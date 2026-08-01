@@ -2,6 +2,7 @@ package guard
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -21,6 +22,37 @@ func asciiRequired(rel string) bool {
 		return true
 	}
 	return false
+}
+
+// Text that lives in the repository is English, whatever its audience. The
+// criterion is the place, not the reader - the technical changelog is read
+// internally and still sits on the public surface of the project.
+//
+// The internal documents are absent from this list because they are absent
+// from the repository. See .gitignore.
+var englishFiles = []string{
+	"README.md",
+	"CHANGELOG.md",
+	"CHANGELOG-DEV.md",
+}
+
+func TestTextInTheRepositoryIsAsciiOnly(t *testing.T) {
+	root := repoRoot(t)
+	for _, name := range englishFiles {
+		b, err := os.ReadFile(filepath.Join(root, name))
+		if err != nil {
+			t.Errorf("reading %s: %v - it is listed as English text but is not there", name, err)
+			continue
+		}
+		for n, line := range strings.Split(string(b), "\n") {
+			for col, r := range line {
+				if r > 127 {
+					t.Errorf("%s:%d:%d holds %q - text in the repository is English", name, n+1, col+1, r)
+					break
+				}
+			}
+		}
+	}
 }
 
 func TestCommandLineIsAsciiOnly(t *testing.T) {
