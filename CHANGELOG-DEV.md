@@ -21,6 +21,10 @@ idą do `CHANGELOG.md` i są po angielsku.
 - `.gitignore` sprawdzony pomiarem na 21 ścieżkach. Wyłapał własny błąd:
   negacja `testdata/` zakotwiczona w korzeniu gubiła `testdata/` per pakiet,
   czyli konwencję Go.
+- `.gitattributes` — końce linii normalizowane do LF na każdym systemie,
+  `testdata/` i `LICENSE` wyłączone z jakiejkolwiek konwersji. Bez tego git
+  na Windows przepisywałby wzorce porównywane bajt w bajt, a awaria
+  wyglądałaby jak dryf kompresora, nie jak git dotykający pliku.
 - Wartości wzorcowe stabilności bajtowej **zmierzone od nowa** na go1.26.5.
   Nie zgadzają się z prefiksami z `STACK.md §4.1`, bo tamten pomiar używał
   innego wsadu — dzisiejszy test definiuje swój wsad w sobie.
