@@ -50,6 +50,15 @@ func goldenCases() map[string]engine.Target {
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},
 		"log_8kib":  {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true},
+		"csv_8kib":  {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true},
+		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
+		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},
+
+		// XML is the only one of the three that carries the label in the file,
+		// as a comment, so it is the only one where the switch moves bytes. For
+		// CSV and JSON the label never reaches the content, and both positions
+		// would pin the same file.
+		"xml_8kib_no_label": {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: false},
 
 		// The label is a byte affecting switch, not a cosmetic one, so it is
 		// pinned in both positions.

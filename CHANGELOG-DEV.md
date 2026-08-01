@@ -17,6 +17,55 @@ belongs in one place.
 
 ### Added
 
+- **One primitive for every record based format, in `core.FillRecords`.** Whole
+  records while another still leaves room, then a closing record built to the
+  byte. That rule was written out by hand for the third and fourth time when
+  CSV, JSON and XML arrived, and it is the rule whose failure is hardest to
+  see - a half record leaves the size exact, the run repeatable, and the file
+  looking like something caught mid write.
+  The builder is an interface with two methods rather than one taking a
+  "natural length" sentinel. Zero is a legal length elsewhere in this codebase,
+  and a sentinel that collides with a legal value is how a guard ends up
+  testing the wrong thing.
+  Each generator measures what it has written before sizing its padding value
+  rather than keeping a parallel sum. Arithmetic that has to agree with the
+  bytes beside it is a defect waiting for the day somebody adds a column and
+  updates one of the two - and in XML the escaping makes the two differ on
+  purpose.
+  **The log moved onto it as a separate step with its own proof**, because its
+  bytes are pinned and a refactor that shifted them would be a breaking change.
+  The pinned value did not move, so the conversion is byte for byte neutral. It
+  took 29 lines and two copies of `writeAll` out, and all four record formats
+  now read the same way.
+  That refactor invalidated one mutation, which is worth knowing rather than
+  patching over. The old one cut the closing entry short, and once the loop
+  lived in `core.FillRecords` that stopped producing a wrong file and started
+  producing an error, because a record of the wrong length is refused before it
+  reaches the disk. Its replacement puts a newline inside the padded request
+  path: the entry splits into several lines and the byte count does not move,
+  measured with the size and determinism guards staying green.
+- **The first text formats with both oracle layers.** TXT, MD and LOG have no
+  reference tool, so their structure rests on guards written here. CSV, JSON
+  and XML each have a real reader and a structural check beside it, and the two
+  are genuinely different implementations: `node` for JSON is V8 rather than
+  anything written here, and XML is parsed by expat while the structural check
+  is a hand written scanner, because running the same C parser twice proves
+  nothing the first run did not. Measured on this machine: seven formats
+  checked against an external tool, none skipped.
+  CSV is read by the Python module **at its default settings on purpose**. It
+  refuses a field above 131 072 B, which is the measurement that shaped the
+  generator - raising the limit would leave that finding with nothing checking
+  it. The structural check does not call that module at all, because it accepts
+  a ragged row without a word.
+- **Guards for the failure the other guards cannot see.** Padding that swallows
+  the file leaves the size exact, the run repeatable and the document parsable.
+  Stated once for all three formats as a ceiling on any single value and a
+  floor under the record count, with the floor derived from the ceiling rather
+  than picked separately.
+  Verified by mutation, and the point is what stayed green: with the CSV
+  quoting dropped, the JSON null removed and the XML ampersand left bare, the
+  size and determinism guards passed every time. Four entries joined the
+  mutation list, one of them on the shared loop.
 - **`cleanup` joined `audit`, reading the manifest through the same `Claimed`
   as `verify`.** The two cannot drift into disagreeing about which entries
   describe a file that should be on the disk, which for the deleting one is not

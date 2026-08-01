@@ -202,8 +202,238 @@ def check_log(data):
     ok(f"{entries} entries, all whole")
 
 
+def check_csv(data):
+    """Every row carries the same columns, written to RFC 4180 by hand.
+
+    Not csv.reader. That module is the tolerant reader used as the reference
+    tool beside this one, and it accepts a ragged row without a word - a row
+    with a column missing is exactly the defect this has to catch, and the file
+    would still be the right size and still parse.
+
+    The field size ceiling below is the measurement of 2026-08-01 turned into a
+    rule: the Python csv module at its default settings refuses a field above
+    131 072 B. Padding pushed into one field instead of through rows would sail
+    past every size and determinism guard and break the reader a tester has
+    nearest.
+    """
+    FIELD_CEILING = 131072
+
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+
+    if not text.endswith("\n"):
+        fail("the file does not end with a newline, so the last row is unterminated")
+
+    rows, field, row, quoted, i = [], [], [], False, 0
+    while i < len(text):
+        ch = text[i]
+        if quoted:
+            if ch == '"':
+                if i + 1 < len(text) and text[i + 1] == '"':
+                    field.append('"')
+                    i += 2
+                    continue
+                quoted = False
+            else:
+                field.append(ch)
+            i += 1
+            continue
+        if ch == '"':
+            if field:
+                fail(f"row {len(rows) + 1} opens a quote in the middle of a field")
+            quoted = True
+        elif ch == ",":
+            row.append("".join(field))
+            field = []
+        elif ch == "\n":
+            row.append("".join(field))
+            field = []
+            rows.append(row)
+            row = []
+        else:
+            field.append(ch)
+        i += 1
+
+    if quoted:
+        fail("a quoted field is never closed")
+    if field or row:
+        fail("the file ends in the middle of a row")
+    if len(rows) < 2:
+        fail(f"the table holds {len(rows)} row(s), so there is no data to check")
+
+    columns = len(rows[0])
+    if columns < 2:
+        fail(f"the header declares {columns} column(s)")
+    for number, r in enumerate(rows, start=1):
+        if len(r) != columns:
+            fail(f"row {number} has {len(r)} fields and the header declares {columns}")
+        for value in r:
+            if len(value.encode("utf-8")) > FIELD_CEILING:
+                fail(f"row {number} has a field of {len(value.encode('utf-8'))} B - "
+                     f"the default Python reader refuses anything above {FIELD_CEILING} B")
+
+    ok(f"{len(rows) - 1} data rows, {columns} columns each")
+
+
+def check_json(data):
+    """The document is an array of records, each on its own line.
+
+    Parsing is CPython's json here and V8's parser in the reference tool beside
+    it, which are two implementations in two languages. What this adds is the
+    shape: that the file is records rather than one enormous value, and that it
+    is laid out the way the manifest says it is.
+
+    The value types come from the format document, not from what the generator
+    happens to emit. A generator that quietly stopped writing booleans would be
+    the right size and would still parse.
+    """
+    import json
+
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+
+    try:
+        doc = json.loads(text)
+    except ValueError as exc:
+        fail(f"not valid JSON: {exc}")
+
+    if not isinstance(doc, list):
+        fail(f"the root is {type(doc).__name__} rather than an array")
+    if not doc:
+        fail("the array is empty")
+
+    # The manifest states one record per line, so the line count has to match.
+    lines = text.rstrip("\n").split("\n")
+    if len(lines) != len(doc) + 2:
+        fail(f"{len(doc)} records over {len(lines)} lines - the manifest says one record per line")
+
+    kinds = set()
+    keys = None
+    for number, record in enumerate(doc, start=1):
+        if not isinstance(record, dict):
+            fail(f"record {number} is {type(record).__name__} rather than an object")
+        if keys is None:
+            keys = set(record)
+        elif set(record) != keys:
+            fail(f"record {number} has the keys {sorted(record)} and record 1 has {sorted(keys)}")
+        for value in record.values():
+            if value is None:
+                kinds.add("null")
+            elif isinstance(value, bool):
+                kinds.add("bool")
+            elif isinstance(value, (int, float)):
+                kinds.add("number")
+            elif isinstance(value, str):
+                kinds.add("string")
+            elif isinstance(value, list):
+                kinds.add("array")
+            elif isinstance(value, dict):
+                kinds.add("object")
+
+    wanted = {"null", "bool", "number", "string", "array", "object"}
+    missing = wanted - kinds
+    if missing:
+        fail(f"no record carries a value of type {', '.join(sorted(missing))} - "
+             "the point of a JSON fixture is that a parser meets every type")
+
+    ok(f"{len(doc)} records, keys {sorted(keys)}")
+
+
+def check_xml(data):
+    """Well formed, checked by hand against the XML specification.
+
+    Deliberately not expat. That is the reference tool beside this one, so
+    calling it here would run the same C parser twice and prove nothing the
+    first run did not.
+
+    What a hand scanner adds: tags balanced and correctly nested, a comment that
+    never contains a double hyphen, and text where every ampersand starts a real
+    entity reference. A raw ampersand is the classic way a generated document
+    stops being well formed while staying exactly the right size.
+    """
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+
+    if not text.startswith("<?xml "):
+        fail("the document does not open with an XML declaration")
+
+    entity = re.compile(r"&(?:amp|lt|gt|quot|apos|#[0-9]+|#x[0-9a-fA-F]+);")
+    stack, elements, i = [], 0, 0
+
+    while i < len(text):
+        nxt = text.find("<", i)
+        if nxt < 0:
+            nxt = len(text)
+
+        # Character data between two tags.
+        chunk = text[i:nxt]
+        for pos, ch in enumerate(chunk):
+            if ch == "&" and not entity.match(chunk, pos):
+                fail(f"a bare ampersand at offset {i + pos} - text has to escape it as &amp;")
+        if chunk.strip() and not stack:
+            fail(f"text outside the root element at offset {i}: {chunk.strip()[:40]!r}")
+        if nxt == len(text):
+            break
+
+        if text.startswith("<!--", nxt):
+            end = text.find("-->", nxt + 4)
+            if end < 0:
+                fail("a comment is never closed")
+            if "--" in text[nxt + 4:end]:
+                fail("a comment contains a double hyphen, which XML does not allow")
+            i = end + 3
+            continue
+
+        if text.startswith("<?", nxt):
+            end = text.find("?>", nxt + 2)
+            if end < 0:
+                fail("a processing instruction is never closed")
+            i = end + 2
+            continue
+
+        end = text.find(">", nxt)
+        if end < 0:
+            fail(f"a tag opened at offset {nxt} is never closed")
+        tag = text[nxt + 1:end]
+
+        if tag.startswith("/"):
+            name = tag[1:].strip()
+            if not stack:
+                fail(f"</{name}> closes an element that was never opened")
+            opened = stack.pop()
+            if opened != name:
+                fail(f"</{name}> closes while <{opened}> is open")
+        else:
+            selfClosing = tag.endswith("/")
+            body = tag[:-1] if selfClosing else tag
+            name = body.split()[0] if body.split() else ""
+            if not name:
+                fail(f"an empty tag at offset {nxt}")
+            # Every attribute value has to be quoted.
+            for attr in re.finditer(r"(\w+)\s*=\s*(.?)", body[len(name):]):
+                if attr.group(2) not in ('"', "'"):
+                    fail(f"attribute {attr.group(1)} of <{name}> is not quoted")
+            elements += 1
+            if not selfClosing:
+                stack.append(name)
+        i = end + 1
+
+    if stack:
+        fail(f"the document ends with {', '.join('<' + s + '>' for s in stack)} still open")
+    if elements < 2:
+        fail(f"the document holds {elements} element(s), so there is nothing below the root")
+
+    ok(f"{elements} elements, all balanced")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
-          "log": check_log}
+          "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

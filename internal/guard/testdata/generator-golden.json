@@ -42,6 +42,22 @@
     "log_8kib": {
       "bytes": 8192,
       "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"
+    },
+    "csv_8kib": {
+      "bytes": 8192,
+      "sha256": "131b3700abaa7e5985b87621b2b5ad1308219678183138a7f09b28b9d79927b3"
+    },
+    "json_8kib": {
+      "bytes": 8192,
+      "sha256": "00be5e2927bd5e1b06a187c652df502c0ba291297d24bd7dc23f7f47a60046bb"
+    },
+    "xml_8kib": {
+      "bytes": 8192,
+      "sha256": "49e5784c4a3009025cabe7334f73aad0c4d9e37aa9cbd4465f6faa4b90280719"
+    },
+    "xml_8kib_no_label": {
+      "bytes": 8192,
+      "sha256": "0f29db2065d4b205aecd70cb4b3a56ce458e1bffb9d4967c145c6fbd25455eb1"
     }
   }
 }

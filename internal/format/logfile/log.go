@@ -30,7 +30,6 @@ import (
 
 const (
 	generatorVersion = "1"
-	chunkSize        = 32 * 1024
 
 	// Every field except the path is fixed width, so the length of an entry
 	// is known before it is built and the path absorbs the difference.
@@ -142,53 +141,36 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 
 	remaining := p.Bytes
 	if m.labelLine != "" {
-		if err := writeAll(w, []byte(m.labelLine)); err != nil {
+		if err := core.WriteAll(w, []byte(m.labelLine)); err != nil {
 			return err
 		}
 		remaining -= int64(len(m.labelLine))
 	}
 
-	rng := core.NewRand(m.seed)
-	buf := make([]byte, 0, chunkSize+512)
-
 	// Whole entries while another one still leaves room for a final entry of
-	// its own. That is what keeps the last line from being a stub.
-	min := minEntry()
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
+	// its own, then a closing entry built to the byte. That rule is the same
+	// for every record based format here, so it lives in core rather than
+	// being written out a fourth time.
+	rng := core.NewRand(m.seed)
+	return core.FillRecords(ctx, w, rng, remaining, entries{})
+}
 
-		mark := len(buf)
-		buf = appendEntry(buf, rng, 0)
-		if remaining-int64(len(buf)-mark) < min {
-			buf = buf[:mark]
-			break
-		}
-		remaining -= int64(len(buf) - mark)
+// entries is the log seen as a stream of records.
+type entries struct{}
 
-		if len(buf) >= chunkSize {
-			if err := writeAll(w, buf); err != nil {
-				return err
-			}
-			buf = buf[:0]
-		}
-	}
+func (entries) Shortest() int64 { return minEntry() }
 
-	// The last entry lands the byte count exactly.
-	mark := len(buf)
-	buf = appendEntry(buf, rng, remaining)
-	if got := int64(len(buf) - mark); got != remaining {
-		return fmt.Errorf("log: the closing entry came to %d B and %d B were owed", got, remaining)
-	}
-	return writeAll(w, buf)
+func (entries) Append(dst []byte, rng *rand.Rand) []byte {
+	return appendEntry(dst, rng, -1)
+}
+
+func (entries) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
+	return appendEntry(dst, rng, n)
 }
 
 // appendEntry appends one line in the Apache combined format.
 //
-// want of 0 means "whatever length it comes out". Any other value is the exact
+// want below zero means "whatever length it comes out". Any other value is the exact
 // length the line must have, newline included, and the request path is
 // stretched to reach it.
 //
@@ -225,7 +207,7 @@ func appendEntry(dst []byte, rng *rand.Rand, want int64) []byte {
 	dst = append(dst, timestamp...)
 	dst = append(dst, "] \"GET /"...)
 
-	if want == 0 {
+	if want < 0 {
 		dst = append(dst, path...)
 	} else {
 		dst = appendPath(dst, want-base)
@@ -292,17 +274,6 @@ func minEntry() int64 {
 }
 
 func minimumBytes() int64 { return minEntry() }
-
-func writeAll(w io.Writer, b []byte) error {
-	for len(b) > 0 {
-		n, err := w.Write(b)
-		if err != nil {
-			return err
-		}
-		b = b[n:]
-	}
-	return nil
-}
 
 var statuses = []int{200, 200, 200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 409, 429, 500, 502, 503}
 

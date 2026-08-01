@@ -17,6 +17,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Three more formats: CSV, JSON and XML.** `--format csv` produces a table
+  with a header and six columns, where the description column is quoted and
+  carries commas - the case a CSV reader has to get right. `--format json`
+  produces an array of records, one per line, and every record carries a value
+  of each JSON type, so a parser under test meets numbers, text, booleans,
+  null, arrays and nested objects rather than only strings. `--format xml`
+  produces a document with an encoding declaration, an attribute on every
+  record and names like `Baker &amp; Sons`, so escaping is exercised instead of
+  assumed.
+  All three hit the size you ask for to the byte, and the filling goes through
+  whole records. The last record is built to fit rather than cut short, so
+  **every row, object and element is a whole one a parser will accept**. A
+  truncated last record looks exactly like a file caught mid write, which is a
+  failure that reads as realism unless something checks for it.
+  Each of the three has a smallest size, reported when you ask for less: 117 B
+  for CSV, 219 B for JSON and 264 B for XML. Those are a header and one row, an
+  array and one record, and a declaration with a root and one record. An empty
+  table or an empty document is a legal file and a reasonable thing to want,
+  and it is coming as a setting rather than as a byte count, because asking for
+  `[]` by naming a size is guesswork on both sides.
+  **CSV and JSON never carry the label in the file.** A comment row breaks half
+  the CSV readers and an extra field changes the very structure under test, so
+  the file name and the manifest identify those two instead. `--clean` makes no
+  difference to them for the same reason. XML carries it in a comment, out of
+  the way of the content, and the manifest says which files carry one.
 - **`tfg cleanup --json` and `tfg validate --json`.** Every command that
   produces a report now has a machine readable form, so a pipeline reads a
   result instead of parsing sentences that change when the wording improves.

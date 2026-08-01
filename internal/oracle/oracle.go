@@ -197,7 +197,101 @@ var checkers = map[string]Checker{
 			return nil
 		},
 	},
+
+	// V8's parser, which is neither our code nor our language. Measured present
+	// on this machine as node v26.5.0 on 2026-08-01.
+	"node-json": {
+		Name:   "node",
+		find:   inPath("node"),
+		args:   func(p string) []string { return []string{"-e", nodeJSONScript, p} },
+		accept: expectOK("node"),
+	},
+
+	// The Python csv module at its DEFAULT settings, on purpose. Measured on
+	// 2026-08-01 it refuses a field above 131 072 B, and that is the reader a
+	// tester is most likely to have. Raising the limit here would turn the
+	// measurement that shaped the CSV generator into something nothing checks.
+	"python-csv": {
+		Name:   "python-csv",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", pythonCSVScript, p} },
+		accept: expectOK("the Python csv module"),
+	},
+
+	// expat through xml.sax, which is a C parser rather than anything written
+	// here. The structural check beside it is hand written to the specification,
+	// so the two are genuinely different implementations.
+	"python-xml": {
+		Name:   "python-xml",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", pythonXMLScript, p} },
+		accept: expectOK("the Python XML parser"),
+	},
 }
+
+// expectOK is the acceptance rule shared by the script based checkers: a zero
+// exit and a line starting with OK. Anything else is a rejection reported in
+// the tool's own words.
+func expectOK(tool string) func(stdout, stderr string, code int) error {
+	return func(stdout, stderr string, code int) error {
+		if code != 0 {
+			return fmt.Errorf("%s refused the file: %s", tool, strings.TrimSpace(stdout+" "+stderr))
+		}
+		if !strings.HasPrefix(strings.TrimSpace(stdout), "OK") {
+			return fmt.Errorf("%s did not confirm the file: %s", tool, strings.TrimSpace(stdout+" "+stderr))
+		}
+		return nil
+	}
+}
+
+// nodeJSONScript parses the document and walks it, so a file that is merely
+// well formed at the top level still has to hold records.
+const nodeJSONScript = `
+const fs = require("fs");
+const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (!Array.isArray(data)) { console.log("FAIL the document is not an array"); process.exit(1); }
+if (data.length === 0) { console.log("FAIL the array is empty"); process.exit(1); }
+for (const r of data) {
+  if (typeof r !== "object" || r === null || Array.isArray(r)) {
+    console.log("FAIL an element is not an object"); process.exit(1);
+  }
+}
+console.log("OK " + data.length + " records");
+`
+
+// pythonCSVScript reads every row at the module's default settings.
+const pythonCSVScript = `
+import csv, sys
+with open(sys.argv[1], newline="", encoding="utf-8") as handle:
+    rows = list(csv.reader(handle))
+if len(rows) < 2:
+    print("FAIL the table holds no data rows"); sys.exit(1)
+print("OK", len(rows) - 1, "rows,", len(rows[0]), "columns")
+`
+
+// pythonXMLScript parses with expat, which refuses anything that is not well
+// formed rather than repairing it.
+const pythonXMLScript = `
+import sys
+from xml.sax import make_parser, handler, SAXException
+
+class Count(handler.ContentHandler):
+    def __init__(self):
+        self.elements = 0
+    def startElement(self, name, attrs):
+        self.elements += 1
+
+counter = Count()
+parser = make_parser()
+parser.setContentHandler(counter)
+try:
+    parser.parse(sys.argv[1])
+except SAXException as exc:
+    print("FAIL", exc); sys.exit(1)
+if counter.elements < 2:
+    print("FAIL the document holds no elements below the root"); sys.exit(1)
+print("OK", counter.elements, "elements")
+`
 
 // pillowScript opens the image and forces every pixel to be decoded, so a
 // truncated or malformed image fails rather than passing on its header alone.
@@ -287,7 +381,7 @@ func Strict(formatID, path string) Result {
 // StrictKnows says whether the structural checker covers a format.
 func StrictKnows(formatID string) bool {
 	switch formatID {
-	case "png", "wav", "pdf", "zip", "log":
+	case "png", "wav", "pdf", "zip", "log", "csv", "json", "xml":
 		return true
 	}
 	return false
