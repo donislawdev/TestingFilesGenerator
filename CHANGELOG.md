@@ -136,6 +136,12 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **`tfg recipe fmt` refuses the same files `tfg generate` refuses.** A file
+  holding two recipes used to format cleanly and end with code 0, and `-w`
+  settled it so `--check` passed as well - after which `tfg generate` turned
+  down the file a pre commit hook had just called clean. All three forms now
+  end with code 3 and say the file holds more than one recipe, `-w` leaves the
+  file exactly as it was, and the message names the file it stopped on.
 - **A name template with an unknown placeholder is an error.**
   `name: "file_{index}.txt"` used to produce a file called exactly that, braces
   and all, instead of the numbering asked for. The only placeholder is

@@ -431,7 +431,7 @@ Flags:
 		return ExitIO
 	}
 
-	canon, err := recipe.Canonical(src)
+	canon, err := recipe.Canonical(src, path)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %v\n", err)
 		return classify(err)

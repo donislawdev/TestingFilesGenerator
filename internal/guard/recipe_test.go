@@ -77,11 +77,11 @@ func TestTheCanonicalFormOfARecipeHasNotDrifted(t *testing.T) {
 // A formatter that never settles churns the file on every save, which is the
 // failure the canonical form exists to prevent.
 func TestFormattingARecipeSettlesAndKeepsWhatAPersonWrote(t *testing.T) {
-	once, err := recipe.Canonical([]byte(sampleRecipe))
+	once, err := recipe.Canonical([]byte(sampleRecipe), "recipe.yaml")
 	if err != nil {
 		t.Fatalf("first pass: %v", err)
 	}
-	twice, err := recipe.Canonical(once)
+	twice, err := recipe.Canonical(once, "recipe.yaml")
 	if err != nil {
 		t.Fatalf("second pass: %v", err)
 	}
@@ -323,6 +323,86 @@ targets:
 	}
 	if !strings.Contains(errOut, "document") {
 		t.Errorf("the message does not explain what is wrong:\n%s", errOut)
+	}
+}
+
+// The formatter and the reader have to agree on what a recipe is.
+//
+// They used to disagree in the worst possible direction: "tfg recipe fmt" laid
+// out a file holding two recipes without a word and ended with code 0, and
+// with -w it settled the file so --check passed too. A pre commit hook went
+// green on a file "tfg generate" then refused. The reader was told the layout
+// was the problem, and the layout was fine.
+//
+// The -w case is the one worth naming: a refusal has to leave the file on disk
+// exactly as it was, because the alternative is a half rewritten recipe.
+func TestTheFormatterRefusesTheSameFileTheReaderRefuses(t *testing.T) {
+	dir := t.TempDir()
+	const twoRecipes = `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+---
+version: 1
+targets:
+  - id: b
+    format: txt
+    size: 2kb
+`
+	path := writeRecipe(t, dir, twoRecipes)
+
+	// Printing. The old behaviour was exit 0 with both recipes laid out.
+	code, stdout, errOut := run(t, "recipe", "fmt", path)
+	if code != cli.ExitRecipe {
+		t.Errorf("recipe fmt gave %d, expected %d - the formatter accepts a file generate refuses", code, cli.ExitRecipe)
+	}
+	if stdout != "" {
+		t.Errorf("a refused run wrote to stdout:\n%s", stdout)
+	}
+	if !strings.Contains(errOut, "document") {
+		t.Errorf("the message does not say the file holds more than one recipe:\n%s", errOut)
+	}
+	// A hook runs this over a directory. A refusal that does not name the file
+	// leaves the reader to find it themselves.
+	if !strings.Contains(errOut, path) {
+		t.Errorf("the message does not name the file it refused:\n%s", errOut)
+	}
+
+	// --check is the hook facing form, so a wrong answer here is the one that
+	// reaches a repository. It must not blame the layout.
+	code, stdout, errOut = run(t, "recipe", "fmt", "--check", path)
+	if code != cli.ExitRecipe {
+		t.Errorf("--check gave %d, expected %d", code, cli.ExitRecipe)
+	}
+	if stdout != "" {
+		t.Errorf("--check wrote to stdout:\n%s", stdout)
+	}
+	if !strings.Contains(errOut, "document") {
+		t.Errorf("--check blames the layout for a file that holds two recipes:\n%s", errOut)
+	}
+	if strings.Contains(errOut, "settled shape") {
+		t.Errorf("--check sends the reader to run the formatter, which will not fix this:\n%s", errOut)
+	}
+
+	// -w must refuse without touching the file.
+	if code, _, _ = run(t, "recipe", "fmt", "-w", path); code != cli.ExitRecipe {
+		t.Errorf("-w gave %d, expected %d", code, cli.ExitRecipe)
+	}
+	after, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("reading back: %v", err)
+	}
+	if string(after) != twoRecipes {
+		t.Errorf("a refused -w rewrote the file on disk:\n%s", after)
+	}
+
+	// The invariant behind all three: whatever the formatter accepts, the
+	// reader accepts. Asserting it directly means a future third command
+	// cannot drift away from the pair without this failing.
+	validateCode, _, _ := run(t, "validate", path)
+	if (code == cli.ExitOK) != (validateCode == cli.ExitOK) {
+		t.Errorf("recipe fmt ended %d and validate ended %d - the two disagree about what a recipe is", code, validateCode)
 	}
 }
 

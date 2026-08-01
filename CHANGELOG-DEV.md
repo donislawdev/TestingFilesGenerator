@@ -252,6 +252,13 @@ belongs in one place.
 
 ### Fixed
 
+- **The formatter and the reader disagreed about what a recipe is, and only
+  one of them was checking.** The one document rule lived inside `Parse`, so
+  `Canonical` - and with it `tfg recipe fmt` - never saw it. Both now go
+  through `oneDocument`, the single place that decides how many recipes a file
+  holds, which is what stops the two paths drifting again. The fix was held
+  back once because `recipe_hash` is taken from `Canonical`. It was verified
+  the way that risk deserves: the pinned `canonicalHash` did not move.
 - **A file holding two YAML documents was read as one and the rest dropped.**
   Found by mutation testing rather than by reasoning. A recipe with a `---`
   separator produced the first document only and exited zero, which is the

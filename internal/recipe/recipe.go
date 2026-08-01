@@ -71,14 +71,8 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// One file is one recipe. Everything after a document separator would be
 	// dropped by the decoder, which means somebody gets half the fixtures they
 	// asked for and a run that says it went fine.
-	if n, err := documents(src); err != nil {
+	if _, err := oneDocument(src, name); err != nil {
 		return nil, err
-	} else if n > 1 {
-		return nil, &ValidationError{Name: name, Problems: []Problem{{
-			What: fmt.Sprintf("the file holds %d YAML documents", n),
-			Why:  "a recipe is one document, and everything after the first separator would be ignored without a word",
-			Fix:  "remove the --- separators, or split the file into one recipe per file",
-		}}}
 	}
 
 	// Strict decoding turns an unknown key into an error. A typo in
