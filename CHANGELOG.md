@@ -43,10 +43,13 @@ because it turns other people's test suites red.
 
 ### Notes on behaviour
 
-- **Sizes.** `mb`, `kb`, `gb` and `tb` count in thousands. `mib`, `kib`,
-  `gib` and `tib` count in 1024s. So `10mb` is 10 000 000 bytes and `10mib`
-  is 10 485 760. A size that does not land on a whole byte is an error rather
-  than a rounded number.
+- **Sizes count in 1024s.** `10mb` is 10 485 760 bytes, which is what
+  Windows Explorer and `ls -lh` both call "10 MB". `mib`, `kib` and `gib` are
+  spelled out versions of the same thing. This departs from the SI standard
+  on purpose - a file you asked for as 10mb has to look like 10 MB when you
+  check it. Write the number if you want exactly ten million bytes. A size
+  that does not land on a whole byte is an error rather than a rounded
+  number.
 - **`--size` is required.** Every target declares its size, which is what
   lets `--dry-run` report exact numbers before anything reaches the disk.
 - **The label needs room.** A text file smaller than the label carries no

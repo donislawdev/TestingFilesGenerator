@@ -9,16 +9,24 @@ import (
 
 // ParseSize turns a human written size into an exact number of bytes.
 //
-// Decimal units count in thousands and binary units count in 1024s, the way
-// the standards define them:
-//
-//	10mb   -> 10 000 000
-//	10mib  -> 10 485 760
-//	1.5gib -> 1 610 612 736
-//	700kB  -> 700 000
+//	10mb     -> 10 485 760
+//	10mib    -> 10 485 760  (the same, spelled out)
+//	1.5gib   -> 1 610 612 736
+//	700kb    -> 716 800
 //	10485761 -> 10 485 761
 //
 // Case does not matter. A plain number is a count of bytes.
+//
+// Every unit counts in 1024s, and that is a deliberate departure from the
+// standards. The reason is what the person checking the file will see.
+// Measured on Windows and on Linux: a file of 10 485 760 bytes is shown as
+// "10 MB" by Windows Explorer and as "10M" by ls, while a file of 10 000 000
+// bytes is shown as "9,53 MB" and "9.6M". Someone who asks for 10mb, gets ten
+// million bytes and then looks at the file concludes the generator is broken
+// - and for a tool whose whole promise is an exact size, that costs more than
+// following the standard buys.
+//
+// Someone who genuinely wants ten million bytes writes the number.
 //
 // A size that does not land on a whole byte is refused rather than rounded.
 // Rounding is the one thing this tool must never do quietly - a batch of ten
@@ -77,34 +85,24 @@ func ParseSize(s string) (int64, error) {
 
 func unitBytes(unit string) (int64, bool) {
 	const (
-		k = 1000
-		m = k * 1000
-		g = m * 1000
-		t = g * 1000
-
 		ki = 1024
 		mi = ki * 1024
 		gi = mi * 1024
 		ti = gi * 1024
 	)
+	// The two spellings mean the same thing. kib and mib exist because people
+	// who know the difference reach for them, not because they behave
+	// differently here.
 	switch unit {
 	case "", "b":
 		return 1, true
-	case "k", "kb":
-		return k, true
-	case "m", "mb":
-		return m, true
-	case "g", "gb":
-		return g, true
-	case "t", "tb":
-		return t, true
-	case "ki", "kib":
+	case "k", "kb", "ki", "kib":
 		return ki, true
-	case "mi", "mib":
+	case "m", "mb", "mi", "mib":
 		return mi, true
-	case "gi", "gib":
+	case "g", "gb", "gi", "gib":
 		return gi, true
-	case "ti", "tib":
+	case "t", "tb", "ti", "tib":
 		return ti, true
 	}
 	return 0, false

@@ -85,7 +85,7 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 
 	var (
 		formatID = fs.String("format", "", "format of the files to produce, for example txt")
-		sizeStr  = fs.String("size", "", "exact size of each file, for example 10mb, 1.5gib or 10485761")
+		sizeStr  = fs.String("size", "", "exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count")
 		count    = fs.Int("count", 1, "how many files to produce")
 		outDir   = fs.String("out", ".", "directory to write into")
 		name     = fs.String("name", "", "name template, for example invoice_{index:04}.txt")
