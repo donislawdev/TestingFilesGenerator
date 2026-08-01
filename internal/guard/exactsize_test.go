@@ -146,11 +146,14 @@ func TestEveryFormatHitsTheOrderedSizeExactly(t *testing.T) {
 func TestTheSameSeedGivesTheSameBytes(t *testing.T) {
 	checked := 0
 	for _, d := range format.All() {
-		for _, size := range []int64{d.MinBytes, d.MinBytes + 1024, d.MinBytes + 70000} {
+		for _, size := range []int64{d.MinBytes, d.MinBytes + 4096, d.MinBytes + 70000} {
 			req := format.Request{Bytes: size, Seed: 7741, Label: true}
 
-			first := produce(t, d, req)
-			second := produce(t, d, req)
+			first, ok := produce(t, d, req)
+			if !ok {
+				continue
+			}
+			second, _ := produce(t, d, req)
 			if first != second {
 				t.Errorf("%s at %d B produced different bytes for the same seed", d.ID, size)
 			}
@@ -163,8 +166,11 @@ func TestTheSameSeedGivesTheSameBytes(t *testing.T) {
 			// everywhere else and still look correct - measured, that is
 			// exactly what a mutation of the picture and the padding did.
 			for _, label := range []bool{true, false} {
-				base := produce(t, d, format.Request{Bytes: size, Seed: 7741, Label: label})
-				other := produce(t, d, format.Request{Bytes: size, Seed: 7742, Label: label})
+				base, okA := produce(t, d, format.Request{Bytes: size, Seed: 7741, Label: label})
+				other, okB := produce(t, d, format.Request{Bytes: size, Seed: 7742, Label: label})
+				if !okA || !okB {
+					continue
+				}
 				if size > 256 && other == base {
 					t.Errorf("%s at %d B with label=%v ignored the seed - two seeds gave identical bytes",
 						d.ID, size, label)
@@ -178,17 +184,24 @@ func TestTheSameSeedGivesTheSameBytes(t *testing.T) {
 	}
 }
 
-func produce(t *testing.T, d format.Descriptor, r format.Request) [32]byte {
+// produce returns the hash of one generated file, or false when the format
+// refuses that size. Refusing is legitimate - the minimum in the registry is
+// the smallest file with no label, and a label costs extra.
+func produce(t *testing.T, d format.Descriptor, r format.Request) ([32]byte, bool) {
 	t.Helper()
 	plan, err := d.Generator.Plan(r)
 	if err != nil {
+		var below *format.BelowMinimumError
+		if errors.As(err, &below) {
+			return [32]byte{}, false
+		}
 		t.Fatalf("%s: planning %d B failed: %v", d.ID, r.Bytes, err)
 	}
 	var buf bytes.Buffer
 	if err := d.Generator.Write(context.Background(), &buf, plan); err != nil {
 		t.Fatalf("%s: writing %d B failed: %v", d.ID, r.Bytes, err)
 	}
-	return sha256.Sum256(buf.Bytes())
+	return sha256.Sum256(buf.Bytes()), true
 }
 
 func TestSizeBelowTheMinimumIsRefused(t *testing.T) {

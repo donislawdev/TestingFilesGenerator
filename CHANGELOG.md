@@ -12,8 +12,11 @@ because it turns other people's test suites red.
 
 ### Added
 
-- `tfg generate` produces **text and PNG files** of an exact size. Ask for
-  10 485 761 bytes and you get exactly that.
+- `tfg generate` produces **text, PNG and PDF files** of an exact size. Ask
+  for 10 485 761 bytes and you get exactly that.
+- PDF takes `--set pages=` and `--set page_size=` (A4, A3, A5, Letter,
+  Legal). The label goes in the page footer and in the document title.
+  Checked against Xpdf, exiftool and the Windows PDF renderer.
 - PNG carries the label burned into the picture, and its size is made exact
   by a private chunk that decoders ignore. Checked against Pillow, FFmpeg,
   Tcl/Tk, the Windows Imaging Component and exiftool - all five read the

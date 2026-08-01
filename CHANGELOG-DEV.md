@@ -6,6 +6,35 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - PDF, and an assumption of ours disproved
+
+- `pdf` is the third generator. Exact size, byte determinism, pages and page
+  size as properties, label in the footer and in the document title.
+- **The padding channel this project had written down was wrong, and
+  measurement caught it.** The note said "a comment block before %%EOF, no
+  limit". The reasoning behind it was sound as far as it went - objects and
+  the cross reference table sit earlier, so a comment at the end moves no
+  offset. What it missed is that a reader finds the table by scanning
+  backwards for startxref, and how far back is up to the reader. Xpdf 4.06
+  reads 1004 bytes of comment there and fails at 1005. The Windows renderer
+  reads any amount.
+- **That is worse than a hard limit**, because the file would open for one
+  tester and not for another. The channel moved to a comment after the
+  trailer and before startxref, where the tail stays short whatever the
+  padding size. Measured at 64 B, 4 KB, 100 KB, 1 MB, 2 MB and 10 MB against
+  Xpdf, exiftool and the Windows renderer.
+- This is the third time a claim written from memory has been disproved by a
+  few minutes of measurement, after the 7Z tail and the size units.
+- **The property test found two defects the moment PDF was registered.** The
+  comment splitter could leave exactly one byte over, which cannot be a
+  comment line. And the seed test asked for the declared minimum with a label
+  on, while the declared minimum is the label free one.
+- Fonts are not embedded. Helvetica is one of the fourteen a reader already
+  has, which keeps a font file and its licence out of the picture for now.
+- **Fidelity is declared full but not confirmed in Adobe.** Three engines
+  read it. Adobe Acrobat DC is installed and stays a manual checklist item.
+- Guards: 33, all still green with three formats registered.
+
 ### 2026-08-01 - review after the second format
 
 Another read through everything, this time with memory measured rather than
