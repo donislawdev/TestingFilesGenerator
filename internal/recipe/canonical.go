@@ -56,7 +56,7 @@ func oneDocument(src []byte, name string) (*ast.File, error) {
 	if err != nil {
 		return nil, &SyntaxError{Name: name, Detail: strings.TrimRight(err.Error(), "\n")}
 	}
-	if n := len(f.Docs); n > 1 {
+	if n := recipesIn(f); n > 1 {
 		return nil, &ValidationError{Name: name, Problems: []Problem{{
 			What: fmt.Sprintf("the file holds %d YAML documents", n),
 			Why:  "a recipe is one document, and everything after the first separator would be ignored without a word",
@@ -64,6 +64,36 @@ func oneDocument(src []byte, name string) (*ast.File, error) {
 		}}}
 	}
 	return f, nil
+}
+
+// recipesIn counts the documents in a parsed file that carry a recipe.
+//
+// It is deliberately not len(f.Docs), and the difference is not academic.
+// Measured on this parser, tools/probes/yaml-roundtrip probe4: a comment
+// sitting BEFORE a leading "---" becomes a document of its own, and so does a
+// trailing "---" with nothing after it. Both files hold exactly one recipe,
+// and counting raw documents turned both away with a message about separators
+// the reader had not got wrong. A leading "---" is ordinary YAML house style,
+// so the file it refused was one somebody had every reason to write.
+//
+// The other half was measured too, probe5: with the count loosened, the strict
+// decoder reads the recipe rather than the empty first document, on all seven
+// layouts tried. So this is a fix and not a different failure.
+//
+// Re-measure both probes on a parser upgrade. This counts on how the library
+// attaches comments, which is not something it promises.
+func recipesIn(f *ast.File) int {
+	n := 0
+	for _, d := range f.Docs {
+		// Nothing at all, or nothing but a comment. A comment between two
+		// separators belongs to the recipe beside it, not to a recipe of its
+		// own - there is no such thing as a recipe made of one comment.
+		if d.Body == nil || d.Body.Type() == ast.CommentType {
+			continue
+		}
+		n++
+	}
+	return n
 }
 
 // Hash identifies the content of a recipe, independent of how it was laid out.

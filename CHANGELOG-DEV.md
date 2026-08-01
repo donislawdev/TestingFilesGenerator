@@ -252,6 +252,18 @@ belongs in one place.
 
 ### Fixed
 
+- **The one document rule counted the wrong thing, and a probe is what found
+  it.** It counted raw YAML documents, and this parser makes a document out of
+  a comment sitting before a leading `---`, and another out of a trailing
+  `---`. Both files hold one recipe and both were refused, with a message about
+  separators the reader had not got wrong. It now counts documents that carry
+  content. Measured on 14 layouts in `tools/probes/yaml-roundtrip` probe4, and
+  the other half of the question - whether the strict decoder then reads the
+  recipe or the empty first document - in probe5, seven layouts out of seven.
+  Rejected: keeping the raw count, which is what reasoning about the API would
+  have left in place. The rule rests on how the library attaches comments,
+  which it does not promise, so both probes get re-run on a parser upgrade
+  alongside the pinned `recipe_hash`.
 - **The formatter and the reader disagreed about what a recipe is, and only
   one of them was checking.** The one document rule lived inside `Parse`, so
   `Canonical` - and with it `tfg recipe fmt` - never saw it. Both now go

@@ -326,6 +326,72 @@ targets:
 	}
 }
 
+// One recipe stays one recipe whatever the separators around it look like.
+//
+// The one document rule used to count raw YAML documents, and this parser
+// makes a document out of a comment sitting before a leading "---", and
+// another out of a trailing "---" with nothing after it. Both files hold
+// exactly one recipe. Both were refused, with a message about separators the
+// reader had not got wrong - and a leading "---" is ordinary YAML house style,
+// so this was a file somebody had every reason to write.
+//
+// The layouts are driven through the whole path rather than through the
+// parser, because the parser is exactly the thing that was misread.
+func TestOneRecipeIsAcceptedWhateverSeparatorsSurroundIt(t *testing.T) {
+	const body = `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+`
+	accepted := []struct {
+		name string
+		src  string
+	}{
+		{"no separator at all", body},
+		{"leading separator", "---\n" + body},
+		{"comment then leading separator", "# Fixtures for the upload form.\n---\n" + body},
+		{"two comments then separator", "# one\n# two\n---\n" + body},
+		{"trailing separator", body + "---\n"},
+		{"trailing separator and comment", body + "---\n# nothing after this\n"},
+		{"a comment at each end", "# header\n---\n" + body + "---\n# footer\n"},
+	}
+	for _, c := range accepted {
+		t.Run(c.name, func(t *testing.T) {
+			path := writeRecipe(t, t.TempDir(), c.src)
+
+			code, stdout, errOut := run(t, "validate", path)
+			if code != cli.ExitOK {
+				t.Fatalf("validate refused a single recipe with exit %d:\n%s", code, errOut)
+			}
+			// Refusing is one failure. Reading only part of it is the worse
+			// one, and it looks like success from the exit code alone.
+			if !strings.Contains(stdout, "1 target(s), 1 file(s)") {
+				t.Errorf("the recipe was read but not whole:\n%s", stdout)
+			}
+
+			if code, _, errOut := run(t, "recipe", "fmt", path); code != cli.ExitOK {
+				t.Errorf("recipe fmt refused a single recipe with exit %d:\n%s", code, errOut)
+			}
+		})
+	}
+
+	// The rule still has to do its job. A file holding two recipes stays
+	// refused - loosening the count must not loosen that.
+	t.Run("two recipes are still refused", func(t *testing.T) {
+		path := writeRecipe(t, t.TempDir(), body+"---\n"+body)
+		if code, _, _ := run(t, "validate", path); code != cli.ExitRecipe {
+			t.Errorf("exit %d, expected %d - the count was loosened too far", code, cli.ExitRecipe)
+		}
+	})
+	t.Run("two recipes behind a comment are still refused", func(t *testing.T) {
+		path := writeRecipe(t, t.TempDir(), "# header\n---\n"+body+"---\n"+body)
+		if code, _, _ := run(t, "validate", path); code != cli.ExitRecipe {
+			t.Errorf("exit %d, expected %d - a comment must not hide a second recipe", code, cli.ExitRecipe)
+		}
+	})
+}
+
 // The formatter and the reader have to agree on what a recipe is.
 //
 // They used to disagree in the worst possible direction: "tfg recipe fmt" laid

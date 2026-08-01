@@ -136,6 +136,11 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A recipe starting with a comment above `---` is accepted.** A leading `---`
+  is ordinary YAML house style, and putting a comment above it used to be read
+  as two recipes in one file and turned down. So did a `---` left at the end of
+  a file. Both are one recipe and both now run. A file that really does hold
+  two recipes is still refused.
 - **`tfg recipe fmt` refuses the same files `tfg generate` refuses.** A file
   holding two recipes used to format cleanly and end with code 0, and `-w`
   settled it so `--check` passed as well - after which `tfg generate` turned
