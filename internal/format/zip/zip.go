@@ -27,6 +27,21 @@ const (
 	// padding channel has a ceiling.
 	commentCapacity = 65535
 
+	// commentPaddingLimit is how much of that we actually use.
+	//
+	// Measured on CI: p7zip 17.06 on macOS segfaults reading an archive whose
+	// comment is filled to the maximum. 7-Zip 26.02 on Windows and p7zip
+	// 23.01 on Linux read the same file without complaint, so the crash is a
+	// defect in that build rather than in the archive - the structural check
+	// agrees the file is well formed.
+	//
+	// It is still our problem. p7zip is what "7z" means on a lot of machines,
+	// and a fixture that crashes the archiver a tester reaches for is a
+	// fixture nobody will trust. Padding through a stored entry reaches every
+	// size just as exactly, so the enormous comment bought nothing and now it
+	// is gone.
+	commentPaddingLimit = 4096
+
 	// fillerName is the entry that carries padding the comment cannot hold.
 	// Named plainly, because somebody opening the archive should see what it
 	// is rather than wonder.
@@ -172,14 +187,13 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		// Nothing to pad.
 	default:
 		needed := r.Bytes - bare
-		room := int64(commentCapacity - len(label))
+		room := int64(commentPaddingLimit - len(label))
 		if needed <= room {
 			m.comment = label + strings.Repeat(" ", int(needed))
 		} else {
-			// The comment is full, so the rest goes into a stored entry
+			// Above what the comment takes, the rest goes into a stored entry
 			// whose bytes land in the archive one for one. This is the only
-			// padding channel in Tier 1 with a ceiling, and this is what
-			// happens above it.
+			// padding channel in Tier 1 with a ceiling.
 			m.comment = label + strings.Repeat(" ", int(room))
 			m.withFiller = true
 			withFiller, err := archiveSize(m)

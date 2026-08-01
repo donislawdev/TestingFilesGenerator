@@ -72,6 +72,17 @@ func (c Checker) Check(path string) Result {
 	if runErr != nil {
 		if ok := asExitError(runErr, &exitErr); ok {
 			code = exitErr.ExitCode()
+			// A crash is not a verdict on the file. It is worth reporting in
+			// its own words, because "the tool says your file is wrong" and
+			// "the tool fell over" call for different answers.
+			if code < 0 || strings.Contains(exitErr.String(), "signal") {
+				return Result{
+					Available: true, Tool: c.Name,
+					Output: strings.TrimSpace(out.String() + " " + errOut.String()),
+					Err: fmt.Errorf("%s crashed rather than answering (%v) - that is a defect in the tool, and a file that crashes it is still a file nobody will trust",
+						c.Name, exitErr),
+				}
+			}
 		} else {
 			return Result{Available: true, Tool: c.Name, Err: runErr}
 		}
@@ -152,6 +163,9 @@ var checkers = map[string]Checker{
 		find: sevenZip,
 		args: func(p string) []string { return []string{"t", p} },
 		accept: func(stdout, stderr string, code int) error {
+			if strings.Contains(stdout, "Segmentation fault") || strings.Contains(stderr, "Segmentation fault") {
+				return fmt.Errorf("7z crashed reading the archive: %s", strings.TrimSpace(stdout+stderr))
+			}
 			if code != 0 {
 				return fmt.Errorf("7z refused the archive: %s", strings.TrimSpace(stdout+stderr))
 			}

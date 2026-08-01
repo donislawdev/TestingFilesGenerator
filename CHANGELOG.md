@@ -68,6 +68,13 @@ because it turns other people's test suites red.
 - **A picture too large to hold in memory is refused** with a message saying
   so, rather than ending the run with an out of memory error.
 
+### Compatibility
+
+- **The archive comment stays small.** Filling it to the format maximum of
+  65 535 bytes makes p7zip 17.06 on macOS crash while every other archiver
+  tested reads the file fine. The padding goes into a stored entry instead,
+  which reaches the same sizes exactly, so nothing is lost.
+
 ### Notes on behaviour
 
 - **Sizes count in 1024s.** `10mb` is 10 485 760 bytes, which is what
