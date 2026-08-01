@@ -6,6 +6,33 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - ZIP, and an abstraction that turned out unnecessary
+
+- `zip` is the fourth generator and the first container. Entries are real
+  generated files of another format, each valid on its own.
+- **The two stage padding strategy in its pure form.** ZIP is the only Tier 1
+  format whose padding channel has a ceiling, so it is the only one that
+  really needs both stages: the archive comment up to 65 535 bytes, then a
+  stored entry above it. Measured: 7-Zip reports no warning at any comment
+  size up to the limit.
+- Everything is stored rather than compressed, so the archive size is a
+  linear function of its parts and planning computes it exactly. Measured:
+  entry overhead is a constant plus twice the name length, data and comment
+  both count one for one.
+- **The child generator injection this project designed was not needed.** The
+  architecture note had the engine injecting a child producing function into
+  the archive generator, to avoid the archive reaching upwards for the
+  engine. Reaching for the engine would indeed have broken the layering - but
+  an archive needs the registry and another generator, and both sit on its
+  own layer. format.Get is a sideways edge that was already allowed. The
+  machinery was removed before it was written and the note corrected.
+- `entry_size` accepts the same size syntax as --size. Anything else would
+  have meant entry_size=200kb failing while size=200kb works.
+- Nesting an archive inside an archive is refused for now, because it needs a
+  depth limit first and there is none.
+- Guards: 33, all green with four formats registered. Five mutations of the
+  ZIP generator all turn them red.
+
 ### 2026-08-01 - PDF, and an assumption of ours disproved
 
 - `pdf` is the third generator. Exact size, byte determinism, pages and page

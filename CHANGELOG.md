@@ -12,8 +12,12 @@ because it turns other people's test suites red.
 
 ### Added
 
-- `tfg generate` produces **text, PNG and PDF files** of an exact size. Ask
-  for 10 485 761 bytes and you get exactly that.
+- `tfg generate` produces **text, PNG, PDF and ZIP files** of an exact size.
+  Ask for 10 485 761 bytes and you get exactly that.
+- **A ZIP holds real generated files, not random bytes.**
+  `--set entries=5 --set entry_format=pdf --set entry_size=200kb` gives an
+  archive whose five entries are valid PDFs that open on their own. Checked
+  with 7-Zip, Windows Explorer and by extracting and opening the contents.
 - PDF takes `--set pages=` and `--set page_size=` (A4, A3, A5, Letter,
   Legal). The label goes in the page footer and in the document title.
   Checked against Xpdf, exiftool and the Windows PDF renderer.
