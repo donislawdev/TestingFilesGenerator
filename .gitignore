@@ -12,6 +12,15 @@
 /CLAUDE.md
 
 # ---------------------------------------------------------------------------
+# Internal tooling - owner decision, 2026-08-01
+#
+# Measurement probes and helper scripts we use while building this. Kept
+# because they will be needed again, backed up by the owner separately, and
+# never shipped.
+# ---------------------------------------------------------------------------
+/tools/
+
+# ---------------------------------------------------------------------------
 # Generated output
 # Anything a run produces. Never commit fixtures - regenerate them from the
 # recipe instead. That is the whole point of the tool.
