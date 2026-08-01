@@ -17,6 +17,32 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`tfg cleanup --json` and `tfg validate --json`.** Every command that
+  produces a report now has a machine readable form, so a pipeline reads a
+  result instead of parsing sentences that change when the wording improves.
+  The cleanup report says whether it `applied` anything, so a preview and a
+  real run cannot be mistaken for each other, and it carries what was found at
+  each path. The validate report carries **every problem separately**, each
+  with what is wrong, why the rule exists and what to do instead - a recipe
+  with five faults arrives as five entries.
+- **A stop by signal and Ctrl+C are told apart.** A run cancelled by a person
+  ends with code 130 and one stopped by a signal - a CI timeout - ends with
+  143, as the exit code table always said. Every stop used to report 130, so a
+  job that ran out of time looked like somebody had cancelled it.
+- **Two more formats: Markdown and access logs.** `--format md` produces a real
+  document - headings, bullet lists, tables, fenced code blocks, block quotes -
+  rather than prose with a `.md` on the end, because the structure is what a
+  renderer or a converter under test has to cope with. `--format log` produces
+  entries in the Apache combined format, with addresses, paths, status codes
+  and user agents that look like traffic.
+  Both hit the size you ask for to the byte. In a log that means the last entry
+  is built to fit rather than cut short, so **every line is a whole entry a
+  parser will accept** - a truncated last line looks exactly like a real log
+  caught mid rotation, which is the worst kind of broken fixture. In Markdown
+  it means structure is only written while a whole block fits and the rest is a
+  paragraph, so a file never ends on an unclosed code fence.
+  A log has a minimum of 155 bytes, which is one whole entry. Asking for less
+  says so and names the number.
 - **An archive says what it holds, in the recipe.** `contains` takes a list of
   groups - "3 PDFs of 8 kB and 2 PNGs of 4 kB" is two lines, not five entries -
   and the archive holds real files of those formats, each one valid on its own

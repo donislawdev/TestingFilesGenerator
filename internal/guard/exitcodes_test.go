@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
@@ -17,6 +18,64 @@ import (
 // permissions" look identical.
 //
 // See docs/CLI.md section 3. Changing what a code means is a breaking change.
+
+// A stop by signal and a stop by Ctrl+C are different endings in the table,
+// and the difference is the whole point: 130 says a person cancelled, 143 says
+// the job ran out of time. CI reads that to know whether to retry.
+//
+// They used to be the same. signal.NotifyContext does not report which signal
+// arrived, so every stop came out as 130 and the 143 in the table was
+// unreachable - a documented ending nothing could produce.
+func TestAStopBySignalIsToldApartFromCtrlC(t *testing.T) {
+	if got := cli.ExitForSignal(syscall.SIGTERM); got != cli.ExitTerminated {
+		t.Errorf("SIGTERM gave %d, expected %d - a CI timeout would read as somebody cancelling", got, cli.ExitTerminated)
+	}
+	if got := cli.ExitForSignal(os.Interrupt); got != cli.ExitInterrupted {
+		t.Errorf("Ctrl+C gave %d, expected %d", got, cli.ExitInterrupted)
+	}
+	// The two must not collapse into one value, whatever those values are.
+	if cli.ExitTerminated == cli.ExitInterrupted {
+		t.Fatal("the two endings share a code, so nothing can tell them apart")
+	}
+}
+
+// The constants and docs/CLI.md section 3 describe one frozen table. A code
+// present in one and not the other means somebody changed a public contract in
+// half the places.
+func TestTheExitCodeConstantsMatchTheFrozenTable(t *testing.T) {
+	// Straight from docs/CLI.md section 3. Written out here rather than parsed
+	// from the document, because the document lives outside the repository and
+	// a guard that skips when it is absent guards nothing.
+	table := map[string]int{
+		"OK": 0, "RUNTIME": 1, "USAGE": 2, "RECIPE": 3, "FORMAT": 4,
+		"IO": 5, "SPACE": 6, "VERIFY": 7, "PARTIAL": 8,
+		"INTERRUPTED": 130, "TERMINATED": 143,
+	}
+	code := map[string]int{
+		"OK": cli.ExitOK, "RUNTIME": cli.ExitRuntime, "USAGE": cli.ExitUsage,
+		"RECIPE": cli.ExitRecipe, "FORMAT": cli.ExitFormat, "IO": cli.ExitIO,
+		"SPACE": cli.ExitSpace, "VERIFY": cli.ExitVerify, "PARTIAL": cli.ExitPartial,
+		"INTERRUPTED": cli.ExitInterrupted, "TERMINATED": cli.ExitTerminated,
+	}
+	if len(table) != len(code) {
+		t.Fatalf("the table names %d endings and the constants %d", len(table), len(code))
+	}
+	for name, want := range table {
+		if got, ok := code[name]; !ok {
+			t.Errorf("%s is in the table and has no constant", name)
+		} else if got != want {
+			t.Errorf("%s is %d in the table and %d in the code", name, want, got)
+		}
+	}
+	// Two endings sharing a number would make them indistinguishable to CI.
+	seen := map[int]string{}
+	for name, v := range code {
+		if other, dup := seen[v]; dup {
+			t.Errorf("%s and %s both end with %d", name, other, v)
+		}
+		seen[v] = name
+	}
+}
 
 func TestEveryEndingUsesACodeFromTheTable(t *testing.T) {
 	dir := t.TempDir()

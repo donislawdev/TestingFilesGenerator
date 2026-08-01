@@ -15,6 +15,7 @@ Usage: python strict.py <format> <path>
 Prints "OK <detail>" or "FAIL <reason>".
 """
 
+import re
 import struct
 import sys
 import zlib
@@ -156,7 +157,53 @@ def check_zip(data):
     ok(f"{entries} entries, comment {comment_len} B")
 
 
-CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip}
+def check_log(data):
+    """Every line is a whole entry in the Apache combined format.
+
+    A log is read line by line, so a line that is not a whole entry is a broken
+    file however right its length is. And "the last line is truncated" is what
+    a real log looks like caught mid rotation, so the defect reads as realism
+    unless something checks.
+
+    Written to the format rather than to our output. The octet pattern refuses
+    a leading zero: real logs write 93, not 093, and a leading zero is read as
+    octal by some address parsers - where 069 is not even valid octal. Our
+    generator produced padded octets until 2026-08-01, and a checker written to
+    match it would have blessed that instead of catching it.
+    """
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+
+    if not text.endswith("\n"):
+        fail("the file does not end with a newline, so the last entry is unterminated")
+
+    octet = r"(?:0|[1-9][0-9]{0,2})"
+    pattern = re.compile(
+        r"^" + octet + r"\." + octet + r"\." + octet + r"\." + octet +
+        r" - - \[[^\]]+\] \"(?:GET|POST|PUT|DELETE|HEAD|PATCH) /\S* HTTP/1\.[01]\""
+        r" [1-5][0-9]{2} [0-9]+ \"[^\"]*\" \"[^\"]*\"$")
+
+    entries = 0
+    for number, line in enumerate(text.rstrip("\n").split("\n"), start=1):
+        if line.startswith("# "):
+            continue  # the label line, which says in words that it is not an entry
+        if not pattern.match(line):
+            fail(f"line {number} is not a whole entry: {line[:90]!r}")
+        # An octet above 255 parses as a number and is not an address.
+        address = line.split(" ", 1)[0]
+        if any(int(part) > 255 for part in address.split(".")):
+            fail(f"line {number} has an octet above 255: {address}")
+        entries += 1
+
+    if entries == 0:
+        fail("the file holds no entries at all")
+    ok(f"{entries} entries, all whole")
+
+
+CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
+          "log": check_log}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

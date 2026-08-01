@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -43,7 +44,25 @@ const (
 	// Ctrl+C. Named here rather than written as a bare 130 at the point of
 	// use, because it is in the same frozen table as the rest.
 	ExitInterrupted = 130
+
+	// Stopped by a signal rather than by a person - a CI timeout is the case
+	// the table names. It is a separate ending from Ctrl+C on purpose: one
+	// means somebody cancelled and the other means the job ran out of time,
+	// and those call for different answers.
+	ExitTerminated = 143
 )
+
+// ExitForSignal maps a signal onto the ending in the frozen table.
+//
+// It exists as its own function because the alternative is deciding this
+// inside main, where nothing tests it. signal.NotifyContext does not say which
+// signal arrived, which is how every stop ended up reported as Ctrl+C.
+func ExitForSignal(s os.Signal) int {
+	if s == syscall.SIGTERM {
+		return ExitTerminated
+	}
+	return ExitInterrupted
+}
 
 // Run is the entry point of the command line.
 //
@@ -405,19 +424,22 @@ func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 func validate(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
+	asJSON := fs.Bool("json", false, "write the result as JSON, with every problem separately")
 	fs.Usage = func() {
-		fmt.Fprint(errOut, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n")
+		fmt.Fprint(errOut, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n\nFlags:\n")
+		fs.PrintDefaults()
 	}
-	if err := fs.Parse(args); err != nil {
+	leading, rest := splitLeadingPath(args)
+	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
 	}
-	if fs.NArg() != 1 {
+	path, ok := onePath(leading, fs)
+	if !ok {
 		fmt.Fprintln(errOut, "tfg: validate takes one recipe file. Example: tfg validate recipe.yaml")
 		return ExitUsage
 	}
 
-	path := fs.Arg(0)
-	rec, hash, code := loadRecipe(path, errOut)
+	rec, hash, code := loadRecipeReporting(path, *asJSON, errOut)
 	if code != ExitOK {
 		return code
 	}
@@ -438,13 +460,85 @@ func validate(args []string, out, errOut io.Writer) int {
 	}
 	planned, err := engine.Plan(targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
 	if err != nil {
+		if *asJSON {
+			writeJSON(errOut, validateReport{Recipe: path, Valid: false,
+				Problems: []validateProblem{{What: err.Error()}}})
+			return classify(err)
+		}
 		fmt.Fprintf(errOut, "tfg: %v\n", err)
 		return classify(err)
+	}
+
+	if *asJSON {
+		writeJSON(out, validateReport{
+			Recipe: path, Valid: true, RecipeHash: hash,
+			Targets: len(rec.Targets), Files: len(planned),
+			TotalBytes: engine.TotalBytes(planned),
+			Problems:   []validateProblem{},
+		})
+		return ExitOK
 	}
 
 	fmt.Fprintf(out, "%s is valid: %d target(s), %d file(s), %d B total\n%s\n",
 		path, len(rec.Targets), len(planned), engine.TotalBytes(planned), hash)
 	return ExitOK
+}
+
+// validateReport is what --json puts out. Every problem arrives separately
+// rather than as one blob of prose, because RC7 already reports them all at
+// once and a script should not have to split the message back apart.
+type validateReport struct {
+	Recipe     string            `json:"recipe"`
+	Valid      bool              `json:"valid"`
+	RecipeHash string            `json:"recipe_hash,omitempty"`
+	Targets    int               `json:"targets,omitempty"`
+	Files      int               `json:"files,omitempty"`
+	TotalBytes int64             `json:"total_bytes,omitempty"`
+	Problems   []validateProblem `json:"problems"`
+}
+
+// validateProblem carries the three parts every refusal in this tool has: what
+// is wrong, why the rule exists, and what to do instead.
+type validateProblem struct {
+	What string `json:"what"`
+	Why  string `json:"why,omitempty"`
+	Fix  string `json:"fix,omitempty"`
+}
+
+// loadRecipeReporting is loadRecipe with the option of a machine readable
+// refusal. A recipe with five problems has to arrive as five entries, not as
+// one string a script would have to take apart.
+func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Recipe, string, int) {
+	if !asJSON {
+		return loadRecipe(path, errOut)
+	}
+	src, err := os.ReadFile(path)
+	if err != nil {
+		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{{What: fmt.Sprintf("cannot read the recipe: %v", err)}}})
+		return nil, "", ExitIO
+	}
+	rec, err := recipe.Parse(src, path)
+	if err != nil {
+		report := validateReport{Recipe: path, Valid: false, Problems: []validateProblem{}}
+		var invalid *recipe.ValidationError
+		if errors.As(err, &invalid) {
+			for _, p := range invalid.Problems {
+				report.Problems = append(report.Problems, validateProblem{What: p.What, Why: p.Why, Fix: p.Fix})
+			}
+		} else {
+			report.Problems = append(report.Problems, validateProblem{What: err.Error()})
+		}
+		writeJSON(errOut, report)
+		return nil, "", classify(err)
+	}
+	hash, err := recipe.Hash(src)
+	if err != nil {
+		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{{What: err.Error()}}})
+		return nil, "", classify(err)
+	}
+	return rec, hash, ExitOK
 }
 
 // verify compares a directory against a manifest an earlier run wrote.
@@ -554,6 +648,7 @@ func cleanup(ctx context.Context, args []string, out, errOut io.Writer) int {
 	yes := fs.Bool("yes", false, "actually remove the files. Without this nothing is deleted and the list is printed")
 	force := fs.Bool("force", false, "remove files whose content has changed since they were written")
 	withManifest := fs.Bool("with-manifest", false, "remove the manifest as well, once every file it lists is gone")
+	asJSON := fs.Bool("json", false, "write the report as JSON instead of prose")
 	against := fs.String("against", "", "directory to clean. Defaults to the directory holding the manifest")
 	fs.Usage = func() {
 		fmt.Fprint(errOut, `tfg cleanup - remove the files a manifest lists.
@@ -597,6 +692,10 @@ Flags:
 	}
 
 	if len(cands) == 0 {
+		if *asJSON {
+			writeJSON(out, cleanupReport{Manifest: path, Directory: dir, Applied: *yes, Files: []cleanupEntry{}})
+			return ExitOK
+		}
 		fmt.Fprintf(errOut, "%s lists no files, so there was nothing to remove.\n", path)
 		return ExitOK
 	}
@@ -605,6 +704,21 @@ Flags:
 	// strength of one argument is the wrong shape when the directory may hold
 	// somebody's own work, and asking interactively is ruled out.
 	if !*yes {
+		if *asJSON {
+			report := cleanupReport{Manifest: path, Directory: dir, Applied: false}
+			for _, c := range cands {
+				e := cleanupEntry{Path: c.Path, State: string(c.Disposition)}
+				if c.Removable(*force) {
+					e.Action = "would-remove"
+				} else {
+					e.Action, e.Reason = "would-keep", skipNote(c, *force)
+				}
+				report.Files = append(report.Files, e)
+				report.WouldRemove += boolToInt(c.Removable(*force))
+			}
+			writeJSON(out, report)
+			return ExitOK
+		}
 		fmt.Fprintf(out, "%d file(s) would be removed from %s:\n", countRemovable(cands, *force), dir)
 		for _, c := range cands {
 			if c.Removable(*force) {
@@ -622,17 +736,23 @@ Flags:
 	// A file that was already gone is not a leftover. Counting it as one would
 	// make the second run of cleanup fail, and the second run is the one a
 	// script makes.
+	report := cleanupReport{Manifest: path, Directory: dir, Applied: true}
 	removed, blocked := 0, 0
 	for _, o := range outcomes {
 		if o.Removed {
 			removed++
+			report.Files = append(report.Files, cleanupEntry{Path: o.Path, Action: "removed"})
 			continue
 		}
 		if o.Blocked {
 			blocked++
 		}
-		fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
+		report.Files = append(report.Files, cleanupEntry{Path: o.Path, Action: "kept", Reason: o.Reason})
+		if !*asJSON {
+			fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
+		}
 	}
+	report.Removed, report.Kept = removed, blocked
 
 	// There is no undo, so an interrupted run has to say exactly how far it
 	// got. "Some of them" is not an answer somebody can act on.
@@ -649,6 +769,18 @@ Flags:
 			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %v\n", path, err)
 			return ExitIO
 		}
+	}
+
+	if *asJSON {
+		// A run that left something behind ends non zero, and a failed run puts
+		// nothing on stdout - so its report goes to stderr with the rest of the
+		// news, the same as verify.
+		if blocked > 0 {
+			writeJSON(errOut, report)
+			return ExitIO
+		}
+		writeJSON(out, report)
+		return ExitOK
 	}
 
 	fmt.Fprintf(out, "%d file(s) removed from %s\n", removed, dir)
@@ -683,6 +815,35 @@ func skipNote(c audit.Candidate, force bool) string {
 		return "it could not be read, so there is no telling whether it is ours"
 	}
 	return string(c.Disposition)
+}
+
+// cleanupReport is what --json puts out. Applied says whether anything was
+// actually deleted, so a preview and a real run cannot be mistaken for each
+// other by a script reading the file list.
+type cleanupReport struct {
+	Manifest    string         `json:"manifest"`
+	Directory   string         `json:"directory"`
+	Applied     bool           `json:"applied"`
+	WouldRemove int            `json:"would_remove,omitempty"`
+	Removed     int            `json:"removed"`
+	Kept        int            `json:"kept"`
+	Files       []cleanupEntry `json:"files"`
+}
+
+type cleanupEntry struct {
+	Path   string `json:"path"`
+	Action string `json:"action"`
+	// State is what was found there - ready, absent, changed or unreachable.
+	// Only on a preview, where nothing has happened to it yet.
+	State  string `json:"state,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
 
 type verifyReport struct {

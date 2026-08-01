@@ -34,6 +34,14 @@
     "zip_past_the_comment_limit": {
       "bytes": 262144,
       "sha256": "2e69aa3c433321bfa5866ba82324f634d9186c03ee901fca8c52a5b89d9186b5"
+    },
+    "md_8kib": {
+      "bytes": 8192,
+      "sha256": "8ded1f648a9d9704182ab04aa8c4ce61128268eccad89cf9b3c525fd1edcfa95"
+    },
+    "log_8kib": {
+      "bytes": 8192,
+      "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"
     }
   }
 }

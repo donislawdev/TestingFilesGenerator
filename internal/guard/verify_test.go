@@ -339,6 +339,151 @@ func TestAPathIsAcceptedBeforeOrAfterTheFlags(t *testing.T) {
 	}
 }
 
+// CI reads exit codes and JSON, and nothing else. A command whose report is
+// only prose forces a script to parse sentences, which breaks the first time
+// somebody improves the wording.
+//
+// The rule from docs/CLI.md section 2 holds here too: a run that ends non zero
+// puts nothing on stdout, so its report goes to stderr.
+func TestCleanupAndValidateReportAsJSON(t *testing.T) {
+	t.Run("cleanup preview names what it would do", func(t *testing.T) {
+		out, mf := generated(t)
+		withBystander(t, out)
+
+		code, stdout, _ := run(t, "cleanup", mf, "--json")
+		if code != cli.ExitOK {
+			t.Fatalf("exit %d", code)
+		}
+		var r struct {
+			Applied     bool `json:"applied"`
+			WouldRemove int  `json:"would_remove"`
+			Files       []struct {
+				Path   string `json:"path"`
+				Action string `json:"action"`
+				State  string `json:"state"`
+			} `json:"files"`
+		}
+		if err := json.Unmarshal([]byte(stdout), &r); err != nil {
+			t.Fatalf("stdout is not JSON: %v\n%s", err, stdout)
+		}
+		if r.Applied {
+			t.Error("a preview reports applied=true, so a script cannot tell it from a real run")
+		}
+		if r.WouldRemove != 3 || len(r.Files) != 3 {
+			t.Errorf("would_remove=%d over %d files, expected 3 and 3", r.WouldRemove, len(r.Files))
+		}
+		for _, f := range r.Files {
+			if f.Action != "would-remove" || f.State == "" {
+				t.Errorf("entry %+v does not say what would happen and what was found", f)
+			}
+			if f.Path == bystander {
+				t.Error("the preview lists a file that is in nobody's manifest")
+			}
+		}
+
+		// Nothing may have been deleted by asking.
+		bystanderSurvives(t, out)
+		if _, err := os.Stat(filepath.Join(out, firstGenerated(t, out))); err != nil {
+			t.Error("the preview removed a file")
+		}
+	})
+
+	t.Run("cleanup that leaves something behind reports on stderr", func(t *testing.T) {
+		out, mf := generated(t)
+		victim := firstGenerated(t, out)
+		full := filepath.Join(out, victim)
+		body, err := os.ReadFile(full)
+		if err != nil {
+			t.Fatalf("reading: %v", err)
+		}
+		body[0] ^= 0xFF
+		if err := os.WriteFile(full, body, 0o644); err != nil {
+			t.Fatalf("writing: %v", err)
+		}
+
+		code, stdout, errOut := run(t, "cleanup", mf, "--yes", "--json")
+		if code != cli.ExitIO {
+			t.Fatalf("exit %d, expected %d", code, cli.ExitIO)
+		}
+		if stdout != "" {
+			t.Errorf("a run that ended non zero wrote to stdout:\n%s", stdout)
+		}
+		var r struct {
+			Applied bool `json:"applied"`
+			Removed int  `json:"removed"`
+			Kept    int  `json:"kept"`
+		}
+		if err := json.Unmarshal([]byte(errOut), &r); err != nil {
+			t.Fatalf("the report is not JSON: %v\n%s", err, errOut)
+		}
+		if !r.Applied || r.Removed != 2 || r.Kept != 1 {
+			t.Errorf("applied=%v removed=%d kept=%d, expected true, 2 and 1", r.Applied, r.Removed, r.Kept)
+		}
+	})
+
+	t.Run("validate reports every problem separately", func(t *testing.T) {
+		// Three faults at once. RC7 already reports them together, and the
+		// point of JSON is that a script does not have to split the sentence
+		// back apart.
+		path := writeRecipe(t, t.TempDir(), `version: 1
+targets:
+  - id: a
+    format: txt
+  - id: a
+    format: nosuchformat
+    size: 1kb
+`)
+		code, stdout, errOut := run(t, "validate", path, "--json")
+		if code != cli.ExitRecipe {
+			t.Fatalf("exit %d, expected %d", code, cli.ExitRecipe)
+		}
+		if stdout != "" {
+			t.Errorf("a failed validate wrote to stdout:\n%s", stdout)
+		}
+		var r struct {
+			Valid    bool `json:"valid"`
+			Problems []struct {
+				What string `json:"what"`
+				Why  string `json:"why"`
+				Fix  string `json:"fix"`
+			} `json:"problems"`
+		}
+		if err := json.Unmarshal([]byte(errOut), &r); err != nil {
+			t.Fatalf("the report is not JSON: %v\n%s", err, errOut)
+		}
+		if r.Valid {
+			t.Error("a recipe with faults is reported as valid")
+		}
+		if len(r.Problems) < 2 {
+			t.Errorf("got %d problems, expected the faults reported separately: %+v", len(r.Problems), r.Problems)
+		}
+		for _, p := range r.Problems {
+			if p.What == "" || p.Why == "" || p.Fix == "" {
+				t.Errorf("problem %+v is missing one of what, why or fix - the three parts every refusal here carries", p)
+			}
+		}
+	})
+
+	t.Run("a valid recipe reports on stdout", func(t *testing.T) {
+		path := writeRecipe(t, t.TempDir(), "version: 1\ntargets:\n  - id: a\n    format: txt\n    count: 3\n    size: 1kb\n")
+		code, stdout, _ := run(t, "validate", path, "--json")
+		if code != cli.ExitOK {
+			t.Fatalf("exit %d", code)
+		}
+		var r struct {
+			Valid      bool   `json:"valid"`
+			Files      int    `json:"files"`
+			RecipeHash string `json:"recipe_hash"`
+		}
+		if err := json.Unmarshal([]byte(stdout), &r); err != nil {
+			t.Fatalf("stdout is not JSON: %v\n%s", err, stdout)
+		}
+		if !r.Valid || r.Files != 3 || !strings.HasPrefix(r.RecipeHash, "sha256:") {
+			t.Errorf("valid=%v files=%d hash=%q", r.Valid, r.Files, r.RecipeHash)
+		}
+	})
+}
+
 // firstGenerated is the name of one file the run produced, taken from the
 // directory rather than guessed from the template.
 func firstGenerated(t *testing.T, out string) string {

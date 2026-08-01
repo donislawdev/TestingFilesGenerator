@@ -33,6 +33,62 @@ belongs in one place.
   correct hash and deliberately did not write, sitting on top of somebody's
   real file - where which entries are claimed is the only thing standing
   between that file and deletion.
+- **A documented ending nothing could produce.** The exit code table has 143
+  for a stop by signal, and `signal.NotifyContext` does not report which signal
+  arrived - so every stop came out as 130 and 143 was unreachable. The decision
+  moved into `cli.ExitForSignal`, where a guard can reach it, rather than
+  staying in `main` where nothing tests it. A second guard now checks all
+  eleven endings against the frozen table and refuses two sharing a number.
+  The table is written into the test rather than parsed from docs/CLI.md,
+  because that document is outside the repository and a guard that skips when
+  its input is missing guards nothing.
+- **A fidelity defect found by looking at the file, not by testing it.** The
+  log generator padded address octets to three digits so the line length was
+  trivial to predict. No real log writes `093.102.169.133`, and a leading zero
+  is read as octal by some address parsers - `069` is not even valid octal.
+  Untouchable rule 4, broken for the convenience of the implementation. The
+  address is built plainly now and its length feeds the arithmetic the request
+  path already absorbed, so the mechanism did not change and the minimum did
+  not move.
+  **The guard had blessed it.** The first structural test demanded exactly
+  three digits per octet - written to what the generator produced rather than
+  to the format, so it enforced our own defect. The lesson generalises: a guard
+  written to observed output agrees with the code whatever the code does.
+  `strict.py` gained a `log` check written from the format definition, and it
+  refused our own file on the first run. That is what an independent oracle
+  looks like when it works.
+- **The mutation runner was reporting mutations as caught that never
+  compiled.** It called a mutation caught whenever the named test came back
+  non zero, and a tree that does not build comes back non zero too. So a
+  mutation that broke the syntax rather than the behaviour read as proof while
+  proving nothing - the same failure the script exists to catch one level up,
+  a guard going red for the wrong reason.
+  It now runs `go vet ./...` on the mutated tree first and reports `BROKEN`
+  instead of `ok` when it does not compile. `vet` rather than `build`, because
+  it compiles the test files too, and a mutation aimed at a signature can break
+  a guard while the packages still build.
+  **Four of the forty five were in that state**, all the same shape: replacing
+  a condition with a constant orphans the variable the condition read, and Go
+  refuses an unused variable. They are written as `cond && false` now, which
+  keeps the variable used and still disables the branch. Four guards that were
+  described as verified by mutation were not, and are now.
+- **MD and LOG went in, and the generic guards caught both of them.** Neither
+  needed a new test - the property test walked ~120 sizes each, the registry
+  demanded a full declaration, and the resource guard refused both on the first
+  run. MD allocated 525 MB producing a 64 MiB file and LOG allocated 420 MB,
+  because both built each element into its own allocation. Appending into one
+  reused buffer took LOG to 40 KiB, the same as TXT, and MD to 2.4 MB.
+  LOG had a second allocation nobody would spot by reading: the length of the
+  fixed part of a line was measured by concatenating a string and taking its
+  length, once per entry. That alone was about the size of the file again in
+  garbage. It is arithmetic on constants now.
+  The padding channel of LOG is deliberately not the one the rest of the text
+  group uses. A log is read line by line, so the closing entry is built to the
+  exact length with the request path absorbing the difference, rather than the
+  file being cut. Same shape as the CSV measurement: padding goes where the
+  format has room for a long value, never into a truncated record.
+  The package is `logfile` rather than `log`, so it cannot be mistaken for the
+  standard library package at a glance. The format id is still `log`.
 - **`contains` gave the generator interface a typed channel, because a flat
   string map could not carry it.** A list of groups encoded into
   `Properties map[string]string` would have been a stringly typed contract in
