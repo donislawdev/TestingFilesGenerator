@@ -1,0 +1,73 @@
+# Testing Files Generator - ignored paths
+#
+# This project is a file generator. Its own working tree fills up with
+# generated output faster than any other kind of repository, so the rules
+# below are deliberately broad on output and deliberately narrow on data.
+
+# ---------------------------------------------------------------------------
+# Internal documentation - owner decision, 2026-08-01
+# Written in Polish, aimed at development, not at users.
+# ---------------------------------------------------------------------------
+/docs/
+/CLAUDE.md
+
+# ---------------------------------------------------------------------------
+# Generated output
+# Anything a run produces. Never commit fixtures - regenerate them from the
+# recipe instead. That is the whole point of the tool.
+# ---------------------------------------------------------------------------
+/fixtures/
+/out/
+/output/
+manifest.json
+manifest.csv
+files.jsonl
+
+# ---------------------------------------------------------------------------
+# Build output
+# ---------------------------------------------------------------------------
+/tfg
+/tfg.exe
+/tfg-gui
+/tfg-gui.exe
+/dist/
+/build/
+
+# ---------------------------------------------------------------------------
+# Test and coverage artifacts
+# ---------------------------------------------------------------------------
+*.test
+*.test.exe
+coverage.out
+coverage.html
+/covdata/
+
+# ---------------------------------------------------------------------------
+# Editors and operating systems
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# ---------------------------------------------------------------------------
+# Local assistant state
+# ---------------------------------------------------------------------------
+/.claude/settings.local.json
+
+# ---------------------------------------------------------------------------
+# Never ignore these
+#
+# testdata/ holds the golden values that guard byte stability (D11). If a
+# broad output rule ever swallows them, the guard test goes green without
+# checking anything and nobody notices until users report shifted hashes.
+#
+# Go keeps test data in a testdata/ directory next to each package, so the
+# rules match at any depth. Anchoring them to the repository root would drop
+# files like internal/engine/testdata/manifest.json - measured, not assumed.
+# ---------------------------------------------------------------------------
+!**/testdata/
+!**/testdata/**

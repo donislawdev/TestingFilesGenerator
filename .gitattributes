@@ -1,0 +1,20 @@
+# Line endings are normalised to LF in the repository and on checkout, on
+# every system. Without this, a file written on Windows and read on Linux
+# differs by one byte per line - and this project promises byte identical
+# output across systems, so that difference would look like a real drift.
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Test data is compared byte for byte. Git must never rewrite it.
+#
+# The golden values that guard byte stability live here. A line ending
+# rewritten on checkout would fail the guard on one system and pass on
+# another, and the failure would look like the compressor drifting rather
+# than like git touching the file.
+# ---------------------------------------------------------------------------
+**/testdata/** -text
+
+# ---------------------------------------------------------------------------
+# The licence is a legal document. It is stored exactly as received.
+# ---------------------------------------------------------------------------
+/LICENSE -text
