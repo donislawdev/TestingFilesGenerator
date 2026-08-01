@@ -38,6 +38,50 @@ belongs in one place.
   lowercase - the last one **the same length as what it replaced**, so the file
   does not move by a single byte and only a guard that knows SVG is case
   sensitive notices.
+- **The mutation list is kept by hand, so something now checks it is kept.**
+  Every guard is named by a mutation, or written down as unproven, or written
+  down as proven by probe - and which of the three is visible rather than
+  assumed. The third state exists for guards that read documents, where there is
+  no product code underneath for a mutation to reach.
+  It earned its place immediately. Two rows of the regression surface said a
+  locality guard was proven by mutation and no entry named one, so untouchable
+  rule 2 - seeds are derived, never drawn from a shared stream - rested on a
+  sentence rather than on a check. Four mutations went in for it, and each was
+  aimed one test at a time: the first substitution reddened only the reordering
+  guard, and naming any of the other three would have reported it as uncaught.
+- **A guard for the identifiers the documents are built on.** Six numbering
+  schemes carry the decisions here, they collided once, and nothing was watching
+  them. A reference now has to land on something, a range may not grow a hole -
+  numbers are handed out once and never withdrawn - and the summary table in
+  CLAUDE.md has to agree with what the six documents actually define. Measured
+  when it went in: 66 identifiers across 13 documents, none dangling, no holes,
+  every declared range correct.
+  Proven by probe rather than by mutation, three ways: a reference to a decision
+  that does not exist, a number removed from the middle of a range, and the
+  summary table announcing a range the document no longer defines.
+- **A probe that sends a real Ctrl+C**, `tools/probes/ctrl-c-probe.py`. It is
+  safe to run beside a working session because the child gets its own process
+  group and the console event goes only there - sending to group 0 would hit the
+  shell running it.
+  What it settled: there is no second press to measure. The run ends within
+  0.00 s of the first one in both shapes tried - thousands of small files and a
+  single 400 MB file - so every later press lands on a process that has already
+  gone. Six runs, exit 130 every time, manifest always written, files on disk
+  always equal to manifest entries. The probe reports whether each press landed
+  on a live run, because an earlier version sent four and measured one.
+  It also crashed on `"files": null` and found a defect nobody was looking for.
+- **Errors from the system go through one place.** `describeError` swaps the
+  system's sentence for ours wherever it sits in a wrapped chain and keeps every
+  layer of context above it. Sixteen call sites route through it.
+  **The finding that prompted this did not survive being checked, and the
+  change stands for a different reason.** It came from another project of the
+  owner's, where a refusal comes out in the language of the machine - measured
+  there, on two machines. Go does not behave that way: it asks Windows for the
+  English message explicitly before falling back to the machine's own. Measured
+  here, on a Polish install, `syscall.Errno(1)` gives "Incorrect function."
+  while FormatMessage on its own gives "Niepoprawna funkcja.". So the leak is
+  only the fallback. The sentence is opaque in any language, which is the reason
+  that held.
 - **One primitive for every record based format, in `core.FillRecords`.** Whole
   records while another still leaves room, then a closing record built to the
   byte. That rule was written out by hand for the third and fourth time when

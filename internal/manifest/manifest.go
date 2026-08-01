@@ -186,6 +186,12 @@ func New(toolName, toolVersion, runID, command string, seed int64, os, arch stri
 			ByFormat:   map[string]int{},
 			ByExpected: map[string]int{},
 		},
+		// An empty list rather than nothing. A run interrupted before its first
+		// file finished used to render "files": null, while every other empty
+		// collection beside it rendered as {} - so a reader looping over the
+		// entries met a value it had no reason to expect. The document shows a
+		// list and this is what makes that true at every size, including nought.
+		Files: []File{},
 	}
 }
 

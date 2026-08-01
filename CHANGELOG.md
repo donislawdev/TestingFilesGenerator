@@ -233,6 +233,24 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Pointing a command at a directory says so.** `tfg verify out/` used to answer
+  `read out: Incorrect function.`, which is what Windows says about reading a
+  directory and which reads like a fault in this tool. All four commands that
+  take a file - `verify`, `cleanup`, `validate` and `recipe fmt` - now say the
+  path is a directory and print the command to run instead. The neighbouring
+  commands take directories, so this is the mistake worth answering properly.
+- **A failure caused by the system is reported in our words, with the number.**
+  The sentence an operating system hands back is opaque whatever language it is
+  in, and on an install without the English message resource it is not English
+  either. A missing recipe now reads `there is nothing at that path (system
+  error 2)` rather than whatever the machine chose to say. The number is kept
+  because it means the same thing everywhere.
+- **A manifest describing no files carries an empty list.** A run stopped before
+  its first file finished wrote `"files": null`, while every other empty
+  collection in the same manifest was written as `{}`. Anything reading the
+  manifest and looping over the entries met a value that was not a list. It is
+  `[]` now, at every size including nought.
+
 - **A recipe saved by an editor that adds a byte order mark is read.** Notepad
   on Windows adds one by default. The mark used to reach the reader as part of
   the first key, so the tool reported `version` as an unknown field - and the

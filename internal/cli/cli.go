@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -244,7 +245,7 @@ Flags:
 
 		bytesWanted, err := core.ParseSize(*sizeStr)
 		if err != nil {
-			fmt.Fprintf(errOut, "tfg: %v\n", err)
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 			return ExitUsage
 		}
 
@@ -272,7 +273,7 @@ Flags:
 
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
@@ -294,7 +295,7 @@ Flags:
 	}
 
 	if runErr != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", runErr)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(runErr))
 		if !*dryRun {
 			saveManifest(res, opt, errOut)
 		}
@@ -311,7 +312,7 @@ Flags:
 	if *asJSON {
 		var buf bytes.Buffer
 		if err := res.Manifest.Encode(&buf); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot render the manifest: %v\n", err)
+			fmt.Fprintf(errOut, "tfg: cannot render the manifest: %s\n", describeError(err))
 			return ExitRuntime
 		}
 		out.Write(buf.Bytes())
@@ -403,17 +404,17 @@ func contentsOf(t recipe.Target) []format.Content {
 func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 	src, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %v\n", path, err)
+		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))
 		return nil, "", ExitIO
 	}
 	rec, err := recipe.Parse(src, path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, "", classify(err)
 	}
 	hash, err := recipe.Hash(src)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, "", classify(err)
 	}
 	return rec, hash, ExitOK
@@ -436,6 +437,10 @@ func validate(args []string, out, errOut io.Writer) int {
 	path, ok := onePath(leading, fs)
 	if !ok {
 		fmt.Fprintln(errOut, "tfg: validate takes one recipe file. Example: tfg validate recipe.yaml")
+		return ExitUsage
+	}
+	if err := mustBeFile(path, "recipe.yaml", "validate"); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
 		return ExitUsage
 	}
 
@@ -465,7 +470,7 @@ func validate(args []string, out, errOut io.Writer) int {
 				Problems: []validateProblem{{What: err.Error()}}})
 			return classify(err)
 		}
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
@@ -569,10 +574,14 @@ Flags:
 		fmt.Fprintln(errOut, "tfg: verify takes one manifest file. Example: tfg verify out/manifest.json")
 		return ExitUsage
 	}
+	if err := mustBeFile(path, "manifest.json", "verify"); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
+		return ExitUsage
+	}
 
 	m, err := manifest.Load(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
@@ -673,10 +682,14 @@ Flags:
 		fmt.Fprintln(errOut, "tfg: cleanup takes one manifest file. Example: tfg cleanup out/manifest.json")
 		return ExitUsage
 	}
+	if err := mustBeFile(path, "manifest.json", "cleanup"); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
+		return ExitUsage
+	}
 
 	m, err := manifest.Load(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
@@ -766,7 +779,7 @@ Flags:
 		if blocked > 0 {
 			fmt.Fprintf(errOut, "tfg: the manifest was kept because %d file(s) it lists are still there. It is the only record of them.\n", blocked)
 		} else if err := os.Remove(path); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %v\n", path, err)
+			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %s\n", path, describeError(err))
 			return ExitIO
 		}
 	}
@@ -898,16 +911,20 @@ Flags:
 		fmt.Fprintln(errOut, "tfg: recipe fmt takes one recipe file. Example: tfg recipe fmt recipe.yaml")
 		return ExitUsage
 	}
+	if err := mustBeFile(path, "recipe.yaml", "recipe fmt"); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
+		return ExitUsage
+	}
 
 	src, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %v\n", path, err)
+		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))
 		return ExitIO
 	}
 
 	canon, err := recipe.Canonical(src, path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
@@ -929,7 +946,7 @@ Flags:
 			return ExitOK
 		}
 		if err := os.WriteFile(path, canon, 0o644); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot write %s: %v\n", path, err)
+			fmt.Fprintf(errOut, "tfg: cannot write %s: %s\n", path, describeError(err))
 			return ExitIO
 		}
 		fmt.Fprintf(errOut, "%s rewritten.\n", path)
@@ -950,7 +967,7 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 	}
 	path := filepath.Join(opt.OutDir, name)
 	if err := res.Manifest.Save(path); err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %v\n", path, err)
+		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", path, describeError(err))
 		return ExitIO
 	}
 	fmt.Fprintf(errOut, "manifest: %s\n", path)
@@ -997,7 +1014,7 @@ func formats(args []string, out, errOut io.Writer) int {
 		enc := json.NewEncoder(out)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(list); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot render the list: %v\n", err)
+			fmt.Fprintf(errOut, "tfg: cannot render the list: %s\n", describeError(err))
 			return ExitRuntime
 		}
 		return ExitOK
@@ -1016,6 +1033,71 @@ func formats(args []string, out, errOut io.Writer) int {
 // The mapping lives here and nowhere else, and it works on error types rather
 // than on message text. Anything unrecognised becomes a runtime error, which
 // is the honest answer for a failure the tool did not anticipate.
+// describeError renders an error for a person, in English, whatever language
+// the operating system speaks.
+//
+// Every message this tool prints is English. A wrapped operating system error
+// breaks that with nothing noticing, because the system formats its messages in
+// the language of the machine - "Incorrect function." reaches somebody on a
+// Polish install as a Polish sentence. The guard that scans this binary for non
+// English text cannot see it, since that text is not in the binary at all. It
+// arrives at run time.
+//
+// So the system's sentence is swapped for ours and every layer of our own
+// context above it is kept. The number it carried stays, because a number means
+// the same thing in every language and it is what somebody puts into a search.
+func describeError(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	var errno syscall.Errno
+	if !errors.As(err, &errno) {
+		return err.Error()
+	}
+
+	// Replace it wherever it sits rather than only at the end. A message built
+	// by wrapping prints the innermost error last, but nothing guarantees that,
+	// and a leak of one sentence is the whole defect.
+	full := err.Error()
+	if osText := errno.Error(); osText != "" && strings.Contains(full, osText) {
+		return strings.ReplaceAll(full, osText, systemReason(errno))
+	}
+	return full
+}
+
+// systemReason is our own English sentence for a system error, with the number
+// beside it. The number is the part that survives translation.
+func systemReason(errno syscall.Errno) string {
+	reason := "the system refused it"
+	switch {
+	case errors.Is(errno, fs.ErrNotExist):
+		reason = "there is nothing at that path"
+	case errors.Is(errno, fs.ErrPermission):
+		reason = "the system refused permission"
+	case errors.Is(errno, fs.ErrExist):
+		reason = "something is already there"
+	}
+	return fmt.Sprintf("%s (system error %d)", reason, uintptr(errno))
+}
+
+// mustBeFile turns the likeliest mistake into a sentence of ours.
+//
+// Every command below takes a file and the neighbouring ones take directories,
+// so pointing one at a directory is the mistake somebody actually makes. Left
+// alone it surfaces as whatever the system says about reading a directory,
+// which on Windows is "Incorrect function." and says nothing to anybody.
+func mustBeFile(path, kind, command string) error {
+	info, err := os.Stat(path)
+	if err != nil || !info.IsDir() {
+		// Anything else is left to the read that follows, so one fault gives
+		// one message.
+		return nil
+	}
+	return fmt.Errorf("%s is a directory and %s reads a file. Name the one inside it, for example: tfg %s %s",
+		path, command, command, filepath.Join(path, kind))
+}
+
 func classify(err error) int {
 	var recipeErr *engine.RecipeError
 	if errors.As(err, &recipeErr) {
