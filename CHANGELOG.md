@@ -136,6 +136,12 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A recipe saved by an editor that adds a byte order mark is read.** Notepad
+  on Windows adds one by default. The mark used to reach the reader as part of
+  the first key, so the tool reported `version` as an unknown field - and the
+  mark does not show on screen, which left a message pointing at a typo that
+  was not there. `tfg recipe fmt -w` takes the mark off. A mark anywhere else
+  in the file is text and is kept.
 - **A recipe starting with a comment above `---` is accepted.** A leading `---`
   is ordinary YAML house style, and putting a comment above it used to be read
   as two recipes in one file and turned down. So did a `---` left at the end of

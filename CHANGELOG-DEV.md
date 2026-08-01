@@ -252,6 +252,18 @@ belongs in one place.
 
 ### Fixed
 
+- **A byte order mark defeated the strict decoder by the one route strictness
+  cannot help with.** It arrived as part of the first key, so `version` was
+  refused as an unknown field - the message the decoder gives when it is doing
+  its job, pointing at a typo that did not exist. It is dropped before either
+  reader sees the bytes, so the parser and the decoder cannot disagree about
+  where the file starts. Only a leading mark, and only one: further along the
+  file it is somebody's text.
+  The first guard for it passed for the wrong reason, and mutation is what
+  said so. It asserted an exit code, and stripping every mark in the file
+  leaves a recipe that is still perfectly valid - so the exit code noticed
+  nothing while the text was being eaten. It now asserts through the formatter,
+  where destroyed text is visible.
 - **The one document rule counted the wrong thing, and a probe is what found
   it.** It counted raw YAML documents, and this parser makes a document out of
   a comment sitting before a leading `---`, and another out of a trailing

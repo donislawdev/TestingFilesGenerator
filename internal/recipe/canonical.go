@@ -22,9 +22,14 @@ import (
 // Measured on this parser: comments in every position survive, blank lines
 // between sections survive, and a second pass changes nothing. The probe that
 // settled it is in tools/probes/yaml-roundtrip.
+//
 // name is the file the bytes came from. It appears only in the error, and it
 // is there because a hook running the formatter over a directory has to be
 // told which file it stopped on.
+//
+// A byte order mark is dropped rather than kept, so the settled shape of a
+// file that had one does not have one. A recipe saved by an editor that adds
+// a mark is then reported as unsettled, and -w takes the mark off.
 func Canonical(src []byte, name string) ([]byte, error) {
 	// The formatter has to turn away the same files the rest of the tool turns
 	// away. It used to lay out a file holding two recipes without a word, and
@@ -32,7 +37,7 @@ func Canonical(src []byte, name string) ([]byte, error) {
 	// "tfg generate" refused the very file a pre commit hook had just called
 	// clean. Two commands disagreeing about what a recipe is sends the reader
 	// looking for the wrong thing.
-	f, err := oneDocument(src, name)
+	f, err := oneDocument(withoutBOM(src), name)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +69,31 @@ func oneDocument(src []byte, name string) (*ast.File, error) {
 		}}}
 	}
 	return f, nil
+}
+
+// bom is the byte order mark. Notepad on Windows writes one by default, and
+// this tool is aimed at testers on Windows.
+//
+// Written as an escape because Go source may not carry the character itself,
+// and because it keeps this file inside the ASCII the guard scans for.
+const bom = "\ufeff"
+
+// withoutBOM drops a leading byte order mark.
+//
+// Left in place it reaches the decoder as part of the first key, which then
+// refuses `version` as an unknown field - and the mark does not render, so the
+// message reads "unknown field version" and points at a typo that is not
+// there. Measured, the message was:
+//
+//	[1:1] unknown field "<mark>version"
+//
+// That is the exact failure the strict decoder exists to prevent, arriving by
+// the one route strictness cannot help with.
+//
+// Only a leading mark, and only one. Further along the file it is content, and
+// a recipe carrying it in a file name or a label is entitled to keep it.
+func withoutBOM(src []byte) []byte {
+	return []byte(strings.TrimPrefix(string(src), bom))
 }
 
 // recipesIn counts the documents in a parsed file that carry a recipe.

@@ -326,6 +326,76 @@ targets:
 	}
 }
 
+// A byte order mark is not a typo, and the message used to say it was.
+//
+// Notepad on Windows writes one by default and this tool is aimed at testers
+// on Windows. Left in place the mark reaches the decoder as part of the first
+// key, which refuses `version` as an unknown field - and the mark does not
+// render, so the reader sees "unknown field version" and has nothing to go on.
+// Measured before the fix, that was the whole message.
+func TestARecipeCarryingAByteOrderMarkIsRead(t *testing.T) {
+	const body = `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+`
+	const mark = "\ufeff"
+	dir := t.TempDir()
+	path := writeRecipe(t, dir, mark+body)
+
+	// The mark has to be there, or this guard proves nothing. A fixture that
+	// quietly lost it would pass for the wrong reason.
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("reading back: %v", err)
+	}
+	if !bytes.HasPrefix(raw, []byte(mark)) {
+		t.Fatal("the fixture lost its byte order mark, so this guard would pass without testing anything")
+	}
+
+	code, stdout, errOut := run(t, "validate", path)
+	if code != cli.ExitOK {
+		t.Fatalf("a recipe with a byte order mark was refused, exit %d:\n%s", code, errOut)
+	}
+	if !strings.Contains(stdout, "1 target(s), 1 file(s)") {
+		t.Errorf("the recipe was read but not whole:\n%s", stdout)
+	}
+
+	// The settled shape has no mark, so a file that has one is reported as
+	// unsettled and -w takes it off. Otherwise the mark rides along forever.
+	if code, _, _ := run(t, "recipe", "fmt", "--check", path); code != cli.ExitRecipe {
+		t.Errorf("--check called a file with a byte order mark settled, so -w would never remove it")
+	}
+	if code, _, errOut := run(t, "recipe", "fmt", "-w", path); code != cli.ExitOK {
+		t.Fatalf("-w gave %d:\n%s", code, errOut)
+	}
+	after, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("reading back: %v", err)
+	}
+	if bytes.HasPrefix(after, []byte(mark)) {
+		t.Error("-w left the byte order mark in place")
+	}
+	if code, _, _ := run(t, "recipe", "fmt", "--check", path); code != cli.ExitOK {
+		t.Error("the file the formatter just wrote is still not settled")
+	}
+
+	// A mark further along the file is content, and has to survive. Checking
+	// this through the formatter rather than through an exit code is the
+	// point: stripping every mark in the file leaves a recipe that is still
+	// perfectly valid, so an exit code would notice nothing. What it destroys
+	// is somebody's text, and the formatter is where that becomes visible.
+	inside := writeRecipe(t, t.TempDir(), "# a note with a"+mark+"mark in it\n"+body)
+	code, stdout, errOut = run(t, "recipe", "fmt", inside)
+	if code != cli.ExitOK {
+		t.Fatalf("recipe fmt gave %d:\n%s", code, errOut)
+	}
+	if !strings.Contains(stdout, "a"+mark+"mark") {
+		t.Errorf("a mark inside the file was eaten - only a leading one is an encoding artefact, the rest is somebody's text:\n%q", stdout)
+	}
+}
+
 // One recipe stays one recipe whatever the separators around it look like.
 //
 // The one document rule used to count raw YAML documents, and this parser

@@ -68,6 +68,11 @@ type Output struct {
 func Parse(src []byte, name string) (*Recipe, error) {
 	var raw rawRecipe
 
+	// An editor that writes a byte order mark would otherwise hand the decoder
+	// a first key nobody typed. Dropped here rather than in one of the two
+	// readers below, so both see the same bytes.
+	src = withoutBOM(src)
+
 	// One file is one recipe. Everything after a document separator would be
 	// dropped by the decoder, which means somebody gets half the fixtures they
 	// asked for and a run that says it went fine.
