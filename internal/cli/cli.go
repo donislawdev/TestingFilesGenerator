@@ -63,6 +63,8 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return validate(args[1:], out, errOut)
 	case "verify":
 		return verify(ctx, args[1:], out, errOut)
+	case "cleanup":
+		return cleanup(ctx, args[1:], out, errOut)
 	case "recipe":
 		return recipeCmd(args[1:], out, errOut)
 	case "formats":
@@ -87,6 +89,7 @@ Commands:
   generate    produce files, from a recipe or from flags
   validate    check a recipe and write nothing
   verify      check a directory against a manifest
+  cleanup     remove the files a manifest lists
   recipe fmt  print a recipe in its settled shape
   formats     list the formats this build supports
   version     print the tool version
@@ -525,6 +528,144 @@ Flags:
 	}
 	fmt.Fprintf(out, "%s matches %s: %d file(s) checked\n", dir, path, claimed)
 	return ExitOK
+}
+
+// cleanup removes the files a manifest lists, and nothing else.
+func cleanup(ctx context.Context, args []string, out, errOut io.Writer) int {
+	fs := flag.NewFlagSet("cleanup", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	yes := fs.Bool("yes", false, "actually remove the files. Without this nothing is deleted and the list is printed")
+	force := fs.Bool("force", false, "remove files whose content has changed since they were written")
+	withManifest := fs.Bool("with-manifest", false, "remove the manifest as well, once every file it lists is gone")
+	against := fs.String("against", "", "directory to clean. Defaults to the directory holding the manifest")
+	fs.Usage = func() {
+		fmt.Fprint(errOut, `tfg cleanup - remove the files a manifest lists.
+
+Removes what the manifest lists and nothing else. Without --yes it deletes
+nothing and prints what it would remove. A file whose content has changed
+since it was written is left alone and reported, because it may not be ours.
+
+Usage:
+  tfg cleanup <manifest.json> [--yes]
+
+Flags:
+`)
+		fs.PrintDefaults()
+	}
+	leading, rest := splitLeadingPath(args)
+	if err := fs.Parse(rest); err != nil {
+		return ExitUsage
+	}
+	path, ok := onePath(leading, fs)
+	if !ok {
+		fmt.Fprintln(errOut, "tfg: cleanup takes one manifest file. Example: tfg cleanup out/manifest.json")
+		return ExitUsage
+	}
+
+	m, err := manifest.Load(path)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return classify(err)
+	}
+
+	dir := *against
+	if dir == "" {
+		dir = filepath.Dir(path)
+	}
+
+	cands, inspectErr := audit.Inspect(ctx, dir, m)
+	if inspectErr != nil {
+		fmt.Fprintln(errOut, "tfg: cleanup was interrupted while looking and removed nothing.")
+		return ExitInterrupted
+	}
+
+	if len(cands) == 0 {
+		fmt.Fprintf(errOut, "%s lists no files, so there was nothing to remove.\n", path)
+		return ExitOK
+	}
+
+	// The default run deletes nothing. A tool that removes files on the
+	// strength of one argument is the wrong shape when the directory may hold
+	// somebody's own work, and asking interactively is ruled out.
+	if !*yes {
+		fmt.Fprintf(out, "%d file(s) would be removed from %s:\n", countRemovable(cands, *force), dir)
+		for _, c := range cands {
+			if c.Removable(*force) {
+				fmt.Fprintf(out, "  remove %s\n", c.Path)
+				continue
+			}
+			fmt.Fprintf(out, "  keep   %s - %s\n", c.Path, skipNote(c, *force))
+		}
+		fmt.Fprintf(errOut, "Nothing was removed. Run the same command with --yes to remove them.\n")
+		return ExitOK
+	}
+
+	outcomes, removeErr := audit.Remove(ctx, dir, cands, *force)
+
+	// A file that was already gone is not a leftover. Counting it as one would
+	// make the second run of cleanup fail, and the second run is the one a
+	// script makes.
+	removed, blocked := 0, 0
+	for _, o := range outcomes {
+		if o.Removed {
+			removed++
+			continue
+		}
+		if o.Blocked {
+			blocked++
+		}
+		fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
+	}
+
+	// There is no undo, so an interrupted run has to say exactly how far it
+	// got. "Some of them" is not an answer somebody can act on.
+	if removeErr != nil {
+		fmt.Fprintf(errOut, "tfg: cleanup was interrupted. %d file(s) were removed and %d were not - what is gone is gone.\n",
+			removed, len(cands)-removed)
+		return ExitInterrupted
+	}
+
+	if *withManifest {
+		if blocked > 0 {
+			fmt.Fprintf(errOut, "tfg: the manifest was kept because %d file(s) it lists are still there. It is the only record of them.\n", blocked)
+		} else if err := os.Remove(path); err != nil {
+			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %v\n", path, err)
+			return ExitIO
+		}
+	}
+
+	fmt.Fprintf(out, "%d file(s) removed from %s\n", removed, dir)
+
+	// A file left behind is not a silent outcome. It was reported above, and
+	// the exit code has to carry it too or a script never learns.
+	if blocked > 0 {
+		return ExitIO
+	}
+	return ExitOK
+}
+
+func countRemovable(cands []audit.Candidate, force bool) int {
+	n := 0
+	for _, c := range cands {
+		if c.Removable(force) {
+			n++
+		}
+	}
+	return n
+}
+
+func skipNote(c audit.Candidate, force bool) string {
+	switch c.Disposition {
+	case audit.Absent:
+		return "it is already gone"
+	case audit.Changed:
+		if !force {
+			return "it has changed since it was written, so it may not be ours. Pass --force to remove it anyway"
+		}
+	case audit.Unreachable:
+		return "it could not be read, so there is no telling whether it is ours"
+	}
+	return string(c.Disposition)
 }
 
 type verifyReport struct {

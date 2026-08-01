@@ -17,6 +17,22 @@ belongs in one place.
 
 ### Added
 
+- **`cleanup` joined `audit`, reading the manifest through the same `Claimed`
+  as `verify`.** The two cannot drift into disagreeing about which entries
+  describe a file that should be on the disk, which for the deleting one is not
+  a tidiness question.
+  Two decisions worth their reasons. The manifest is not in its own list, so
+  removing it by default would be the tool guessing - untouchable rule 7 stays
+  literally intact and `--with-manifest` is the explicit ask. And a file that
+  was already gone is not counted as left behind, because counting it made the
+  second run fail, which is the run a script makes. Both of those were found by
+  the guard, not by reasoning.
+  The mutation for rule 7 needed rewriting too. The first guard used a manifest
+  entry that no other check could have passed anyway, so it proved nothing and
+  the mutation stayed green. It now uses an entry the manifest describes with a
+  correct hash and deliberately did not write, sitting on top of somebody's
+  real file - where which entries are claimed is the only thing standing
+  between that file and deletion.
 - **`audit` reads a finished run back off the disk, on layer 3 beside the
   engine.** The engine writes files and records what it wrote. This is the
   other half. It went in its own package rather than into `manifest`, which

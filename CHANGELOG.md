@@ -17,6 +17,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`tfg cleanup manifest.json` removes the files a run produced.** It removes
+  what the manifest lists and nothing else. Without `--yes` it deletes nothing
+  and prints what it would remove, so you read the list first. A file whose
+  content changed since it was written is left alone and reported, because it
+  may not be yours - `--force` removes it anyway. Running it twice is not an
+  error. The manifest itself is kept unless you pass `--with-manifest`, and
+  even then it stays if any file it lists is still on the disk, because it is
+  the only record of them. A file left behind reaches the exit code, so a
+  script finds out.
 - **`tfg verify manifest.json` checks that a directory still matches what was
   generated.** It reports files that went missing, files nobody asked for, and
   files whose content changed - which is what a backup restore, a storage
