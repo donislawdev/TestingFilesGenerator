@@ -28,12 +28,14 @@ jobs:
       # separately.
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
+          # No dependencies, so there is no go.sum and nothing to cache.
+          cache: false
 
       - name: formatting
         run: |
@@ -55,12 +57,14 @@ jobs:
     env:
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
+          # No dependencies, so there is no go.sum and nothing to cache.
+          cache: false
 
       - name: measure
         run: go test ./... -count=1 -coverprofile=coverage.out -covermode=atomic
