@@ -9,9 +9,49 @@ test suite.
 
 Runs entirely on your machine. No account, no cloud, no network calls.
 
-> **Status: early development.** There is no working command yet. The
-> repository currently holds the layout, the guard tests and the project
-> documentation. Nothing here generates a file so far.
+> **Status: early development.** Five formats work end to end - text, PNG,
+> PDF, ZIP and WAV. Each one is produced at an exact size and checked against
+> independent tools and its native application. Runs can come from a recipe
+> file or from flags. `verify`, `cleanup` and the desktop window are not built.
+
+## Try it
+
+```
+tfg generate --format png --size 2mb --out ./fixtures
+```
+
+Or put the run in a file and commit it:
+
+```yaml
+# fixtures.yaml - the upload endpoint claims a 1 MB limit
+version: 1
+seed: 7741
+
+targets:
+  - id: edges
+    format: wav
+    boundary: 1mb          # gives 1mb-1B, 1mb and 1mb+1B
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+output:
+  dir: ./fixtures
+```
+
+```
+tfg validate fixtures.yaml     # check it, write nothing
+tfg generate fixtures.yaml     # 28 files and a manifest
+```
+
+The same recipe and seed give byte identical files on any machine, so the
+recipe replaces the fixtures you would otherwise commit.
 
 ## What it is meant to do
 
