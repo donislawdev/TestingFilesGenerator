@@ -156,6 +156,10 @@ func (r *rows) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	return r.append(dst, rng, n)
 }
 
+// Discard hands back the number the thrown away row took with it, so the closing
+// row carries it instead and the column reads 1..N with nothing missing.
+func (r *rows) Discard() { r.next-- }
+
 // append writes one row. A want below zero means whatever length it comes out,
 // any other value is the exact length the row must have, newline included, and
 // the description is stretched to reach it.

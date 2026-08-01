@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
+	"math"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -403,6 +405,171 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 					size, shapes, minRecords)
 			}
 		})
+	}
+}
+
+// attrNum reads a numeric attribute off an element. Missing or unreadable
+// counts as absent, and the callers treat absent as "this one constrains
+// nothing" rather than guessing a value.
+func attrNum(el xml.StartElement, name string) (float64, bool) {
+	for _, a := range el.Attr {
+		if a.Name.Local != name {
+			continue
+		}
+		v, err := strconv.ParseFloat(a.Value, 64)
+		return v, err == nil
+	}
+	return 0, false
+}
+
+// The label is the one thing inside a generated file that says what the file
+// is, and SVG is the format here where it has to be painted rather than written
+// into a comment. Painting has an order, and that order lost the label twice
+// over - both found by looking at a render, neither by reading the code:
+//
+//   - the closing label sat on the same baseline and, written last, covered it
+//   - shapes reached the bottom edge and covered both
+//
+// Nothing else notices. The size is exact either way, the document parses
+// either way, and the render oracle counts colours - a page full of shapes is
+// colourful whether or not anybody can read the corner.
+func TestNothingIsPaintedOverTheSVGLabel(t *testing.T) {
+	// A line of text inks roughly one em above its baseline and a third below.
+	// Generous on purpose: a guard for "can this be read" should speak up
+	// before the ink actually touches.
+	const ascent, descent = 1.0, 0.34
+
+	type span struct{ top, bottom float64 }
+	hits := func(a, b span) bool { return a.top <= b.bottom && b.top <= a.bottom }
+
+	// From 288 B up the drawing has room for the identity label beside a whole
+	// shape. Below that it is left out on purpose, with a note saying so, and
+	// that is a different behaviour with its own guard. 320 keeps this one near
+	// the small end without sitting on the boundary.
+	for _, size := range []int64{320, 4097, densitySize} {
+		t.Run(sizeText(size), func(t *testing.T) {
+			body := generateBytes(t, "svg", size)
+
+			var texts, shapes []span
+
+			dec := xml.NewDecoder(bytes.NewReader(body))
+			dec.Strict = true
+			for {
+				tok, err := dec.Token()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					t.Fatalf("the drawing is not well formed: %v", err)
+				}
+				el, ok := tok.(xml.StartElement)
+				if !ok {
+					continue
+				}
+				switch el.Name.Local {
+				case "text":
+					y, okY := attrNum(el, "y")
+					em, okEm := attrNum(el, "font-size")
+					if !okY || !okEm {
+						t.Fatal("a text element declares no baseline or no font size, so where it lands is left to the renderer")
+					}
+					texts = append(texts, span{y - em*ascent, y + em*descent})
+				case "rect":
+					y, okY := attrNum(el, "y")
+					h, okH := attrNum(el, "height")
+					if okY && okH {
+						shapes = append(shapes, span{y, y + h})
+					}
+				case "circle":
+					cy, okY := attrNum(el, "cy")
+					r, okR := attrNum(el, "r")
+					if okY && okR {
+						shapes = append(shapes, span{cy - r, cy + r})
+					}
+				case "ellipse":
+					cy, okY := attrNum(el, "cy")
+					ry, okR := attrNum(el, "ry")
+					if okY && okR {
+						shapes = append(shapes, span{cy - ry, cy + ry})
+					}
+				case "line":
+					y1, ok1 := attrNum(el, "y1")
+					y2, ok2 := attrNum(el, "y2")
+					if ok1 && ok2 {
+						shapes = append(shapes, span{math.Min(y1, y2), math.Max(y1, y2)})
+					}
+				}
+			}
+
+			// Without both of them there is nothing to compare, and a guard
+			// that quietly compares nothing is worse than no guard.
+			if len(texts) < 2 {
+				t.Fatalf("the drawing holds %d text elements, expected the identity label and the closing one", len(texts))
+			}
+			for i := range texts {
+				for j := i + 1; j < len(texts); j++ {
+					if hits(texts[i], texts[j]) {
+						t.Errorf("two lines of text share the band %.0f..%.0f and %.0f..%.0f - whichever is written last covers the other, and the label is written first",
+							texts[i].top, texts[i].bottom, texts[j].top, texts[j].bottom)
+					}
+				}
+			}
+			for _, s := range shapes {
+				for _, tx := range texts {
+					if hits(s, tx) {
+						t.Fatalf("a shape spanning %.0f..%.0f crosses the text band %.0f..%.0f - shapes are drawn after the label, so the shape wins",
+							s.top, s.bottom, tx.top, tx.bottom)
+					}
+				}
+			}
+		})
+	}
+}
+
+// A record number that skips is not a broken file. It parses, it is exactly the
+// size that was asked for, and it repeats byte for byte - so size, determinism
+// and the golden values all stay green. It is a lie about the data instead, and
+// for a tool whose whole point is telling a test suite what to expect, that is
+// the worse kind: somebody asserts the ids run 1..N and gets a red run we
+// caused.
+//
+// It came from the shared filling loop. That loop builds one record past the
+// end to learn that it does not fit, throws the bytes away, and the builder had
+// already counted it.
+func TestRecordNumbersRunFromOneWithoutAGap(t *testing.T) {
+	cases := []struct {
+		format string
+		number *regexp.Regexp
+	}{
+		{"csv", regexp.MustCompile(`(?m)^(\d+),`)},
+		{"json", regexp.MustCompile(`\{"id":(\d+),`)},
+		{"xml", regexp.MustCompile(`<record id="(\d+)"`)},
+	}
+
+	for _, c := range cases {
+		for _, size := range []int64{1024, 4097, densitySize} {
+			t.Run(c.format+"/"+sizeText(size), func(t *testing.T) {
+				body := generateBytes(t, c.format, size)
+
+				found := c.number.FindAllSubmatch(body, -1)
+				// One record cannot show a gap, so a pass there would mean
+				// nothing.
+				if len(found) < 2 {
+					t.Fatalf("found %d record numbers, too few for a gap to be visible", len(found))
+				}
+
+				for i, m := range found {
+					n, err := strconv.Atoi(string(m[1]))
+					if err != nil {
+						t.Fatalf("record number %q does not read as a number: %v", m[1], err)
+					}
+					if want := i + 1; n != want {
+						t.Fatalf("the %d record carries the number %d - the numbering skips, which is what happens when a record is built, counted, and then thrown away",
+							want, n)
+					}
+				}
+			})
+		}
 	}
 }
 

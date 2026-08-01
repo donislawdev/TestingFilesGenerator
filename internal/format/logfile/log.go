@@ -168,6 +168,10 @@ func (entries) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	return appendEntry(dst, rng, n)
 }
 
+// Discard has nothing to put back. An entry carries no state from one to the
+// next, so throwing one away leaves no trace to undo.
+func (entries) Discard() {}
+
 // appendEntry appends one line in the Apache combined format.
 //
 // want below zero means "whatever length it comes out". Any other value is the exact

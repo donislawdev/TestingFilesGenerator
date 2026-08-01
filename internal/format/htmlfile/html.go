@@ -213,6 +213,10 @@ func (blocks) Append(dst []byte, rng *rand.Rand) []byte {
 	}
 }
 
+// Discard has nothing to put back. A block carries no state from one to the
+// next, so throwing one away leaves no trace to undo.
+func (blocks) Discard() {}
+
 func (blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
 	dst = append(dst, paraOpen...)

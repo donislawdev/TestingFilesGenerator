@@ -1,6 +1,11 @@
 {
-  "note": "SHA-256 of what our own generators produce, through the engine. A change here is a breaking change under D11 - it needs a major version bump, a changelog entry and a decision by the owner. Never edit this file to turn the guard green. Measured with Go 1.26.5 on windows/amd64, and confirmed identical on the CI matrix.",
+  "note": "SHA-256 of what our own generators produce, through the engine. A change here is a breaking change under D11 - it needs a version bump, a changelog entry and a decision by the owner. Never edit this file to turn the guard green. Measured with Go 1.26.5 on windows/amd64, and confirmed identical on the CI matrix.",
   "measured_on": "2026-08-01",
+  "remeasured": {
+    "on": "2026-08-02",
+    "why": "Two defects were fixed that no guard could see, both found by looking at generated files rather than at code. Record numbers skipped one before the last record, because the filling loop builds a record to measure it, throws it away, and the builder had already counted it - that moved csv, json and xml. The SVG label was unreadable, because the closing label shared its baseline and shapes reached the bottom edge - that moved svg. Both now have guards, and both guards are proven by mutation.",
+    "files": ["csv_8kib", "json_8kib", "svg_8kib", "xml_8kib", "xml_8kib_no_label"]
+  },
   "seed": 7741,
   "files": {
     "txt_4kib": {
@@ -45,19 +50,19 @@
     },
     "csv_8kib": {
       "bytes": 8192,
-      "sha256": "131b3700abaa7e5985b87621b2b5ad1308219678183138a7f09b28b9d79927b3"
+      "sha256": "9c27e8266485816183ac867c69fe3ae797aeab185a2f5b38c99acdc957076998"
     },
     "json_8kib": {
       "bytes": 8192,
-      "sha256": "00be5e2927bd5e1b06a187c652df502c0ba291297d24bd7dc23f7f47a60046bb"
+      "sha256": "0b717f6295487af0afa21c68e2fc5649239eb010089079b9364f9b8fd2538a30"
     },
     "xml_8kib": {
       "bytes": 8192,
-      "sha256": "49e5784c4a3009025cabe7334f73aad0c4d9e37aa9cbd4465f6faa4b90280719"
+      "sha256": "7b0bfb9e55775dda3373ab0c42f10642a11ebed39764e6659fcf0412d3786c0b"
     },
     "xml_8kib_no_label": {
       "bytes": 8192,
-      "sha256": "0f29db2065d4b205aecd70cb4b3a56ce458e1bffb9d4967c145c6fbd25455eb1"
+      "sha256": "e3abef37b6ec306f92c1d489401500741fd6fced5b4838b487d055faa1e2af28"
     },
     "html_8kib": {
       "bytes": 8192,
@@ -65,7 +70,7 @@
     },
     "svg_8kib": {
       "bytes": 8192,
-      "sha256": "5f0793494e03777b589088b735238586eeed98f7f3c85114e57b2d9433595c91"
+      "sha256": "1cfeca2a6632e55c7575115b14e75aa7fff2ad42543f76d46e2199842910e84a"
     }
   }
 }

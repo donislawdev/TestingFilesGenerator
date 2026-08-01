@@ -40,6 +40,17 @@ type Record interface {
 	// has to hold for every draw rather than for the lucky one, otherwise the
 	// closing record cannot reach the length it was asked for.
 	Shortest() int64
+	// Discard undoes whatever the last Append changed about the builder. That
+	// record was built only to measure it and then thrown away, which happens
+	// exactly once per file - on the one that no longer leaves room for a whole
+	// closing record.
+	//
+	// A builder that keeps nothing between records has nothing to undo. One
+	// that counts, though, has already counted the record that was thrown away,
+	// and without this the file ends with a hole in the numbering. Nothing else
+	// in this package can see that: the size is exact, the bytes repeat, and
+	// every reader still parses the file.
+	Discard()
 }
 
 // FillRecords writes exactly remaining bytes as whole records.
@@ -71,6 +82,10 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 		// what keeps the last one from being a stub.
 		if remaining-int64(len(buf)-mark) < shortest {
 			buf = buf[:mark]
+			// The bytes are gone, so anything the builder counted for them has
+			// to go too. The draw itself is not put back, and does not need to
+			// be - the run stays repeatable either way.
+			rec.Discard()
 			break
 		}
 		remaining -= int64(len(buf) - mark)

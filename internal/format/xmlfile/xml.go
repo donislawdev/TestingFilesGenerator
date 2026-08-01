@@ -196,6 +196,10 @@ func (r *records) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	return r.append(dst, rng, n)
 }
 
+// Discard hands back the number the thrown away record took with it, so the
+// closing record carries it instead and the ids read 1..N with nothing missing.
+func (r *records) Discard() { r.next-- }
+
 // append writes one record element. A want below zero means whatever length it
 // comes out, any other value is the exact length the record must have,
 // including the bytes that close the root element.

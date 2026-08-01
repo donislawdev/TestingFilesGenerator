@@ -17,6 +17,13 @@ belongs in one place.
 
 ### Added
 
+- **Two guards for defects that shipped past every existing one.** One walks the
+  record numbers of CSV, JSON and XML and demands 1 to N with nothing missing.
+  The other parses an SVG, works out the band each line of text inks, and
+  demands that no two lines share it and that no shape crosses it. Both are
+  proven by mutation, and in all three mutations the size and determinism guards
+  stayed green - which is the point, because those two are what a defect of this
+  shape walks straight past.
 - **The first reference tool that renders rather than parses.** SVG is checked
   by Inkscape drawing it to a bitmap, which is then opened and its colours
   counted. A drawing that parses and paints nothing passes every other check in
@@ -501,6 +508,26 @@ belongs in one place.
 
 ### Fixed
 
+- **The shared filling loop counted a record it threw away.** It builds one
+  record past the end to learn that it no longer leaves room for a whole closing
+  record, rolls the bytes back, and breaks. The bytes went back, the count did
+  not, so the closing record took the next number and the file ended with a hole
+  in the numbering. `core.Record` now carries `Discard`, the loop calls it on
+  exactly that path, and the three builders that count hand the number back. The
+  three that keep nothing between records say so in an empty body rather than
+  inheriting a default, because a builder that gains state later should have to
+  answer the question.
+  The draw is deliberately not put back. Rewinding the generator would mean
+  snapshotting it, and the run repeats either way.
+- **Two ways of losing the SVG label, neither visible to any guard.** The
+  closing label shared a baseline with the identity label and, being written
+  last, painted over it. Shapes reached the bottom edge and painted over both.
+  Every check in the suite stayed green through both: the size is exact, the
+  document parses, and the render oracle counts colours - a page full of shapes
+  is colourful whether or not the corner can be read.
+  Found by looking at a render, not by reading code. That is the second time
+  this project has learned something from a picture that no amount of reading
+  produced, and it is the argument for the render oracle rather than a parser.
 - **A byte order mark defeated the strict decoder by the one route strictness
   cannot help with.** It arrived as part of the first key, so `version` was
   refused as an unknown field - the message the decoder gives when it is doing

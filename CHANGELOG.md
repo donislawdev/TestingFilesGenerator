@@ -233,6 +233,22 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Record numbers no longer skip. This changes the bytes of every CSV, JSON and
+  XML file, so it is a breaking change.** The number just before the last record
+  was missing - a file of a thousand records ran 1 to 999 and then 1001. Nothing
+  else about the file was wrong, which is why it went unnoticed for so long: the
+  size was exact, the bytes repeated, and every reader parsed it. A test
+  asserting that ids run 1 to N failed against data this tool produced, and the
+  fault was ours. Files you keep for comparison need regenerating, and their
+  hashes will differ.
+- **The label in an SVG can be read. This changes the bytes of every SVG file,
+  so it is a breaking change.** The line naming the format, the size and the
+  seed shared a baseline with the text that pads the drawing out to the
+  requested size, and the padding is written second, so it covered the label.
+  Shapes reached the bottom edge and covered it as well. The two lines now sit
+  on separate baselines and shapes stay out of the strip they occupy, which
+  costs the drawing the lowest 56 of its 600 units. The label was always in the
+  file - it just could not be read on screen.
 - **Pointing a command at a directory says so.** `tfg verify out/` used to answer
   `read out: Incorrect function.`, which is what Windows says about reading a
   directory and which reads like a fault in this tool. All four commands that

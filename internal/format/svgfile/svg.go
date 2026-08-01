@@ -36,15 +36,37 @@ const (
 	width  = 800
 	height = 600
 
+	// textBand is the strip along the bottom edge that shapes stay out of, so
+	// the two lines of text below it are read against plain background.
+	//
+	// Without it about one shape in ten landed on the label - measured on a
+	// small and a large file, 11.0% and 10.3% - and the label is the one thing
+	// in the file that says what the file is. A drawing is still a drawing with
+	// a margin. A label with a circle through it is not a label.
+	textBand   = 56
+	drawHeight = height - textBand
+
 	declaration = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 	rootOpen    = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">` + "\n"
 	rootClose   = "</svg>\n"
 
 	// The closing record is a text element, so the drawing ends with something
 	// that can be stretched to any length without changing what it is.
+	//
+	// It gets its own baseline. Sharing one with the identity label meant the
+	// closing text, written last, painted straight over it - the label was
+	// there in the bytes and unreadable on screen. Nothing caught that: the
+	// size was exact, the file parsed, and a renderer still drew a full page of
+	// shapes.
 	textOpen  = `<text x="16" y="` + textY + `" font-size="13" fill="#333333">`
-	textY     = "584"
+	textY     = "566"
 	textClose = "</text>\n"
+
+	// labelOpen carries the identity label along the bottom edge. It is the
+	// same width as textOpen, so the smallest file this format can produce does
+	// not move.
+	labelOpen = `<text x="16" y="` + labelY + `" font-size="13" fill="#333333">`
+	labelY    = "584"
 
 	tailLast = textClose + rootClose
 
@@ -118,7 +140,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{seed: r.Seed}
 	if r.Label {
-		line := textOpen + core.Label("svg", r.Bytes, r.Seed) + textClose
+		line := labelOpen + core.Label("svg", r.Bytes, r.Seed) + textClose
 		if int64(len(line))+minimumBytes() <= r.Bytes {
 			m.labelLine = line
 		} else {
@@ -170,7 +192,7 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 		dst = append(dst, `<rect x="`...)
 		dst = strconv.AppendInt(dst, int64(rng.IntN(width-80)), 10)
 		dst = append(dst, `" y="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(height-80)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-80)), 10)
 		dst = append(dst, `" width="`...)
 		dst = strconv.AppendInt(dst, int64(20+rng.IntN(60)), 10)
 		dst = append(dst, `" height="`...)
@@ -179,14 +201,14 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 		dst = append(dst, `<circle cx="`...)
 		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
 		dst = append(dst, `" cy="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(height)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-45)), 10)
 		dst = append(dst, `" r="`...)
 		dst = strconv.AppendInt(dst, int64(5+rng.IntN(40)), 10)
 	case 2:
 		dst = append(dst, `<ellipse cx="`...)
 		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
 		dst = append(dst, `" cy="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(height)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-60)), 10)
 		dst = append(dst, `" rx="`...)
 		dst = strconv.AppendInt(dst, int64(10+rng.IntN(50)), 10)
 		dst = append(dst, `" ry="`...)
@@ -195,11 +217,11 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 		dst = append(dst, `<line x1="`...)
 		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
 		dst = append(dst, `" y1="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(height)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight)), 10)
 		dst = append(dst, `" x2="`...)
 		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
 		dst = append(dst, `" y2="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(height)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight)), 10)
 		dst = append(dst, `" stroke-width="2`...)
 		paint = "stroke"
 	}
@@ -210,6 +232,10 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 	dst = append(dst, colours[rng.IntN(len(colours))]...)
 	return append(dst, `"/>`+"\n"...)
 }
+
+// Discard has nothing to put back. A shape carries no state from one to the
+// next, so throwing one away leaves no trace to undo.
+func (shapes) Discard() {}
 
 func (shapes) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
