@@ -49,10 +49,111 @@ type Target struct {
 	Expected       string
 	ExpectedReason string
 	Properties     map[string]string
+	// Contains is what a container holds, one entry per group.
+	Contains []Content
+	// SizeFromContents is set when contains was given without a size, so the
+	// container works the size out from what it holds.
+	SizeFromContents bool
+}
+
+// Content is one group of files inside a container.
+//
+// It is declared here rather than reused from the format package so that the
+// recipe stays a description of a recipe. The format layer sits below this one
+// and the mapping is one line in the caller.
+type Content struct {
+	Format string
+	Count  int
+	Bytes  int64
 }
 
 // Count is how many files this target produces.
 func (t Target) Count() int { return len(t.Sizes) }
+
+// contentGroups reads the contains list.
+//
+// Every problem is collected rather than returned on the first one, because a
+// contains list written by hand usually has more than one thing wrong with it
+// and fixing a recipe one error per run is how people stop using a tool.
+func contentGroups(p *problems, where string, raw []map[string]any) []Content {
+	if len(raw) == 0 {
+		// An empty list is not the same as no list. It says "an archive
+		// holding nothing", which is a legitimate thing to test, and the size
+		// then comes from the container overhead alone.
+		return []Content{}
+	}
+
+	out := make([]Content, 0, len(raw))
+	for i, item := range raw {
+		at := fmt.Sprintf("%s: contains entry %d", where, i+1)
+		g := Content{Count: 1}
+
+		for key := range item {
+			switch key {
+			case "format", "count", "size":
+			default:
+				p.add(fmt.Sprintf("%s has the key %q", at, key),
+					"a contains entry describes files with a format, a count and a size, and anything else would be dropped on the way",
+					"remove the key, or move it to the target itself")
+			}
+		}
+
+		if v, ok := item["format"]; ok {
+			if s, ok := scalarText(v); ok && s != "" {
+				g.Format = s
+			} else {
+				p.add(fmt.Sprintf("%s has a format that is not a name", at),
+					"a format is the id of a format this build supports",
+					"use format: pdf, or run tfg formats to see the list")
+			}
+		} else {
+			p.add(fmt.Sprintf("%s has no format", at),
+				"a container holds real files, so each group says which format its files are",
+				"add format: pdf")
+		}
+
+		if v, ok := item["count"]; ok {
+			n, ok := scalarInt(v)
+			switch {
+			case !ok:
+				p.add(fmt.Sprintf("%s has a count that is not a whole number", at),
+					"a count is how many files of this group the container holds",
+					"use count: 50")
+			case n < 0:
+				p.add(fmt.Sprintf("%s has a negative count", at),
+					"a container cannot hold fewer than no files",
+					"use count: 0 for a group that contributes nothing, or drop the entry")
+			default:
+				g.Count = n
+			}
+		}
+
+		if v, ok := item["size"]; ok {
+			s, ok := scalarText(v)
+			if !ok {
+				p.add(fmt.Sprintf("%s has a size that is neither text nor a number", at),
+					"a size is written as 2mb or as a plain byte count",
+					"use size: 2mb or size: 2097152")
+			} else if n, err := core.ParseSize(s); err != nil {
+				p.add(fmt.Sprintf("%s: %v", at, err),
+					"units count in 1024s, so 10mb is 10485760 bytes",
+					"use a size such as 2mb, 512kb or a plain byte count")
+			} else {
+				g.Bytes = n
+			}
+		} else {
+			// The same rule as AR10 one level down. Without it the size of the
+			// container could not be worked out before writing, which is the
+			// whole reason contains counts as a way of declaring a size.
+			p.add(fmt.Sprintf("%s has no size", at),
+				"the size of the container follows from the size of what it holds, so every group states one",
+				"add size: 2mb")
+		}
+
+		out = append(out, g)
+	}
+	return out
+}
 
 // Output says where the run lands.
 type Output struct {
@@ -291,8 +392,7 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 			"give an exact size instead")
 	}
 	if rt.Contains != nil {
-		p.notYet(where+": contains", "declaring archive members is not in this build yet",
-			"use size together with the entries, entry_format and entry_size properties of the zip format")
+		t.Contains = contentGroups(p, where, rt.Contains)
 	}
 	if rt.Mutations != nil {
 		p.notYet(where+": mutations", "damaged files arrive with the Chaos Lab",
@@ -338,10 +438,20 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 			t.Sizes = append(t.Sizes, n)
 		}
 
-	case rt.SizeRange == nil && rt.Contains == nil:
+	case rt.Contains != nil:
+		// The fourth way of declaring a size, and not an exception to the
+		// rule. Every member has its own size, so the total follows from the
+		// parts and a dry run still reports a number without generating
+		// anything. See ARCHITECTURE.md section 9.
+		t.SizeFromContents = true
+		for i := 0; i < count; i++ {
+			t.Sizes = append(t.Sizes, 0)
+		}
+
+	case rt.SizeRange == nil:
 		p.add(fmt.Sprintf("%s has no size", where),
 			"every target declares its size, which is what lets a dry run report exact numbers before anything reaches the disk",
-			"add size: 2mb, a boundary, or a plain number of bytes")
+			"add size: 2mb, a boundary, contains, or a plain number of bytes")
 	}
 
 	if rt.Name != nil {
@@ -515,6 +625,24 @@ func properties(p *problems, where string, in map[string]any) map[string]string 
 		out[k] = s
 	}
 	return out
+}
+
+// scalarInt reads a whole number, refusing anything that is not one.
+//
+// A count of 1.5 is not rounded. Rounding here would give an archive holding a
+// different number of files than the recipe says, and the recipe is what
+// somebody reads in a pull request.
+func scalarInt(v any) (int, bool) {
+	switch x := v.(type) {
+	case int:
+		return x, true
+	case int64:
+		return int(x), true
+	case uint64:
+		return int(x), true
+	default:
+		return 0, false
+	}
 }
 
 // scalarText renders a YAML scalar the way a person wrote it.

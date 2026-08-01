@@ -33,6 +33,31 @@ belongs in one place.
   correct hash and deliberately did not write, sitting on top of somebody's
   real file - where which entries are claimed is the only thing standing
   between that file and deletion.
+- **`contains` gave the generator interface a typed channel, because a flat
+  string map could not carry it.** A list of groups encoded into
+  `Properties map[string]string` would have been a stringly typed contract in
+  the middle of a project that avoids them everywhere else. `format.Request`
+  gained `Contains` and `SizeFromContents`, and `Descriptor` gained
+  `Container`.
+  `Container` is declared rather than inferred. A format that quietly ignored
+  `contains` would produce an empty archive and report success, and that is the
+  silence rule broken in the worst way - the file looks right and the suite
+  believes it.
+  `SizeFromContents` is a flag rather than a zero in `Bytes`, because zero is a
+  real size: a TXT file of nought bytes is legal and its minimum is nought. A
+  sentinel colliding with a legal value is how a guard ends up testing
+  something else.
+  Three endings that would have landed in `RUNTIME` got typed errors instead -
+  a format that is not a container, an archive asked to nest, and contents
+  declared twice. `RUNTIME` means "a bug in the tool", and telling CI to file a
+  report against us for something a person wrote is the wrong answer. The
+  nesting one also repaired the older `entry_format: zip` path, which had the
+  same problem.
+  The seed of a member comes from its position across the whole archive, so
+  inserting a group moves the members below it. Left that way deliberately:
+  the stable alternative changes how seeds are derived, which moves the bytes
+  of every archive already generated. That is a breaking change and the owner's
+  call, and it is written down in RECIPE.md rather than left to be rediscovered.
 - **The bytes of our own generators are pinned, which nothing was watching.**
   Untouchable rule 3 promises a generated file does not change inside a major
   version, and two guards looked like they covered it without doing so. The

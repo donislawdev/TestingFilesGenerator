@@ -17,6 +17,18 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **An archive says what it holds, in the recipe.** `contains` takes a list of
+  groups - "3 PDFs of 8 kB and 2 PNGs of 4 kB" is two lines, not five entries -
+  and the archive holds real files of those formats, each one valid on its own
+  and openable after unpacking. No `size` is needed: the size of the archive
+  follows from what is in it, and `--dry-run` reports the exact number before
+  anything reaches the disk. State a `size` as well and that wins, with the
+  difference padded.
+  Contents larger than a stated size is an error naming both numbers, never a
+  silent truncation. Asking a format that holds nothing to hold something is an
+  error naming the formats that can. Saying what an archive holds twice, once
+  with `contains` and once with the `entries` properties, is an error rather
+  than one of them being picked.
 - **`tfg cleanup manifest.json` removes the files a run produced.** It removes
   what the manifest lists and nothing else. Without `--yes` it deletes nothing
   and prints what it would remove, so you read the list first. A file whose

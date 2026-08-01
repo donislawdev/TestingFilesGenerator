@@ -195,14 +195,16 @@ Flags:
 				label = !*clean
 			}
 			targets = append(targets, engine.Target{
-				ID:             t.ID,
-				Format:         t.Format,
-				Sizes:          t.Sizes,
-				NameTmpl:       t.Name,
-				Label:          label,
-				Expected:       t.Expected,
-				ExpectedReason: t.ExpectedReason,
-				Properties:     t.Properties,
+				ID:               t.ID,
+				Format:           t.Format,
+				Sizes:            t.Sizes,
+				Contains:         contentsOf(t),
+				SizeFromContents: t.SizeFromContents,
+				NameTmpl:         t.Name,
+				Label:            label,
+				Expected:         t.Expected,
+				ExpectedReason:   t.ExpectedReason,
+				Properties:       t.Properties,
 			})
 		}
 		if given["clean"] {
@@ -365,6 +367,20 @@ func describingFlagsGiven(given map[string]bool) []string {
 	return bad
 }
 
+// contentsOf maps the recipe's view of a container's contents onto the format
+// layer's. Two types rather than one so the recipe package stays a description
+// of a recipe, and this is the one line that costs.
+func contentsOf(t recipe.Target) []format.Content {
+	if t.Contains == nil {
+		return nil
+	}
+	out := make([]format.Content, 0, len(t.Contains))
+	for _, c := range t.Contains {
+		out = append(out, format.Content{Format: c.Format, Count: c.Count, Bytes: c.Bytes})
+	}
+	return out
+}
+
 func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 	src, err := os.ReadFile(path)
 	if err != nil {
@@ -415,6 +431,7 @@ func validate(args []string, out, errOut io.Writer) int {
 	for _, t := range rec.Targets {
 		targets = append(targets, engine.Target{
 			ID: t.ID, Format: t.Format, Sizes: t.Sizes,
+			Contains: contentsOf(t), SizeFromContents: t.SizeFromContents,
 			NameTmpl: t.Name, Label: t.Label, Expected: t.Expected,
 			ExpectedReason: t.ExpectedReason, Properties: t.Properties,
 		})
@@ -866,6 +883,23 @@ func classify(err error) int {
 	var unknown *format.UnknownFormatError
 	if errors.As(err, &unknown) {
 		return ExitFormat
+	}
+	// A format that holds nothing being asked to hold something, and a
+	// container asked to nest, are both "this format cannot do that" - the
+	// same class as a size below the minimum.
+	var notContainer *format.NotAContainerError
+	if errors.As(err, &notContainer) {
+		return ExitFormat
+	}
+	var nesting *format.NestingUnsupportedError
+	if errors.As(err, &nesting) {
+		return ExitFormat
+	}
+	// Two parts of one recipe saying different things about the same archive
+	// is a recipe problem, like a boundary stated beside a size.
+	var conflict *format.ContentsConflictError
+	if errors.As(err, &conflict) {
+		return ExitRecipe
 	}
 	var badProp *format.UnknownPropertyError
 	if errors.As(err, &badProp) {

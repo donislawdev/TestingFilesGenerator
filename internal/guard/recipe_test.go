@@ -874,6 +874,7 @@ type manifestShape struct {
 		Hashes struct {
 			SHA256 string `json:"sha256"`
 		} `json:"hashes"`
+		Properties map[string]any `json:"properties"`
 	} `json:"files"`
 }
 

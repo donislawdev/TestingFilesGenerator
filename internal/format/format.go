@@ -113,6 +113,77 @@ type Descriptor struct {
 	// default settings and an hour spent wondering why the test passes when
 	// it should not. An empty list means the format takes no properties.
 	Properties []string
+
+	// Container says this format holds other files, so a recipe may declare
+	// contains for it.
+	//
+	// Declared rather than inferred. A format that quietly ignored contains
+	// would produce an archive with nothing in it and report success, and
+	// that is the silence rule broken in the worst way - the file looks right
+	// and the test suite believes it.
+	Container bool
+}
+
+// NotAContainerError is contains asked of a format that holds nothing.
+type NotAContainerError struct {
+	Format     string
+	Containers []string
+}
+
+func (e *NotAContainerError) Error() string {
+	return fmt.Sprintf(
+		"%s holds no other files, so it cannot take contains - the formats that can are %s. Drop contains, or change the format",
+		e.Format, strings.Join(e.Containers, ", "))
+}
+
+// ContentsConflictError is contains stated beside format properties saying the
+// same thing. Picking one would build an archive holding something other than
+// what the recipe says, and the recipe is what somebody reads in a review.
+type ContentsConflictError struct {
+	Format string
+	Keys   []string
+}
+
+func (e *ContentsConflictError) Error() string {
+	return fmt.Sprintf(
+		"%s: contains and the %s propert%s both say what the archive holds. Keep contains and drop the properties, or the other way round",
+		e.Format, strings.Join(e.Keys, ", "), plural(len(e.Keys)))
+}
+
+// NestingUnsupportedError is a container asked to hold its own format.
+//
+// A legitimate test case that needs a depth limit before it is allowed, and
+// there is none yet. It says that rather than pretending the format is unknown.
+type NestingUnsupportedError struct {
+	Format string
+}
+
+func (e *NestingUnsupportedError) Error() string {
+	return fmt.Sprintf(
+		"%s cannot hold %s yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target",
+		e.Format, e.Format)
+}
+
+func plural(n int) string {
+	if n == 1 {
+		return "y"
+	}
+	return "ies"
+}
+
+// Containers lists the formats that accept contains, for a message that tells
+// somebody what to write instead.
+func Containers() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+	var out []string
+	for id, d := range registry {
+		if d.Container {
+			out = append(out, id)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 // UnknownPropertyError is a property key no format recognises.
@@ -150,10 +221,39 @@ func (d Descriptor) CheckProperties(props map[string]string) error {
 	return nil
 }
 
+// Content is one group of files a container holds.
+//
+// A group rather than a file, because "50 PDFs of 2 MB and 200 JPGs of 500 kB"
+// is what somebody writes, and expanding that into 250 entries in the recipe
+// would make the recipe unreadable and the diff useless.
+type Content struct {
+	// Format is the id of the format for these members, from the same
+	// registry as any other format. A container holds real files.
+	Format string
+	// Count is how many members this group contributes.
+	Count int
+	// Bytes is the exact size of each member.
+	Bytes int64
+}
+
 // Request is what the caller wants from a generator.
 type Request struct {
 	// Bytes is the exact size of the file, to the byte.
+	//
+	// It is meaningless when SizeFromContents is set - read that first.
 	Bytes int64
+	// SizeFromContents says the caller did not name a size and the generator
+	// works it out from Contains, reporting it back in Plan.Bytes.
+	//
+	// A separate flag rather than a zero in Bytes, because zero is a real
+	// size: a TXT file of nought bytes is legal and has a minimum of nought.
+	// A sentinel that collides with a legal value is how a guard ends up
+	// testing the wrong thing.
+	SizeFromContents bool
+	// Contains is what a container holds. Empty for every other format, and
+	// a format that is not a container never receives it - the engine refuses
+	// that before planning starts.
+	Contains []Content
 	// Seed determines the content. The same seed gives the same bytes.
 	Seed uint64
 	// Label asks for the self describing label. On by default, turned off

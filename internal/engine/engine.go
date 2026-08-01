@@ -35,9 +35,17 @@ type Target struct {
 	// and a range will be a different size per file. Carrying a count and one
 	// size would have needed a second way of saying it the moment the first of
 	// those arrived.
-	Sizes    []int64
-	NameTmpl string
-	Label    bool
+	Sizes []int64
+	// Contains is what a container holds. Only a format that declares itself a
+	// container may have it, and asking it of any other is refused before
+	// planning starts rather than ignored.
+	Contains []format.Content
+	// SizeFromContents says no size was named and the container works it out
+	// from Contains. The entries in Sizes then only carry the count, and their
+	// value is not read.
+	SizeFromContents bool
+	NameTmpl         string
+	Label            bool
 	// Expected is what the system under test should do with these files, and
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string
@@ -150,6 +158,14 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			return nil, err
 		}
 
+		// A format that holds nothing cannot be asked what it holds. Silently
+		// ignoring contains would give an archive with none of the files
+		// somebody listed, reported as a success - the file looks right and
+		// the test suite believes it.
+		if len(t.Contains) > 0 && !desc.Container {
+			return nil, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
+		}
+
 		// A size below the minimum is refused by the generator itself, on the
 		// first size that cannot be delivered, and planning writes nothing -
 		// so every size of a boundary set is judged before any file exists.
@@ -165,10 +181,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			fileSeed := core.FileSeed(targetSeed, idx)
 
 			p, err := desc.Generator.Plan(format.Request{
-				Bytes:      size,
-				Seed:       fileSeed,
-				Label:      t.Label,
-				Properties: t.Properties,
+				Bytes:            size,
+				SizeFromContents: t.SizeFromContents,
+				Contains:         t.Contains,
+				Seed:             fileSeed,
+				Label:            t.Label,
+				Properties:       t.Properties,
 			})
 			if err != nil {
 				return nil, err

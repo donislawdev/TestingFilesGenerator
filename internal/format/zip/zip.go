@@ -76,6 +76,7 @@ func init() {
 		Label:            format.LabelInternal,
 		Oracle:           "7z",
 		Properties:       []string{"entries", "entry_format", "entry_size"},
+		Container:        true,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -97,30 +98,69 @@ type memo struct {
 	seed       uint64
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+// groupsFor works out what the archive holds.
+//
+// There are two ways to say it. "contains" in a recipe is the general one and
+// takes a list of groups of different formats. The entries, entry_format and
+// entry_size properties are the flag sized one, reachable through --set, and
+// they say the same thing for a single format.
+//
+// Both at once is refused rather than one of them being picked. Picking would
+// produce an archive holding something other than what the recipe says, and
+// the recipe is the thing somebody reads in a pull request. Same rule as a
+// boundary declared beside a size.
+func groupsFor(r format.Request) ([]format.Content, error) {
+	var stated []string
+	for _, key := range []string{"entries", "entry_format", "entry_size"} {
+		if _, ok := r.Properties[key]; ok {
+			stated = append(stated, key)
+		}
+	}
+
+	// Not len() > 0. An empty contains says "an archive holding nothing",
+	// which is a legitimate thing to ask for, and it is a different statement
+	// from saying nothing at all.
+	if r.Contains != nil {
+		if len(stated) > 0 {
+			return nil, &format.ContentsConflictError{Format: "zip", Keys: stated}
+		}
+		for _, g := range r.Contains {
+			if g.Format == "zip" {
+				return nil, &format.NestingUnsupportedError{Format: "zip"}
+			}
+		}
+		return r.Contains, nil
+	}
+
+	if r.SizeFromContents {
+		// Only reachable if a caller sets the flag without contents. Saying so
+		// beats producing an empty archive and calling it the answer.
+		return nil, fmt.Errorf("zip: the size was left to the contents and there are none")
+	}
+
 	entries, err := intProperty(r.Properties, "entries", defaultEntries, 0, maxEntries)
 	if err != nil {
-		return format.Plan{}, err
+		return nil, err
 	}
 	// Sizes in properties use the same syntax as --size. Anything else would
 	// mean entry_size=200kb failing while size=200kb works, which nobody
 	// would predict.
 	entrySize, err := sizeProperty(r.Properties, "entry_size", defaultEntrySize)
 	if err != nil {
-		return format.Plan{}, err
+		return nil, err
 	}
-
 	entryFmt := defaultEntryFmt
 	if v, ok := r.Properties["entry_format"]; ok && v != "" {
 		entryFmt = v
 	}
 	if entryFmt == "zip" {
-		// An archive of archives is a legitimate test case, but it needs a
-		// depth limit before it is allowed, and there is none yet.
-		return format.Plan{}, fmt.Errorf("zip: entry_format cannot be zip yet - nesting needs a depth limit first")
+		return nil, &format.NestingUnsupportedError{Format: "zip"}
 	}
+	return []format.Content{{Format: entryFmt, Count: entries, Bytes: entrySize}}, nil
+}
 
-	desc, err := format.Get(entryFmt)
+func (generator) Plan(r format.Request) (format.Plan, error) {
+	groups, err := groupsFor(r)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -128,26 +168,45 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	// The children are real files of another format, each valid on its own.
 	// The registry sits on the same layer as this package, so reaching for it
 	// needs nothing from the engine.
+	//
+	// Members are numbered across the whole archive rather than per group, so
+	// the seed of a member does not move when a group above it changes count.
+	// That is untouchable rule 2 applied one level down.
 	m := memo{seed: r.Seed}
-	for i := 0; i < entries; i++ {
-		childSeed := core.FileSeed(r.Seed, i)
-		cp, err := desc.Generator.Plan(format.Request{
-			Bytes: entrySize,
-			Seed:  childSeed,
-			Label: r.Label,
-		})
+	index := 0
+	// Numbering runs per format rather than per group, so two groups of the
+	// same format do not both start at 0001 and collide inside the archive.
+	numbered := map[string]int{}
+	for _, g := range groups {
+		desc, err := format.Get(g.Format)
 		if err != nil {
-			return format.Plan{}, fmt.Errorf("zip: the %s file inside cannot be made: %w", entryFmt, err)
+			return format.Plan{}, err
 		}
-		m.children = append(m.children, child{
-			name: fmt.Sprintf("%s_%04d%s", entryFmt, i+1, desc.Extension),
-			desc: desc,
-			plan: cp,
-		})
+		for i := 0; i < g.Count; i++ {
+			childSeed := core.FileSeed(r.Seed, index)
+			cp, err := desc.Generator.Plan(format.Request{
+				Bytes: g.Bytes,
+				Seed:  childSeed,
+				Label: r.Label,
+			})
+			if err != nil {
+				return format.Plan{}, fmt.Errorf("zip: the %s file inside cannot be made: %w", g.Format, err)
+			}
+			numbered[g.Format]++
+			m.children = append(m.children, child{
+				name: fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
+				desc: desc,
+				plan: cp,
+			})
+			index++
+		}
 	}
 
+	// The label carries the size, so a size that comes from the contents is
+	// not known until the archive has been measured. Measure bare first with
+	// no comment, then settle the label, then measure again.
 	label := ""
-	if r.Label {
+	if r.Label && !r.SizeFromContents {
 		label = core.Label("zip", r.Bytes, r.Seed)
 	}
 	m.comment = label
@@ -160,30 +219,65 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
+	target := r.Bytes
+	if r.SizeFromContents {
+		// The contents decide the size, and the label states the size, so the
+		// two settle against each other: a longer number makes a longer file.
+		//
+		// It converges rather than oscillating, because the size only ever
+		// grows and a longer number never shortens the label. Bounded anyway,
+		// and an error rather than a guess if it somehow does not settle - a
+		// label stating the wrong size is worse than the work of finding out.
+		if r.Label {
+			size := bare
+			settled := false
+			for i := 0; i < 4 && !settled; i++ {
+				m.comment = core.Label("zip", size, r.Seed)
+				measured, err := archiveSize(m)
+				if err != nil {
+					return format.Plan{}, err
+				}
+				settled = measured == size
+				size = measured
+			}
+			if !settled {
+				return format.Plan{}, fmt.Errorf(
+					"zip: the size of this archive and the size written in its label do not settle. Give an explicit size")
+			}
+			label = m.comment
+			bare = size
+		}
+		target = bare
+	}
+
 	p := format.Plan{
-		Bytes:       r.Bytes,
+		Bytes:       target,
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"entries":        entries,
-			"entry_format":   entryFmt,
-			"entry_size":     entrySize,
+			"entries":        len(m.children),
+			"contains":       contentSummary(groups),
 			"method":         "store",
 			"label_embedded": label != "",
 		},
 	}
+	// The single format shape keeps the keys it always had, so a test
+	// asserting on entry_format does not break the day contains arrives.
+	if len(groups) == 1 {
+		p.Properties["entry_format"] = groups[0].Format
+		p.Properties["entry_size"] = groups[0].Bytes
+	}
 
 	switch {
-	case r.Bytes < bare:
+	case target < bare:
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "ZIP",
-			Requested: r.Bytes,
+			Requested: target,
 			Minimum:   bare,
-			Reason: fmt.Sprintf("an archive holding %d %s file(s) of %d B already needs that much",
-				entries, strings.ToUpper(entryFmt), entrySize),
-			Hint: fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files with --set entries=... --set entry_size=...", bare),
+			Reason:    fmt.Sprintf("an archive holding %s already needs that much", describeGroups(groups)),
+			Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", bare),
 		}
-	case r.Bytes == bare:
+	case target == bare:
 		// Nothing to pad.
 	default:
 		needed := r.Bytes - bare
@@ -216,6 +310,29 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	p.Memo = m
 	return p, nil
+}
+
+// contentSummary is what the archive holds, in the manifest, so a test can
+// assert on it without unpacking the file.
+func contentSummary(groups []format.Content) []map[string]any {
+	out := make([]map[string]any, 0, len(groups))
+	for _, g := range groups {
+		out = append(out, map[string]any{
+			"format": g.Format,
+			"count":  g.Count,
+			"bytes":  g.Bytes,
+		})
+	}
+	return out
+}
+
+// describeGroups is the same thing for a person reading an error.
+func describeGroups(groups []format.Content) string {
+	parts := make([]string, 0, len(groups))
+	for _, g := range groups {
+		parts = append(parts, fmt.Sprintf("%d %s file(s) of %d B", g.Count, strings.ToUpper(g.Format), g.Bytes))
+	}
+	return strings.Join(parts, " and ")
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
