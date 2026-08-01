@@ -58,6 +58,14 @@
     "xml_8kib_no_label": {
       "bytes": 8192,
       "sha256": "0f29db2065d4b205aecd70cb4b3a56ce458e1bffb9d4967c145c6fbd25455eb1"
+    },
+    "html_8kib": {
+      "bytes": 8192,
+      "sha256": "7fcd7bd8fa49fb5e7392ef33d8f1537c96dabb2157bbda7cfe2eba75c02513a7"
+    },
+    "svg_8kib": {
+      "bytes": 8192,
+      "sha256": "5f0793494e03777b589088b735238586eeed98f7f3c85114e57b2d9433595c91"
     }
   }
 }

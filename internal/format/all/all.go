@@ -9,11 +9,13 @@ package all
 import (
 	// Each format registers itself when its package is loaded.
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/csvfile"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/htmlfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/jsonfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/logfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/md"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pdf"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/png"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/svgfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/wav"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xmlfile"

@@ -53,6 +53,8 @@ func goldenCases() map[string]engine.Target {
 		"csv_8kib":  {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true},
 		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
 		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},
+		"html_8kib": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true},
+		"svg_8kib":  {ID: "g", Format: "svg", Sizes: engine.Uniform(1, 8192), Label: true},
 
 		// XML is the only one of the three that carries the label in the file,
 		// as a comment, so it is the only one where the switch moves bytes. For

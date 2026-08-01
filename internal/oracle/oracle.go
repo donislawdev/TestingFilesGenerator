@@ -227,7 +227,121 @@ var checkers = map[string]Checker{
 		args:   func(p string) []string { return []string{"-c", pythonXMLScript, p} },
 		accept: expectOK("the Python XML parser"),
 	},
+
+	// The strongest reference tool in this project. Everything else answers
+	// "did it parse" - this one answers "did it draw", by rendering the file to
+	// a bitmap and then looking at the pixels. A drawing that parses and paints
+	// nothing passes every other check here.
+	//
+	// Driven from a script rather than directly, because two things had to be
+	// measured before this could be trusted, and both surprised. Inkscape 1.4.4
+	// exits ZERO on a malformed file and only says so on standard error - the
+	// exit code alone would bless a broken drawing. And it will not write the
+	// bitmap to standard output, so the only way to know a bitmap exists is to
+	// open the file it wrote.
+	"inkscape": {
+		Name:   "inkscape-render",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", inkscapeScript, p} },
+		accept: expectOK("the Inkscape renderer"),
+	},
+
+	// The only HTML reader on this machine, and lenient by design - the format
+	// requires a parser to recover from almost anything, so this says less than
+	// the readers beside it. The structural check carries more of the weight.
+	"python-html": {
+		Name:   "python-html",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", pythonHTMLScript, p} },
+		accept: expectOK("the Python HTML parser"),
+	},
 }
+
+// inkscapeScript renders the drawing and then looks at what came out.
+//
+// The blank check is the point. An SVG that parses but paints nothing renders
+// to a single flat colour, and that is a defect no parser and no size guard can
+// see. Two colours is a low bar on purpose - it says something was drawn, not
+// that it was drawn well.
+const inkscapeScript = `
+import os, pathlib, shutil, subprocess, sys, tempfile
+
+exe = shutil.which("inkscape")
+if exe is None:
+    for candidate in (r"C:\ProgramData\chocolatey\bin\inkscape.exe",
+                      r"C:\Program Files\Inkscape\bin\inkscape.exe"):
+        if os.path.exists(candidate):
+            exe = candidate
+            break
+if exe is None:
+    print("SKIP no inkscape"); sys.exit(0)
+try:
+    from PIL import Image
+except ImportError:
+    print("SKIP no pillow"); sys.exit(0)
+
+out = pathlib.Path(tempfile.mkdtemp()) / "render.png"
+run = subprocess.run([exe, "--export-type=png", "--export-filename=" + str(out), sys.argv[1]],
+                     capture_output=True, text=True, timeout=120)
+
+# Measured 2026-08-01: a malformed drawing still exits zero here and says so
+# only on standard error, so the exit code alone would bless a broken file.
+noise = run.stderr or ""
+for word in ("error", "Error", "ERROR", "unsupported", "WARNING"):
+    if word in noise:
+        print("FAIL inkscape complained:", noise.strip()[:200]); sys.exit(1)
+if run.returncode != 0:
+    print("FAIL inkscape refused the drawing:", noise.strip()[:200]); sys.exit(1)
+if not out.exists() or out.stat().st_size == 0:
+    print("FAIL inkscape wrote no bitmap, so nothing was rendered"); sys.exit(1)
+
+im = Image.open(out)
+im.load()
+colours = im.convert("RGB").getcolors(maxcolors=1 << 20)
+if colours is None:
+    count = 1 << 20
+else:
+    count = len(colours)
+if count < 2:
+    print("FAIL the rendered bitmap is one flat colour, so the drawing paints nothing"); sys.exit(1)
+print("OK rendered", im.width, "x", im.height, "with", count, "colours")
+`
+
+// pythonHTMLScript walks the document and counts what it found, so a file that
+// merely opened still has to carry a body with blocks in it.
+const pythonHTMLScript = `
+import sys
+from html.parser import HTMLParser
+
+class Walk(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.open = []
+        self.blocks = 0
+        self.bad = []
+    def handle_starttag(self, tag, attrs):
+        if tag in ("meta", "br", "img", "hr", "input", "link"):
+            return
+        self.open.append(tag)
+        if tag in ("p", "h1", "h2", "ul", "table", "blockquote"):
+            self.blocks += 1
+    def handle_endtag(self, tag):
+        if tag in self.open:
+            while self.open and self.open.pop() != tag:
+                pass
+        else:
+            self.bad.append(tag)
+
+walk = Walk()
+walk.feed(open(sys.argv[1], encoding="utf-8").read())
+if walk.bad:
+    print("FAIL closing tag with nothing open:", walk.bad[:3]); sys.exit(1)
+if walk.open:
+    print("FAIL still open at the end:", walk.open[:3]); sys.exit(1)
+if walk.blocks < 1:
+    print("FAIL the body holds no blocks"); sys.exit(1)
+print("OK", walk.blocks, "blocks")
+`
 
 // expectOK is the acceptance rule shared by the script based checkers: a zero
 // exit and a line starting with OK. Anything else is a rejection reported in
@@ -381,7 +495,7 @@ func Strict(formatID, path string) Result {
 // StrictKnows says whether the structural checker covers a format.
 func StrictKnows(formatID string) bool {
 	switch formatID {
-	case "png", "wav", "pdf", "zip", "log", "csv", "json", "xml":
+	case "png", "wav", "pdf", "zip", "log", "csv", "json", "xml", "svg", "html":
 		return true
 	}
 	return false

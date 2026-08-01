@@ -343,7 +343,7 @@ def check_json(data):
     ok(f"{len(doc)} records, keys {sorted(keys)}")
 
 
-def check_xml(data):
+def scan_xml(data):
     """Well formed, checked by hand against the XML specification.
 
     Deliberately not expat. That is the reference tool beside this one, so
@@ -364,7 +364,7 @@ def check_xml(data):
         fail("the document does not open with an XML declaration")
 
     entity = re.compile(r"&(?:amp|lt|gt|quot|apos|#[0-9]+|#x[0-9a-fA-F]+);")
-    stack, elements, i = [], 0, 0
+    stack, elements, i, seen = [], 0, 0, {}
 
     while i < len(text):
         nxt = text.find("<", i)
@@ -420,20 +420,111 @@ def check_xml(data):
                 if attr.group(2) not in ('"', "'"):
                     fail(f"attribute {attr.group(1)} of <{name}> is not quoted")
             elements += 1
+            seen[name] = seen.get(name, 0) + 1
             if not selfClosing:
                 stack.append(name)
         i = end + 1
 
     if stack:
         fail(f"the document ends with {', '.join('<' + s + '>' for s in stack)} still open")
+    return elements, seen
+
+
+def check_xml(data):
+    elements, _ = scan_xml(data)
     if elements < 2:
         fail(f"the document holds {elements} element(s), so there is nothing below the root")
-
     ok(f"{elements} elements, all balanced")
 
 
+def check_svg(data):
+    """An SVG that parses can still draw nothing.
+
+    Inkscape stands beside this one and answers whether the file renders. What
+    this adds is the shape of the document: the root really is an svg with a
+    viewBox, and it holds drawable elements rather than only metadata. Written
+    to the format, not to our output - the list below is what SVG calls a basic
+    shape, and a generator that quietly stopped emitting them would be the right
+    size and would still open.
+    """
+    elements, seen = scan_xml(data)
+
+    text = data.decode("utf-8")
+    if "<svg" not in text:
+        fail("there is no svg root element")
+    if 'xmlns="http://www.w3.org/2000/svg"' not in text:
+        fail("the root carries no SVG namespace, so a renderer has no reason to draw it")
+    if "viewBox=" not in text:
+        fail("the root declares no viewBox")
+
+    drawable = {"rect", "circle", "ellipse", "line", "polyline", "polygon", "path", "text"}
+    shapes = sum(count for name, count in seen.items() if name in drawable)
+    if shapes == 0:
+        fail(f"the drawing holds {elements} element(s) and not one of them draws anything")
+    ok(f"{shapes} drawable shapes out of {elements} elements")
+
+
+def check_html(data):
+    """Balanced, complete and with real blocks in the body.
+
+    HTML is the weakest format in this project for checking, and that is a
+    property of the format rather than of this machine. A parser is required to
+    recover from almost anything, so the tolerant reader beside this one accepts
+    documents nobody would want - "it parsed" is close to no information. This
+    check is written to the specification instead: the void elements below are
+    the HTML5 list, everything else has to close, and an ampersand has to start
+    a real entity reference.
+    """
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input",
+            "link", "meta", "param", "source", "track", "wbr"}
+    BLOCKS = {"p", "h1", "h2", "h3", "ul", "ol", "table", "blockquote"}
+
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+
+    if not text.lower().startswith("<!doctype html>"):
+        fail("the document does not open with an HTML5 doctype")
+    if not text.rstrip().endswith("</html>"):
+        fail("the document does not end with a closing html tag")
+
+    entity = re.compile(r"&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]+|#x[0-9a-fA-F]+);")
+    tag = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>")
+
+    stack, blocks, i = [], 0, 0
+    for m in tag.finditer(text):
+        # Character data between the previous tag and this one.
+        chunk = text[i:m.start()]
+        for pos, ch in enumerate(chunk):
+            if ch == "&" and not entity.match(chunk, pos):
+                fail(f"a bare ampersand at offset {i + pos} - text has to escape it as &amp;")
+        i = m.end()
+
+        closing, name, rest = m.group(1) == "/", m.group(2).lower(), m.group(3)
+        if name in VOID or rest.rstrip().endswith("/"):
+            continue
+        if closing:
+            if not stack:
+                fail(f"</{name}> closes an element that was never opened")
+            opened = stack.pop()
+            if opened != name:
+                fail(f"</{name}> closes while <{opened}> is open")
+        else:
+            stack.append(name)
+            if name in BLOCKS:
+                blocks += 1
+
+    if stack:
+        fail(f"the document ends with {', '.join('<' + s + '>' for s in stack)} still open")
+    if blocks == 0:
+        fail("the body holds no block elements, so the page renders as nothing")
+    ok(f"{blocks} blocks, all tags balanced")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
-          "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml}
+          "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
+          "svg": check_svg, "html": check_html}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

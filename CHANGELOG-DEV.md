@@ -17,6 +17,27 @@ belongs in one place.
 
 ### Added
 
+- **The first reference tool that renders rather than parses.** SVG is checked
+  by Inkscape drawing it to a bitmap, which is then opened and its colours
+  counted. A drawing that parses and paints nothing passes every other check in
+  this project, and fails that one.
+  Two things about it were measured before it could be trusted, and both
+  surprised. Inkscape 1.4.4 **exits zero on a malformed file** and says so only
+  on standard error, so the exit code alone would bless a broken drawing. And
+  it will not write the bitmap to standard output, so the only way to know one
+  exists is to open the file it wrote. Both are why this checker is a script
+  rather than a plain command line.
+- **HTML is the weakest format here to check, and that is the format's doing.**
+  A parser is required to recover from almost anything, so the tolerant reader
+  says very little, and the standard library has no HTML parser - adding a
+  dependency would need a decision and would trip the dependency gate in CI. So
+  the scanner is written to the specification, with the HTML5 void element list
+  in it, and it carries the weight the reader cannot.
+  Both new formats got mutations that leave the size and the exit code right:
+  a list left unclosed, an ampersand left bare, and a `viewBox` written in
+  lowercase - the last one **the same length as what it replaced**, so the file
+  does not move by a single byte and only a guard that knows SVG is case
+  sensitive notices.
 - **One primitive for every record based format, in `core.FillRecords`.** Whole
   records while another still leaves room, then a closing record built to the
   byte. That rule was written out by hand for the third and fourth time when

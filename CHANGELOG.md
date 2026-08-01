@@ -17,6 +17,20 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Two more formats: HTML and SVG.** `--format html` produces a complete HTML5
+  document - doctype, character set, title and language - with five kinds of
+  block in the body: headings, lists, tables, quotes and paragraphs. One quote
+  carries an escaped ampersand, so a parser under test meets an entity rather
+  than only plain text. `--format svg` produces a drawing with a viewBox and
+  four kinds of shape, where lines are stroked and closed shapes are filled -
+  a shape painted the wrong way round is invisible, and the size never notices.
+  Both hit the size you ask for to the byte, and the filling goes through whole
+  blocks and whole shapes. Nothing is ever cut in the middle, so a list, a table
+  or a shape is always complete.
+  The smallest HTML is 118 B and the smallest SVG is 193 B, which is the
+  skeleton plus one whole block. Asking for less says so and names the number.
+  **This finishes the text and structured formats.** Twelve of the twenty five
+  now work end to end.
 - **Three more formats: CSV, JSON and XML.** `--format csv` produces a table
   with a header and six columns, where the description column is quoted and
   carries commas - the case a CSV reader has to get right. `--format json`

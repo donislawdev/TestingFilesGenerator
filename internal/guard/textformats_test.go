@@ -346,6 +346,173 @@ func TestAnXMLDocumentIsWellFormedAndCarriesRecords(t *testing.T) {
 	}
 }
 
+// An SVG that parses can still draw nothing. Inkscape answers whether it
+// renders, and it is an external tool that skips when it is missing - so the
+// shape of the drawing is checked here too, where nothing can skip.
+func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
+	drawable := map[string]bool{
+		"rect": true, "circle": true, "ellipse": true, "line": true,
+		"polyline": true, "polygon": true, "path": true, "text": true,
+	}
+
+	for _, size := range []int64{193, 194, 4097, densitySize} {
+		t.Run(sizeText(size), func(t *testing.T) {
+			body := generateBytes(t, "svg", size)
+			if int64(len(body)) != size {
+				t.Fatalf("produced %d B, expected %d B", len(body), size)
+			}
+			text := string(body)
+			if !strings.Contains(text, `xmlns="http://www.w3.org/2000/svg"`) {
+				t.Error("the root carries no SVG namespace, so a renderer has no reason to draw it")
+			}
+			if !strings.Contains(text, "viewBox=") {
+				t.Error("the root declares no viewBox")
+			}
+
+			// SVG is XML, so an unbalanced document is caught by the decoder in
+			// strict mode rather than by anything written here.
+			dec := xml.NewDecoder(bytes.NewReader(body))
+			dec.Strict = true
+
+			shapes := 0
+			for {
+				tok, err := dec.Token()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					t.Fatalf("the drawing is not well formed: %v", err)
+				}
+				switch el := tok.(type) {
+				case xml.StartElement:
+					if drawable[el.Name.Local] {
+						shapes++
+					}
+				case xml.CharData:
+					if len(el) > maxValueBytes {
+						t.Errorf("an element holds %d B of text - padding belongs in the closing label", len(el))
+					}
+				}
+			}
+
+			if shapes == 0 {
+				t.Fatal("the drawing holds nothing that draws anything")
+			}
+			if size == densitySize && shapes < minRecords {
+				t.Errorf("a %d B drawing holds %d shapes, expected at least %d - the padding has swallowed the file",
+					size, shapes, minRecords)
+			}
+		})
+	}
+}
+
+// HTML is the weakest format here for checking, and that is the format's own
+// doing: a parser is required to recover from almost anything, so the tolerant
+// reader beside this accepts documents nobody would want. There is also only
+// one such reader on this machine and no HTML parser in the standard library,
+// so this scanner is written to the specification and carries the weight.
+var (
+	htmlTag    = regexp.MustCompile(`<(/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>`)
+	htmlEntity = regexp.MustCompile(`^&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]+|#x[0-9a-fA-F]+);`)
+)
+
+func TestAnHTMLDocumentIsBalancedAndCarriesBlocks(t *testing.T) {
+	// The HTML5 void elements. Anything else has to close.
+	void := map[string]bool{
+		"area": true, "base": true, "br": true, "col": true, "embed": true,
+		"hr": true, "img": true, "input": true, "link": true, "meta": true,
+		"param": true, "source": true, "track": true, "wbr": true,
+	}
+	block := map[string]bool{
+		"p": true, "h1": true, "h2": true, "h3": true,
+		"ul": true, "ol": true, "table": true, "blockquote": true,
+	}
+
+	for _, size := range []int64{118, 119, 4097, densitySize} {
+		t.Run(sizeText(size), func(t *testing.T) {
+			body := generateBytes(t, "html", size)
+			if int64(len(body)) != size {
+				t.Fatalf("produced %d B, expected %d B", len(body), size)
+			}
+			text := string(body)
+
+			if !strings.HasPrefix(strings.ToLower(text), "<!doctype html>") {
+				t.Error("the document does not open with an HTML5 doctype")
+			}
+			if !strings.HasSuffix(strings.TrimSpace(text), "</html>") {
+				t.Error("the document does not end with a closing html tag")
+			}
+
+			var stack []string
+			blocks, longest, last, escaped := 0, 0, 0, false
+			for _, m := range htmlTag.FindAllStringSubmatchIndex(text, -1) {
+				// Character data between the previous tag and this one. A bare
+				// ampersand is the classic way a page stops being well formed,
+				// and it leaves the size exactly right.
+				chunk := text[last:m[0]]
+				for pos := strings.IndexByte(chunk, '&'); pos >= 0; {
+					if loc := htmlEntity.FindStringIndex(chunk[pos:]); loc == nil || loc[0] != 0 {
+						t.Fatalf("a bare ampersand in %q - text has to escape it as &amp;", chunk)
+					}
+					escaped = true
+					next := strings.IndexByte(chunk[pos+1:], '&')
+					if next < 0 {
+						break
+					}
+					pos += 1 + next
+				}
+
+				if run := m[0] - last; run > longest {
+					longest = run
+				}
+				last = m[1]
+
+				closing := m[3]-m[2] == 1
+				name := strings.ToLower(text[m[4]:m[5]])
+				rest := text[m[6]:m[7]]
+				if void[name] || strings.HasSuffix(strings.TrimSpace(rest), "/") {
+					continue
+				}
+				if closing {
+					if len(stack) == 0 {
+						t.Fatalf("</%s> closes an element that was never opened", name)
+					}
+					opened := stack[len(stack)-1]
+					stack = stack[:len(stack)-1]
+					if opened != name {
+						t.Fatalf("</%s> closes while <%s> is open", name, opened)
+					}
+					continue
+				}
+				stack = append(stack, name)
+				if block[name] {
+					blocks++
+				}
+			}
+
+			if len(stack) != 0 {
+				t.Errorf("the document ends with %v still open", stack)
+			}
+			if blocks == 0 {
+				t.Fatal("the body holds no block elements, so the page renders as nothing")
+			}
+			// Only where the document is big enough for every kind of block to
+			// have come up. A page at the minimum carries one, and whether that
+			// one carries an entity is chance.
+			if size == densitySize && !escaped {
+				t.Error("no text carries an escaped entity - the classic way a page stops being well formed goes unexercised")
+			}
+			if longest > maxValueBytes {
+				t.Errorf("a run of %d B sits between two tags - padding belongs in the closing paragraph", longest)
+			}
+			if size == densitySize && blocks < minRecords {
+				t.Errorf("a %d B page holds %d blocks, expected at least %d - the padding has swallowed the file",
+					size, blocks, minRecords)
+			}
+		})
+	}
+}
+
 // generateBytes produces one file of a format and returns its bytes, through
 // the same plan and write path a run uses.
 func generateBytes(t *testing.T, formatID string, size int64) []byte {
