@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -224,6 +225,52 @@ func (m *Manifest) Encode(w io.Writer) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(m)
+}
+
+// SchemaError is a manifest this build cannot read.
+type SchemaError struct {
+	Path   string
+	Detail string
+}
+
+func (e *SchemaError) Error() string {
+	return fmt.Sprintf("%s cannot be read as a manifest: %s", e.Path, e.Detail)
+}
+
+// Load reads a manifest written by an earlier run.
+//
+// The major of manifest_version is checked before anything is believed. A
+// manifest from a future major describes fields this build does not know, and
+// acting on the half of it we recognise is how "verify" ends up calling a
+// directory sound on the strength of the part it could read.
+func Load(path string) (*Manifest, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var m Manifest
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil, &SchemaError{Path: path, Detail: err.Error()}
+	}
+	if m.ManifestVersion == "" {
+		return nil, &SchemaError{Path: path, Detail: "it carries no manifest_version, so it is not a manifest this tool wrote"}
+	}
+	got, want := major(m.ManifestVersion), major(Version)
+	if got != want {
+		return nil, &SchemaError{Path: path, Detail: fmt.Sprintf(
+			"it is schema version %s and this build reads %s. Use the version of tfg that wrote it",
+			m.ManifestVersion, Version)}
+	}
+	return &m, nil
+}
+
+// major is the part before the first dot. A minor bump adds fields and stays
+// readable, which is the whole point of splitting the two.
+func major(v string) string {
+	if i := strings.IndexByte(v, '.'); i >= 0 {
+		return v[:i]
+	}
+	return v
 }
 
 // Save writes the manifest to a file, replacing whatever was there.

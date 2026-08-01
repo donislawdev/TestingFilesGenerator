@@ -17,6 +17,28 @@ belongs in one place.
 
 ### Added
 
+- **`audit` reads a finished run back off the disk, on layer 3 beside the
+  engine.** The engine writes files and records what it wrote. This is the
+  other half. It went in its own package rather than into `manifest`, which
+  owns the schema and has no business walking directories, and rather than into
+  `cli`, which would have put the rule about what a manifest claims where the
+  window cannot reach it.
+  `Claimed` is that rule, in one place. Both commands read the manifest through
+  it, so they cannot drift into disagreeing about which entries describe a file
+  that should be on the disk.
+- **`manifest.Load` checks the major of `manifest_version` before believing
+  anything.** A manifest from a future major describes fields this build does
+  not know, and acting on the recognised half is how `verify` reports a
+  directory sound on the strength of the part it could read. It classifies as
+  `IO` rather than `RUNTIME`, because the file came from a person, not from a
+  bug in the tool.
+- **Every command takes its file before or after the flags.** The flag package
+  stops at the first non flag argument, which turned the form written in
+  docs/CLI.md - `tfg verify manifest.json --against dir` - into a usage error.
+  `generate` already had a private fix for this. It is now shared, and it also
+  repaired `tfg recipe fmt recipe.yaml -w`, which had the same hole.
+- `130` gained a name, `ExitInterrupted`. It sat in the same frozen table as
+  the rest while being written as a bare number at the point of use.
 - **`recipe` parses, validates and canonicalises the recipe.** It is the first
   package that reads configuration rather than producing bytes, and the first
   one standing on a dependency.

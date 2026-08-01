@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -38,6 +39,10 @@ const (
 	ExitSpace   = 6
 	ExitVerify  = 7
 	ExitPartial = 8
+
+	// Ctrl+C. Named here rather than written as a bare 130 at the point of
+	// use, because it is in the same frozen table as the rest.
+	ExitInterrupted = 130
 )
 
 // Run is the entry point of the command line.
@@ -56,6 +61,8 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return generate(ctx, args[1:], out, errOut)
 	case "validate":
 		return validate(args[1:], out, errOut)
+	case "verify":
+		return verify(ctx, args[1:], out, errOut)
 	case "recipe":
 		return recipeCmd(args[1:], out, errOut)
 	case "formats":
@@ -79,6 +86,7 @@ func usage(w io.Writer) {
 Commands:
   generate    produce files, from a recipe or from flags
   validate    check a recipe and write nothing
+  verify      check a directory against a manifest
   recipe fmt  print a recipe in its settled shape
   formats     list the formats this build supports
   version     print the tool version
@@ -126,7 +134,7 @@ Flags:
 
 	// A recipe is named first, before any flag. Anywhere else and a value
 	// such as "--seed 5" could not be told apart from a file name.
-	recipePath, rest := splitRecipeArgument(args)
+	recipePath, rest := splitLeadingPath(args)
 
 	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
@@ -295,15 +303,40 @@ Flags:
 // defaultManifestName is where the manifest lands when nothing says otherwise.
 const defaultManifestName = "manifest.json"
 
-// splitRecipeArgument takes the recipe path off the front of the arguments.
+// splitLeadingPath takes the file a command works on off the front of the
+// arguments, leaving the rest for flag parsing.
 //
 // It has to be first. A path recognised anywhere in the list could not be told
 // apart from the value of a flag, so "--seed 5" would turn 5 into a file name.
-func splitRecipeArgument(args []string) (string, []string) {
+//
+// Every command that takes a file uses this, so "tfg verify m.json --against
+// x" and "tfg generate r.yaml --seed 9" read the same way round. The flag
+// package on its own stops at the first non flag argument, which turns the
+// documented form of a command into a usage error.
+func splitLeadingPath(args []string) (string, []string) {
 	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
 		return args[0], args[1:]
 	}
 	return "", args
+}
+
+// onePath resolves the single file a command works on, accepting it either
+// before or after the flags.
+//
+// Both forms are in circulation. docs/CLI.md writes "tfg verify manifest.json
+// --against dir" and a person who has just typed "tfg recipe fmt --check f"
+// expects the other order to work too. Turning one of them into a usage error
+// is a papercut with nothing on the other side of it.
+//
+// Anything else - no path, or two - is a real mistake and says so.
+func onePath(leading string, fs *flag.FlagSet) (string, bool) {
+	switch {
+	case leading != "" && fs.NArg() == 0:
+		return leading, true
+	case leading == "" && fs.NArg() == 1:
+		return fs.Arg(0), true
+	}
+	return "", false
 }
 
 // flagsGiven is the set of flags the user actually wrote.
@@ -394,6 +427,127 @@ func validate(args []string, out, errOut io.Writer) int {
 	return ExitOK
 }
 
+// verify compares a directory against a manifest an earlier run wrote.
+func verify(ctx context.Context, args []string, out, errOut io.Writer) int {
+	fs := flag.NewFlagSet("verify", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	against := fs.String("against", "", "directory to check. Defaults to the directory holding the manifest")
+	asJSON := fs.Bool("json", false, "write the report to stdout as JSON")
+	fs.Usage = func() {
+		fmt.Fprint(errOut, `tfg verify - check that a directory still matches a manifest.
+
+Reports files that are missing, files nobody asked for, and files whose
+content has changed. The directory is always a local one.
+
+Usage:
+  tfg verify <manifest.json> [--against <dir>]
+
+Flags:
+`)
+		fs.PrintDefaults()
+	}
+	leading, rest := splitLeadingPath(args)
+	if err := fs.Parse(rest); err != nil {
+		return ExitUsage
+	}
+	path, ok := onePath(leading, fs)
+	if !ok {
+		fmt.Fprintln(errOut, "tfg: verify takes one manifest file. Example: tfg verify out/manifest.json")
+		return ExitUsage
+	}
+
+	m, err := manifest.Load(path)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return classify(err)
+	}
+
+	// Defaulting to the directory the manifest sits in makes the common case
+	// one argument. A manifest is written beside the files it describes.
+	dir := *against
+	if dir == "" {
+		dir = filepath.Dir(path)
+	}
+	if info, statErr := os.Stat(dir); statErr != nil || !info.IsDir() {
+		fmt.Fprintf(errOut, "tfg: cannot read the directory %s. Check the path and that you have permission to read it.\n", dir)
+		return ExitIO
+	}
+
+	diffs, verifyErr := audit.Verify(ctx, dir, m, filepath.Base(path))
+	claimed := len(audit.Claimed(m))
+
+	// A cancelled run reports what it compared and never calls the rest sound.
+	if verifyErr != nil {
+		fmt.Fprintf(errOut, "tfg: verify was interrupted after %d difference(s) and did not check everything.\n", len(diffs))
+		for _, d := range diffs {
+			fmt.Fprintln(errOut, "  "+d.String())
+		}
+		return ExitInterrupted
+	}
+
+	if *asJSON {
+		report := verifyReport{
+			Manifest:   path,
+			Directory:  dir,
+			Checked:    claimed,
+			Matched:    len(diffs) == 0,
+			Difference: []verifyDifference{},
+		}
+		for _, d := range diffs {
+			report.Difference = append(report.Difference, verifyDifference{
+				Kind: string(d.Kind), Path: d.Path, Expected: d.Want, Found: d.Got,
+			})
+		}
+		if len(diffs) > 0 {
+			// A failed run puts nothing on stdout, so the machine readable
+			// report of a mismatch goes to stderr with the rest of the news.
+			writeJSON(errOut, report)
+			return ExitVerify
+		}
+		writeJSON(out, report)
+		return ExitOK
+	}
+
+	if len(diffs) > 0 {
+		fmt.Fprintf(errOut, "tfg: %s does not match %s - %d difference(s):\n", dir, path, len(diffs))
+		for _, d := range diffs {
+			fmt.Fprintln(errOut, "  "+d.String())
+		}
+		return ExitVerify
+	}
+
+	// A manifest describing nothing is not a match and not a mismatch. Saying
+	// "everything is fine" about zero files invites somebody to trust a run
+	// that never happened.
+	if claimed == 0 {
+		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", path)
+		return ExitOK
+	}
+	fmt.Fprintf(out, "%s matches %s: %d file(s) checked\n", dir, path, claimed)
+	return ExitOK
+}
+
+type verifyReport struct {
+	Manifest   string             `json:"manifest"`
+	Directory  string             `json:"directory"`
+	Checked    int                `json:"checked"`
+	Matched    bool               `json:"matched"`
+	Difference []verifyDifference `json:"differences"`
+}
+
+type verifyDifference struct {
+	Kind     string `json:"kind"`
+	Path     string `json:"path"`
+	Expected string `json:"expected,omitempty"`
+	Found    string `json:"found,omitempty"`
+}
+
+func writeJSON(w io.Writer, v any) {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	enc.Encode(v)
+}
+
 // recipeCmd groups the operations that work on a recipe file itself rather
 // than on the files it describes.
 func recipeCmd(args []string, out, errOut io.Writer) int {
@@ -416,15 +570,16 @@ Flags:
 `)
 		fs.PrintDefaults()
 	}
-	if err := fs.Parse(args[1:]); err != nil {
+	leading, rest := splitLeadingPath(args[1:])
+	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
 	}
-	if fs.NArg() != 1 {
+	path, ok := onePath(leading, fs)
+	if !ok {
 		fmt.Fprintln(errOut, "tfg: recipe fmt takes one recipe file. Example: tfg recipe fmt recipe.yaml")
 		return ExitUsage
 	}
 
-	path := fs.Arg(0)
 	src, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %v\n", path, err)
@@ -575,8 +730,15 @@ func classify(err error) int {
 	if errors.As(err, &badProp) {
 		return ExitUsage
 	}
+	// A manifest we cannot read is a reading failure, not a bug in the tool.
+	// Falling through to RUNTIME would tell CI to file a report against us for
+	// a file somebody handed in.
+	var schema *manifest.SchemaError
+	if errors.As(err, &schema) {
+		return ExitIO
+	}
 	if errors.Is(err, context.Canceled) {
-		return 130
+		return ExitInterrupted
 	}
 	var pathErr *os.PathError
 	if errors.As(err, &pathErr) {

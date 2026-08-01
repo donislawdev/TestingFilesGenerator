@@ -28,6 +28,7 @@ var layer = map[string]int{
 	"internal/manifest": 2,
 
 	"internal/engine": 3,
+	"internal/audit":  3,
 
 	"internal/cli": 4,
 	"internal/gui": 4,

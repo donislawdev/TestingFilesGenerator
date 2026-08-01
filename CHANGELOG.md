@@ -17,6 +17,17 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`tfg verify manifest.json` checks that a directory still matches what was
+  generated.** It reports files that went missing, files nobody asked for, and
+  files whose content changed - which is what a backup restore, a storage
+  migration or a sync gets wrong. Point it at a restored copy with `--against`,
+  or leave that off and it checks the directory the manifest sits in. `--json`
+  gives the same report for a script. It ends with code 7 on any difference and
+  0 on a full match, so CI can tell the two apart.
+  Size and content are reported separately, because a truncated file and an
+  edited one point at different causes. A manifest entry for a file the run
+  reported as never written is not chased - a run that was honest about failing
+  does not then fail verification for it.
 - **`tfg generate recipe.yaml` takes its settings from a file.** Put the run in
   a YAML file, commit it, and get the same files back on any machine. The file
   keeps your comments, which is why it is YAML and not JSON.
