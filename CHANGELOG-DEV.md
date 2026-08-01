@@ -33,6 +33,22 @@ belongs in one place.
   correct hash and deliberately did not write, sitting on top of somebody's
   real file - where which entries are claimed is the only thing standing
   between that file and deletion.
+- **The bytes of our own generators are pinned, which nothing was watching.**
+  Untouchable rule 3 promises a generated file does not change inside a major
+  version, and two guards looked like they covered it without doing so. The
+  standard library golden file pins flate, gzip, zip and png - that catches a
+  Go upgrade moving the ground under us, and says nothing about our own code.
+  The determinism tests compare two runs of one binary, so they stay green when
+  every byte of a format changes, because both runs change together.
+  Eight values now sit in `testdata/generator-golden.json`: the five formats,
+  the label in both positions because it is embedded in the file, an archive
+  holding real files of another format, and an archive padded past the comment
+  limit into a stored entry. They go through the engine rather than calling a
+  generator directly, because the label, the padding and the naming are all
+  part of what somebody's hash covers.
+  It went in before `contains` rather than after. That work rewrites how an
+  archive builds its children, and without this a refactor could have moved the
+  bytes of every archive anybody has generated with nothing to notice.
 - **`audit` reads a finished run back off the disk, on layer 3 beside the
   engine.** The engine writes files and records what it wrote. This is the
   other half. It went in its own package rather than into `manifest`, which

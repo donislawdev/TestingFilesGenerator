@@ -1,0 +1,39 @@
+{
+  "note": "SHA-256 of what our own generators produce, through the engine. A change here is a breaking change under D11 - it needs a major version bump, a changelog entry and a decision by the owner. Never edit this file to turn the guard green. Measured with Go 1.26.5 on windows/amd64, and confirmed identical on the CI matrix.",
+  "measured_on": "2026-08-01",
+  "seed": 7741,
+  "files": {
+    "txt_4kib": {
+      "bytes": 4096,
+      "sha256": "26a697bd184868acaa1da3f474b32a063e1b76e55ced42e38e79fdc63cf66161"
+    },
+    "txt_4kib_no_label": {
+      "bytes": 4096,
+      "sha256": "bb9c887212279acd53caa0afea2a82079725a61dabf4581880308169a6ffd95e"
+    },
+    "png_64kib": {
+      "bytes": 65536,
+      "sha256": "85e174c37ebd91b39afdd5b4ca906d7b996c8ceb43a287424412b08ab815e521"
+    },
+    "pdf_16kib": {
+      "bytes": 16384,
+      "sha256": "38eb0c49d4deb0c6d050e60b519e0fe780fb12801fd20e9f4d033dafb66f2417"
+    },
+    "wav_32kib": {
+      "bytes": 32768,
+      "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
+    },
+    "zip_16kib": {
+      "bytes": 16384,
+      "sha256": "7565899808dd8e6b70f903645beacc8481b9067e034a641519a68a3954bd3d31"
+    },
+    "zip_with_three_pdfs": {
+      "bytes": 65536,
+      "sha256": "3844663f9120712408408485b45212ed9317a33bab47a2a99805e0f17b027028"
+    },
+    "zip_past_the_comment_limit": {
+      "bytes": 262144,
+      "sha256": "2e69aa3c433321bfa5866ba82324f634d9186c03ee901fca8c52a5b89d9186b5"
+    }
+  }
+}
