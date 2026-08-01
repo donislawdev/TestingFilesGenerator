@@ -43,3 +43,8 @@ configuration, architectural decisions. Anything a user would notice goes to
   its own source, so it depends on nothing outside the repository.
 - Coverage gate starts at a threshold of zero, held in exactly one file. It
   rises with coverage and is never lowered to turn a red run green.
+- CI runs on Windows, macOS and Linux. First run green on all three, which
+  also settles something worth recording: **the six standard library paths
+  produce identical bytes on all three systems.** Measured by the matrix,
+  not assumed. That is evidence for the byte stability promise, although it
+  covers the library rather than our own generators, which do not exist yet.
