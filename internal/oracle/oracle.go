@@ -77,6 +77,14 @@ func (c Checker) Check(path string) Result {
 		}
 	}
 
+	// A tool can be present while the library it needs is not - python is
+	// installed on every runner and Pillow is not. A checker says so with
+	// this marker, and it counts as unavailable rather than as a rejection.
+	// Without this the file looks broken when in fact nothing looked at it.
+	if strings.HasPrefix(strings.TrimSpace(out.String()), "SKIP") {
+		return Result{Available: false, Tool: c.Name}
+	}
+
 	res := Result{
 		Available: true,
 		Tool:      c.Name,
