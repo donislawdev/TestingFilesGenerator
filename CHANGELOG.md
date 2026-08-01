@@ -48,6 +48,16 @@ because it turns other people's test suites red.
   manifest - so nothing incomplete is ever left in the output directory and
   cleanup has something to work with.
 
+### Fixed
+
+- **A large PNG no longer needs as much memory as the file it produces.** A
+  600 MiB image used to take 613 MB of memory and now takes 13 MB.
+- **A misspelled property is an error rather than a shrug.** `--set widht=100`
+  used to produce a file with default dimensions and say nothing. It now says
+  which property does not exist and which ones do.
+- **A picture too large to hold in memory is refused** with a message saying
+  so, rather than ending the run with an out of memory error.
+
 ### Notes on behaviour
 
 - **Sizes count in 1024s.** `10mb` is 10 485 760 bytes, which is what

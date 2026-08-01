@@ -261,6 +261,10 @@ func classify(err error) int {
 	if errors.As(err, &unknown) {
 		return ExitFormat
 	}
+	var badProp *format.UnknownPropertyError
+	if errors.As(err, &badProp) {
+		return ExitUsage
+	}
 	if errors.Is(err, context.Canceled) {
 		return 130
 	}

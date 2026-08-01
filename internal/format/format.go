@@ -9,6 +9,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sort"
+	"strings"
 )
 
 // Fidelity is how close to the real thing a generated file gets. Every format
@@ -105,6 +107,47 @@ type Descriptor struct {
 	Oracle           string
 	GeneratorVersion string
 	Generator        Generator
+
+	// Properties are the keys this format understands. Anything else in a
+	// recipe is a typo, and a typo accepted in silence gives a file with
+	// default settings and an hour spent wondering why the test passes when
+	// it should not. An empty list means the format takes no properties.
+	Properties []string
+}
+
+// UnknownPropertyError is a property key no format recognises.
+type UnknownPropertyError struct {
+	Format string
+	Key    string
+	Known  []string
+}
+
+func (e *UnknownPropertyError) Error() string {
+	if len(e.Known) == 0 {
+		return fmt.Sprintf("%s takes no properties, so %q is not one of them", e.Format, e.Key)
+	}
+	return fmt.Sprintf("%s does not have a property called %q. It takes: %s",
+		e.Format, e.Key, strings.Join(e.Known, ", "))
+}
+
+// CheckProperties refuses any key the format does not declare.
+func (d Descriptor) CheckProperties(props map[string]string) error {
+	known := make(map[string]bool, len(d.Properties))
+	for _, k := range d.Properties {
+		known[k] = true
+	}
+	// Sorted, so the same recipe always reports the same key first.
+	keys := make([]string, 0, len(props))
+	for k := range props {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if !known[k] {
+			return &UnknownPropertyError{Format: d.ID, Key: k, Known: d.Properties}
+		}
+	}
+	return nil
 }
 
 // Request is what the caller wants from a generator.

@@ -56,6 +56,16 @@ const (
 	minDimension = 1
 	maxDimension = 20000
 
+	// The picture is built in memory as one buffer and encoded twice, once
+	// while planning and once while writing. Measured: 10000x10000 peaks at
+	// 1.17 GB and 20000x20000 at 4.65 GB, which is enough to end a run on an
+	// ordinary machine.
+	//
+	// The documented range reaches 8K, which is 33 megapixels, and shapes
+	// such as 1x10000. This budget covers both with room to spare and refuses
+	// what would otherwise be an out of memory error with no explanation.
+	maxPixels = 40_000_000
+
 	// A chunk carries its length in four bytes and the format caps it at
 	// 2^31-1. Beyond that the padding would need several chunks.
 	maxChunkData = 1<<31 - 1
@@ -80,6 +90,7 @@ func init() {
 		},
 		Label:            format.LabelVisible,
 		Oracle:           "pillow",
+		Properties:       []string{"width", "height"},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -215,12 +226,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 
 	if m.withPad {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-		if err := writeChunk(w, paddingChunk, paddingBytes(m.seed, m.padData)); err != nil {
+		if err := writePaddingChunk(ctx, w, paddingChunk, m.seed, m.padData); err != nil {
 			return err
 		}
 	}
@@ -258,6 +264,11 @@ func chooseSize(r format.Request, label string) (memo, bool, error) {
 			return memo{}, true, err
 		}
 		_, _ = wRaw, hRaw
+		if int64(w)*int64(h) > maxPixels {
+			return memo{}, true, fmt.Errorf(
+				"png: %dx%d is %d megapixels and the limit is %d - the picture is held in memory while it is encoded. Ask for smaller dimensions",
+				w, h, int64(w)*int64(h)/1_000_000, maxPixels/1_000_000)
+		}
 		m := memo{width: w, height: h, seed: r.Seed, label: label}
 		body, err := encodedBodySize(m)
 		if err != nil {
@@ -360,40 +371,56 @@ func minimumBytes() int64 {
 	return body + iendSize
 }
 
-// paddingBytes fills the chunk. Deterministic from the seed, so the file is
-// repeatable down to its padding.
-func paddingBytes(seed uint64, n int64) []byte {
-	if n <= 0 {
-		return nil
-	}
-	out := make([]byte, n)
-	rng := core.NewRand(seed)
-	var buf [8]byte
-	for i := int64(0); i < n; i += 8 {
-		binary.BigEndian.PutUint64(buf[:], rng.Uint64())
-		copy(out[i:], buf[:])
-	}
-	return out
-}
+// padChunkSize is how much padding is built before each write. It also sets
+// how often cancellation is noticed.
+const padChunkSize = 32 * 1024
 
-func writeChunk(w io.Writer, kind string, data []byte) error {
+// writePaddingChunk emits the padding chunk without ever holding it in memory.
+//
+// The length is known in advance and the checksum is fed as the bytes go by,
+// so a gigabyte of padding costs a 32 KiB buffer rather than a gigabyte.
+// Measured before this was streamed: a 600 MiB PNG took 613 MB of memory
+// while the same size of text took 42 MB.
+func writePaddingChunk(ctx context.Context, w io.Writer, kind string, seed uint64, n int64) error {
 	var head [8]byte
-	binary.BigEndian.PutUint32(head[0:4], uint32(len(data)))
+	binary.BigEndian.PutUint32(head[0:4], uint32(n))
 	copy(head[4:8], kind)
-
-	crc := crc32.NewIEEE()
-	crc.Write([]byte(kind))
-	crc.Write(data)
-
-	var tail [4]byte
-	binary.BigEndian.PutUint32(tail[:], crc.Sum32())
-
 	if _, err := w.Write(head[:]); err != nil {
 		return err
 	}
-	if _, err := w.Write(data); err != nil {
-		return err
+
+	crc := crc32.NewIEEE()
+	crc.Write([]byte(kind))
+
+	rng := core.NewRand(seed)
+	buf := make([]byte, padChunkSize)
+	for remaining := n; remaining > 0; {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		size := int64(len(buf))
+		if remaining < size {
+			size = remaining
+		}
+		chunk := buf[:size]
+		for i := 0; i < len(chunk); i += 8 {
+			var eight [8]byte
+			binary.BigEndian.PutUint64(eight[:], rng.Uint64())
+			copy(chunk[i:], eight[:])
+		}
+
+		crc.Write(chunk)
+		if _, err := w.Write(chunk); err != nil {
+			return err
+		}
+		remaining -= size
 	}
+
+	var tail [4]byte
+	binary.BigEndian.PutUint32(tail[:], crc.Sum32())
 	_, err := w.Write(tail[:])
 	return err
 }

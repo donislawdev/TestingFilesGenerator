@@ -6,6 +6,28 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - review after the second format
+
+Another read through everything, this time with memory measured rather than
+reasoned about.
+
+- **PNG built its padding as one buffer.** Measured: a 600 MiB PNG peaked at
+  613 MB while the same size of text peaked at 42 MB. The padding now streams
+  in 32 KiB rounds with the checksum fed as it goes, and the same file peaks
+  at 13 MB.
+- **Unknown properties were accepted in silence.** `--set widht=100` gave a
+  file with default dimensions and exit 0, which is the failure the recipe
+  document names explicitly. A format now declares the keys it understands
+  and the engine refuses anything else.
+- **A picture large enough to exhaust memory was accepted.** Measured:
+  10000x10000 peaks at 1.17 GB and 20000x20000 at 4.65 GB, because the
+  picture is held whole and encoded twice. Capped at 40 megapixels, which
+  covers the documented range up to 8K.
+- **The price of planning everything up front was measured, not guessed.**
+  About 2.3 kB per planned file: 12 MB at the ten thousand file design point,
+  4.5 GB at two million. That ceiling is now written down and guarded.
+- Guards went from 28 to 33.
+
 ### 2026-08-01 - the first compressed format
 
 - `png` is the first generator where the output size does not follow from the

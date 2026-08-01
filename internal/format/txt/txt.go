@@ -46,8 +46,12 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:            format.LabelVisible,
-		Oracle:           format.OracleNone,
+		Label:  format.LabelVisible,
+		Oracle: format.OracleNone,
+		// Encoding, line endings and line length come later. Until they do,
+		// declaring none is what makes a recipe asking for them fail loudly
+		// instead of quietly producing something else.
+		Properties:       nil,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

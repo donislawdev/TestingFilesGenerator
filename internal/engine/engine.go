@@ -104,6 +104,10 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			return nil, err
 		}
 
+		if err := desc.CheckProperties(t.Properties); err != nil {
+			return nil, err
+		}
+
 		if t.Bytes < desc.MinBytes {
 			return nil, &format.BelowMinimumError{
 				Format:    strings.ToUpper(desc.ID),
