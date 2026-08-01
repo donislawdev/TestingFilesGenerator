@@ -6,6 +6,35 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - WAV, and oracles that actually judge
+
+- `wav` completes the five formats of the first milestone. The one whose size
+  follows from the parameters of the signal rather than from content.
+- **A measurement decided where the padding goes.** RIFF pads an odd length
+  chunk to an even boundary, so every chunk contributes an even number of
+  bytes and a strictly padded file is always an even size. That would put
+  every odd size out of reach - and a boundary set of limit-1, limit, limit+1
+  needs consecutive sizes. Putting the JUNK chunk last and leaving off its
+  final alignment byte fixes it. Measured on four parsers: the Python wave
+  module, FFmpeg, the .NET SoundPlayer and Windows Media Foundation, at odd
+  payloads from one byte to a hundred kilobytes. Verified end to end at
+  1048575, 1048576 and 1048577 bytes.
+- **Oracle tests exist now, and mutation showed why one layer is not enough.**
+  Removing the alignment padding from a RIFF chunk changed the bytes, kept
+  the size exact, kept the run repeatable, and every guard stayed green.
+- Worse, three more format defects walked straight past the reference tools:
+  ffprobe ignores a wrong size in the RIFF header, Pillow does not verify the
+  checksum of an ancillary PNG chunk, and a PDF reader rebuilds a cross
+  reference table whose offset is off by one. Real readers are tolerant on
+  purpose.
+- So oracles come in two layers. The reference tool answers "would a real
+  reader accept this". A structural checker written to the specification, in
+  Python, answers "is it well formed". A file has to pass both. With the
+  second layer all four defects turn the suite red, with messages naming the
+  exact chunk and the exact offset.
+- A missing tool skips loudly and the run reports how many were skipped.
+- Guards: 34.
+
 ### 2026-08-01 - ZIP, and an abstraction that turned out unnecessary
 
 - `zip` is the fourth generator and the first container. Entries are real

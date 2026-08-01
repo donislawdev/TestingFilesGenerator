@@ -11,5 +11,6 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pdf"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/png"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/wav"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/zip"
 )

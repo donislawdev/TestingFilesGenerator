@@ -12,8 +12,11 @@ because it turns other people's test suites red.
 
 ### Added
 
-- `tfg generate` produces **text, PNG, PDF and ZIP files** of an exact size.
-  Ask for 10 485 761 bytes and you get exactly that.
+- `tfg generate` produces **text, PNG, PDF, ZIP and WAV files** of an exact
+  size. Ask for 10 485 761 bytes and you get exactly that.
+- WAV takes `--set sample_rate=`, `--set bit_depth=`, `--set channels=` and
+  `--set content=` (tone, silence, noise, sweep). Odd file sizes work, so a
+  boundary set of limit-1, limit and limit+1 gives three real files.
 - **A ZIP holds real generated files, not random bytes.**
   `--set entries=5 --set entry_format=pdf --set entry_size=200kb` gives an
   archive whose five entries are valid PDFs that open on their own. Checked
