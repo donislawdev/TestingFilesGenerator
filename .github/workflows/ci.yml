@@ -67,7 +67,14 @@ jobs:
           cache: false
 
       - name: measure
-        run: go test ./... -count=1 -coverprofile=coverage.out -covermode=atomic
+        # -coverpkg is not optional here. The guard tests live in their own
+        # package, and by default Go credits coverage only to the package
+        # under test - which reports 0.0% and makes the gate meaningless.
+        # Measured, not assumed.
+        run: >
+          go test ./... -count=1 -covermode=atomic
+          -coverpkg=./internal/...,./cmd/...
+          -coverprofile=coverage.out
 
       - name: gate
         # The threshold lives in exactly one place, .github/coverage-threshold.
