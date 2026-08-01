@@ -15,6 +15,7 @@ var layer = map[string]int{
 	"internal/core":    0,
 
 	"internal/format":            1,
+	"internal/format/all":        1,
 	"internal/format/imagelabel": 1,
 	"internal/format/txt":        1,
 	"internal/format/png":        1,
@@ -38,6 +39,16 @@ var layer = map[string]int{
 // Same layer edges that are intended. Everything else inside one layer is a
 // violation, which is what keeps cli and gui apart.
 var sameLayerAllowed = map[string][]string{
+	// The registration package exists to pull every format in, so it is the
+	// one place allowed to reach sideways across the whole layer.
+	"internal/format/all": {
+		"internal/format",
+		"internal/format/txt",
+		"internal/format/png",
+		"internal/format/pdf",
+		"internal/format/zip",
+		"internal/format/wav",
+	},
 	"internal/format/imagelabel": {"internal/format"},
 	"internal/format/txt":        {"internal/format", "internal/format/imagelabel"},
 	"internal/format/png":        {"internal/format", "internal/format/imagelabel"},

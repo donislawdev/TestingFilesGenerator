@@ -10,4 +10,33 @@ because it turns other people's test suites red.
 
 ## Unreleased
 
-Nothing to report yet. No command is implemented.
+### Added
+
+- `tfg generate` produces text files of an exact size. Ask for 10 485 761
+  bytes and you get exactly that, from 0 bytes upward.
+- `tfg formats` lists what this build supports, with the fidelity level, the
+  determinism level, the minimum size and the padding channel of each format.
+- Every run writes a `manifest.json` next to the files - path, size, SHA-256,
+  format, seed, tool version and the declared expectation for each file.
+- `--dry-run` counts and shows without writing a single byte.
+- `--seed` makes a run repeatable. The same seed gives the same bytes.
+- `--clean` turns off the self describing label.
+- `--json` writes the manifest to standard output, so it can be piped.
+- `--expected` records what the system under test should do with the files:
+  accept, reject, sanitize or unspecified.
+
+### Notes on behaviour
+
+- **Sizes.** `mb`, `kb`, `gb` and `tb` count in thousands. `mib`, `kib`,
+  `gib` and `tib` count in 1024s. So `10mb` is 10 000 000 bytes and `10mib`
+  is 10 485 760. A size that does not land on a whole byte is an error rather
+  than a rounded number.
+- **`--size` is required.** Every target declares its size, which is what
+  lets `--dry-run` report exact numbers before anything reaches the disk.
+- **The label needs room.** A text file smaller than the label carries no
+  label. The run says so and the manifest records it, so a missing label is
+  never a silent difference from what you ordered.
+- **The last word can be clipped.** Hitting the exact size wins over ending
+  on a word boundary.
+- Text files are UTF-8 with LF line endings. Other encodings and line endings
+  are not implemented yet.

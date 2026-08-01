@@ -6,6 +6,32 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - first format through the whole path
+
+- `core` holds the size arithmetic, the seed derivation and the label
+  composition. It knows about no format, which the layer test enforces.
+- `format` defines the generator interface. Planning is separate from
+  writing, so `--dry-run` is the first half of the real path rather than a
+  second path that can drift away from it, and a size a format cannot deliver
+  is refused before any file exists.
+- The padding channel declaration carries **where** in the stream it sits,
+  not only how much it holds. Four Tier 1 formats pad at the front, so an
+  interface assuming the end would have to be rewritten at the twelfth
+  format.
+- `txt` is the first generator. Exact size from 0 bytes upward, byte
+  determinism, label on the first line.
+- `engine` plans, writes under a temporary name, renames on completion and
+  keeps the manifest in step. A run that is cut short still leaves a manifest,
+  otherwise cleanup has nothing to work with.
+- **Guards grew from 4 to 17.** New ones cover the exact size as a property
+  over 118 cases per format, determinism, refusal below the minimum, edit
+  locality in all four of its forms, `--dry-run`, and a dropped label staying
+  visible. Every one verified by mutation.
+- **Mutation testing found a real defect, not just proved the tests.** An off
+  by one in the padding arithmetic made the writer loop for ever instead of
+  failing. A run that hangs cannot be told apart from a very large file, so
+  the writer now refuses to continue when a round emits nothing.
+
 ### 2026-08-01 - repository skeleton
 
 - Directory layout and layer boundaries. Packages are empty and carry only
