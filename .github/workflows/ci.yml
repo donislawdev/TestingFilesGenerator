@@ -34,8 +34,9 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
-          # No dependencies, so there is no go.sum and nothing to cache.
-          cache: false
+          # Keyed on go.sum. The one dependency is the YAML parser behind the
+          # recipe - see docs/STACK.md.
+          cache: true
 
       - name: formatting
         run: |
@@ -44,6 +45,23 @@ jobs:
 
       - name: vet
         run: go vet ./...
+
+      - name: the dependency list has not grown by accident
+        # Every dependency is a licence question and a byte stability question.
+        # A new one arriving as somebody's transitive import has to be visible
+        # rather than discovered later.
+        run: |
+          set -euo pipefail
+          expected="github.com/goccy/go-yaml"
+          actual=$(go list -m -f '{{.Path}}' all | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | sort)
+          if [ "$actual" != "$expected" ]; then
+            echo "the module list changed."
+            echo "expected: $expected"
+            echo "actual  : $actual"
+            exit 1
+          fi
+          echo "dependencies unchanged: $actual"
+        shell: bash
 
       - name: test
         run: go test ./... -count=1
@@ -63,8 +81,9 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
-          # No dependencies, so there is no go.sum and nothing to cache.
-          cache: false
+          # Keyed on go.sum. The one dependency is the YAML parser behind the
+          # recipe - see docs/STACK.md.
+          cache: true
 
       - name: measure
         # -coverpkg is not optional here. The guard tests live in their own
