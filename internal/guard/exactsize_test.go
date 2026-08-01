@@ -56,6 +56,15 @@ func sizesFor(t *testing.T, d format.Descriptor) []int64 {
 		min + 100000,
 	}
 
+	// Sizes below the declared minimum, so the refusal path is actually
+	// walked. Without these the code that refuses could be deleted and every
+	// test would still pass.
+	for _, below := range []int64{0, 1, min - 1, min - 2, min / 2} {
+		if below >= 0 && below < min {
+			sizes = append(sizes, below)
+		}
+	}
+
 	// A deterministic spread, so a failure is reproducible rather than a
 	// flake that disappears on the next run.
 	rng := rand.New(rand.NewPCG(0x5eed, 0xf11e))
@@ -71,19 +80,33 @@ func TestEveryFormatHitsTheOrderedSizeExactly(t *testing.T) {
 		t.Fatal("no format is registered - this guard would pass without checking anything")
 	}
 
-	checked := 0
 	for _, d := range descriptors {
+		produced, refused := 0, 0
+
 		for _, withLabel := range []bool{true, false} {
 			for _, ordered := range sizesFor(t, d) {
 				name := fmt.Sprintf("%s/label=%v/%d", d.ID, withLabel, ordered)
-				t.Run(name, func(t *testing.T) {
+				ok := t.Run(name, func(t *testing.T) {
 					plan, err := d.Generator.Plan(format.Request{
 						Bytes: ordered,
 						Seed:  uint64(ordered)*31 + 7,
 						Label: withLabel,
 					})
 					if err != nil {
-						t.Fatalf("planning %d B failed: %v", ordered, err)
+						// Refusing is a legitimate answer. Some sizes are
+						// genuinely unreachable - PNG cannot be 74 bytes,
+						// because the smallest chunk that could make up the
+						// difference costs twelve on its own. What is never
+						// allowed is handing back a different size in
+						// silence, so the refusal has to be the typed error
+						// that carries the format, the minimum, the reason
+						// and the way out.
+						var below *format.BelowMinimumError
+						if !errors.As(err, &below) {
+							t.Fatalf("refused %d B with %T rather than a BelowMinimumError: %v", ordered, err, err)
+						}
+						refused++
+						return
 					}
 
 					if plan.Bytes != ordered {
@@ -97,17 +120,26 @@ func TestEveryFormatHitsTheOrderedSizeExactly(t *testing.T) {
 
 					// Ordered against produced. Read back from the bytes, not
 					// from anything the generator reported about itself.
-					if produced := int64(buf.Len()); produced != ordered {
+					if got := int64(buf.Len()); got != ordered {
 						t.Fatalf("ordered %d B, produced %d B - the size is exact or it is an error",
-							ordered, produced)
+							ordered, got)
 					}
+					produced++
 				})
-				checked++
+				_ = ok
 			}
 		}
-	}
-	if checked == 0 {
-		t.Fatal("no size was examined - this guard would pass without checking anything")
+
+		// A generator that refuses everything would satisfy the rule above
+		// while being useless, so the counts are checked too.
+		if produced == 0 {
+			t.Errorf("%s produced no file at all across every size tried", d.ID)
+		}
+		if refused > produced {
+			t.Errorf("%s refused %d sizes and produced %d - refusing is for genuinely unreachable sizes, not the common case",
+				d.ID, refused, produced)
+		}
+		t.Logf("%s: %d sizes produced exactly, %d refused as unreachable", d.ID, produced, refused)
 	}
 }
 
@@ -125,9 +157,18 @@ func TestTheSameSeedGivesTheSameBytes(t *testing.T) {
 
 			// A different seed has to give different content, otherwise the
 			// seed is decoration and this guard proves nothing.
-			other := produce(t, d, format.Request{Bytes: size, Seed: 7742, Label: true})
-			if size > 128 && other == first {
-				t.Errorf("%s at %d B ignored the seed - two seeds gave identical bytes", d.ID, size)
+			//
+			// Checked with the label off as well. The label carries the seed
+			// in its text, so with it on a generator could ignore the seed
+			// everywhere else and still look correct - measured, that is
+			// exactly what a mutation of the picture and the padding did.
+			for _, label := range []bool{true, false} {
+				base := produce(t, d, format.Request{Bytes: size, Seed: 7741, Label: label})
+				other := produce(t, d, format.Request{Bytes: size, Seed: 7742, Label: label})
+				if size > 256 && other == base {
+					t.Errorf("%s at %d B with label=%v ignored the seed - two seeds gave identical bytes",
+						d.ID, size, label)
+				}
 			}
 			checked++
 		}

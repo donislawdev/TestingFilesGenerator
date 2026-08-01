@@ -8,5 +8,6 @@ package all
 
 import (
 	// Each format registers itself when its package is loaded.
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/png"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
 )

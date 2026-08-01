@@ -12,8 +12,15 @@ because it turns other people's test suites red.
 
 ### Added
 
-- `tfg generate` produces text files of an exact size. Ask for 10 485 761
-  bytes and you get exactly that, from 0 bytes upward.
+- `tfg generate` produces **text and PNG files** of an exact size. Ask for
+  10 485 761 bytes and you get exactly that.
+- PNG carries the label burned into the picture, and its size is made exact
+  by a private chunk that decoders ignore. Checked against Pillow, FFmpeg,
+  Tcl/Tk, the Windows Imaging Component and exiftool - all five read the
+  image, the pixels are unchanged and none of them reports a warning.
+- `--set` sets a format property and can be repeated:
+  `--set width=1920 --set height=1080`. Leave it out and the picture size is
+  chosen to suit the file size you asked for.
 - `tfg formats` lists what this build supports, with the fidelity level, the
   determinism level, the minimum size and the padding channel of each format.
 - Every run writes a `manifest.json` next to the files - path, size, SHA-256,
@@ -57,5 +64,10 @@ because it turns other people's test suites red.
   never a silent difference from what you ordered.
 - **The last word can be clipped.** Hitting the exact size wins over ending
   on a word boundary.
+- **A few PNG sizes cannot be reached.** The smallest PNG is 73 bytes and the
+  next reachable size is 83, because the chunk that makes up any difference
+  costs 12 bytes on its own. Anything from 83 bytes upward works. Asking for
+  a size in between gets an error naming both neighbours - never a file of a
+  different size.
 - Text files are UTF-8 with LF line endings. Other encodings and line endings
   are not implemented yet.

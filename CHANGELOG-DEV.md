@@ -6,6 +6,45 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - the first compressed format
+
+- `png` is the first generator where the output size does not follow from the
+  content. Everything before the closing chunk streams straight out while
+  being counted, then a padding chunk makes up the difference. Nothing is
+  buffered, whatever the picture size.
+- **The padding channel was measured before it was built.** Five independent
+  decoders - Pillow, FFmpeg, Tcl/Tk, the Windows Imaging Component and
+  exiftool - all read an image with an extra chunk between IDAT and IEND and
+  return identical pixels. This had been recorded as an open question that
+  had to be measured rather than assumed, and it was.
+- **A private chunk rather than tEXt.** Both work everywhere, but exiftool
+  reports "Text/EXIF chunk(s) found after PNG IDAT" for tEXt. A warning in
+  the checking tool is what makes a tester think the generator is broken,
+  which is the same cost already recorded for 7Z.
+- **PNG has unreachable sizes and that is a property of the format.** The
+  smallest is 73 bytes, the next reachable is 83, and 74 to 82 cannot be hit
+  because the smallest possible chunk costs 12 bytes. Measured by scanning
+  every size from 0 to 400.
+- The exact size guard was restated as the rule it actually protects: exact
+  or an error, never a different size in silence. It now also walks sizes
+  below the declared minimum, so the refusal path is exercised rather than
+  assumed.
+- **Mutation found two holes in the guards themselves.** The seed test only
+  ran with the label on, and the label carries the seed in its text - so a
+  generator could ignore the seed everywhere else and still pass. And no test
+  ever asked for a size below the minimum, so the code that refuses could
+  have been deleted unnoticed. Both closed.
+- `imagelabel` draws a 3 by 5 bitmap font written here rather than taken from
+  a font file. No dependency, no licence to check, and identical pixels on
+  every machine. Known limit: at three pixels wide M, N and W stay similar.
+- `--set key=value` is repeatable and maps one to one onto the properties
+  block of a recipe.
+- Measured while building this: a gradient compresses to 0.1% of its raw
+  size, noise to 75%. A 3840x2160 gradient encodes in about 176 ms, and
+  writing it to disk instead of counting it costs nothing measurable - so the
+  temp file option would have bought time it does not buy and cost disk space
+  it does not have.
+
 ### 2026-08-01 - review after the first format
 
 A read through everything written so far, before starting the second format.

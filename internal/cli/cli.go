@@ -97,6 +97,13 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		asJSON   = fs.Bool("json", false, "write the manifest to standard output")
 	)
 
+	// One repeatable flag rather than a separate flag per format property.
+	// Twenty five formats with a dozen properties each would give a surface
+	// nobody reads in --help, and this maps one to one onto the properties
+	// block of a recipe, so both surfaces speak the same words.
+	props := propertyFlag{}
+	fs.Var(&props, "set", "format property, repeatable: --set width=1920 --set height=1080")
+
 	fs.Usage = func() {
 		fmt.Fprint(errOut, "tfg generate - produce files.\n\nFlags:\n")
 		fs.PrintDefaults()
@@ -133,13 +140,14 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	}
 
 	target := engine.Target{
-		ID:       *id,
-		Format:   *formatID,
-		Count:    *count,
-		Bytes:    bytesWanted,
-		NameTmpl: *name,
-		Label:    !*clean,
-		Expected: *expected,
+		ID:         *id,
+		Format:     *formatID,
+		Count:      *count,
+		Bytes:      bytesWanted,
+		NameTmpl:   *name,
+		Label:      !*clean,
+		Expected:   *expected,
+		Properties: props,
 	}
 	opt := engine.Options{
 		OutDir:  *outDir,
@@ -261,6 +269,25 @@ func classify(err error) int {
 		return ExitIO
 	}
 	return ExitRuntime
+}
+
+// propertyFlag collects repeated --set key=value pairs.
+type propertyFlag map[string]string
+
+func (p propertyFlag) String() string { return "" }
+
+func (p propertyFlag) Set(v string) error {
+	key, value, found := strings.Cut(v, "=")
+	if !found || key == "" {
+		return fmt.Errorf("expected key=value, got %q", v)
+	}
+	if _, exists := p[key]; exists {
+		// Setting the same property twice is a mistake worth naming. One of
+		// the two values would be lost, and nobody would know which.
+		return fmt.Errorf("%s is set more than once", key)
+	}
+	p[key] = value
+	return nil
 }
 
 func args2(args []string) []string {
