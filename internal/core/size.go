@@ -109,19 +109,3 @@ func unitBytes(unit string) (int64, bool) {
 	}
 	return 0, false
 }
-
-// FormatSize writes a byte count the way a person reads it, keeping the exact
-// number alongside. The exact number is the point of this tool, so it is
-// never dropped in favour of a rounded one.
-func FormatSize(n int64) string {
-	switch {
-	case n >= 1<<30:
-		return fmt.Sprintf("%.2f GiB (%d B)", float64(n)/(1<<30), n)
-	case n >= 1<<20:
-		return fmt.Sprintf("%.2f MiB (%d B)", float64(n)/(1<<20), n)
-	case n >= 1<<10:
-		return fmt.Sprintf("%.2f KiB (%d B)", float64(n)/(1<<10), n)
-	default:
-		return fmt.Sprintf("%d B", n)
-	}
-}

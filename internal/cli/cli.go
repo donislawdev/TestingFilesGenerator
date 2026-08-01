@@ -20,6 +20,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
@@ -42,7 +43,7 @@ const (
 // Data goes to out and everything else goes to errOut. A failed run puts
 // nothing on out, so a consumer of a pipe never receives half an answer and
 // has to guess whether that was all of it.
-func Run(args []string, out, errOut io.Writer) int {
+func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	if len(args) == 0 {
 		usage(errOut)
 		return ExitUsage
@@ -50,7 +51,7 @@ func Run(args []string, out, errOut io.Writer) int {
 
 	switch args[0] {
 	case "generate":
-		return generate(args[1:], out, errOut)
+		return generate(ctx, args[1:], out, errOut)
 	case "formats":
 		return formats(args[1:], out, errOut)
 	case "--version", "version":
@@ -78,7 +79,7 @@ Run "tfg <command> --help" for the flags of one command.
 `)
 }
 
-func generate(args []string, out, errOut io.Writer) int {
+func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("generate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 
@@ -120,6 +121,17 @@ func generate(args []string, out, errOut io.Writer) int {
 		return ExitUsage
 	}
 
+	// An expectation nobody recognises is a typo, and a typo accepted in
+	// silence becomes an expectation no test will ever check.
+	switch *expected {
+	case "", manifest.OutcomeAccept, manifest.OutcomeReject,
+		manifest.OutcomeSanitize, manifest.OutcomeUnspecified:
+	default:
+		fmt.Fprintf(errOut,
+			"tfg: --expected %q is not a known outcome. Use accept, reject, sanitize or unspecified.\n", *expected)
+		return ExitUsage
+	}
+
 	target := engine.Target{
 		ID:       *id,
 		Format:   *formatID,
@@ -143,13 +155,17 @@ func generate(args []string, out, errOut io.Writer) int {
 	}
 
 	total := engine.TotalBytes(planned)
-	fmt.Fprintf(errOut, "%d file(s), %s total\n", len(planned), core.FormatSize(total))
+	// Echo what was asked for next to the exact byte count. The exact number
+	// is the point of this tool, and it is what any other tool will show when
+	// the user goes to check the file.
+	fmt.Fprintf(errOut, "%d file(s) of %s = %d B each, %d B total\n",
+		len(planned), *sizeStr, bytesWanted, total)
 
 	if *dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
 	}
 
-	res, runErr := engine.Run(context.Background(), planned, opt)
+	res, runErr := engine.Run(ctx, planned, opt)
 
 	for _, n := range res.Manifest.Notes() {
 		fmt.Fprintf(errOut, "note: %s\n", n)
@@ -217,6 +233,18 @@ func formats(args []string, out, errOut io.Writer) int {
 // than on message text. Anything unrecognised becomes a runtime error, which
 // is the honest answer for a failure the tool did not anticipate.
 func classify(err error) int {
+	var recipeErr *engine.RecipeError
+	if errors.As(err, &recipeErr) {
+		return ExitRecipe
+	}
+	var spaceErr *engine.SpaceError
+	if errors.As(err, &spaceErr) {
+		return ExitSpace
+	}
+	var collision *engine.CollisionError
+	if errors.As(err, &collision) {
+		return ExitIO
+	}
 	var belowMin *format.BelowMinimumError
 	if errors.As(err, &belowMin) {
 		return ExitFormat

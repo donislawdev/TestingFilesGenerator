@@ -7,11 +7,21 @@
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 )
 
 func main() {
-	os.Exit(cli.Run(os.Args[1:], os.Stdout, os.Stderr))
+	// Ctrl+C and a CI timeout have to reach the generator, not only kill the
+	// process. Without this the run dies mid file, leaving a partial file
+	// behind and no manifest - so cleanup has nothing to work with and the
+	// leftovers stay for good.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	os.Exit(cli.Run(ctx, os.Args[1:], os.Stdout, os.Stderr))
 }

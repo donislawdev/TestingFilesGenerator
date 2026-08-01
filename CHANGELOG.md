@@ -25,6 +25,22 @@ because it turns other people's test suites red.
 - `--expected` records what the system under test should do with the files:
   accept, reject, sanitize or unspecified.
 
+### Safety
+
+- **Nothing is written over.** A run that would land on a file already there
+  stops and says which one, before writing anything. This tool runs in
+  directories that belong to you.
+- **Two files cannot head for one name.** A name template with no index and a
+  count above one is refused while planning, rather than leaving one file on
+  disk and a manifest describing three.
+- **A run larger than the free space is refused before the first byte.**
+  Finding out at file five thousand of ten thousand leaves a half written set
+  and a full disk.
+- **Ctrl+C is handled.** An interrupted run finishes or removes the file it
+  was writing, keeps everything already completed, and still writes the
+  manifest - so nothing incomplete is ever left in the output directory and
+  cleanup has something to work with.
+
 ### Notes on behaviour
 
 - **Sizes.** `mb`, `kb`, `gb` and `tb` count in thousands. `mib`, `kib`,

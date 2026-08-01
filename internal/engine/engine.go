@@ -40,6 +40,19 @@ type Options struct {
 	Seed    int64
 	DryRun  bool
 	Command string
+
+	// AvailableBytes reports the free space at a path. It is injected so a
+	// test can describe a small disk without owning one - and so that a test
+	// of the guard writes kilobytes rather than trying for a petabyte when
+	// the guard is broken. Nil means ask the operating system.
+	AvailableBytes func(path string) (int64, error)
+}
+
+func (o Options) availableBytes(path string) (int64, error) {
+	if o.AvailableBytes != nil {
+		return o.AvailableBytes(path)
+	}
+	return core.AvailableBytes(path)
 }
 
 // Result is what a run produced.
@@ -69,20 +82,21 @@ type PlannedFile struct {
 func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	var out []PlannedFile
 	seen := map[string]bool{}
+	names := map[string]string{}
 
 	for i := range targets {
 		t := &targets[i]
 
 		if t.ID == "" {
-			return nil, fmt.Errorf("a target has no id: every target needs a stable id, it anchors the seed and links to the manifest")
+			return nil, &RecipeError{Detail: "a target has no id: every target needs a stable id, it anchors the seed and links to the manifest"}
 		}
 		if seen[t.ID] {
-			return nil, fmt.Errorf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)
+			return nil, &RecipeError{Detail: fmt.Sprintf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)}
 		}
 		seen[t.ID] = true
 
 		if t.Count <= 0 {
-			return nil, fmt.Errorf("target %q asks for %d files: ask for at least one", t.ID, t.Count)
+			return nil, &RecipeError{Detail: fmt.Sprintf("target %q asks for %d files: ask for at least one", t.ID, t.Count)}
 		}
 
 		desc, err := format.Get(t.Format)
@@ -115,11 +129,23 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 				return nil, err
 			}
 
+			name := renderName(t, desc, idx)
+			// Two files heading for one name means one of them would be
+			// destroyed by the other, and the manifest would still describe
+			// both. A manifest that quietly lost a file looks complete and
+			// reaches the test suite as a false truth.
+			if owner, clash := names[name]; clash {
+				return nil, &RecipeError{Detail: fmt.Sprintf(
+					"targets %q and %q both produce a file named %s - give one of them a --name template containing {index:04}",
+					owner, t.ID, name)}
+			}
+			names[name] = t.ID
+
 			out = append(out, PlannedFile{
 				ID:     fmt.Sprintf("f_%04d", len(out)+1),
 				Target: t,
 				Index:  idx,
-				Name:   renderName(t, desc, idx),
+				Name:   name,
 				Seed:   fileSeed,
 				Desc:   desc,
 				Plan:   p,
@@ -168,8 +194,30 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		return res, nil
 	}
 
+	// Free space is checked before the first byte. Finding out at file five
+	// thousand of ten thousand leaves a half written set and a full disk on a
+	// machine somebody works on.
+	needed := TotalBytes(files)
+	if available, err := opt.availableBytes(opt.OutDir); err == nil {
+		if available < needed {
+			return res, &SpaceError{Needed: needed, Available: available, Path: opt.OutDir}
+		}
+	}
+	// A failure to read the free space is not a reason to refuse. It is
+	// reported by the caller and the run goes ahead, because a disk we cannot
+	// measure is not the same as a disk that is full.
+
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
 		return res, fmt.Errorf("cannot create the output directory %s: %w", opt.OutDir, err)
+	}
+
+	// Nothing is written over. This tool runs in directories that belong to
+	// the user, so destroying their work is the one failure that cannot be
+	// undone by running again.
+	for _, f := range files {
+		if _, err := os.Stat(filepath.Join(opt.OutDir, f.Name)); err == nil {
+			return res, &CollisionError{Path: filepath.Join(opt.OutDir, f.Name)}
+		}
 	}
 
 	for _, f := range files {

@@ -6,6 +6,30 @@ configuration, architectural decisions. Anything a user would notice goes to
 
 ## Unreleased
 
+### 2026-08-01 - review after the first format
+
+A read through everything written so far, before starting the second format.
+Seven gaps, two of them dangerous to a user's own files.
+
+- **The tool wrote over existing files without a word.** Measured on a file
+  holding real content - it was replaced. Now refused with the IO code.
+- **Three files heading for one name gave one file and a manifest describing
+  three.** The manifest looked complete and would have reached a test suite
+  as a false truth. Now refused while planning.
+- **No free space guard at all.** The exit code for it was defined and never
+  returned. Now checked before the first byte.
+- **No signal handling anywhere.** The context was plumbed through the whole
+  engine and nothing ever cancelled it, so Ctrl+C killed the process, left a
+  partial file and wrote no manifest.
+- Three exit codes disagreed with the frozen table: a count of zero, an
+  unrecognised expectation, and a name clash.
+- Guards went from 17 to 24, coverage from 43.7% to 77.3%, threshold raised
+  from 40 to 70.
+- **The free space probe is injected.** The first version of its test asked
+  for a petabyte, and when the guard was mutated away that test wrote until
+  the disk filled - 50 seconds, on a machine with 11 GB free. A guard test
+  that damages the machine when the guard breaks is the wrong shape.
+
 ### 2026-08-01 - first format through the whole path
 
 - `core` holds the size arithmetic, the seed derivation and the label
