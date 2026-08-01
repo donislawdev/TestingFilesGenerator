@@ -58,7 +58,7 @@ func hashesOf(t *testing.T, targets []engine.Target, seed int64) map[string]stri
 }
 
 func txtTarget(id string, count int, bytes int64) engine.Target {
-	return engine.Target{ID: id, Format: "txt", Count: count, Bytes: bytes, Label: true}
+	return engine.Target{ID: id, Format: "txt", Sizes: engine.Uniform(count, bytes), Label: true}
 }
 
 func TestAddingATargetLeavesTheOthersUntouched(t *testing.T) {

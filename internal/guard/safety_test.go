@@ -58,7 +58,7 @@ func TestTwoFilesCannotHeadForOneName(t *testing.T) {
 	// same name. Without this check one file survives, the manifest describes
 	// three, and the suite reads a manifest that quietly lost two of them.
 	targets := []engine.Target{{
-		ID: "files", Format: "txt", Count: 3, Bytes: 512,
+		ID: "files", Format: "txt", Sizes: engine.Uniform(3, 512),
 		NameTmpl: "same.txt", Label: true,
 	}}
 

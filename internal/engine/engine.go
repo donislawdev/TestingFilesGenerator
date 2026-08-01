@@ -24,14 +24,37 @@ import (
 
 // Target is one group of files to produce.
 type Target struct {
-	ID         string
-	Format     string
-	Count      int
-	Bytes      int64
-	NameTmpl   string
-	Label      bool
-	Expected   string
-	Properties map[string]string
+	ID     string
+	Format string
+	// Sizes is the exact size of every file in the group, one entry per file,
+	// so the number of files is the length of this list.
+	//
+	// A single size repeated is the common case and Uniform builds it. The
+	// list is the general form because files in one group do not have to be
+	// the same size - a boundary set is three consecutive sizes under one id,
+	// and a range will be a different size per file. Carrying a count and one
+	// size would have needed a second way of saying it the moment the first of
+	// those arrived.
+	Sizes    []int64
+	NameTmpl string
+	Label    bool
+	// Expected is what the system under test should do with these files, and
+	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
+	Expected       string
+	ExpectedReason string
+	Properties     map[string]string
+}
+
+// Uniform is n files of the same size, which is what most targets ask for.
+func Uniform(n int, bytes int64) []int64 {
+	if n <= 0 {
+		return nil
+	}
+	out := make([]int64, n)
+	for i := range out {
+		out[i] = bytes
+	}
+	return out
 }
 
 // Options are the settings of one run.
@@ -40,6 +63,13 @@ type Options struct {
 	Seed    int64
 	DryRun  bool
 	Command string
+
+	// RecipeHash and Overrides describe where the settings of this run came
+	// from. Both are empty for a run driven by flags alone.
+	RecipeHash string
+	Overrides  map[string]manifest.Override
+	// ManifestName is the file the manifest lands in, relative to OutDir.
+	ManifestName string
 
 	// AvailableBytes reports the free space at a path. It is injected so a
 	// test can describe a small disk without owning one - and so that a test
@@ -84,6 +114,18 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	seen := map[string]bool{}
 	names := map[string]string{}
 
+	// The manifest lands beside the files, so its name is a name too. A path
+	// here would leave a manifest outside the directory the run was pointed
+	// at, describing files that are not next to it.
+	if opt.ManifestName != "" {
+		if err := checkFileName("the manifest", opt.ManifestName); err != nil {
+			return nil, err
+		}
+	}
+	if opt.OutDir == "" {
+		return nil, &RecipeError{Detail: "the output directory is empty: name a directory, for example ./fixtures, or leave it out to use the current one"}
+	}
+
 	for i := range targets {
 		t := &targets[i]
 
@@ -95,8 +137,8 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		}
 		seen[t.ID] = true
 
-		if t.Count <= 0 {
-			return nil, &RecipeError{Detail: fmt.Sprintf("target %q asks for %d files: ask for at least one", t.ID, t.Count)}
+		if len(t.Sizes) == 0 {
+			return nil, &RecipeError{Detail: fmt.Sprintf("target %q asks for 0 files: ask for at least one", t.ID)}
 		}
 
 		desc, err := format.Get(t.Format)
@@ -108,23 +150,22 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			return nil, err
 		}
 
-		if t.Bytes < desc.MinBytes {
-			return nil, &format.BelowMinimumError{
-				Format:    strings.ToUpper(desc.ID),
-				Requested: t.Bytes,
-				Minimum:   desc.MinBytes,
-				Reason:    "that is the smallest valid file this format can produce",
-				Hint:      fmt.Sprintf("Ask for %d B or more.", desc.MinBytes),
-			}
-		}
-
+		// A size below the minimum is refused by the generator itself, on the
+		// first size that cannot be delivered, and planning writes nothing -
+		// so every size of a boundary set is judged before any file exists.
+		//
+		// There used to be a loop here checking the same thing against the
+		// declared minimum first. Mutation showed no test could tell whether
+		// it ran, because every generator already refuses and a guard walks
+		// sizes below the minimum for every registered format. It was removed
+		// rather than kept as defence nobody can verify.
 		targetSeed := core.TargetSeed(opt.Seed, t.ID)
 
-		for idx := 0; idx < t.Count; idx++ {
+		for idx, size := range t.Sizes {
 			fileSeed := core.FileSeed(targetSeed, idx)
 
 			p, err := desc.Generator.Plan(format.Request{
-				Bytes:      t.Bytes,
+				Bytes:      size,
 				Seed:       fileSeed,
 				Label:      t.Label,
 				Properties: t.Properties,
@@ -133,7 +174,10 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 				return nil, err
 			}
 
-			name := renderName(t, desc, idx)
+			name, err := renderName(t, desc, idx)
+			if err != nil {
+				return nil, err
+			}
 			// Two files heading for one name means one of them would be
 			// destroyed by the other, and the manifest would still describe
 			// both. A manifest that quietly lost a file looks complete and
@@ -185,6 +229,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		runID(opt.Seed), opt.Command, opt.Seed,
 		runtime.GOOS, runtime.GOARCH,
 	)
+	m.Run.RecipeHash = opt.RecipeHash
+	m.Run.Overrides = opt.Overrides
 	res := &Result{Manifest: m}
 
 	if opt.DryRun {
@@ -341,7 +387,11 @@ func expectationFor(f PlannedFile) manifest.Expected {
 		}
 	case manifest.OutcomeAccept, manifest.OutcomeReject,
 		manifest.OutcomeSanitize, manifest.OutcomeUnspecified:
-		return manifest.Expected{Outcome: f.Target.Expected, Confidence: "certain"}
+		return manifest.Expected{
+			Outcome:    f.Target.Expected,
+			Reason:     f.Target.ExpectedReason,
+			Confidence: "certain",
+		}
 	default:
 		return manifest.Expected{
 			Outcome:    manifest.OutcomeUnspecified,
@@ -351,12 +401,63 @@ func expectationFor(f PlannedFile) manifest.Expected {
 	}
 }
 
-func renderName(t *Target, d format.Descriptor, index int) string {
+// indexToken is the one placeholder a name template understands.
+const indexToken = "{index:04}"
+
+func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 	tmpl := t.NameTmpl
 	if tmpl == "" {
-		tmpl = t.ID + "_{index:04}" + d.Extension
+		tmpl = t.ID + "_" + indexToken + d.Extension
 	}
-	return strings.ReplaceAll(tmpl, "{index:04}", fmt.Sprintf("%04d", index+1))
+	name := strings.ReplaceAll(tmpl, indexToken, fmt.Sprintf("%04d", index+1))
+
+	// Every token was just replaced, so a brace left over is a placeholder
+	// that does not exist. Left alone it becomes part of the file name, and
+	// somebody ends up with a file called invoice_{index}.pdf rather than the
+	// numbering they asked for.
+	if strings.Contains(name, "{") {
+		return "", &RecipeError{Detail: fmt.Sprintf(
+			"target %q has a name template this build does not understand: %q. The only placeholder is %s, so a name looks like invoice_%s.pdf",
+			t.ID, tmpl, indexToken, indexToken)}
+	}
+
+	if err := checkFileName(fmt.Sprintf("target %q", t.ID), name); err != nil {
+		return "", err
+	}
+	return name, nil
+}
+
+// checkFileName keeps a name a name.
+//
+// A name carrying a path escapes the directory the run was pointed at. A
+// recipe travels between teams by design, so "../../something" in a file
+// somebody sent over would write outside the directory its reader chose - and
+// the free space check, the collision check and cleanup all work on the
+// directory, so none of them would be looking in the right place.
+//
+// Both separators are refused on every system, not just the local one. A name
+// holding a backslash is legal on Linux and cannot exist on Windows, and a
+// recipe that only works on the machine it was written on is not portable.
+func checkFileName(where, name string) error {
+	switch {
+	case name == "":
+		return &RecipeError{Detail: fmt.Sprintf("%s produces a file with no name", where)}
+
+	case strings.ContainsAny(name, `/\`):
+		return &RecipeError{Detail: fmt.Sprintf(
+			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Use --out or the output section to choose the directory",
+			where, name)}
+
+	case name == "." || name == "..":
+		return &RecipeError{Detail: fmt.Sprintf(
+			"%s produces the name %q, which names a directory rather than a file", where, name)}
+
+	case filepath.IsAbs(name) || filepath.VolumeName(name) != "":
+		return &RecipeError{Detail: fmt.Sprintf(
+			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Use --out or the output section to choose the directory",
+			where, name)}
+	}
+	return nil
 }
 
 func runID(seed int64) string {

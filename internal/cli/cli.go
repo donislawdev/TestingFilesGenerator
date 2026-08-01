@@ -22,6 +22,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
@@ -53,6 +54,10 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	switch args[0] {
 	case "generate":
 		return generate(ctx, args[1:], out, errOut)
+	case "validate":
+		return validate(args[1:], out, errOut)
+	case "recipe":
+		return recipeCmd(args[1:], out, errOut)
 	case "formats":
 		return formats(args[1:], out, errOut)
 	case "--version", "version":
@@ -72,7 +77,9 @@ func usage(w io.Writer) {
 	fmt.Fprint(w, `tfg - generate test files and know how the system under test should react.
 
 Commands:
-  generate    produce files
+  generate    produce files, from a recipe or from flags
+  validate    check a recipe and write nothing
+  recipe fmt  print a recipe in its settled shape
   formats     list the formats this build supports
   version     print the tool version
 
@@ -106,69 +113,143 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs.Var(&props, "set", "format property, repeatable: --set width=1920 --set height=1080")
 
 	fs.Usage = func() {
-		fmt.Fprint(errOut, "tfg generate - produce files.\n\nFlags:\n")
+		fmt.Fprint(errOut, `tfg generate - produce files.
+
+Usage:
+  tfg generate <recipe.yaml> [flags]   settings come from the file
+  tfg generate --format txt --size 1mb  settings come from the flags
+
+Flags:
+`)
 		fs.PrintDefaults()
 	}
 
-	if err := fs.Parse(args); err != nil {
+	// A recipe is named first, before any flag. Anywhere else and a value
+	// such as "--seed 5" could not be told apart from a file name.
+	recipePath, rest := splitRecipeArgument(args)
+
+	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
 	}
 
-	if *formatID == "" {
-		fmt.Fprintln(errOut, "tfg: --format is required. Run \"tfg formats\" to see what this build supports.")
-		return ExitUsage
-	}
-	if *sizeStr == "" {
-		fmt.Fprintln(errOut, "tfg: --size is required. Every target declares its size, which is what lets --dry-run report exact numbers before anything is written.")
-		return ExitUsage
-	}
+	// A flag that was never written must not beat the recipe. The tool sees
+	// the default --count 1 and would otherwise wipe out count: 500 from the
+	// file, which is the whole class of "my recipe stopped working after I
+	// added a flag I did not touch".
+	given := flagsGiven(fs)
 
-	bytesWanted, err := core.ParseSize(*sizeStr)
-	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %v\n", err)
-		return ExitUsage
-	}
-
-	// An expectation nobody recognises is a typo, and a typo accepted in
-	// silence becomes an expectation no test will ever check.
-	switch *expected {
-	case "", manifest.OutcomeAccept, manifest.OutcomeReject,
-		manifest.OutcomeSanitize, manifest.OutcomeUnspecified:
-	default:
-		fmt.Fprintf(errOut,
-			"tfg: --expected %q is not a known outcome. Use accept, reject, sanitize or unspecified.\n", *expected)
-		return ExitUsage
-	}
-
-	target := engine.Target{
-		ID:         *id,
-		Format:     *formatID,
-		Count:      *count,
-		Bytes:      bytesWanted,
-		NameTmpl:   *name,
-		Label:      !*clean,
-		Expected:   *expected,
-		Properties: props,
-	}
 	opt := engine.Options{
-		OutDir:  *outDir,
-		Seed:    *seed,
-		DryRun:  *dryRun,
-		Command: "tfg " + strings.Join(args2(args), " "),
+		OutDir:       *outDir,
+		Seed:         *seed,
+		DryRun:       *dryRun,
+		Command:      "tfg " + strings.Join(args2(args), " "),
+		ManifestName: defaultManifestName,
 	}
 
-	planned, err := engine.Plan([]engine.Target{target}, opt)
+	var targets []engine.Target
+
+	if recipePath != "" {
+		rec, hash, code := loadRecipe(recipePath, errOut)
+		if code != ExitOK {
+			return code
+		}
+
+		// Flags that describe one target have no target to describe when the
+		// recipe names several. Saying so beats picking one silently.
+		if bad := describingFlagsGiven(given); len(bad) > 0 {
+			fmt.Fprintf(errOut,
+				"tfg: %s describe a single target and this run comes from %s. Edit the recipe, or drop the recipe and pass the flags on their own.\n",
+				strings.Join(bad, ", "), recipePath)
+			return ExitUsage
+		}
+
+		opt.RecipeHash = hash
+		opt.Overrides = map[string]manifest.Override{}
+		opt.OutDir = rec.Output.Dir
+		opt.ManifestName = rec.Output.Manifest
+		opt.Seed = rec.Seed
+
+		if given["out"] {
+			opt.Overrides["out"] = manifest.Override{FromRecipe: rec.Output.Dir, FromFlag: *outDir}
+			opt.OutDir = *outDir
+		}
+		if given["seed"] {
+			opt.Overrides["seed"] = manifest.Override{FromRecipe: rec.Seed, FromFlag: *seed}
+			opt.Seed = *seed
+		}
+
+		for _, t := range rec.Targets {
+			label := t.Label
+			if given["clean"] {
+				label = !*clean
+			}
+			targets = append(targets, engine.Target{
+				ID:             t.ID,
+				Format:         t.Format,
+				Sizes:          t.Sizes,
+				NameTmpl:       t.Name,
+				Label:          label,
+				Expected:       t.Expected,
+				ExpectedReason: t.ExpectedReason,
+				Properties:     t.Properties,
+			})
+		}
+		if given["clean"] {
+			opt.Overrides["label"] = manifest.Override{FromRecipe: "per target", FromFlag: !*clean}
+		}
+		if len(opt.Overrides) == 0 {
+			opt.Overrides = nil
+		}
+	} else {
+		if *formatID == "" {
+			fmt.Fprintln(errOut, "tfg: --format is required. Run \"tfg formats\" to see what this build supports, or name a recipe file instead.")
+			return ExitUsage
+		}
+		if *sizeStr == "" {
+			fmt.Fprintln(errOut, "tfg: --size is required. Every target declares its size, which is what lets --dry-run report exact numbers before anything is written.")
+			return ExitUsage
+		}
+
+		bytesWanted, err := core.ParseSize(*sizeStr)
+		if err != nil {
+			fmt.Fprintf(errOut, "tfg: %v\n", err)
+			return ExitUsage
+		}
+
+		// An expectation nobody recognises is a typo, and a typo accepted in
+		// silence becomes an expectation no test will ever check.
+		switch *expected {
+		case "", manifest.OutcomeAccept, manifest.OutcomeReject,
+			manifest.OutcomeSanitize, manifest.OutcomeUnspecified:
+		default:
+			fmt.Fprintf(errOut,
+				"tfg: --expected %q is not a known outcome. Use accept, reject, sanitize or unspecified.\n", *expected)
+			return ExitUsage
+		}
+
+		targets = []engine.Target{{
+			ID:         *id,
+			Format:     *formatID,
+			Sizes:      engine.Uniform(*count, bytesWanted),
+			NameTmpl:   *name,
+			Label:      !*clean,
+			Expected:   *expected,
+			Properties: props,
+		}}
+	}
+
+	planned, err := engine.Plan(targets, opt)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %v\n", err)
 		return classify(err)
 	}
 
 	total := engine.TotalBytes(planned)
-	// Echo what was asked for next to the exact byte count. The exact number
-	// is the point of this tool, and it is what any other tool will show when
-	// the user goes to check the file.
-	fmt.Fprintf(errOut, "%d file(s) of %s = %d B each, %d B total\n",
-		len(planned), *sizeStr, bytesWanted, total)
+	// Echo the exact byte count. The exact number is the point of this tool,
+	// and it is what any other tool will show when the user goes to check the
+	// file.
+	fmt.Fprintf(errOut, "%d file(s) in %d target(s), %d B total\n",
+		len(planned), len(targets), total)
 
 	if *dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
@@ -211,8 +292,189 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	return ExitOK
 }
 
+// defaultManifestName is where the manifest lands when nothing says otherwise.
+const defaultManifestName = "manifest.json"
+
+// splitRecipeArgument takes the recipe path off the front of the arguments.
+//
+// It has to be first. A path recognised anywhere in the list could not be told
+// apart from the value of a flag, so "--seed 5" would turn 5 into a file name.
+func splitRecipeArgument(args []string) (string, []string) {
+	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+		return args[0], args[1:]
+	}
+	return "", args
+}
+
+// flagsGiven is the set of flags the user actually wrote.
+//
+// This is the whole of the precedence rule. Reading the values back cannot
+// tell "not given" from "given the same value as the default", and that
+// difference decides whether the recipe or the flag wins.
+func flagsGiven(fs *flag.FlagSet) map[string]bool {
+	given := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { given[f.Name] = true })
+	return given
+}
+
+// describingFlagsGiven lists flags that describe one target, which is
+// meaningless next to a recipe that may hold many.
+func describingFlagsGiven(given map[string]bool) []string {
+	var bad []string
+	for _, name := range []string{"format", "size", "count", "name", "id", "set", "expected"} {
+		if given[name] {
+			bad = append(bad, "--"+name)
+		}
+	}
+	return bad
+}
+
+func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
+	src, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %v\n", path, err)
+		return nil, "", ExitIO
+	}
+	rec, err := recipe.Parse(src, path)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return nil, "", classify(err)
+	}
+	hash, err := recipe.Hash(src)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return nil, "", classify(err)
+	}
+	return rec, hash, ExitOK
+}
+
+// validate runs the checks a run would run and writes nothing at all, so it
+// suits a pre commit hook.
+func validate(args []string, out, errOut io.Writer) int {
+	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	fs.Usage = func() {
+		fmt.Fprint(errOut, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n")
+	}
+	if err := fs.Parse(args); err != nil {
+		return ExitUsage
+	}
+	if fs.NArg() != 1 {
+		fmt.Fprintln(errOut, "tfg: validate takes one recipe file. Example: tfg validate recipe.yaml")
+		return ExitUsage
+	}
+
+	path := fs.Arg(0)
+	rec, hash, code := loadRecipe(path, errOut)
+	if code != ExitOK {
+		return code
+	}
+
+	// The schema and the semantics both passed. Planning is what proves the
+	// rest: a size below the minimum of its format, a format nobody
+	// registered, a property that does not exist, two files heading for one
+	// name. Refusing those here rather than at generate time is the point of
+	// this command.
+	var targets []engine.Target
+	for _, t := range rec.Targets {
+		targets = append(targets, engine.Target{
+			ID: t.ID, Format: t.Format, Sizes: t.Sizes,
+			NameTmpl: t.Name, Label: t.Label, Expected: t.Expected,
+			ExpectedReason: t.ExpectedReason, Properties: t.Properties,
+		})
+	}
+	planned, err := engine.Plan(targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return classify(err)
+	}
+
+	fmt.Fprintf(out, "%s is valid: %d target(s), %d file(s), %d B total\n%s\n",
+		path, len(rec.Targets), len(planned), engine.TotalBytes(planned), hash)
+	return ExitOK
+}
+
+// recipeCmd groups the operations that work on a recipe file itself rather
+// than on the files it describes.
+func recipeCmd(args []string, out, errOut io.Writer) int {
+	if len(args) == 0 || args[0] != "fmt" {
+		fmt.Fprintln(errOut, "tfg: recipe takes one operation. Example: tfg recipe fmt recipe.yaml")
+		return ExitUsage
+	}
+
+	fs := flag.NewFlagSet("recipe fmt", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	write := fs.Bool("w", false, "write the result back to the file instead of printing it")
+	check := fs.Bool("check", false, "print nothing and end with code 3 when the file is not in its settled shape")
+	fs.Usage = func() {
+		fmt.Fprint(errOut, `tfg recipe fmt - print a recipe in its settled shape, comments kept.
+
+Usage:
+  tfg recipe fmt <recipe.yaml>
+
+Flags:
+`)
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(args[1:]); err != nil {
+		return ExitUsage
+	}
+	if fs.NArg() != 1 {
+		fmt.Fprintln(errOut, "tfg: recipe fmt takes one recipe file. Example: tfg recipe fmt recipe.yaml")
+		return ExitUsage
+	}
+
+	path := fs.Arg(0)
+	src, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %v\n", path, err)
+		return ExitIO
+	}
+
+	canon, err := recipe.Canonical(src)
+	if err != nil {
+		fmt.Fprintf(errOut, "tfg: %v\n", err)
+		return classify(err)
+	}
+
+	// Reading the file and finding it already settled is the answer a hook
+	// wants, and it costs nothing to say so.
+	settled := bytes.Equal(src, canon)
+
+	if *check {
+		if settled {
+			return ExitOK
+		}
+		fmt.Fprintf(errOut, "tfg: %s is not in its settled shape. Run \"tfg recipe fmt -w %s\".\n", path, path)
+		return ExitRecipe
+	}
+
+	if *write {
+		if settled {
+			fmt.Fprintf(errOut, "%s was already settled and was not touched.\n", path)
+			return ExitOK
+		}
+		if err := os.WriteFile(path, canon, 0o644); err != nil {
+			fmt.Fprintf(errOut, "tfg: cannot write %s: %v\n", path, err)
+			return ExitIO
+		}
+		fmt.Fprintf(errOut, "%s rewritten.\n", path)
+		return ExitOK
+	}
+
+	// Printing by default rather than rewriting. A command that edits a file
+	// somebody wrote, without being asked to, is the wrong default in a tool
+	// that already refuses to write over anything.
+	out.Write(canon)
+	return ExitOK
+}
+
 func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int {
-	path := filepath.Join(opt.OutDir, "manifest.json")
+	name := opt.ManifestName
+	if name == "" {
+		name = defaultManifestName
+	}
+	path := filepath.Join(opt.OutDir, name)
 	if err := res.Manifest.Save(path); err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %v\n", path, err)
 		return ExitIO
@@ -283,6 +545,14 @@ func formats(args []string, out, errOut io.Writer) int {
 func classify(err error) int {
 	var recipeErr *engine.RecipeError
 	if errors.As(err, &recipeErr) {
+		return ExitRecipe
+	}
+	var invalid *recipe.ValidationError
+	if errors.As(err, &invalid) {
+		return ExitRecipe
+	}
+	var syntax *recipe.SyntaxError
+	if errors.As(err, &syntax) {
 		return ExitRecipe
 	}
 	var spaceErr *engine.SpaceError

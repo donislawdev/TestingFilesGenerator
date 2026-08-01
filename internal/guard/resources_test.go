@@ -72,7 +72,7 @@ func TestPlanningTenThousandFilesStaysCheap(t *testing.T) {
 	runtime.ReadMemStats(&before)
 
 	planned, err := engine.Plan(
-		[]engine.Target{{ID: "many", Format: "txt", Count: count, Bytes: 1024, Label: true}},
+		[]engine.Target{{ID: "many", Format: "txt", Sizes: engine.Uniform(count, 1024), Label: true}},
 		engine.Options{OutDir: t.TempDir(), Seed: 7741, Command: "test"},
 	)
 	if err != nil {
@@ -134,7 +134,7 @@ func TestAnUnknownPropertyIsRefused(t *testing.T) {
 // people actually write.
 func TestATypoInAPropertyReachesTheUser(t *testing.T) {
 	targets := []engine.Target{{
-		ID: "images", Format: "png", Count: 1, Bytes: 200 << 10, Label: true,
+		ID: "images", Format: "png", Sizes: engine.Uniform(1, 200<<10), Label: true,
 		Properties: map[string]string{"widht": "100"},
 	}}
 

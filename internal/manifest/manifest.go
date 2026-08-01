@@ -56,6 +56,25 @@ type Run struct {
 	// even then, otherwise cleanup has nothing to work with and the leftovers
 	// stay for good.
 	Complete bool `json:"complete"`
+
+	// RecipeHash identifies the recipe that shaped this run, taken from its
+	// canonical form so that reformatting a file does not look like a change
+	// of content. Absent when the run came from flags alone.
+	RecipeHash string `json:"recipe_hash,omitempty"`
+
+	// Overrides are the values a flag took away from the recipe.
+	//
+	// Without them the recipe hash stops describing the run, because two runs
+	// of the same recipe would produce different files and nothing would say
+	// why.
+	Overrides map[string]Override `json:"overrides,omitempty"`
+}
+
+// Override records one value that came from the recipe and was replaced on the
+// command line.
+type Override struct {
+	FromRecipe any `json:"from_recipe"`
+	FromFlag   any `json:"from_flag"`
 }
 
 // Platform is where the run happened.

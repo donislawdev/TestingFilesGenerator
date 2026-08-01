@@ -59,7 +59,12 @@ func packages(t *testing.T) []pkg {
 			return nil
 		}
 		name := d.Name()
-		if p != root && (name == ".git" || name == ".github" || name == "docs" || name == "testdata") {
+		// tools/ holds internal scripts and measurement probes. It is excluded
+		// from the repository and from every rule that governs shipped code -
+		// any language, no tests required. Walking into it would judge a probe
+		// by the rules of the tool it measures.
+		if p != root && (name == ".git" || name == ".github" || name == "docs" ||
+			name == "testdata" || name == "tools") {
 			return filepath.SkipDir
 		}
 
