@@ -35,6 +35,20 @@ because it turns other people's test suites red.
   byte under it, the limit itself, one byte over. The recipe key already did
   this and the flag did not, so an ad hoc run had to become a file first.
 
+### Added
+
+- **A run says how far it has got.** A large run used to print nothing between
+  starting and finishing, so there was no way to tell a working tool from a
+  hung one. It now shows the files done, the bytes written and an estimate of
+  the time left, updated in place.
+  The line goes to the error channel, so `tfg generate recipe.yaml --json | jq`
+  still works, and it appears only when that channel is a terminal. Redirected
+  into a file or a CI log it stays silent rather than filling the log with
+  thousands of redrawn lines.
+  Progress arrives while a single file is still being written, not only when
+  one finishes, so asking for one very large file reports as it goes rather
+  than once at the end.
+
 ### Fixed
 
 - **A second run no longer destroys the record of the first.** The manifest was

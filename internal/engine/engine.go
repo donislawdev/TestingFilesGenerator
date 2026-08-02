@@ -137,6 +137,16 @@ type Options struct {
 	// of the guard writes kilobytes rather than trying for a petabyte when
 	// the guard is broken. Nil means ask the operating system.
 	AvailableBytes func(path string) (int64, error)
+
+	// OnProgress is called as the run advances. Nil means silence, which is
+	// what every caller that has nobody to show it to should pass.
+	//
+	// Called from the same goroutine doing the work, so there is no
+	// concurrency here to get wrong. Called often - once per write inside a
+	// file, not only once per finished file - so rate limiting what actually
+	// reaches a screen belongs to the caller. Without the writes inside a
+	// file, one 5 GB file would report once, at the end.
+	OnProgress func(Progress)
 }
 
 func (o Options) availableBytes(path string) (int64, error) {
@@ -309,6 +319,15 @@ func TotalBytes(files []PlannedFile) int64 {
 //
 // A manifest is returned even when the run is cut short, otherwise cleanup
 // has nothing to work with.
+// Progress is how far a run has got. Both counts are known from the plan, so
+// the fractions are exact rather than estimated.
+type Progress struct {
+	FilesDone  int
+	FilesTotal int
+	BytesDone  int64
+	BytesTotal int64
+}
+
 // DefaultManifestName is where the manifest lands when nothing says otherwise.
 //
 // It lives here rather than in the caller because the engine has to know the
@@ -397,7 +416,10 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		return res, fmt.Errorf("cannot create the output directory %s: %w", opt.OutDir, err)
 	}
 
-	for _, f := range files {
+	totalBytes := TotalBytes(files)
+	var bytesDone int64
+
+	for i, f := range files {
 		select {
 		case <-ctx.Done():
 			// Stop starting new files. What is already finished stays, and
@@ -407,7 +429,27 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		default:
 		}
 
-		sum, err := writeOne(ctx, f, opt.OutDir)
+		// Built per file rather than once, because it closes over how far the
+		// run had got before this file started. Left nil when nobody is
+		// listening, so a run without progress allocates nothing for it.
+		var report func(int64)
+		if opt.OnProgress != nil {
+			report = func(inFile int64) {
+				opt.OnProgress(Progress{
+					FilesDone: i, FilesTotal: len(files),
+					BytesDone: bytesDone + inFile, BytesTotal: totalBytes,
+				})
+			}
+		}
+
+		sum, err := writeOne(ctx, f, opt.OutDir, report)
+		bytesDone += f.Plan.Bytes
+		if opt.OnProgress != nil {
+			opt.OnProgress(Progress{
+				FilesDone: i + 1, FilesTotal: len(files),
+				BytesDone: bytesDone, BytesTotal: totalBytes,
+			})
+		}
 		if err != nil {
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				m.Run.Complete = false
@@ -426,7 +468,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	return res, nil
 }
 
-func writeOne(ctx context.Context, f PlannedFile, outDir string) (string, error) {
+func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int64)) (string, error) {
 	final := filepath.Join(outDir, f.Name)
 	tmp := final + ".tfg-partial"
 
@@ -436,7 +478,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string) (string, error)
 	}
 
 	h := sha256.New()
-	counter := &countingWriter{w: io.MultiWriter(fh, h)}
+	counter := &countingWriter{w: io.MultiWriter(fh, h), report: report}
 
 	writeErr := f.Desc.Generator.Write(ctx, counter, f.Plan)
 	closeErr := fh.Close()
@@ -595,10 +637,18 @@ func runID(seed int64) string {
 type countingWriter struct {
 	w io.Writer
 	n int64
+	// report, when set, is called with the running total for this file. It is
+	// what gives progress inside a single large file rather than only between
+	// files - the case where silence is worst, because one 5 GB file is one
+	// callback if you only count finished files.
+	report func(int64)
 }
 
 func (c *countingWriter) Write(p []byte) (int, error) {
 	n, err := c.w.Write(p)
 	c.n += int64(n)
+	if c.report != nil {
+		c.report(c.n)
+	}
 	return n, err
 }

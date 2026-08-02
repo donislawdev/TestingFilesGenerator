@@ -304,7 +304,21 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
 	}
 
+	// Nil when the error channel is not a terminal, and then the engine is
+	// told nothing is listening rather than being handed a callback that
+	// throws its work away.
+	bar := newProgressBar(errOut)
+	if bar != nil && !g.dryRun {
+		opt.OnProgress = bar.report
+	}
+
 	res, runErr := engine.Run(ctx, planned, opt)
+
+	// Taken back before anything else is written, or the summary lands on top
+	// of a half drawn bar.
+	if bar != nil {
+		bar.clear()
+	}
 
 	for _, n := range res.Manifest.Notes() {
 		fmt.Fprintf(errOut, "note: %s\n", n)
