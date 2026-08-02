@@ -69,6 +69,33 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
+  staticcheck:
+    name: staticcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: staticcheck
+        # MIT, pinned. Run rather than imported, so it never enters go.mod and
+        # the dependency gate above does not see it - measured twice on
+        # 2026-08-02, go.mod and go.sum both untouched afterwards.
+        #
+        # The version is pinned because an unpinned analyser turns somebody
+        # else's release into a red build on a commit that changed nothing.
+        #
+        # Which checks run, and why ST1005 does not, is in staticcheck.conf.
+        # Measured before switching this on: two findings in the whole tree,
+        # both of them the word "Pillow" at the start of an error string, which
+        # is the name of the library that refused the image rather than a
+        # sentence. Zero findings with the config in place.
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.7.0 ./...
+
   race:
     name: race detector
     runs-on: ubuntu-latest

@@ -1,10 +1,12 @@
 package guard
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -54,6 +56,65 @@ func FuzzParseSize(f *testing.F) {
 		// negative one would reach the planner as a length to allocate.
 		if n < 0 {
 			t.Fatalf("ParseSize(%q) accepted and returned %d", s, n)
+		}
+	})
+}
+
+// FuzzNameTemplate throws arbitrary name templates at the planner.
+//
+// This is the one input in the tool where being wrong means writing outside the
+// directory the user pointed at, and it has been wrong once already: `name:
+// "../../x"` wrote two directories up and finished with exit code 0, found by
+// reading rather than by any test. A guard went in with five hand written
+// names. Nobody had thrown generated ones at it.
+//
+// A recipe travels between teams by design, so the name in it is a string
+// somebody else wrote. The invariant is deliberately about the outcome rather
+// than the rule: whatever the planner accepts has to land inside the output
+// directory. Asserting the rule instead - "it contains no slash" - would only
+// restate the implementation and would pass on any escape nobody thought of.
+func FuzzNameTemplate(f *testing.F) {
+	for _, seed := range []string{
+		"", "a.txt", "invoice_{index:04}.txt", "{index:04}",
+		"../x", "..", ".", "/etc/passwd", `C:\x`, "C:x", `a\b`, "a/b",
+		"con", "nul", "a ", "a.", ".hidden", "a\x00b", "{index}", "{",
+		strings.Repeat("n", 300) + ".txt", "\u202ecod.txt", "ą.txt",
+	} {
+		f.Add(seed)
+	}
+
+	const dir = "out"
+
+	f.Fuzz(func(t *testing.T, tmpl string) {
+		planned, err := engine.Plan([]engine.Target{{
+			ID:       "files",
+			Format:   "txt",
+			Sizes:    engine.Uniform(2, 4096),
+			NameTmpl: tmpl,
+			Label:    true,
+		}}, engine.Options{OutDir: dir, ManifestName: "manifest.json"})
+		if err != nil {
+			// Refusing is the safe answer and most templates get it.
+			return
+		}
+
+		for _, p := range planned {
+			// Where the file would actually land, worked out the way the
+			// writing path works it out.
+			landed := filepath.Join(dir, p.Name)
+			rel, relErr := filepath.Rel(dir, landed)
+			switch {
+			case p.Name == "":
+				t.Fatalf("template %q was accepted and produced a file with no name", tmpl)
+			case relErr != nil:
+				t.Fatalf("template %q produced %q, which does not sit under %s at all", tmpl, p.Name, dir)
+			case rel != p.Name:
+				// The join cleaned something away, so the name was carrying
+				// path structure rather than being a name.
+				t.Fatalf("template %q produced %q, which resolves to %q inside %s", tmpl, p.Name, rel, dir)
+			case rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)):
+				t.Fatalf("template %q escapes the output directory: %q", tmpl, rel)
+			}
 		}
 	})
 }
