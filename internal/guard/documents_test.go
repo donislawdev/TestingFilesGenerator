@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-// Eight numbering schemes carry the decisions of this project, and nothing was
+// Nine numbering schemes carry the decisions of this project, and nothing was
 // watching them.
 //
 // They collided once already and were pulled apart on 2026-08-01, which is why
@@ -36,14 +36,15 @@ var home = map[string]string{
 	"MF": "MANIFEST.md",
 	"O":  "OBSERVATIONS.md",
 	"G":  "GUI.md",
+	"UX": "UX.md",
 }
 
 // Longest first, so MF5 is not read as M followed by rubbish.
-var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|D|G|M|O)([0-9]+)\b`)
+var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|UX|D|G|M|O)([0-9]+)\b`)
 
 // The summary table in CLAUDE.md, which is what a new session reads instead of
 // the documents themselves.
-var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|D|G|M|O)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|D|G|M|O)([0-9]+)`")
+var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|UX|D|G|M|O)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|UX|D|G|M|O)([0-9]+)`")
 
 func TestEveryIdentifierAReferencePointsAtExists(t *testing.T) {
 	root := repoRoot(t)
