@@ -139,7 +139,7 @@ func TestTwoSizeDeclarationsInOneTargetAreRefused(t *testing.T) {
 		body string
 	}{
 		{"size and size-range", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    size-range: 1kb-8kb\n"},
-		{"boundary and size-range", "version: 1\ntargets:\n  - id: a\n    format: txt\n    boundary: 4kb\n    size-range: 1kb-8kb\n"},
+		{"boundary and size-range", "version: 1\ntargets:\n  - id: a\n    format: txt\n    boundary: 4kib\n    size-range: 1kb-8kb\n"},
 		{"a range running backwards", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size-range: 8kb-1kb\n"},
 		{"a range with one end", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size-range: 1kb\n"},
 	}
@@ -203,7 +203,7 @@ targets:
 func TestTheBoundaryFlagGivesTheThreeSizesAroundTheLimit(t *testing.T) {
 	dir := t.TempDir()
 	out := filepath.Join(dir, "out")
-	code, _, errOut := run(t, "generate", "--format", "txt", "--boundary", "4kb", "--out", out)
+	code, _, errOut := run(t, "generate", "--format", "txt", "--boundary", "4kib", "--out", out)
 	if code != cli.ExitOK {
 		t.Fatalf("exit %d:\n%s", code, errOut)
 	}

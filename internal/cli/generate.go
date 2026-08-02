@@ -266,7 +266,7 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 		return make([]int64, max(g.count, 0)), lo, hi, 0, ExitOK
 
 	case g.boundary != "":
-		limit, err := core.ParseSize(g.boundary)
+		limit, err := core.ParseBoundary(g.boundary)
 		if err != nil {
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 			return nil, 0, 0, 0, ExitUsage
@@ -384,29 +384,8 @@ func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOu
 				fmt.Fprintf(errOut, "  %-26s %d B\n", f.Name, f.Plan.Bytes)
 			}
 		}
-		if twin := decimalTwin(t.BoundaryLimit); twin > 0 {
-			fmt.Fprintf(errOut,
-				"  sizes count in 1024s. If the limit you are testing means %d B, ask for --boundary %d instead\n",
-				twin, twin)
-		}
-	}
-}
 
-// decimalTwin is the number somebody probably meant when a limit is written
-// "15 MB" in an API document rather than in bytes. Zero when the limit is not
-// a round count of the units this tool speaks, because then there is nothing
-// to be confused about.
-func decimalTwin(limit int64) int64 {
-	for _, u := range []struct{ binary, decimal int64 }{
-		{1 << 30, 1_000_000_000},
-		{1 << 20, 1_000_000},
-		{1 << 10, 1_000},
-	} {
-		if limit%u.binary == 0 {
-			return limit / u.binary * u.decimal
-		}
 	}
-	return 0
 }
 
 func contentsOf(t recipe.Target) []format.Content {

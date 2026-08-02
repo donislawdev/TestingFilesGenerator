@@ -362,7 +362,7 @@ func boundarySizes(p *problems, where, text string) []int64 {
 	if text == "" {
 		return nil
 	}
-	limit, err := core.ParseSize(text)
+	limit, err := core.ParseBoundary(text)
 	if err != nil {
 		p.add(fmt.Sprintf("%s: %v", where, err),
 			"units count in 1024s, so 10mb is 10485760 bytes",

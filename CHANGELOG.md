@@ -51,6 +51,19 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **`--boundary 15mb` is now refused rather than guessed at.** A boundary set
+  is the one place where the number belongs to somebody else - it is the limit
+  of the system you are testing, and "15 MB" on an upload form means 15000000
+  bytes far more often than 15728640. Sizes here count in 1024s, so a set built
+  from `15mb` sat entirely above a 15 MB limit and every file was rejected. The
+  files looked right, which is what made it expensive.
+  An ambiguous unit on a boundary now ends with an error naming both readings
+  and giving both commands, so nothing has to be worked out. `--boundary
+  15000000` and `--boundary 15mib` both say exactly which limit they mean and
+  are unchanged, as is `tfg validate` on a recipe using the `boundary` key.
+  `--size 15mb` is untouched. There the number describes a file this tool
+  makes, and 1024s are what Explorer and `ls` show it as.
+
 - **A boundary set now says which file is which.** The three files arrived as
   `files_0001`, `files_0002` and `files_0003`, and the only way to tell the one
   on the limit from the one a byte either side was to read their sizes off the

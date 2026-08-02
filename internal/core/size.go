@@ -47,7 +47,11 @@ func ParseSize(s string) (int64, error) {
 
 	multiplier, ok := unitBytes(unit)
 	if !ok {
-		return 0, fmt.Errorf("size %q uses an unknown unit %q: use b, kb, mb, gb, tb for thousands or kib, mib, gib, tib for 1024s", s, unit)
+		// Every unit here counts in 1024s, kb and kib alike. An earlier version
+		// of this sentence said kb was for thousands, which is the opposite of
+		// what the tool does and appeared in the one place somebody has
+		// already got their units wrong.
+		return 0, fmt.Errorf("size %q uses an unknown unit %q: use b, kb, mb, gb or tb, all counting in 1024s, and kib, mib, gib or tib for the same thing spelled out", s, unit)
 	}
 
 	// A whole number with no unit, or with a unit, is the common case and
@@ -156,6 +160,59 @@ func ParseSizeRange(text string) (low, high int64, err error) {
 //
 // Here for the same reason as ParseSizeRange - the recipe key and the flag have
 // to mean the same thing, and one implementation is how that stays true.
+// ambiguousUnits are the spellings that mean 1024s here and ten hundreds
+// almost everywhere a limit is written down.
+//
+// The distinction does not matter for a size, where the number describes a
+// file this tool makes and the user checks in Explorer, which counts in 1024s
+// too. It decides the whole answer for a boundary, where the number belongs to
+// somebody else's system.
+var ambiguousUnits = map[string]int64{
+	"k": 1_000, "kb": 1_000,
+	"m": 1_000_000, "mb": 1_000_000,
+	"g": 1_000_000_000, "gb": 1_000_000_000,
+	"t": 1_000_000_000_000, "tb": 1_000_000_000_000,
+}
+
+// ParseBoundary reads the limit of a boundary set and refuses to guess.
+//
+// A boundary set exists to sit either side of a limit that belongs to the
+// system under test, so the unit is whatever that system chose. A form saying
+// "15 MB" means 15000000 B in most services and 15728640 B in some, and a set
+// built around the wrong one sits entirely on one side of the real limit and
+// tests nothing at all.
+//
+// That is worse than an error, because the files arrive and look right. It was
+// reported exactly that way: a set aimed at a 15 MB limit had all three files
+// refused, and nothing anywhere said why.
+//
+// So an ambiguous spelling is refused rather than guessed - the same rule the
+// recipe already applies to 0x10 and 1_000, for the same reason. A plain byte
+// count and the spelled out 1024 units are unambiguous and pass through.
+func ParseBoundary(s string) (int64, error) {
+	raw := strings.TrimSpace(s)
+	digits := strings.TrimRight(raw, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
+	unit := strings.ToLower(strings.TrimSpace(raw[len(digits):]))
+
+	decimal, ambiguous := ambiguousUnits[unit]
+	if !ambiguous {
+		return ParseSize(s)
+	}
+
+	binary, err := ParseSize(s)
+	if err != nil {
+		return 0, err
+	}
+	n, _ := strconv.ParseFloat(strings.TrimSpace(digits), 64)
+	return 0, fmt.Errorf(
+		"boundary %q does not say which limit it means, and this is the one place that decides the answer. "+
+			"The limit belongs to the system you are testing, and %s means %d B to most services and %d B to some. "+
+			"A set built around the wrong one sits entirely past the real limit and tests nothing. "+
+			"Write the exact number: --boundary %d for the first, --boundary %d for the second",
+		s, strings.TrimSpace(raw), int64(n*float64(decimal)), binary,
+		int64(n*float64(decimal)), binary)
+}
+
 func BoundarySizes(limit int64) []int64 {
 	return []int64{limit - 1, limit, limit + 1}
 }

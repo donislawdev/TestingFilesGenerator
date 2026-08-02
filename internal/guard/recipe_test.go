@@ -594,7 +594,7 @@ seed: 7741
 targets:
   - id: edges
     format: wav
-    boundary: 1mb
+    boundary: 1mib
 `)
 
 	if code, _, errOut := run(t, "generate", path, "--out", out); code != cli.ExitOK {
@@ -633,7 +633,7 @@ func TestABoundaryBesideASizeOrACountIsRefused(t *testing.T) {
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			dir := t.TempDir()
-			path := writeRecipe(t, dir, "version: 1\ntargets:\n  - id: edges\n    format: txt\n    boundary: 1mb\n"+c.extra)
+			path := writeRecipe(t, dir, "version: 1\ntargets:\n  - id: edges\n    format: txt\n    boundary: 1mib\n"+c.extra)
 
 			code, _, errOut := run(t, "validate", path)
 			if code != cli.ExitRecipe {
