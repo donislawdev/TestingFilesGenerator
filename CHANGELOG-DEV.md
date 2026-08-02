@@ -17,6 +17,21 @@ belongs in one place.
 
 ### Added
 
+- **core.AppendFiller, the second shared primitive, and the fix that came with
+  it.** The padding that stretches a record's last value to an exact length was
+  written out six times, and the six had already drifted into five different
+  shapes - one format did not have the function at all and padded a URL path
+  instead. All six cut with dst[:start+int(n)], a byte cut, which is only safe
+  while every vocabulary is ASCII.
+  It now cuts on a character boundary and makes the length back up with spaces,
+  so the byte count - the promise - never gives way. Measured with a vocabulary
+  of Polish words across 304 sizes: 86 files carried a character cut in half
+  before, none after. No format bytes moved: with an ASCII vocabulary every byte
+  is a boundary, so the twelve pinned values stayed silent through the whole
+  extraction, which is what made it safe to do at all.
+  The mutation that used to prove the guard now reports NOT CAUGHT, because the
+  mutated code became correct. That is the runner proving a fix rather than a
+  hole, so the guard moved to the probe list with both numbers written down.
 - **A guard for a defect that does not exist yet.** Every record format pads its
   last value to an exact byte count and then cuts to length, which is safe only
   because every word in every vocabulary is ASCII. Measured with a vocabulary of

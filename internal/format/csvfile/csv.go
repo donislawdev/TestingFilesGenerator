@@ -230,24 +230,18 @@ func appendPhrase(dst []byte, rng *rand.Rand, n int) []byte {
 //
 // It never emits a quote or a newline, the two characters that would end the
 // field early.
+// appendFiller stretches the description to the byte.
+//
+// A comma every fourth word, unlike every other format here, and on purpose:
+// the description is a quoted field, so the padding is what makes a long file
+// keep exercising the quoting rather than turning into plain words.
 func appendFiller(dst []byte, n int64) []byte {
-	if n <= 0 {
-		// An empty description is a legal field, and it is what the smallest
-		// files get. Anything below zero would mean the minimum was ignored,
-		// and FillRecords turns that into an error rather than a wrong size.
-		return dst
-	}
-	start := len(dst)
-	for i := 0; int64(len(dst)-start) < n; i++ {
-		if len(dst) > start {
-			if i%4 == 0 {
-				dst = append(dst, ',')
-			}
-			dst = append(dst, ' ')
+	return core.AppendFiller(dst, words, n, func(i int) string {
+		if i%4 == 0 {
+			return ", "
 		}
-		dst = append(dst, words[i%len(words)]...)
-	}
-	return dst[:start+int(n)]
+		return " "
+	})
 }
 
 // minimumBytes is the header and one whole row, computed rather than written

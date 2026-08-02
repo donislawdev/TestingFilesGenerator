@@ -250,18 +250,9 @@ func (shapes) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 // It never emits an ampersand or an angle bracket, the characters that would
 // have to be escaped - an escape would make the text longer than the count
 // asked for.
+// appendFiller stretches the closing label's text to the byte.
 func appendFiller(dst []byte, n int64) []byte {
-	if n <= 0 {
-		return dst
-	}
-	start := len(dst)
-	for i := 0; int64(len(dst)-start) < n; i++ {
-		if len(dst) > start {
-			dst = append(dst, ' ')
-		}
-		dst = append(dst, words[i%len(words)]...)
-	}
-	return dst[:start+int(n)]
+	return core.AppendFiller(dst, words, n, nil)
 }
 
 // minimumBytes is the declaration, the root element and one whole record,

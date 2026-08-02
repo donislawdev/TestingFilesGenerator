@@ -248,15 +248,14 @@ func appendPath(dst []byte, n int64) []byte {
 		// turns that into an error rather than a file of the wrong size.
 		return append(dst, 'x')
 	}
-	start := len(dst)
-	for int64(len(dst)-start) < n {
-		if len(dst) > start {
-			dst = append(dst, '/')
-		}
-		dst = append(dst, "segment"...)
-	}
-	return dst[:start+int(n)]
+	// One word and a slash between the repeats, so the padding reads as a path
+	// rather than as prose. The vocabulary is a literal here because a URL path
+	// is ASCII by definition, but it goes through the shared filler all the
+	// same - one copy of "cut to the byte" rather than six.
+	return core.AppendFiller(dst, pathFiller, n, func(int) string { return "/" })
 }
+
+var pathFiller = []string{"segment"}
 
 // minEntry is the length of the shortest line this generator can produce, and
 // minimumBytes is the smallest file - one whole entry.

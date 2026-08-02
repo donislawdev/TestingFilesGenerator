@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"unicode/utf8"
 )
 
 // Several formats are read one record at a time - a log entry, a CSV row, a
@@ -104,6 +105,67 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 		return fmt.Errorf("core: the closing record came to %d B and %d B were owed", got, remaining)
 	}
 	return WriteAll(w, buf)
+}
+
+// AppendFiller appends whole words until exactly n bytes have been added, and
+// returns the result.
+//
+// This is the padding that absorbs the remainder of a record built to an exact
+// length. It was written out six times before it moved here, and the six copies
+// had already drifted into five different shapes for the same job - which is
+// the argument for a primitive rather than a convention.
+//
+// separator says what goes in front of word i, for i above zero. Nil means one
+// space, which is what most formats want.
+//
+// 🔴 The cut lands on a character boundary, not on a byte. Every vocabulary in
+// this project is ASCII today, so the two are the same thing and this costs
+// nothing - measured, the pinned values did not move. They stop being the same
+// thing the day a locale pack arrives, and `locale` is already a key in the
+// recipe schema. Measured before the fix, with a vocabulary of Polish words
+// across 304 sizes: every file the right size, and 86 of them carrying a
+// character cut in half. The size guard, the determinism guard and the pinned
+// values were all green through it.
+func AppendFiller(dst []byte, words []string, n int64, separator func(i int) string) []byte {
+	if n <= 0 {
+		// An empty value is legal, and it is what the smallest files get.
+		// Anything below zero would mean the minimum was ignored, and
+		// FillRecords turns that into an error rather than a wrong size.
+		return dst
+	}
+
+	start := len(dst)
+	for i := 0; int64(len(dst)-start) < n; i++ {
+		if len(dst) > start {
+			if separator == nil {
+				dst = append(dst, ' ')
+			} else {
+				dst = append(dst, separator(i)...)
+			}
+		}
+		dst = append(dst, words[i%len(words)]...)
+	}
+
+	cut := start + int(n)
+	out := dst[:cut]
+
+	// Back off over a character the cut split. One cut can only split one
+	// character and a character is at most four bytes, so three steps is always
+	// enough. With ASCII the first check passes and nothing moves at all.
+	for k := 0; k < 3 && len(out) > start; k++ {
+		r, size := utf8.DecodeLastRune(out[start:])
+		if r != utf8.RuneError || size != 1 {
+			break
+		}
+		out = out[:len(out)-1]
+	}
+
+	// Put the length back with spaces. The byte count is the promise, so it is
+	// the one thing that cannot give way.
+	for len(out) < cut {
+		out = append(out, ' ')
+	}
+	return out
 }
 
 // WriteAll writes every byte or returns the error that stopped it. A short

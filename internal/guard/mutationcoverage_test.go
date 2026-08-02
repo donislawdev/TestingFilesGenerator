@@ -87,6 +87,11 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestEveryTextFormatIsValidUTF8": "checked 2026-08-02 with tools/probes/probe-utf8-filler.py, which swaps in a vocabulary of Polish words and sweeps 304 sizes. " +
+		"Before core.AppendFiller cut on a character boundary: 304 files, every one the right size, 86 of them carrying invalid UTF-8. After: 0. " +
+		"It was a mutation until the fix landed, and the runner then reported it NOT CAUGHT - which is the fix being proven rather than a hole. " +
+		"Breaking this guard now needs two changes at once, a non ASCII vocabulary and a byte cut, and that is not one substitution.",
+
 	"TestNoFunctionOrFileHasGrownPastWhatAPersonCanFollow": "checked 2026-08-02 three ways, with tools/probes/probe-shape.py: a function grown past 80 lines of code went red, " +
 		"a file grown past 550 went red, and the same function padded with 90 lines of COMMENT stayed green - so the ceiling is on code and not on explaining. " +
 		"A probe rather than a mutation because the substitution is ninety lines long and mutate.py entries have to be literals.",

@@ -288,21 +288,9 @@ func appendPhrase(dst []byte, rng *rand.Rand, n int) []byte {
 // It never emits an ampersand or an angle bracket - the characters that would
 // have to be escaped, and an escape would make the text longer than the count
 // asked for.
+// appendFiller stretches the closing element's text to the byte.
 func appendFiller(dst []byte, n int64) []byte {
-	if n <= 0 {
-		// An empty element is legal, and it is what the smallest files get.
-		// Anything below zero would mean the minimum was ignored, and
-		// FillRecords turns that into an error rather than a wrong size.
-		return dst
-	}
-	start := len(dst)
-	for i := 0; int64(len(dst)-start) < n; i++ {
-		if len(dst) > start {
-			dst = append(dst, ' ')
-		}
-		dst = append(dst, words[i%len(words)]...)
-	}
-	return dst[:start+int(n)]
+	return core.AppendFiller(dst, words, n, nil)
 }
 
 // minimumBytes is the declaration, the root element and one whole record,
