@@ -286,7 +286,21 @@ run = subprocess.run([exe, "--export-type=png", "--export-filename=" + str(out),
 
 # Measured 2026-08-01: a malformed drawing still exits zero here and says so
 # only on standard error, so the exit code alone would bless a broken file.
-noise = run.stderr or ""
+#
+# Any word on standard error was therefore treated as a complaint - and that
+# made this guard flaky. Seen three times on 2026-08-02: GLib, which Inkscape
+# links, writes warnings about the machine rather than about the drawing, and
+# one of them named an unrelated Windows Store application. A guard that
+# reddens on somebody else's software is a guard that gets switched off.
+#
+# So lines from the GLib subsystems are dropped and everything else is judged
+# as before. The filter is narrow on purpose: Inkscape's own objections to a
+# file do not carry these prefixes, and the check below is proven by feeding
+# this script a malformed drawing.
+def about_the_drawing(line):
+    return "GLib-" not in line and "Gtk-" not in line and "GdkPixbuf-" not in line
+
+noise = "\n".join(l for l in (run.stderr or "").splitlines() if about_the_drawing(l))
 for word in ("error", "Error", "ERROR", "unsupported", "WARNING"):
     if word in noise:
         print("FAIL inkscape complained:", noise.strip()[:200]); sys.exit(1)
