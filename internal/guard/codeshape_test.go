@@ -36,7 +36,74 @@ const (
 	// functions, so counting them would have punished the wrong thing.
 	longestFunction = 80
 	longestFile     = 550
+
+	// Depth answers a different question than length, and it is the better
+	// question of the two. A hundred line function that is flat reads top to
+	// bottom. A thirty line function nested five deep has to be held in the
+	// head all at once, and that is where a case gets missed.
+	//
+	// Set from measurement like the two above, and a ratchet like them.
+	deepestNesting = 4
 )
+
+// nesting reports how many blocks deep the deepest statement of a function sits.
+//
+// A function body is depth zero. Each if, for, switch, select, range and
+// function literal inside it adds one. else-if is deliberately not counted as
+// deeper than its if - it reads as one chain, and counting it would push toward
+// a switch that says less.
+func nesting(fn *ast.FuncDecl) int {
+	deepest := 0
+	var walk func(n ast.Node, depth int)
+	walk = func(n ast.Node, depth int) {
+		if depth > deepest {
+			deepest = depth
+		}
+		switch node := n.(type) {
+		case *ast.IfStmt:
+			walk(node.Body, depth+1)
+			// An else-if chain stays at the same depth as the if it follows.
+			if el, ok := node.Else.(*ast.IfStmt); ok {
+				walk(el, depth)
+			} else if node.Else != nil {
+				walk(node.Else, depth+1)
+			}
+			return
+		case *ast.ForStmt:
+			walk(node.Body, depth+1)
+			return
+		case *ast.RangeStmt:
+			walk(node.Body, depth+1)
+			return
+		case *ast.SwitchStmt:
+			walk(node.Body, depth+1)
+			return
+		case *ast.TypeSwitchStmt:
+			walk(node.Body, depth+1)
+			return
+		case *ast.SelectStmt:
+			walk(node.Body, depth+1)
+			return
+		case *ast.FuncLit:
+			walk(node.Body, depth+1)
+			return
+		}
+		ast.Inspect(n, func(c ast.Node) bool {
+			if c == nil || c == n {
+				return true
+			}
+			switch c.(type) {
+			case *ast.IfStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt,
+				*ast.TypeSwitchStmt, *ast.SelectStmt, *ast.FuncLit:
+				walk(c, depth)
+				return false
+			}
+			return true
+		})
+	}
+	walk(fn.Body, 0)
+	return deepest
+}
 
 // codeLines reports, for the given 1-based inclusive line range, how many lines
 // carry code. A line is code when it is not blank and is not inside a comment.
@@ -108,6 +175,12 @@ func TestNoFunctionOrFileHasGrownPastWhatAPersonCanFollow(t *testing.T) {
 				}
 				from := fset.Position(fn.Pos()).Line
 				to := fset.Position(fn.End()).Line
+				if d := nesting(fn); d > deepestNesting {
+					tooLong = append(tooLong, fmt.Sprintf(
+						"%s:%d %s nests %d deep and the ceiling is %d",
+						rel, from, name(fn), d, deepestNesting))
+				}
+
 				n := codeLines(src, comments, from, to)
 				if n <= longestFunction {
 					continue

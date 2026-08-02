@@ -890,3 +890,57 @@ func readManifest(t *testing.T, path string) manifestShape {
 	}
 	return m
 }
+
+// A recipe arrives from somebody else's repository - it can come in a pull
+// request - so its size is chosen by a stranger, and reading time grows with
+// it. The cost sits inside the YAML parser, where nothing we do afterwards can
+// reduce it, so the only lever is refusing the bytes before they get there.
+//
+// Measured 2026-08-02: 80 kB of deliberate nesting cost about 1.3 s over the
+// baseline, growing faster than linear.
+func TestARecipeTooLargeToBeWrittenByHandIsRefused(t *testing.T) {
+	dir := t.TempDir()
+
+	// One byte past the limit, so this fails if the boundary moves either way.
+	huge := filepath.Join(dir, "huge.yaml")
+	body := append([]byte("version: 1\n# "), bytes.Repeat([]byte("x"), recipe.MaxBytes)...)
+	if err := os.WriteFile(huge, body, 0o644); err != nil {
+		t.Fatalf("writing the oversized recipe: %v", err)
+	}
+
+	// Every command that takes a recipe, because the check lives in one helper
+	// and the point of the guard is that no command bypasses it.
+	for _, args := range [][]string{
+		{"validate", huge},
+		{"generate", huge},
+		{"recipe", "fmt", huge},
+		{"validate", huge, "--json"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var out, errOut bytes.Buffer
+			code := cli.Run(context.Background(), args, &out, &errOut)
+			if code != cli.ExitRecipe {
+				t.Fatalf("exit code %d, expected %d - an oversized recipe is a bad recipe, not an I/O failure",
+					code, cli.ExitRecipe)
+			}
+			said := errOut.String() + out.String()
+			if !strings.Contains(said, "the limit is") {
+				t.Errorf("the refusal does not say what the limit is: %q", said)
+			}
+		})
+	}
+
+	// A recipe just under the limit still works, or the guard above would be
+	// satisfied by refusing everything.
+	fits := filepath.Join(dir, "fits.yaml")
+	pad := recipe.MaxBytes - 200
+	body = append([]byte("version: 1\n# "), bytes.Repeat([]byte("x"), int(pad))...)
+	body = append(body, []byte("\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n")...)
+	if err := os.WriteFile(fits, body, 0o644); err != nil {
+		t.Fatalf("writing the large but legal recipe: %v", err)
+	}
+	var out, errOut bytes.Buffer
+	if code := cli.Run(context.Background(), []string{"validate", fits}, &out, &errOut); code != cli.ExitOK {
+		t.Fatalf("a recipe under the limit was refused with %d: %s", code, errOut.String())
+	}
+}

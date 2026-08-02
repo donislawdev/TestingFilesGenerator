@@ -69,6 +69,29 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
+  govulncheck:
+    name: known vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: govulncheck
+        # The official Go vulnerability scanner. BSD-3-Clause, read from the
+        # LICENSE file of the pinned version rather than recalled. Run rather
+        # than imported, so it never enters go.mod.
+        #
+        # It reports only what is actually reachable from our code, which is
+        # what makes it worth having: a scanner that lists every advisory
+        # touching the module graph produces noise, and noise gets switched off.
+        # Measured before switching it on, 2026-08-02: no vulnerabilities found.
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+
   staticcheck:
     name: staticcheck
     runs-on: ubuntu-latest

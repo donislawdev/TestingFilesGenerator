@@ -13,7 +13,27 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
+// tooLargeToRead reports a recipe past the limit, checked on the directory
+// entry rather than after loading.
+//
+// "Read it all, then say it was too big" is not a limit - the cost was already
+// paid by then. One helper for all three commands that take a recipe, so none
+// of them can be the one that forgets.
+func tooLargeToRead(path string) error {
+	info, err := os.Stat(path)
+	if err != nil || info.Size() <= recipe.MaxBytes {
+		// A path that cannot be examined is not refused here. The read below
+		// gives the better message for it.
+		return nil
+	}
+	return &recipe.TooLargeError{Name: path, Bytes: info.Size()}
+}
+
 func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
+	if err := tooLargeToRead(path); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
+		return nil, "", ExitRecipe
+	}
 	src, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))
@@ -129,6 +149,11 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 	if !asJSON {
 		return loadRecipe(path, errOut)
 	}
+	if err := tooLargeToRead(path); err != nil {
+		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{{What: err.Error()}}})
+		return nil, "", ExitRecipe
+	}
 	src, err := os.ReadFile(path)
 	if err != nil {
 		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
@@ -194,6 +219,10 @@ Flags:
 		return ExitUsage
 	}
 
+	if err := tooLargeToRead(path); err != nil {
+		fmt.Fprintf(errOut, "tfg: %s\n", err)
+		return ExitRecipe
+	}
 	src, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))

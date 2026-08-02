@@ -166,7 +166,43 @@ type Output struct {
 // Nothing is written before this succeeds, and it reports every problem at
 // once rather than the first one. Fixing a recipe one error per run is the
 // cheapest way to make someone stop using the tool.
+// MaxBytes is the largest recipe this build will read.
+//
+// A recipe comes from somebody else's repository - it can arrive in a pull
+// request - so its size is chosen by a stranger. Reading time grows with it,
+// and the cost sits inside the YAML parser where nothing we do afterwards can
+// reduce it. The only lever before parsing is the size of the input.
+//
+// Measured on 2026-08-02: a deliberately nested document of 80 kB cost about
+// 1.3 s of parsing over the baseline, and the growth is faster than linear. A
+// megabyte caps the worst case at seconds rather than minutes, and is far above
+// any recipe a person writes - ten thousand targets spelled out in full come to
+// roughly half of it.
+//
+// What this does not do: it does not defend against a recipe that fits and is
+// still expensive. Seconds on a hostile file are acceptable, minutes were not.
+const MaxBytes = 1 << 20
+
+// TooLargeError is returned for a recipe past MaxBytes.
+type TooLargeError struct {
+	Name  string
+	Bytes int64
+}
+
+func (e *TooLargeError) Error() string {
+	return fmt.Sprintf(
+		"%s is %d B and the limit is %d B. A recipe is a document somebody writes, and reading time grows with its size, so an unbounded one is a way to hang a build. Split it into several recipes, or generate the targets with a loop in your own script",
+		e.Name, e.Bytes, MaxBytes)
+}
+
 func Parse(src []byte, name string) (*Recipe, error) {
+	// Checked here as well as before the read, because this is the door every
+	// caller comes through - including the fuzz target, which hands over bytes
+	// that never were a file.
+	if int64(len(src)) > MaxBytes {
+		return nil, &TooLargeError{Name: name, Bytes: int64(len(src))}
+	}
+
 	var raw rawRecipe
 
 	// An editor that writes a byte order mark would otherwise hand the decoder
