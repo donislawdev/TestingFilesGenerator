@@ -12,6 +12,20 @@
 /CLAUDE.md
 
 # ---------------------------------------------------------------------------
+# Technical changelog - owner decision, 2026-08-02
+#
+# It was tracked until that day and its history stays in the repository, which
+# the owner decided is not a problem. From here it is an internal file like the
+# two above: the user facing CHANGELOG.md is what ships.
+#
+# Two things move with it and must not be separated from this line. It came off
+# englishFiles in internal/guard/ascii_test.go, because a guard that looks for a
+# file the repository does not have fails every fresh clone. And CHANGELOG.md no
+# longer points a reader at it, because that reader would not find it.
+# ---------------------------------------------------------------------------
+/CHANGELOG-DEV.md
+
+# ---------------------------------------------------------------------------
 # Internal tooling - owner decision, 2026-08-01
 #
 # Measurement probes and helper scripts we use while building this. Kept

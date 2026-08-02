@@ -30,10 +30,16 @@ func asciiRequired(rel string) bool {
 //
 // The internal documents are absent from this list because they are absent
 // from the repository. See .gitignore.
+// CHANGELOG-DEV.md was on this list until 2026-08-02 and is deliberately off
+// it. The owner took the technical changelog out of the repository that day, so
+// by the criterion this comment states - the place, not the reader - it stopped
+// being repository text. Leaving it listed would fail every fresh clone and
+// every CI run, because the guard would look for a file that is not there.
+//
+// Do not put it back without moving the file back first. The two go together.
 var englishFiles = []string{
 	"README.md",
 	"CHANGELOG.md",
-	"CHANGELOG-DEV.md",
 }
 
 func TestTextInTheRepositoryIsAsciiOnly(t *testing.T) {
