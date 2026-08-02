@@ -15,6 +15,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -137,7 +138,9 @@ Run "tfg <command> --help" for the flags of one command.
 //
 // A dozen separate pointers is what made this command the longest function in
 // the tree, because every piece of it had to be handed all of them.
-const defaultManifestName = "manifest.json"
+// defaultManifestName mirrors the engine, which has to know the name to keep
+// a run from writing over an earlier one's record.
+const defaultManifestName = engine.DefaultManifestName
 
 // splitLeadingPath takes the file a command works on off the front of the
 // arguments, leaving the rest for flag parsing.

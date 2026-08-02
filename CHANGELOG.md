@@ -37,6 +37,25 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A second run no longer destroys the record of the first.** The manifest was
+  not covered by the refusal to write over existing files, so running into a
+  directory that already held one replaced it. Everything the earlier manifest
+  listed then stopped being anybody's - `tfg cleanup` reported nothing to
+  remove and those files could never be cleaned up by this tool again.
+  When the file names collided the run at least ended with an error. When they
+  did not, it ended with code 0 and said nothing, and the files were lost from
+  the record anyway.
+  A run into a directory that already holds a manifest is now refused before
+  anything is written, with code 5, and the message says what to do. To
+  generate alongside an earlier run, give the manifest its own name with
+  `output.manifest` in a recipe, or write to another directory with `--out`.
+
+- **`--dry-run` now reaches the same verdict the real run would.** The free
+  space check and the collision check both sat behind the point where a dry run
+  returned, so `--dry-run` reported success for runs that refuse to start. It
+  now ends with code 6 when the run does not fit on the disk and code 5 when a
+  name is already taken, and it still writes nothing at all.
+
 - **Asking for help is no longer reported as a mistake.** `tfg generate --help`
   and the same for `validate`, `verify`, `cleanup`, `formats` and `recipe fmt`
   ended with exit code 2, which is the code that means you typed something

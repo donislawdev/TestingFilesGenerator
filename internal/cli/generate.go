@@ -312,7 +312,10 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 
 	if runErr != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(runErr))
-		if !g.dryRun {
+		// A run that was refused before it wrote anything gets no manifest.
+		// Writing one would replace the record of whatever was already in the
+		// directory, and that record is the only thing cleanup can work from.
+		if !g.dryRun && res.Started {
 			saveManifest(res, opt, errOut)
 		}
 		return classify(runErr)

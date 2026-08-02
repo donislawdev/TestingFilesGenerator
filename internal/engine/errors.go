@@ -41,9 +41,20 @@ func (e *SpaceError) Error() string {
 // a word is the one mistake that destroys work rather than wasting time.
 type CollisionError struct {
 	Path string
+
+	// Manifest tells the two apart. The remedy differs, and so does what is
+	// lost by writing anyway: a data file costs the bytes, and the manifest
+	// costs the record of every file an earlier run wrote - after which
+	// cleanup cannot see them and nothing can.
+	Manifest bool
 }
 
 func (e *CollisionError) Error() string {
+	if e.Manifest {
+		return fmt.Sprintf(
+			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory with --out, or move the old manifest aside",
+			e.Path)
+	}
 	return fmt.Sprintf(
 		"%s already exists and this run will not write over it. Generate into an empty directory with --out, or remove the file first",
 		e.Path)

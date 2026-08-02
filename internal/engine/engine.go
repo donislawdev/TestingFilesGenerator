@@ -152,6 +152,15 @@ type Result struct {
 	// Failures counts files that could not be produced. A run with failures
 	// keeps its good files and reports the partial outcome.
 	Failures int
+
+	// Started says whether the run got past its preflight checks.
+	//
+	// A manifest is written even when a run is cut short, because otherwise
+	// cleanup has nothing to work from. That rule was applied one step too
+	// wide: a run refused before it wrote anything also produced a manifest,
+	// which replaced the record of an earlier run and left that run's files
+	// with nothing able to remove them. A refused run has nothing to record.
+	Started bool
 }
 
 // PlannedFile is one file worked out before anything is written.
@@ -300,6 +309,60 @@ func TotalBytes(files []PlannedFile) int64 {
 //
 // A manifest is returned even when the run is cut short, otherwise cleanup
 // has nothing to work with.
+// DefaultManifestName is where the manifest lands when nothing says otherwise.
+//
+// It lives here rather than in the caller because the engine has to know the
+// name to protect it from being written over, and two copies of a file name
+// are two things to keep in step.
+const DefaultManifestName = "manifest.json"
+
+// preflight answers whether this run may start, without writing anything.
+//
+// Both checks used to sit after the dry run had already returned, so
+// --dry-run reported success for runs that would refuse to start.
+func preflight(files []PlannedFile, opt Options) error {
+	// Free space first. Finding out at file five thousand of ten thousand
+	// leaves a half written set and a full disk on a machine somebody works on.
+	needed := TotalBytes(files)
+	if available, err := opt.availableBytes(opt.OutDir); err == nil {
+		if available < needed {
+			return &SpaceError{Needed: needed, Available: available, Path: opt.OutDir}
+		}
+	}
+	// A failure to read the free space is not a reason to refuse. A disk we
+	// cannot measure is not the same as a disk that is full.
+
+	// The manifest is checked with the files it would describe, and leaving it
+	// out cost exactly what it protects. A second run into the same directory
+	// wrote a fresh manifest over the old one, so every file the old one listed
+	// stopped being anybody's - cleanup reported nothing to remove and those
+	// files could never be cleaned up by this tool again. It happened on a
+	// successful run as readily as on a refused one, and on the successful one
+	// it happened in silence.
+	name := opt.ManifestName
+	if name == "" {
+		name = DefaultManifestName
+	}
+	if path := filepath.Join(opt.OutDir, name); exists(path) {
+		return &CollisionError{Path: path, Manifest: true}
+	}
+
+	// Nothing else is written over either. This tool runs in directories that
+	// belong to the user, so destroying their work is the one failure that
+	// cannot be undone by running again.
+	for _, f := range files {
+		if path := filepath.Join(opt.OutDir, f.Name); exists(path) {
+			return &CollisionError{Path: path}
+		}
+	}
+	return nil
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {
 	m := manifest.New(
 		"testing-files-generator", version.Version,
@@ -309,6 +372,15 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	m.Run.RecipeHash = opt.RecipeHash
 	m.Run.Overrides = opt.Overrides
 	res := &Result{Manifest: m}
+
+	// Whether this run may start at all is settled before anything is written
+	// and before a dry run returns. A dry run exists to count and show before
+	// the disk is touched, so reporting success for a run that refuses to
+	// start on the very next line answers the wrong question.
+	if err := preflight(files, opt); err != nil {
+		return res, err
+	}
+	res.Started = true
 
 	if opt.DryRun {
 		// Nothing is written. Every entry is what would have been produced,
@@ -321,30 +393,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		return res, nil
 	}
 
-	// Free space is checked before the first byte. Finding out at file five
-	// thousand of ten thousand leaves a half written set and a full disk on a
-	// machine somebody works on.
-	needed := TotalBytes(files)
-	if available, err := opt.availableBytes(opt.OutDir); err == nil {
-		if available < needed {
-			return res, &SpaceError{Needed: needed, Available: available, Path: opt.OutDir}
-		}
-	}
-	// A failure to read the free space is not a reason to refuse. It is
-	// reported by the caller and the run goes ahead, because a disk we cannot
-	// measure is not the same as a disk that is full.
-
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
 		return res, fmt.Errorf("cannot create the output directory %s: %w", opt.OutDir, err)
-	}
-
-	// Nothing is written over. This tool runs in directories that belong to
-	// the user, so destroying their work is the one failure that cannot be
-	// undone by running again.
-	for _, f := range files {
-		if _, err := os.Stat(filepath.Join(opt.OutDir, f.Name)); err == nil {
-			return res, &CollisionError{Path: filepath.Join(opt.OutDir, f.Name)}
-		}
 	}
 
 	for _, f := range files {
