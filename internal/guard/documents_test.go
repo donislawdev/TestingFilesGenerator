@@ -34,14 +34,15 @@ var home = map[string]string{
 	"RC": "RECIPE.md",
 	"PR": "PRESETS.md",
 	"MF": "MANIFEST.md",
+	"O":  "OBSERVATIONS.md",
 }
 
 // Longest first, so MF5 is not read as M followed by rubbish.
-var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|D|M)([0-9]+)\b`)
+var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|D|M|O)([0-9]+)\b`)
 
 // The summary table in CLAUDE.md, which is what a new session reads instead of
 // the six documents.
-var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|D|M)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|D|M)([0-9]+)`")
+var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|D|M|O)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|D|M|O)([0-9]+)`")
 
 func TestEveryIdentifierAReferencePointsAtExists(t *testing.T) {
 	root := repoRoot(t)
@@ -247,17 +248,20 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-// observationItem matches a numbered row in the observations file. That file
-// keeps its own numbering, plain integers rather than one of the prefixes
-// above, on purpose - a new prefix would have to be added to the table in
-// CLAUDE.md and to the map that drives the test above.
+// observationItem matches a numbered row in the observations file.
 //
-// The cost of that choice is that nothing was watching those numbers, and on
-// 2026-08-02 two rows were appended that reused 25 and 26. The file's own rule
-// two says a number, once given, stays - because a reference from another
-// document otherwise points at somebody else's row. So the rule now has a
-// guard, written the day it was broken.
-var observationItem = regexp.MustCompile(`(?m)^\| ([0-9]+) \|`)
+// That file used to number its rows with plain integers, and the comment here
+// used to explain why the cheaper option was taken. It cost twice. First
+// nothing watched the numbers, and on 2026-08-02 two rows were appended that
+// reused 25 and 26. Then the deeper cost showed: a bare 27 in another document
+// is not a reference to anything, so the one guard that checks references could
+// not see it either.
+//
+// Prefixed on 2026-08-02, which made the rows citable as O27 and pulled them
+// under the same guard as every other numbering in the project. This is the
+// same conclusion the sibling project reached after its own positional
+// numbering shifted under a reference written an hour earlier.
+var observationItem = regexp.MustCompile(`(?m)^\| O([0-9]+) \|`)
 
 func TestTheObservationsAreNumberedOnceEach(t *testing.T) {
 	path := filepath.Join(repoRoot(t), "docs", "OBSERVATIONS.md")
