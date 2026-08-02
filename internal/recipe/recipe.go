@@ -88,7 +88,10 @@ func contentGroups(p *problems, where string, raw []map[string]any) []Content {
 		at := fmt.Sprintf("%s: contains entry %d", where, i+1)
 		g := Content{Count: 1}
 
-		for key := range item {
+		// Sorted, because Go randomises map order and these keys become
+		// problems in the report. Unsorted, the same broken recipe would print
+		// its problems in a different order on two runs.
+		for _, key := range sortedKeys(item) {
 			switch key {
 			case "format", "count", "size":
 			default:
@@ -161,11 +164,6 @@ type Output struct {
 	Manifest string
 }
 
-// Parse reads a recipe and returns it only when every check passes.
-//
-// Nothing is written before this succeeds, and it reports every problem at
-// once rather than the first one. Fixing a recipe one error per run is the
-// cheapest way to make someone stop using the tool.
 // MaxBytes is the largest recipe this build will read.
 //
 // A recipe comes from somebody else's repository - it can arrive in a pull
@@ -195,6 +193,11 @@ func (e *TooLargeError) Error() string {
 		e.Name, e.Bytes, MaxBytes)
 }
 
+// Parse reads a recipe and returns it only when every check passes.
+//
+// Nothing is written before this succeeds, and it reports every problem at
+// once rather than the first one. Fixing a recipe one error per run is the
+// cheapest way to make someone stop using the tool.
 func Parse(src []byte, name string) (*Recipe, error) {
 	// Checked here as well as before the read, because this is the door every
 	// caller comes through - including the fuzz target, which hands over bytes
@@ -561,6 +564,17 @@ var reasons = map[string]bool{
 	"malware_signature": true, "duplicate": true, "none": true,
 }
 
+// sortedKeys is map iteration with the randomness taken out, for the places
+// where the keys become text somebody reads.
+func sortedKeys(m map[string]any) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
 func reasonList() string {
 	out := make([]string, 0, len(reasons))
 	for r := range reasons {
@@ -639,7 +653,7 @@ func expectation(p *problems, where string, v any) (string, string) {
 
 		// Any key other than the two we carry would be dropped on the way to
 		// the manifest, and a dropped expectation is one nobody ever checks.
-		for k := range x {
+		for _, k := range sortedKeys(x) {
 			switch k {
 			case "outcome", "reason":
 			default:
