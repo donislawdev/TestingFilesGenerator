@@ -102,6 +102,9 @@ var provenByProbe = map[string]string{
 		"an entry naming a guard that was renamed away, and a guard left on the list after it gained a mutation. All three went red.",
 
 	"TestEveryLinkBetweenDocumentsLeadsSomewhere": "checked 2026-08-01 by adding a link to a document that does not exist. It went red.",
+
+	"TestTheObservationsAreNumberedOnceEach": "checked 2026-08-02 two ways: one number used twice, and a number cut out of the middle leaving a hole. " +
+		"Both went red. Written the same day the rule it guards was broken - two rows were appended reusing 25 and 26, and nothing noticed.",
 }
 
 var (

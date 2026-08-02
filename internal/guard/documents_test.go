@@ -246,3 +246,67 @@ func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
+
+// observationItem matches a numbered row in the observations file. That file
+// keeps its own numbering, plain integers rather than one of the prefixes
+// above, on purpose - a new prefix would have to be added to the table in
+// CLAUDE.md and to the map that drives the test above.
+//
+// The cost of that choice is that nothing was watching those numbers, and on
+// 2026-08-02 two rows were appended that reused 25 and 26. The file's own rule
+// two says a number, once given, stays - because a reference from another
+// document otherwise points at somebody else's row. So the rule now has a
+// guard, written the day it was broken.
+var observationItem = regexp.MustCompile(`(?m)^\| ([0-9]+) \|`)
+
+func TestTheObservationsAreNumberedOnceEach(t *testing.T) {
+	path := filepath.Join(repoRoot(t), "docs", "OBSERVATIONS.md")
+
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Logf("SKIPPED: docs/ is not here, so nothing was compared. "+
+			"The internal documents are excluded from the repository, so this check only runs on a machine that has them. (%v)", err)
+		return
+	}
+
+	seen := map[int]bool{}
+	highest := 0
+	var repeated []int
+	for _, m := range observationItem.FindAllStringSubmatch(string(body), -1) {
+		n, err := strconv.Atoi(m[1])
+		if err != nil {
+			continue
+		}
+		if seen[n] {
+			repeated = append(repeated, n)
+		}
+		seen[n] = true
+		if n > highest {
+			highest = n
+		}
+	}
+
+	// A file with no rows at all would pass every check below while checking
+	// nothing, which is the shape this project keeps finding in its own guards.
+	if len(seen) == 0 {
+		t.Fatal("OBSERVATIONS.md holds no numbered rows, so this guard compared nothing")
+	}
+
+	if len(repeated) > 0 {
+		sort.Ints(repeated)
+		t.Errorf("these numbers are used twice in OBSERVATIONS.md: %v - a number, once given, stays, "+
+			"because a reference from another document otherwise points at a different row than it did", repeated)
+	}
+
+	var missing []int
+	for n := 1; n <= highest; n++ {
+		if !seen[n] {
+			missing = append(missing, n)
+		}
+	}
+	if len(missing) > 0 {
+		t.Errorf("OBSERVATIONS.md counts up to %d and never uses %v - a closed item is struck through where it is, not cut out",
+			highest, missing)
+	}
+	t.Logf("observations: %d rows, numbered 1 to %d", len(seen), highest)
+}

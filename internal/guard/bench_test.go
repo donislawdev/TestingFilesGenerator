@@ -44,6 +44,45 @@ func BenchmarkGenerate(b *testing.B) {
 	}
 }
 
+// BenchmarkRunToDisk times the path a user actually waits on: plan, generate,
+// hash for the manifest, write, publish.
+//
+// The benchmark above deliberately avoids the disk in order to measure the
+// generators. This one exists because that left the thing people actually feel
+// unmeasured, and measuring it changed the picture completely - producing bytes
+// is not what a run of many small files spends its time on.
+//
+// Measured 2026-08-02 on the owner's machine, 5000 files of 1 KiB through the
+// command line: 1.67 to 1.79 ms per file, against 0.17 to 0.33 ms for the same
+// run with --dry-run. So about 85% of a small file run is the write path, and
+// the generator - which does 949 MB/s - contributes microseconds.
+//
+// Wall clock here swings by 80% between runs on one machine, because of the
+// disk cache and the virus scanner, so this is a number to read rather than a
+// number to gate on.
+func BenchmarkRunToDisk(b *testing.B) {
+	const count = 500
+
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		dir := b.TempDir()
+		targets := []engine.Target{{
+			ID: "many", Format: "txt", Sizes: engine.Uniform(count, 1024), Label: true,
+		}}
+		opt := engine.Options{OutDir: dir, Seed: 7741, Command: "bench", ManifestName: "manifest.json"}
+		planned, err := engine.Plan(targets, opt)
+		if err != nil {
+			b.Fatalf("planning: %v", err)
+		}
+		b.StartTimer()
+
+		if _, err := engine.Run(context.Background(), planned, opt); err != nil {
+			b.Fatalf("running: %v", err)
+		}
+	}
+	b.ReportMetric(float64(count), "files/op")
+}
+
 // BenchmarkPlanTenThousand times the phase that happens before any byte is
 // written. It is the one that decides how long `--dry-run` takes, and it is
 // also the one holding the whole plan in memory.
