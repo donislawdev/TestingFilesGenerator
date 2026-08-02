@@ -230,6 +230,14 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 	case rt.Boundary != nil:
 		t.Size = boundaryText(p, where, rt.Boundary)
 		t.Sizes = boundarySizes(p, where, t.Size)
+		if len(t.Sizes) == 3 {
+			// Kept so the three files can name which of them they are. Without
+			// it they arrive as an ordinary group of three and the only way to
+			// tell the limit from one byte either side is to read the sizes
+			// back off the disk - which is exactly what somebody uploading them
+			// to a form cannot do.
+			t.BoundaryLimit = t.Sizes[1]
+		}
 
 	case rt.Size != nil:
 		s, ok := rt.Size.value()

@@ -168,6 +168,7 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 			SizeIsRange:      t.SizeIsRange,
 			SizeMin:          t.SizeMin,
 			SizeMax:          t.SizeMax,
+			BoundaryLimit:    t.BoundaryLimit,
 			NameTmpl:         t.Name,
 			Label:            label,
 			Expected:         t.Expected,
@@ -216,7 +217,7 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		return nil, ExitUsage
 	}
 
-	sizes, rangeLow, rangeHigh, code := sizesFromFlags(g, errOut)
+	sizes, rangeLow, rangeHigh, boundaryLimit, code := sizesFromFlags(g, errOut)
 	if code != ExitOK {
 		return nil, code
 	}
@@ -233,16 +234,17 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 	}
 
 	return []engine.Target{{
-		ID:          g.id,
-		Format:      g.formatID,
-		Sizes:       sizes,
-		SizeIsRange: g.sizeRange != "",
-		SizeMin:     rangeLow,
-		SizeMax:     rangeHigh,
-		NameTmpl:    g.name,
-		Label:       !g.clean,
-		Expected:    g.expected,
-		Properties:  g.props,
+		ID:            g.id,
+		Format:        g.formatID,
+		Sizes:         sizes,
+		SizeIsRange:   g.sizeRange != "",
+		SizeMin:       rangeLow,
+		SizeMax:       rangeHigh,
+		BoundaryLimit: boundaryLimit,
+		NameTmpl:      g.name,
+		Label:         !g.clean,
+		Expected:      g.expected,
+		Properties:    g.props,
 	}}, ExitOK
 }
 
@@ -253,36 +255,36 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 // recipe reader cannot drift into disagreeing about what 1kb-8kb or a limit
 // means. A range leaves the list carrying only the count, exactly as the
 // recipe does, because the draw needs the seed of the run.
-func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high int64, code int) {
+func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high, boundaryLimit int64, code int) {
 	switch {
 	case g.sizeRange != "":
 		lo, hi, err := core.ParseSizeRange(g.sizeRange)
 		if err != nil {
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-			return nil, 0, 0, ExitUsage
+			return nil, 0, 0, 0, ExitUsage
 		}
-		return make([]int64, max(g.count, 0)), lo, hi, ExitOK
+		return make([]int64, max(g.count, 0)), lo, hi, 0, ExitOK
 
 	case g.boundary != "":
 		limit, err := core.ParseSize(g.boundary)
 		if err != nil {
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-			return nil, 0, 0, ExitUsage
+			return nil, 0, 0, 0, ExitUsage
 		}
 		if limit < 1 {
 			fmt.Fprintf(errOut,
 				"tfg: --boundary %d B is too small. The set needs a size one byte below the limit and there is nothing below zero. Use a limit of at least 1 B.\n", limit)
-			return nil, 0, 0, ExitUsage
+			return nil, 0, 0, 0, ExitUsage
 		}
-		return core.BoundarySizes(limit), 0, 0, ExitOK
+		return core.BoundarySizes(limit), 0, 0, limit, ExitOK
 
 	default:
 		bytesWanted, err := core.ParseSize(g.sizeStr)
 		if err != nil {
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-			return nil, 0, 0, ExitUsage
+			return nil, 0, 0, 0, ExitUsage
 		}
-		return engine.Uniform(g.count, bytesWanted), 0, 0, ExitOK
+		return engine.Uniform(g.count, bytesWanted), 0, 0, 0, ExitOK
 	}
 }
 
@@ -299,6 +301,8 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	// file.
 	fmt.Fprintf(errOut, "%d file(s) in %d target(s), %d B total\n",
 		len(planned), len(targets), engine.TotalBytes(planned))
+
+	echoBoundaries(targets, planned, errOut)
 
 	if g.dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
@@ -359,6 +363,51 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 }
 
 // defaultManifestName is where the manifest lands when nothing says otherwise.
+
+// echoBoundaries spells out a boundary set, because a boundary set exists to
+// sit either side of a limit that belongs to somebody else, and the exact
+// numbers are the whole of it.
+//
+// Reported by hand: a set built for a 15 MB limit had all three files refused
+// by the service it was aimed at. Nothing was broken. Sizes here count in
+// 1024s, so the set sat around 15728640, and the service meant 15000000 - so
+// every file was over the limit and the set tested nothing at all.
+func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOut io.Writer) {
+	for i := range targets {
+		t := &targets[i]
+		if t.BoundaryLimit <= 0 {
+			continue
+		}
+		fmt.Fprintf(errOut, "boundary %q around %d B:\n", t.ID, t.BoundaryLimit)
+		for _, f := range planned {
+			if f.Target == t {
+				fmt.Fprintf(errOut, "  %-26s %d B\n", f.Name, f.Plan.Bytes)
+			}
+		}
+		if twin := decimalTwin(t.BoundaryLimit); twin > 0 {
+			fmt.Fprintf(errOut,
+				"  sizes count in 1024s. If the limit you are testing means %d B, ask for --boundary %d instead\n",
+				twin, twin)
+		}
+	}
+}
+
+// decimalTwin is the number somebody probably meant when a limit is written
+// "15 MB" in an API document rather than in bytes. Zero when the limit is not
+// a round count of the units this tool speaks, because then there is nothing
+// to be confused about.
+func decimalTwin(limit int64) int64 {
+	for _, u := range []struct{ binary, decimal int64 }{
+		{1 << 30, 1_000_000_000},
+		{1 << 20, 1_000_000},
+		{1 << 10, 1_000},
+	} {
+		if limit%u.binary == 0 {
+			return limit / u.binary * u.decimal
+		}
+	}
+	return 0
+}
 
 func contentsOf(t recipe.Target) []format.Content {
 	if t.Contains == nil {

@@ -55,8 +55,15 @@ type Target struct {
 	SizeIsRange bool
 	SizeMin     int64
 	SizeMax     int64
-	NameTmpl    string
-	Label       bool
+	// BoundaryLimit is the limit a boundary set was built around, zero when
+	// this target is not one. The three files name themselves from it.
+	//
+	// Reported by hand: three files called files_0001, files_0002 and
+	// files_0003 do not say which is the limit and which is a byte either
+	// side, and somebody dropping one into an upload form has no way to tell.
+	BoundaryLimit int64
+	NameTmpl      string
+	Label         bool
 	// Expected is what the system under test should do with these files, and
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string
@@ -573,9 +580,25 @@ func expectationFor(f PlannedFile) manifest.Expected {
 // indexToken is the one placeholder a name template understands.
 const indexToken = "{index:04}"
 
+// boundaryRoles names the three files of a boundary set in the order the sizes
+// are built, which is one byte under the limit, the limit, one byte over.
+//
+// The words rather than the arithmetic, because the arithmetic form has a plus
+// sign in it and these files exist to be dropped into upload forms, where a
+// plus sign in a name is a well known way to lose an afternoon.
+var boundaryRoles = [3]string{"under_limit", "at_limit", "over_limit"}
+
 func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 	tmpl := t.NameTmpl
-	if tmpl == "" {
+	switch {
+	case tmpl != "":
+		// A template the user wrote wins. They asked for it by name.
+	case t.BoundaryLimit > 0 && index < len(boundaryRoles):
+		// A boundary set says which file is which. The role goes in as literal
+		// text rather than as a token, so it still passes the same name checks
+		// below - the id comes from the user and can hold anything.
+		tmpl = t.ID + "_" + boundaryRoles[index] + d.Extension
+	default:
 		tmpl = t.ID + "_" + indexToken + d.Extension
 	}
 	name := strings.ReplaceAll(tmpl, indexToken, fmt.Sprintf("%04d", index+1))

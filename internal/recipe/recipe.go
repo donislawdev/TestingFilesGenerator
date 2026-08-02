@@ -38,10 +38,14 @@ type Target struct {
 	Size string
 	// Sizes is one exact size per file, resolved and known before anything is
 	// written. A boundary set puts three consecutive sizes here under one id.
-	Sizes  []int64
-	Format string
-	Name   string
-	Label  bool
+	Sizes []int64
+	// BoundaryLimit is the limit a boundary set was built around, and zero
+	// when this target is not one. It is what lets the three files say which
+	// of them is under the limit, on it and over it.
+	BoundaryLimit int64
+	Format        string
+	Name          string
+	Label         bool
 	// Expected is what the system under test should do with these files, and
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string

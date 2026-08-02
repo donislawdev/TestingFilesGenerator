@@ -51,6 +51,19 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A boundary set now says which file is which.** The three files arrived as
+  `files_0001`, `files_0002` and `files_0003`, and the only way to tell the one
+  on the limit from the one a byte either side was to read their sizes off the
+  disk. They are now called `<id>_under_limit`, `<id>_at_limit` and
+  `<id>_over_limit`. A `--name` template still wins, and a group that is not a
+  boundary set is still numbered.
+  The run also prints the three exact byte counts. That matters more than it
+  sounds: sizes here count in 1024s, so `--boundary 15mb` builds a set around
+  15728640, while a service whose documentation says "15 MB" often means
+  15000000 - and then all three files are over the limit and the set tests
+  nothing. When the limit is a round number of these units, the output now says
+  what the decimal equivalent would be and gives the command for it.
+
 - **A second run no longer destroys the record of the first.** The manifest was
   not covered by the refusal to write over existing files, so running into a
   directory that already held one replaced it. Everything the earlier manifest

@@ -208,14 +208,30 @@ func TestTheBoundaryFlagGivesTheThreeSizesAroundTheLimit(t *testing.T) {
 		t.Fatalf("exit %d:\n%s", code, errOut)
 	}
 
+	// By name rather than by position. This used to compare the files in the
+	// order the directory listed them, which worked only because files_0001
+	// through files_0003 happened to sort into size order. A boundary set now
+	// names each file for the part it plays, so directory order and size order
+	// are no longer the same thing - and the name is the stronger assertion
+	// anyway, because it says which file is which rather than only that the
+	// three sizes are present somewhere.
+	want := map[string]int64{
+		"files_under_limit.txt": 4095,
+		"files_at_limit.txt":    4096,
+		"files_over_limit.txt":  4097,
+	}
 	got := describeFiles(t, out)
-	want := []int64{4095, 4096, 4097}
 	if len(got) != len(want) {
 		t.Fatalf("%d files, expected 3", len(got))
 	}
-	for i := range want {
-		if got[i].bytes != want[i] {
-			t.Errorf("file %d is %d B, expected %d B", i+1, got[i].bytes, want[i])
+	for _, f := range got {
+		size, known := want[f.name]
+		if !known {
+			t.Errorf("unexpected file %s in a boundary set", f.name)
+			continue
+		}
+		if f.bytes != size {
+			t.Errorf("%s is %d B, expected %d B", f.name, f.bytes, size)
 		}
 	}
 }
