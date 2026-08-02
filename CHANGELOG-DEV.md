@@ -17,6 +17,20 @@ belongs in one place.
 
 ### Added
 
+- **A guard for a defect that does not exist yet.** Every record format pads its
+  last value to an exact byte count and then cuts to length, which is safe only
+  because every word in every vocabulary is ASCII. Measured with a vocabulary of
+  Polish words across 304 sizes: 304 files, every one the right size, and 86 of
+  them carrying invalid UTF-8 - a character cut in half. Nothing would have
+  said so. Nothing in the Go code validates UTF-8, and node reads a file with
+  fs.readFileSync(path, "utf8"), which replaces a broken sequence rather than
+  refusing, so JSON.parse succeeds on a corrupt file.
+  The trigger is already named in the schema: `locale` is a recipe key this
+  build refuses with "generated content is English only so far". The guard goes
+  in now, before the code that needs it, the same way the first four guards in
+  this project did. The fix does not, because the six copies of the filler have
+  already drifted apart and putting it right means moving the primitive into
+  core - a decision rather than a tidy up.
 - **Four gates, because the owner of this project does not read the code.** A
   rule written in prose about code nobody reads has one reader and one judge,
   and they are the same - the same shape as a guard claimed to be proven by

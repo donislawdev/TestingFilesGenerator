@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -405,6 +406,62 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 					size, shapes, minRecords)
 			}
 		})
+	}
+}
+
+// textFormats are the formats whose whole output is text. A new one belongs
+// here, and the check below fails on a name that is not a format at all, so the
+// list cannot quietly point at nothing.
+var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg"}
+
+// Every record format pads its last value to an exact BYTE count and then cuts
+// to length. Today every word in every vocabulary is ASCII, so a byte is a
+// character and the cut always lands between two of them.
+//
+// The day that stops being true, the cut splits a character in half. Measured
+// on 2026-08-02 with tools/probes/probe-utf8-filler.py, one format and a
+// vocabulary of Polish words: 304 sizes, 304 files, **zero wrong sizes** and
+// **86 files carrying invalid UTF-8**. The size is exact, so the size guard is
+// green. The bytes repeat, so determinism is green. The file looks right.
+//
+// And most of the reference tools would not say anything either. Node reads a
+// file with fs.readFileSync(path, "utf8"), which replaces a broken sequence
+// with U+FFFD rather than refusing - so JSON.parse succeeds on a corrupt file.
+// Python's open(encoding="utf-8") does refuse, so some formats are covered and
+// others are not.
+//
+// This is not a defect today. It is a defect the moment somebody adds a locale
+// pack, which the recipe schema already names - `locale` is a key this build
+// refuses with "generated content is English only so far" - and which M5
+// describes. The guard goes in before the code that needs it, which is how the
+// first four guards in this project were built.
+func TestEveryTextFormatIsValidUTF8(t *testing.T) {
+	for _, id := range textFormats {
+		d, err := format.Get(id)
+		if err != nil {
+			t.Errorf("textFormats names %q and the registry has no such format", id)
+			continue
+		}
+		for _, size := range []int64{d.MinBytes, d.MinBytes + 1, 4097, densitySize} {
+			t.Run(id+"/"+sizeText(size), func(t *testing.T) {
+				body := generateBytes(t, id, size)
+				if utf8.Valid(body) {
+					return
+				}
+				// Point at the break rather than saying the file is bad, so
+				// whoever reads this knows where to look.
+				for i := 0; i < len(body); {
+					r, n := utf8.DecodeRune(body[i:])
+					if r == utf8.RuneError && n == 1 {
+						from := max(0, i-30)
+						t.Fatalf("byte %d of %d is not valid UTF-8, so a character was cut in half: %q",
+							i, len(body), body[from:min(len(body), i+10)])
+					}
+					i += n
+				}
+				t.Fatal("the file is not valid UTF-8")
+			})
+		}
 	}
 }
 
