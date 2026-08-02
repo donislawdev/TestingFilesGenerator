@@ -34,7 +34,7 @@ type generateOpts struct {
 	props     propertyFlag
 }
 
-func generateFlagSet(errOut io.Writer, g *generateOpts) *flag.FlagSet {
+func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.Writer)) {
 	fs := flag.NewFlagSet("generate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 
@@ -59,8 +59,8 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) *flag.FlagSet {
 	g.props = propertyFlag{}
 	fs.Var(&g.props, "set", "format property, repeatable: --set width=1920 --set height=1080")
 
-	fs.Usage = func() {
-		fmt.Fprint(errOut, `tfg generate - produce files.
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, `tfg generate - produce files.
 
 Usage:
   tfg generate <recipe.yaml> [flags]   settings come from the file
@@ -68,14 +68,21 @@ Usage:
 
 Flags:
 `)
+		fs.SetOutput(w)
 		fs.PrintDefaults()
+		fs.SetOutput(errOut)
 	}
-	return fs
+	fs.Usage = func() { usage(errOut) }
+	return fs, usage
 }
 
 func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	var g generateOpts
-	fs := generateFlagSet(errOut, &g)
+	fs, usage := generateFlagSet(errOut, &g)
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
+	}
 
 	// A recipe is named first, before any flag. Anywhere else and a value
 	// such as "--seed 5" could not be told apart from a file name.

@@ -37,6 +37,19 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Asking for help is no longer reported as a mistake.** `tfg generate --help`
+  and the same for `validate`, `verify`, `cleanup`, `formats` and `recipe fmt`
+  ended with exit code 2, which is the code that means you typed something
+  wrong, and printed the text on the error channel. The top level help says to
+  run exactly those commands, so the tool was telling you to run something it
+  then called a mistake.
+  All of them now end with 0 and write to standard output, so `tfg generate
+  --help | less` works and a shell script can capture the text.
+  Two things deliberately did not change. A mistyped command or flag still ends
+  with 2 and still writes to the error channel, because that really is a
+  mistake. Running `tfg` with no arguments at all also still ends with 2 - in a
+  script that is an oversight and it should stop the build.
+
 - **A number in a recipe now means what it looks like.** YAML decides for itself
   what a bare number means, and its rules are not the ones you apply reading the
   file. Every one of these was wrong, and none of them said a word: `seed: 010`

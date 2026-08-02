@@ -21,8 +21,8 @@ func cleanup(ctx context.Context, args []string, out, errOut io.Writer) int {
 	withManifest := fs.Bool("with-manifest", false, "remove the manifest as well, once every file it lists is gone")
 	asJSON := fs.Bool("json", false, "write the report as JSON instead of prose")
 	against := fs.String("against", "", "directory to clean. Defaults to the directory holding the manifest")
-	fs.Usage = func() {
-		fmt.Fprint(errOut, `tfg cleanup - remove the files a manifest lists.
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, `tfg cleanup - remove the files a manifest lists.
 
 Removes what the manifest lists and nothing else. Without --yes it deletes
 nothing and prints what it would remove. A file whose content has changed
@@ -33,7 +33,14 @@ Usage:
 
 Flags:
 `)
+		fs.SetOutput(w)
 		fs.PrintDefaults()
+		fs.SetOutput(errOut)
+	}
+	fs.Usage = func() { usage(errOut) }
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
 	}
 	leading, rest := splitLeadingPath(args)
 	if err := fs.Parse(rest); err != nil {

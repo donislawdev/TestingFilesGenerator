@@ -83,13 +83,38 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(out, version.Version)
 		return ExitOK
 	case "--help", "-h", "help":
-		usage(errOut)
+		// Asking is not a mistake, so the answer goes where answers go and
+		// "tfg --help | less" works.
+		usage(out)
 		return ExitOK
 	default:
 		fmt.Fprintf(errOut, "tfg: unknown command %q.\n\n", args[0])
 		usage(errOut)
 		return ExitUsage
 	}
+}
+
+// helpRequested reports whether these arguments explicitly ask for help.
+//
+// The question has to be settled before the flag package parses. By the time
+// it hands back ErrHelp it has already printed the text to the stream the set
+// was pointed at, and it reports the parse as a failure - so an answer arrives
+// on the channel meant for complaints, with the ending that means the caller
+// typed something wrong.
+//
+// Scanning stops at "--", after which nothing is a flag any more. A value that
+// happens to read as "--help" is therefore taken as a request for help, which
+// is the harmless way to be wrong about it.
+func helpRequested(args []string) bool {
+	for _, a := range args {
+		switch a {
+		case "--":
+			return false
+		case "-h", "-help", "--help":
+			return true
+		}
+	}
+	return false
 }
 
 func usage(w io.Writer) {

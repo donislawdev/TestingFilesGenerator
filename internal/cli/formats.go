@@ -28,6 +28,27 @@ func formats(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("formats", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	asJSON := fs.Bool("json", false, "write the list as JSON to standard output")
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, `tfg formats - list the formats this build supports.
+
+Says three things a request depends on and that nobody can guess: how faithful
+the file will be, whether it repeats to the byte, and how small it can go.
+
+Usage:
+  tfg formats
+  tfg formats --json
+
+Flags:
+`)
+		fs.SetOutput(w)
+		fs.PrintDefaults()
+		fs.SetOutput(errOut)
+	}
+	fs.Usage = func() { usage(errOut) }
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
+	}
 	if err := fs.Parse(args); err != nil {
 		return ExitUsage
 	}

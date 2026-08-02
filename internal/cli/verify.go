@@ -18,8 +18,8 @@ func verify(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs.SetOutput(errOut)
 	against := fs.String("against", "", "directory to check. Defaults to the directory holding the manifest")
 	asJSON := fs.Bool("json", false, "write the report to stdout as JSON")
-	fs.Usage = func() {
-		fmt.Fprint(errOut, `tfg verify - check that a directory still matches a manifest.
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, `tfg verify - check that a directory still matches a manifest.
 
 Reports files that are missing, files nobody asked for, and files whose
 content has changed. The directory is always a local one.
@@ -29,7 +29,14 @@ Usage:
 
 Flags:
 `)
+		fs.SetOutput(w)
 		fs.PrintDefaults()
+		fs.SetOutput(errOut)
+	}
+	fs.Usage = func() { usage(errOut) }
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
 	}
 	leading, rest := splitLeadingPath(args)
 	if err := fs.Parse(rest); err != nil {

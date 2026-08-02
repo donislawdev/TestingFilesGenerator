@@ -58,9 +58,16 @@ func validate(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	asJSON := fs.Bool("json", false, "write the result as JSON, with every problem separately")
-	fs.Usage = func() {
-		fmt.Fprint(errOut, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n\nFlags:\n")
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n\nFlags:\n")
+		fs.SetOutput(w)
 		fs.PrintDefaults()
+		fs.SetOutput(errOut)
+	}
+	fs.Usage = func() { usage(errOut) }
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
 	}
 	leading, rest := splitLeadingPath(args)
 	if err := fs.Parse(rest); err != nil {
@@ -196,15 +203,22 @@ func recipeCmd(args []string, out, errOut io.Writer) int {
 	fs.SetOutput(errOut)
 	write := fs.Bool("w", false, "write the result back to the file instead of printing it")
 	check := fs.Bool("check", false, "print nothing and end with code 3 when the file is not in its settled shape")
-	fs.Usage = func() {
-		fmt.Fprint(errOut, `tfg recipe fmt - print a recipe in its settled shape, comments kept.
+	usage := func(w io.Writer) {
+		fmt.Fprint(w, `tfg recipe fmt - print a recipe in its settled shape, comments kept.
 
 Usage:
   tfg recipe fmt <recipe.yaml>
 
 Flags:
 `)
+		fs.SetOutput(w)
 		fs.PrintDefaults()
+		fs.SetOutput(errOut)
+	}
+	fs.Usage = func() { usage(errOut) }
+	if helpRequested(args) {
+		usage(out)
+		return ExitOK
 	}
 	leading, rest := splitLeadingPath(args[1:])
 	if err := fs.Parse(rest); err != nil {
