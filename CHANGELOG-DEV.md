@@ -17,6 +17,36 @@ belongs in one place.
 
 ### Added
 
+- **Four gates, because the owner of this project does not read the code.** A
+  rule written in prose about code nobody reads has one reader and one judge,
+  and they are the same - the same shape as a guard claimed to be proven by
+  mutation with no mutation behind it. So everything that could become a gate
+  became one, and the prose was cut back to what could not.
+  The race detector runs as its own CI job on Linux, where a C toolchain is
+  free, so the three system matrix stays on CGO_ENABLED=0. Measured: 31 s
+  without, 148 s with, zero races in the tree.
+  A guard confines concurrency to the two files that declare it - the registry
+  lock and the signal handler - because a race is the one defect class here that
+  changes no size and, on a run that interleaves the safe way, no byte either.
+  Waiting on ctx.Done() is excluded by name, or the rule would have been
+  meaningless the day it was written.
+  A guard caps functions at 80 lines of code and files at 550. It counts code
+  and not comments, which was measured rather than assumed: comments and blanks
+  run 17 to 45 lines in the longest functions, so counting them would have been
+  a limit on explaining. Both numbers are a ratchet and go down only.
+  Two fuzz targets cover the size parser and the recipe reader. Native to Go, so
+  no dependency and nothing for the module gate to notice.
+- **Fuzzing paid for itself in under two minutes, twice.** A size of 2^63 was
+  accepted and came back negative, because float64 rounds MaxInt64 up to 2^63
+  and the bound compared that value against itself. And "targets: ! " made the
+  YAML decoder dereference nil, which reached the user as a stack trace and exit
+  code 2 - a crash wearing the exit code for a mistyped command. Both failing
+  inputs are in testdata/fuzz and are part of the repository, so every later run
+  starts from them.
+- **Seven functions split and cli.go broken into seven files**, one per command,
+  paying off the debt the new ceiling named. No format bytes moved: the pinned
+  values covered zip three ways and wav once, and stayed silent through both
+  generator refactors.
 - **Two guards for defects that shipped past every existing one.** One walks the
   record numbers of CSV, JSON and XML and demands 1 to N with nothing missing.
   The other parses an SVG, works out the band each line of text inks, and

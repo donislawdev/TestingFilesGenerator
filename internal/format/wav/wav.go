@@ -94,23 +94,25 @@ type memo struct {
 
 func (m memo) frameSize() int64 { return int64(m.channels) * int64(m.bits) / 8 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+// readProperties turns the request properties into the part of the memo that
+// describes the sound itself.
+func readProperties(r format.Request) (memo, error) {
 	m := memo{seed: r.Seed}
 	var err error
 
 	if m.rate, err = intProperty(r.Properties, "sample_rate", defaultRate, 8000, 192000); err != nil {
-		return format.Plan{}, err
+		return memo{}, err
 	}
 	if m.channels, err = intProperty(r.Properties, "channels", defaultChannels, 1, 8); err != nil {
-		return format.Plan{}, err
+		return memo{}, err
 	}
 	if m.bits, err = intProperty(r.Properties, "bit_depth", defaultBits, 8, 32); err != nil {
-		return format.Plan{}, err
+		return memo{}, err
 	}
 	switch m.bits {
 	case 8, 16, 24, 32:
 	default:
-		return format.Plan{}, fmt.Errorf("wav: bit_depth must be 8, 16, 24 or 32, got %d", m.bits)
+		return memo{}, fmt.Errorf("wav: bit_depth must be 8, 16, 24 or 32, got %d", m.bits)
 	}
 
 	m.content = "tone"
@@ -119,8 +121,64 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		case "tone", "silence", "noise", "sweep":
 			m.content = v
 		default:
-			return format.Plan{}, fmt.Errorf("wav: content must be tone, silence, noise or sweep, got %q", v)
+			return memo{}, fmt.Errorf("wav: content must be tone, silence, noise or sweep, got %q", v)
 		}
+	}
+	return m, nil
+}
+
+// layout splits what is left after the headers between whole audio frames and
+// the padding chunk.
+//
+// The audio takes as much of the file as whole frames allow, and the padding
+// chunk takes the remainder. Working the other way round - fixing the length
+// first - would leave most sizes unreachable, because a frame is two to sixteen
+// bytes and the remainder rarely lands on a boundary.
+func layout(m *memo, r format.Request, fixed int64) error {
+	free := r.Bytes - fixed
+	fs := m.frameSize()
+
+	if free%fs == 0 {
+		// The audio fills the file exactly. No padding chunk at all.
+		m.frames = free / fs
+		m.dataLen = free
+		return nil
+	}
+
+	// Leave room for the padding chunk, then give the rest to the audio.
+	if free < chunkHeader {
+		// Too little room for both a frame and a chunk header, so the file is
+		// header only plus padding.
+		m.frames = 0
+		m.dataLen = 0
+		m.withPad = true
+		m.junkLen = free - chunkHeader
+		if m.junkLen < 0 {
+			return &format.BelowMinimumError{
+				Format:    "WAV",
+				Requested: r.Bytes,
+				Minimum:   fixed + chunkHeader,
+				Reason: fmt.Sprintf(
+					"this size needs a padding chunk and the smallest one costs %d B, so nothing between %d and %d B can be reached",
+					chunkHeader, fixed, fixed+chunkHeader),
+				Hint: fmt.Sprintf("Ask for exactly %d B or for %d B or more.", fixed, fixed+chunkHeader),
+			}
+		}
+		return nil
+	}
+
+	audio := free - chunkHeader
+	m.frames = audio / fs
+	m.dataLen = m.frames * fs
+	m.withPad = true
+	m.junkLen = free - m.dataLen - chunkHeader
+	return nil
+}
+
+func (generator) Plan(r format.Request) (format.Plan, error) {
+	m, err := readProperties(r)
+	if err != nil {
+		return format.Plan{}, err
 	}
 
 	if r.Label {
@@ -139,45 +197,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	}
 
-	// The audio takes as much of the file as whole frames allow, and the
-	// padding chunk takes the remainder. Working the other way round - fixing
-	// the length first - would leave most sizes unreachable, because a frame
-	// is two to sixteen bytes and the remainder rarely lands on a boundary.
-	free := r.Bytes - fixed
-	fs := m.frameSize()
-
-	switch {
-	case free%fs == 0:
-		// The audio fills the file exactly. No padding chunk at all.
-		m.frames = free / fs
-		m.dataLen = free
-	default:
-		// Leave room for the padding chunk, then give the rest to the audio.
-		if free < chunkHeader {
-			// Too little room for both a frame and a chunk header, so the
-			// file is header only plus padding.
-			m.frames = 0
-			m.dataLen = 0
-			m.withPad = true
-			m.junkLen = free - chunkHeader
-			if m.junkLen < 0 {
-				return format.Plan{}, &format.BelowMinimumError{
-					Format:    "WAV",
-					Requested: r.Bytes,
-					Minimum:   fixed + chunkHeader,
-					Reason: fmt.Sprintf(
-						"this size needs a padding chunk and the smallest one costs %d B, so nothing between %d and %d B can be reached",
-						chunkHeader, fixed, fixed+chunkHeader),
-					Hint: fmt.Sprintf("Ask for exactly %d B or for %d B or more.", fixed, fixed+chunkHeader),
-				}
-			}
-			break
-		}
-		audio := free - chunkHeader
-		m.frames = audio / fs
-		m.dataLen = m.frames * fs
-		m.withPad = true
-		m.junkLen = free - m.dataLen - chunkHeader
+	if err := layout(&m, r, fixed); err != nil {
+		return format.Plan{}, err
 	}
 
 	durationMs := float64(m.frames) / float64(m.rate) * 1000

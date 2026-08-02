@@ -233,6 +233,17 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A size one past the largest that fits is refused instead of coming back
+  negative.** `--size 9223372036854775808` was accepted and turned into a
+  negative byte count on its way to the planner. The check that was meant to
+  stop it compared two floating point numbers that had both been rounded to the
+  same value, so it never fired. Any size a file can actually have was and is
+  unaffected.
+- **A recipe with a stray tag marker is reported instead of crashing the tool.**
+  A line such as `targets: !` with nothing after the marker made `tfg validate`
+  stop with a Go stack trace and exit code 2, which is the code for a mistyped
+  command. It now says the file could not be read as YAML, points at the kind of
+  marker that does it, and exits 3 like every other unusable recipe.
 - **Record numbers no longer skip. This changes the bytes of every CSV, JSON and
   XML file, so it is a breaking change.** The number just before the last record
   was missing - a file of a thousand records ran 1 to 999 and then 1001. Nothing

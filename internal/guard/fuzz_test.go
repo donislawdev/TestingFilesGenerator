@@ -1,0 +1,113 @@
+package guard
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+)
+
+// Every other guard here checks an input somebody thought of. The size guard
+// walks about 120 sizes per format, the exit code guard walks 14 endings, and
+// each of those lists was written by the same mind that wrote the code - so it
+// contains the cases that mind had in view.
+//
+// Fuzzing is the only thing in this project that generates the input instead.
+// It is native to Go, so it costs no dependency and cannot trip the gate that
+// watches the module list.
+//
+// These run as ordinary tests over their seed corpus on every `go test`. To
+// actually search, ask for it by name and give it a budget:
+//
+//	go test ./internal/guard/ -run FuzzParseSize -fuzz FuzzParseSize -fuzztime 60s
+//
+// What they assert is deliberately weak: no panic, and an answer that does not
+// contradict itself. A stronger claim would need a second implementation of the
+// same parser, and two readings of one grammar prove nothing the first did not.
+
+// FuzzParseSize feeds arbitrary text to the size parser.
+//
+// It is the widest untrusted surface in the tool. Every size in a recipe and
+// every --size on the command line goes through it, and it accepts several
+// shapes at once: plain bytes, decimal points, a dozen unit spellings.
+func FuzzParseSize(f *testing.F) {
+	for _, seed := range []string{
+		"1", "0", "1024", "10mb", "1.5gib", "700kB", "  8kb  ", "2MB",
+		"-1", "", "mb", "1e9", "9223372036854775807", "1.7976931348623157e309",
+		"1kb1", "٣", "1\x00mb", "1 mb", "+5", "0x10", "1,5mb",
+	} {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, s string) {
+		n, err := core.ParseSize(s)
+		if err != nil {
+			// A refusal is a fine answer. What is not fine is a refusal that
+			// hands back a number somebody might use anyway.
+			if n != 0 {
+				t.Fatalf("ParseSize(%q) refused with %v and still returned %d", s, err, n)
+			}
+			return
+		}
+		// Accepted. A size is a byte count, so it cannot be negative - and a
+		// negative one would reach the planner as a length to allocate.
+		if n < 0 {
+			t.Fatalf("ParseSize(%q) accepted and returned %d", s, n)
+		}
+	})
+}
+
+// FuzzParseRecipe feeds arbitrary bytes to the recipe reader.
+//
+// A recipe is a file somebody else wrote, and this is where YAML from outside
+// meets our validation. The parser is the one dependency in the project, so
+// this is also the only place where a defect could arrive from code that is
+// not ours.
+func FuzzParseRecipe(f *testing.F) {
+	for _, seed := range []string{
+		"version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n",
+		"version: 1\n",
+		"",
+		"---\n",
+		"version: 1\ntargets: []\n",
+		"version: 1\ntargets:\n  - id: a\n    format: txt\n    boundary: 1mb\n",
+		"version: 1\ntargets:\n  - id: a\n    format: zip\n    contains:\n      - format: pdf\n        count: 2\n        size: 1kb\n",
+		"\xef\xbb\xbfversion: 1\n",
+		"version: 99999999999999999999\n",
+		"version: 1\ntargets:\n  - id: \"\\u0000\"\n    format: txt\n    size: 1\n",
+	} {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, src string) {
+		rec, err := recipe.Parse([]byte(src), "fuzz.yaml")
+		if err != nil {
+			// Refusing is the common answer and the right one. The contract is
+			// that it says so rather than handing back half a recipe.
+			if rec != nil {
+				t.Fatalf("Parse refused with %v and still returned a recipe", err)
+			}
+			// RC7: every problem at once, and a message a person can act on.
+			if strings.TrimSpace(err.Error()) == "" {
+				t.Fatal("Parse refused with an empty message")
+			}
+			return
+		}
+		if rec == nil {
+			t.Fatal("Parse returned no recipe and no error")
+		}
+		// Accepted. Every target has to carry the thing the planner will ask it
+		// for, or the failure moves from here to the middle of a run.
+		for i, tgt := range rec.Targets {
+			if tgt.Format == "" {
+				t.Fatalf("target %d was accepted with no format", i)
+			}
+			for _, size := range tgt.Sizes {
+				if size < 0 {
+					t.Fatalf("target %d was accepted with the size %d", i, size)
+				}
+			}
+		}
+	})
+}

@@ -165,14 +165,36 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	// The children are real files of another format, each valid on its own.
-	// The registry sits on the same layer as this package, so reaching for it
-	// needs nothing from the engine.
-	//
-	// Members are numbered across the whole archive rather than per group, so
-	// the seed of a member does not move when a group above it changes count.
-	// That is untouchable rule 2 applied one level down.
 	m := memo{seed: r.Seed}
+	if m.children, err = planChildren(r, groups); err != nil {
+		return format.Plan{}, err
+	}
+
+	target, bare, label, err := settleSize(&m, r)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	p := describe(target, label, m, groups)
+	if err := pad(&m, &p, r, target, bare, label, groups); err != nil {
+		return format.Plan{}, err
+	}
+
+	p.Memo = m
+	return p, nil
+}
+
+// planChildren plans every file the archive will hold.
+//
+// The children are real files of another format, each valid on its own. The
+// registry sits on the same layer as this package, so reaching for it needs
+// nothing from the engine.
+//
+// Members are numbered across the whole archive rather than per group, so the
+// seed of a member does not move when a group above it changes count. That is
+// untouchable rule 2 applied one level down.
+func planChildren(r format.Request, groups []format.Content) ([]child, error) {
+	var out []child
 	index := 0
 	// Numbering runs per format rather than per group, so two groups of the
 	// same format do not both start at 0001 and collide inside the archive.
@@ -180,7 +202,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	for _, g := range groups {
 		desc, err := format.Get(g.Format)
 		if err != nil {
-			return format.Plan{}, err
+			return nil, err
 		}
 		for i := 0; i < g.Count; i++ {
 			childSeed := core.FileSeed(r.Seed, index)
@@ -190,10 +212,10 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 				Label: r.Label,
 			})
 			if err != nil {
-				return format.Plan{}, fmt.Errorf("zip: the %s file inside cannot be made: %w", g.Format, err)
+				return nil, fmt.Errorf("zip: the %s file inside cannot be made: %w", g.Format, err)
 			}
 			numbered[g.Format]++
-			m.children = append(m.children, child{
+			out = append(out, child{
 				name: fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
 				desc: desc,
 				plan: cp,
@@ -201,55 +223,63 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			index++
 		}
 	}
+	return out, nil
+}
 
-	// The label carries the size, so a size that comes from the contents is
-	// not known until the archive has been measured. Measure bare first with
-	// no comment, then settle the label, then measure again.
-	label := ""
+// settleSize returns the size the archive is aiming at, the size it comes to
+// with no padding, and the label it carries.
+//
+// The label carries the size, so a size that comes from the contents is not
+// known until the archive has been measured. Measure bare first with no
+// comment, then settle the label, then measure again.
+func settleSize(m *memo, r format.Request) (target, bare int64, label string, err error) {
 	if r.Label && !r.SizeFromContents {
 		label = core.Label("zip", r.Bytes, r.Seed)
 	}
 	m.comment = label
 
-	// Measure the archive with no padding at all. Every entry is stored
-	// rather than compressed, so the size follows from the parts exactly and
-	// nothing has to be guessed.
-	bare, err := archiveSize(m)
-	if err != nil {
-		return format.Plan{}, err
+	// Measure the archive with no padding at all. Every entry is stored rather
+	// than compressed, so the size follows from the parts exactly and nothing
+	// has to be guessed.
+	if bare, err = archiveSize(*m); err != nil {
+		return 0, 0, "", err
 	}
 
-	target := r.Bytes
-	if r.SizeFromContents {
-		// The contents decide the size, and the label states the size, so the
-		// two settle against each other: a longer number makes a longer file.
-		//
-		// It converges rather than oscillating, because the size only ever
-		// grows and a longer number never shortens the label. Bounded anyway,
-		// and an error rather than a guess if it somehow does not settle - a
-		// label stating the wrong size is worse than the work of finding out.
-		if r.Label {
-			size := bare
-			settled := false
-			for i := 0; i < 4 && !settled; i++ {
-				m.comment = core.Label("zip", size, r.Seed)
-				measured, err := archiveSize(m)
-				if err != nil {
-					return format.Plan{}, err
-				}
-				settled = measured == size
-				size = measured
+	if !r.SizeFromContents {
+		return r.Bytes, bare, label, nil
+	}
+
+	// The contents decide the size, and the label states the size, so the two
+	// settle against each other: a longer number makes a longer file.
+	//
+	// It converges rather than oscillating, because the size only ever grows
+	// and a longer number never shortens the label. Bounded anyway, and an
+	// error rather than a guess if it somehow does not settle - a label stating
+	// the wrong size is worse than the work of finding out.
+	if r.Label {
+		size := bare
+		settled := false
+		for i := 0; i < 4 && !settled; i++ {
+			m.comment = core.Label("zip", size, r.Seed)
+			measured, err := archiveSize(*m)
+			if err != nil {
+				return 0, 0, "", err
 			}
-			if !settled {
-				return format.Plan{}, fmt.Errorf(
-					"zip: the size of this archive and the size written in its label do not settle. Give an explicit size")
-			}
-			label = m.comment
-			bare = size
+			settled = measured == size
+			size = measured
 		}
-		target = bare
+		if !settled {
+			return 0, 0, "", fmt.Errorf(
+				"zip: the size of this archive and the size written in its label do not settle. Give an explicit size")
+		}
+		label = m.comment
+		bare = size
 	}
+	return bare, bare, label, nil
+}
 
+// describe builds the plan and the properties that reach the manifest.
+func describe(target int64, label string, m memo, groups []format.Content) format.Plan {
 	p := format.Plan{
 		Bytes:       target,
 		Exact:       true,
@@ -261,16 +291,21 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			"label_embedded": label != "",
 		},
 	}
-	// The single format shape keeps the keys it always had, so a test
-	// asserting on entry_format does not break the day contains arrives.
+	// The single format shape keeps the keys it always had, so a test asserting
+	// on entry_format does not break the day contains arrives.
 	if len(groups) == 1 {
 		p.Properties["entry_format"] = groups[0].Format
 		p.Properties["entry_size"] = groups[0].Bytes
 	}
+	return p
+}
 
+// pad decides where the difference between the bare archive and the size that
+// was asked for goes.
+func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label string, groups []format.Content) error {
 	switch {
 	case target < bare:
-		return format.Plan{}, &format.BelowMinimumError{
+		return &format.BelowMinimumError{
 			Format:    "ZIP",
 			Requested: target,
 			Minimum:   bare,
@@ -278,38 +313,37 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", bare),
 		}
 	case target == bare:
-		// Nothing to pad.
-	default:
-		needed := r.Bytes - bare
-		room := int64(commentPaddingLimit - len(label))
-		if needed <= room {
-			m.comment = label + strings.Repeat(" ", int(needed))
-		} else {
-			// Above what the comment takes, the rest goes into a stored entry
-			// whose bytes land in the archive one for one. This is the only
-			// padding channel in Tier 1 with a ceiling.
-			m.comment = label + strings.Repeat(" ", int(room))
-			m.withFiller = true
-			withFiller, err := archiveSize(m)
-			if err != nil {
-				return format.Plan{}, err
-			}
-			m.fillerSize = r.Bytes - withFiller
-			if m.fillerSize < 0 {
-				return format.Plan{}, &format.BelowMinimumError{
-					Format:    "ZIP",
-					Requested: r.Bytes,
-					Minimum:   withFiller,
-					Reason:    "the padding entry the archive needs at this size does not fit",
-					Hint:      fmt.Sprintf("Ask for %d B or more.", withFiller),
-				}
-			}
-			p.Properties["padding_entry"] = fillerName
-		}
+		return nil // Nothing to pad.
 	}
 
-	p.Memo = m
-	return p, nil
+	needed := r.Bytes - bare
+	room := int64(commentPaddingLimit - len(label))
+	if needed <= room {
+		m.comment = label + strings.Repeat(" ", int(needed))
+		return nil
+	}
+
+	// Above what the comment takes, the rest goes into a stored entry whose
+	// bytes land in the archive one for one. This is the only padding channel
+	// in Tier 1 with a ceiling.
+	m.comment = label + strings.Repeat(" ", int(room))
+	m.withFiller = true
+	withFiller, err := archiveSize(*m)
+	if err != nil {
+		return err
+	}
+	m.fillerSize = r.Bytes - withFiller
+	if m.fillerSize < 0 {
+		return &format.BelowMinimumError{
+			Format:    "ZIP",
+			Requested: r.Bytes,
+			Minimum:   withFiller,
+			Reason:    "the padding entry the archive needs at this size does not fit",
+			Hint:      fmt.Sprintf("Ask for %d B or more.", withFiller),
+		}
+	}
+	p.Properties["padding_entry"] = fillerName
+	return nil
 }
 
 // contentSummary is what the archive holds, in the manifest, so a test can

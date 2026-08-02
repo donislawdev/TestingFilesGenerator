@@ -69,6 +69,36 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
+  race:
+    name: race detector
+    runs-on: ubuntu-latest
+    env:
+      # The one thing in this project that needs a C toolchain. Linux runners
+      # ship one, so this job carries the cost and the matrix above stays on
+      # CGO_ENABLED=0 and stays fast.
+      CGO_ENABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: test under the race detector
+        # A data race is the one defect class here that nothing else notices. It
+        # does not change a size, and on the run that happens to interleave the
+        # safe way it does not change a byte either - so determinism and the
+        # pinned values both stay green while the file is wrong once a month on
+        # somebody else's machine.
+        #
+        # Measured on 2026-08-02: 31 s without, 148 s with, and zero races found
+        # in the tree as it stands. The guard that keeps concurrency confined to
+        # two files lives in internal/guard, so this and that one answer
+        # different halves of the same worry.
+        run: go test ./... -count=1 -race
+
   coverage:
     name: coverage gate
     runs-on: ubuntu-latest

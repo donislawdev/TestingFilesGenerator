@@ -184,7 +184,7 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// Strict decoding turns an unknown key into an error. A typo in
 	// "siez: 10mb" accepted in silence gives a file of the default size and an
 	// hour spent wondering why the test passes when it should not.
-	if err := yaml.UnmarshalWithOptions(src, &raw, yaml.Strict()); err != nil {
+	if err := decodeStrict(src, &raw); err != nil {
 		return nil, &SyntaxError{Name: name, Detail: strings.TrimRight(err.Error(), "\n")}
 	}
 
@@ -194,6 +194,31 @@ func Parse(src []byte, name string) (*Recipe, error) {
 		return nil, err
 	}
 	return rec, nil
+}
+
+// decodeStrict runs the YAML decoder and turns a crash inside it into an error.
+//
+// The decoder is the one dependency in this project, and a recipe is a file
+// somebody else wrote - so a crash in there is a crash on ordinary user input.
+// Found by fuzzing on 2026-08-02: "targets: ! " is a tag indicator with nothing
+// after it, and goccy/go-yaml v1.19.2 dereferences nil on it. What reached the
+// user was a Go stack trace on standard error and exit code 2, which the frozen
+// table says means a usage error - an ending nothing downstream can tell apart
+// from a mistyped flag.
+//
+// Scoped to this one call rather than to the whole of Parse. A crash in our own
+// validation should still arrive as a crash, not be quietly relabelled as a
+// problem with the user's file.
+func decodeStrict(src []byte, raw *rawRecipe) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// The panic value itself says "invalid memory address", which tells
+			// a person testing an upload form nothing at all. What helps is the
+			// shape of the thing that does it.
+			err = fmt.Errorf("this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it")
+		}
+	}()
+	return yaml.UnmarshalWithOptions(src, raw, yaml.Strict())
 }
 
 // rawRecipe carries every key the recipe document describes, including the
@@ -270,9 +295,38 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 			"upgrade the tool, or write the recipe against the version above")
 	}
 
-	// Keys the document describes and this build cannot honour. Accepting them
-	// in silence would produce a run that quietly ignores what was asked for,
-	// which is the one thing this tool must never do.
+	raw.refuseUnsupported(p)
+	raw.applySettings(p, rec)
+
+	if len(raw.Targets) == 0 {
+		p.add("the recipe asks for no files",
+			"a recipe without targets has nothing to produce",
+			"add at least one entry under targets:")
+		return rec
+	}
+
+	seen := map[string]bool{}
+	for i, rt := range raw.Targets {
+		t := rt.validate(p, i, rec.Defaults)
+		if t.ID != "" {
+			if seen[t.ID] {
+				p.add(fmt.Sprintf("target id %q is used twice", t.ID),
+					"an id identifies a target, anchors its seed and links it to the manifest",
+					"give one of them a different id")
+			}
+			seen[t.ID] = true
+		}
+		rec.Targets = append(rec.Targets, t)
+	}
+	return rec
+}
+
+// refuseUnsupported names every top level key the document describes and this
+// build cannot honour.
+//
+// Accepting one in silence would produce a run that quietly ignores what was
+// asked for, which is the one thing this tool must never do.
+func (raw rawRecipe) refuseUnsupported(p *problems) {
 	if raw.Engine != nil {
 		p.notYet("engine", "the tool version this recipe requires is not checked yet",
 			"remove the line - the manifest records the version that ran")
@@ -299,7 +353,11 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 		p.notYet("with", "presets are not in this build",
 			"write the targets out in full")
 	}
+}
 
+// applySettings copies the seed, the defaults and the output settings onto the
+// recipe, refusing the parts of each that are not honoured yet.
+func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 	if raw.Seed != nil {
 		rec.Seed = *raw.Seed
 		rec.SeedSet = true
@@ -327,28 +385,6 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 			rec.Output.Manifest = *raw.Output.Manifest
 		}
 	}
-
-	if len(raw.Targets) == 0 {
-		p.add("the recipe asks for no files",
-			"a recipe without targets has nothing to produce",
-			"add at least one entry under targets:")
-		return rec
-	}
-
-	seen := map[string]bool{}
-	for i, rt := range raw.Targets {
-		t := rt.validate(p, i, rec.Defaults)
-		if t.ID != "" {
-			if seen[t.ID] {
-				p.add(fmt.Sprintf("target id %q is used twice", t.ID),
-					"an id identifies a target, anchors its seed and links it to the manifest",
-					"give one of them a different id")
-			}
-			seen[t.ID] = true
-		}
-		rec.Targets = append(rec.Targets, t)
-	}
-	return rec
 }
 
 func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
@@ -383,16 +419,29 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		}
 	}
 
-	// One of four ways to state a size. Two of them work here, and the rule
-	// itself is not negotiable: the plan knows the size of every file before
-	// anything is written, which is what lets --dry-run report exact numbers
-	// and refuses an impossible size before the first file exists.
+	rt.refuseSections(p, where)
+	if rt.Contains != nil {
+		t.Contains = contentGroups(p, where, rt.Contains)
+	}
+	rt.resolveSize(p, where, count, &t)
+
+	if rt.Name != nil {
+		t.Name = *rt.Name
+	}
+	if rt.Label != nil {
+		t.Label = *rt.Label
+	}
+
+	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
+	t.Properties = properties(p, where, rt.Properties)
+	return t
+}
+
+// refuseSections names the parts of a target this build cannot honour.
+func (rt rawTarget) refuseSections(p *problems, where string) {
 	if rt.SizeRange != nil {
 		p.notYet(where+": size-range", "a random size from a range is not in this build yet",
 			"give an exact size instead")
-	}
-	if rt.Contains != nil {
-		t.Contains = contentGroups(p, where, rt.Contains)
 	}
 	if rt.Mutations != nil {
 		p.notYet(where+": mutations", "damaged files arrive with the Chaos Lab",
@@ -402,7 +451,15 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		p.notYet(where+": fill", "the fill mode is not settable yet",
 			"remove the line - content is generated from the seed")
 	}
+}
 
+// resolveSize settles how big each file of this target is.
+//
+// One of four ways to state a size. Two of them work here, and the rule itself
+// is not negotiable: the plan knows the size of every file before anything is
+// written, which is what lets --dry-run report exact numbers and refuses an
+// impossible size before the first file exists.
+func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target) {
 	switch {
 	case rt.Boundary != nil && rt.Size != nil:
 		p.add(fmt.Sprintf("%s states both a size and a boundary", where),
@@ -439,10 +496,10 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		}
 
 	case rt.Contains != nil:
-		// The fourth way of declaring a size, and not an exception to the
-		// rule. Every member has its own size, so the total follows from the
-		// parts and a dry run still reports a number without generating
-		// anything. See ARCHITECTURE.md section 9.
+		// The fourth way of declaring a size, and not an exception to the rule.
+		// Every member has its own size, so the total follows from the parts
+		// and a dry run still reports a number without generating anything.
+		// See ARCHITECTURE.md section 9.
 		t.SizeFromContents = true
 		for i := 0; i < count; i++ {
 			t.Sizes = append(t.Sizes, 0)
@@ -453,17 +510,6 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 			"every target declares its size, which is what lets a dry run report exact numbers before anything reaches the disk",
 			"add size: 2mb, a boundary, contains, or a plain number of bytes")
 	}
-
-	if rt.Name != nil {
-		t.Name = *rt.Name
-	}
-	if rt.Label != nil {
-		t.Label = *rt.Label
-	}
-
-	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
-	t.Properties = properties(p, where, rt.Properties)
-	return t
 }
 
 // reasons is the closed list from docs/MANIFEST.md section 5.

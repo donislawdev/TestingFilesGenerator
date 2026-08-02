@@ -72,15 +72,25 @@ var notProvenByMutation = map[string]bool{
 	"TestVerifyOnAManifestClaimingNoFilesSaysThereWasNothingToCheck":  true,
 }
 
-// provenByProbe are the guards that have no product code underneath them, so a
-// mutation cannot reach them - they read documents and compare lists. They were
-// broken on purpose all the same, by feeding them a document with the defect in
-// it, and each entry says what that was.
+// provenByProbe are the guards the mutation runner cannot express, broken on
+// purpose by hand instead. Each entry says what was broken and what happened.
+//
+// Two reasons a guard lands here, and they are different:
+//
+//   - there is no product code underneath it. It reads documents and compares
+//     lists, so a substitution in a .go file never reaches it.
+//   - the substitution that would break it is not a literal. Entries in
+//     mutate.py are read with ast.literal_eval, so a break that needs ninety
+//     generated lines cannot be written as one.
 //
 // A separate list rather than a note in the one above, because "unproven" and
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestNoFunctionOrFileHasGrownPastWhatAPersonCanFollow": "checked 2026-08-02 three ways, with tools/probes/probe-shape.py: a function grown past 80 lines of code went red, " +
+		"a file grown past 550 went red, and the same function padded with 90 lines of COMMENT stayed green - so the ceiling is on code and not on explaining. " +
+		"A probe rather than a mutation because the substitution is ninety lines long and mutate.py entries have to be literals.",
+
 	"TestEveryIdentifierAReferencePointsAtExists": "checked 2026-08-01 three ways: a reference to a decision that does not exist, " +
 		"a number removed from the middle of a range, and the summary table in CLAUDE.md announcing a range the document no longer defines. All three went red.",
 

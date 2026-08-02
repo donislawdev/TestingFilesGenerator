@@ -71,7 +71,15 @@ func ParseSize(s string) (int64, error) {
 	}
 
 	exact := f * float64(multiplier)
-	if exact > math.MaxInt64 {
+	// The boundary itself has to go, not just what is above it. A float64
+	// cannot hold MaxInt64 exactly - the nearest value it has is 2^63, one past
+	// the largest int64 - so "greater than MaxInt64" compares 2^63 against 2^63
+	// and is false, and the conversion below then wraps to a negative size.
+	//
+	// Found by fuzzing on 2026-08-02, not by reading: "9223372036854775808" was
+	// accepted and came back as -9223372036854775808. ParseInt refuses it for
+	// being out of range, so it reaches the float path, which does not.
+	if exact >= float64(math.MaxInt64) {
 		return 0, fmt.Errorf("size %q is too large to express in bytes", s)
 	}
 	n := int64(exact)
