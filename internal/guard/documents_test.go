@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-// Six numbering schemes carry the decisions of this project, and nothing was
+// Eight numbering schemes carry the decisions of this project, and nothing was
 // watching them.
 //
 // They collided once already and were pulled apart on 2026-08-01, which is why
@@ -24,7 +24,7 @@ import (
 // one was removed and every document quoting it now points at nothing.
 
 // home is where each prefix is defined. A number counts as defined when it
-// appears in its own document - the six documents format their definitions
+// appears in its own document - the documents format their definitions
 // differently, and a parser per format would be a guard that breaks whenever
 // somebody reformats a table.
 var home = map[string]string{
@@ -35,14 +35,15 @@ var home = map[string]string{
 	"PR": "PRESETS.md",
 	"MF": "MANIFEST.md",
 	"O":  "OBSERVATIONS.md",
+	"G":  "GUI.md",
 }
 
 // Longest first, so MF5 is not read as M followed by rubbish.
-var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|D|M|O)([0-9]+)\b`)
+var identifier = regexp.MustCompile(`\b(AR|MF|RC|PR|D|G|M|O)([0-9]+)\b`)
 
 // The summary table in CLAUDE.md, which is what a new session reads instead of
-// the six documents.
-var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|D|M|O)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|D|M|O)([0-9]+)`")
+// the documents themselves.
+var declaredRange = regexp.MustCompile("\\| `(AR|MF|RC|PR|D|G|M|O)([0-9]+)`[^`]*`(?:AR|MF|RC|PR|D|G|M|O)([0-9]+)`")
 
 func TestEveryIdentifierAReferencePointsAtExists(t *testing.T) {
 	root := repoRoot(t)
@@ -150,9 +151,9 @@ func TestEveryIdentifierAReferencePointsAtExists(t *testing.T) {
 		}
 	}
 
-	// The table in CLAUDE.md is what a new session reads instead of the six
-	// documents, so a range that stopped being true there is worse than no
-	// table at all.
+	// The table in CLAUDE.md is what a new session reads instead of the
+	// documents themselves, so a range that stopped being true there is worse
+	// than no table at all.
 	for _, m := range declaredRange.FindAllStringSubmatch(bodies["CLAUDE.md"], -1) {
 		prefix := m[1]
 		numbers, known := defined[prefix]
