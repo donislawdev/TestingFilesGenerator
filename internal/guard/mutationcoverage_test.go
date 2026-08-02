@@ -49,7 +49,6 @@ var notProvenByMutation = map[string]bool{
 	"TestEveryFormatSurvivesItsReferenceTool":                         true,
 	"TestGeneratingTwiceGivesTheSameBytes":                            true,
 	"TestLayeringHoldsForEveryPackage":                                true,
-	"TestNoGeneratorHoldsTheWholeFileInMemory":                        true,
 	"TestNoNetworkImports":                                            true,
 	"TestNoProcessExecutionInLowerLayers":                             true,
 	"TestNonsenseSizesAreRefusedWithAUsefulMessage":                   true,

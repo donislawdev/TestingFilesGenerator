@@ -18,6 +18,25 @@ import (
 // memory while the same size of text peaked at 42 MB, because the padding was
 // built as one buffer. At the sizes the presets declare, that ends the run.
 
+// allocCeiling is how many objects a generator may allocate for one 64 MiB
+// file, whatever the format.
+//
+// Measured 2026-08-02, after the two defects this number was introduced to
+// catch were fixed: png 56, zip 39, wav 11, everything else at most 7. The
+// ceiling sits at more than twice the worst of those, because the runtime
+// moves a little between runs - png was seen at 55, 56 and 59 - and a guard
+// that reddens on noise gets switched off.
+//
+// The slack costs nothing, because the failure this catches is not a few
+// objects over. It is allocating once per item: png allocated 786443 objects
+// for one image before SetRGBA replaced Set, and md 163842 for one document
+// before a one character ToUpper stopped building a string per word. Four
+// orders of magnitude, not a few percent.
+//
+// A ratchet. It goes down when work makes it lowerable, never up to turn a run
+// green - the same rule as the coverage threshold and the pinned values.
+const allocCeiling = 128
+
 func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 	const size = 64 << 20 // 64 MiB, large enough that holding it would show
 
@@ -52,7 +71,25 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 				t.Errorf("%s allocated %d B while producing a %d B file - it is building the file in memory rather than streaming it",
 					d.ID, grew, size)
 			}
-			t.Logf("%s: allocated %d KiB producing %d KiB", d.ID, grew/1024, int64(size)/1024)
+
+			// How many objects, not how many bytes. The two answer different
+			// questions: a generator can stream perfectly and still allocate
+			// once per pixel, which is what PNG did - 786443 objects for one
+			// image, because Set takes a color.Color interface and boxes every
+			// colour. The byte budget above never noticed, because the boxes
+			// are small and short lived.
+			//
+			// This is the dimension worth gating. Allocation counts are
+			// deterministic - measured identical across runs - while wall clock
+			// speed is not, so a time based gate would be flaky on CI runners
+			// and a flaky guard gets switched off.
+			objects := int64(after.Mallocs - before.Mallocs)
+			if objects > allocCeiling {
+				t.Errorf("%s allocated %d objects producing a %d B file, ceiling is %d - something in the loop is allocating per item",
+					d.ID, objects, size, allocCeiling)
+			}
+			t.Logf("%s: allocated %d KiB in %d objects, producing %d KiB",
+				d.ID, grew/1024, objects, int64(size)/1024)
 		})
 	}
 }

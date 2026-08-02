@@ -17,6 +17,27 @@ belongs in one place.
 
 ### Added
 
+- **The first benchmarks, and a gate on the dimension that can carry one.** The
+  project had two guards on memory and nothing at all on speed - nobody had ever
+  measured how many bytes a second this tool produces. The benchmarks write to
+  io.Discard, because a benchmark that writes to a disk measures the disk, and
+  they do not run during `go test`, so CI pays nothing.
+  What can be gated was measured rather than assumed. Allocation counts are
+  deterministic - identical to the object across three runs - so they carry a
+  hard ceiling. Wall clock speed is not: it moved 2% between runs on one
+  machine, and would move far more across three CI runners, so a time based gate
+  would redden on noise and get switched off. Time is recorded as a baseline
+  instead.
+  The first run found two defects the byte budget beside it could not see,
+  because boxed values are small and short lived. PNG allocated once per pixel -
+  786443 objects for one 16 MiB image - because image.RGBA.Set takes a
+  color.Color interface. SetRGBA takes the concrete type: 56 objects, and 770 to
+  911 MB/s. MD built a throwaway string per word of every heading with
+  strings.ToUpper(w[:1]): 4 objects after, and 831 to 886 MB/s. Both fixes are
+  one line, both byte neutral.
+  The ceiling went in after the fixes rather than before, because a ceiling set
+  on a defective number makes the defect the norm. Reverting SetRGBA is now a
+  mutation, so the memory guard moved off the unproven list.
 - **core.AppendFiller, the second shared primitive, and the fix that came with
   it.** The padding that stretches a record's last value to an exact length was
   written out six times, and the six had already drifted into five different

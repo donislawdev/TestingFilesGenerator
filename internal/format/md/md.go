@@ -12,7 +12,8 @@ import (
 	"io"
 	"math/rand/v2"
 	"strconv"
-	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -227,8 +228,16 @@ func appendTitle(dst []byte, rng *rand.Rand, n int) []byte {
 			dst = append(dst, ' ')
 		}
 		w := word(rng)
-		dst = append(dst, byte(strings.ToUpper(w[:1])[0]))
-		dst = append(dst, w[1:]...)
+		// The first character, not the first byte, and appended without
+		// building a string to throw away.
+		//
+		// strings.ToUpper(w[:1]) allocated once per word of every heading -
+		// measured at 91% of everything this generator allocates, 163842
+		// objects for a 16 MiB document. It also took the first BYTE, so a
+		// vocabulary that is not ASCII would silently stop being capitalised.
+		r, size := utf8.DecodeRuneInString(w)
+		dst = utf8.AppendRune(dst, unicode.ToUpper(r))
+		dst = append(dst, w[size:]...)
 	}
 	return dst
 }
