@@ -15,6 +15,32 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A number in a recipe now means what it looks like.** YAML decides for itself
+  what a bare number means, and its rules are not the ones you apply reading the
+  file. Every one of these was wrong, and none of them said a word: `seed: 010`
+  ran with seed 8, `count: 010` produced eight files rather than ten, and
+  `width: 0100` gave a 100 by 100 image the dimensions 64 by 64. A leading zero
+  is what you write numbering runs 001, 002, 003, or keeping a column straight.
+  The value changed, the manifest recorded the changed value, and nothing was
+  left to notice the mistake by.
+  Recipes are now read from the text you wrote and the numbers are parsed in
+  base ten, so a leading zero means nothing at all. This covers `version`,
+  `seed`, `count`, `size`, `boundary`, `output.split_threshold`, the values
+  under `properties`, and `count` and `size` inside a `contains` entry.
+  A recipe written in plain decimal produces exactly the bytes it produced
+  before. Nothing that was correct has moved.
+
+### Changed
+
+- **A spelling only YAML calls a number is refused instead of guessed at.**
+  `seed: 0x10`, `seed: 1_000` and `version: 1.0` end with exit code 3 and a
+  message saying what to write instead. Reading them would mean deciding on your
+  behalf what your digits meant, which is the behaviour above. A number too
+  large for the value it sets is refused for the same reason, rather than
+  wrapping into a different run than the one you asked for.
+
 ### Added
 
 - **Two more formats: HTML and SVG.** `--format html` produces a complete HTML5
