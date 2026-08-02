@@ -46,6 +46,30 @@ func FileSeed(targetSeed uint64, index int) uint64 {
 	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
 }
 
+// SizeSeed derives the seed that settles how big one file of a size-range
+// target is.
+//
+// It is separate from FileSeed rather than the same number, and the separator
+// byte below is the whole of the difference. How big a file is and what is
+// inside it are two questions about the same place, and drawing both from one
+// stream would tie them together: every file of a given size would then start
+// its content from the same state. Nothing breaks if they are tied, which is
+// exactly why it would never be noticed.
+//
+// The index is what keeps rule 2 intact here. Sizes are derived per file, so
+// raising a count leaves the sizes of the earlier files alone - a stream read
+// in order would shift all of them, which is the failure the top of this file
+// describes.
+func SizeSeed(targetSeed uint64, index int) uint64 {
+	h := sha256.New()
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], targetSeed)
+	h.Write(buf[:])
+	h.Write([]byte{1})
+	h.Write([]byte(strconv.Itoa(index)))
+	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
+}
+
 // NewRand returns the random source for one file.
 //
 // It is deterministic given the seed and it is not shared between files. A

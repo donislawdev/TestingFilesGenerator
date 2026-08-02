@@ -91,6 +91,7 @@ func validate(args []string, out, errOut io.Writer) int {
 		targets = append(targets, engine.Target{
 			ID: t.ID, Format: t.Format, Sizes: t.Sizes,
 			Contains: contentsOf(t), SizeFromContents: t.SizeFromContents,
+			SizeIsRange: t.SizeIsRange, SizeMin: t.SizeMin, SizeMax: t.SizeMax,
 			NameTmpl: t.Name, Label: t.Label, Expected: t.Expected,
 			ExpectedReason: t.ExpectedReason, Properties: t.Properties,
 		})

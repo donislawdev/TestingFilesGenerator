@@ -44,13 +44,66 @@ type Target struct {
 	// from Contains. The entries in Sizes then only carry the count, and their
 	// value is not read.
 	SizeFromContents bool
-	NameTmpl         string
-	Label            bool
+	// SizeIsRange says the sizes are drawn from SizeMin to SizeMax rather than
+	// stated, and Sizes arrives carrying only the count.
+	//
+	// The draw happens here rather than in the recipe package because this is
+	// the first place that knows the seed the run will actually use - the
+	// --seed flag overrides the recipe, and a size drawn before that would
+	// belong to a different run than the manifest describes. It still happens
+	// during planning, so AR10 holds and a dry run reports exact numbers.
+	SizeIsRange bool
+	SizeMin     int64
+	SizeMax     int64
+	NameTmpl    string
+	Label       bool
 	// Expected is what the system under test should do with these files, and
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string
 	ExpectedReason string
 	Properties     map[string]string
+}
+
+// drawSizes settles the size of every file of a range target.
+//
+// Judged at the low end before a single size is drawn, and that order is the
+// point rather than an optimisation. A range whose low end the format cannot
+// deliver - below the minimum of the format, or too small to hold what the
+// container was told to hold - would otherwise fail on some runs and not
+// others, depending on what came out of the seed. A tool whose whole promise
+// is that the same seed gives the same run cannot have an error that appears
+// and disappears. So the low end is planned first and the range either works
+// for every file or for none.
+//
+// The judge is the generator itself rather than a second copy of its rules
+// here. A copy would be a place for the two to disagree, and the disagreement
+// would surface as a file that planning accepted and writing refused.
+func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
+	if _, err := desc.Generator.Plan(format.Request{
+		Bytes:      t.SizeMin,
+		Contains:   t.Contains,
+		Seed:       core.FileSeed(targetSeed, 0),
+		Label:      t.Label,
+		Properties: t.Properties,
+	}); err != nil {
+		return err
+	}
+
+	span := uint64(t.SizeMax - t.SizeMin)
+	for i := range t.Sizes {
+		if span == 0 {
+			// Both ends the same is legal and means identical files. Drawing
+			// from a range of one is not wrong, it just reads worse.
+			t.Sizes[i] = t.SizeMin
+			continue
+		}
+		// Per index, never from a running stream. Raising a count then leaves
+		// the sizes of the earlier files alone, which is rule 2 and the reason
+		// core.SizeSeed takes an index at all.
+		r := core.NewRand(core.SizeSeed(targetSeed, i))
+		t.Sizes[i] = t.SizeMin + int64(r.Uint64N(span+1))
+	}
+	return nil
 }
 
 // Uniform is n files of the same size, which is what most targets ask for.
@@ -176,6 +229,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		// sizes below the minimum for every registered format. It was removed
 		// rather than kept as defence nobody can verify.
 		targetSeed := core.TargetSeed(opt.Seed, t.ID)
+
+		if t.SizeIsRange {
+			if err := drawSizes(t, desc, targetSeed); err != nil {
+				return nil, err
+			}
+		}
 
 		for idx, size := range t.Sizes {
 			fileSeed := core.FileSeed(targetSeed, idx)

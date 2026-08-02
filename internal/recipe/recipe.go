@@ -52,6 +52,17 @@ type Target struct {
 	// SizeFromContents is set when contains was given without a size, so the
 	// container works the size out from what it holds.
 	SizeFromContents bool
+	// SizeMin and SizeMax hold the range when the target asked for one, and
+	// SizeIsRange says it did. The sizes themselves are not settled here.
+	//
+	// They cannot be. A range is drawn from the seed, and the --seed flag
+	// overrides the recipe after this package has finished reading it, so a
+	// size drawn at validation time would belong to a different run than the
+	// one the manifest describes. The engine draws them, which is still before
+	// anything reaches the disk, so AR10 holds and --dry-run stays exact.
+	SizeIsRange bool
+	SizeMin     int64
+	SizeMax     int64
 }
 
 // Content is one group of files inside a container.

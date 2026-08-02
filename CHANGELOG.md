@@ -14,6 +14,27 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **Files of varying size, with `size-range`.** `size-range: 1kb-8kb` in a
+  recipe, or `--size-range 1kb-8kb` on the command line, gives every file its
+  own size drawn from that range. The draw comes from the seed, so the same
+  seed gives the same sizes on any machine and after any number of years, and
+  `--dry-run` reports the exact total before anything reaches the disk.
+  Raising the count leaves the earlier files untouched, byte for byte. That is
+  the same promise every other part of this tool makes, and it is the reason
+  sizes are derived from the position of the file rather than read one after
+  another.
+  A container takes a range too. `size-range` beside `contains` gives archives
+  of varying size holding the same files, with the difference padded.
+  A range whose low end the format cannot deliver is refused before a single
+  size is drawn, so it fails on every run or on none. An error that appeared
+  and disappeared depending on the seed would be worse than the mistake it
+  reports.
+- **`--boundary <limit>` on the command line.** Three files around a limit: one
+  byte under it, the limit itself, one byte over. The recipe key already did
+  this and the flag did not, so an ad hoc run had to become a file first.
+
 ### Fixed
 
 - **A number in a recipe now means what it looks like.** YAML decides for itself

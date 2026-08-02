@@ -122,7 +122,7 @@ type rawTarget struct {
 	Expected   any               `yaml:"expected"`
 
 	Boundary  *scalar             `yaml:"boundary"`
-	SizeRange *string             `yaml:"size-range"`
+	SizeRange *scalar             `yaml:"size-range"`
 	Contains  []map[string]scalar `yaml:"contains"`
 	Mutations []map[string]any    `yaml:"mutations"`
 	Fill      *string             `yaml:"fill"`
@@ -186,10 +186,6 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 
 // refuseSections names the parts of a target this build cannot honour.
 func (rt rawTarget) refuseSections(p *problems, where string) {
-	if rt.SizeRange != nil {
-		p.notYet(where+": size-range", "a random size from a range is not in this build yet",
-			"give an exact size instead")
-	}
 	if rt.Mutations != nil {
 		p.notYet(where+": mutations", "damaged files arrive with the Chaos Lab",
 			"remove the section")
@@ -208,6 +204,19 @@ func (rt rawTarget) refuseSections(p *problems, where string) {
 // impossible size before the first file exists.
 func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target) {
 	switch {
+	// Two ways of stating a size in one target is two answers to one question,
+	// and picking one of them quietly is how a recipe stops meaning what it
+	// says. Every pairing is named rather than resolved.
+	case rt.SizeRange != nil && rt.Size != nil:
+		p.add(fmt.Sprintf("%s states both a size and a size-range", where),
+			"one names an exact size and the other draws one, so together they say two different things",
+			"keep size for identical files, or keep size-range for a different size each")
+
+	case rt.SizeRange != nil && rt.Boundary != nil:
+		p.add(fmt.Sprintf("%s states both a boundary and a size-range", where),
+			"a boundary is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them",
+			"keep boundary to test a limit, or keep size-range for files of varying size")
+
 	case rt.Boundary != nil && rt.Size != nil:
 		p.add(fmt.Sprintf("%s states both a size and a boundary", where),
 			"a boundary already decides the sizes, so a size beside it means two different things at once",
@@ -242,6 +251,31 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 			t.Sizes = append(t.Sizes, n)
 		}
 
+	case rt.SizeRange != nil:
+		// Placed above contains for the same reason size is: a stated size
+		// wins over one worked out from the contents, and the difference is
+		// closed by padding. A range is a stated size that happens to differ
+		// per file.
+		text, ok := rt.SizeRange.value()
+		if !ok {
+			p.add(fmt.Sprintf("%s has a size-range that is not text", where),
+				"a range is two sizes with a hyphen between them",
+				"use size-range: 1kb-8kb")
+			break
+		}
+		t.Size = text
+		low, high, ok := parseSizeRange(p, where, text)
+		if !ok {
+			break
+		}
+		t.SizeIsRange, t.SizeMin, t.SizeMax = true, low, high
+		// The values stay zero here and the engine replaces them. What this
+		// list carries at this point is the number of files, exactly as it
+		// does for contains.
+		for i := 0; i < count; i++ {
+			t.Sizes = append(t.Sizes, 0)
+		}
+
 	case rt.Contains != nil:
 		// The fourth way of declaring a size, and not an exception to the rule.
 		// Every member has its own size, so the total follows from the parts
@@ -252,11 +286,27 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 			t.Sizes = append(t.Sizes, 0)
 		}
 
-	case rt.SizeRange == nil:
+	default:
 		p.add(fmt.Sprintf("%s has no size", where),
 			"every target declares its size, which is what lets a dry run report exact numbers before anything reaches the disk",
-			"add size: 2mb, a boundary, contains, or a plain number of bytes")
+			"add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes")
 	}
+}
+
+// parseSizeRange asks core for the two ends and turns a refusal into the four
+// part message a recipe problem carries.
+//
+// The maths is not repeated here on purpose: the flag asks the same question,
+// and one implementation is what keeps the two surfaces meaning the same thing.
+func parseSizeRange(p *problems, where, text string) (low, high int64, ok bool) {
+	lo, hi, err := core.ParseSizeRange(text)
+	if err != nil {
+		p.add(fmt.Sprintf("%s: %v", where, err),
+			"both ends of a range are sizes, and units count in 1024s",
+			"use size-range: 1kb-8kb or a pair of plain byte counts")
+		return 0, 0, false
+	}
+	return lo, hi, true
 }
 
 // reasons is the closed list from docs/MANIFEST.md section 5.
@@ -317,7 +367,7 @@ func boundarySizes(p *problems, where, text string) []int64 {
 			"use a boundary of at least 1 B")
 		return nil
 	}
-	return []int64{limit - 1, limit, limit + 1}
+	return core.BoundarySizes(limit)
 }
 
 // expectation accepts the short form and the long one. The short form is what

@@ -115,3 +115,47 @@ func unitBytes(unit string) (int64, bool) {
 	}
 	return 0, false
 }
+
+// ParseSizeRange reads the two ends of "1kb-8kb".
+//
+// It lives here rather than in the recipe package because two surfaces ask the
+// same question. The recipe key and the --size-range flag have to agree on what
+// a range is down to the byte, and two implementations of one rule is a place
+// for them to drift apart - the reader would then meet a recipe the formatter
+// calls clean and the generator refuses, or the reverse.
+//
+// The hyphen is not ambiguous here because a size is never negative.
+func ParseSizeRange(text string) (low, high int64, err error) {
+	parts := strings.Split(text, "-")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return 0, 0, fmt.Errorf("%q is not a range. A range is exactly two sizes with one hyphen between them, such as 1kb-8kb", text)
+	}
+
+	ends := [2]int64{}
+	for i, part := range parts {
+		n, perr := ParseSize(part)
+		if perr != nil {
+			return 0, 0, perr
+		}
+		ends[i] = n
+	}
+
+	// Equal ends are legal and mean every file is that size. It reads oddly and
+	// is a reasonable thing to arrive at from a script that computes both ends,
+	// so refusing it would be pedantry rather than protection.
+	if ends[0] > ends[1] {
+		return 0, 0, fmt.Errorf(
+			"the range runs backwards, from %d B down to %d B. The smaller end comes first, and a range that runs backwards holds no sizes at all. Write it as %d-%d",
+			ends[0], ends[1], ends[1], ends[0])
+	}
+	return ends[0], ends[1], nil
+}
+
+// BoundarySizes turns a limit into the three sizes a boundary set means: one
+// byte under it, the limit itself, and one byte over.
+//
+// Here for the same reason as ParseSizeRange - the recipe key and the flag have
+// to mean the same thing, and one implementation is how that stays true.
+func BoundarySizes(limit int64) []int64 {
+	return []int64{limit - 1, limit, limit + 1}
+}

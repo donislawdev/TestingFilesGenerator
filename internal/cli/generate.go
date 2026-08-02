@@ -18,18 +18,20 @@ import (
 )
 
 type generateOpts struct {
-	formatID string
-	sizeStr  string
-	count    int
-	outDir   string
-	name     string
-	id       string
-	seed     int64
-	expected string
-	clean    bool
-	dryRun   bool
-	asJSON   bool
-	props    propertyFlag
+	formatID  string
+	sizeStr   string
+	sizeRange string
+	boundary  string
+	count     int
+	outDir    string
+	name      string
+	id        string
+	seed      int64
+	expected  string
+	clean     bool
+	dryRun    bool
+	asJSON    bool
+	props     propertyFlag
 }
 
 func generateFlagSet(errOut io.Writer, g *generateOpts) *flag.FlagSet {
@@ -38,6 +40,8 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) *flag.FlagSet {
 
 	fs.StringVar(&g.formatID, "format", "", "format of the files to produce, for example txt")
 	fs.StringVar(&g.sizeStr, "size", "", "exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count")
+	fs.StringVar(&g.sizeRange, "size-range", "", "a size drawn from a range for each file, as 1kb-8kb. The draw comes from the seed, so the same seed gives the same sizes")
+	fs.StringVar(&g.boundary, "boundary", "", "three files around a limit: one byte under it, the limit itself, one byte over")
 	fs.IntVar(&g.count, "count", 1, "how many files to produce")
 	fs.StringVar(&g.outDir, "out", ".", "directory to write into")
 	fs.StringVar(&g.name, "name", "", "name template, for example invoice_{index:04}.txt")
@@ -102,7 +106,7 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	if recipePath != "" {
 		targets, code = targetsFromRecipe(recipePath, &g, given, &opt, errOut)
 	} else {
-		targets, code = targetsFromFlags(&g, errOut)
+		targets, code = targetsFromFlags(&g, given, errOut)
 	}
 	if code != ExitOK {
 		return code
@@ -154,6 +158,9 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 			Sizes:            t.Sizes,
 			Contains:         contentsOf(t),
 			SizeFromContents: t.SizeFromContents,
+			SizeIsRange:      t.SizeIsRange,
+			SizeMin:          t.SizeMin,
+			SizeMax:          t.SizeMax,
 			NameTmpl:         t.Name,
 			Label:            label,
 			Expected:         t.Expected,
@@ -171,20 +178,40 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 }
 
 // targetsFromFlags builds the single target of a run with no recipe.
-func targetsFromFlags(g *generateOpts, errOut io.Writer) ([]engine.Target, int) {
+func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) ([]engine.Target, int) {
 	if g.formatID == "" {
 		fmt.Fprintln(errOut, "tfg: --format is required. Run \"tfg formats\" to see what this build supports, or name a recipe file instead.")
 		return nil, ExitUsage
 	}
-	if g.sizeStr == "" {
-		fmt.Fprintln(errOut, "tfg: --size is required. Every target declares its size, which is what lets --dry-run report exact numbers before anything is written.")
+	// One of the three, and exactly one. Two of them together is two answers to
+	// one question, and picking one silently is how a command stops meaning
+	// what it says - the same rule the recipe applies to the same three keys.
+	stated := 0
+	for _, s := range []string{g.sizeStr, g.sizeRange, g.boundary} {
+		if s != "" {
+			stated++
+		}
+	}
+	switch {
+	case stated == 0:
+		fmt.Fprintln(errOut, "tfg: one of --size, --size-range or --boundary is required. Every target declares its size, which is what lets --dry-run report exact numbers before anything is written.")
+		return nil, ExitUsage
+	case stated > 1:
+		fmt.Fprintln(errOut, "tfg: --size, --size-range and --boundary each decide how big the files are, so only one of them can be given. Keep --size for identical files, --size-range for a different size each, or --boundary to test a limit.")
 		return nil, ExitUsage
 	}
 
-	bytesWanted, err := core.ParseSize(g.sizeStr)
-	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+	// A boundary set is exactly three files, so a count beside it is a number
+	// that would be thrown away. Saying so beats producing three files for
+	// somebody who asked for fifty.
+	if g.boundary != "" && given["count"] {
+		fmt.Fprintln(errOut, "tfg: --boundary and --count say different things about how many files to produce. A boundary set is exactly three: one byte under the limit, the limit itself, one byte over. Drop --count, or use --size with --count for identical files.")
 		return nil, ExitUsage
+	}
+
+	sizes, rangeLow, rangeHigh, code := sizesFromFlags(g, errOut)
+	if code != ExitOK {
+		return nil, code
 	}
 
 	// An expectation nobody recognises is a typo, and a typo accepted in
@@ -199,14 +226,57 @@ func targetsFromFlags(g *generateOpts, errOut io.Writer) ([]engine.Target, int) 
 	}
 
 	return []engine.Target{{
-		ID:         g.id,
-		Format:     g.formatID,
-		Sizes:      engine.Uniform(g.count, bytesWanted),
-		NameTmpl:   g.name,
-		Label:      !g.clean,
-		Expected:   g.expected,
-		Properties: g.props,
+		ID:          g.id,
+		Format:      g.formatID,
+		Sizes:       sizes,
+		SizeIsRange: g.sizeRange != "",
+		SizeMin:     rangeLow,
+		SizeMax:     rangeHigh,
+		NameTmpl:    g.name,
+		Label:       !g.clean,
+		Expected:    g.expected,
+		Properties:  g.props,
 	}}, ExitOK
+}
+
+// sizesFromFlags turns whichever of the three size flags was given into the
+// list of sizes, and for a range into the ends the engine draws between.
+//
+// The maths for both a range and a boundary lives in core, so this and the
+// recipe reader cannot drift into disagreeing about what 1kb-8kb or a limit
+// means. A range leaves the list carrying only the count, exactly as the
+// recipe does, because the draw needs the seed of the run.
+func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high int64, code int) {
+	switch {
+	case g.sizeRange != "":
+		lo, hi, err := core.ParseSizeRange(g.sizeRange)
+		if err != nil {
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+			return nil, 0, 0, ExitUsage
+		}
+		return make([]int64, max(g.count, 0)), lo, hi, ExitOK
+
+	case g.boundary != "":
+		limit, err := core.ParseSize(g.boundary)
+		if err != nil {
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+			return nil, 0, 0, ExitUsage
+		}
+		if limit < 1 {
+			fmt.Fprintf(errOut,
+				"tfg: --boundary %d B is too small. The set needs a size one byte below the limit and there is nothing below zero. Use a limit of at least 1 B.\n", limit)
+			return nil, 0, 0, ExitUsage
+		}
+		return core.BoundarySizes(limit), 0, 0, ExitOK
+
+	default:
+		bytesWanted, err := core.ParseSize(g.sizeStr)
+		if err != nil {
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+			return nil, 0, 0, ExitUsage
+		}
+		return engine.Uniform(g.count, bytesWanted), 0, 0, ExitOK
+	}
 }
 
 // produce plans the run, writes it and reports what happened.
