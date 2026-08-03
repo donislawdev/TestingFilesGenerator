@@ -358,7 +358,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 		"polyline": true, "polygon": true, "path": true, "text": true,
 	}
 
-	for _, size := range []int64{193, 194, 4097, densitySize} {
+	for _, size := range []int64{194, 195, 4097, densitySize} {
 		t.Run(sizeText(size), func(t *testing.T) {
 			body := generateBytes(t, "svg", size)
 			if int64(len(body)) != size {
@@ -377,7 +377,16 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 			dec := xml.NewDecoder(bytes.NewReader(body))
 			dec.Strict = true
 
-			shapes := 0
+			// An element that draws nothing does not count as one that does.
+			//
+			// "text" is on the list because a label is a real mark on the
+			// canvas, and an empty text element is not. Counting the element
+			// rather than what it holds is how this guard passed on a document
+			// that was one empty text element and no shapes - valid SVG, the
+			// exact size ordered, and a blank canvas. Found on 2026-08-03 by
+			// pointing the renderer at the smallest size a format will make,
+			// which nothing had ever done.
+			shapes, pendingText := 0, false
 			for {
 				tok, err := dec.Token()
 				if err == io.EOF {
@@ -388,12 +397,25 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 				}
 				switch el := tok.(type) {
 				case xml.StartElement:
+					if el.Name.Local == "text" {
+						// Counted only once something is inside it.
+						pendingText = true
+						continue
+					}
 					if drawable[el.Name.Local] {
 						shapes++
 					}
 				case xml.CharData:
+					if pendingText && len(strings.TrimSpace(string(el))) > 0 {
+						shapes++
+						pendingText = false
+					}
 					if len(el) > maxValueBytes {
 						t.Errorf("an element holds %d B of text - padding belongs in the closing label", len(el))
+					}
+				case xml.EndElement:
+					if el.Name.Local == "text" {
+						pendingText = false
 					}
 				}
 			}

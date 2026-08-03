@@ -88,6 +88,12 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The smallest SVG this tool makes now draws something.** At exactly its old
+  minimum of 193 bytes the document held one empty text element and no shapes:
+  valid SVG, exactly the size ordered, repeatable, and a blank canvas when
+  rendered. The minimum is 194 bytes now, which is the first size that paints.
+  Every SVG of 194 bytes or more is unchanged, byte for byte - the floor moved
+  rather than the content.
 - **A size is written the way a person writes it.** `--size 1e5` quietly meant
   100000 bytes, while a recipe refuses `1_000` and `0x10` outright on the
   grounds that a spelling is never guessed at. The flag now applies the same

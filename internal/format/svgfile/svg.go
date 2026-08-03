@@ -257,9 +257,36 @@ func appendFiller(dst []byte, n int64) []byte {
 
 // minimumBytes is the declaration, the root element and one whole record,
 // computed rather than written down so it cannot drift away from the template.
+// A drawing has to draw something, and one byte is what that costs.
+//
+// The arithmetic below gives the smallest well formed document: the
+// declaration, the root element and the shortest closing label. At exactly
+// that size the label has nothing in it, so the file is one empty text element
+// and no shapes - valid SVG, exactly the size ordered, repeatable, and a blank
+// canvas.
+//
+// Measured on 2026-08-03 with tools/probes/fidelity-sweep.py, rendered by
+// Inkscape and counted with Pillow:
+//
+//	193 B   0 shapes, 1 colour     nothing painted
+//	194 B   0 shapes, 11 colours   the label draws
+//	260 B   1 shape,  63 colours
+//
+// The same with the label off, because the padding channel is the label text
+// either way.
+//
+// One byte more is therefore the smallest file this format can honestly
+// produce, and refusing the byte below is the answer rather than filling it -
+// putting something into the document at that size would move every byte of
+// every SVG this tool has ever made, and D11 does not allow that for a size
+// nobody can usefully order. Every file at 194 B and above is untouched.
+//
+// This was invisible because the reference tool only ever saw one size per
+// format, MinBytes plus 300 KB. The renderer that catches exactly this failure
+// existed and was never pointed at the bottom of the range.
 func minimumBytes() int64 {
 	var s shapes
-	return int64(len(declaration)+len(rootOpen)) + s.Shortest()
+	return int64(len(declaration)+len(rootOpen)) + s.Shortest() + 1
 }
 
 var colours = []string{
