@@ -67,6 +67,22 @@ func ParseSize(s string) (int64, error) {
 		return n * multiplier, nil
 	}
 
+	// Only the spellings a person writes. ParseFloat also takes exponents, hex
+	// floats and the words for infinity, and none of those describes a file.
+	//
+	// Measured on 2026-08-03: "--size 1e5" quietly meant 100000 bytes, while
+	// the recipe refuses "1_000" and "0x10" outright, with the reasoning that
+	// guessing at a spelling is the behaviour that type was written to remove.
+	// Two doors into one idea applying opposite rules, and the difference was
+	// nobody's decision - it fell out of ParseFloat being permissive. In a size
+	// field, "1e5" is far likelier to be a typo than an intention.
+	//
+	// The decimal point stays, because 1.5gib is a real thing people write.
+	if !plainDecimal(digits) {
+		return 0, fmt.Errorf(
+			"size %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", s)
+	}
+
 	f, err := strconv.ParseFloat(digits, 64)
 	if err != nil {
 		return 0, fmt.Errorf("size %q is not a number: write something like 10mb, 1.5gib or 1048576", s)
@@ -94,6 +110,30 @@ func ParseSize(s string) (int64, error) {
 			s, exact, n, n+1)
 	}
 	return n, nil
+}
+
+// plainDecimal reports whether the text is digits, with at most one decimal
+// point and an optional leading sign. Nothing else counts as a number here.
+//
+// Leading zeros are allowed and mean nothing, which matches how the recipe
+// reads a number: 010 is ten because that is what it looks like.
+func plainDecimal(s string) bool {
+	s = strings.TrimPrefix(strings.TrimPrefix(s, "+"), "-")
+	if s == "" {
+		return false
+	}
+	dot, digits := false, 0
+	for _, r := range s {
+		switch {
+		case r >= '0' && r <= '9':
+			digits++
+		case r == '.' && !dot:
+			dot = true
+		default:
+			return false
+		}
+	}
+	return digits > 0
 }
 
 func unitBytes(unit string) (int64, bool) {

@@ -230,7 +230,28 @@ func (p propertyFlag) Set(v string) error {
 	return nil
 }
 
+// args2 rebuilds the command as it would have to be typed to run again.
+//
+// It goes into the manifest, where its whole job is to be re-runnable, and it
+// was assembled by joining the arguments with spaces. An argument holding a
+// space then arrived as two - "--name my file.txt" reads as a name of "my" and
+// a stray word - so the recorded command produced a different run, or none.
+//
+// Quoted only where it is needed, so the common line stays readable. Single
+// quotes are avoided because the shells this tool is aimed at disagree about
+// them, and double quotes with escaping work in all of them.
 func args2(args []string) []string {
-	out := []string{"generate"}
-	return append(out, args...)
+	out := make([]string, 0, len(args)+1)
+	out = append(out, "generate")
+	for _, a := range args {
+		out = append(out, quoteArg(a))
+	}
+	return out
+}
+
+func quoteArg(a string) string {
+	if a != "" && !strings.ContainsAny(a, " \t\"\\") {
+		return a
+	}
+	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(a) + `"`
 }

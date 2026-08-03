@@ -21,6 +21,11 @@ env:
 jobs:
   test:
     name: test on ${{ matrix.os }}
+    # A hung job otherwise holds a runner until the GitHub default of six
+    # hours. Every number here is well above what the job takes today: the
+    # matrix runs in about a minute, the race detector took 148 s when it was
+    # measured, and fuzzing is given 5 minutes a target by its own loop.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -73,9 +78,22 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
+      - name: build the window binary
+        # Nothing built this, so it could stop compiling and no run would say
+        # so. The package is a stub today and that is exactly why it is cheap
+        # to keep honest - it costs a second now and a bisect later.
+        #
+        # CGO_ENABLED is 0 for this whole job, which is the point: the window
+        # binary has to keep building without a C toolchain for as long as the
+        # toolkit is not wired in. The day it is, this step needs a compiler
+        # and moves to a job that has one, and finding that out here is better
+        # than finding it out when the release does not build.
+        run: go build ./cmd/tfg-gui
+
   govulncheck:
     name: known vulnerabilities
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -99,6 +117,7 @@ jobs:
   staticcheck:
     name: staticcheck
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -126,6 +145,7 @@ jobs:
   race:
     name: race detector
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       # The one thing in this project that needs a C toolchain. Linux runners
       # ship one, so this job carries the cost and the matrix above stays on
@@ -156,6 +176,7 @@ jobs:
   coverage:
     name: coverage gate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       CGO_ENABLED: "0"
     steps:
@@ -205,6 +226,8 @@ jobs:
     # searching.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Four targets at five minutes each, plus the build and the baseline pass.
+    timeout-minutes: 45
     env:
       CGO_ENABLED: "0"
     steps:

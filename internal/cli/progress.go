@@ -4,6 +4,7 @@ package cli
 import (
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -92,9 +93,19 @@ func (p *progressBar) remaining(pr engine.Progress) string {
 	return "  " + roughly(left) + " left"
 }
 
+// percent divides before multiplying where it has to, so a very large run does
+// not wrap on the way to a number between nought and a hundred.
+//
+// done*100 leaves the range of an int64 above about 92 PB. No disk holds that
+// today, and the arithmetic that produces it is free to be right anyway.
 func percent(done, total int64) int {
-	if total <= 0 {
+	switch {
+	case total <= 0:
 		return 100
+	case done >= total:
+		return 100
+	case done > math.MaxInt64/100:
+		return int(done / (total / 100))
 	}
 	return int(done * 100 / total)
 }

@@ -395,7 +395,14 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 			fmt.Fprintf(errOut, "tfg: cannot render the manifest: %s\n", describeError(err))
 			return ExitRuntime
 		}
-		out.Write(buf.Bytes())
+		// The error is read rather than dropped. A closed pipe is the ordinary
+		// way this fails - "tfg generate --json | head" - and a run that could
+		// not deliver what was asked for has not succeeded, whatever happened
+		// on the disk.
+		if _, err := out.Write(buf.Bytes()); err != nil {
+			fmt.Fprintf(errOut, "tfg: the files were written and the manifest could not be sent to standard output: %s\n", describeError(err))
+			return ExitIO
+		}
 	}
 
 	if res.Failures > 0 {

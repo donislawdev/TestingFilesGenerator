@@ -79,6 +79,15 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 
 		mark := len(buf)
 		buf = rec.Append(buf, rng)
+		// A record that adds nothing would leave remaining untouched and the
+		// buffer never reaching the chunk size, so this loop would spin without
+		// end and without growing - the one failure shape a size guard cannot
+		// see, because no file is ever produced to measure. No builder does it
+		// today and the interface does not forbid it, so it is named here
+		// rather than left to a hang somebody has to interrupt.
+		if len(buf) == mark {
+			return fmt.Errorf("core: a record of this format added no bytes, so the file could never be filled")
+		}
 		// Stop while what is left still fits a whole closing record. That is
 		// what keeps the last one from being a stub.
 		if remaining-int64(len(buf)-mark) < shortest {
@@ -132,6 +141,13 @@ func AppendFiller(dst []byte, words []string, n int64, separator func(i int) str
 		// Anything below zero would mean the minimum was ignored, and
 		// FillRecords turns that into an error rather than a wrong size.
 		return dst
+	}
+	if len(words) == 0 {
+		// The loop below indexes words modulo its length, so an empty
+		// vocabulary divides by zero. No caller passes one today and none
+		// should: a format with nothing to say cannot pad to a length. Saying
+		// which mistake it is beats a runtime panic with no name on it.
+		panic("core: AppendFiller was given no words to pad with")
 	}
 
 	start := len(dst)

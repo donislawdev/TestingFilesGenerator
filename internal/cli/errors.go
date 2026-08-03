@@ -151,6 +151,15 @@ func classify(err error) int {
 	if errors.Is(err, context.Canceled) {
 		return ExitInterrupted
 	}
+	// A deadline running out is the same ending as a signal that says time is
+	// up, and the frozen table tells that apart from somebody cancelling.
+	// Nothing in the command line sets a deadline today - it is reachable only
+	// through a caller that does, which the window will be - so this is here
+	// before it is needed rather than after it has been reported as the tool
+	// crashing. Without it the ending falls through to RUNTIME.
+	if errors.Is(err, context.DeadlineExceeded) {
+		return ExitTerminated
+	}
 	var pathErr *os.PathError
 	if errors.As(err, &pathErr) {
 		return ExitIO

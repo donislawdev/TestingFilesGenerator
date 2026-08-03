@@ -425,12 +425,30 @@ func preflight(files []PlannedFile, opt Options) error {
 	// Nothing else is written over either. This tool runs in directories that
 	// belong to the user, so destroying their work is the one failure that
 	// cannot be undone by running again.
+	//
+	// The temporary name is checked as well as the final one. It is created
+	// with os.Create, which truncates, so a file already sitting under that
+	// name lost its contents without a word - and the collision check only
+	// ever looked at the name the file ends up with. It is an unlikely name to
+	// meet by accident and an easy one to leave behind: a run killed outright
+	// leaves exactly this, and the next run into the same directory would eat
+	// it silently.
 	for _, f := range files {
 		if path := filepath.Join(opt.OutDir, f.Name); exists(path) {
 			return &CollisionError{Path: path}
 		}
+		if path := tempPathFor(opt.OutDir, f.Name); exists(path) {
+			return &CollisionError{Path: path}
+		}
 	}
 	return nil
+}
+
+// tempPathFor is the name a file is written under before it is renamed into
+// place. One definition, used by the check above and by the write below, so
+// the two cannot disagree about what is being protected.
+func tempPathFor(outDir, name string) string {
+	return fmt.Sprintf("%s%s%d", filepath.Join(outDir, name), core.PartialMarker, os.Getpid())
 }
 
 func exists(path string) bool {
@@ -499,7 +517,12 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		}
 
 		sum, err := writeOne(ctx, f, opt.OutDir, report)
-		bytesDone += f.Plan.Bytes
+		if err == nil {
+			// Only what reached the disk. Counting a file that failed would
+			// have the bar claim bytes nobody can find, and on a run where
+			// several fail the total would arrive before the files do.
+			bytesDone += f.Plan.Bytes
+		}
 		if opt.OnProgress != nil {
 			opt.OnProgress(Progress{
 				FilesDone: i + 1, FilesTotal: len(files),
@@ -532,7 +555,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	// not produce, and the bytes of the other had already gone through the same
 	// handle. The name never survives the run, so nothing about it has to be
 	// repeatable - and the file it becomes is settled by the plan, not by this.
-	tmp := fmt.Sprintf("%s%s%d", final, core.PartialMarker, os.Getpid())
+	tmp := tempPathFor(outDir, f.Name)
 
 	fh, err := os.Create(tmp)
 	if err != nil {

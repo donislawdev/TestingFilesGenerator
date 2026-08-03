@@ -88,6 +88,23 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A size is written the way a person writes it.** `--size 1e5` quietly meant
+  100000 bytes, while a recipe refuses `1_000` and `0x10` outright on the
+  grounds that a spelling is never guessed at. The flag now applies the same
+  rule. `1.5gib` and every other decimal are untouched.
+- **`tfg recipe fmt -w` replaces a file in one step**, through a temporary name,
+  so a process ending mid write no longer leaves the recipe at half its length.
+  Generated files and the manifest already worked this way.
+- **The command recorded in the manifest can be run again.** It was built by
+  joining the arguments with spaces, so `--name "my file.txt"` came back as two
+  arguments and described a different run.
+- **A run refuses to write through a name something else already occupies.**
+  Only the final name was checked, and the temporary one is created in a way
+  that truncates - so a file already sitting under it lost its contents without
+  a word. A run killed outright leaves exactly that shape behind.
+- **`tfg generate --json` reports a manifest that could not be delivered.**
+  Piping into a command that closes early left the run reporting success with
+  nothing on standard output.
 - **`tfg recipe fmt` says what it does not check.** It settles the layout of a
   file and never claimed otherwise in `--help`, but the text implied more than
   it did. A recipe with a key nobody recognises still has a settled shape and
