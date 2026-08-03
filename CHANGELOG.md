@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Security
 
+- **`cleanup` and `verify` no longer follow a link out of the directory.** A
+  path such as `"jn/file.txt"` contains no climb, so it passed every reading of
+  the text - and a junction or symbolic link called `jn` inside the output
+  directory took it somewhere else entirely. `tfg cleanup --yes --force`
+  removed the file it landed on and ended with 0. Where a path leads is now
+  settled after the links have been followed rather than by reading it. A link
+  is not refused for being one: a directory that is itself a link keeps
+  working, which is an ordinary way to keep fixtures on another disk.
 - **`cleanup` and `verify` no longer act on a manifest whose entries point
   outside the directory.** An entry such as `"path": "../notes.txt"` used to be
   resolved against the output directory and followed. `tfg cleanup --yes

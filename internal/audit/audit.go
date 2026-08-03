@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -62,6 +63,41 @@ func (d Difference) String() string {
 	default:
 		return fmt.Sprintf("%-9s %s\n            expected %s\n            found    %s", d.Kind, d.Path, d.Want, d.Got)
 	}
+}
+
+// EscapeError is a manifest entry that leaves the directory once the links on
+// the way have been followed.
+//
+// Separate from the check manifest.Load already makes, and it has to be. That
+// one reads the text of the path and this one asks the filesystem, so a path
+// with no climb in it - "jn/VICTIM.txt" - passes the first and is caught here
+// when "jn" turns out to point somewhere else.
+type EscapeError struct {
+	Dir  string
+	Path string
+}
+
+func (e *EscapeError) Error() string {
+	return fmt.Sprintf(
+		"the manifest lists %q, which lands outside %s once the links on the way are followed. "+
+			"This tool never reads or removes anything outside the directory it was pointed at, so it will not act on this manifest. "+
+			"Check that the directory is the one the run wrote to, and that nothing inside it points elsewhere.",
+		e.Path, e.Dir)
+}
+
+// resolved turns a manifest entry into the path on disk, refusing one that
+// leaves the directory.
+//
+// Both commands go through this, so neither can be the one that forgets. It is
+// the second half of the rule docs/SECURITY.md section 2.4 states: a name from
+// somebody else's file is a name, and where it lands is settled after the links
+// have been followed rather than by reading the string.
+func resolved(dir string, f manifest.File) (string, error) {
+	full := filepath.Join(dir, filepath.FromSlash(f.Path))
+	if core.EscapesAfterResolving(dir, full) {
+		return "", &EscapeError{Dir: dir, Path: f.Path}
+	}
+	return full, nil
 }
 
 // Claimed lists the files a manifest says are on the disk.
@@ -112,7 +148,10 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		}
 		seen[f.Path] = true
 
-		full := filepath.Join(dir, filepath.FromSlash(f.Path))
+		full, err := resolved(dir, f)
+		if err != nil {
+			return nil, err
+		}
 		info, statErr := os.Stat(full)
 		if statErr != nil {
 			diffs = append(diffs, Difference{Kind: Missing, Path: f.Path})
@@ -165,6 +204,16 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 // Recursive because the manifest carries a path rather than a bare name, and
 // a run that groups its output into folders has to verify the same way.
 func walk(dir string) ([]string, error) {
+	// The root is resolved first, because WalkDir does not follow links and a
+	// directory that is itself one would be handed to the callback as a single
+	// entry that is not a directory. Found on 2026-08-03 by the guard for
+	// generating into a linked directory: verify reported "extra ." and called
+	// the whole run a mismatch. People keep fixtures on redirected paths, so
+	// this is an ordinary setup rather than a corner.
+	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
+		dir = resolved
+	}
+
 	var out []string
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {

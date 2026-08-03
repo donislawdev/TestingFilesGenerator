@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
@@ -65,7 +64,14 @@ func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate
 		if err := ctx.Err(); err != nil {
 			return out, err
 		}
-		full := filepath.Join(dir, filepath.FromSlash(f.Path))
+		full, err := resolved(dir, f)
+		if err != nil {
+			// Nothing is inspected and nothing is offered. A list that points
+			// outside the directory is not a list this tool acts on, and the
+			// preview is where somebody decides - so it must not show the entry
+			// as something it would remove.
+			return nil, err
+		}
 
 		info, err := os.Stat(full)
 		if errors.Is(err, fs.ErrNotExist) {
@@ -138,7 +144,14 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 			})
 			continue
 		}
-		full := filepath.Join(dir, filepath.FromSlash(c.Path))
+		// Asked again rather than carried over from Inspect. The two passes are
+		// separated by however long a person spends reading the preview, and
+		// this is the one operation in the tool that destroys data - so the
+		// question is put to the filesystem in the state it is in now.
+		full, err := resolved(dir, manifest.File{Path: c.Path})
+		if err != nil {
+			return out, err
+		}
 		if err := os.Remove(full); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				// It went away between the two passes. That is the state the

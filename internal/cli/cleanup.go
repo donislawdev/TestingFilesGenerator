@@ -3,6 +3,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -69,8 +70,16 @@ Flags:
 
 	cands, inspectErr := audit.Inspect(ctx, dir, m)
 	if inspectErr != nil {
-		fmt.Fprintln(errOut, "tfg: cleanup was interrupted while looking and removed nothing.")
-		return ExitInterrupted
+		// Not every refusal from the looking pass is a cancellation. It used to
+		// be treated as one, so a manifest pointing outside the directory was
+		// reported as "interrupted" under exit code 130 - an ending that says
+		// somebody pressed Ctrl+C when nobody had.
+		if errors.Is(inspectErr, context.Canceled) {
+			fmt.Fprintln(errOut, "tfg: cleanup was interrupted while looking and removed nothing.")
+			return ExitInterrupted
+		}
+		fmt.Fprintf(errOut, "tfg: %s Nothing was removed.\n", describeError(inspectErr))
+		return classify(inspectErr)
 	}
 
 	if len(cands) == 0 {

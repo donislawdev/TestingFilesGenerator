@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -138,6 +139,13 @@ func classify(err error) int {
 	// will not take, not a fault of ours.
 	var manifestTooLarge *manifest.TooLargeError
 	if errors.As(err, &manifestTooLarge) {
+		return ExitIO
+	}
+	// And the same class one step later: a manifest whose entries leave the
+	// directory once the links are followed. The text of the path passed, the
+	// filesystem did not.
+	var escape *audit.EscapeError
+	if errors.As(err, &escape) {
 		return ExitIO
 	}
 	if errors.Is(err, context.Canceled) {

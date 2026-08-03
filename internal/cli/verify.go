@@ -3,6 +3,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -73,7 +74,15 @@ Flags:
 	claimed := len(audit.Claimed(m))
 
 	// A cancelled run reports what it compared and never calls the rest sound.
+	//
+	// Anything else is a refusal rather than a cancellation, and saying
+	// "interrupted" about it names an ending nobody caused. A manifest pointing
+	// outside the directory used to arrive here as exit code 130.
 	if verifyErr != nil {
+		if !errors.Is(verifyErr, context.Canceled) {
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(verifyErr))
+			return classify(verifyErr)
+		}
 		fmt.Fprintf(errOut, "tfg: verify was interrupted after %d difference(s) and did not check everything.\n", len(diffs))
 		for _, d := range diffs {
 			fmt.Fprintln(errOut, "  "+d.String())
