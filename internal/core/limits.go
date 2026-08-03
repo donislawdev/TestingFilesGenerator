@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"math"
+	"strings"
 )
 
 // The numbers a person can write that this build will not honour.
@@ -42,6 +43,36 @@ var ErrTooManyFiles = errors.New(
 	"this build plans at most 1000000 files in one run, because the whole plan is worked out in memory before anything is written - " +
 		"that is what lets a run that cannot succeed be refused before the first byte. " +
 		"Ask for fewer files, or split the work into several runs")
+
+// PartialMarker is what a file being written is called before it is finished.
+//
+// Every file goes out under a temporary name and is renamed into place, so the
+// output directory never holds a half written file. The full name is
+// "<final>.tfg-partial-<process id>", with the process id there because two
+// runs writing into one directory used to meet on the temporary file.
+//
+// The marker is declared here rather than built at the point of use, because
+// two parts of the tool have to agree on it: the engine writes it, and the
+// reading side has to recognise one that outlived its run. A second spelling
+// would mean verify reports our own leftovers as files it knows nothing about,
+// which is what it did until 2026-08-03.
+const PartialMarker = ".tfg-partial-"
+
+// IsPartialName says whether a file name is one of ours, left behind by a run
+// that did not get to finish.
+//
+// It matters because such a file cannot be removed by cleanup - untouchable
+// rule 7 makes the manifest the whole authority over what may be deleted, and a
+// file that was never finished never reached it. So it sits in the directory,
+// and the only thing that can help is saying clearly what it is.
+//
+// Measured on 2026-08-03 with tools/probes/hard-kill-probe.py: three runs
+// killed with taskkill /F left one of these every time, and verify reported it
+// as "extra" - a word that tells a reader nothing about a file this tool wrote
+// itself.
+func IsPartialName(name string) bool {
+	return strings.Contains(name, PartialMarker)
+}
 
 // AddSizes adds one file size to a running total and says when the total has
 // left the range it is measured in.

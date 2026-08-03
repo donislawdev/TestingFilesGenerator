@@ -42,6 +42,16 @@ const (
 	// agreement and it is not a mismatch, and calling it either would be a
 	// guess.
 	Unreadable Kind = "unreadable"
+	// Leftover is a file this tool started and never finished, from a run that
+	// was killed before it could tidy up.
+	//
+	// It is reported apart from Extra because the two call for different
+	// answers. An extra file is somebody else's and the question is whose. A
+	// leftover is ours, nothing was lost, and it can be deleted - but cleanup
+	// will not do it, because untouchable rule 7 makes the manifest the whole
+	// authority over what may be removed and a file that never finished never
+	// reached it. So the only useful thing is to say plainly what it is.
+	Leftover Kind = "leftover"
 )
 
 // Difference is one disagreement, in the words a person needs to act on it.
@@ -60,6 +70,12 @@ func (d Difference) String() string {
 		return fmt.Sprintf("extra     %s", d.Path)
 	case Unreadable:
 		return fmt.Sprintf("unreadable %s - %s", d.Path, d.Got)
+	case Leftover:
+		return fmt.Sprintf(
+			"leftover  %s\n            an unfinished file from a run that was stopped before it could tidy up. "+
+				"Nothing described by this manifest is missing because of it. "+
+				"cleanup will not remove it, because it removes only what the manifest lists - delete it by hand",
+			d.Path)
 	default:
 		return fmt.Sprintf("%-9s %s\n            expected %s\n            found    %s", d.Kind, d.Path, d.Want, d.Got)
 	}
@@ -187,7 +203,12 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		if seen[p] || filepath.Base(p) == skip {
 			continue
 		}
-		diffs = append(diffs, Difference{Kind: Extra, Path: p})
+		// Ours or somebody else's, and the reader needs to be told which.
+		kind := Extra
+		if core.IsPartialName(filepath.Base(p)) {
+			kind = Leftover
+		}
+		diffs = append(diffs, Difference{Kind: kind, Path: p})
 	}
 
 	sort.Slice(diffs, func(i, j int) bool {

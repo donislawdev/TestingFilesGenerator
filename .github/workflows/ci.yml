@@ -226,7 +226,7 @@ jobs:
         # next search starts from nothing.
         run: |
           set -euo pipefail
-          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate; do
+          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe; do
             echo "=== $target ==="
             go test ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
           done

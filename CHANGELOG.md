@@ -36,6 +36,22 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **`tfg recipe fmt -w` no longer replaces a recipe with something it cannot
+  read.** The formatter prints the file back through a library whose printer is
+  not faithful for everything its parser accepts, and it never checked the
+  result. Following the tool's own instructions destroyed the file: `--check`
+  said "not in its settled shape, run -w", `-w` rewrote it and reported
+  success, and every command afterwards refused the file as unreadable. The
+  settled shape is now read back and settled again before it is handed over, so
+  a file that cannot survive the round trip is left exactly as it was.
+- **`verify` says what an unfinished file is instead of calling it unexpected.**
+  A run killed outright leaves the file it was writing behind, because the name
+  it is renamed from is removed by code and no code runs after a kill. Measured
+  over three killed runs, one was left every time. `verify` reported it as an
+  ordinary extra file, which says nothing about a file this tool wrote itself
+  and which `cleanup` will never remove - it removes only what the manifest
+  lists. It is now named as an unfinished file from an interrupted run, with
+  what to do about it. Files somebody else put there are still extra.
 - **A count larger than this build can plan is refused instead of crashing.**
   `--count 9223372036854775807` used to end in a Go stack trace under exit code
   2, which means a mistyped flag, and the same count in a recipe tried to

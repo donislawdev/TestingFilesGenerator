@@ -119,6 +119,77 @@ func FuzzNameTemplate(f *testing.F) {
 	})
 }
 
+// FuzzCanonicalRecipe feeds arbitrary bytes to the formatter and the hash.
+//
+// This is a second door into the same dependency and it was not being knocked
+// on. FuzzParseRecipe stops at recipe.Parse, which decodes. Canonical parses to
+// a tree and prints it back, which is different code in the library, and it
+// runs on the same untrusted bytes in two ordinary places: "tfg recipe fmt",
+// and every "tfg generate <recipe>", because the recipe hash in the manifest is
+// taken from the settled form.
+//
+// It matters more than a second entry point usually would, for two measured
+// reasons. The dependency has panicked on ordinary input before - "targets: ! "
+// took down the decoder, and the recover that fixed it is scoped narrowly to
+// the decode call, deliberately, so it does not cover this path at all. And
+// Canonical accepts strictly more than Parse does: measured on 2026-08-03,
+// "tfg recipe fmt --check" ends with 0 on five different recipes that "tfg
+// validate" refuses. So this reaches inputs the other target never sees.
+//
+// What it asserts is deliberately weak, the same as its neighbours: no panic,
+// and an answer that does not contradict itself. Settling twice has to give the
+// same bytes, because the whole point of a canonical form is that it is one -
+// and the hash of it goes into somebody else's manifest.
+func FuzzCanonicalRecipe(f *testing.F) {
+	for _, seed := range []string{
+		"version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n",
+		"",
+		"---\n",
+		"# just a comment\n",
+		"targets: ! ",
+		"a: &anchor\nb: *anchor\n",
+		"a: !!binary\n",
+		"? complex\n: mapping\n",
+		"a: |\n  block\n",
+		"\xef\xbb\xbfversion: 1\n",
+		"a: [1, 2,\n",
+		"{",
+	} {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, src string) {
+		once, err := recipe.Canonical([]byte(src), "fuzz.yaml")
+		if err != nil {
+			if once != nil {
+				t.Fatalf("Canonical refused with %v and still returned %d bytes", err, len(once))
+			}
+			return
+		}
+
+		// A settled form that does not settle is not one. Two passes have to
+		// agree, or "tfg recipe fmt -w" would rewrite a file every time it ran
+		// and a pre commit hook would never go green.
+		twice, err := recipe.Canonical(once, "fuzz.yaml")
+		if err != nil {
+			t.Fatalf("the settled form of %q was refused on the second pass: %v", src, err)
+		}
+		if string(twice) != string(once) {
+			t.Fatalf("settling is not stable for %q:\nfirst  %q\nsecond %q", src, once, twice)
+		}
+
+		// The hash rides on the settled form, so it has to be as stable.
+		h1, err1 := recipe.Hash([]byte(src))
+		h2, err2 := recipe.Hash(once)
+		if err1 != nil || err2 != nil {
+			t.Fatalf("hashing what Canonical accepted failed: %v / %v", err1, err2)
+		}
+		if h1 != h2 {
+			t.Fatalf("the hash moved when the file was settled, for %q: %s then %s", src, h1, h2)
+		}
+	})
+}
+
 // FuzzParseRecipe feeds arbitrary bytes to the recipe reader.
 //
 // A recipe is a file somebody else wrote, and this is where YAML from outside

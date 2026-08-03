@@ -521,7 +521,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	// not produce, and the bytes of the other had already gone through the same
 	// handle. The name never survives the run, so nothing about it has to be
 	// repeatable - and the file it becomes is settled by the plan, not by this.
-	tmp := fmt.Sprintf("%s.tfg-partial-%d", final, os.Getpid())
+	tmp := fmt.Sprintf("%s%s%d", final, core.PartialMarker, os.Getpid())
 
 	fh, err := os.Create(tmp)
 	if err != nil {
