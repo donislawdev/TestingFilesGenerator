@@ -202,9 +202,14 @@ func recipeCmd(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("recipe fmt", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	write := fs.Bool("w", false, "write the result back to the file instead of printing it")
-	check := fs.Bool("check", false, "print nothing and end with code 3 when the file is not in its settled shape")
+	check := fs.Bool("check", false, "print nothing and end with code 3 when the layout is not settled. It says nothing about whether the recipe is valid - use tfg validate for that")
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg recipe fmt - print a recipe in its settled shape, comments kept.
+
+This settles the layout of a file. It does not check that the recipe makes
+sense - a file with a key nobody recognises or a format that does not exist
+still has a settled shape, and this will print it. Run "tfg validate" for
+that, and run both if you are checking recipes before a commit.
 
 Usage:
   tfg recipe fmt <recipe.yaml>

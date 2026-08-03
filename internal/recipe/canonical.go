@@ -31,12 +31,33 @@ import (
 // file that had one does not have one. A recipe saved by an editor that adds
 // a mark is then reported as unsettled, and -w takes the mark off.
 func Canonical(src []byte, name string) ([]byte, error) {
-	// The formatter has to turn away the same files the rest of the tool turns
-	// away. It used to lay out a file holding two recipes without a word, and
-	// with -w it settled the file so that --check then passed - after which
-	// "tfg generate" refused the very file a pre commit hook had just called
-	// clean. Two commands disagreeing about what a recipe is sends the reader
-	// looking for the wrong thing.
+	// What this refuses, and what it deliberately does not.
+	//
+	// It is about the shape of a file, not about whether the recipe in it makes
+	// sense. "tfg validate" answers the second question and this does not:
+	// measured on 2026-08-03, "recipe fmt --check" ends with 0 on a recipe with
+	// no version, with an unknown top level key, with a format nobody
+	// registered, with a typo in a target key, and with a size and a boundary
+	// stated together - all five of which validate refuses.
+	//
+	// That is the owner's decision of 2026-08-03 rather than an oversight. A
+	// formatter that refused an invalid recipe could not lay out one somebody
+	// is still writing, and being unable to format work in progress is the
+	// thing people would actually hit. The cost is named instead: a hook that
+	// runs --check alone has checked the layout and nothing else, so it wants
+	// "tfg validate" beside it. docs/CLI.md and the --help text say so.
+	//
+	// This comment used to claim the opposite - that the formatter turns away
+	// the same files the rest of the tool turns away - and that was written
+	// after fixing one case of it, the file holding two recipes below. The
+	// sentence was true of that case and false in general, which is the kind of
+	// prose this project has no guard for.
+	//
+	// Two things are still refused, and both are about the shape rather than
+	// the recipe. A file holding two documents, because everything after the
+	// first separator would be dropped without a word. And a file whose settled
+	// form cannot be read back or does not settle twice, which is checked below
+	// - without that, -w replaced somebody's file with something unreadable.
 	f, err := oneDocument(withoutBOM(src), name)
 	if err != nil {
 		return nil, err

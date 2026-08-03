@@ -557,23 +557,34 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 
 // minimumBytes is the smallest archive this generator can produce: one empty
 // entry, no label, no padding.
+// It panics rather than returning a number nobody measured.
+//
+// This used to answer 1<<62 on any failure, on the reasoning that refusing
+// every size is safer than declaring a wrong minimum. It is not safer, it is
+// quieter: ZIP would refuse every request ever made with a message about a
+// minimum of 4611686018427387904 B, and nothing would say why. That is rule 6
+// broken in the way this project keeps finding.
+//
+// The condition is a programming mistake rather than a runtime one. It needs
+// the default entry format to be unregistered when this runs, which today
+// depends on "txt" sorting before "zip" in the import list of format/all -
+// true, and true by accident. format.Register already panics on the same class
+// of mistake, so this matches it: a build that cannot state its own minimum
+// fails at start rather than at every use.
 func minimumBytes() int64 {
 	desc, err := format.Get(defaultEntryFmt)
 	if err != nil {
-		// The default entry format is not registered yet, which happens only
-		// if registration order changes. Refusing every size is safer than
-		// declaring a minimum that was never measured.
-		return 1 << 62
+		panic(fmt.Sprintf("zip: the default entry format %q is not registered yet, so the minimum size of an archive cannot be worked out. Check the import order in internal/format/all", defaultEntryFmt))
 	}
 	cp, err := desc.Generator.Plan(format.Request{Bytes: 0, Seed: 0, Label: false})
 	if err != nil {
-		return 1 << 62
+		panic(fmt.Sprintf("zip: the default entry format %q cannot produce an empty file, so the minimum size of an archive cannot be worked out: %v", defaultEntryFmt, err))
 	}
 	n, err := archiveSize(memo{children: []child{{
 		name: "txt_0001.txt", desc: desc, plan: cp,
 	}}})
 	if err != nil {
-		return 1 << 62
+		panic(fmt.Sprintf("zip: the smallest archive cannot be measured: %v", err))
 	}
 	return n
 }

@@ -78,8 +78,33 @@ because it turns other people's test suites red.
   declared contents did not finish at all. It is now 57 ms, and the bytes of
   every archive are unchanged.
 
+### Added
+
+- **`--expected-reason` on the command line.** A recipe could say why an
+  outcome was expected and the flags could not, so a run driven by flags could
+  never fill the category the closed list exists to make countable. The list is
+  the same one the recipe uses, and a value that is not on it is refused with
+  the list to pick from.
+
 ### Changed
 
+- **`tfg recipe fmt` says what it does not check.** It settles the layout of a
+  file and never claimed otherwise in `--help`, but the text implied more than
+  it did. A recipe with a key nobody recognises still has a settled shape and
+  is still formatted, so a check before a commit wants `tfg validate` beside
+  it. Both the help and the flag description now say so.
+- **A PNG asking for more pixels than it can hold is the caller's request, not
+  a fault in the tool.** It ended with 1, which tells CI this build is broken,
+  for a pair of numbers somebody chose. It now ends with 4, the same as every
+  other value a format cannot deliver. `tfg formats png` also states the limit
+  on the two dimensions multiplied - it offered each side up to 20000 without
+  saying that both cannot be at their largest at once.
+- **`--count 0` or below is reported with the number that was written.** It
+  used to come back as "asks for 0 files" whatever was typed, because anything
+  below one produced an empty list and the message described the list.
+- **`--out` pointing at a file says so, once.** It produced two messages for
+  one mistake, the first of them saying there was nothing at a path that had
+  something at it.
 - **A file name ending in a dot or a space is refused.** Windows stores such a
   name without the last character, so the file on disk was not the file the
   manifest described - `tfg generate --name "report."` ended with 0 and `tfg

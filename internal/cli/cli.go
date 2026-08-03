@@ -193,7 +193,7 @@ func flagsGiven(fs *flag.FlagSet) map[string]bool {
 // meaningless next to a recipe that may hold many.
 func describingFlagsGiven(given map[string]bool) []string {
 	var bad []string
-	for _, name := range []string{"format", "size", "size-range", "boundary", "count", "name", "id", "set", "expected"} {
+	for _, name := range []string{"format", "size", "size-range", "boundary", "count", "name", "id", "set", "expected", "expected-reason"} {
 		if given[name] {
 			bad = append(bad, "--"+name)
 		}

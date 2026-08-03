@@ -91,15 +91,22 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
+			// The declaration bounds each side on its own and cannot say that
+			// the two multiplied have a limit as well, so the sentence carries
+			// it. Without that, "tfg formats png" offered 20000 by 20000 and
+			// the run then refused it - the tool advertising a pair it does not
+			// accept. Naming the whole rule in the registry needs a shape for a
+			// limit on two settings at once, which is a change to AR9 rather
+			// than a line here. Recorded in docs/OBSERVATIONS.md, O45.
 			{
 				Name: "width", Kind: format.PropertyInt,
 				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for. Width times height cannot pass 40 megapixels, so both sides cannot be at their largest at once.",
 			},
 			{
 				Name: "height", Kind: format.PropertyInt,
 				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for. Width times height cannot pass 40 megapixels, so both sides cannot be at their largest at once.",
 			},
 		},
 		GeneratorVersion: generatorVersion,
@@ -275,10 +282,20 @@ func chooseSize(r format.Request, label string) (memo, bool, error) {
 			return memo{}, true, err
 		}
 		_, _ = wRaw, hRaw
+		// A PropertyValueError rather than a plain one, and the difference is
+		// the exit code somebody's CI reads. This used to end with 1, which
+		// means the tool itself broke, for a pair of numbers the caller chose.
+		// That is the same defect closed for declared ranges on 2026-08-03,
+		// surviving one layer deeper: the declaration bounds each dimension on
+		// its own and cannot express a limit on the two multiplied.
 		if int64(w)*int64(h) > maxPixels {
-			return memo{}, true, fmt.Errorf(
-				"png: %dx%d is %d megapixels and the limit is %d - the picture is held in memory while it is encoded. Ask for smaller dimensions",
-				w, h, int64(w)*int64(h)/1_000_000, maxPixels/1_000_000)
+			return memo{}, true, &format.PropertyValueError{
+				Format: "png", Key: "width and height",
+				Value: fmt.Sprintf("%dx%d", w, h),
+				Reason: fmt.Sprintf(
+					"together they come to %d megapixels and the limit is %d, because the picture is held in memory while it is encoded. Each side may go up to %d, but not both at once - ask for a smaller pair",
+					int64(w)*int64(h)/1_000_000, maxPixels/1_000_000, maxDimension),
+			}
 		}
 		m := memo{width: w, height: h, seed: r.Seed, label: label}
 		body, err := encodedBodySize(m)

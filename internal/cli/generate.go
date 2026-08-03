@@ -18,20 +18,21 @@ import (
 )
 
 type generateOpts struct {
-	formatID  string
-	sizeStr   string
-	sizeRange string
-	boundary  string
-	count     int
-	outDir    string
-	name      string
-	id        string
-	seed      int64
-	expected  string
-	clean     bool
-	dryRun    bool
-	asJSON    bool
-	props     propertyFlag
+	formatID       string
+	sizeStr        string
+	sizeRange      string
+	boundary       string
+	count          int
+	outDir         string
+	name           string
+	id             string
+	seed           int64
+	expected       string
+	expectedReason string
+	clean          bool
+	dryRun         bool
+	asJSON         bool
+	props          propertyFlag
 }
 
 func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.Writer)) {
@@ -48,6 +49,8 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	fs.StringVar(&g.id, "id", "files", "target id, the anchor the seeds are derived from")
 	fs.Int64Var(&g.seed, "seed", 0, "run seed, the same seed gives the same bytes")
 	fs.StringVar(&g.expected, "expected", "", "declared expectation: accept, reject, sanitize or unspecified")
+	fs.StringVar(&g.expectedReason, "expected-reason", "",
+		"why that outcome is expected, from the closed list. Run with an unknown value to see it")
 	fs.BoolVar(&g.clean, "clean", false, "turn off the self describing label")
 	fs.BoolVar(&g.dryRun, "dry-run", false, "count and show, write nothing at all")
 	fs.BoolVar(&g.asJSON, "json", false, "write the manifest to standard output")
@@ -209,6 +212,16 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		return nil, ExitUsage
 	}
 
+	// Reported with the number the caller wrote. It used to fall through to the
+	// planner, which builds an empty list from anything below one and then says
+	// "asks for 0 files" - a sentence about a number nobody typed.
+	if given["count"] && g.count < 1 {
+		fmt.Fprintf(errOut,
+			"tfg: --count %d asks for fewer than one file. A target that produces nothing is almost always a mistake rather than an intention. Ask for at least one, or leave the flag out to get a single file.\n",
+			g.count)
+		return nil, ExitRecipe
+	}
+
 	// Asked before the list is built, because building it is the failure. A
 	// count past the ceiling used to reach make([]int64) and panic with a stack
 	// trace under the exit code that means a mistyped flag.
@@ -242,18 +255,34 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		return nil, ExitUsage
 	}
 
+	// The list is closed so that a report can group by reason, and a typo would
+	// make a category of one. Same list the recipe uses rather than a second
+	// copy, because two copies is how the two surfaces drift apart.
+	if g.expectedReason != "" && !recipe.KnownReason(g.expectedReason) {
+		fmt.Fprintf(errOut,
+			"tfg: --expected-reason %q is not on the list. The list is closed so that a report can group by reason. Use one of: %s.\n",
+			g.expectedReason, strings.Join(recipe.Reasons(), ", "))
+		return nil, ExitUsage
+	}
+	if g.expectedReason != "" && g.expected == "" {
+		fmt.Fprintln(errOut,
+			"tfg: --expected-reason says why an outcome is expected and no outcome was given. Add --expected accept, reject, sanitize or unspecified, or drop the reason.")
+		return nil, ExitUsage
+	}
+
 	return []engine.Target{{
-		ID:            g.id,
-		Format:        g.formatID,
-		Sizes:         sizes,
-		SizeIsRange:   g.sizeRange != "",
-		SizeMin:       rangeLow,
-		SizeMax:       rangeHigh,
-		BoundaryLimit: boundaryLimit,
-		NameTmpl:      g.name,
-		Label:         !g.clean,
-		Expected:      g.expected,
-		Properties:    g.props,
+		ID:             g.id,
+		Format:         g.formatID,
+		Sizes:          sizes,
+		SizeIsRange:    g.sizeRange != "",
+		SizeMin:        rangeLow,
+		SizeMax:        rangeHigh,
+		BoundaryLimit:  boundaryLimit,
+		NameTmpl:       g.name,
+		Label:          !g.clean,
+		Expected:       g.expected,
+		ExpectedReason: g.expectedReason,
+		Properties:     g.props,
 	}}, ExitOK
 }
 

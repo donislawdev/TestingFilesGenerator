@@ -338,13 +338,27 @@ var reasons = map[string]bool{
 }
 
 func reasonList() string {
+	return strings.Join(Reasons(), ", ")
+}
+
+// Reasons is the closed list, for the surfaces that have to offer it.
+//
+// Exported because the command line needs the same list the recipe uses. It
+// had no way to state a reason at all until 2026-08-03 - "--expected reject"
+// worked and the reason beside it did not exist - so a run driven by flags
+// could never fill the category the list exists to make countable. Two copies
+// of a closed list is how the two surfaces drift, which is D1 one level down.
+func Reasons() []string {
 	out := make([]string, 0, len(reasons))
 	for r := range reasons {
 		out = append(out, r)
 	}
 	sort.Strings(out)
-	return strings.Join(out, ", ")
+	return out
 }
+
+// KnownReason says whether a reason is on the list.
+func KnownReason(r string) bool { return reasons[r] }
 
 // boundaryText reads the limit a boundary set is built around.
 func boundaryText(p *problems, where string, v *scalar) string {

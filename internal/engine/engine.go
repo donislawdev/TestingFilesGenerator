@@ -396,6 +396,17 @@ func preflight(files []PlannedFile, opt Options) error {
 	// A failure to read the free space is not a reason to refuse. A disk we
 	// cannot measure is not the same as a disk that is full.
 
+	// Pointing --out at a file rather than a directory is a mistake somebody
+	// makes, and it used to arrive as two messages about one fault, the first
+	// of them saying "there is nothing at that path" about a path that has
+	// something at it. The system reports ENOTDIR and our mapping only knew
+	// "missing", "no permission" and "already there".
+	if info, err := os.Stat(opt.OutDir); err == nil && !info.IsDir() {
+		return &RecipeError{Detail: fmt.Sprintf(
+			"the output directory %s is a file, not a directory. Point --out at a directory, or at one that does not exist yet and it will be created",
+			opt.OutDir)}
+	}
+
 	// The manifest is checked with the files it would describe, and leaving it
 	// out cost exactly what it protects. A second run into the same directory
 	// wrote a fresh manifest over the old one, so every file the old one listed
