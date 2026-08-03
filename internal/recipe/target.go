@@ -161,6 +161,13 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 			p.add(fmt.Sprintf("%s asks for %d files", where, n),
 				"a target that produces nothing is almost always a mistake rather than an intention",
 				"ask for at least one, or delete the target")
+		// Judged before the list is built. The reader used to grow it one entry
+		// at a time and reached a 13 GB allocation on a count of 2^63 - so this
+		// has to refuse the number rather than the result of using it.
+		case n > core.MaxFilesPerRun:
+			p.add(fmt.Sprintf("%s asks for %d files", where, n),
+				core.ErrTooManyFiles.Error(),
+				fmt.Sprintf("use a count of %d or less, or split the target across several recipes", core.MaxFilesPerRun))
 		default:
 			count = int(n)
 		}
@@ -375,7 +382,14 @@ func boundarySizes(p *problems, where, text string) []int64 {
 			"use a boundary of at least 1 B")
 		return nil
 	}
-	return core.BoundarySizes(limit)
+	sizes, err := core.BoundarySizes(limit)
+	if err != nil {
+		p.add(fmt.Sprintf("%s has a boundary of %d B", where, limit),
+			err.Error(),
+			"use a boundary at least one byte below the largest number")
+		return nil
+	}
+	return sizes
 }
 
 // expectation accepts the short form and the long one. The short form is what

@@ -209,6 +209,15 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		return nil, ExitUsage
 	}
 
+	// Asked before the list is built, because building it is the failure. A
+	// count past the ceiling used to reach make([]int64) and panic with a stack
+	// trace under the exit code that means a mistyped flag.
+	if int64(g.count) > core.MaxFilesPerRun {
+		fmt.Fprintf(errOut, "tfg: --count %d cannot be planned - %s\n",
+			g.count, core.ErrTooManyFiles)
+		return nil, ExitRecipe
+	}
+
 	// A boundary set is exactly three files, so a count beside it is a number
 	// that would be thrown away. Saying so beats producing three files for
 	// somebody who asked for fifty.
@@ -276,7 +285,12 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 				"tfg: --boundary %d B is too small. The set needs a size one byte below the limit and there is nothing below zero. Use a limit of at least 1 B.\n", limit)
 			return nil, 0, 0, 0, ExitUsage
 		}
-		return core.BoundarySizes(limit), 0, 0, limit, ExitOK
+		sizes, err := core.BoundarySizes(limit)
+		if err != nil {
+			fmt.Fprintf(errOut, "tfg: --boundary %d B is too large - %s\n", limit, err)
+			return nil, 0, 0, 0, ExitRecipe
+		}
+		return sizes, 0, 0, limit, ExitOK
 
 	default:
 		bytesWanted, err := core.ParseSize(g.sizeStr)

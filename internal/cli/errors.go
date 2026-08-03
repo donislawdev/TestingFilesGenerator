@@ -134,6 +134,12 @@ func classify(err error) int {
 	if errors.As(err, &schema) {
 		return ExitIO
 	}
+	// Same class, one step earlier: a manifest too large to read is a file we
+	// will not take, not a fault of ours.
+	var manifestTooLarge *manifest.TooLargeError
+	if errors.As(err, &manifestTooLarge) {
+		return ExitIO
+	}
 	if errors.Is(err, context.Canceled) {
 		return ExitInterrupted
 	}

@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -130,6 +131,69 @@ func TestPlanningTenThousandFilesStaysCheap(t *testing.T) {
 			perFile, budget)
 	}
 	t.Logf("planning cost %d B per file", perFile)
+}
+
+// Planning a container must not generate what the container holds.
+//
+// This project tells people to run --dry-run before anything large, so the
+// preview is the step that has to be cheap. It was not: measuring an archive
+// meant building it, and building it meant running every generator inside, two
+// or three times over. Measured on 2026-08-03, a 256 MB archive from contents:
+// 960 ms to preview against 56 ms for a plain file of the same size, and 1585
+// ms to actually write it. The preview cost about what the run costs.
+//
+// Asserted on the clock, which this project otherwise refuses to gate on
+// because the spread between runners is real. It is legitimate here and only
+// here, because the gap is not a percentage: the declared contents below come
+// to 10 GB, so the old path had to push about 30 GB through a CRC before
+// answering - tens of seconds on any machine - while the arithmetic answers in
+// about a millisecond however large the number is. Four orders of magnitude,
+// so no runner sits anywhere near the line.
+//
+// Ten gigabytes rather than a hundred on purpose. The mutation that proves this
+// guard restores the old path and has to run to completion, and the owner's
+// mutation runs are already long enough.
+func TestPlanningAContainerDoesNotGenerateWhatItHolds(t *testing.T) {
+	const (
+		ceiling  = 20 * time.Second
+		declared = 100 * (100 << 20) // 100 files of 100 MB
+	)
+
+	started := time.Now()
+	planned, err := engine.Plan(
+		[]engine.Target{{
+			ID:     "huge",
+			Format: "zip",
+			Sizes:  engine.Uniform(1, 0),
+			// No size of its own, so the archive works it out from what it
+			// holds and nothing is padded.
+			SizeFromContents: true,
+			Contains: []format.Content{
+				{Format: "txt", Count: 100, Bytes: 100 << 20},
+			},
+			Label: true,
+		}},
+		engine.Options{OutDir: t.TempDir(), Seed: 7741, Command: "test"},
+	)
+	elapsed := time.Since(started)
+
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+	if len(planned) != 1 {
+		t.Fatalf("planned %d files, expected 1", len(planned))
+	}
+
+	// The number still has to be right. A fast answer that is wrong would pass
+	// the clock and break the one promise this tool makes.
+	if got := planned[0].Plan.Bytes; got < declared {
+		t.Errorf("the archive plans %d B while holding %d B, so the contents are not being counted", got, int64(declared))
+	}
+	if elapsed > ceiling {
+		t.Errorf("planning an archive of %d B of declared contents took %s, ceiling is %s - the contents are being generated in order to measure them",
+			int64(declared), elapsed.Round(time.Millisecond), ceiling)
+	}
+	t.Logf("planned %d B of declared contents in %s", int64(declared), elapsed.Round(time.Millisecond))
 }
 
 type countingSink struct{ n int64 }

@@ -14,6 +14,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Version is the schema version. A consumer checks it before parsing and
@@ -249,7 +251,42 @@ func (e *SchemaError) Error() string {
 // manifest from a future major describes fields this build does not know, and
 // acting on the half of it we recognise is how "verify" ends up calling a
 // directory sound on the strength of the part it could read.
+// MaxBytes is the largest manifest this build will read.
+//
+// A manifest arrives from outside the same way a recipe does - it travels with
+// a fixture set, it turns up in a pull request, it is handed to "verify" by
+// path - so its size is chosen by somebody else. The recipe has had a ceiling
+// since 2026-08-02 for exactly that reason and the manifest had none, which was
+// an asymmetry rather than a decision.
+//
+// Sixteen megabytes rather than the recipe's one. A manifest is generated
+// rather than typed and it grows with the run: measured on 2026-08-03, an entry
+// costs about 700 B, so this holds a run of roughly twenty thousand files -
+// twice the largest preset in docs/PRESETS.md and well above the ten thousand
+// this tool is designed around.
+//
+// What it does not do, stated as plainly as the recipe's: it does not defend
+// against a manifest that fits and is still expensive.
+const MaxBytes = 16 << 20
+
+// TooLargeError is returned for a manifest past MaxBytes.
+type TooLargeError struct {
+	Path  string
+	Bytes int64
+}
+
+func (e *TooLargeError) Error() string {
+	return fmt.Sprintf(
+		"%s is %d B and the limit is %d B. A manifest is read into memory to be compared against a directory, so an unbounded one is a way to exhaust it. Check that this is a manifest this tool wrote, or split the run it describes",
+		e.Path, e.Bytes, MaxBytes)
+}
+
 func Load(path string) (*Manifest, error) {
+	// Asked on the directory entry rather than after reading. "Read it all,
+	// then say it was too big" is not a limit - the cost was already paid.
+	if info, statErr := os.Stat(path); statErr == nil && info.Size() > MaxBytes {
+		return nil, &TooLargeError{Path: path, Bytes: info.Size()}
+	}
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -267,7 +304,47 @@ func Load(path string) (*Manifest, error) {
 			"it is schema version %s and this build reads %s. Use the version of tfg that wrote it",
 			m.ManifestVersion, Version)}
 	}
+	if err := checkPaths(path, &m); err != nil {
+		return nil, err
+	}
 	return &m, nil
+}
+
+// checkPaths refuses a manifest whose entries point outside the directory they
+// describe.
+//
+// This is the door. Every consumer of a manifest comes through Load, so the
+// check sits here rather than beside each use - "verify" and "cleanup" then
+// cannot drift into disagreeing about it, and a consumer written later gets it
+// without knowing it exists.
+//
+// Measured on 2026-08-03, before this existed: an entry with the path
+// "../VICTIM.txt" and cleanup --yes --force removed a file one directory above
+// the output directory, reported "1 file(s) removed from <outdir>", and ended
+// with exit code 0. Untouchable rule 7 says the list is the whole authority
+// over what may be deleted - and nothing was asking whether the list stayed
+// inside the directory it was handed.
+//
+// The whole document is refused rather than the one entry. A manifest is a
+// record of one run, and an entry pointing somewhere it could never have
+// written means the file was edited or produced by something else. Acting on
+// the rest of it would be trusting the half we happen to like.
+//
+// Every entry is checked, not only the ones Claimed returns. An entry that no
+// command reads today is one a command reads tomorrow.
+func checkPaths(path string, m *Manifest) error {
+	for i, f := range m.Files {
+		problem := core.ContainmentProblem(f.Path)
+		if problem == "" {
+			continue
+		}
+		return &SchemaError{Path: path, Detail: fmt.Sprintf(
+			"entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
+				"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
+				"Use the manifest the run actually wrote, or correct the path to one inside the directory",
+			i+1, f.Path, problem)}
+	}
+	return nil
 }
 
 // major is the part before the first dot. A minor bump adds fields and stays
@@ -279,18 +356,63 @@ func major(v string) string {
 	return v
 }
 
-// Save writes the manifest to a file, replacing whatever was there.
+// Save writes the manifest, claiming the name before it writes and never
+// writing over a manifest that is already there.
+//
+// Two failures shaped this, and neither is hypothetical.
+//
+// The first is a second run into the same directory. The engine refuses that in
+// its preflight, but a check followed by a write is not the same as claiming
+// the name: two runs started together both found the directory empty, both
+// wrote, and one manifest replaced the other. Measured on 2026-08-03 with two
+// runs of eight files under different ids - both ended with exit code 0,
+// sixteen files were on the disk, one manifest described eight of them, and the
+// other eight could never be removed by this tool again. O_EXCL closes that,
+// because creating the name and finding out whether it existed become one
+// operation the operating system settles.
+//
+// The second is the process ending part way through the write. Every generated
+// file goes through a temporary name and a rename for exactly this reason,
+// while the manifest - the one file that can remove all the others - was
+// written in place. A truncated manifest does not parse, so the record of a
+// finished run would be lost to a Ctrl+C landing in the wrong second.
+//
+// So the name is claimed first, the content is written beside it, and the
+// rename puts it in place in one step.
 func (m *Manifest) Save(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	f, err := os.Create(path)
+
+	// Claiming the name. O_EXCL fails when something is already there, which is
+	// the answer we want rather than a condition to work around.
+	claim, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+	if err != nil {
+		return err
+	}
+	if err := claim.Close(); err != nil {
+		return err
+	}
+
+	tmp := path + ".tfg-writing"
+	f, err := os.Create(tmp)
 	if err != nil {
 		return err
 	}
 	if err := m.Encode(f); err != nil {
 		f.Close()
+		os.Remove(tmp)
 		return err
 	}
-	return f.Close()
+	if err := f.Close(); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	// Over our own claim, which is why this rename is allowed to replace
+	// something. Nobody else can be holding that name.
+	if err := os.Rename(tmp, path); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	return nil
 }

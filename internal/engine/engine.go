@@ -196,10 +196,74 @@ type PlannedFile struct {
 // Everything is planned before anything is written. A size a format cannot
 // deliver is refused here, which is what makes the promise of "zero files on
 // disk" true rather than nearly true.
+// settleTarget checks everything that has to be true about one target before
+// any of its files are planned, and settles the sizes of a range.
+//
+// Split out of Plan when that function crossed the shape ceiling. The line is
+// what a part does rather than how long it is: this answers "is this target
+// askable at all", and the loop it was taken out of answers "what files does it
+// come to". seen carries across targets because a duplicate id is a fact about
+// the run rather than about one entry.
+func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
+	if t.ID == "" {
+		return format.Descriptor{}, &RecipeError{Detail: "a target has no id: every target needs a stable id, it anchors the seed and links to the manifest"}
+	}
+	if seen[t.ID] {
+		return format.Descriptor{}, &RecipeError{Detail: fmt.Sprintf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)}
+	}
+	seen[t.ID] = true
+
+	if len(t.Sizes) == 0 {
+		return format.Descriptor{}, &RecipeError{Detail: fmt.Sprintf("target %q asks for 0 files: ask for at least one", t.ID)}
+	}
+
+	desc, err := format.Get(t.Format)
+	if err != nil {
+		return format.Descriptor{}, err
+	}
+
+	if err := desc.CheckProperties(t.Properties); err != nil {
+		return format.Descriptor{}, err
+	}
+
+	// A format that holds nothing cannot be asked what it holds. Silently
+	// ignoring contains would give an archive with none of the files somebody
+	// listed, reported as a success - the file looks right and the test suite
+	// believes it.
+	if len(t.Contains) > 0 && !desc.Container {
+		return format.Descriptor{}, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
+	}
+
+	// A size below the minimum is refused by the generator itself, on the first
+	// size that cannot be delivered, and planning writes nothing - so every size
+	// of a boundary set is judged before any file exists.
+	//
+	// There used to be a loop here checking the same thing against the declared
+	// minimum first. Mutation showed no test could tell whether it ran, because
+	// every generator already refuses and a guard walks sizes below the minimum
+	// for every registered format. It was removed rather than kept as defence
+	// nobody can verify.
+	if t.SizeIsRange {
+		if err := drawSizes(t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {
+			return format.Descriptor{}, err
+		}
+	}
+	return desc, nil
+}
+
 func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	var out []PlannedFile
 	seen := map[string]bool{}
 	names := map[string]string{}
+
+	// The running total of the whole run, kept here rather than worked out
+	// afterwards. Both of these used to be settled too late to help: the file
+	// count was only bounded by whatever a caller had already allocated, and
+	// the byte total was summed after planning by a function that could not
+	// report a wrap - so a total that had left the range was handed to the free
+	// space check as a negative requirement and satisfied it.
+	var totalBytes int64
+	var totalFiles int
 
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed
@@ -216,50 +280,19 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	for i := range targets {
 		t := &targets[i]
 
-		if t.ID == "" {
-			return nil, &RecipeError{Detail: "a target has no id: every target needs a stable id, it anchors the seed and links to the manifest"}
-		}
-		if seen[t.ID] {
-			return nil, &RecipeError{Detail: fmt.Sprintf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)}
-		}
-		seen[t.ID] = true
-
-		if len(t.Sizes) == 0 {
-			return nil, &RecipeError{Detail: fmt.Sprintf("target %q asks for 0 files: ask for at least one", t.ID)}
-		}
-
-		desc, err := format.Get(t.Format)
+		desc, err := settleTarget(t, opt, seen)
 		if err != nil {
 			return nil, err
 		}
-
-		if err := desc.CheckProperties(t.Properties); err != nil {
-			return nil, err
-		}
-
-		// A format that holds nothing cannot be asked what it holds. Silently
-		// ignoring contains would give an archive with none of the files
-		// somebody listed, reported as a success - the file looks right and
-		// the test suite believes it.
-		if len(t.Contains) > 0 && !desc.Container {
-			return nil, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
-		}
-
-		// A size below the minimum is refused by the generator itself, on the
-		// first size that cannot be delivered, and planning writes nothing -
-		// so every size of a boundary set is judged before any file exists.
-		//
-		// There used to be a loop here checking the same thing against the
-		// declared minimum first. Mutation showed no test could tell whether
-		// it ran, because every generator already refuses and a guard walks
-		// sizes below the minimum for every registered format. It was removed
-		// rather than kept as defence nobody can verify.
 		targetSeed := core.TargetSeed(opt.Seed, t.ID)
 
-		if t.SizeIsRange {
-			if err := drawSizes(t, desc, targetSeed); err != nil {
-				return nil, err
-			}
+		// Counted across every target, not per target. A ceiling on one target
+		// alone is one somebody reaches by writing the number out in pieces.
+		totalFiles += len(t.Sizes)
+		if totalFiles > core.MaxFilesPerRun {
+			return nil, &RecipeError{Detail: fmt.Sprintf(
+				"this run asks for %d files across %d target(s) - %s",
+				totalFiles, len(targets), core.ErrTooManyFiles)}
 		}
 
 		for idx, size := range t.Sizes {
@@ -291,6 +324,11 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 					owner, t.ID, name)}
 			}
 			names[name] = t.ID
+
+			if totalBytes, err = core.AddSizes(totalBytes, p.Bytes); err != nil {
+				return nil, &RecipeError{Detail: fmt.Sprintf(
+					"target %q brings the run to a size that is too large to measure: %s", t.ID, err)}
+			}
 
 			out = append(out, PlannedFile{
 				ID:     fmt.Sprintf("f_%04d", len(out)+1),
@@ -477,7 +515,13 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 
 func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int64)) (string, error) {
 	final := filepath.Join(outDir, f.Name)
-	tmp := final + ".tfg-partial"
+	// The process id is in the name because two runs writing into one directory
+	// used to meet on it. Measured on 2026-08-03: two runs of the same target
+	// collided on the temporary file, one of them reported two files it could
+	// not produce, and the bytes of the other had already gone through the same
+	// handle. The name never survives the run, so nothing about it has to be
+	// repeatable - and the file it becomes is settled by the plan, not by this.
+	tmp := fmt.Sprintf("%s.tfg-partial-%d", final, os.Getpid())
 
 	fh, err := os.Create(tmp)
 	if err != nil {
@@ -643,6 +687,24 @@ func checkFileName(where, name string) error {
 	case name == "." || name == "..":
 		return &RecipeError{Detail: fmt.Sprintf(
 			"%s produces the name %q, which names a directory rather than a file", where, name)}
+
+	// A name Windows stores under a different name than the one it was given.
+	// Refused on every system for the same reason a separator is: a recipe that
+	// only works on the machine it was written on is not portable.
+	//
+	// Measured on 2026-08-03, and it is the silence rule broken rather than a
+	// portability nicety. "--name trailing." finished with exit code 0, the
+	// file landed as "trailing", and the manifest recorded "trailing." - so the
+	// run described a file that was not there under that name, and "tfg verify"
+	// on the tool's own output failed with exit code 7 a second later.
+	//
+	// Producing such a name deliberately is a real test case and it belongs to
+	// the name laboratory, which writes it into an archive rather than onto the
+	// host filesystem for exactly this reason. See D10.
+	case strings.HasSuffix(name, ".") || strings.HasSuffix(name, " "):
+		return &RecipeError{Detail: fmt.Sprintf(
+			"%s produces the name %q, which ends in a dot or a space. Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both. Take the last character off, or ask for the file inside an archive where the name survives",
+			where, name)}
 
 	case filepath.IsAbs(name) || filepath.VolumeName(name) != "":
 		return &RecipeError{Detail: fmt.Sprintf(

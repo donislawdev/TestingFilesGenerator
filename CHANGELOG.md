@@ -14,6 +14,56 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Security
+
+- **`cleanup` and `verify` no longer act on a manifest whose entries point
+  outside the directory.** An entry such as `"path": "../notes.txt"` used to be
+  resolved against the output directory and followed. `tfg cleanup --yes
+  --force` removed the file it landed on, reported it as removed from the
+  output directory, and ended with 0. A manifest travels with a fixture set and
+  can arrive from anywhere, so it is now checked when it is read: a manifest
+  with an entry that leaves the directory is refused whole, with the entry
+  named, and nothing is read or removed. Paths naming a subdirectory are
+  unaffected.
+
+### Fixed
+
+- **A count larger than this build can plan is refused instead of crashing.**
+  `--count 9223372036854775807` used to end in a Go stack trace under exit code
+  2, which means a mistyped flag, and the same count in a recipe tried to
+  allocate 13 GB before the system stopped it. A run now plans at most 1000000
+  files and says so with exit code 3. That is a hundred times the largest
+  preset.
+- **A total size that does not fit is refused instead of wrapping.** Sizes that
+  added up past what a byte count can hold came out negative, were reported as
+  a negative total, and satisfied the free space check - so a run that could
+  never fit started writing. The same wrap could reach `--boundary` through the
+  file one byte above the limit.
+- **A manifest is never written over, even by a run that started at the same
+  time.** Two runs into one directory both ended with 0 and one manifest
+  quietly replaced the other, leaving the files it described with nothing able
+  to remove them. The name is now claimed rather than checked in advance. The
+  manifest is also written through a temporary file, so a run that is
+  interrupted mid write no longer leaves an unreadable one.
+- **A manifest too large to read is refused before it is read**, the same way a
+  recipe already was.
+- **`--dry-run` on an archive no longer generates everything the archive
+  holds.** Measuring an archive meant building it, which meant running every
+  generator inside it two or three times. A dry run of a 256 MB archive took
+  960 ms against 56 ms for a plain file of the same size, and one with large
+  declared contents did not finish at all. It is now 57 ms, and the bytes of
+  every archive are unchanged.
+
+### Changed
+
+- **A file name ending in a dot or a space is refused.** Windows stores such a
+  name without the last character, so the file on disk was not the file the
+  manifest described - `tfg generate --name "report."` ended with 0 and `tfg
+  verify` then reported the same directory as wrong. Both spellings are refused
+  on every system, the same way a path separator already is, so that a recipe
+  means one thing everywhere. Names that merely contain a dot or a space are
+  unaffected.
+
 ### Added
 
 - **Files of varying size, with `size-range`.** `size-range: 1kb-8kb` in a

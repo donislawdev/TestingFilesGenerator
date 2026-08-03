@@ -19,11 +19,16 @@ import (
 //
 // Reported from manual testing. The sizes were always right.
 
-func boundaryTarget(id string, limit int64) engine.Target {
+func boundaryTarget(t *testing.T, id string, limit int64) engine.Target {
+	t.Helper()
+	sizes, err := core.BoundarySizes(limit)
+	if err != nil {
+		t.Fatalf("building the boundary set for %d: %v", limit, err)
+	}
 	return engine.Target{
 		ID:            id,
 		Format:        "txt",
-		Sizes:         core.BoundarySizes(limit),
+		Sizes:         sizes,
 		BoundaryLimit: limit,
 		Label:         true,
 	}
@@ -35,7 +40,7 @@ func TestABoundarySetSaysWhichFileIsWhich(t *testing.T) {
 
 	opt := engine.Options{OutDir: dir, Seed: 7741, Command: "test",
 		ManifestName: engine.DefaultManifestName}
-	planned, err := engine.Plan([]engine.Target{boundaryTarget("files", limit)}, opt)
+	planned, err := engine.Plan([]engine.Target{boundaryTarget(t, "files", limit)}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)
 	}
@@ -69,7 +74,7 @@ func TestABoundarySetSaysWhichFileIsWhich(t *testing.T) {
 func TestABoundarySetStillObeysANameTemplate(t *testing.T) {
 	dir := t.TempDir()
 
-	target := boundaryTarget("files", 1<<20)
+	target := boundaryTarget(t, "files", 1<<20)
 	target.NameTmpl = "invoice_{index:04}.txt"
 
 	opt := engine.Options{OutDir: dir, Seed: 7741, Command: "test",
