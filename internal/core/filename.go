@@ -60,9 +60,15 @@ func ContainmentProblem(p string) string {
 	return ""
 }
 
-// hasVolumeName spots a Windows volume prefix such as "C:". filepath.VolumeName
-// answers for the system this build runs on, which is exactly what must not
-// decide it here.
+// HasVolumeName spots a Windows volume prefix such as "C:".
+//
+// filepath.VolumeName answers for the system this build runs on, which is
+// exactly what must not decide it. Measured on 2026-08-04: the name "a:b.txt"
+// was accepted on Linux and refused on Windows as an absolute path, from one
+// recipe - so a fixture set written on one machine failed on the next, which
+// is the thing the separator rule beside it exists to prevent.
+func HasVolumeName(p string) bool { return hasVolumeName(p) }
+
 func hasVolumeName(p string) bool {
 	if len(p) < 2 || p[1] != ':' {
 		return false

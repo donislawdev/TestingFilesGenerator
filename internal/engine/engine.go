@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -254,7 +255,7 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	var out []PlannedFile
 	seen := map[string]bool{}
-	names := map[string]string{}
+	names := map[string]nameOwner{}
 
 	// The running total of the whole run, kept here rather than worked out
 	// afterwards. Both of these used to be settled too late to help: the file
@@ -318,12 +319,33 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			// destroyed by the other, and the manifest would still describe
 			// both. A manifest that quietly lost a file looks complete and
 			// reaches the test suite as a false truth.
-			if owner, clash := names[name]; clash {
-				return nil, &RecipeError{Detail: fmt.Sprintf(
-					"targets %q and %q both produce a file named %s - give one of them a --name template containing {index:04}",
-					owner, t.ID, name)}
+			//
+			// "One name" is not "the same string", and reading it that way cost
+			// exactly what this check exists to prevent. Most filesystems people
+			// run this on keep the case somebody typed and match without it -
+			// NTFS, APFS and exFAT do, ext4 does not - so "report.txt" and
+			// "REPORT.TXT" are two files on one machine and one file on the
+			// next. Measured on Windows, 2026-08-03: exit 0, two entries in the
+			// manifest, one file on the disk, and "tfg verify" failing on the
+			// tool's own output a second later.
+			//
+			// Refused everywhere rather than only where it bites, the same as a
+			// path separator and for the same reason: a recipe travels between
+			// machines by design, and one that quietly loses a file on somebody
+			// else's is worse than one refused on both. Producing such a pair on
+			// purpose belongs to the name laboratory and its archive mode, D10.
+			key := strings.ToLower(name)
+			if owner, clash := names[key]; clash {
+				detail := fmt.Sprintf("targets %q and %q both produce a file named %s", owner.id, t.ID, name)
+				if owner.name != name {
+					detail = fmt.Sprintf(
+						"targets %q and %q produce the names %s and %s, which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both",
+						owner.id, t.ID, owner.name, name)
+				}
+				return nil, &RecipeError{Detail: detail +
+					" - give one of them a --name template containing " + indexToken}
 			}
-			names[name] = t.ID
+			names[key] = nameOwner{id: t.ID, name: name}
 
 			if totalBytes, err = core.AddSizes(totalBytes, p.Bytes); err != nil {
 				return nil, &RecipeError{Detail: fmt.Sprintf(
@@ -447,6 +469,13 @@ func tempPathFor(outDir, name string) string {
 	return fmt.Sprintf("%s%s%d", filepath.Join(outDir, name), core.PartialMarker, os.Getpid())
 }
 
+// nameOwner remembers who took a name and how it was spelled, so a refusal can
+// show both names as they were written rather than as they were compared.
+type nameOwner struct {
+	id   string
+	name string
+}
+
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
@@ -478,12 +507,12 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	if err := preflight(files, opt); err != nil {
 		return res, err
 	}
-	res.Started = true
 
 	if opt.DryRun {
 		// Nothing is written. Every entry is what would have been produced,
 		// which is the same planning path the real run uses rather than a
 		// separate one that can drift away from it.
+		res.Started = true
 		for _, f := range files {
 			m.Add(entryFor(f, "", false, nil))
 		}
@@ -505,8 +534,26 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// Taking the name here turns that into a refusal before anything is written.
 	manifestPath := filepath.Join(opt.OutDir, manifestNameOf(opt))
 	if err := manifest.Claim(manifestPath); err != nil {
-		return res, &CollisionError{Path: manifestPath, Manifest: true}
+		// Only a name that is genuinely taken is a collision. Reporting every
+		// failure that way said "manifest.json already exists ... it is the
+		// only record of what an earlier run wrote" about an empty directory
+		// the user simply had no permission to write in - a sentence that is
+		// untrue and sends somebody looking for a run that never happened.
+		// Measured on 2026-08-04 with write denied on the output directory.
+		if errors.Is(err, fs.ErrExist) {
+			return res, &CollisionError{Path: manifestPath, Manifest: true}
+		}
+		return res, fmt.Errorf("cannot start a run in %s: %w", opt.OutDir, err)
 	}
+
+	// Past this point the run owns the name and may write. Started says so, and
+	// it is what tells the caller a manifest is worth saving - set here rather
+	// than before the claim, because a run that could not take the name has
+	// written nothing and has nothing to record. It used to be set earlier, so
+	// a refused claim was followed by a second message about failing to write
+	// the manifest it had just been told it could not have.
+	res.Started = true
+
 	// Given back if this run ends without writing one, or the name would stay
 	// taken by a run that never happened.
 	defer func() {
@@ -743,6 +790,25 @@ func checkFileName(where, name string) error {
 			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Use --out or the output section to choose the directory",
 			where, name)}
 
+	// A colon, on every system, for the same reason as a separator.
+	//
+	// Windows reads it as the start of an alternate data stream, so
+	// "AB:c.txt" names a stream called c.txt inside a file called AB.
+	// Measured on 2026-08-04: the run reported the file as not produced and
+	// ended with the partial code, and an empty file called AB was left in the
+	// directory anyway - not in the manifest, reported by verify as something
+	// nobody asked for, and beyond the reach of cleanup for good. A single
+	// letter in front of it is read as a drive instead, which is how the same
+	// recipe came to be accepted on Linux and refused on Windows.
+	//
+	// Legal in a name on Linux and macOS, and refused there too. A recipe
+	// travels between machines by design, and one that quietly leaves debris on
+	// somebody else's is worse than one refused on all of them.
+	case strings.Contains(name, ":"):
+		return &RecipeError{Detail: fmt.Sprintf(
+			"%s produces the name %q, which holds a colon. Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere - take the colon out, or ask for the file inside an archive where the name survives",
+			where, name)}
+
 	case name == "." || name == "..":
 		return &RecipeError{Detail: fmt.Sprintf(
 			"%s produces the name %q, which names a directory rather than a file", where, name)}
@@ -765,7 +831,13 @@ func checkFileName(where, name string) error {
 			"%s produces the name %q, which ends in a dot or a space. Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both. Take the last character off, or ask for the file inside an archive where the name survives",
 			where, name)}
 
-	case filepath.IsAbs(name) || filepath.VolumeName(name) != "":
+	// Judged the same way on every system, like the separator above. Using
+	// filepath here asks the machine this build runs on, and the answer
+	// differs: measured on 2026-08-04, "a:b.txt" was accepted on Linux and
+	// refused on Windows from one recipe, so a fixture set written on one
+	// machine failed on the next. That is the failure this rule exists to
+	// prevent, arriving through the rule itself.
+	case filepath.IsAbs(name) || core.HasVolumeName(name):
 		return &RecipeError{Detail: fmt.Sprintf(
 			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Use --out or the output section to choose the directory",
 			where, name)}

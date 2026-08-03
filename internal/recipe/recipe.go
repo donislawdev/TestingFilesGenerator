@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/goccy/go-yaml"
 )
@@ -132,6 +133,24 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	}
 
 	var raw rawRecipe
+
+	// A recipe is UTF-8, and anything else is refused rather than read as best
+	// it can be.
+	//
+	// Measured on 2026-08-04: a recipe saved as cp1250 with Polish letters in a
+	// file name was accepted with exit 0, and the file arrived called "za"
+	// followed by four replacement characters. The decoder had turned every
+	// byte it could not read into U+FFFD, the manifest recorded the same
+	// mangled name, so verify agreed with the disk and nothing anywhere said
+	// the name was not the one that was asked for.
+	//
+	// Notepad on Windows still offers ANSI when saving, and this tool is aimed
+	// at testers on Windows. The same reasoning as the byte order mark below,
+	// one step earlier: what somebody typed is what they get, or they are told
+	// why not.
+	if !utf8.Valid(src) {
+		return nil, &SyntaxError{Name: name, Detail: "this file is not valid UTF-8. Every character that could not be read would come back as a replacement mark, so a name written with accents would produce a file called something else. Save the file as UTF-8 and try again"}
+	}
 
 	// An editor that writes a byte order mark would otherwise hand the decoder
 	// a first key nobody typed. Dropped here rather than in one of the two
