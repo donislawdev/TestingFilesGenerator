@@ -1,11 +1,6 @@
 {
   "note": "SHA-256 of what our own generators produce, through the engine. A change here is a breaking change under D11 - it needs a version bump, a changelog entry and a decision by the owner. Never edit this file to turn the guard green. Measured with Go 1.26.5 on windows/amd64, and confirmed identical on the CI matrix.",
   "measured_on": "2026-08-01",
-  "remeasured": {
-    "on": "2026-08-02",
-    "why": "Two defects were fixed that no guard could see, both found by looking at generated files rather than at code. Record numbers skipped one before the last record, because the filling loop builds a record to measure it, throws it away, and the builder had already counted it - that moved csv, json and xml. The SVG label was unreadable, because the closing label shared its baseline and shapes reached the bottom edge - that moved svg. Both now have guards, and both guards are proven by mutation.",
-    "files": ["csv_8kib", "json_8kib", "svg_8kib", "xml_8kib", "xml_8kib_no_label"]
-  },
   "seed": 7741,
   "files": {
     "txt_4kib": {
@@ -22,7 +17,7 @@
     },
     "pdf_16kib": {
       "bytes": 16384,
-      "sha256": "38eb0c49d4deb0c6d050e60b519e0fe780fb12801fd20e9f4d033dafb66f2417"
+      "sha256": "f5a4b84a7729ca4f314d51641c4318ed238401bff023599a94cc1e065b42679d"
     },
     "wav_32kib": {
       "bytes": 32768,
@@ -34,7 +29,7 @@
     },
     "zip_with_three_pdfs": {
       "bytes": 65536,
-      "sha256": "3844663f9120712408408485b45212ed9317a33bab47a2a99805e0f17b027028"
+      "sha256": "2f45c46662ab65d2f598d65446ba0476067fb5c6297dc497d580a0fcd1752fbe"
     },
     "zip_past_the_comment_limit": {
       "bytes": 262144,
@@ -72,5 +67,26 @@
       "bytes": 8192,
       "sha256": "1cfeca2a6632e55c7575115b14e75aa7fff2ad42543f76d46e2199842910e84a"
     }
-  }
+  },
+  "remeasured": [
+    {
+      "on": "2026-08-02",
+      "why": "Two defects were fixed that no guard could see, both found by looking at generated files rather than at code. Record numbers skipped one before the last record, because the filling loop builds a record to measure it, throws it away, and the builder had already counted it - that moved csv, json and xml. The SVG label was unreadable, because the closing label shared its baseline and shapes reached the bottom edge - that moved svg. Both now have guards, and both guards are proven by mutation.",
+      "files": [
+        "csv_8kib",
+        "json_8kib",
+        "svg_8kib",
+        "xml_8kib",
+        "xml_8kib_no_label"
+      ]
+    },
+    {
+      "on": "2026-08-03",
+      "why": "PDF body lines became a fixed width. They used to be eight to thirteen drawn words of four to nine characters, so the smallest document one seed could produce was not the smallest another could: measured across 200 seeds the floor moved between 3090 B and 3499 B, and --size 3300 was accepted for six seeds out of ten. An error that appears and disappears when the seed changes is the one thing this tool cannot have. The floor is now one number for every seed, 3409 B, and it is the real one rather than a worst case - the earlier repair kept the ragged lines and took the theoretical maximum, which was consistent and cost about 1400 B of range nobody could reach. Taken as a breaking change deliberately, while nothing depends on these bytes. The words still come from the seed, so two seeds still read differently. A line also ends on a whole word rather than being cut at the byte: core.AppendFiller cuts and pads, which is right inside a CSV field nobody reads and wrong for the visible text of a page, where every line ending in \"refere\" reads as broken rather than as filler.",
+      "files": [
+        "pdf_16kib",
+        "zip_with_three_pdfs"
+      ]
+    }
+  ]
 }

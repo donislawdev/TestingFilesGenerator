@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -95,13 +96,45 @@ func TestTheFormatListAdmitsTheLimitOnTwoSettingsAtOnce(t *testing.T) {
 	if code != cli.ExitOK {
 		t.Fatalf("exit %d:\n%s", code, errOut)
 	}
-	// Both settings have to carry it, not one. A person reads the line for the
-	// field they are about to set, and a window builds its field from the same
-	// declaration - so a limit stated only beside width is a limit somebody
-	// setting height never sees. Mutation is what said so: removing the
-	// sentence from one of the two left this green.
-	if n := strings.Count(stdout, "megapixels"); n < 2 {
-		t.Errorf("the joint limit is stated %d time(s) and there are two settings it binds, so one of them offers a value it does not accept:\n%s", n, stdout)
+	// Declared, not merely mentioned. It began as a sentence inside the
+	// description of each setting, which a person could read and nothing else
+	// could - and a window building two number fields from Min and Max would
+	// still offer twenty thousand in both. The registry carries the rule now,
+	// so the printed line, the refusal and a future field all come from it.
+	d, err := format.Get("png")
+	if err != nil {
+		t.Fatalf("png is not registered: %v", err)
+	}
+	if len(d.JointLimits) == 0 {
+		t.Fatal("png declares no joint limit, so the rule binding width and height lives only in prose and in the generator")
+	}
+	if !strings.Contains(stdout, d.JointLimits[0].Describe()) {
+		t.Errorf("the declared joint limit is not printed, so the tool still offers a pair it refuses:\n%s", stdout)
+	}
+}
+
+// And a script sees it too, or a window has nothing to build from.
+func TestTheJointLimitReachesMachineOutput(t *testing.T) {
+	code, stdout, errOut := run(t, "formats", "png", "--json")
+	if code != cli.ExitOK {
+		t.Fatalf("exit %d:\n%s", code, errOut)
+	}
+	var list []struct {
+		JointLimits []struct {
+			Of, By string
+			Max    int64
+			Detail string
+		} `json:"joint_limits"`
+	}
+	if err := json.Unmarshal([]byte(stdout), &list); err != nil {
+		t.Fatalf("the list did not parse: %v", err)
+	}
+	if len(list) != 1 || len(list[0].JointLimits) == 0 {
+		t.Fatalf("the machine readable list carries no joint limit:\n%s", stdout)
+	}
+	j := list[0].JointLimits[0]
+	if j.Of == "" || j.By == "" || j.Max == 0 || j.Detail == "" {
+		t.Errorf("the joint limit arrives incomplete: %+v", j)
 	}
 }
 

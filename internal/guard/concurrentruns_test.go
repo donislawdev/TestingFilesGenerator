@@ -55,6 +55,71 @@ func TestAManifestIsNeverWrittenOverEvenWhenItAppearsMidRun(t *testing.T) {
 	}
 }
 
+// The name is taken before the run writes anything, not after it writes
+// everything.
+//
+// Claiming at save time already stopped two runs from both writing a manifest,
+// and it happened at the end - so the second run wrote its whole set of files
+// and only then found out it had nowhere to record them. Measured on
+// 2026-08-03, two runs started together under different ids: they ended 0 and
+// 5, with sixteen files on the disk and eight of them in nobody's manifest.
+// After the claim moved to the front: eight files and one manifest.
+//
+// What is guarded here is the primitive, because the window it closes is
+// between two processes and this package keeps concurrency out on purpose.
+// The engine calling it is covered by the guards for a refused run writing
+// nothing.
+func TestAClaimedNameCannotBeClaimedTwice(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "manifest.json")
+
+	if err := manifest.Claim(path); err != nil {
+		t.Fatalf("claiming an unused name: %v", err)
+	}
+	if err := manifest.Claim(path); err == nil {
+		t.Error("the same name was claimed twice, so two runs could both believe it is theirs")
+	}
+
+	// The claim is an empty file rather than a manifest, so nothing reads it as
+	// a record of a run that happened.
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("the claim is not there: %v", err)
+	}
+	if info.Size() != 0 {
+		t.Errorf("the claim carries %d B - it has to be empty, or a reader would take it for a manifest", info.Size())
+	}
+}
+
+// And a run that claims the name and then cannot start gives it back, or the
+// next run into that directory is refused for a file nobody ever wrote.
+func TestAClaimIsGivenBackButAFilledInManifestIsNot(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "manifest.json")
+
+	if err := manifest.Claim(path); err != nil {
+		t.Fatalf("claiming: %v", err)
+	}
+	if err := manifest.Release(path); err != nil {
+		t.Fatalf("releasing: %v", err)
+	}
+	if _, err := os.Stat(path); err == nil {
+		t.Error("the name is still taken by a run that never wrote anything")
+	}
+
+	// A manifest with content in it is somebody's record and is never removed
+	// by this path, whatever asks.
+	if err := os.WriteFile(path, []byte(`{"manifest_version":"1.0","files":[]}`), 0o644); err != nil {
+		t.Fatalf("writing: %v", err)
+	}
+	if err := manifest.Release(path); err != nil {
+		t.Fatalf("releasing a filled in manifest reported an error: %v", err)
+	}
+	if _, err := os.Stat(path); err != nil {
+		t.Error("a manifest with content was removed as though it were an empty claim")
+	}
+}
+
 // The ordinary case, so the claim above cannot be satisfied by refusing to
 // write a manifest at all.
 func TestAManifestIsStillWrittenWhenNothingIsThere(t *testing.T) {

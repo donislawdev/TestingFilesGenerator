@@ -156,6 +156,64 @@ type Property struct {
 	Detail string
 }
 
+// JointLimit is a rule binding two settings that neither of them can state
+// alone.
+//
+// A Property bounds one value. PNG needs more than that: each side of a picture
+// may go up to twenty thousand pixels and the two multiplied may not pass forty
+// megapixels, because the picture is held in memory while it is encoded. That
+// rule had nowhere to live, so it lived in the generator and in a sentence of
+// prose - and "tfg formats png" offered a pair it then refused.
+//
+// A sentence is enough for a person and not for anything else. AR9 has the
+// registry as the one place a consumer asks what a format accepts, and a window
+// drawing two number fields from Min and Max would offer twenty thousand in
+// both and produce a request the run rejects. Declaring it is what lets the
+// refusal, the printed description and a future field all come from one place.
+//
+// Kept to a product of two because that is the shape every case in Tier 1 has -
+// pixels, samples times channels, pages times page size. A general expression
+// would be a language to learn, and this is a line to read.
+type JointLimit struct {
+	// Of and By are the two settings multiplied together.
+	Of, By string
+	// Max is the largest their product may be, counted in the same units the
+	// settings themselves use.
+	Max int64
+	// Unit is what the product is reported in, and Per is how many of the
+	// settings' own units make one of it. Pixels are counted in millions when
+	// spoken about, so Unit is "megapixels" and Per is a million - "400
+	// megapixels and the limit is 40" is a sentence somebody can act on and
+	// "400000000 and the limit is 40000000" is not. Per of nought means one.
+	Unit string
+	Per  int64
+	// Why is the reason, in the words the refusal uses.
+	Why string
+}
+
+// Allows reports whether a pair of values satisfies the limit, and says what is
+// wrong when it does not.
+func (j JointLimit) Allows(of, by int64) (bad string) {
+	if of*by <= j.Max {
+		return ""
+	}
+	return fmt.Sprintf("together they come to %d %s and the limit is %d, because %s",
+		of*by/j.per(), j.Unit, j.Max/j.per(), j.Why)
+}
+
+// Describe is the rule as one sentence, for the format list and for a window.
+func (j JointLimit) Describe() string {
+	return fmt.Sprintf("%s times %s cannot pass %d %s, because %s",
+		j.Of, j.By, j.Max/j.per(), j.Unit, j.Why)
+}
+
+func (j JointLimit) per() int64 {
+	if j.Per == 0 {
+		return 1
+	}
+	return j.Per
+}
+
 // Descriptor is everything a format announces about itself. A format missing
 // any of it fails the registry test rather than shipping half implemented.
 type Descriptor struct {
@@ -175,6 +233,10 @@ type Descriptor struct {
 	// default settings and an hour spent wondering why the test passes when
 	// it should not. An empty list means the format takes no properties.
 	Properties []Property
+
+	// JointLimits are the rules binding two settings that neither can state on
+	// its own. Empty for every format that has none.
+	JointLimits []JointLimit
 
 	// Container says this format holds other files, so a recipe may declare
 	// contains for it.

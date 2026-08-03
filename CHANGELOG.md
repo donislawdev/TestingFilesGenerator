@@ -86,8 +86,30 @@ because it turns other people's test suites red.
   the same one the recipe uses, and a value that is not on it is refused with
   the list to pick from.
 
+### Breaking
+
+- **PDF bytes have changed.** The text on a page is laid out to a fixed line
+  width now. It used to be eight to thirteen drawn words of four to nine
+  characters, which meant the smallest document one seed could produce was not
+  the smallest another could - so `--size 3300` was accepted for six seeds out
+  of ten, and the floor moved between 3090 and 3499 bytes depending on the
+  seed. The words still come from the seed, so two seeds still read
+  differently. Only the length is settled. Anything holding a hash of a PDF
+  this tool made will need to take it again.
+
 ### Changed
 
+- **A rule binding two settings is declared rather than described.** PNG allows
+  each side of a picture up to 20000 pixels and the two multiplied up to 40
+  megapixels, and that second rule lived in the generator and in a sentence -
+  so `tfg formats png` offered a pair it then refused, and nothing but a person
+  could read the limit. It is in the registry now, printed on its own line and
+  carried in `--json`, so a script or a window sees it.
+- **A second run into the same directory refuses before it writes anything.**
+  It used to write its whole set of files and only then find it had nowhere to
+  record them: two runs started together left sixteen files on the disk with
+  eight of them in nobody's manifest. The manifest name is taken before the
+  first file now, and given back if the run ends without writing one.
 - **The minimum `tfg formats` prints is a size it will take.** For pdf, wav
   and zip it was not: the number came from the registry, which holds the
   structural floor of a format with no label, and the label is on unless you

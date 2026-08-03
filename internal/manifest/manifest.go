@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -379,13 +380,54 @@ func major(v string) string {
 //
 // So the name is claimed first, the content is written beside it, and the
 // rename puts it in place in one step.
+// Claim takes the manifest name before a run writes anything.
+//
+// Claiming at save time was already better than checking in advance - two runs
+// could no longer both write - but it happened after the last file, so the
+// second run wrote its whole set and only then found out it had nowhere to
+// record them. Measured on 2026-08-03: two runs started together under
+// different ids ended 0 and 5, with sixteen files on the disk and eight of them
+// in nobody's manifest. That turned a silent loss into a loud partial run,
+// which was the improvement, and this is the rest of it.
+//
+// The claim is an empty file under the final name. Save renames over it, so the
+// window between them belongs to this run and nobody else can take the name.
+func Claim(path string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return claimName(path)
+}
+
+// Release gives the name back, for a run that claimed it and then could not
+// start. Without it a refused run would leave an empty manifest behind and the
+// next run into that directory would be refused for a file nobody wrote.
+func Release(path string) error {
+	if info, err := os.Stat(path); err != nil || info.Size() != 0 {
+		// Somebody filled it in, so it is not ours to remove.
+		return nil
+	}
+	return os.Remove(path)
+}
+
 func (m *Manifest) Save(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 
-	if err := claimName(path); err != nil {
-		return err
+	// A run that got this far claimed the name before it wrote a byte, and the
+	// claim is an empty file. Anything with content in it is somebody's
+	// manifest and is never written over - that is the whole point of the
+	// claim, and it is why "it exists" is not enough to go on here.
+	switch info, err := os.Stat(path); {
+	case err != nil:
+		// Nothing there. A caller that writes a manifest without claiming
+		// first - the guards do - claims it now.
+		if err := claimName(path); err != nil {
+			return err
+		}
+	case info.Size() != 0:
+		return &os.PathError{Op: "save", Path: path, Err: fs.ErrExist}
 	}
 
 	tmp := path + ".tfg-writing"

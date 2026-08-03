@@ -28,8 +28,20 @@ type formatEntry struct {
 	PaddingCap       int64           `json:"padding_capacity,omitempty"`
 	Label            string          `json:"label_carrier"`
 	Properties       []propertyEntry `json:"properties,omitempty"`
-	Oracle           string          `json:"oracle"`
-	Version          string          `json:"generator_version"`
+	// JointLimits are the rules binding two settings that neither can state on
+	// its own, so a script or a window sees them without reading prose.
+	JointLimits []jointLimitEntry `json:"joint_limits,omitempty"`
+	Oracle      string            `json:"oracle"`
+	Version     string            `json:"generator_version"`
+}
+
+// jointLimitEntry is a rule binding two settings, as a script sees it.
+type jointLimitEntry struct {
+	Of     string `json:"of"`
+	By     string `json:"by"`
+	Max    int64  `json:"max"`
+	Unit   string `json:"unit,omitempty"`
+	Detail string `json:"detail"`
 }
 
 // propertyEntry is one setting as a script sees it. Everything a window would
@@ -57,6 +69,19 @@ func smallestAccepted(d format.Descriptor) int64 {
 	return d.SmallestAccepted(format.Request{Label: true})
 }
 
+func jointsOf(d format.Descriptor) []jointLimitEntry {
+	if len(d.JointLimits) == 0 {
+		return nil
+	}
+	out := make([]jointLimitEntry, 0, len(d.JointLimits))
+	for _, j := range d.JointLimits {
+		out = append(out, jointLimitEntry{
+			Of: j.Of, By: j.By, Max: j.Max, Unit: j.Unit, Detail: j.Describe(),
+		})
+	}
+	return out
+}
+
 func entryFor(d format.Descriptor) formatEntry {
 	props := make([]propertyEntry, 0, len(d.Properties))
 	for _, p := range d.Properties {
@@ -70,7 +95,7 @@ func entryFor(d format.Descriptor) formatEntry {
 		Fidelity: string(d.Fidelity), Determinism: string(d.Determinism),
 		MinBytes: d.MinBytes, SmallestAccepted: smallestAccepted(d),
 		Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
-		Label: string(d.Label), Properties: props,
+		Label: string(d.Label), Properties: props, JointLimits: jointsOf(d),
 		Oracle: d.Oracle, Version: d.GeneratorVersion,
 	}
 }
@@ -98,6 +123,14 @@ func describeOne(d format.Descriptor, out io.Writer) {
 		if p.Detail != "" {
 			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
 		}
+	}
+
+	// A rule binding two settings gets its own line. Folded into the
+	// description of each one it reads as decoration, and it was invisible
+	// altogether before the registry could carry it - so this command offered
+	// twenty thousand by twenty thousand and the run refused the pair.
+	for _, j := range d.JointLimits {
+		fmt.Fprintf(out, "\n  and together:  %s\n", j.Describe())
 	}
 }
 

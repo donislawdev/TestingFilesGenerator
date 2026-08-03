@@ -213,6 +213,51 @@ jobs:
             || { echo "coverage ${actual}% is below the threshold ${threshold}%"; exit 1; }
         shell: bash
 
+  fidelity:
+    name: reference tools actually installed
+    # The oracle guards skip when the tool they need is missing, loudly, and a
+    # skip is not a check. The matrix runners have python and node and nothing
+    # else, so on an ordinary push most of those guards report a skip and the
+    # run is green having verified almost nothing about the files themselves.
+    #
+    # This job installs Inkscape, 7z, ffmpeg and poppler so the same guards run
+    # for real. It is separate from the matrix because installing a graphics
+    # stack takes minutes and a push should not wait for it.
+    #
+    # What it does NOT do, said plainly: it does not walk many sizes. The
+    # guards it runs check the realistic size and the smallest ones, which is
+    # where the one defect this ever found was hiding - an SVG that rendered to
+    # a blank canvas at exactly its minimum, 2026-08-03. The wider sweep across
+    # sizes, seeds and label settings lives in tools/probes/fidelity-sweep.py
+    # and is run by hand, because tools/ is outside the repository. See O51.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: the reference tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            p7zip-full ffmpeg poppler-utils inkscape python3-pil
+        shell: bash
+
+      - name: every format past its reference tool
+        # -v so that a skip is visible in the log. A tool that failed to install
+        # would otherwise turn this job back into the green nothing it exists
+        # to replace.
+        run: go test ./internal/guard/ -count=1 -run 'ReferenceTool' -v
+        shell: bash
+
   fuzz:
     name: fuzzing with a time budget
     # Weekly and by hand, never on a push. Fuzzing searches without end, so a

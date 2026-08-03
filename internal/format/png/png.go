@@ -91,24 +91,22 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			// The declaration bounds each side on its own and cannot say that
-			// the two multiplied have a limit as well, so the sentence carries
-			// it. Without that, "tfg formats png" offered 20000 by 20000 and
-			// the run then refused it - the tool advertising a pair it does not
-			// accept. Naming the whole rule in the registry needs a shape for a
-			// limit on two settings at once, which is a change to AR9 rather
-			// than a line here. Recorded in docs/OBSERVATIONS.md, O45.
 			{
 				Name: "width", Kind: format.PropertyInt,
 				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for. Width times height cannot pass 40 megapixels, so both sides cannot be at their largest at once.",
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
 			},
 			{
 				Name: "height", Kind: format.PropertyInt,
 				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for. Width times height cannot pass 40 megapixels, so both sides cannot be at their largest at once.",
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
 			},
 		},
+		JointLimits: []format.JointLimit{{
+			Of: "width", By: "height", Max: maxPixels,
+			Unit: "megapixels", Per: 1_000_000,
+			Why: "the picture is held in memory while it is encoded",
+		}},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -129,6 +127,31 @@ type memo struct {
 	// exactly on the requested size.
 	padData int64
 	withPad bool
+}
+
+// checkJointLimits asks the registry's own declaration about a pair of
+// dimensions, rather than repeating the rule here.
+//
+// Reading our own descriptor back out looks indirect and is the point: the
+// refusal, the sentence "tfg formats png" prints and the field a window would
+// draw then all come from one line. The rule used to live only inside this
+// generator, and the printed description offered 20000 by 20000 while the run
+// rejected it.
+func checkJointLimits(w, h int) error {
+	d, err := format.Get("png")
+	if err != nil {
+		return err
+	}
+	for _, j := range d.JointLimits {
+		if bad := j.Allows(int64(w), int64(h)); bad != "" {
+			return &format.PropertyValueError{
+				Format: "png", Key: j.Of + " and " + j.By,
+				Value:  fmt.Sprintf("%dx%d", w, h),
+				Reason: bad + fmt.Sprintf(". Each side may go up to %d, but not both at once - ask for a smaller pair", maxDimension),
+			}
+		}
+	}
+	return nil
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -282,20 +305,13 @@ func chooseSize(r format.Request, label string) (memo, bool, error) {
 			return memo{}, true, err
 		}
 		_, _ = wRaw, hRaw
-		// A PropertyValueError rather than a plain one, and the difference is
-		// the exit code somebody's CI reads. This used to end with 1, which
-		// means the tool itself broke, for a pair of numbers the caller chose.
-		// That is the same defect closed for declared ranges on 2026-08-03,
-		// surviving one layer deeper: the declaration bounds each dimension on
-		// its own and cannot express a limit on the two multiplied.
-		if int64(w)*int64(h) > maxPixels {
-			return memo{}, true, &format.PropertyValueError{
-				Format: "png", Key: "width and height",
-				Value: fmt.Sprintf("%dx%d", w, h),
-				Reason: fmt.Sprintf(
-					"together they come to %d megapixels and the limit is %d, because the picture is held in memory while it is encoded. Each side may go up to %d, but not both at once - ask for a smaller pair",
-					int64(w)*int64(h)/1_000_000, maxPixels/1_000_000, maxDimension),
-			}
+		// Asked of the declaration rather than repeated here, so the refusal,
+		// what "tfg formats png" prints and what a window would draw all come
+		// from one place. The rule used to live only in this function and in a
+		// sentence of prose, and the printed description then offered a pair
+		// this line rejects.
+		if err := checkJointLimits(w, h); err != nil {
+			return memo{}, true, err
 		}
 		m := memo{width: w, height: h, seed: r.Seed, label: label}
 		body, err := encodedBodySize(m)

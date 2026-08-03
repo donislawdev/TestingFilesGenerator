@@ -102,10 +102,6 @@ type memo struct {
 	// cross reference table, which sits before the padding.
 	suffix []byte
 	padLen int64
-	// widestContent asks document() to lay out the longest content this format
-	// can ever draw, so that the smallest size it accepts is the same number for
-	// every seed. It is only ever set while measuring.
-	widestContent bool
 }
 
 type pageSize struct {
@@ -139,17 +135,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	m := memo{pages: pages, pageSize: size, seed: r.Seed, label: label}
 	m.prefix, m.suffix = document(m)
 
-	// What this seed happens to come to, which decides how much padding the
-	// file needs.
+	// One number answers both questions: how much padding this file needs, and
+	// what is too small to make. Every line of body text is the same width
+	// whatever the seed drew, so the smallest document this format can produce
+	// is the same for everybody - see lineWidth.
 	bare := int64(len(m.prefix) + len(m.suffix))
-
-	// What any seed could come to, which decides what is refused. The two are
-	// different numbers and using the first for both is what made the same
-	// --size succeed on one seed and fail on another - see longestSentence.
-	widestM := m
-	widestM.widestContent = true
-	wp, ws := document(widestM)
-	floor := int64(len(wp) + len(ws))
+	floor := bare
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -375,13 +366,7 @@ func pageContent(m memo, index int) string {
 	rng := core.NewRand(core.FileSeed(m.seed, index))
 	y := top - 36
 	for line := 0; line < 24 && y > 108; line++ {
-		text := sentence(rng)
-		if m.widestContent {
-			// Measuring the worst case rather than producing a file. See
-			// longestSentence for why the floor may not depend on the seed.
-			text = longestSentence
-		}
-		fmt.Fprintf(&b, "1 0 0 1 72 %d Tm\n(%s) Tj\n", y, escapeString(text))
+		fmt.Fprintf(&b, "1 0 0 1 72 %d Tm\n(%s) Tj\n", y, escapeString(bodyLine(rng)))
 		y -= 16
 	}
 	b.WriteString("ET\n")
@@ -396,52 +381,75 @@ func pageContent(m memo, index int) string {
 	return b.String()
 }
 
-func sentence(rng interface{ IntN(int) int }) string {
-	n := 8 + rng.IntN(6)
-	parts := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		parts = append(parts, words[rng.IntN(len(words))])
-	}
-	return strings.Join(parts, " ")
-}
+// lineWidth is how many characters every line of body text comes to.
+//
+// Fixed, and that is the whole of the point. The words are still drawn from the
+// seed, so two seeds give different text - only the length is settled, the same
+// way every record based format here settles the length of its closing record.
+//
+// Why it has to be fixed was measured rather than argued. A line used to be
+// eight to thirteen words of four to nine characters, so the smallest document
+// one seed could produce was not the smallest another could:
+//
+//	the floor across 200 seeds   3090 B to 3499 B
+//	--size 3300                  accepted for 6 seeds out of 10
+//
+// An error that appears and disappears when the seed changes is the one thing a
+// tool built on "the same seed gives the same run" cannot have, and the engine
+// says exactly that about a size drawn from a range. Nobody had applied it to
+// the minimum itself.
+//
+// The first repair kept the ragged lines and took the theoretical worst case as
+// the floor. That was honest and consistent, and it cost about 1400 B of range
+// that no request could reach any more. This is the answer that costs the user
+// nothing, and it pays for it by shifting every byte this format produces -
+// a breaking change, taken deliberately while nothing depends on those bytes.
+//
+// Eighty four characters is close to what the old lines averaged, so a page
+// still looks like a page. Justified rather than ragged, which if anything
+// reads more like a real document than the random lengths did.
+const lineWidth = 84
 
-// longestSentence is the most a line of this page can ever come to.
+// bodyLine is one line of body text: drawn from the seed, always lineWidth
+// characters long, and never ending in the middle of a word.
 //
-// It exists so that the size this format refuses below does not depend on the
-// seed. The content of a page is drawn - eight to thirteen words, each from a
-// vocabulary of different lengths - so the smallest document a given seed can
-// produce is not the smallest document some other seed can produce.
+// core.AppendFiller does almost this and is not used, which is worth saying
+// because sharing a primitive is usually the right answer here. That one cuts
+// at the byte and makes the difference up with spaces, which is exactly right
+// where it is used - inside a field of a CSV row or a JSON value, where a
+// clipped word is padding nobody reads. This text is the visible content of a
+// page. A document whose every line ends in "refere" reads as broken rather
+// than as filler, and the fidelity bar for this format is that it looks like a
+// document in Adobe.
 //
-// Measured on 2026-08-03, asking every seed for the bare minimum: across two
-// hundred seeds the answer ranged from 3090 B to 3499 B. The visible cost was
-// worse than the number suggests - "tfg generate --format pdf --size 3300"
-// was accepted for six seeds out of ten and refused for four. An error that
-// appears and disappears depending on the seed is the one thing a tool built
-// on "the same seed gives the same run" cannot have, and the engine already
-// says so in as many words about a size drawn from a range.
-//
-// So the floor is the worst case rather than this seed's case, and it is the
-// same number for everybody. Sizes at or above it are produced exactly as
-// before, byte for byte - only the boundary moved.
-var longestSentence = func() string {
-	longest := ""
-	for _, w := range words {
-		if len(w) > len(longest) {
-			longest = w
+// So: whole words while the next one still fits, then spaces. The line is the
+// same length either way, which is the property the floor depends on.
+func bodyLine(rng interface{ IntN(int) int }) string {
+	var b strings.Builder
+	b.Grow(lineWidth)
+
+	// Started at a word the seed chose and walked in order, so two seeds read
+	// differently without needing a draw per word.
+	at := rng.IntN(len(words))
+	for {
+		w := words[at%len(words)]
+		need := len(w)
+		if b.Len() > 0 {
+			need++ // the space in front of it
 		}
+		if b.Len()+need > lineWidth {
+			break
+		}
+		if b.Len() > 0 {
+			b.WriteByte(' ')
+		}
+		b.WriteString(w)
+		at++
 	}
-	const most = 8 + 5 // the largest n that sentence can draw
-	parts := make([]string, most)
-	for i := range parts {
-		parts[i] = longest
-	}
-	return strings.Join(parts, " ")
-}()
-
-// widest is a stand in for a draw, handing back the longest of everything.
-type widest struct{}
-
-func (widest) IntN(int) int { return 0 }
+	// Justified to the fixed width. Every vocabulary here is ASCII, so a byte
+	// and a character are the same thing and the count is the width.
+	return b.String() + strings.Repeat(" ", lineWidth-b.Len())
+}
 
 // escapeString protects the three characters that end or nest a PDF string.
 // Without this a label containing a bracket would produce a file no reader
@@ -497,7 +505,7 @@ func sorted(in []string) []string {
 // minimumBytes is the smallest document this generator can produce: one A4
 // page with no label. Measured at start up rather than guessed.
 func minimumBytes() int64 {
-	m := memo{pages: 1, pageSize: pageSizes["a4"], widestContent: true}
+	m := memo{pages: 1, pageSize: pageSizes["a4"]}
 	prefix, suffix := document(m)
 	return int64(len(prefix) + len(suffix))
 }

@@ -414,11 +414,7 @@ func preflight(files []PlannedFile, opt Options) error {
 	// files could never be cleaned up by this tool again. It happened on a
 	// successful run as readily as on a refused one, and on the successful one
 	// it happened in silence.
-	name := opt.ManifestName
-	if name == "" {
-		name = DefaultManifestName
-	}
-	if path := filepath.Join(opt.OutDir, name); exists(path) {
+	if path := filepath.Join(opt.OutDir, manifestNameOf(opt)); exists(path) {
 		return &CollisionError{Path: path, Manifest: true}
 	}
 
@@ -456,6 +452,15 @@ func exists(path string) bool {
 	return err == nil
 }
 
+// manifestNameOf is where this run's record lands. One definition, because the
+// preflight check, the claim and the save all have to mean the same file.
+func manifestNameOf(opt Options) string {
+	if opt.ManifestName == "" {
+		return DefaultManifestName
+	}
+	return opt.ManifestName
+}
+
 func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {
 	m := manifest.New(
 		"testing-files-generator", version.Version,
@@ -489,6 +494,26 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
 		return res, fmt.Errorf("cannot create the output directory %s: %w", opt.OutDir, err)
 	}
+
+	// The manifest name is taken before the first file, not after the last one.
+	//
+	// Claiming it at save time already stopped two runs from both writing a
+	// manifest, but it happened at the end - so a second run wrote its whole set
+	// of files and only then found out it had nowhere to record them. Measured
+	// on 2026-08-03: two runs started together under different ids ended 0 and
+	// 5, with sixteen files on the disk and eight of them in nobody's manifest.
+	// Taking the name here turns that into a refusal before anything is written.
+	manifestPath := filepath.Join(opt.OutDir, manifestNameOf(opt))
+	if err := manifest.Claim(manifestPath); err != nil {
+		return res, &CollisionError{Path: manifestPath, Manifest: true}
+	}
+	// Given back if this run ends without writing one, or the name would stay
+	// taken by a run that never happened.
+	defer func() {
+		if !res.Manifest.Run.Complete && res.Failures == 0 && len(res.Manifest.Files) == 0 {
+			_ = manifest.Release(manifestPath)
+		}
+	}()
 
 	totalBytes := TotalBytes(files)
 	var bytesDone int64
