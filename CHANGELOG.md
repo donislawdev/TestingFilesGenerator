@@ -88,6 +88,22 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The minimum `tfg formats` prints is a size it will take.** For pdf, wav
+  and zip it was not: the number came from the registry, which holds the
+  structural floor of a format with no label, and the label is on unless you
+  turn it off. Asking for exactly what was printed was refused. The column now
+  shows what an ordinary run accepts, and `--json` carries both - `min_bytes`
+  unchanged, `smallest_accepted` beside it.
+- **Whether a PDF size is accepted no longer depends on the seed.** The text on
+  a page is drawn, so the smallest document one seed could produce was not the
+  smallest another could: `--size 3300` was accepted for six seeds out of ten,
+  and across two hundred seeds the floor moved between 3090 and 3499 bytes. An
+  error that comes and goes when you change the seed is the one thing a tool
+  built on repeatability cannot have. The floor is now worked out from the
+  longest text a page can ever hold, so it is the same for everybody. Every
+  document at an accepted size is unchanged, byte for byte - the boundary
+  moved, not the content. The cost is that the floor is the worst case, so
+  sizes some seeds could have produced are now refused.
 - **The smallest SVG this tool makes now draws something.** At exactly its old
   minimum of 193 bytes the document held one empty text element and no shapes:
   valid SVG, exactly the size ordered, repeatable, and a blank canvas when

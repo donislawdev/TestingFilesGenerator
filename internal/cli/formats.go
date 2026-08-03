@@ -12,17 +12,24 @@ import (
 )
 
 type formatEntry struct {
-	ID          string          `json:"id"`
-	Extension   string          `json:"extension"`
-	Fidelity    string          `json:"fidelity"`
-	Determinism string          `json:"determinism"`
-	MinBytes    int64           `json:"min_bytes"`
-	Padding     string          `json:"padding_channel"`
-	PaddingCap  int64           `json:"padding_capacity,omitempty"`
-	Label       string          `json:"label_carrier"`
-	Properties  []propertyEntry `json:"properties,omitempty"`
-	Oracle      string          `json:"oracle"`
-	Version     string          `json:"generator_version"`
+	ID          string `json:"id"`
+	Extension   string `json:"extension"`
+	Fidelity    string `json:"fidelity"`
+	Determinism string `json:"determinism"`
+	// MinBytes is the structural floor of the format: its skeleton, with no
+	// label and every setting at its default. Kept under the name it has
+	// always had, because a key in machine output is a public name.
+	MinBytes int64 `json:"min_bytes"`
+	// SmallestAccepted is the smallest --size this build will actually take
+	// for an ordinary run, with the label on. For three formats out of twelve
+	// that is not MinBytes, and asking for MinBytes was refused.
+	SmallestAccepted int64           `json:"smallest_accepted"`
+	Padding          string          `json:"padding_channel"`
+	PaddingCap       int64           `json:"padding_capacity,omitempty"`
+	Label            string          `json:"label_carrier"`
+	Properties       []propertyEntry `json:"properties,omitempty"`
+	Oracle           string          `json:"oracle"`
+	Version          string          `json:"generator_version"`
 }
 
 // propertyEntry is one setting as a script sees it. Everything a window would
@@ -39,6 +46,17 @@ type propertyEntry struct {
 	Detail  string   `json:"detail,omitempty"`
 }
 
+// smallestAccepted is the number this command prints as the minimum.
+//
+// It is what an ordinary run will take, so the label is on and every property
+// is at its default - which is what somebody reading that column is about to
+// type. The registry's own MinBytes is the structural floor with no label, and
+// for pdf, wav and zip the two are not the same number: asking for the floor
+// was refused, measured on 2026-08-03.
+func smallestAccepted(d format.Descriptor) int64 {
+	return d.SmallestAccepted(format.Request{Label: true})
+}
+
 func entryFor(d format.Descriptor) formatEntry {
 	props := make([]propertyEntry, 0, len(d.Properties))
 	for _, p := range d.Properties {
@@ -50,7 +68,8 @@ func entryFor(d format.Descriptor) formatEntry {
 	return formatEntry{
 		ID: d.ID, Extension: d.Extension,
 		Fidelity: string(d.Fidelity), Determinism: string(d.Determinism),
-		MinBytes: d.MinBytes, Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
+		MinBytes: d.MinBytes, SmallestAccepted: smallestAccepted(d),
+		Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
 		Label: string(d.Label), Properties: props,
 		Oracle: d.Oracle, Version: d.GeneratorVersion,
 	}
@@ -63,7 +82,7 @@ func entryFor(d format.Descriptor) formatEntry {
 // a format accepts, and the silence looked like an answer.
 func describeOne(d format.Descriptor, out io.Writer) {
 	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %d B\n",
-		d.ID, d.Fidelity, d.Determinism, d.MinBytes)
+		d.ID, d.Fidelity, d.Determinism, smallestAccepted(d))
 	fmt.Fprintf(out, "  extension  %s\n", d.Extension)
 	fmt.Fprintf(out, "  padding    %s\n", d.Padding.Name)
 	fmt.Fprintf(out, "  label      %s\n", d.Label)
@@ -171,7 +190,7 @@ Flags:
 	fmt.Fprintf(out, "%-8s %-10s %-12s %-10s %s\n", "FORMAT", "FIDELITY", "DETERMINISM", "MINIMUM", "PADDING CHANNEL")
 	for _, d := range format.All() {
 		fmt.Fprintf(out, "%-8s %-10s %-12s %-10d %s\n",
-			d.ID, d.Fidelity, d.Determinism, d.MinBytes, d.Padding.Name)
+			d.ID, d.Fidelity, d.Determinism, smallestAccepted(d), d.Padding.Name)
 	}
 	fmt.Fprint(out, "\nRun \"tfg formats <id>\" for what one format accepts.\n")
 	return ExitOK

@@ -7,6 +7,7 @@ package format
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -326,6 +327,71 @@ func (p Property) unitSuffix() string {
 		return ""
 	}
 	return " of " + p.Unit
+}
+
+// SmallestAccepted is the smallest size this format will actually produce for
+// a request shaped like r.
+//
+// MinBytes beside it is the structural floor: the skeleton of the format with
+// no label and nothing else. That is a real thing to know and it is not what a
+// person reading a column headed MINIMUM takes it to mean, because the label is
+// on unless it is turned off and some formats size themselves from their
+// settings. Measured on 2026-08-03, asking for exactly what the tool printed:
+//
+//	pdf   printed 3265   refused it, said 3286
+//	wav   printed 44     refused it, said 98
+//	zip   printed 156    refused it, said 4285
+//
+// The generator is asked rather than a second number being declared beside the
+// first. A declaration would be one more thing to keep in step, and the
+// generator already works this out - it has to, in order to refuse - and
+// carries it in the refusal. So the answer here and the answer somebody gets
+// when they ask for one byte less cannot disagree.
+// It asks repeatedly rather than once, and that is not caution - it is
+// arithmetic. The minimum a format reports depends on the size being asked
+// for, because the self describing label states the byte count and a longer
+// number is a longer label. So the answer is a fixed point: keep asking until
+// a size is accepted, moving to whatever the refusal names next.
+//
+// Measured on 2026-08-03, which is how this was found rather than reasoned
+// about. Asking once at nought gave pdf 3334 while 3286 was accepted, and wav
+// 96 while 96 was refused and 98 was not. One question gives a number that is
+// wrong in either direction.
+//
+// A format may also refuse a band above a size it accepts - PNG takes 73 and
+// refuses 74 through 84, because the smallest chunk that could make up the
+// difference costs twelve on its own - so this steps by one when a refusal
+// names nothing higher, rather than assuming the answer only ever grows.
+func (d Descriptor) SmallestAccepted(r Request) int64 {
+	r.SizeFromContents = false
+
+	// Sixty four rounds is far more than any format needs: each round either
+	// settles or jumps to a number the format itself named. It is here so that
+	// a generator whose refusals ever cycle costs a wrong number rather than a
+	// run that never ends.
+	size := int64(0)
+	for round := 0; round < 64; round++ {
+		r.Bytes = size
+		if _, err := d.Generator.Plan(r); err == nil {
+			return size
+		} else {
+			var below *BelowMinimumError
+			if !errors.As(err, &below) {
+				// Refused for a reason that is not about size - a property this
+				// request cannot have, say. The structural floor is the honest
+				// answer left.
+				return d.MinBytes
+			}
+			if below.Minimum > size {
+				size = below.Minimum
+				continue
+			}
+			// The refusal names nothing above where we already are, so this is
+			// a size inside a band the format cannot reach. Step past it.
+			size++
+		}
+	}
+	return d.MinBytes
 }
 
 // PropertyNames is the declared keys, in the order the format listed them.
