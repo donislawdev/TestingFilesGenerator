@@ -10,7 +10,10 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Fidelity is how close to the real thing a generated file gets. Every format
@@ -94,6 +97,64 @@ type PaddingChannel struct {
 	Capacity int64
 }
 
+// PropertyKind is what sort of value a setting takes.
+//
+// It exists so something other than the generator can answer the question. A
+// window has to know whether to draw a number field, a list or a switch, and
+// "tfg formats png" has to be able to say what png accepts - neither of which
+// is possible when the only description is a name.
+type PropertyKind string
+
+const (
+	// PropertyInt is a whole number, bounded by Min and Max.
+	PropertyInt PropertyKind = "int"
+	// PropertyChoice is one of a closed set of names.
+	PropertyChoice PropertyKind = "choice"
+	// PropertyBool is true or false.
+	PropertyBool PropertyKind = "bool"
+	// PropertySize is a size written the way --size accepts it, so 2mb or a
+	// plain byte count. Its own kind rather than text, because a window draws
+	// it differently and because the same syntax failing here while working
+	// for --size is the kind of difference nobody would predict.
+	PropertySize PropertyKind = "size"
+	// PropertyText is free text the format interprets itself.
+	PropertyText PropertyKind = "text"
+)
+
+// Property is one setting a format understands, described well enough that
+// something other than the format can act on it.
+//
+// Names alone used to be the whole of this, and the type and the range lived
+// inside the generator that read them. That put the knowledge one import away
+// from every consumer that needed it: tfg formats could not print it, a window
+// had nothing to build a field from, and each format phrased the same refusal
+// in its own words. Worse, a bad value surfaced as an ordinary error and came
+// out with the exit code that means the tool itself broke.
+//
+// Two formats declare properties today and every format will eventually - a
+// WAV its sample rate and channels, a ZIP its compression method, a JPG its
+// quality. This is shaped for that rather than for the two.
+type Property struct {
+	Name string
+	Kind PropertyKind
+
+	// Min and Max bound an int. Both zero means unbounded.
+	Min, Max int64
+	// Unit is what an int counts, for the message and for a window's field.
+	// Empty when the number counts itself, as a page count does.
+	Unit string
+	// Choices are the allowed values of a choice, lower case.
+	Choices []string
+
+	// Default is what the format uses when nothing says otherwise, written
+	// the way a person would write it. Empty means the format works it out -
+	// a picture size chosen to fit the requested bytes, for instance.
+	Default string
+	// Detail is one sentence for a person, and it is what tfg formats prints
+	// and what a window shows beside the field.
+	Detail string
+}
+
 // Descriptor is everything a format announces about itself. A format missing
 // any of it fails the registry test rather than shipping half implemented.
 type Descriptor struct {
@@ -108,11 +169,11 @@ type Descriptor struct {
 	GeneratorVersion string
 	Generator        Generator
 
-	// Properties are the keys this format understands. Anything else in a
+	// Properties are the settings this format understands. Anything else in a
 	// recipe is a typo, and a typo accepted in silence gives a file with
 	// default settings and an hour spent wondering why the test passes when
 	// it should not. An empty list means the format takes no properties.
-	Properties []string
+	Properties []Property
 
 	// Container says this format holds other files, so a recipe may declare
 	// contains for it.
@@ -201,11 +262,87 @@ func (e *UnknownPropertyError) Error() string {
 		e.Format, e.Key, strings.Join(e.Known, ", "))
 }
 
-// CheckProperties refuses any key the format does not declare.
+// PropertyValueError is a declared key given a value the declaration forbids.
+//
+// Separate from UnknownPropertyError because the mistake is different and so
+// is the fix: one is a key that does not exist, the other a value out of
+// range. Both are the caller's doing rather than the tool's, which is the
+// point - this used to surface as a plain error and end with the exit code
+// that means the program itself failed, so CI could not tell "you typed that
+// wrong" from "this build has a bug".
+type PropertyValueError struct {
+	Format string
+	Key    string
+	Value  string
+	Reason string
+}
+
+func (e *PropertyValueError) Error() string {
+	return fmt.Sprintf("%s: %s cannot be %q - %s", e.Format, e.Key, e.Value, e.Reason)
+}
+
+// Allows reports whether raw is a value this property accepts, and says what
+// is wrong when it is not.
+//
+// The sentence is built from the declaration, so every format refuses in the
+// same words and a new format gets the wording by declaring rather than by
+// writing it again.
+func (p Property) Allows(raw string) (bad string) {
+	switch p.Kind {
+	case PropertyInt:
+		n, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil {
+			return "it takes a whole number" + p.unitSuffix()
+		}
+		if p.Min != 0 || p.Max != 0 {
+			if n < p.Min || n > p.Max {
+				return fmt.Sprintf("it takes a whole number%s from %d to %d",
+					p.unitSuffix(), p.Min, p.Max)
+			}
+		}
+	case PropertyChoice:
+		for _, c := range p.Choices {
+			if strings.EqualFold(raw, c) {
+				return ""
+			}
+		}
+		return "it takes one of: " + strings.Join(p.Choices, ", ")
+	case PropertyBool:
+		switch strings.ToLower(raw) {
+		case "true", "false":
+		default:
+			return "it takes true or false"
+		}
+	case PropertySize:
+		if _, err := core.ParseSize(raw); err != nil {
+			return "it takes a size written the way --size accepts it, such as 2mb or a plain byte count"
+		}
+	}
+	return ""
+}
+
+func (p Property) unitSuffix() string {
+	if p.Unit == "" {
+		return ""
+	}
+	return " of " + p.Unit
+}
+
+// PropertyNames is the declared keys, in the order the format listed them.
+func (d Descriptor) PropertyNames() []string {
+	out := make([]string, 0, len(d.Properties))
+	for _, p := range d.Properties {
+		out = append(out, p.Name)
+	}
+	return out
+}
+
+// CheckProperties refuses any key the format does not declare, and any value
+// the declaration does not allow.
 func (d Descriptor) CheckProperties(props map[string]string) error {
-	known := make(map[string]bool, len(d.Properties))
-	for _, k := range d.Properties {
-		known[k] = true
+	known := make(map[string]Property, len(d.Properties))
+	for _, p := range d.Properties {
+		known[p.Name] = p
 	}
 	// Sorted, so the same recipe always reports the same key first.
 	keys := make([]string, 0, len(props))
@@ -214,8 +351,17 @@ func (d Descriptor) CheckProperties(props map[string]string) error {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		if !known[k] {
-			return &UnknownPropertyError{Format: d.ID, Key: k, Known: d.Properties}
+		p, ok := known[k]
+		if !ok {
+			return &UnknownPropertyError{Format: d.ID, Key: k, Known: d.PropertyNames()}
+		}
+		// An empty value means "not stated", the same as leaving the key out,
+		// because that is what an unset flag and an empty recipe entry both
+		// look like by the time they arrive here.
+		if raw := props[k]; raw != "" {
+			if bad := p.Allows(raw); bad != "" {
+				return &PropertyValueError{Format: d.ID, Key: k, Value: raw, Reason: bad}
+			}
 		}
 	}
 	return nil

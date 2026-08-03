@@ -6,22 +6,109 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 type formatEntry struct {
-	ID          string   `json:"id"`
-	Extension   string   `json:"extension"`
-	Fidelity    string   `json:"fidelity"`
-	Determinism string   `json:"determinism"`
-	MinBytes    int64    `json:"min_bytes"`
-	Padding     string   `json:"padding_channel"`
-	PaddingCap  int64    `json:"padding_capacity,omitempty"`
-	Label       string   `json:"label_carrier"`
-	Properties  []string `json:"properties,omitempty"`
-	Oracle      string   `json:"oracle"`
-	Version     string   `json:"generator_version"`
+	ID          string          `json:"id"`
+	Extension   string          `json:"extension"`
+	Fidelity    string          `json:"fidelity"`
+	Determinism string          `json:"determinism"`
+	MinBytes    int64           `json:"min_bytes"`
+	Padding     string          `json:"padding_channel"`
+	PaddingCap  int64           `json:"padding_capacity,omitempty"`
+	Label       string          `json:"label_carrier"`
+	Properties  []propertyEntry `json:"properties,omitempty"`
+	Oracle      string          `json:"oracle"`
+	Version     string          `json:"generator_version"`
+}
+
+// propertyEntry is one setting as a script sees it. Everything a window would
+// need to draw a field is here, which is the point of describing properties
+// rather than only naming them.
+type propertyEntry struct {
+	Name    string   `json:"name"`
+	Kind    string   `json:"kind"`
+	Min     int64    `json:"min,omitempty"`
+	Max     int64    `json:"max,omitempty"`
+	Unit    string   `json:"unit,omitempty"`
+	Choices []string `json:"choices,omitempty"`
+	Default string   `json:"default,omitempty"`
+	Detail  string   `json:"detail,omitempty"`
+}
+
+func entryFor(d format.Descriptor) formatEntry {
+	props := make([]propertyEntry, 0, len(d.Properties))
+	for _, p := range d.Properties {
+		props = append(props, propertyEntry{
+			Name: p.Name, Kind: string(p.Kind), Min: p.Min, Max: p.Max,
+			Unit: p.Unit, Choices: p.Choices, Default: p.Default, Detail: p.Detail,
+		})
+	}
+	return formatEntry{
+		ID: d.ID, Extension: d.Extension,
+		Fidelity: string(d.Fidelity), Determinism: string(d.Determinism),
+		MinBytes: d.MinBytes, Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
+		Label: string(d.Label), Properties: props,
+		Oracle: d.Oracle, Version: d.GeneratorVersion,
+	}
+}
+
+// describeOne prints everything one format declares.
+//
+// "tfg formats pdf" is documented in docs/CLI.md and used to print the whole
+// list and ignore the argument, ending with 0 - so there was no way to ask what
+// a format accepts, and the silence looked like an answer.
+func describeOne(d format.Descriptor, out io.Writer) {
+	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %d B\n",
+		d.ID, d.Fidelity, d.Determinism, d.MinBytes)
+	fmt.Fprintf(out, "  extension  %s\n", d.Extension)
+	fmt.Fprintf(out, "  padding    %s\n", d.Padding.Name)
+	fmt.Fprintf(out, "  label      %s\n", d.Label)
+	fmt.Fprintf(out, "  oracle     %s\n", d.Oracle)
+
+	if len(d.Properties) == 0 {
+		fmt.Fprint(out, "\nThis format takes no properties.\n")
+		return
+	}
+	fmt.Fprint(out, "\nproperties, set with --set name=value:\n")
+	for _, p := range d.Properties {
+		fmt.Fprintf(out, "  %-14s %s\n", p.Name, allowedText(p))
+		if p.Detail != "" {
+			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
+		}
+	}
+}
+
+// allowedText says what a property accepts, in the same words the refusal uses.
+func allowedText(p format.Property) string {
+	var what string
+	switch p.Kind {
+	case format.PropertyInt:
+		unit := ""
+		if p.Unit != "" {
+			unit = " of " + p.Unit
+		}
+		if p.Min != 0 || p.Max != 0 {
+			what = fmt.Sprintf("whole number%s from %d to %d", unit, p.Min, p.Max)
+		} else {
+			what = "whole number" + unit
+		}
+	case format.PropertyChoice:
+		what = "one of: " + strings.Join(p.Choices, ", ")
+	case format.PropertyBool:
+		what = "true or false"
+	case format.PropertySize:
+		what = "a size such as 2mb, or a plain byte count"
+	default:
+		what = "text"
+	}
+	if p.Default != "" {
+		what += ", default " + p.Default
+	}
+	return what
 }
 
 func formats(args []string, out, errOut io.Writer) int {
@@ -49,34 +136,53 @@ Flags:
 		usage(out)
 		return ExitOK
 	}
-	if err := fs.Parse(args); err != nil {
+	leading, rest := splitLeadingPath(args)
+	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
+	}
+	wanted := leading
+	if wanted == "" && fs.NArg() == 1 {
+		wanted = fs.Arg(0)
+	}
+
+	if wanted != "" {
+		d, err := format.Get(wanted)
+		if err != nil {
+			// The registry already names the formats it does know, so the
+			// message stays where it is rather than being written twice.
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+			return classify(err)
+		}
+		if *asJSON {
+			return renderJSON([]formatEntry{entryFor(d)}, out, errOut)
+		}
+		describeOne(d, out)
+		return ExitOK
 	}
 
 	if *asJSON {
 		list := make([]formatEntry, 0, len(format.All()))
 		for _, d := range format.All() {
-			list = append(list, formatEntry{
-				ID: d.ID, Extension: d.Extension,
-				Fidelity: string(d.Fidelity), Determinism: string(d.Determinism),
-				MinBytes: d.MinBytes, Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
-				Label: string(d.Label), Properties: d.Properties,
-				Oracle: d.Oracle, Version: d.GeneratorVersion,
-			})
+			list = append(list, entryFor(d))
 		}
-		enc := json.NewEncoder(out)
-		enc.SetIndent("", "  ")
-		if err := enc.Encode(list); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot render the list: %s\n", describeError(err))
-			return ExitRuntime
-		}
-		return ExitOK
+		return renderJSON(list, out, errOut)
 	}
 
 	fmt.Fprintf(out, "%-8s %-10s %-12s %-10s %s\n", "FORMAT", "FIDELITY", "DETERMINISM", "MINIMUM", "PADDING CHANNEL")
 	for _, d := range format.All() {
 		fmt.Fprintf(out, "%-8s %-10s %-12s %-10d %s\n",
 			d.ID, d.Fidelity, d.Determinism, d.MinBytes, d.Padding.Name)
+	}
+	fmt.Fprint(out, "\nRun \"tfg formats <id>\" for what one format accepts.\n")
+	return ExitOK
+}
+
+func renderJSON(v any, out, errOut io.Writer) int {
+	enc := json.NewEncoder(out)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(v); err != nil {
+		fmt.Fprintf(errOut, "tfg: cannot render the list: %s\n", describeError(err))
+		return ExitRuntime
 	}
 	return ExitOK
 }

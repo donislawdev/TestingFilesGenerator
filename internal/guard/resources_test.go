@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"runtime"
+	"strconv"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
@@ -154,9 +155,15 @@ func TestAnUnknownPropertyIsRefused(t *testing.T) {
 
 			// Everything the format does declare has to pass, otherwise this
 			// guard would be satisfied by refusing everything.
+			//
+			// The value comes from the declaration rather than being a fixed
+			// "1", which used to work only because nothing checked values. Now
+			// it also proves the declaration agrees with itself: a default the
+			// format advertises and then refuses would be a worse trap than no
+			// default at all.
 			accepted := map[string]string{}
-			for _, k := range d.Properties {
-				accepted[k] = "1"
+			for _, p := range d.Properties {
+				accepted[p.Name] = acceptableValue(p)
 			}
 			if len(accepted) > 0 {
 				if err := d.CheckProperties(accepted); err != nil {
@@ -199,5 +206,35 @@ func TestAnImageTooLargeToHoldIsRefused(t *testing.T) {
 	})
 	if err == nil {
 		t.Error("a 400 megapixel picture was accepted - measured at 4.65 GB of memory before this was capped")
+	}
+}
+
+// acceptableValue is a value the declaration says it takes, worked out from
+// the declaration alone.
+//
+// The default is used where there is one, because a format advertising a
+// default it then refuses is a trap rather than a mistake, and this is the one
+// place able to notice.
+func acceptableValue(p format.Property) string {
+	if p.Default != "" {
+		return p.Default
+	}
+	switch p.Kind {
+	case format.PropertyChoice:
+		if len(p.Choices) > 0 {
+			return p.Choices[0]
+		}
+		return ""
+	case format.PropertyBool:
+		return "true"
+	case format.PropertySize:
+		return "1kb"
+	case format.PropertyInt:
+		if p.Min != 0 || p.Max != 0 {
+			return strconv.FormatInt(p.Min, 10)
+		}
+		return "1"
+	default:
+		return "x"
 	}
 }

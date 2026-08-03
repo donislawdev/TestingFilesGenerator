@@ -88,9 +88,20 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: maxChunkData,
 		},
-		Label:            format.LabelVisible,
-		Oracle:           "pillow",
-		Properties:       []string{"width", "height"},
+		Label:  format.LabelVisible,
+		Oracle: "pillow",
+		Properties: []format.Property{
+			{
+				Name: "width", Kind: format.PropertyInt,
+				Min: minDimension, Max: maxDimension, Unit: "pixels",
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
+			},
+			{
+				Name: "height", Kind: format.PropertyInt,
+				Min: minDimension, Max: maxDimension, Unit: "pixels",
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
+			},
+		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

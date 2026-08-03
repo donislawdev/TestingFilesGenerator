@@ -73,9 +73,29 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: commentCapacity,
 		},
-		Label:            format.LabelInternal,
-		Oracle:           "7z",
-		Properties:       []string{"entries", "entry_format", "entry_size"},
+		Label:  format.LabelInternal,
+		Oracle: "7z",
+		Properties: []format.Property{
+			{
+				Name: "entries", Kind: format.PropertyInt,
+				Min: 0, Max: maxEntries,
+				Default: strconv.Itoa(defaultEntries),
+				Detail:  "How many files the archive holds. Use contains instead when the files are not all alike.",
+			},
+			{
+				Name: "entry_format", Kind: format.PropertyText,
+				// Not a choice, because the allowed values are whatever this
+				// build registered, and a list frozen here would drift away
+				// from the registry the moment a format is added.
+				Default: defaultEntryFmt,
+				Detail:  "The format of the files inside. Run tfg formats to see what this build supports.",
+			},
+			{
+				Name: "entry_size", Kind: format.PropertySize,
+				Default: "8kb",
+				Detail:  "How big each file inside is.",
+			},
+		},
 		Container:        true,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},

@@ -37,6 +37,22 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`tfg formats <id>` now answers about one format.** It used to print the
+  whole list and ignore the argument, ending with 0, so there was no way to ask
+  what a format accepts and the silence looked like an answer.
+  It now lists every setting the format takes with its type, its range or the
+  values it allows, its default and a sentence saying what it does - in prose
+  and under `--json`. Asking about a format that does not exist ends with 4
+  rather than pretending.
+
+  ```
+  properties, set with --set name=value:
+    pages          whole number from 1 to 5000, default 1
+                   How many pages the document has.
+    page_size      one of: a4, a3, a5, letter, legal, default a4
+                   The paper size every page uses.
+  ```
+
 - **A run says how far it has got.** A large run used to print nothing between
   starting and finishing, so there was no way to tell a working tool from a
   hung one. It now shows the files done, the bytes written and an estimate of
@@ -50,6 +66,16 @@ because it turns other people's test suites red.
   than once at the end.
 
 ### Fixed
+
+- **A value a format cannot take is now reported as your mistake, not ours.**
+  `--set width=abc` ended with exit code 1, which in this tool means the
+  program itself failed - so a script could not tell a typo from a bug worth
+  reporting. It now ends with 4, the same code a size below the minimum gives,
+  and the message quotes the value and says what the setting accepts.
+  One case changed verdict rather than only its code. `--set bit_depth=20` on a
+  WAV used to get past the first check and fail later in different words,
+  because bit depth was treated as any number from 8 to 32. It is one of 8, 16,
+  24 or 32, and it is refused as such straight away.
 
 - **`--boundary 15mb` is now refused rather than guessed at.** A boundary set
   is the one place where the number belongs to somebody else - it is the limit

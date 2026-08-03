@@ -63,9 +63,25 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:            format.LabelVisible,
-		Oracle:           "pdftotext",
-		Properties:       []string{"pages", "page_size"},
+		Label:  format.LabelVisible,
+		Oracle: "pdftotext",
+		Properties: []format.Property{
+			{
+				Name: "pages", Kind: format.PropertyInt,
+				Min: 1, Max: maxPages,
+				Default: strconv.Itoa(defaultPages),
+				Detail:  "How many pages the document has.",
+			},
+			{
+				Name: "page_size", Kind: format.PropertyChoice,
+				// Written out rather than read from the map, so the order is
+				// the one a person would expect rather than whatever the map
+				// hands back.
+				Choices: []string{"a4", "a3", "a5", "letter", "legal"},
+				Default: "a4",
+				Detail:  "The paper size every page uses.",
+			},
+		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

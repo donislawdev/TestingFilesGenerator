@@ -68,9 +68,37 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:            format.LabelInternal,
-		Oracle:           "ffprobe",
-		Properties:       []string{"sample_rate", "bit_depth", "channels", "content"},
+		Label:  format.LabelInternal,
+		Oracle: "ffprobe",
+		Properties: []format.Property{
+			{
+				Name: "sample_rate", Kind: format.PropertyInt,
+				Min: 8000, Max: 192000, Unit: "hertz",
+				Default: strconv.Itoa(defaultRate),
+				Detail:  "How many samples a second the signal carries.",
+			},
+			{
+				Name: "bit_depth", Kind: format.PropertyChoice,
+				// A closed set rather than a range, because it is one. As a
+				// range 8 to 32 a request for 20 passed the first check and
+				// was refused later, in different words.
+				Choices: []string{"8", "16", "24", "32"},
+				Default: strconv.Itoa(defaultBits),
+				Detail:  "How many bits each sample uses.",
+			},
+			{
+				Name: "channels", Kind: format.PropertyInt,
+				Min: 1, Max: 8,
+				Default: strconv.Itoa(defaultChannels),
+				Detail:  "How many channels the signal has, so 1 for mono and 2 for stereo.",
+			},
+			{
+				Name: "content", Kind: format.PropertyChoice,
+				Choices: []string{"tone", "silence", "noise", "sweep"},
+				Default: "tone",
+				Detail:  "What the signal sounds like.",
+			},
+		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

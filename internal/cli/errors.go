@@ -119,6 +119,14 @@ func classify(err error) int {
 	if errors.As(err, &badProp) {
 		return ExitUsage
 	}
+	// A value outside what the format declares is a request the format cannot
+	// deliver, which is what FORMAT means - the same class as a size below the
+	// minimum. It used to fall through to RUNTIME, so "--set width=abc" told
+	// CI this program had a bug rather than that the value was wrong.
+	var badValue *format.PropertyValueError
+	if errors.As(err, &badValue) {
+		return ExitFormat
+	}
 	// A manifest we cannot read is a reading failure, not a bug in the tool.
 	// Falling through to RUNTIME would tell CI to file a report against us for
 	// a file somebody handed in.
