@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    # Weekly, for the fuzzing job below only. Every other job here runs on
+    # push, and fuzzing deliberately does not - see that job for why.
+    - cron: "17 4 * * 1"
 
 permissions:
   contents: read
@@ -187,3 +191,55 @@ jobs:
           awk -v a="$actual" -v t="$threshold" 'BEGIN { exit (a+0 >= t+0) ? 0 : 1 }' \
             || { echo "coverage ${actual}% is below the threshold ${threshold}%"; exit 1; }
         shell: bash
+
+  fuzz:
+    name: fuzzing with a time budget
+    # Weekly and by hand, never on a push. Fuzzing searches without end, so a
+    # budget picked to fit a commit gate would be a gate that says "fuzzing
+    # passed" after twenty seconds of looking - which is worth less than not
+    # claiming it. See docs/OBSERVATIONS.md, O34.
+    #
+    # What the push jobs do run is the seed corpus in testdata/fuzz, because
+    # go test executes fuzz targets as ordinary tests. That is regression
+    # cover for what has already been found, and it is not the same thing as
+    # searching.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: search
+        # One target at a time, because -fuzz takes exactly one. Five minutes
+        # each - long enough to be a search rather than a gesture, short enough
+        # that a weekly run stays cheap.
+        #
+        # A finding here is not fixed by this job. It has to be pulled into
+        # testdata/fuzz and committed, or it disappears with the runner and the
+        # next search starts from nothing.
+        run: |
+          set -euo pipefail
+          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate; do
+            echo "=== $target ==="
+            go test ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
+          done
+        shell: bash
+
+      - name: keep what was found
+        # The corpus a failing run leaves behind is the whole value of the run,
+        # and it lives in the runner's cache directory rather than the tree.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-findings
+          path: |
+            internal/guard/testdata/fuzz/**
+            ~/.cache/go-build/fuzz/**
+          if-no-files-found: warn
