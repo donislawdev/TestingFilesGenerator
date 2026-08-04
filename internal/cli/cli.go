@@ -83,6 +83,14 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	case "--version", "version":
 		fmt.Fprintln(out, version.Version)
 		return ExitOK
+	case "--license", "--licence", "license", "licence":
+		// Both spellings. The tool writes British English and half the people
+		// who reach for this will type the American one, and being right about
+		// spelling at the cost of answering is not a trade worth making.
+		//
+		// An answer, so it goes to out and ends with zero, the same as version.
+		fmt.Fprint(out, licenceNotice)
+		return ExitOK
 	case "--help", "-h", "help":
 		// Asking is not a mistake, so the answer goes where answers go and
 		// "tfg --help | less" works.
@@ -129,10 +137,38 @@ Commands:
   recipe fmt  print a recipe in its settled shape
   formats     list the formats this build supports
   version     print the tool version
+  license     print the licence and what it means for generated files
 
 Run "tfg <command> --help" for the flags of one command.
 `)
 }
+
+// licenceNotice is what "tfg license" prints.
+//
+// The second paragraph is the reason this command is worth having. Somebody
+// deciding whether to put a generator into a closed source project has to know
+// whether its licence reaches the files it produces, and the answer is no - but
+// that answer is not obvious from the name of the licence, and guessing wrong
+// in either direction costs them either a tool or a lawyer.
+//
+// The full licence text is not printed. It is 674 lines and a terminal is the
+// wrong place for it, so this points at the file instead.
+const licenceNotice = `Testing Files Generator
+Copyright (C) 2026 DonislawDev
+
+Released under the GNU General Public License, version 3. The full text is in
+the LICENSE file beside the source.
+
+There is no warranty, to the extent the law allows.
+
+The files you generate are yours. Generated files, recipes and manifests are
+output of this program and not derived works of it, so this licence does not
+reach them. You can generate fixtures, commit them and ship them inside a
+closed source product with no obligation of any kind.
+
+Code from other projects is compiled into this program. Their licences and
+copyright notices are in THIRD-PARTY-NOTICES.md.
+`
 
 // generateOpts is every flag of the generate command in one place.
 //

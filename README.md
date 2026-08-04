@@ -80,10 +80,37 @@ The command line binary builds without CGO on Windows, macOS and Linux. The
 desktop window is a separate binary that needs a C compiler, so it is built
 natively on each system.
 
+## Everything inside a generated file is made up
+
+The contents are synthesised from a seed. Names, addresses, e-mail addresses,
+IP addresses, timestamps, invoice numbers, log lines and every other value are
+produced by an algorithm and describe nobody. No real person, company, account
+or system is represented, and any resemblance to a real one is coincidence.
+
+Nothing is copied in from anywhere either. The tool reads no dataset, contacts
+no service and embeds no third party content - the vocabulary it draws from is
+a short list of ordinary English words written for this project. That is also
+why the output is safe to commit: a fixture generated here carries no personal
+data, so it does not turn your repository into something a privacy regulation
+has an opinion about.
+
+Two things this does not promise. A generated value can collide with a real one
+by chance, the same way any random string can, so treat a generated e-mail
+address as unusable rather than unused - do not send anything to it. And the
+files are built to exercise software, not to look convincing to a reader, so
+they are not a substitute for anonymised production data when what you need is
+realistic distributions.
+
 ## Licence
 
+Copyright (C) 2026 DonislawDev.
+
 Released under the GNU General Public License, version 3. The full text is in
-[LICENSE](LICENSE).
+[LICENSE](LICENSE). Run `tfg license` for the short version, including what it
+means for the files you generate.
+
+Code from other projects is compiled into the binary. Their licences and
+copyright notices are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ### The files you generate are yours
 

@@ -40,6 +40,13 @@ func asciiRequired(rel string) bool {
 var englishFiles = []string{
 	"README.md",
 	"CHANGELOG.md",
+	// The notices that travel with a release binary. Added 2026-08-04 with the
+	// file itself: it is repository text a user reads, so it belongs here by
+	// the same criterion as the two above. The licence texts it quotes sit in
+	// fenced blocks and are left alone by the prose rules, which is what makes
+	// listing it safe - the wording of somebody else's licence is not ours to
+	// tidy.
+	"THIRD-PARTY-NOTICES.md",
 }
 
 func TestTextInTheRepositoryIsAsciiOnly(t *testing.T) {
