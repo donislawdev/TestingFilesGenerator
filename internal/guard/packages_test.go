@@ -118,7 +118,7 @@ func rawImports(t *testing.T, p pkg) []string {
 }
 
 // internalOnly keeps imports that belong to this module and strips the module
-// prefix, so "…/internal/core" becomes "internal/core".
+// prefix, so ".../internal/core" becomes "internal/core".
 func internalOnly(imports []string) []string {
 	var out []string
 	for _, imp := range imports {

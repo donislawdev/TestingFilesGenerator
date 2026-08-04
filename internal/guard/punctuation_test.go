@@ -76,6 +76,38 @@ func proseFaults(text string) []string {
 		out = append(out, fmt.Sprintf("%q - rule 13 asks for the flat hyphen -", r))
 		break
 	}
+	for _, r := range text {
+		// ASCII is left alone here. The dash and semicolon rules above already
+		// cover what matters in it, and a circumflex or a backtick inside a
+		// comment about a regular expression is ordinary writing.
+		if r < 128 {
+			continue
+		}
+		// Two things slip past a rule written only about dashes, and this tree
+		// carried one of each until 2026-08-04.
+		//
+		// A symbol is note taking that escaped. The red circle this project
+		// uses to mark a warning in its own documents had reached a comment in
+		// internal/core, where it means nothing to anybody reading the code.
+		//
+		// The rest are the characters a word processor substitutes: an ellipsis
+		// and curly quotes. They read the same and cannot be typed back, so a
+		// person searching for the line does not find it.
+		//
+		// Letters are deliberately not touched. One comment in this package
+		// annotates raw cp1250 bytes and has to be able to write the letters
+		// those bytes stand for - a rule that forbade it would make the one
+		// comment that needs them say less.
+		switch {
+		case unicode.Is(unicode.So, r):
+			out = append(out, fmt.Sprintf("%q - a symbol belongs in the project's own notes, not in text that ships", r))
+		case r == '…' || r == '‘' || r == '’' || r == '“' || r == '”':
+			out = append(out, fmt.Sprintf("%q - write it the way somebody can type it", r))
+		default:
+			continue
+		}
+		break
+	}
 	return out
 }
 

@@ -127,7 +127,7 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 // separator says what goes in front of word i, for i above zero. Nil means one
 // space, which is what most formats want.
 //
-// 🔴 The cut lands on a character boundary, not on a byte. Every vocabulary in
+// The cut lands on a character boundary, not on a byte. Every vocabulary in
 // this project is ASCII today, so the two are the same thing and this costs
 // nothing - measured, the pinned values did not move. They stop being the same
 // thing the day a locale pack arrives, and `locale` is already a key in the
