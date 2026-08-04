@@ -59,9 +59,26 @@ jobs:
         # Every dependency is a licence question and a byte stability question.
         # A new one arriving as somebody's transitive import has to be visible
         # rather than discovered later.
+        #
+        # Four modules, one of which is linked. golang.org/x/text is imported
+        # for Unicode normalisation in the collision check - see docs/STACK.md.
+        # It names x/mod, x/sync and x/tools in its own go.mod for the tooling
+        # that generates its tables, and "go mod tidy" does not prune them from
+        # the graph, measured 2026-08-04. They reach the module list and not the
+        # binary. All four are BSD from the Go Authors.
         run: |
           set -euo pipefail
-          expected="github.com/goccy/go-yaml"
+          # Built with printf rather than written across several lines. A
+          # continuation starting in column one reads as the end of the jobs
+          # block to anything scanning this file by indentation, and the guard
+          # on job timeouts does exactly that - it counted one job instead of
+          # seven and went green whatever it was given. Measured 2026-08-04.
+          expected=$(printf '%s\n' \
+            github.com/goccy/go-yaml \
+            golang.org/x/mod \
+            golang.org/x/sync \
+            golang.org/x/text \
+            golang.org/x/tools)
           actual=$(go list -m -f '{{.Path}}' all | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | sort)
           if [ "$actual" != "$expected" ]; then
             echo "the module list changed."

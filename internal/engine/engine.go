@@ -17,6 +17,8 @@ import (
 	"runtime"
 	"strings"
 
+	"golang.org/x/text/unicode/norm"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -329,20 +331,28 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			// manifest, one file on the disk, and "tfg verify" failing on the
 			// tool's own output a second later.
 			//
+			// Case is not the only way to spell one name twice. An accented
+			// letter is one code point, U+00E9, and it is also the plain letter
+			// followed by a combining accent, U+0301. Both are valid UTF-8 and
+			// they print identically. APFS normalises what it is given, so on
+			// macOS the two spellings are one file, while NTFS and ext4 keep
+			// them apart. Measured there 2026-08-04: exit 0, two entries in the
+			// manifest, one file on the disk, and "tfg verify" failing on the
+			// tool's own output a second later - the same defect the case rule
+			// exists to stop, reached by spelling a letter the other way.
+			//
+			// So the key folds case and normalises, and neither alone is
+			// enough: case folding does not bring the two spellings together
+			// and normalising does not bring REPORT.TXT to report.txt.
+			//
 			// Refused everywhere rather than only where it bites, the same as a
 			// path separator and for the same reason: a recipe travels between
 			// machines by design, and one that quietly loses a file on somebody
 			// else's is worse than one refused on both. Producing such a pair on
 			// purpose belongs to the name laboratory and its archive mode, D10.
-			key := strings.ToLower(name)
+			key := collisionKey(name)
 			if owner, clash := names[key]; clash {
-				detail := fmt.Sprintf("targets %q and %q both produce a file named %s", owner.id, t.ID, name)
-				if owner.name != name {
-					detail = fmt.Sprintf(
-						"targets %q and %q produce the names %s and %s, which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both",
-						owner.id, t.ID, owner.name, name)
-				}
-				return nil, &RecipeError{Detail: detail +
+				return nil, &RecipeError{Detail: collisionDetail(owner, t.ID, name) +
 					" - give one of them a --name template containing " + indexToken}
 			}
 			names[key] = nameOwner{id: t.ID, name: name}
@@ -474,6 +484,37 @@ func tempPathFor(outDir, name string) string {
 type nameOwner struct {
 	id   string
 	name string
+}
+
+// collisionKey is the spelling two names are compared under. Two names sharing
+// a key are one file on some filesystem somebody runs this on.
+//
+// Folding case covers NTFS, APFS and exFAT, which keep the case that was typed
+// and match without it. Normalising covers APFS again, which folds the two
+// spellings of an accented letter into one name. Neither step covers the other:
+// case folding leaves the two spellings apart, and normalising leaves
+// REPORT.TXT apart from report.txt.
+func collisionKey(name string) string {
+	return strings.ToLower(norm.NFC.String(name))
+}
+
+// collisionDetail says what the two names have in common. Two names that
+// collide can print identically on screen, so a refusal that only shows them is
+// one the reader cannot act on. A refusal has to say what is wrong, what is
+// allowed and what to do instead.
+func collisionDetail(owner nameOwner, id, name string) string {
+	switch {
+	case owner.name == name:
+		return fmt.Sprintf("targets %q and %q both produce a file named %s", owner.id, id, name)
+	case strings.EqualFold(owner.name, name):
+		return fmt.Sprintf(
+			"targets %q and %q produce the names %s and %s, which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both",
+			owner.id, id, owner.name, name)
+	default:
+		return fmt.Sprintf(
+			"targets %q and %q produce the names %s and %s. Those print the same because they are one name spelled two ways, an accented letter against the plain letter with its accent as a separate character. macOS stores both under one name, so one file would be written over the other and the manifest would describe both",
+			owner.id, id, owner.name, name)
+	}
 }
 
 func exists(path string) bool {
