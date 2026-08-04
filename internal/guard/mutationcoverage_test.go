@@ -48,7 +48,6 @@ var notProvenByMutation = map[string]bool{
 	"TestDryRunWritesNothingAtAll":                                    true,
 	"TestEveryEndingUsesACodeFromTheTable":                            true,
 	"TestEveryFormatDeclaresTheFullSet":                               true,
-	"TestEveryFormatSurvivesItsReferenceTool":                         true,
 	"TestGeneratingTwiceGivesTheSameBytes":                            true,
 	"TestLayeringHoldsForEveryPackage":                                true,
 	"TestNoNetworkImports":                                            true,

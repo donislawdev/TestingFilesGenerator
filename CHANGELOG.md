@@ -29,6 +29,24 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **TAR.GZ, the thirteenth format.** `tfg generate --format targz --size 3mb`
+  gives an archive of exactly that many bytes. It holds real generated files of
+  other formats rather than random bytes, the same way ZIP does, through
+  `contains` in a recipe or through `--set entries=`, `--set entry_format=` and
+  `--set entry_size=`. Entries are written in the ustar format with a fixed
+  timestamp, so the same recipe and seed give the same archive everywhere.
+  The smallest archive is 1052 B.
+
+  Nothing inside is compressed. That is what lets the size be worked out before
+  a byte is written, so `--dry-run` stays cheap and the number it prints is the
+  number you get. The cost is honest and worth knowing up front: a `.tar.gz`
+  from this build does not shrink anything, and `tfg formats targz` does not
+  offer a compression level because there is none to choose.
+
+  One size cannot be produced without the self describing label: exactly one
+  byte above the smallest archive. The gzip comment that would make up the
+  difference cannot be one byte long. With the label on, which is the default,
+  every size from the smallest upward works.
 - **`tfg license`.** Prints the copyright line, the licence, the absence of a
   warranty, and the one thing somebody actually needs to know before putting a
   generator into a closed source product: the licence covers this tool and not

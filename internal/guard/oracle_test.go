@@ -115,6 +115,46 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 	}
 }
 
+// structurallyChecked is the formats the second layer covers, written down.
+//
+// TXT and MD are absent on purpose and that is the whole reason this list
+// exists rather than being derived: for those two there is no specification to
+// check against beyond "these are the bytes we meant", so they have one layer
+// and it is honest to say so.
+//
+// Without this, dropping a format from oracle.StrictKnows removes its
+// structural check and every test stays green - the loop above simply skips it.
+// A guard that can be switched off in silence is the failure this project keeps
+// finding, so the list is stated and compared rather than trusted.
+var structurallyChecked = map[string]bool{
+	"png": true, "wav": true, "pdf": true, "zip": true, "targz": true,
+	"log": true, "csv": true, "json": true, "xml": true, "svg": true, "html": true,
+}
+
+func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {
+	descriptors := format.All()
+	if len(descriptors) == 0 {
+		t.Fatal("no format is registered - this guard would pass without checking anything")
+	}
+	for _, d := range descriptors {
+		want := structurallyChecked[d.ID]
+		got := oracle.StrictKnows(d.ID)
+		switch {
+		case want && !got:
+			t.Errorf("%s should have a structural check and oracle.StrictKnows does not know it - "+
+				"the reference tool test skips that layer in silence", d.ID)
+		case !want && got:
+			t.Errorf("%s has a structural check that this list does not mention - add it here, "+
+				"so the two cannot drift", d.ID)
+		}
+	}
+	for id := range structurallyChecked {
+		if _, err := format.Get(id); err != nil {
+			t.Errorf("this list names %q and no such format is registered", id)
+		}
+	}
+}
+
 func firstLine(s string) string {
 	for i, r := range s {
 		if r == '\n' || r == '\r' {

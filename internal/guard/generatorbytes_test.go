@@ -73,9 +73,22 @@ func goldenCases() map[string]engine.Target {
 			Properties: map[string]string{"entries": "3", "entry_format": "pdf", "entry_size": "8kb"}},
 
 		// Padding above the archive comment limit moves into a stored entry.
-		// That is the second stage of the only Tier 1 padding channel with a
-		// ceiling, and it has its own arithmetic to get wrong.
+		// That is the second stage of a padding channel with a ceiling, and it
+		// has its own arithmetic to get wrong.
 		"zip_past_the_comment_limit": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 262144), Label: true},
+
+		// TAR.GZ, pinned from three sides for the same reasons as ZIP. Its size
+		// does not come from measuring the structure the way ZIP's does - it
+		// comes from arithmetic over the stored block framing of gzip - so a
+		// drift here can be a wrong size rather than only different bytes.
+		"targz_16kib": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 16384), Label: true},
+		"targz_with_three_pdfs": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"entries": "3", "entry_format": "pdf", "entry_size": "8kb"}},
+
+		// Above the comment limit the padding moves into a tar entry, and a tar
+		// entry is aligned to 512 bytes. This is the case where the two stages
+		// have to agree to the byte.
+		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
 }
 

@@ -66,6 +66,21 @@
     "svg_8kib": {
       "bytes": 8192,
       "sha256": "1cfeca2a6632e55c7575115b14e75aa7fff2ad42543f76d46e2199842910e84a"
+    },
+    "targz_16kib": {
+      "bytes": 16384,
+      "sha256": "ed2da392da2fc46e6f4262515ca1a264bd596f02b9d3ed01e860e189cf8a46f9",
+      "measured_on": "2026-08-04"
+    },
+    "targz_with_three_pdfs": {
+      "bytes": 65536,
+      "sha256": "84a776cc5439d9a7edb29018dca7b0fb1462f7b57a374de34c21b0cf7f601eb5",
+      "measured_on": "2026-08-04"
+    },
+    "targz_past_the_comment_limit": {
+      "bytes": 262144,
+      "sha256": "17505ccb4f1ae3bf1fb36cb3098e38bf654ac4cca6a3faf74a51c17ec807b398",
+      "measured_on": "2026-08-04"
     }
   },
   "remeasured": [

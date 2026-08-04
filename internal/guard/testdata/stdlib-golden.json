@@ -15,6 +15,12 @@
       "bytes": 592,
       "sha256": "51af913d03c1595df26696ede2751448249b578393147c0106566cc49ec56810"
     },
+    "gzip_store": {
+      "bytes": 65569,
+      "sha256": "324638839c7230e01c38c9c21925c62dfecbeea820138249c7f70d4e505ee52b",
+      "measured_on": "2026-08-04",
+      "why": "TAR.GZ writes every archive through this path, and its exact size arithmetic depends on the stored block framing it produces. Confirmed identical on go1.26.5 windows/amd64 and go1.26.5 linux/amd64. NOT yet checked across the four toolchains the other paths here were measured against - that sweep predates this entry."
+    },
     "zip_deflate": {
       "bytes": 728,
       "sha256": "bf16317f2aef3141a567dd17eb272839d1cd382e4b1125a79d5c1de0e63d7169"

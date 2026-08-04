@@ -522,9 +522,121 @@ def check_html(data):
     ok(f"{blocks} blocks, all tags balanced")
 
 
+def gzip_header_end(data):
+    """Where the deflate stream starts, per RFC 1952 section 2.3.
+
+    Walked by hand rather than handed to the gzip module, because the module
+    skips these fields without checking that they are terminated inside the
+    file - which is exactly the class of defect this layer exists to catch.
+    Returns the offset and the header comment.
+    """
+    if data[:2] != b"\x1f\x8b":
+        fail("there is no gzip magic at the start of the file")
+    if data[2] != 8:
+        fail(f"the compression method is {data[2]} and deflate is 8")
+    flg = data[3]
+    if flg & 0xE0:
+        fail(f"reserved bits are set in the flag byte ({flg:#04x})")
+
+    at = 10
+    if flg & 0x04:
+        if at + 2 > len(data):
+            fail("the extra field length runs past the end of the file")
+        xlen = struct.unpack("<H", data[at:at + 2])[0]
+        at += 2 + xlen
+    if flg & 0x08:
+        end = data.find(b"\x00", at)
+        if end < 0:
+            fail("the original name field is not terminated")
+        at = end + 1
+    comment = b""
+    if flg & 0x10:
+        end = data.find(b"\x00", at)
+        if end < 0:
+            fail("the header comment is not terminated")
+        comment = data[at:end]
+        at = end + 1
+    if flg & 0x02:
+        at += 2
+    if at > len(data):
+        fail("the gzip header runs past the end of the file")
+    return at, comment
+
+
+def tar_entries(tar):
+    """Every ustar header, with its stored checksum verified.
+
+    The checksum is the reason this is here. Readers accept a header whose
+    checksum is wrong - GNU tar warns and carries on - so a header corrupted in
+    a way that leaves the sizes intact passes a listing and fails here.
+    """
+    if len(tar) % 512:
+        fail(f"the tar stream is {len(tar)} B, which is not whole 512 B blocks")
+    if len(tar) < 1024 or tar[-1024:] != b"\x00" * 1024:
+        fail("the tar stream does not end with two zero blocks")
+
+    entries = []
+    at = 0
+    limit = len(tar) - 1024
+    while at < limit:
+        head = tar[at:at + 512]
+        if head[257:263] != b"ustar\x00":
+            fail(f"the header at {at} does not carry the ustar magic")
+
+        stored = head[148:156].split(b"\x00")[0].split(b" ")[0]
+        try:
+            claimed = int(stored, 8)
+        except ValueError:
+            fail(f"the header at {at} has an unreadable checksum field")
+        # The checksum is computed with its own eight bytes read as spaces.
+        actual = sum(head[:148]) + sum(head[156:]) + 8 * 32
+        if claimed != actual:
+            fail(f"the header at {at} claims checksum {claimed} and its bytes add up to {actual}")
+
+        name = head[:100].split(b"\x00")[0].decode("ascii", "replace")
+        raw = head[124:136].split(b"\x00")[0].strip()
+        try:
+            size = int(raw, 8) if raw else 0
+        except ValueError:
+            fail(f"the entry {name} has an unreadable size field")
+        entries.append((name, size))
+        at += 512 + (size + 511) // 512 * 512
+
+    if at != limit:
+        fail(f"the entries end at {at} and the end of archive marker starts at {limit}")
+    return entries
+
+
+def check_targz(data):
+    at, comment = gzip_header_end(data)
+
+    stream = zlib.decompressobj(-zlib.MAX_WBITS)
+    try:
+        tar = stream.decompress(data[at:]) + stream.flush()
+    except zlib.error as exc:
+        fail(f"the deflate stream does not decompress: {exc}")
+
+    # Measured 2026-08-04: four readers out of five refuse a file with anything
+    # after the stream, so the trailer has to be the last eight bytes and there
+    # has to be nothing behind it.
+    trailer = stream.unused_data
+    if len(trailer) != 8:
+        fail(f"exactly 8 B of trailer should follow the stream and {len(trailer)} B do")
+    crc, isize = struct.unpack("<II", trailer)
+    if crc != zlib.crc32(tar) & 0xFFFFFFFF:
+        fail("the CRC32 in the trailer does not match the data it covers")
+    if isize != len(tar) & 0xFFFFFFFF:
+        fail(f"the trailer says {isize} B uncompressed and the stream holds {len(tar)}")
+
+    entries = tar_entries(tar)
+    if b"\x00" in comment:
+        fail("the header comment holds a zero byte, which ends the field early")
+    ok(f"{len(entries)} entries, comment {len(comment)} B, tar {len(tar)} B")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
-          "svg": check_svg, "html": check_html}
+          "svg": check_svg, "html": check_html, "targz": check_targz}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

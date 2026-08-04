@@ -79,6 +79,7 @@ func TestStandardLibraryOutputHasNotDrifted(t *testing.T) {
 		"flate_level_1": flateAt(t, 1),
 		"flate_default": flateAt(t, flate.DefaultCompression),
 		"gzip_default":  gzipDefault(t),
+		"gzip_store":    gzipStore(t),
 		"zip_deflate":   zipDeflate(t),
 		"png_default":   pngAt(t, png.DefaultCompression),
 		"png_best":      pngAt(t, png.BestCompression),
@@ -115,6 +116,7 @@ func TestGeneratingTwiceGivesTheSameBytes(t *testing.T) {
 	}{
 		{"flate_default", func() []byte { return flateAt(t, flate.DefaultCompression) }},
 		{"gzip_default", func() []byte { return gzipDefault(t) }},
+		{"gzip_store", func() []byte { return gzipStore(t) }},
 		{"zip_deflate", func() []byte { return zipDeflate(t) }},
 		{"png_default", func() []byte { return pngAt(t, png.DefaultCompression) }},
 	}
@@ -161,6 +163,30 @@ func gzipDefault(t *testing.T) []byte {
 	t.Helper()
 	var buf bytes.Buffer
 	w := gzip.NewWriter(&buf)
+	if _, err := w.Write(payload()); err != nil {
+		t.Fatalf("gzip write: %v", err)
+	}
+	if err := w.Close(); err != nil {
+		t.Fatalf("gzip close: %v", err)
+	}
+	return buf.Bytes()
+}
+
+// gzipStore is gzip at compression level zero, which TAR.GZ writes.
+//
+// A different path through flate than the two above, and it was outside this
+// file until 2026-08-04. The four toolchain measurement that D11 rests on
+// covered flate at level 1 and at the default, gzip at the default, ZIP and
+// PNG - not the stored path. TAR.GZ puts its whole archive through it, and its
+// exact size arithmetic depends on the block framing this produces, so a drift
+// here moves every byte of that format and the sizes with it.
+func gzipStore(t *testing.T) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	w, err := gzip.NewWriterLevel(&buf, gzip.NoCompression)
+	if err != nil {
+		t.Fatalf("gzip writer: %v", err)
+	}
 	if _, err := w.Write(payload()); err != nil {
 		t.Fatalf("gzip write: %v", err)
 	}
