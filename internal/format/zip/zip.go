@@ -47,13 +47,36 @@ const (
 	// is rather than wonder.
 	fillerName = "tfg-padding.bin"
 
-	defaultEntries   = 1
-	defaultEntryFmt  = "txt"
-	defaultEntrySize = 4096
-	maxEntries       = 10000
+	defaultEntries  = 1
+	defaultEntryFmt = "txt"
+	maxEntries      = 10000
+
+	// defaultEntrySizeText is the default size of a file inside, written the
+	// way somebody writes it. The number below is derived from it rather than
+	// spelled a second time.
+	//
+	// They used to be two constants and they had drifted: the declaration said
+	// 8kb and the generator used 4096, so tfg formats printed one answer and
+	// generating without the setting gave the other. Nothing could see it,
+	// because the declaration is only read for printing. The declaration is
+	// the half consumers believe - AR9 makes the registry the place a consumer
+	// asks - so the generator was moved to it rather than the other way round.
+	defaultEntrySizeText = "8kb"
 
 	writeChunk = 32 * 1024
 )
+
+// defaultEntrySize is defaultEntrySizeText in bytes. Package variables are
+// initialised before init runs, so the registration below can rely on it.
+var defaultEntrySize = mustSize(defaultEntrySizeText)
+
+func mustSize(s string) int64 {
+	n, err := core.ParseSize(s)
+	if err != nil {
+		panic(fmt.Sprintf("zip: the default entry size %q is not a size this build can parse: %v", s, err))
+	}
+	return n
+}
 
 // A fixed timestamp on every entry. Taking one from the clock would make two
 // runs of the same recipe differ, and relying on the zero value would be an
@@ -92,7 +115,7 @@ func init() {
 			},
 			{
 				Name: "entry_size", Kind: format.PropertySize,
-				Default: "8kb",
+				Default: defaultEntrySizeText,
 				Detail:  "How big each file inside is.",
 			},
 		},

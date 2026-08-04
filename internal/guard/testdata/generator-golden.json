@@ -25,7 +25,7 @@
     },
     "zip_16kib": {
       "bytes": 16384,
-      "sha256": "7565899808dd8e6b70f903645beacc8481b9067e034a641519a68a3954bd3d31"
+      "sha256": "480b35575b9cec5bcdcdf02d066f4ad8b4b967969aecbeb2e49d7a451a14fdaf"
     },
     "zip_with_three_pdfs": {
       "bytes": 65536,
@@ -33,7 +33,7 @@
     },
     "zip_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "2e69aa3c433321bfa5866ba82324f634d9186c03ee901fca8c52a5b89d9186b5"
+      "sha256": "fae918bc961420dd675dd9a90005d319c93856d56b5c3f9aeeb1150baf41a6df"
     },
     "md_8kib": {
       "bytes": 8192,
@@ -69,7 +69,7 @@
     },
     "targz_16kib": {
       "bytes": 16384,
-      "sha256": "ed2da392da2fc46e6f4262515ca1a264bd596f02b9d3ed01e860e189cf8a46f9",
+      "sha256": "03bba423e483a3606a8d43e40ea24e98356e1e07ef474c9178cb5cdf084384a6",
       "measured_on": "2026-08-04"
     },
     "targz_with_three_pdfs": {
@@ -79,11 +79,21 @@
     },
     "targz_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "17505ccb4f1ae3bf1fb36cb3098e38bf654ac4cca6a3faf74a51c17ec807b398",
+      "sha256": "0031527861ad2753e25ab242a8415fdf1c027f0be377de948894778caa26e0eb",
       "measured_on": "2026-08-04"
     }
   },
   "remeasured": [
+    {
+      "on": "2026-08-04",
+      "why": "The files inside a container now default to 8 kB rather than 4 kB, which is what the registry always said they did. entry_size was declared as 8kb and the generator used 4096, so tfg formats printed one answer and generating without the setting gave the other - neither number wrong on its own, written in two places, and one of them drifted. The declaration is the half consumers believe, because AR9 makes the registry the place a consumer asks what a format accepts, so the generator was moved to the declaration rather than the other way round. Both values now come from one constant in each container, and the two containers use the same one, because two settings of the same name defaulting differently is a difference nobody would predict. Only the four cases that leave entry_size unset moved. Sizes are unchanged - the archives hold the same number of files and those files are bigger. Guarded from now on by TestADeclaredDefaultIsTheOneTheFormatUses, which generates with each declared default left out and written out and compares the bytes.",
+      "files": [
+        "zip_16kib",
+        "zip_past_the_comment_limit",
+        "targz_16kib",
+        "targz_past_the_comment_limit"
+      ]
+    },
     {
       "on": "2026-08-02",
       "why": "Two defects were fixed that no guard could see, both found by looking at generated files rather than at code. Record numbers skipped one before the last record, because the filling loop builds a record to measure it, throws it away, and the builder had already counted it - that moved csv, json and xml. The SVG label was unreadable, because the closing label shared its baseline and shapes reached the bottom edge - that moved svg. Both now have guards, and both guards are proven by mutation.",

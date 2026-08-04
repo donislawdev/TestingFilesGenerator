@@ -14,6 +14,17 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: the files inside a ZIP or a TAR.GZ now default to 8 kB, not 4 kB.**
+  That is the size `tfg formats zip` has always printed. The declaration said
+  8kb and the generator used 4096, so reading the tool and running it gave two
+  different answers, and the one people read is the one they plan around. Only
+  archives generated without `--set entry_size=` change, they hold the same
+  number of files and those files are bigger, and the archive itself is still
+  exactly the size that was asked for. Say `--set entry_size=4kb` to keep what
+  you had.
+
 ### Fixed
 
 - **Two targets whose names differ only in how an accent is spelled are now

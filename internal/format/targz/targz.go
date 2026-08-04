@@ -81,9 +81,13 @@ const (
 	// defaultEntrySizeText is the default size of a file inside, written the
 	// way somebody would write it. The number below is derived from it rather
 	// than written a second time, because the declaration is what tfg formats
-	// prints and nothing makes a printed default agree with the one the code
-	// uses. They already disagree in ZIP - it prints 8kb and uses 4096.
-	defaultEntrySizeText = "4kb"
+	// prints and there is no other mechanism making a printed default agree
+	// with the one the code uses.
+	//
+	// The same value as ZIP on purpose. Two containers taking a setting of the
+	// same name and defaulting it differently is a difference nobody would
+	// predict and nothing would explain.
+	defaultEntrySizeText = "8kb"
 
 	writeChunk = 32 * 1024
 )
