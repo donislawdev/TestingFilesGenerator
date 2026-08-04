@@ -51,7 +51,17 @@ type Target struct {
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string
 	ExpectedReason string
-	Properties     map[string]string
+	// Group names the class of case these files belong to, and it reaches the
+	// manifest so a test can assert about a whole class at once rather than
+	// file by file - "every file in extension-content-mismatch was rejected".
+	//
+	// Presets are what fill it in practice, and it is a plain recipe key
+	// rather than something a preset passes around the recipe on purpose: PR5
+	// says an ejected preset is an ordinary recipe, and a field only a preset
+	// could set would make the ejected copy produce something different from
+	// the preset it came from.
+	Group      string
+	Properties map[string]string
 	// Contains is what a container holds, one entry per group.
 	Contains []Content
 	// SizeFromContents is set when contains was given without a size, so the

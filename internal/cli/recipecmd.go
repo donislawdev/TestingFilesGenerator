@@ -121,13 +121,7 @@ func validate(args []string, out, errOut io.Writer) int {
 	// this command.
 	var targets []engine.Target
 	for _, t := range rec.Targets {
-		targets = append(targets, engine.Target{
-			ID: t.ID, Format: t.Format, Sizes: t.Sizes,
-			Contains: contentsOf(t), SizeFromContents: t.SizeFromContents,
-			SizeIsRange: t.SizeIsRange, SizeMin: t.SizeMin, SizeMax: t.SizeMax,
-			NameTmpl: t.Name, Label: t.Label, Expected: t.Expected,
-			ExpectedReason: t.ExpectedReason, Properties: t.Properties,
-		})
+		targets = append(targets, engineTarget(t, t.Label))
 	}
 	planned, err := engine.Plan(targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
 	if err != nil {

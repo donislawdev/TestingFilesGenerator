@@ -14,6 +14,27 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **`group` in a recipe target, and in the manifest beside every file it
+  produced.** It names the class of case a file belongs to, so a test can
+  assert about a whole class at once - "every file in
+  extension-content-mismatch was rejected" - instead of naming files one by
+  one. The manifest has described the field since it was written and nothing
+  filled it. A target that names no group has no `group` in its entries at
+  all, rather than an empty one, so "no class" and "a class called nothing"
+  stay different.
+
+### Fixed
+
+- **`tfg validate` no longer refuses a recipe that `tfg generate` accepts.** A
+  boundary set names its three files `under_limit`, `at_limit` and
+  `over_limit`, and `validate` was checking for collisions against `0001`,
+  `0002` and `0003` instead. A recipe holding a boundary set beside a target
+  named `<id>_0001.<ext>` was rejected while the run it described was fine.
+  This is the command meant to sit in a pre-commit hook, where a false alarm
+  blocks work that was never wrong.
+
 ### Changed
 
 - **BREAKING: the files inside a ZIP or a TAR.GZ now default to 8 kB, not 4 kB.**

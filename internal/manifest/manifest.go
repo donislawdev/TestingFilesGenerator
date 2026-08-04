@@ -119,6 +119,12 @@ type File struct {
 
 	Expected Expected `json:"expected"`
 
+	// Group is the class of case this file belongs to, from the recipe or from
+	// the preset that produced it. Left out when nothing named one, rather
+	// than written as an empty string - a consumer reading it can then tell
+	// "no class" from "a class called nothing".
+	Group string `json:"group,omitempty"`
+
 	LabelEmbedded bool `json:"label_embedded"`
 
 	// Notes are the things that must not be swallowed - a label that did not

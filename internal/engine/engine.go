@@ -71,7 +71,10 @@ type Target struct {
 	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
 	Expected       string
 	ExpectedReason string
-	Properties     map[string]string
+	// Group names the class of case these files belong to and reaches the
+	// manifest, so a test can assert about a whole class at once.
+	Group      string
+	Properties map[string]string
 }
 
 // drawSizes settles the size of every file of a range target.
@@ -730,6 +733,7 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		LabelEmbedded: label,
 		Notes:         notes,
 		Expected:      expectationFor(f),
+		Group:         f.Target.Group,
 	}
 
 	if failure != nil {

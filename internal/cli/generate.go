@@ -162,22 +162,7 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 		if given["clean"] {
 			label = !g.clean
 		}
-		targets = append(targets, engine.Target{
-			ID:               t.ID,
-			Format:           t.Format,
-			Sizes:            t.Sizes,
-			Contains:         contentsOf(t),
-			SizeFromContents: t.SizeFromContents,
-			SizeIsRange:      t.SizeIsRange,
-			SizeMin:          t.SizeMin,
-			SizeMax:          t.SizeMax,
-			BoundaryLimit:    t.BoundaryLimit,
-			NameTmpl:         t.Name,
-			Label:            label,
-			Expected:         t.Expected,
-			ExpectedReason:   t.ExpectedReason,
-			Properties:       t.Properties,
-		})
+		targets = append(targets, engineTarget(t, label))
 	}
 	if given["clean"] {
 		opt.Overrides["label"] = manifest.Override{FromRecipe: "per target", FromFlag: !g.clean}
@@ -435,6 +420,41 @@ func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOu
 			}
 		}
 
+	}
+}
+
+// engineTarget turns one recipe target into one engine target.
+//
+// One function rather than one per command, and that is a repair. There were
+// two, in generate and in validate, and they had drifted: validate left out
+// BoundaryLimit, which decides what the three files of a boundary set are
+// called. So validate planned names that generate never produces, and the
+// collision check ran against the wrong ones in both directions.
+//
+// Measured on 2026-08-04, on a recipe holding a boundary set beside a target
+// named cap_0001.txt: validate refused it with exit 3 and generate wrote four
+// files with no collision at all. That command exists to sit in a pre-commit
+// hook, so a false alarm there blocks a commit that was never wrong.
+//
+// The label is the one thing the caller decides, because generate honours
+// --clean over what the recipe says and validate has no flag to honour.
+func engineTarget(t recipe.Target, label bool) engine.Target {
+	return engine.Target{
+		ID:               t.ID,
+		Format:           t.Format,
+		Sizes:            t.Sizes,
+		Contains:         contentsOf(t),
+		SizeFromContents: t.SizeFromContents,
+		SizeIsRange:      t.SizeIsRange,
+		SizeMin:          t.SizeMin,
+		SizeMax:          t.SizeMax,
+		BoundaryLimit:    t.BoundaryLimit,
+		NameTmpl:         t.Name,
+		Label:            label,
+		Expected:         t.Expected,
+		ExpectedReason:   t.ExpectedReason,
+		Group:            t.Group,
+		Properties:       t.Properties,
 	}
 }
 

@@ -75,6 +75,7 @@ var notYetReachable = []string{
 	"property:zip.entry_format",
 	"property:zip.entry_size",
 	"recipe:allow_nondeterministic",
+	"recipe:targets.group",
 	"recipe:defaults",
 	"recipe:defaults.fill",
 	"recipe:defaults.label",

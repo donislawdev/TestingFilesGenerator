@@ -120,6 +120,7 @@ type rawTarget struct {
 
 	Properties map[string]scalar `yaml:"properties"`
 	Expected   any               `yaml:"expected"`
+	Group      *string           `yaml:"group"`
 
 	Boundary  *scalar             `yaml:"boundary"`
 	SizeRange *scalar             `yaml:"size-range"`
@@ -187,6 +188,9 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	}
 
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
+	if rt.Group != nil {
+		t.Group = *rt.Group
+	}
 	t.Properties = properties(p, where, rt.Properties)
 	return t
 }
