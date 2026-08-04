@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -142,6 +143,10 @@ func TestAManifestThatCannotReachStandardOutputIsNotASuccess(t *testing.T) {
 // Every job in the workflow has a ceiling on how long it may run. Without one
 // a hung job holds a runner until the GitHub default of six hours, and the
 // fuzzing job is the one most able to hang.
+// topLevelKey matches a key of the workflow itself, such as "on:" or "env:".
+// Anything else in column one is content somebody wrote inside a step.
+var topLevelKey = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*:`)
+
 func TestEveryCIJobHasACeilingOnItsTime(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join("..", "..", ".github", "workflows", "ci.yml"))
 	if err != nil {
@@ -162,7 +167,14 @@ func TestEveryCIJobHasACeilingOnItsTime(t *testing.T) {
 			inJobs = true
 			continue
 		}
-		if inJobs && len(line) > 0 && !strings.HasPrefix(line, " ") {
+		// Leaving the block takes a top level key, not merely a line starting
+		// in column one. A shell string inside a "run:" step can carry those,
+		// and one did: the dependency gate listed its expected modules that
+		// way, this scan called the jobs block finished at the first of them,
+		// and from then on it counted one job instead of seven. Seven ceilings
+		// against one job is not fewer, so the guard was green whatever it was
+		// given - found by mutation on 2026-08-04, not by reading.
+		if inJobs && len(line) > 0 && !strings.HasPrefix(line, " ") && topLevelKey.MatchString(line) {
 			inJobs = false
 		}
 		trimmed := strings.TrimSpace(line)

@@ -33,6 +33,8 @@ import (
 // shorter.
 var notProvenByMutation = map[string]bool{
 	"TestAFreshRunIntoAnEmptyDirectoryStillWorks":                     true,
+	"TestCleanupNeverReachesOutsideTheDirectory":                      true,
+	"TestVerifyNeverReachesOutsideTheDirectory":                       true,
 	"TestAKeyThisBuildCannotHonourSaysSoRatherThanBeingIgnored":       true,
 	"TestARunTooBigForTheDiskIsRefusedBeforeTheFirstByte":             true,
 	"TestASizeThatIsNotAWholeByteIsRefused":                           true,

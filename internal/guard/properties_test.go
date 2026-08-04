@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"testing"
@@ -134,6 +135,48 @@ func TestTheMachineReadableListCarriesTheWholeDeclaration(t *testing.T) {
 		if !strings.Contains(stdout, want) {
 			t.Errorf("the JSON for png has no %s, so a window cannot draw a field from it:\n%s",
 				want, stdout)
+		}
+	}
+
+	// The keys being present is the easy half, and until 2026-08-04 it was the
+	// only half. Emptying every value left all five keys in place and this
+	// guard green, so a window would have drawn fields with no unit, no
+	// default and no help text and nothing would have said so.
+	//
+	// Compared against the registry rather than against words written here.
+	// A second copy of the expected values would be a second place to keep up
+	// to date, and this test exists to find the two disagreeing.
+	d, err := format.Get("png")
+	if err != nil {
+		t.Fatalf("png is not registered: %v", err)
+	}
+	var list []struct {
+		Properties []struct {
+			Name, Kind, Unit, Default, Detail string
+			Choices                           []string
+		} `json:"properties"`
+	}
+	if err := json.Unmarshal([]byte(stdout), &list); err != nil {
+		t.Fatalf("the machine readable list is not JSON: %v\n%s", err, stdout)
+	}
+	if len(list) != 1 {
+		t.Fatalf("expected one format, got %d", len(list))
+	}
+	printed := map[string]string{}
+	for _, p := range list[0].Properties {
+		printed[p.Name] = p.Unit + "\x00" + p.Default + "\x00" + p.Detail
+	}
+	if len(d.Properties) == 0 {
+		t.Fatal("png declares no properties, so this half of the guard checks nothing")
+	}
+	for _, want := range d.Properties {
+		got, ok := printed[want.Name]
+		if !ok {
+			t.Errorf("the declared property %q is not in the machine readable list", want.Name)
+			continue
+		}
+		if declared := want.Unit + "\x00" + want.Default + "\x00" + want.Detail; got != declared {
+			t.Errorf("property %q is printed as %q and declared as %q", want.Name, got, declared)
 		}
 	}
 }

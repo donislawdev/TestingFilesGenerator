@@ -377,6 +377,40 @@ targets:
 	if bytes.HasPrefix(after, []byte(mark)) {
 		t.Error("-w left the byte order mark in place")
 	}
+
+	// A mark at the front is an encoding artefact and comes off. The same
+	// character inside a value is not one - there it is a zero width no break
+	// space somebody put in a name or an id, and taking it out would hand back
+	// a different word than the recipe asked for. That is the quiet name change
+	// this project refuses everywhere else.
+	//
+	// Without this case the difference between taking the mark off the front
+	// and deleting it wherever it appears is invisible, and the guard passes on
+	// either. Measured 2026-08-04: the mark inside an id survives a settle.
+	//
+	// Both marks, and that is not decoration. The stripping runs while the text
+	// still starts with one, so a recipe carrying only the inner mark never
+	// reaches the code being tested - a first attempt at this case used the
+	// inner mark alone and the mutation walked straight past it.
+	inner := writeRecipe(t, t.TempDir(), mark+`version: 1
+targets:
+  - id: a`+mark+`b
+    format: txt
+    size: 1kb
+`)
+	if code, _, errOut := run(t, "validate", inner); code != cli.ExitOK {
+		t.Fatalf("an id holding the mark was refused, exit %d:\n%s", code, errOut)
+	}
+	if code, _, errOut := run(t, "recipe", "fmt", "-w", inner); code != cli.ExitOK {
+		t.Fatalf("settling a recipe whose id holds the mark gave %d:\n%s", code, errOut)
+	}
+	settled, err := os.ReadFile(inner)
+	if err != nil {
+		t.Fatalf("reading back: %v", err)
+	}
+	if !bytes.Contains(settled, []byte(mark)) {
+		t.Errorf("the mark inside the id was removed, so the target is now called something else:\n%s", settled)
+	}
 	if code, _, _ := run(t, "recipe", "fmt", "--check", path); code != cli.ExitOK {
 		t.Error("the file the formatter just wrote is still not settled")
 	}

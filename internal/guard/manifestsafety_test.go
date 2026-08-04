@@ -83,6 +83,16 @@ func TestASecondRunNeverWritesOverAnEarlierManifest(t *testing.T) {
 			if !errors.As(runErr, &collision) {
 				t.Errorf("refused with %T, expected a CollisionError so the caller answers with the right exit code", runErr)
 			}
+			// A refusal about the manifest has to name the manifest that is
+			// really there, and until 2026-08-04 nothing here asked. Two layers
+			// protect this name and each covers the other, so switching off
+			// either one left every assertion below green - and so did changing
+			// which name the run protects, because then the run refused over a
+			// file of its own making and looked just as correct from here.
+			if collision != nil && collision.Manifest && collision.Path != manifestOf(dir) {
+				t.Errorf("the refusal names %s, and the manifest an earlier run left is %s - so the run stopped over something else",
+					collision.Path, manifestOf(dir))
+			}
 			if res.Started {
 				t.Error("the run reported that it started, so the caller would write a manifest for it")
 			}
