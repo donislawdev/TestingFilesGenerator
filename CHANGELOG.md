@@ -86,7 +86,26 @@ because it turns other people's test suites red.
   the same one the recipe uses, and a value that is not on it is refused with
   the list to pick from.
 
+### Security
+
+- **A recipe that is not UTF-8 is refused rather than read as best it can be.**
+  One saved as cp1250 with accented letters in a file name was accepted, and
+  the file arrived named with replacement characters instead. The manifest
+  recorded the same mangled name, so nothing downstream noticed that the name
+  was not the one that had been asked for.
+
 ### Breaking
+
+- **A file name may not contain a colon, and two names may not differ only in
+  case.** Both were accepted before and both lost a file. Two targets asking
+  for `report.txt` and `REPORT.TXT` ended with 0, left one file on the disk and
+  described two in the manifest, because NTFS, APFS and exFAT treat those as
+  one name. A name such as `AB:c.txt` on Windows names a data stream rather
+  than a file: the run reported the file as not produced and still left an
+  empty `AB` behind, in nobody's manifest and beyond the reach of cleanup. Both
+  are refused on every system, including the ones where they would have worked,
+  because a recipe that quietly loses a file on somebody else's machine is
+  worse than one refused on both. A recipe using either will now be refused.
 
 - **PDF bytes have changed.** The text on a page is laid out to a fixed line
   width now. It used to be eight to thirteen drawn words of four to nine
@@ -99,6 +118,9 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A directory you cannot write in says so.** It reported that the manifest
+  already existed and was the only record of an earlier run, about an empty
+  directory, and followed that with a second message for the same fault.
 - **A rule binding two settings is declared rather than described.** PNG allows
   each side of a picture up to 20000 pixels and the two multiplied up to 40
   megapixels, and that second rule lived in the generator and in a sentence -
