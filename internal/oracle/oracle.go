@@ -297,8 +297,26 @@ run = subprocess.run([exe, "--export-type=png", "--export-filename=" + str(out),
 # as before. The filter is narrow on purpose: Inkscape's own objections to a
 # file do not carry these prefixes, and the check below is proven by feeding
 # this script a malformed drawing.
+# Widened on 2026-08-04, after this reddened CI on every run for a day. The
+# prefixes below were not enough: the runner also produces
+#
+#   ** (inkscape:3815): WARNING **: Failed to wrap object of type
+#   'GtkRecentManager'. Hint: this error is commonly caused by failing to
+#   call a library init() function.
+#
+# which carries none of them, because the type name has no hyphen after Gtk.
+# It is the same kind of complaint - about how the machine is set up, not
+# about the file - and it took the SVG oracle down in seven places at once.
+#
+# Matched by its own sentence rather than by relaxing the rule to "ignore
+# warnings", which would throw away the thing this checker is for. Anything
+# Inkscape says about the drawing itself still counts, and the test below
+# feeds it a drawing that paints nothing to prove that is still true.
+NOT_ABOUT_THE_FILE = ("GLib-", "Gtk-", "GdkPixbuf-", "Failed to wrap object of type")
+
+
 def about_the_drawing(line):
-    return "GLib-" not in line and "Gtk-" not in line and "GdkPixbuf-" not in line
+    return not any(marker in line for marker in NOT_ABOUT_THE_FILE)
 
 noise = "\n".join(l for l in (run.stderr or "").splitlines() if about_the_drawing(l))
 for word in ("error", "Error", "ERROR", "unsupported", "WARNING"):

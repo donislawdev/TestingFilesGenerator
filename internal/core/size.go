@@ -254,20 +254,23 @@ func ParseBoundary(s string) (int64, error) {
 		int64(n*float64(decimal)), binary)
 }
 
-// BoundaryTooLarge is a limit with no room above it for the third file.
+// ErrBoundaryTooLarge is a limit with no room above it for the third file.
 //
 // Measured on 2026-08-03: --boundary 9223372036854775807 wrapped the file above
 // the limit to the smallest number there is, and the refusal that followed said
 // "TXT cannot be smaller than 0 B. Requested: -9223372036854775808 B" - an
 // answer about the bottom of the range to a question about the top of it.
-var BoundaryTooLarge = errors.New(
+var ErrBoundaryTooLarge = errors.New(
 	"a boundary set needs one size above the limit, and there is no number above this one. " +
 		"Use a limit at least one byte below the largest, or check that the number is the one you meant")
 
 // BoundarySizes turns a limit into the three sizes a boundary set means.
 func BoundarySizes(limit int64) ([]int64, error) {
-	if limit >= math.MaxInt64 {
-		return nil, BoundaryTooLarge
+	// Equality rather than "at or above", because nothing of this type sits
+	// above the largest value it can hold. The wider comparison read as the
+	// more careful one and its upper half was unreachable.
+	if limit == math.MaxInt64 {
+		return nil, ErrBoundaryTooLarge
 	}
 	return []int64{limit - 1, limit, limit + 1}, nil
 }

@@ -87,7 +87,9 @@ func TestCleanupDoesNotFollowAJunctionOutOfTheDirectory(t *testing.T) {
 	out, victim := junctionEscape(t)
 	mf := escapingManifest(t, out, "jn/VICTIM.txt", 21)
 
-	code, stdout, _ := run(t, "cleanup", mf)
+	// Only what the preview printed matters here. Its exit code is checked by
+	// the run below, which is the one that would do the damage.
+	_, stdout, _ := run(t, "cleanup", mf)
 	if strings.Contains(stdout, "remove") {
 		t.Errorf("the preview offered to remove a path that leaves through a junction:\n%s", stdout)
 	}
@@ -116,13 +118,13 @@ func TestCleanupDoesNotFollowALinkOutOfTheDirectory(t *testing.T) {
 	mf := escapingManifest(t, out, "jn/VICTIM.txt", 21)
 
 	// The preview first. Offering to remove it is already the defect.
-	code, stdout, errOut := run(t, "cleanup", mf)
+	_, stdout, _ := run(t, "cleanup", mf)
 	if strings.Contains(stdout, "remove") {
 		t.Errorf("the preview offered to remove a path that leaves the directory through a link:\n%s", stdout)
 	}
 	victimSurvives(t, victim)
 
-	code, _, errOut = run(t, "cleanup", mf, "--yes", "--force")
+	code, _, errOut := run(t, "cleanup", mf, "--yes", "--force")
 	victimSurvives(t, victim)
 
 	if code != cli.ExitIO {
