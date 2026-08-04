@@ -124,6 +124,74 @@ func TestTheFormatDocumentAgreesWithTheRegistry(t *testing.T) {
 	}
 }
 
+// checklistRow matches a row of the fidelity checklist, which names its format
+// in bold in the first cell.
+var checklistRow = regexp.MustCompile(`(?m)^\|\s*\*\*([^*|]+)\*\*\s*\|`)
+
+// TestEveryFormatHasARowInTheFidelityChecklist keeps the one list a person
+// fills in from falling behind the registry.
+//
+// D4 asks every format to declare a fidelity level and to record the result of
+// opening it in a real application. The checklist in MVP-FORMATS.md section 6.1
+// is that record, and it is the only guard in this project that a machine
+// cannot stand in for - automatic checks answer whether a file parses, and this
+// answers whether somebody watched it open.
+//
+// The check above asks whether the document mentions a format anywhere. A
+// format can satisfy that from its own card and still be missing here, which
+// would leave it looking finished while the one human step was never done.
+//
+// The document lives outside the repository, so this skips loudly on a fresh
+// checkout, the same way its neighbour does.
+func TestEveryFormatHasARowInTheFidelityChecklist(t *testing.T) {
+	root := repoRoot(t)
+	path := filepath.Join(root, "docs", "MVP-FORMATS.md")
+
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Logf("SKIPPED: docs/MVP-FORMATS.md is not here, so nothing was compared. "+
+			"The internal documents are excluded from the repository, so this check only runs on a machine that has them. (%v)", err)
+		return
+	}
+
+	section, ok := fidelityChecklist(string(body))
+	if !ok {
+		t.Fatal("docs/MVP-FORMATS.md has no fidelity checklist section - this guard would pass without checking anything")
+	}
+
+	listed := map[string]bool{}
+	for _, m := range checklistRow.FindAllStringSubmatch(section, -1) {
+		// The checklist names formats the way a person writes them, so TAR.GZ
+		// stands for the id targz. Dots go, case folds, and the two meet.
+		listed[strings.ToLower(strings.ReplaceAll(strings.TrimSpace(m[1]), ".", ""))] = true
+	}
+	if len(listed) == 0 {
+		t.Fatal("the fidelity checklist has no rows - this guard would pass without checking anything")
+	}
+
+	for _, d := range format.All() {
+		if !listed[strings.ToLower(d.ID)] {
+			t.Errorf("%s is implemented and the fidelity checklist in docs/MVP-FORMATS.md section 6.1 "+
+				"has no row for it. That list is the record of somebody opening the file, and it is the "+
+				"one check nothing automatic replaces", d.ID)
+		}
+	}
+}
+
+// fidelityChecklist returns the section 6.1 of the format document, so rows of
+// the other tables in the file cannot be mistaken for checklist entries.
+func fidelityChecklist(text string) (string, bool) {
+	start := strings.Index(text, "## 6.1")
+	if start < 0 {
+		return "", false
+	}
+	rest := text[start+len("## 6.1"):]
+	if end := strings.Index(rest, "\n## "); end >= 0 {
+		return rest[:end], true
+	}
+	return rest, true
+}
+
 // statedMinimum reads a line of the shape "minimum ... 1234 B" from the
 // implementation note of one format, when the document carries one.
 var minimumLine = regexp.MustCompile(`(?i)najmniejszy\s+` + "`?" + `?(\w+)` + "`?" + `?[^\n]*?(\d[\d\s]*)\s*B`)

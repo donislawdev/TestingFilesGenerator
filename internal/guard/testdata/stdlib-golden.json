@@ -19,7 +19,7 @@
       "bytes": 65569,
       "sha256": "324638839c7230e01c38c9c21925c62dfecbeea820138249c7f70d4e505ee52b",
       "measured_on": "2026-08-04",
-      "why": "TAR.GZ writes every archive through this path, and its exact size arithmetic depends on the stored block framing it produces. Confirmed identical on go1.26.5 windows/amd64 and go1.26.5 linux/amd64. NOT yet checked across the four toolchains the other paths here were measured against - that sweep predates this entry."
+      "why": "TAR.GZ writes every archive through this path, and its exact size arithmetic depends on the stored block framing it produces. Confirmed identical on go1.26.5 windows/amd64 and go1.26.5 linux/amd64, and byte for byte across six toolchains - go1.21.13, go1.22.12, go1.23.12, go1.24.0, go1.25.0 and go1.26.5 - by tools/toolchain-sweep.py, which runs the same inputs in a standalone module because go.mod here requires 1.26.5 and an older toolchain will not build it."
     },
     "zip_deflate": {
       "bytes": 728,

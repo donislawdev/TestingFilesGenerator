@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 )
 
@@ -89,6 +90,50 @@ func goldenCases() map[string]engine.Target {
 		// entry is aligned to 512 bytes. This is the case where the two stages
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
+	}
+}
+
+// TestEveryFormatHasAGoldenValue asks whether the pinning below covers what
+// this build actually registers.
+//
+// The check inside that test compares two counts - how many cases this file
+// lists against how many the golden file records - and catches one of the pair
+// being changed alone. It says nothing about whether a format appears at all,
+// because the cases are a hand written map and nothing walks the registry.
+//
+// So a format could be added, pass every guard in this package, and ship with
+// its bytes pinned nowhere at all. D11 says those bytes do not move inside a
+// major version, and for that format the promise would quietly be empty.
+//
+// Found on 2026-08-04 while adding the thirteenth format: its three cases went
+// in because the pattern says to add them, not because anything asked. That is
+// the same shape this project keeps finding - a guard that checks the rule was
+// followed where it was followed, and is silent where it was not.
+func TestEveryFormatHasAGoldenValue(t *testing.T) {
+	descriptors := format.All()
+	if len(descriptors) == 0 {
+		t.Fatal("no format is registered - this guard would pass without checking anything")
+	}
+
+	covered := map[string]bool{}
+	for _, target := range goldenCases() {
+		covered[target.Format] = true
+	}
+
+	for _, d := range descriptors {
+		if !covered[d.ID] {
+			t.Errorf("%s is registered and no golden case produces one, so its bytes are pinned "+
+				"nowhere and D11 does not reach it. Add a case to goldenCases and record what it measures",
+				d.ID)
+		}
+	}
+
+	// The other direction, so a case naming a format this build does not have
+	// is a mistake rather than a line nobody reads.
+	for id := range covered {
+		if _, err := format.Get(id); err != nil {
+			t.Errorf("a golden case names the format %q and nothing registers it", id)
+		}
 	}
 }
 
