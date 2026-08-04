@@ -14,6 +14,44 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Two targets whose names differ only in how an accent is spelled are now
+  refused.** An accented letter can be written as one character or as the plain
+  letter followed by its accent. The two print identically and are different
+  bytes, and macOS stores both under one name. A recipe asking for both used to
+  end with 0, leave one file on the disk, and write a manifest describing two -
+  and `tfg verify` then failed on that same output. A pair like this is refused
+  on every system, the way names differing only in case already were, because a
+  recipe is meant to travel between machines and one that loses a file on
+  somebody else's is worse than one refused on both. An accented name on its
+  own is ordinary input and keeps working.
+
+### Added
+
+- **`tfg license`.** Prints the copyright line, the licence, the absence of a
+  warranty, and the one thing somebody actually needs to know before putting a
+  generator into a closed source product: the licence covers this tool and not
+  the files it produces. `tfg licence` and the flag spellings do the same thing. It is a
+  question, so it answers on standard output and ends with 0.
+- **README says what is inside a generated file.** Everything is synthesised
+  from a seed and describes nobody, nothing is copied in from any dataset, and
+  a generated fixture carries no personal data. It also says the two things
+  that are not promised.
+- **`THIRD-PARTY-NOTICES.md`.** The tool links code from the Go standard
+  library, `github.com/goccy/go-yaml` and `golang.org/x/text`. Their licences
+  ask that their copyright notices travel with any copy, a built binary
+  included, so the notices now live in the repository and belong with any
+  release. Every one of them is compatible with the GPL. Building from source
+  is unaffected.
+
+### Changed
+
+- **A second dependency, `golang.org/x/text`, is now part of the build.** It
+  supplies the Unicode normalisation behind the name check above. It is BSD
+  licensed, and it adds about 131 KB to the binary. Nothing about the bytes of
+  a generated file changes.
+
 ### Security
 
 - **`cleanup` and `verify` no longer follow a link out of the directory.** A
