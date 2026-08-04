@@ -9,11 +9,12 @@ test suite.
 
 Runs entirely on your machine. No account, no cloud, no network calls.
 
-> **Status: early development.** Seven formats work end to end - text,
-> Markdown, access logs, PNG, PDF, ZIP and WAV. Each one is produced at an
-> exact size and checked against independent tools. Runs can come from a
-> recipe file or from flags, and an archive can say what it holds. `verify`
-> and `cleanup` work. The desktop window is not built.
+> **Status: early development.** Thirteen formats work end to end - text,
+> Markdown, access logs, CSV, JSON, XML, HTML, SVG, PNG, PDF, ZIP, TAR.GZ and
+> WAV. Each one is produced at an exact size and checked against independent
+> tools. Runs can come from a recipe file or from flags, and an archive can say
+> what it holds - and what it holds is real files of the other formats, not
+> random bytes. `verify` and `cleanup` work. The desktop window is not built.
 
 ## Try it
 
