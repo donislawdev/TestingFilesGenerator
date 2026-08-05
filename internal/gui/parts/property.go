@@ -51,13 +51,27 @@ func FromProperty(p format.Property) PropertyField {
 	}
 }
 
+// An empty control means "not stated", and no field is filled in with its
+// declared default. That is a correction rather than a preference, and it was
+// found by a guard rather than by reading.
+//
+// Filling the default in makes "I did not state this" impossible to express
+// from a window, because every field arrives at the engine carrying a value.
+// For a format setting that is harmless - the value equals the default either
+// way. For a preset parameter it destroys a contract: the manifest records
+// WHICH numbers were ours through defaulted, untouchable rule 5, and a window
+// that states everything would never mark anything. Measured on 2026-08-05 by
+// running one preset from both surfaces: the command line recorded
+// defaulted: [spread] and the window recorded nothing.
+//
+// What the default is stays visible, in the sentence under the field - Allowed
+// ends with ", default 10mb" - and in the placeholder.
+
 // choiceField is a closed set, so it is a list rather than a box to type in.
 // Nobody can misspell a value that is not typed.
 func choiceField(p format.Property) PropertyField {
 	sel := widget.NewSelect(p.Choices, nil)
-	if p.Default != "" {
-		sel.SetSelected(p.Default)
-	}
+	sel.PlaceHolder = leftAlone(p)
 	return PropertyField{
 		Name:    p.Name,
 		Control: sel,
@@ -65,6 +79,9 @@ func choiceField(p format.Property) PropertyField {
 	}
 }
 
+// boolField is the one kind that cannot be left unstated. A switch has two
+// positions and no third one for silence, so it starts where the declaration
+// says and always sends what it shows.
 func boolField(p format.Property) PropertyField {
 	check := widget.NewCheck("", nil)
 	check.SetChecked(p.Default == "true")
@@ -78,24 +95,23 @@ func boolField(p format.Property) PropertyField {
 // textField covers a number, a size and free text alike, because all three are
 // a box somebody types into and the difference between them is what the engine
 // accepts rather than what the box does.
-//
-// The declared default is filled in rather than shown as a placeholder, when
-// there is one. A placeholder disappears the moment somebody types, so a person
-// who wanted the default back has nothing to type - while a declaration saying
-// nothing means the format works the value out from the size, and that field
-// stays empty on purpose.
 func textField(p format.Property) PropertyField {
 	entry := widget.NewEntry()
-	if p.Default != "" {
-		entry.SetText(p.Default)
-	} else {
-		entry.SetPlaceHolder("worked out from the size")
-	}
+	entry.SetPlaceHolder(leftAlone(p))
 	return PropertyField{
 		Name:    p.Name,
 		Control: entry,
 		Value:   func() string { return entry.Text },
 	}
+}
+
+// leftAlone is what happens if this field is not touched. A declaration with no
+// default means the format works the value out from the size it was asked for.
+func leftAlone(p format.Property) string {
+	if p.Default == "" {
+		return "worked out from the size"
+	}
+	return "left empty: " + p.Default
 }
 
 // PropertyFields draws every field one format declares, in the order it

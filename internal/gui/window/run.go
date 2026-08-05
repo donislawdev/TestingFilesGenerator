@@ -9,9 +9,12 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
 // The one place in the window where work happens off the interface thread, and
@@ -54,64 +57,84 @@ func (t *throttle) allow(now time.Time) bool {
 	return true
 }
 
-// settle turns what is on the screen into what the engine takes.
+// settler is how a screen says what it wants produced.
 //
-// It parses and it does not judge. Every rule about whether the numbers make
-// sense - the minimum of the format, the ceiling on files, a name that is a
-// path, two files heading for one name - belongs to the engine and is asked of
-// it. That is G1, and it is why the window cannot come to accept something the
-// command line refuses.
-func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
-	var none engine.Options
+// It is the only thing that differs between the screens: one builds a single
+// target from its fields, the other expands a named preset. Everything after it
+// - the plan, the preview, the run, the bar, cancelling, the manifest - is the
+// same work and lives once, in the runner below.
+type settler func() ([]engine.Target, engine.Options, error)
 
-	bytesWanted, err := core.ParseSize(g.size.Text)
-	if err != nil {
-		return nil, none, err
-	}
-	count, err := wholeNumber("how many", g.count.Text)
-	if err != nil {
-		return nil, none, err
-	}
-	seed, err := wholeNumber("seed", g.seed.Text)
-	if err != nil {
-		return nil, none, err
-	}
+// runner is the half of a screen that runs the engine and shows how it is
+// going. Both screens have one.
+//
+// Written as a shared piece the moment there was a second screen rather than
+// after the two had drifted. The parts that would have drifted are named in G7
+// and are exactly the parts nobody would think to compare: whether closing the
+// window waits, whether a preview writes, whether a manifest is saved when the
+// run was cut short.
+type runner struct {
+	settle settler
 
-	// Asked before the list is built, because building it is the failure. The
-	// same ceiling and the same sentence the command line uses, from core, so
-	// there is no second opinion about how many files is too many. A count past
-	// it used to reach make and panic with a stack trace.
-	if count > core.MaxFilesPerRun {
-		return nil, none, fmt.Errorf("this run asks for %d files - %s", count, core.ErrTooManyFiles)
-	}
+	previewBtn  *widget.Button
+	generateBtn *widget.Button
+	cancelBtn   *widget.Button
 
-	return []engine.Target{{
-			ID:         g.id.Text,
-			Format:     g.formatPick.Selected,
-			Sizes:      engine.Uniform(int(count), bytesWanted),
-			NameTmpl:   g.name.Text,
-			Label:      g.label.Checked,
-			Properties: g.properties(),
-		}}, engine.Options{
-			OutDir:       g.outDir.Text,
-			Seed:         seed,
-			Command:      "tfg-gui",
-			ManifestName: engine.DefaultManifestName,
-		}, nil
+	bar     *widget.ProgressBar
+	status  *widget.Label
+	problem *parts.ErrorArea
+
+	// stop ends the run in progress and waits for it. Nil while nothing is
+	// running, and only ever touched on the interface thread.
+	stop func()
+
+	// notes is what settling had to say out loud, set by settle rather than
+	// worked out here. Silence is banned: a set built around a limit we
+	// invented carries expectations that read exactly like a set built around
+	// the real one, so the run says which number it made up. The command line
+	// prints these as "note:" lines and this is the window's half of it.
+	notes []string
 }
 
-// wholeNumber reads a plain count out of a box.
+// say puts a sentence on the status line, under whatever settling had to say.
+func (r *runner) say(lines ...string) {
+	r.status.SetText(strings.Join(append(append([]string{}, r.notes...), lines...), "\n"))
+}
+
+func newRunner() *runner {
+	r := &runner{}
+	r.bar = widget.NewProgressBar()
+	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
+	// a very large run inside the range of its own type is the one the command
+	// line already uses.
+	r.bar.Max = 100
+	r.bar.Hide()
+
+	r.status = widget.NewLabel("")
+	r.status.Wrapping = fyne.TextWrapWord
+	r.problem = parts.NewErrorArea()
+
+	r.previewBtn = widget.NewButton("Preview", r.onPreview)
+	r.generateBtn = widget.NewButton("Generate", r.onGenerate)
+	r.generateBtn.Importance = widget.HighImportance
+	r.cancelBtn = widget.NewButton("Cancel", r.onCancel)
+	r.cancelBtn.Disable()
+	return r
+}
+
+// actions puts Preview before Generate, and that order is G6.
 //
-// Turning text into a number is not one of this tool's rules - the command line
-// gets it from the flag package - so this is not a second copy of anything G1
-// protects. What the number then has to satisfy stays with the engine.
-func wholeNumber(what, text string) (int64, error) {
-	n, err := strconv.ParseInt(strings.TrimSpace(text), 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf(
-			"%s is %q, which is not a whole number. Write the digits out, such as 1 or 500", what, text)
-	}
-	return n, nil
+// It is the one thing a window does better than a command line rather than
+// merely as well: --dry-run has to be known about and remembered, and this is
+// on the way to the button beside it. With presets running to several gigabytes
+// and disks that are not always emptier than that, it is not decoration.
+func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
+	all := []fyne.CanvasObject{r.previewBtn, r.generateBtn, r.cancelBtn}
+	return container.NewHBox(append(all, extra...)...)
+}
+
+func (r *runner) progress() fyne.CanvasObject {
+	return container.NewVBox(r.bar, r.status)
 }
 
 // onPreview says what the run would cost and writes nothing.
@@ -121,25 +144,25 @@ func wholeNumber(what, text string) (int64, error) {
 // checks for free space and for a name already taken live in the same preflight
 // the real run goes through, so the answer here is the answer there. Stopping
 // early used to promise success to a run that refused to start on the next line.
-func (g *Generate) onPreview() {
-	g.problem.Clear()
-	targets, opt, err := g.settle()
+func (r *runner) onPreview() {
+	r.problem.Clear()
+	targets, opt, err := r.settle()
 	if err != nil {
-		g.problem.Say(err.Error())
+		r.problem.Say(err.Error())
 		return
 	}
 	opt.DryRun = true
 
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
-		g.problem.Say(err.Error())
+		r.problem.Say(err.Error())
 		return
 	}
 	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
-		g.problem.Say(err.Error())
+		r.problem.Say(err.Error())
 		return
 	}
-	g.status.SetText(previewText(planned, opt.OutDir))
+	r.say(previewText(planned, opt.OutDir))
 }
 
 // previewText is the cost, before anything exists. G6: how many files, how many
@@ -162,30 +185,30 @@ func previewText(planned []engine.PlannedFile, outDir string) string {
 // Planning is fast enough to do here - measured at 15.7 ms for ten thousand
 // files - and doing it here is what lets a refusal appear with nothing started
 // and no buttons to put back.
-func (g *Generate) onGenerate() {
-	g.problem.Clear()
-	targets, opt, err := g.settle()
+func (r *runner) onGenerate() {
+	r.problem.Clear()
+	targets, opt, err := r.settle()
 	if err != nil {
-		g.problem.Say(err.Error())
+		r.problem.Say(err.Error())
 		return
 	}
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
-		g.problem.Say(err.Error())
+		r.problem.Say(err.Error())
 		return
 	}
-	g.startRun(planned, opt)
+	r.startRun(planned, opt)
 }
 
-func (g *Generate) startRun(planned []engine.PlannedFile, opt engine.Options) {
+func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	started := time.Now()
 	limit := &throttle{}
 
-	g.setRunning(true)
-	g.bar.SetValue(0)
-	g.status.SetText(fmt.Sprintf("writing %d file(s)...", len(planned)))
+	r.setRunning(true)
+	r.bar.SetValue(0)
+	r.say(fmt.Sprintf("writing %d file(s)...", len(planned)))
 
 	// Called by the engine from the goroutine below, once per write inside a
 	// file. Thinned out here, before anything crosses over, so the interface is
@@ -196,8 +219,8 @@ func (g *Generate) startRun(planned []engine.PlannedFile, opt engine.Options) {
 		}
 		elapsed := time.Since(started)
 		fyne.Do(func() {
-			g.bar.SetValue(float64(core.Percent(p.BytesDone, p.BytesTotal)))
-			g.status.SetText(progressText(p, elapsed))
+			r.bar.SetValue(float64(core.Percent(p.BytesDone, p.BytesTotal)))
+			r.status.SetText(progressText(p, elapsed))
 		})
 	}
 
@@ -210,7 +233,7 @@ func (g *Generate) startRun(planned []engine.PlannedFile, opt engine.Options) {
 		// Do rather than DoAndWait. The interface thread may already be inside
 		// stop, waiting on the channel closed below, and a worker waiting for
 		// that thread to run something would be both of them waiting.
-		fyne.Do(func() { g.runFinished(res, runErr, saveErr) })
+		fyne.Do(func() { r.runFinished(res, runErr, saveErr) })
 		close(done)
 	}()
 
@@ -219,7 +242,7 @@ func (g *Generate) startRun(planned []engine.PlannedFile, opt engine.Options) {
 	// ending the process without waiting would leave it somewhere inside a file
 	// with no manifest, which is the one thing the output directory is promised
 	// never to hold.
-	g.stop = func() {
+	r.stop = func() {
 		cancel()
 		<-done
 	}
@@ -259,8 +282,6 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 	return nil
 }
 
-// runFinished puts the screen back and says what happened. On the interface
-// thread, because everything it touches is a widget.
 // stop is deliberately left in place rather than cleared here, and that is a
 // threading decision rather than an oversight. Clearing it would be a write
 // from the worker under the toolkit's test driver, where fyne.Do runs on the
@@ -268,24 +289,21 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 // have, and the honest way out is a handle that is safe to hold on to. Calling
 // it after the run has ended cancels a finished context and receives from a
 // closed channel, both of which return at once.
-func (g *Generate) runFinished(res *engine.Result, runErr, saveErr error) {
-	g.setRunning(false)
+func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
+	r.setRunning(false)
 
 	switch {
 	case runErr != nil:
-		g.problem.Say(runErr.Error())
+		r.problem.Say(runErr.Error())
 	case saveErr != nil:
-		g.problem.Say(saveErr.Error())
+		r.problem.Say(saveErr.Error())
 	}
 
 	// Silence is banned. A file that was not produced has to be visible here
 	// and not only in the manifest - "the manifest says which ones" is an
 	// answer in a terminal and an instruction to open a file with ten thousand
 	// entries in a window.
-	g.status.SetText(outcomeText(res, runErr))
-	for _, note := range notesOf(res) {
-		g.status.SetText(g.status.Text + "\n" + note)
-	}
+	r.say(append([]string{outcomeText(res, runErr)}, notesOf(res)...)...)
 }
 
 func outcomeText(res *engine.Result, runErr error) string {
@@ -312,35 +330,41 @@ func notesOf(res *engine.Result) []string {
 // setRunning is the screen in one state or the other. Two buttons that both
 // look pressable during a run is a window that invites a second run into a
 // directory the first one is still filling.
-func (g *Generate) setRunning(running bool) {
+func (r *runner) setRunning(running bool) {
 	if running {
-		g.previewBtn.Disable()
-		g.generateBtn.Disable()
-		g.cancelBtn.Enable()
-		g.bar.Show()
+		r.previewBtn.Disable()
+		r.generateBtn.Disable()
+		r.cancelBtn.Enable()
+		r.bar.Show()
 		return
 	}
-	g.previewBtn.Enable()
-	g.generateBtn.Enable()
-	g.cancelBtn.Disable()
-	g.bar.Hide()
+	r.previewBtn.Enable()
+	r.generateBtn.Enable()
+	r.cancelBtn.Disable()
+	r.bar.Hide()
 }
 
-func (g *Generate) onCancel() {
-	if g.stop != nil {
-		g.stop()
+func (r *runner) onCancel() { r.Stop() }
+
+// Stop ends a run in progress and waits for it, or does nothing when there is
+// none. Safe to call at any time, which is what lets one close intercept ask
+// every screen without knowing which of them is busy.
+func (r *runner) Stop() {
+	if r.stop != nil {
+		r.stop()
 	}
 }
 
-// onClose is what closing the window does while a run is going, G7.
+// wholeNumber reads a plain count out of a box.
 //
-// The run is stopped and waited for, and only then does the window go. What is
-// already finished stays on disk and the manifest describes exactly that, with
-// run.complete false - the same ending Ctrl+C gives the command line, reached
-// through the one gesture that is not a signal.
-func (g *Generate) onClose() {
-	if g.stop != nil {
-		g.stop()
+// Turning text into a number is not one of this tool's rules - the command line
+// gets it from the flag package - so this is not a second copy of anything G1
+// protects. What the number then has to satisfy stays with the engine.
+func wholeNumber(what, text string) (int64, error) {
+	n, err := strconv.ParseInt(strings.TrimSpace(text), 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf(
+			"%s is %q, which is not a whole number. Write the digits out, such as 1 or 500", what, text)
 	}
-	g.host.Close()
+	return n, nil
 }

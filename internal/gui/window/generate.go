@@ -1,10 +1,14 @@
 package window
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	// The formats register themselves when this package is pulled in, and
 	// without it the registry the menu is built from is empty.
@@ -21,7 +25,7 @@ import (
 
 // Host is what a screen needs of the window it lives in.
 //
-// An interface with two methods rather than fyne.Window, and the reason is
+// An interface with three methods rather than fyne.Window, and the reason is
 // testable rather than tidy: a screen that took the whole window would need a
 // real one to be exercised, and a real one needs a C compiler and a graphics
 // environment. fyne.Window satisfies this, and so does a stand in that records
@@ -33,14 +37,13 @@ type Host interface {
 	Close()
 }
 
-// Generate is the screen that produces the files.
+// Generate is the screen that produces files from settings somebody chose.
 //
-// One target: a format, a size, how many, where they go. Not because a window
-// deserves less than the command line - D1 says the opposite - but because this
-// is the first of the screens and the rest of a recipe arrives with the one
-// that edits recipes.
+// One target: a format, a size, how many, where they go. The preset screen
+// beside it is the other way in - a named question rather than a set of
+// numbers - and the two share everything after "what should be produced".
 type Generate struct {
-	host Host
+	*runner
 
 	formatPick *widget.Select
 	size       *widget.Entry
@@ -57,53 +60,27 @@ type Generate struct {
 	props   []parts.PropertyField
 	propBox *fyne.Container
 
-	previewBtn  *widget.Button
-	generateBtn *widget.Button
-	cancelBtn   *widget.Button
-
-	bar     *widget.ProgressBar
-	status  *widget.Label
-	problem *parts.ErrorArea
-
 	body fyne.CanvasObject
-
-	// stop ends the run in progress. Set when one starts, nil the rest of the
-	// time, and only ever touched on the interface thread.
-	stop func()
 }
 
-// NewGenerate builds the screen. about is how the licence notice is reached.
-func NewGenerate(h Host, about func()) *Generate {
-	g := &Generate{host: h}
-	// Progress first, and the order is load bearing rather than tidy. Choosing a
-	// format redraws the settings that format declares, and the toolkit fires
-	// that the moment a selection is set - so the box those settings go in, and
-	// the area a refusal would go in, have to exist before the first selection
-	// rather than after it. Built the other way round this crashed on the way
-	// up, which is how the order was found.
-	g.buildProgress()
+// NewGenerate builds the screen. links are the buttons to the other screens.
+func NewGenerate(links ...fyne.CanvasObject) *Generate {
+	g := &Generate{runner: newRunner()}
+	g.runner.settle = g.settle
 	g.buildFields()
-	g.buildActions()
 
 	g.body = container.NewVScroll(parts.Screen(
 		"Generate files",
 		g.settingsSection(),
 		g.propBox,
-		g.actionsSection(about),
-		g.progressSection(),
+		g.actions(links...),
+		g.progress(),
 		g.problem.Object(),
 	))
 
 	// The format decides which settings exist, so the first one has to be
 	// applied rather than waited for.
 	g.onFormatChosen(g.formatPick.Selected)
-
-	// Closing the window during a run is a cancellation and not a kill, G7. The
-	// invariant that the output directory never holds a half written file rests
-	// on the signal handler in cmd/tfg, and closing a window is not a signal -
-	// so without this the run would carry on with nobody watching it, or die in
-	// the middle of a file.
-	h.SetCloseIntercept(g.onClose)
 	return g
 }
 
@@ -112,6 +89,10 @@ func (g *Generate) Object() fyne.CanvasObject { return g.body }
 
 func (g *Generate) buildFields() {
 	// Before the select below, which fills it as soon as a format is chosen.
+	// The order is load bearing rather than tidy: choosing a format redraws the
+	// settings that format declares, and the toolkit fires that the moment a
+	// selection is set. Built the other way round this crashed on the way up,
+	// which is how the order was found.
 	g.propBox = container.NewVBox()
 
 	// Every format this build registered, asked of the registry rather than
@@ -164,47 +145,6 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 	)
 }
 
-// actionsSection puts Preview before Generate, and that order is G6.
-//
-// It is the one thing a window does better than a command line rather than
-// merely as well: --dry-run has to be known about and remembered, and this is
-// on the way. With presets running to several gigabytes and disks that are not
-// always emptier than that, it is not decoration.
-func (g *Generate) actionsSection(about func()) fyne.CanvasObject {
-	return container.NewHBox(
-		g.previewBtn,
-		g.generateBtn,
-		g.cancelBtn,
-		widget.NewButton("About", about),
-	)
-}
-
-func (g *Generate) buildActions() {
-	g.previewBtn = widget.NewButton("Preview", g.onPreview)
-	g.generateBtn = widget.NewButton("Generate", g.onGenerate)
-	g.generateBtn.Importance = widget.HighImportance
-
-	g.cancelBtn = widget.NewButton("Cancel", g.onCancel)
-	g.cancelBtn.Disable()
-}
-
-func (g *Generate) buildProgress() {
-	g.bar = widget.NewProgressBar()
-	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
-	// a very large run inside the range of its own type is the one the command
-	// line already uses.
-	g.bar.Max = 100
-	g.bar.Hide()
-
-	g.status = widget.NewLabel("")
-	g.status.Wrapping = fyne.TextWrapWord
-	g.problem = parts.NewErrorArea()
-}
-
-func (g *Generate) progressSection() fyne.CanvasObject {
-	return container.NewVBox(g.bar, g.status)
-}
-
 // onFormatChosen redraws the settings the chosen format declares.
 //
 // Nothing here knows what a PNG or a WAV takes. The registry declares a name, a
@@ -252,4 +192,50 @@ func (g *Generate) properties() map[string]string {
 		return nil
 	}
 	return out
+}
+
+// settle turns what is on the screen into what the engine takes.
+//
+// It parses and it does not judge. Every rule about whether the numbers make
+// sense - the minimum of the format, the ceiling on files, a name that is a
+// path, two files heading for one name - belongs to the engine and is asked of
+// it. That is G1, and it is why the window cannot come to accept something the
+// command line refuses.
+func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
+	var none engine.Options
+
+	bytesWanted, err := core.ParseSize(g.size.Text)
+	if err != nil {
+		return nil, none, err
+	}
+	count, err := wholeNumber("how many", g.count.Text)
+	if err != nil {
+		return nil, none, err
+	}
+	seed, err := wholeNumber("seed", g.seed.Text)
+	if err != nil {
+		return nil, none, err
+	}
+
+	// Asked before the list is built, because building it is the failure. The
+	// same ceiling and the same sentence the command line uses, from core, so
+	// there is no second opinion about how many files is too many. A count past
+	// it used to reach make and panic with a stack trace.
+	if count > core.MaxFilesPerRun {
+		return nil, none, fmt.Errorf("this run asks for %d files - %s", count, core.ErrTooManyFiles)
+	}
+
+	return []engine.Target{{
+			ID:         g.id.Text,
+			Format:     g.formatPick.Selected,
+			Sizes:      engine.Uniform(int(count), bytesWanted),
+			NameTmpl:   g.name.Text,
+			Label:      g.label.Checked,
+			Properties: g.properties(),
+		}}, engine.Options{
+			OutDir:       g.outDir.Text,
+			Seed:         seed,
+			Command:      "tfg-gui",
+			ManifestName: engine.DefaultManifestName,
+		}, nil
 }

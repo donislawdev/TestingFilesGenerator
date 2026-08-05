@@ -48,6 +48,14 @@ import (
 // the guard was armed on 2026-08-03, which was the point: the distance started
 // as the whole list rather than as whatever was left after nobody was watching.
 var reachableFromTheWindow = []string{
+	// A named question, its parameters drawn by the same code that draws a
+	// format's settings - because a preset parameter IS a format.Property.
+	// TestTheWindowOffersEveryPresetThereIs and the two beside it, one of which
+	// runs the same preset from both surfaces and compares the bytes.
+	"preset:size-boundaries",
+	"preset:size-boundaries.limit",
+	"preset:size-boundaries.spread",
+
 	// Every format the registry holds, taken from the registry itself rather
 	// than listed in the window. TestTheWindowOffersEveryFormatTheRegistryHas.
 	"format:csv",
@@ -111,9 +119,6 @@ var reachableFromTheWindow = []string{
 // key the window cannot produce, and separating the two reasons would be a
 // second list to keep in step for no gain.
 var notYetReachable = []string{
-	"preset:size-boundaries",
-	"preset:size-boundaries.limit",
-	"preset:size-boundaries.spread",
 	"recipe:allow_nondeterministic",
 	"recipe:targets.group",
 	"recipe:defaults",

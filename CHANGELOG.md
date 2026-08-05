@@ -16,6 +16,20 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Presets in the window.** A second screen that starts from a question rather
+  than from numbers: pick what you are testing, and the set is worked out from
+  the answer. It shows the question the preset closes and the mistakes it
+  typically finds, and its settings are drawn from the preset itself, the same
+  way a format's settings are.
+  It produces exactly what `tfg generate --preset` produces - the same files,
+  byte for byte, and the same record of the run. When a number was not given and
+  ours stood in, the window says so out loud, because a set built around a limit
+  we invented carries expectations that read exactly like a set built around
+  yours.
+  No field arrives filled in any more. What a setting falls back to is shown in
+  the box as a hint instead, so leaving a field alone means "I did not state
+  this" and the manifest can say which numbers were ours.
+
 - **The window generates files.** Pick a format, say how big and how many, and
   press Generate. It writes the same bytes the command line writes from the same
   settings, because it is the same engine underneath rather than a second one.

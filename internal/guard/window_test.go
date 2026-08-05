@@ -62,7 +62,7 @@ func (h *fakeHost) Close()                         { h.closed++ }
 // Worth writing down, because a colour count reads like a content check and is
 // not one.
 func TestTheWindowActuallyDrawsSomething(t *testing.T) {
-	w := test.NewWindow(window.FirstScreen(&fakeHost{}))
+	w := test.NewWindow(window.FirstScreen())
 	defer w.Close()
 	w.Resize(window.OpenSize)
 

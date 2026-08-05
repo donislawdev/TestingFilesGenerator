@@ -15,68 +15,24 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
-// expandedPreset is one preset settled on its parameters and turned into the
-// recipe it stands for.
-//
-// The source is what a run consumes and what eject prints, because it is the
-// same bytes - PR5 in docs/PRESETS.md. Every command here goes through this one
-// function, so none of them can be the one that expands differently.
-type expandedPreset struct {
-	Preset  preset.Preset
-	Settled preset.Args
-	// Defaulted names the parameters nobody gave, whose declared default stood
-	// in. Sorted, so two runs of one preset produce identical records.
-	Defaulted []string
-	Source    []byte
-}
-
-func expandPreset(id string, given preset.Args) (*expandedPreset, error) {
-	p, err := preset.Get(id)
-	if err != nil {
-		return nil, err
-	}
-	settled, err := p.Settle(given)
-	if err != nil {
-		return nil, err
-	}
-
-	var defaulted []string
-	for name := range p.Defaults() {
-		if given[name] == "" {
-			defaulted = append(defaulted, name)
-		}
-	}
-	sort.Strings(defaulted)
-
-	src, err := p.Expand(settled)
-	if err != nil {
-		return nil, err
-	}
-	return &expandedPreset{Preset: p, Settled: settled, Defaulted: defaulted, Source: src}, nil
-}
+// Expanding a preset lives in internal/preset, because the window expands them
+// too and the two surfaces cannot import each other. What stays here is the one
+// thing that is about output rather than about presets: turning an expansion
+// into the manifest record.
 
 // record is what goes into the manifest.
-func (e *expandedPreset) record() *manifest.Preset {
+//
+// A three field literal rather than a shared constructor, and deliberately so:
+// putting it in internal/preset would make that package import the manifest,
+// which is the output contract and no business of an input concept. The drift
+// this invites is watched behaviourally instead - a guard runs the same preset
+// from both surfaces and compares the records they produce.
+func record(e *preset.Expansion) *manifest.Preset {
 	return &manifest.Preset{
 		ID:         e.Preset.ID,
 		Parameters: map[string]string(e.Settled),
 		Defaulted:  e.Defaulted,
 	}
-}
-
-// notes is what to say out loud about a value nobody gave us.
-//
-// Some defaults describe our own file and some describe somebody else's system.
-// A set built around a limit we invented carries expectations that read exactly
-// like a set built around the real one, so the run says which number it made up.
-func (e *expandedPreset) notes() []string {
-	var out []string
-	for _, name := range e.Defaulted {
-		if said := e.Preset.SaidWhenDefaulted[name]; said != "" {
-			out = append(out, said)
-		}
-	}
-	return out
 }
 
 // budget is what a preset would produce, counted by the planner.
@@ -92,7 +48,7 @@ type budget struct {
 	Formats []string `json:"formats"`
 }
 
-func budgetOf(e *expandedPreset) (budget, error) {
+func budgetOf(e *preset.Expansion) (budget, error) {
 	rec, err := recipe.Parse(e.Source, e.Preset.ID)
 	if err != nil {
 		return budget{}, err
@@ -358,7 +314,7 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 		return nil, ExitUsage
 	}
 
-	expanded, err := expandPreset(g.presetID, givenPresetArgs(fs, p))
+	expanded, err := preset.Expand(g.presetID, givenPresetArgs(fs, p))
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, classify(err)
@@ -374,10 +330,10 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 		return nil, classify(err)
 	}
 
-	for _, note := range expanded.notes() {
+	for _, note := range expanded.Notes() {
 		fmt.Fprintf(errOut, "note: %s\n", note)
 	}
-	opt.Preset = expanded.record()
+	opt.Preset = record(expanded)
 	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
 }
 
@@ -431,7 +387,7 @@ Run "tfg generate --preset <id>" to produce the files.
 // nil for the one that does not - a recipe is already machine readable, and a
 // second encoding of it would be a second thing to keep in step.
 func presetFlagSet(name string, args []string, out, errOut io.Writer, usage func(io.Writer), asJSON *bool) (
-	*expandedPreset, int) {
+	*preset.Expansion, int) {
 
 	fs := flag.NewFlagSet("preset "+name, flag.ContinueOnError)
 	fs.SetOutput(errOut)
@@ -470,7 +426,7 @@ func presetFlagSet(name string, args []string, out, errOut io.Writer, usage func
 		return nil, ExitUsage
 	}
 
-	expanded, err := expandPreset(id, givenPresetArgs(fs, p))
+	expanded, err := preset.Expand(id, givenPresetArgs(fs, p))
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, classify(err)
@@ -555,14 +511,14 @@ Usage:
 		entry := presetEntryFor(expanded.Preset)
 		entry.Budget = &b
 		entry.Defaulted = expanded.Defaulted
-		entry.Notes = expanded.notes()
+		entry.Notes = expanded.Notes()
 		return renderJSON(entry, out, errOut)
 	}
 	describePreset(expanded, b, out)
 	return ExitOK
 }
 
-func describePreset(e *expandedPreset, b budget, out io.Writer) {
+func describePreset(e *preset.Expansion, b budget, out io.Writer) {
 	p := e.Preset
 	fmt.Fprintf(out, "%s - %s\n%s\n", p.ID, p.Title, p.Question)
 
@@ -581,7 +537,7 @@ func describePreset(e *expandedPreset, b budget, out io.Writer) {
 
 	fmt.Fprintf(out, "\nbudget at these values:\n  %d target(s), %d file(s), %d B total, format %s\n",
 		b.Targets, b.Files, b.Bytes, strings.Join(b.Formats, ", "))
-	for _, note := range e.notes() {
+	for _, note := range e.Notes() {
 		fmt.Fprintf(out, "\nnote: %s\n", note)
 	}
 
@@ -618,7 +574,7 @@ Usage:
 	// The note goes to the error channel. The recipe is the data here, and a
 	// sentence about a number we chose has no business inside a file somebody
 	// is about to commit.
-	for _, note := range expanded.notes() {
+	for _, note := range expanded.Notes() {
 		fmt.Fprintf(errOut, "note: %s\n", note)
 	}
 	if _, err := out.Write(expanded.Source); err != nil {
