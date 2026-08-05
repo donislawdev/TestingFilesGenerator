@@ -16,6 +16,18 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A window.** `tfg-gui` opens one, and it is a separate binary from `tfg` on
+  purpose: the toolkit that draws it needs a C compiler and OpenGL, and the
+  command line needs neither. Nothing about `tfg` changes - a server or a build
+  agent runs it exactly as before, without the toolkit, without graphics and
+  without a network stack.
+  The first screen says what the tool is and what its licence means for the
+  files you generate. That sentence has been in `tfg license` since it was
+  added and there was no way to read it from a window, which is the whole
+  reason this screen came first.
+  A build made without C support has no window in it at all. It says so, says
+  that every feature is on the command line instead, and ends with the code
+  that means the fault is not yours.
 - **`tfg preset list`, `tfg preset show`, `tfg preset eject` and
   `tfg generate --preset`.** A preset is a named test question. `list` says
   which ones this build answers, `show` says what one takes and what it would
