@@ -328,13 +328,17 @@ func (raw rawRecipe) refuseUnsupported(p *problems) {
 		p.notYet("policy", "unspecified expectations are left in the manifest for the consumer to settle",
 			"remove the section - the expected field on a target already works")
 	}
+	// The reason these two give used to be "presets are not in this build",
+	// and presets arrived on 2026-08-05 while this sentence stayed. A recipe
+	// still cannot name one - that is what is missing - so the key is refused
+	// for the same reason as before and the sentence now says which.
 	if raw.Extends != nil {
-		p.notYet("extends", "presets are not in this build",
-			"write the targets out in full")
+		p.notYet("extends", "a recipe cannot build on a preset yet, though the command line can run one",
+			"run \"tfg preset eject <id> > recipe.yaml\" and edit the targets, or write them out in full")
 	}
 	if raw.With != nil {
-		p.notYet("with", "presets are not in this build",
-			"write the targets out in full")
+		p.notYet("with", "a recipe cannot build on a preset yet, though the command line can run one",
+			"run \"tfg preset eject <id> > recipe.yaml\" and edit the targets, or write them out in full")
 	}
 }
 
