@@ -16,6 +16,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`tfg preset list`, `tfg preset show`, `tfg preset eject` and
+  `tfg generate --preset`.** A preset is a named test question. `list` says
+  which ones this build answers, `show` says what one takes and what it would
+  produce, `eject` prints the recipe it stands for, and `generate --preset`
+  writes the files.
+  Ejecting is not an export. The recipe it prints is the same bytes a run
+  consumes, so ejecting one to a file and running that file produces the same
+  files and the same recipe hash in the manifest as running the preset
+  directly. There are no closed presets and that is now a fact rather than a
+  promise.
+  `show` counts its budget by planning the run, at the parameters you gave, so
+  the number of files and bytes it prints is what a run would really write.
+  `list` and `show` also take `--json`. `eject` does not, because a recipe is
+  already something a script can read.
+- **`--format` is no longer required when a preset is given.** The preset
+  supplies a value for it. Asking for files without saying what to produce now
+  names all three ways of saying it - a format, a recipe file, or a preset.
+- **The manifest records which preset a run came from, and which of its numbers
+  were ours.** Under `run.preset`: the id, the settled parameters, and
+  `defaulted` - the parameters nobody gave, where a number of ours stood in.
+  Some of those describe your system rather than the files. The size limit of
+  an upload form is yours, and a set built around a limit we invented carries
+  expectations that read exactly like a set built around the real one. The run
+  says so while it runs, and that sentence scrolls away. This is the part that
+  stays beside the files.
 - **`group` in a recipe target, and in the manifest beside every file it
   produced.** It names the class of case a file belongs to, so a test can
   assert about a whole class at once - "every file in
@@ -27,6 +52,18 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A mistyped `--spread` is your mistake again, not a crash report against
+  this tool.** `--spread notasize` ended with the code that means the program
+  itself broke, which told a build server to file a bug when somebody had
+  simply typed the wrong thing. It now ends with the code that means the value
+  is not one this preset takes, and says which value and why.
+  Three more shapes of the same flag were wrong and are refused now. The same
+  distance twice built a set holding one step twice, and complained about names
+  nobody typed. The same distance spelled two ways - `1024` and `1kb` - was
+  accepted in silence and built that duplicate step anyway. And a distance
+  holding a character a filename cannot carry reached the recipe and broke it,
+  because the text of a distance becomes the name of a file. All four were
+  found by fuzzing.
 - **`tfg validate` no longer refuses a recipe that `tfg generate` accepts.** A
   boundary set names its three files `under_limit`, `at_limit` and
   `over_limit`, and `validate` was checking for collisions against `0001`,
