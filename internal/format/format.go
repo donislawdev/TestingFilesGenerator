@@ -391,6 +391,44 @@ func (p Property) unitSuffix() string {
 	return " of " + p.Unit
 }
 
+// Allowed says what this property accepts, as one phrase for a person.
+//
+// It lives here rather than beside a consumer because there are two of them and
+// they cannot import each other. "tfg formats png" prints it in a list, and the
+// window shows it under the field it drew from this same declaration - so a
+// second copy would be two surfaces coming to describe one format differently,
+// which is D1 in the place nobody thinks to compare.
+//
+// Near neighbour of Allows above, and deliberately not folded into it. Allows
+// answers somebody who has already typed a wrong value and names the flag that
+// would have taken a right one. This answers somebody looking at an empty field.
+// The two phrasings agree today for every kind but size, and unifying them would
+// change a message the command line already prints - a decision for the owner
+// rather than a tidy up. Recorded as O64.
+func (p Property) Allowed() string {
+	var what string
+	switch p.Kind {
+	case PropertyInt:
+		if p.Min != 0 || p.Max != 0 {
+			what = fmt.Sprintf("whole number%s from %d to %d", p.unitSuffix(), p.Min, p.Max)
+		} else {
+			what = "whole number" + p.unitSuffix()
+		}
+	case PropertyChoice:
+		what = "one of: " + strings.Join(p.Choices, ", ")
+	case PropertyBool:
+		what = "true or false"
+	case PropertySize:
+		what = "a size such as 2mb, or a plain byte count"
+	default:
+		what = "text"
+	}
+	if p.Default != "" {
+		what += ", default " + p.Default
+	}
+	return what
+}
+
 // SmallestAccepted is the smallest size this format will actually produce for
 // a request shaped like r.
 //

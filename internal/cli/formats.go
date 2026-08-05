@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
@@ -119,7 +118,7 @@ func describeOne(d format.Descriptor, out io.Writer) {
 	}
 	fmt.Fprint(out, "\nproperties, set with --set name=value:\n")
 	for _, p := range d.Properties {
-		fmt.Fprintf(out, "  %-14s %s\n", p.Name, allowedText(p))
+		fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
 		if p.Detail != "" {
 			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
 		}
@@ -134,34 +133,10 @@ func describeOne(d format.Descriptor, out io.Writer) {
 	}
 }
 
-// allowedText says what a property accepts, in the same words the refusal uses.
-func allowedText(p format.Property) string {
-	var what string
-	switch p.Kind {
-	case format.PropertyInt:
-		unit := ""
-		if p.Unit != "" {
-			unit = " of " + p.Unit
-		}
-		if p.Min != 0 || p.Max != 0 {
-			what = fmt.Sprintf("whole number%s from %d to %d", unit, p.Min, p.Max)
-		} else {
-			what = "whole number" + unit
-		}
-	case format.PropertyChoice:
-		what = "one of: " + strings.Join(p.Choices, ", ")
-	case format.PropertyBool:
-		what = "true or false"
-	case format.PropertySize:
-		what = "a size such as 2mb, or a plain byte count"
-	default:
-		what = "text"
-	}
-	if p.Default != "" {
-		what += ", default " + p.Default
-	}
-	return what
-}
+// What a property accepts is asked of the declaration itself, through
+// Property.Allowed. It used to be worked out here, which put the sentence one
+// import away from the window - and the window draws its field from the same
+// declaration, so the two would have described one format in two ways.
 
 func formats(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("formats", flag.ContinueOnError)

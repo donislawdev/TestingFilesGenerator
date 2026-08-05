@@ -182,7 +182,7 @@ func registerPresetFlags(fs *flag.FlagSet, p preset.Preset) {
 }
 
 func parameterUsage(param format.Property) string {
-	usage := allowedText(param)
+	usage := param.Allowed()
 	if param.Detail != "" {
 		usage += ". " + param.Detail
 	}
@@ -569,7 +569,7 @@ func describePreset(e *expandedPreset, b budget, out io.Writer) {
 	if len(p.Parameters) > 0 {
 		fmt.Fprint(out, "\nparameters:\n")
 		for _, param := range p.Parameters {
-			fmt.Fprintf(out, "  --%-12s %s\n", param.Name, allowedText(param))
+			fmt.Fprintf(out, "  --%-12s %s\n", param.Name, param.Allowed())
 			if param.Detail != "" {
 				fmt.Fprintf(out, "  %-14s %s\n", "", param.Detail)
 			}

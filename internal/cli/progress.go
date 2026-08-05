@@ -4,11 +4,11 @@ package cli
 import (
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 )
 
@@ -57,8 +57,8 @@ func (p *progressBar) report(pr engine.Progress) {
 
 	line := fmt.Sprintf("  %d/%d files  %s of %s  %d%%%s",
 		pr.FilesDone, pr.FilesTotal,
-		humanBytes(pr.BytesDone), humanBytes(pr.BytesTotal),
-		percent(pr.BytesDone, pr.BytesTotal),
+		core.HumanBytes(pr.BytesDone), core.HumanBytes(pr.BytesTotal),
+		core.Percent(pr.BytesDone, pr.BytesTotal),
 		p.remaining(pr))
 
 	// Pad to cover whatever the last line left behind, so a shorter line does
@@ -90,50 +90,10 @@ func (p *progressBar) remaining(pr engine.Progress) string {
 	}
 	left := time.Duration(float64(elapsed) *
 		float64(pr.BytesTotal-pr.BytesDone) / float64(pr.BytesDone))
-	return "  " + roughly(left) + " left"
+	return "  " + core.Roughly(left) + " left"
 }
 
-// percent divides before multiplying where it has to, so a very large run does
-// not wrap on the way to a number between nought and a hundred.
-//
-// done*100 leaves the range of an int64 above about 92 PB. No disk holds that
-// today, and the arithmetic that produces it is free to be right anyway.
-func percent(done, total int64) int {
-	switch {
-	case total <= 0:
-		return 100
-	case done >= total:
-		return 100
-	case done > math.MaxInt64/100:
-		return int(done / (total / 100))
-	}
-	return int(done * 100 / total)
-}
-
-// roughly keeps the estimate at the precision it deserves. Seconds on a two
-// minute estimate are noise that changes every redraw.
-func roughly(d time.Duration) string {
-	switch {
-	case d < time.Minute:
-		return fmt.Sprintf("%ds", int(d.Seconds())+1)
-	case d < time.Hour:
-		return fmt.Sprintf("%dm", int(d.Minutes())+1)
-	default:
-		return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
-	}
-}
-
-// humanBytes counts in 1024s, the same as every size this tool accepts and the
-// same as what Explorer and ls show. See docs/RECIPE.md section 9.
-func humanBytes(n int64) string {
-	const unit = 1024
-	if n < unit {
-		return fmt.Sprintf("%d B", n)
-	}
-	div, exp := int64(unit), 0
-	for n/div >= unit && exp < 3 {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "KMGT"[exp])
-}
+// Putting a size, a percentage and a duration into words lives in core, because
+// the window draws a progress bar too and the two surfaces cannot import each
+// other. A copy here would be the two bars rounding differently, which is the
+// kind of drift nobody goes looking for.
