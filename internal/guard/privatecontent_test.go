@@ -153,6 +153,41 @@ func TestTheScanForPrivateContentLeavesOrdinaryTextAlone(t *testing.T) {
 
 // The files as they stand. The text guards read three of them, this one reads
 // every file git tracks.
+// quotedLicencesRemoved drops the fenced blocks of the notices file.
+//
+// Those blocks are other people's licence texts, reproduced word for word
+// because the licences require it - "the above copyright notice shall be
+// included in all copies" is the obligation, not a style choice. One of them
+// carries the address of its copyright holder, published by him in his own
+// repository.
+//
+// This guard exists to stop the OWNER's private content reaching a public
+// repository. A copyright line somebody else published, that we are obliged to
+// carry, is neither ours nor private, and the alternative to this exception is
+// deleting text a licence requires.
+//
+// Narrow on purpose, and in two ways. It applies to one file, and inside it
+// only to fenced blocks - the prose we wrote in that same file is still read,
+// so a path or a token typed into it is still caught. Widening this is the
+// cheap way to put the guard to sleep.
+func quotedLicencesRemoved(name, body string) string {
+	if filepath.Base(name) != "THIRD-PARTY-NOTICES.md" {
+		return body
+	}
+	var kept []string
+	inFence := false
+	for _, line := range strings.Split(body, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			inFence = !inFence
+			continue
+		}
+		if !inFence {
+			kept = append(kept, line)
+		}
+	}
+	return strings.Join(kept, "\n")
+}
+
 func TestNoTrackedFileCarriesPrivateContent(t *testing.T) {
 	// Tracked files and files that are not tracked yet but are not ignored
 	// either, read from the working tree rather than from the last commit.
@@ -172,7 +207,7 @@ func TestNoTrackedFileCarriesPrivateContent(t *testing.T) {
 			continue
 		}
 		checked++
-		for _, fault := range privateFaults(string(body)) {
+		for _, fault := range privateFaults(quotedLicencesRemoved(f, string(body))) {
 			faults = append(faults, f+": "+fault)
 		}
 	}

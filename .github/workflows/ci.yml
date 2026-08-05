@@ -56,29 +56,97 @@ jobs:
         run: go vet ./...
 
       - name: the dependency list has not grown by accident
-        # Every dependency is a licence question and a byte stability question.
-        # A new one arriving as somebody's transitive import has to be visible
-        # rather than discovered later.
+        # Every dependency is a licence question and a byte stability
+        # question. A new one arriving as somebody's transitive import has
+        # to be visible rather than discovered later.
         #
-        # Four modules, one of which is linked. golang.org/x/text is imported
-        # for Unicode normalisation in the collision check - see docs/STACK.md.
-        # It names x/mod, x/sync and x/tools in its own go.mod for the tooling
-        # that generates its tables, and "go mod tidy" does not prune them from
-        # the graph, measured 2026-08-04. They reach the module list and not the
-        # binary. All four are BSD from the Go Authors.
+        # Two questions rather than one, since the graphics toolkit arrived
+        # on 2026-08-05. The graph below is 69 modules and most of them are
+        # Fyne's. Their licences were measured before it was added and every
+        # one in the linked set is permissive and one way compatible with
+        # GPL-3.0: 13 BSD-3, 10 MIT, 1 Apache-2.0, 1 BSD-2, 1 ISC.
+        #
+        # The second question protects what ships to most people. The
+        # command line binary links exactly two external modules and the
+        # toolkit is not among them, so a build for a server carries no
+        # window, no OpenGL and - see internal/guard - no socket.
         run: |
           set -euo pipefail
           # Built with printf rather than written across several lines. A
           # continuation starting in column one reads as the end of the jobs
-          # block to anything scanning this file by indentation, and the guard
-          # on job timeouts does exactly that - it counted one job instead of
-          # seven and went green whatever it was given. Measured 2026-08-04.
+          # block to anything scanning this file by indentation, and the
+          # guard on job timeouts does exactly that - it counted one job
+          # instead of seven and went green whatever it was given.
           expected=$(printf '%s\n' \
+            fyne.io/fyne/v2 \
+            fyne.io/systray \
+            github.com/BurntSushi/toml \
+            github.com/FyshOS/fancyfs \
+            github.com/akavel/rsrc \
+            github.com/anthonynsimon/bild \
+            github.com/clipperhouse/uax29/v2 \
+            github.com/cpuguy83/go-md2man/v2 \
+            github.com/creack/pty \
+            github.com/davecgh/go-spew \
+            github.com/felixge/fgprof \
+            github.com/fogleman/gg \
+            github.com/fredbi/uri \
+            github.com/fsnotify/fsnotify \
+            github.com/fyne-io/gl-js \
+            github.com/fyne-io/glfw-js \
+            github.com/fyne-io/image \
+            github.com/fyne-io/oksvg \
+            github.com/go-gl/gl \
+            github.com/go-gl/glfw/v3.4/glfw \
+            github.com/go-ole/go-ole \
+            github.com/go-text/render \
+            github.com/go-text/typesetting \
+            github.com/go-text/typesetting-utils \
             github.com/goccy/go-yaml \
+            github.com/godbus/dbus/v5 \
+            github.com/golang/freetype \
+            github.com/google/pprof \
+            github.com/hack-pad/go-indexeddb \
+            github.com/hack-pad/safejs \
+            github.com/inconshreveable/mousetrap \
+            github.com/jackmordaunt/icns/v2 \
+            github.com/jeandeaual/go-locale \
+            github.com/josephspurrier/goversioninfo \
+            github.com/jsummers/gobmp \
+            github.com/kr/text \
+            github.com/lucor/goinfo \
+            github.com/mattn/go-runewidth \
+            github.com/mcuadros/go-version \
+            github.com/natefinch/atomic \
+            github.com/nfnt/resize \
+            github.com/nicksnyder/go-i18n/v2 \
+            github.com/niemeyer/pretty \
+            github.com/pkg/profile \
+            github.com/pmezard/go-difflib \
+            github.com/russross/blackfriday/v2 \
+            github.com/rymdport/portal \
+            github.com/spf13/cobra \
+            github.com/spf13/pflag \
+            github.com/srwiley/oksvg \
+            github.com/srwiley/rasterx \
+            github.com/stretchr/objx \
+            github.com/stretchr/testify \
+            github.com/urfave/cli/v2 \
+            github.com/xrash/smetrics \
+            github.com/yuin/goldmark \
+            golang.org/x/crypto \
+            golang.org/x/image \
+            golang.org/x/mobile \
             golang.org/x/mod \
+            golang.org/x/net \
             golang.org/x/sync \
+            golang.org/x/sys \
+            golang.org/x/term \
             golang.org/x/text \
-            golang.org/x/tools)
+            golang.org/x/tools \
+            golang.org/x/tools/go/vcs \
+            gopkg.in/check.v1 \
+            gopkg.in/yaml.v3)
           actual=$(go list -m -f '{{.Path}}' all | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | sort)
           if [ "$actual" != "$expected" ]; then
             echo "the module list changed."
@@ -86,7 +154,17 @@ jobs:
             echo "actual  : $actual"
             exit 1
           fi
-          echo "dependencies unchanged: $actual"
+          echo "dependencies unchanged, $(echo "$expected" | wc -l) modules"
+
+          linked=$(go list -deps -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
+          wanted=$(printf '%s\n' github.com/goccy/go-yaml golang.org/x/text)
+          if [ "$linked" != "$wanted" ]; then
+            echo "the command line binary links a different set of modules."
+            echo "expected: $wanted"
+            echo "actual  : $linked"
+            exit 1
+          fi
+          echo "the command line binary links only: $linked"
         shell: bash
 
       - name: test
@@ -95,16 +173,21 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
-      - name: build the window binary
-        # Nothing built this, so it could stop compiling and no run would say
-        # so. The package is a stub today and that is exactly why it is cheap
-        # to keep honest - it costs a second now and a bisect later.
+      - name: build the window binary without a C toolchain
+        # The toolkit arrived on 2026-08-05 and this step still passes, which
+        # is the point of how it was wired in. Reaching the toolkit's app
+        # package needs CGO and, on Linux, X11 development headers no runner
+        # carries by default - so that one file sits behind a cgo build tag and
+        # everything building a widget tree sits outside it.
         #
-        # CGO_ENABLED is 0 for this whole job, which is the point: the window
-        # binary has to keep building without a C toolchain for as long as the
-        # toolkit is not wired in. The day it is, this step needs a compiler
-        # and moves to a job that has one, and finding that out here is better
-        # than finding it out when the release does not build.
+        # CGO_ENABLED is 0 for this job, so this proves the tree still compiles
+        # where there is no compiler and no graphics. The tests go further:
+        # they render a screen to an image and read it, also with CGO off.
+        #
+        # What it does NOT prove is that the windowed binary links, because
+        # that build needs a C compiler per platform and is done natively -
+        # docs/STACK.md section 4.4. Naming the gap beats implying it is
+        # covered.
         run: go build ./cmd/tfg-gui
 
   govulncheck:
