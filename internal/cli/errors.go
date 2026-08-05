@@ -15,6 +15,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -70,83 +71,16 @@ func mustBeFile(path, kind, command string) error {
 		path, command, command, filepath.Join(path, kind))
 }
 
+// Split into three by what the error is about rather than left as one chain.
+// The chain reached the ceiling on function length, and cutting it where the
+// subject changes is the cut that costs nothing to read: a caller still asks
+// one question and gets one number.
 func classify(err error) int {
-	var recipeErr *engine.RecipeError
-	if errors.As(err, &recipeErr) {
-		return ExitRecipe
+	if code, ok := classifyRequest(err); ok {
+		return code
 	}
-	var invalid *recipe.ValidationError
-	if errors.As(err, &invalid) {
-		return ExitRecipe
-	}
-	var syntax *recipe.SyntaxError
-	if errors.As(err, &syntax) {
-		return ExitRecipe
-	}
-	var spaceErr *engine.SpaceError
-	if errors.As(err, &spaceErr) {
-		return ExitSpace
-	}
-	var collision *engine.CollisionError
-	if errors.As(err, &collision) {
-		return ExitIO
-	}
-	var belowMin *format.BelowMinimumError
-	if errors.As(err, &belowMin) {
-		return ExitFormat
-	}
-	var unknown *format.UnknownFormatError
-	if errors.As(err, &unknown) {
-		return ExitFormat
-	}
-	// A format that holds nothing being asked to hold something, and a
-	// container asked to nest, are both "this format cannot do that" - the
-	// same class as a size below the minimum.
-	var notContainer *format.NotAContainerError
-	if errors.As(err, &notContainer) {
-		return ExitFormat
-	}
-	var nesting *format.NestingUnsupportedError
-	if errors.As(err, &nesting) {
-		return ExitFormat
-	}
-	// Two parts of one recipe saying different things about the same archive
-	// is a recipe problem, like a boundary stated beside a size.
-	var conflict *format.ContentsConflictError
-	if errors.As(err, &conflict) {
-		return ExitRecipe
-	}
-	var badProp *format.UnknownPropertyError
-	if errors.As(err, &badProp) {
-		return ExitUsage
-	}
-	// A value outside what the format declares is a request the format cannot
-	// deliver, which is what FORMAT means - the same class as a size below the
-	// minimum. It used to fall through to RUNTIME, so "--set width=abc" told
-	// CI this program had a bug rather than that the value was wrong.
-	var badValue *format.PropertyValueError
-	if errors.As(err, &badValue) {
-		return ExitFormat
-	}
-	// A manifest we cannot read is a reading failure, not a bug in the tool.
-	// Falling through to RUNTIME would tell CI to file a report against us for
-	// a file somebody handed in.
-	var schema *manifest.SchemaError
-	if errors.As(err, &schema) {
-		return ExitIO
-	}
-	// Same class, one step earlier: a manifest too large to read is a file we
-	// will not take, not a fault of ours.
-	var manifestTooLarge *manifest.TooLargeError
-	if errors.As(err, &manifestTooLarge) {
-		return ExitIO
-	}
-	// And the same class one step later: a manifest whose entries leave the
-	// directory once the links are followed. The text of the path passed, the
-	// filesystem did not.
-	var escape *audit.EscapeError
-	if errors.As(err, &escape) {
-		return ExitIO
+	if code, ok := classifyReading(err); ok {
+		return code
 	}
 	if errors.Is(err, context.Canceled) {
 		return ExitInterrupted
@@ -165,6 +99,121 @@ func classify(err error) int {
 		return ExitIO
 	}
 	return ExitRuntime
+}
+
+// classifyRequest covers what was asked for: the recipe, the preset and what
+// the format can deliver.
+func classifyRequest(err error) (int, bool) {
+	var recipeErr *engine.RecipeError
+	if errors.As(err, &recipeErr) {
+		return ExitRecipe, true
+	}
+	var invalid *recipe.ValidationError
+	if errors.As(err, &invalid) {
+		return ExitRecipe, true
+	}
+	var syntax *recipe.SyntaxError
+	if errors.As(err, &syntax) {
+		return ExitRecipe, true
+	}
+	// Two parts of one recipe saying different things about the same archive
+	// is a recipe problem, like a boundary stated beside a size.
+	var conflict *format.ContentsConflictError
+	if errors.As(err, &conflict) {
+		return ExitRecipe, true
+	}
+	var badProp *format.UnknownPropertyError
+	if errors.As(err, &badProp) {
+		return ExitUsage, true
+	}
+	// A preset id nobody registered is a typo in the invocation, which is what
+	// USAGE means. Deliberately not the code an unknown format gets: a format
+	// can arrive from inside a recipe, where it describes a request rather than
+	// something somebody just typed, and a preset id only ever comes from the
+	// command line.
+	var unknownPreset *preset.UnknownPresetError
+	if errors.As(err, &unknownPreset) {
+		return ExitUsage, true
+	}
+	if code, ok := classifyFormat(err); ok {
+		return code, true
+	}
+	return 0, false
+}
+
+// classifyFormat is the one class the frozen table gives its own code: the
+// request is well formed and no format here can deliver it.
+func classifyFormat(err error) (int, bool) {
+	var belowMin *format.BelowMinimumError
+	if errors.As(err, &belowMin) {
+		return ExitFormat, true
+	}
+	var unknown *format.UnknownFormatError
+	if errors.As(err, &unknown) {
+		return ExitFormat, true
+	}
+	// A format that holds nothing being asked to hold something, and a
+	// container asked to nest, are both "this format cannot do that" - the
+	// same class as a size below the minimum.
+	var notContainer *format.NotAContainerError
+	if errors.As(err, &notContainer) {
+		return ExitFormat, true
+	}
+	var nesting *format.NestingUnsupportedError
+	if errors.As(err, &nesting) {
+		return ExitFormat, true
+	}
+	// A value outside what the format declares is a request the format cannot
+	// deliver, which is what FORMAT means - the same class as a size below the
+	// minimum. It used to fall through to RUNTIME, so "--set width=abc" told
+	// CI this program had a bug rather than that the value was wrong.
+	var badValue *format.PropertyValueError
+	if errors.As(err, &badValue) {
+		return ExitFormat, true
+	}
+	// A set the build cannot complete is a request no format here can deliver -
+	// the same class as a size below the minimum, and usually literally that,
+	// since it is the floor of a format that puts the smallest step out of
+	// reach. Refusing the whole set rather than the part that fits is PR7: the
+	// files nearest the limit are the ones the run was about.
+	var impossible *preset.ImpossibleError
+	if errors.As(err, &impossible) {
+		return ExitFormat, true
+	}
+	return 0, false
+}
+
+// classifyReading covers the disk and what came off it.
+func classifyReading(err error) (int, bool) {
+	var spaceErr *engine.SpaceError
+	if errors.As(err, &spaceErr) {
+		return ExitSpace, true
+	}
+	var collision *engine.CollisionError
+	if errors.As(err, &collision) {
+		return ExitIO, true
+	}
+	// A manifest we cannot read is a reading failure, not a bug in the tool.
+	// Falling through to RUNTIME would tell CI to file a report against us for
+	// a file somebody handed in.
+	var schema *manifest.SchemaError
+	if errors.As(err, &schema) {
+		return ExitIO, true
+	}
+	// Same class, one step earlier: a manifest too large to read is a file we
+	// will not take, not a fault of ours.
+	var manifestTooLarge *manifest.TooLargeError
+	if errors.As(err, &manifestTooLarge) {
+		return ExitIO, true
+	}
+	// And the same class one step later: a manifest whose entries leave the
+	// directory once the links are followed. The text of the path passed, the
+	// filesystem did not.
+	var escape *audit.EscapeError
+	if errors.As(err, &escape) {
+		return ExitIO, true
+	}
+	return 0, false
 }
 
 // propertyFlag collects repeated --set key=value pairs.

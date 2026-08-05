@@ -7,6 +7,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -47,6 +48,9 @@ var reachableFromTheWindow = []string{}
 // key the window cannot produce, and separating the two reasons would be a
 // second list to keep in step for no gain.
 var notYetReachable = []string{
+	"preset:size-boundaries",
+	"preset:size-boundaries.limit",
+	"preset:size-boundaries.spread",
 	"format:csv",
 	"format:html",
 	"format:json",
@@ -109,11 +113,21 @@ var notYetReachable = []string{
 // capabilities is everything the engine can be asked for, gathered from the
 // code that defines it rather than from a list somebody typed.
 //
-// Three sources, because three different things can drift apart: the keys a
-// recipe accepts, the formats this build registered, and the settings each
-// format declares. A window has to reach all three to be at parity, and the
-// third is the one that arrived last - until format properties carried a type
-// and a range there was nothing here worth comparing.
+// Four sources, because four different things can drift apart: the keys a
+// recipe accepts, the formats this build registered, the settings each format
+// declares, and the presets. A window has to reach all four to be at parity.
+//
+// The presets arrived last and they arrived late, which is the whole lesson of
+// O59 in docs/OBSERVATIONS.md. This guard was armed before the first widget so
+// that it would never start from a full list of things already built - and then
+// size-boundaries was registered and it stayed green, because a preset is not a
+// recipe key and not a format and nothing here looked for one. Measured on
+// 2026-08-04: adding the preset did not redden this, while adding the recipe key
+// group reddened it at once.
+//
+// Reads is deliberately not counted. A preset that supplies a default for
+// --format has not added a capability - the format is already on this list, and
+// counting it twice would make the distance to parity read longer than it is.
 func capabilities() []string {
 	var out []string
 	for _, k := range recipe.Keys() {
@@ -123,6 +137,12 @@ func capabilities() []string {
 		out = append(out, "format:"+d.ID)
 		for _, p := range d.Properties {
 			out = append(out, "property:"+d.ID+"."+p.Name)
+		}
+	}
+	for _, p := range preset.All() {
+		out = append(out, "preset:"+p.ID)
+		for _, param := range p.Parameters {
+			out = append(out, "preset:"+p.ID+"."+param.Name)
 		}
 	}
 	sort.Strings(out)

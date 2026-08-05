@@ -72,6 +72,32 @@ type Run struct {
 	// of the same recipe would produce different files and nothing would say
 	// why.
 	Overrides map[string]Override `json:"overrides,omitempty"`
+
+	// Preset names the question this run was built to answer, when it came
+	// from one. Absent for a run driven by a recipe file or by flags.
+	Preset *Preset `json:"preset,omitempty"`
+}
+
+// Preset records which named question produced this run, and on what numbers.
+//
+// The id alone would not be enough, and the reason is the untouchable rule
+// about a manifest not claiming certainty it does not have. Some parameters
+// describe somebody else's system - the size limit of an upload form is theirs,
+// not ours - and when one is left out we stand a number of our own in its
+// place. A set built around a limit we invented carries expectations that read
+// exactly like a set built around the real one.
+//
+// So Defaulted names the values nobody gave us. The run says the same thing out
+// loud while it runs, and that sentence scrolls away. This is the part that
+// stays with the files.
+type Preset struct {
+	ID string `json:"id"`
+	// Parameters are the settled values, ours and theirs together, written the
+	// way somebody would type them.
+	Parameters map[string]string `json:"parameters,omitempty"`
+	// Defaulted are the parameter names that were not given and stood in from
+	// the declaration. Sorted, so two runs of one preset compare byte for byte.
+	Defaulted []string `json:"defaulted,omitempty"`
 }
 
 // Override records one value that came from the recipe and was replaced on the

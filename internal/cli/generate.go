@@ -18,6 +18,7 @@ import (
 )
 
 type generateOpts struct {
+	presetID       string
 	formatID       string
 	sizeStr        string
 	sizeRange      string
@@ -39,6 +40,7 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	fs := flag.NewFlagSet("generate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 
+	fs.StringVar(&g.presetID, "preset", "", "build the set a named test question calls for. Run \"tfg preset list\" to see them")
 	fs.StringVar(&g.formatID, "format", "", "format of the files to produce, for example txt")
 	fs.StringVar(&g.sizeStr, "size", "", "exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count")
 	fs.StringVar(&g.sizeRange, "size-range", "", "a size drawn from a range for each file, as 1kb-8kb. The draw comes from the seed, so the same seed gives the same sizes")
@@ -75,7 +77,10 @@ Flags:
 		fs.PrintDefaults()
 		fs.SetOutput(errOut)
 	}
-	fs.Usage = func() { usage(errOut) }
+	// Pointed at wherever the set is currently writing rather than at errOut,
+	// so a caller that wants to hold the complaint back and answer it better
+	// gets the whole of it, help text included.
+	fs.Usage = func() { usage(fs.Output()) }
 	return fs, usage
 }
 
@@ -91,7 +96,25 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	// such as "--seed 5" could not be told apart from a file name.
 	recipePath, rest := splitLeadingPath(args)
 
-	if err := fs.Parse(rest); err != nil {
+	// Which flags exist depends on which preset was named, because the
+	// parameters of a preset are flags. Read out of the arguments rather than
+	// parsed, since parsing is the thing that needs the answer.
+	if code := addPresetFlags(fs, rest, errOut); code != ExitOK {
+		return code
+	}
+
+	// The flag package writes its complaint and then the entire flag list.
+	// Held back rather than let through, because a preset parameter typed
+	// without its preset deserves a sentence saying where the flag went, and
+	// underneath twenty lines of flag list is where that sentence is not read.
+	var complaint bytes.Buffer
+	fs.SetOutput(&complaint)
+	err := fs.Parse(rest)
+	fs.SetOutput(errOut)
+	if err != nil {
+		if !explainUndefinedFlag(fs, rest, errOut) {
+			errOut.Write(complaint.Bytes())
+		}
 		return ExitUsage
 	}
 
@@ -113,9 +136,19 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		targets []engine.Target
 		code    int
 	)
-	if recipePath != "" {
+	switch {
+	case recipePath != "" && g.presetID != "":
+		// Two answers to one question. A preset is a recipe with a name, so
+		// there is a way to have both, and it is to turn one into the other.
+		fmt.Fprintf(errOut,
+			"tfg: %s and --preset %s each say what to produce, so only one of them can be given. Run \"tfg preset eject %s\" to turn the preset into a recipe file you can edit and combine yourself.\n",
+			recipePath, g.presetID, g.presetID)
+		return ExitUsage
+	case recipePath != "":
 		targets, code = targetsFromRecipe(recipePath, &g, given, &opt, errOut)
-	} else {
+	case g.presetID != "":
+		targets, code = targetsFromPreset(fs, &g, given, &opt, errOut)
+	default:
 		targets, code = targetsFromFlags(&g, given, errOut)
 	}
 	if code != ExitOK {
@@ -141,6 +174,18 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 		return nil, ExitUsage
 	}
 
+	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
+}
+
+// targetsFromParsedRecipe settles what the flags take away from a recipe that
+// has already been read.
+//
+// One function for both sources on purpose. A preset expands into recipe
+// source and is parsed by the same parser, so from here on there is nothing
+// left that could tell the two apart - which means --clean, --out and --seed
+// behave identically whether the recipe came from a file or from a name, and
+// no second copy of this can drift away from the first.
+func targetsFromParsedRecipe(rec *recipe.Recipe, hash string, g *generateOpts, given map[string]bool, opt *engine.Options) []engine.Target {
 	opt.RecipeHash = hash
 	opt.Overrides = map[string]manifest.Override{}
 	opt.OutDir = rec.Output.Dir
@@ -170,13 +215,17 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 	if len(opt.Overrides) == 0 {
 		opt.Overrides = nil
 	}
-	return targets, ExitOK
+	return targets
 }
 
 // targetsFromFlags builds the single target of a run with no recipe.
 func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) ([]engine.Target, int) {
+	// Three things can say what to produce and none of them was given. It used
+	// to name two, because a preset was not yet one of them - and a message
+	// listing the ways out has to list all of them or it sends somebody the
+	// long way round.
 	if g.formatID == "" {
-		fmt.Fprintln(errOut, "tfg: --format is required. Run \"tfg formats\" to see what this build supports, or name a recipe file instead.")
+		fmt.Fprintln(errOut, "tfg: nothing says what to produce. Give --format with a size, name a recipe file, or pick a preset with --preset. Run \"tfg formats\" for the formats and \"tfg preset list\" for the presets.")
 		return nil, ExitUsage
 	}
 	// One of the three, and exactly one. Two of them together is two answers to

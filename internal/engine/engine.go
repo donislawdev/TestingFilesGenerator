@@ -142,6 +142,9 @@ type Options struct {
 	// from. Both are empty for a run driven by flags alone.
 	RecipeHash string
 	Overrides  map[string]manifest.Override
+	// Preset says which named question this run came from, when it came from
+	// one. Nil for a recipe file and for flags on their own.
+	Preset *manifest.Preset
 	// ManifestName is the file the manifest lands in, relative to OutDir.
 	ManifestName string
 
@@ -542,6 +545,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	)
 	m.Run.RecipeHash = opt.RecipeHash
 	m.Run.Overrides = opt.Overrides
+	m.Run.Preset = opt.Preset
 	res := &Result{Manifest: m}
 
 	// Whether this run may start at all is settled before anything is written

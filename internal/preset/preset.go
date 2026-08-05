@@ -248,6 +248,24 @@ func IDs() []string {
 	return ids()
 }
 
+// Declaring is the preset that declares a parameter of this name, or empty.
+//
+// Parameter names and global flag names share one namespace, which is what
+// lets "--preset size-boundaries --limit 10mb" read as one sentence. The cost
+// of that is a flag which exists in one invocation and not in the next, so
+// typing --limit without its preset has to be answered with something better
+// than "not defined". This is how the command line finds out whose it is.
+func Declaring(name string) string {
+	for _, id := range ids() {
+		for _, param := range registry[id].Parameters {
+			if param.Name == name {
+				return id
+			}
+		}
+	}
+	return ""
+}
+
 func ids() []string {
 	out := make([]string, 0, len(registry))
 	for id := range registry {

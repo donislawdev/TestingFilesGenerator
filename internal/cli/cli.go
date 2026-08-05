@@ -78,6 +78,8 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return cleanup(ctx, args[1:], out, errOut)
 	case "recipe":
 		return recipeCmd(args[1:], out, errOut)
+	case "preset":
+		return presetCmd(args[1:], out, errOut)
 	case "formats":
 		return formats(args[1:], out, errOut)
 	case "--version", "version":
@@ -135,6 +137,7 @@ Commands:
   verify      check a directory against a manifest
   cleanup     remove the files a manifest lists
   recipe fmt  print a recipe in its settled shape
+  preset      build a set of files from a named test question
   formats     list the formats this build supports
   version     print the tool version
   license     print the licence and what it means for generated files
