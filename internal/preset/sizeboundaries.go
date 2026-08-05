@@ -29,6 +29,7 @@ func init() {
 			},
 			{
 				Name: "spread", Kind: format.PropertyText,
+				Shape:   "sizes separated by commas",
 				Default: defaultSpreadText,
 				Detail:  "How far either side of the limit to reach, as a list of sizes.",
 			},

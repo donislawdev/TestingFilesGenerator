@@ -35,6 +35,19 @@ type Host interface {
 	SetContent(fyne.CanvasObject)
 	SetCloseIntercept(func())
 	Close()
+	// ChooseDirectory asks the person where the files should go and calls back
+	// with what they picked, or with nothing at all if they changed their mind.
+	//
+	// It always calls back, and that is the contract rather than an accident.
+	// An implementation that stays silent on cancel leaves the caller unable to
+	// tell "cancelled" from "still open", and it also leaves the caller's
+	// handling of the empty answer as code no test can reach - which is how a
+	// field ends up cleared by a cancelled picker with nothing to catch it.
+	//
+	// Here rather than in the screens because it is the one thing a screen
+	// needs that only a real window can do. A stand in answers it with a path,
+	// which is what lets a guard press the button on a machine with no screen.
+	ChooseDirectory(func(string))
 }
 
 // Generate is the screen that produces files from settings somebody chose.
@@ -44,6 +57,8 @@ type Host interface {
 // numbers - and the two share everything after "what should be produced".
 type Generate struct {
 	*runner
+
+	host Host
 
 	formatPick *widget.Select
 	size       *widget.Entry
@@ -64,8 +79,8 @@ type Generate struct {
 }
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
-func NewGenerate(links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner()}
+func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
+	g := &Generate{runner: newRunner(), host: host}
 	g.runner.settle = g.settle
 	g.buildFields()
 
@@ -113,7 +128,7 @@ func (g *Generate) buildFields() {
 	g.count = entry("1", "")
 	g.id = entry("files", "")
 	g.name = entry("", "left empty: files_0001 and so on")
-	g.outDir = entry(".", "")
+	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")
 
 	g.label = widget.NewCheck("", nil)
@@ -139,7 +154,8 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 		parts.Field("how many", "How many files to produce.", g.count),
 		parts.Field("target id", "Names the group. The seeds are derived from it, so changing it changes the bytes.", g.id),
 		parts.Field("name template", "What the files are called. {index:04} becomes 0001, 0002 and so on.", g.name),
-		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.", g.outDir),
+		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.",
+			chooserFor(g.host, g.outDir)),
 		parts.Field("seed", "The same seed gives the same bytes, on any machine.", g.seed),
 		parts.Field("self describing label", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.", g.label),
 	)

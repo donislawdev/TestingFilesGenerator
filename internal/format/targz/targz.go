@@ -137,6 +137,7 @@ func init() {
 			},
 			{
 				Name: "entry_format", Kind: format.PropertyText,
+				Shape: "the id of a format, as tfg formats lists them",
 				// Not a choice, for the same reason as in ZIP: the allowed
 				// values are whatever this build registered, and a list frozen
 				// here would drift the moment a format is added.

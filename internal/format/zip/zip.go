@@ -107,6 +107,7 @@ func init() {
 			},
 			{
 				Name: "entry_format", Kind: format.PropertyText,
+				Shape: "the id of a format, as tfg formats lists them",
 				// Not a choice, because the allowed values are whatever this
 				// build registered, and a list frozen here would drift away
 				// from the registry the moment a format is added.

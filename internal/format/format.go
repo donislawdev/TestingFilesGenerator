@@ -147,6 +147,18 @@ type Property struct {
 	// Choices are the allowed values of a choice, lower case.
 	Choices []string
 
+	// Shape is what free text has to look like, in a few words, for a kind that
+	// has no range and no closed set to describe itself with.
+	//
+	// It exists because "text" was the whole of what a text setting could say
+	// about itself, and under a field that reads as no description at all -
+	// seen on screen on 2026-08-05, where the spread of a boundary set was
+	// announced as "text, default 1B,1kb,1mb". The value it wants is a list of
+	// sizes separated by commas, the declaration knew that, and there was
+	// nowhere to put it. Ignored by every other kind, which say what they take
+	// from their own range or set.
+	Shape string
+
 	// Default is what the format uses when nothing says otherwise, written
 	// the way a person would write it. Empty means the format works it out -
 	// a picture size chosen to fit the requested bytes, for instance.
@@ -421,7 +433,12 @@ func (p Property) Allowed() string {
 	case PropertySize:
 		what = "a size such as 2mb, or a plain byte count"
 	default:
-		what = "text"
+		// A text setting describes itself with Shape or not at all. Saying
+		// "text" under a field is a word where a description should be.
+		what = p.Shape
+	}
+	if p.Default != "" && what == "" {
+		return "default " + p.Default
 	}
 	if p.Default != "" {
 		what += ", default " + p.Default

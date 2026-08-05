@@ -16,6 +16,13 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **The window says where the files will go, and lets you browse to it.** The
+  output directory is written out in full instead of as a dot, and there is a
+  Choose button beside it. A dot is clear in a terminal, where you walked into
+  the directory yourself. Started from a desktop it means somewhere, and this is
+  the part of the tool that writes into your directories.
+  The box is still a box, so a path somebody sent you can be pasted straight in.
+
 - **Presets in the window.** A second screen that starts from a question rather
   than from numbers: pick what you are testing, and the set is worked out from
   the answer. It shows the question the preset closes and the mistakes it

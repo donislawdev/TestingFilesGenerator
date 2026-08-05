@@ -61,10 +61,20 @@ jobs:
         # to be visible rather than discovered later.
         #
         # Two questions rather than one, since the graphics toolkit arrived
-        # on 2026-08-05. The graph below is 69 modules and most of them are
+        # on 2026-08-05. The graph below is 68 modules and most of them are
         # Fyne's. Their licences were measured before it was added and every
         # one in the linked set is permissive and one way compatible with
         # GPL-3.0: 13 BSD-3, 10 MIT, 1 Apache-2.0, 1 BSD-2, 1 ISC.
+        #
+        # Changed once since, on 2026-08-05, when the window gained a
+        # folder picker. github.com/FyshOS/fancyfs was already named here
+        # because the toolkit requires it - importing the dialog package
+        # moved it from named to downloaded, checksummed and compiled in.
+        # Checked before it was accepted: BSD-3, 129 lines, written by the
+        # toolkit's own author, and reached from one line of the dialog
+        # package where it decorates folder icons. Tidying after it pruned
+        # github.com/kr/text from go.mod, which took github.com/creack/pty
+        # out of the graph, taking the count from 69 to 68.
         #
         # The second question protects what ships to most people. The
         # command line binary links exactly two external modules and the
@@ -86,7 +96,6 @@ jobs:
             github.com/anthonynsimon/bild \
             github.com/clipperhouse/uax29/v2 \
             github.com/cpuguy83/go-md2man/v2 \
-            github.com/creack/pty \
             github.com/davecgh/go-spew \
             github.com/felixge/fgprof \
             github.com/fogleman/gg \

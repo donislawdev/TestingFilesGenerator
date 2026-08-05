@@ -27,6 +27,8 @@ import (
 type Preset struct {
 	*runner
 
+	host Host
+
 	pick   *widget.Select
 	outDir *widget.Entry
 	seed   *widget.Entry
@@ -42,8 +44,8 @@ type Preset struct {
 }
 
 // NewPreset builds the screen. links are the buttons to the other screens.
-func NewPreset(links ...fyne.CanvasObject) *Preset {
-	p := &Preset{runner: newRunner()}
+func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
+	p := &Preset{runner: newRunner(), host: host}
 	p.runner.settle = p.settle
 
 	p.paramBox = container.NewVBox()
@@ -51,7 +53,7 @@ func NewPreset(links ...fyne.CanvasObject) *Preset {
 
 	ids := preset.IDs()
 	p.pick = widget.NewSelect(ids, p.onPresetChosen)
-	p.outDir = entry(".", "")
+	p.outDir = entry(startingDirectory(), "")
 	p.seed = entry("0", "")
 
 	p.body = container.NewVScroll(parts.Screen(
@@ -59,7 +61,8 @@ func NewPreset(links ...fyne.CanvasObject) *Preset {
 		parts.Field("preset", "What you are testing. The set is worked out from the answer.", p.pick),
 		p.about,
 		p.paramBox,
-		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.", p.outDir),
+		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.",
+			chooserFor(p.host, p.outDir)),
 		parts.Field("seed", "The same seed gives the same bytes, on any machine.", p.seed),
 		p.actions(links...),
 		p.progress(),
@@ -90,8 +93,18 @@ func (p *Preset) onPresetChosen(id string) {
 	// The question first, because it is the thing somebody chooses by. A list
 	// of ids says nothing about which one answers what they came to ask.
 	p.about.Add(parts.Prose(chosen.Question))
+
+	// One line each rather than one sentence. Run together they are unreadable,
+	// because the entries have commas inside them - "MB confused with MiB,
+	// which is 4.8 per cent and enough to let a file through that should not
+	// pass" is one item, and joined with commas and an "and" it reads as three.
+	// Seen on screen on 2026-08-05, which is the only way this kind of thing is
+	// ever seen.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Note("Typically finds: " + joinWords(chosen.Catches)))
+		p.about.Add(parts.Note("Typically finds:"))
+		for _, catch := range chosen.Catches {
+			p.about.Add(parts.Note("   - " + catch))
+		}
 	}
 	p.about.Refresh()
 
@@ -111,21 +124,6 @@ func detailOfParameter(param format.Property) string {
 		detail += ". " + param.Detail
 	}
 	return detail
-}
-
-func joinWords(all []string) string {
-	out := ""
-	for i, s := range all {
-		switch {
-		case i == 0:
-		case i == len(all)-1:
-			out += " and "
-		default:
-			out += ", "
-		}
-		out += s
-	}
-	return out
 }
 
 // given is what the user typed, by parameter name. A field left empty is left

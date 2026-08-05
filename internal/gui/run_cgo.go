@@ -5,7 +5,9 @@ package gui
 import (
 	"io"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/dialog"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
@@ -33,10 +35,44 @@ import (
 // deletes itself.
 const appID = "dev.donislaw.tfg"
 
+// desktop is a real window, told how to answer the one thing the screens
+// cannot do for themselves.
+//
+// The toolkit's folder picker lives here rather than beside the screens for the
+// same reason its app package does: it is the part that needs a real window,
+// and keeping it out of internal/gui/window is what lets the whole screen tree
+// build and render with no C compiler.
+//
+// It is the only place this build touches fyne.io/fyne/v2/dialog, and that
+// import has a cost worth recording. The dialog package pulls in
+// github.com/FyshOS/fancyfs, which decorates folder icons and is reached from
+// exactly one line of it. Checked on 2026-08-05 before it was accepted: BSD-3,
+// one way compatible with GPL-3.0 like the eleven other BSD-3 modules already
+// here, 129 lines of code, written by the author of the toolkit itself. It was
+// already named in our module graph because the toolkit requires it - what
+// changed is that it is now downloaded, checksummed and compiled in.
+type desktop struct {
+	fyne.Window
+}
+
+func (d desktop) ChooseDirectory(chosen func(string)) {
+	dialog.ShowFolderOpen(func(dir fyne.ListableURI, err error) {
+		// Nothing chosen and nothing to say. Cancelling a picker is an
+		// ordinary answer rather than a failure, and an error here is the
+		// toolkit failing to read a directory - which the field the person
+		// can still type into makes survivable.
+		if err != nil || dir == nil {
+			chosen("")
+			return
+		}
+		chosen(dir.Path())
+	}, d.Window)
+}
+
 func run(errOut io.Writer) int {
 	a := app.NewWithID(appID)
 	w := a.NewWindow("Testing Files Generator " + version.Version)
-	window.Open(w)
+	window.Open(desktop{w})
 	w.Resize(window.OpenSize)
 	w.CenterOnScreen()
 	w.ShowAndRun()

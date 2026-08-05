@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -26,6 +27,35 @@ import (
 // It checks versions rather than the set of modules. Which modules are listed
 // is a licence question and belongs to a person reading each licence, and a
 // guard that added rows automatically would defeat the reason the file exists.
+
+// unlisted is every module the binary carries that the notices do not name.
+//
+// The standard library is not a module and does not appear in the build
+// list, so nothing has to be excluded here - what comes back is third party
+// code that ships.
+func unlisted(body string, built map[string]string) []string {
+	// Two ways of being named, because this file uses both. Most modules get
+	// a row in a table. The two that carry the command line get a section of
+	// their own with the whole licence text under a heading, which is a
+	// stronger notice rather than a weaker one - reading only the rows called
+	// them missing the first time this ran.
+	named := map[string]bool{}
+	for _, line := range strings.Split(body, "\n") {
+		if m := noticeRow.FindStringSubmatch(line); m != nil {
+			named[m[1]] = true
+		}
+		if heading, found := strings.CutPrefix(line, "## "); found {
+			named[strings.TrimSpace(heading)] = true
+		}
+	}
+	var missing []string
+	for path := range built {
+		if !named[path] {
+			missing = append(missing, path)
+		}
+	}
+	return missing
+}
 
 var noticeRow = regexp.MustCompile(`^\| ` + "`" + `([^` + "`" + `]+)` + "`" + ` \| (v[^ |]+) \|`)
 
@@ -64,6 +94,19 @@ func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 	}
 	if listed < 5 {
 		t.Fatalf("only %d rows were compared, so this guard would pass on an empty table", listed)
+	}
+
+	// And the other direction, which is the one that was missing. Until
+	// 2026-08-05 this only asked whether every listed module is still built,
+	// so a module that ARRIVED went unlisted and unnoticed - and it was the
+	// folder picker arriving that showed it. Their licences require the
+	// notice to travel with the code that ships, and an absent notice fails
+	// that in a way a wrong version number does not.
+	if missing := unlisted(string(body), built); len(missing) > 0 {
+		sort.Strings(missing)
+		t.Errorf("%d module(s) are compiled into the window and named nowhere in the notices:\n  %s\n"+
+			"Read the licence out of the module's own source, add a row, and change the counts "+
+			"in the paragraph above the table.", len(missing), strings.Join(missing, "\n  "))
 	}
 	t.Logf("%d module version(s) in the notices agree with what the window binary links", listed)
 }

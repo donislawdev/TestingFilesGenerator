@@ -12,6 +12,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 )
 
@@ -252,4 +254,145 @@ func hashLine(recorded string) string {
 		}
 	}
 	return ""
+}
+
+// Where the files will land is legible before the button is pressed.
+//
+// In a terminal a dot is the directory you typed your way into. A window
+// started from a desktop has a working directory nobody chose and nobody can
+// see, so the same dot means "somewhere" - and this is the one part of this
+// tool that writes into other people's directories. The destination is
+// unchanged, what changed is that it can be read.
+func TestBothScreensSayWhereTheFilesWillGo(t *testing.T) {
+	host, generate := screen(t)
+	press(t, generate, "Presets")
+
+	for name, content := range map[string]fyne.CanvasObject{
+		"the generate screen": generate,
+		"the preset screen":   host.content,
+	} {
+		shown := entryUnder(t, content, "output directory").Text
+		if shown == "." || shown == "" {
+			t.Errorf("%s offers %q as the output directory, which says nothing about where the files go",
+				name, shown)
+			continue
+		}
+		if !filepath.IsAbs(shown) {
+			t.Errorf("%s offers %q, which is not a path somebody can read off the screen", name, shown)
+		}
+	}
+}
+
+// A text setting says what sort of text it takes.
+//
+// "text" was the whole of what a text setting could say about itself, and under
+// a field that reads as no description at all - seen on screen on 2026-08-05 as
+// "text, default 1B,1kb,1mb", where the value wanted is a list of sizes. The
+// declaration knew that and had nowhere to put it.
+func TestNoTextSettingDescribesItselfAsText(t *testing.T) {
+	checked := 0
+	for _, p := range preset.All() {
+		for _, param := range p.Parameters {
+			if param.Kind != format.PropertyText {
+				continue
+			}
+			checked++
+			if strings.HasPrefix(param.Allowed(), "text") {
+				t.Errorf("%s.%s announces itself as %q, which is a word where a description should be",
+					p.ID, param.Name, param.Allowed())
+			}
+			if param.Shape == "" {
+				t.Errorf("%s.%s is free text and declares no shape, so nothing can say what it takes",
+					p.ID, param.Name)
+			}
+		}
+	}
+	for _, d := range format.All() {
+		for _, param := range d.Properties {
+			if param.Kind == format.PropertyText && param.Shape == "" {
+				t.Errorf("%s.%s is free text and declares no shape", d.ID, param.Name)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Skip("no text setting is declared in this build")
+	}
+	t.Logf("%d text setting(s), each declaring what it takes", checked)
+}
+
+// What a preset typically finds is a list, not a sentence.
+//
+// The entries have commas inside them, so run together they read as three times
+// as many items as there are. Only visible by looking at the screen.
+func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
+	_, content := presetScreen(t)
+	picker := controlUnder(content, "preset").(*widget.Select)
+
+	for _, p := range preset.All() {
+		if len(p.Catches) < 2 {
+			continue
+		}
+		picker.SetSelected(p.ID)
+		shown := textIn(content)
+		for _, catch := range p.Catches {
+			if !strings.Contains(shown, "\n"+"   - "+catch+"\n") &&
+				!strings.Contains(shown, "   - "+catch) {
+				t.Errorf("%s: %q is not on a line of its own", p.ID, catch)
+			}
+		}
+		// Joined into one sentence they would share a line with each other.
+		if strings.Contains(shown, p.Catches[0]+" and "+p.Catches[1]) ||
+			strings.Contains(shown, p.Catches[0]+", "+p.Catches[1]) {
+			t.Errorf("%s runs its findings together into one sentence", p.ID)
+		}
+	}
+}
+
+// The browse button reaches the window and its answer lands in the field.
+//
+// A picker needs a real window, so what is provable here is the wiring rather
+// than the dialog: that the button asks, and that what comes back is what the
+// run will use. A button that asks and drops the answer looks exactly like one
+// that works, which is the shape this project keeps meeting.
+func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
+	host := &fakeHost{picked: filepath.Join(t.TempDir(), "chosen")}
+	window.Open(host)
+
+	for _, screenName := range []string{"generate", "preset"} {
+		if screenName == "preset" {
+			press(t, host.content, "Presets")
+		}
+		content := host.content
+
+		before := entryUnder(t, content, "output directory").Text
+		press(t, content, "Choose...")
+
+		if host.asked == 0 {
+			t.Fatalf("the %s screen has a browse button that asks nobody", screenName)
+		}
+		after := entryUnder(t, content, "output directory").Text
+		if after == before {
+			t.Errorf("the %s screen dropped the directory that was chosen, so the button does nothing",
+				screenName)
+		}
+		if after != host.picked {
+			t.Errorf("the %s screen holds %q and %q was chosen", screenName, after, host.picked)
+		}
+	}
+}
+
+// Changing your mind leaves the field alone.
+//
+// A picker that is cancelled answers with nothing, and a field emptied by
+// cancelling would send the run at a directory nobody named.
+func TestCancellingTheDirectoryPickerLeavesTheFieldAlone(t *testing.T) {
+	host := &fakeHost{} // picked is empty, so nothing is chosen
+	window.Open(host)
+
+	before := entryUnder(t, host.content, "output directory").Text
+	press(t, host.content, "Choose...")
+
+	if after := entryUnder(t, host.content, "output directory").Text; after != before {
+		t.Errorf("cancelling the picker changed the field from %q to %q", before, after)
+	}
 }

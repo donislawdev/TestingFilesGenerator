@@ -1,7 +1,10 @@
 package window
 
 import (
+	"os"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -20,11 +23,11 @@ import (
 func Open(h Host) {
 	var showGenerate, showPreset, showAbout func()
 
-	gen := NewGenerate(
+	gen := NewGenerate(h,
 		widget.NewButton("Presets", func() { showPreset() }),
 		widget.NewButton("About", func() { showAbout() }),
 	)
-	pre := NewPreset(
+	pre := NewPreset(h,
 		widget.NewButton("One target", func() { showGenerate() }),
 		widget.NewButton("About", func() { showAbout() }),
 	)
@@ -54,6 +57,49 @@ func Open(h Host) {
 
 // FirstScreen is what the window shows when it opens, without a window to put
 // it in. It is what a guard renders, and it is the same tree Open installs.
-func FirstScreen() fyne.CanvasObject {
-	return NewGenerate().Object()
+func FirstScreen(h Host) fyne.CanvasObject {
+	return NewGenerate(h).Object()
+}
+
+// chooserFor is the output directory box with a way to browse to one.
+//
+// Typing a path is fine when you have one to hand and hopeless when you do not,
+// and the box beside it is the only field on either screen whose value is not
+// something a person carries in their head. The button asks the window, which
+// is the only thing that can open a picker.
+//
+// The box stays editable. A picker that replaces typing takes away pasting a
+// path somebody sent you, which is how most of these get filled in.
+func chooserFor(host Host, box *widget.Entry) fyne.CanvasObject {
+	choose := widget.NewButton("Choose...", func() {
+		host.ChooseDirectory(func(dir string) {
+			if dir != "" {
+				box.SetText(dir)
+			}
+		})
+	})
+	return container.NewBorder(nil, nil, nil, choose, box)
+}
+
+// startingDirectory is where the output field points before anybody changes it.
+//
+// Spelled out in full rather than left as a dot, and that is the one place a
+// window has to differ from the command line rather than merely look different.
+// In a terminal "." is the directory you are standing in and you know which one
+// that is, because you typed your way there. A window started from a desktop
+// has a working directory nobody chose and nobody can see - so the same dot
+// means "somewhere", and this is the one part of this tool that writes into
+// other people's directories.
+//
+// The destination itself is unchanged. What changes is that it is legible
+// before the button is pressed rather than after the files have appeared.
+//
+// A working directory we cannot read leaves the dot, because a dot that means
+// "here" is still better than a path that is wrong.
+func startingDirectory() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "."
+	}
+	return dir
 }

@@ -40,11 +40,25 @@ type fakeHost struct {
 	content   fyne.CanvasObject
 	intercept func()
 	closed    int
+	picked    string
+	asked     int
 }
 
 func (h *fakeHost) SetContent(o fyne.CanvasObject) { h.content = o }
 func (h *fakeHost) SetCloseIntercept(fn func())    { h.intercept = fn }
 func (h *fakeHost) Close()                         { h.closed++ }
+
+// picked is what the stand in answers when a screen asks where the files
+// should go, and asked counts how often it was asked. A real picker needs a
+// real window, and the behaviour worth proving is that the button reaches one
+// and that the answer lands in the field.
+func (h *fakeHost) ChooseDirectory(chosen func(string)) {
+	h.asked++
+	// Always, including the empty answer that means somebody changed their
+	// mind. Staying silent here would make the caller's handling of that answer
+	// unreachable from any test.
+	chosen(h.picked)
+}
 
 // A tree that renders as one flat colour passes every structural check and
 // shows nothing. That defect is not hypothetical here: SVG at exactly its
@@ -62,7 +76,7 @@ func (h *fakeHost) Close()                         { h.closed++ }
 // Worth writing down, because a colour count reads like a content check and is
 // not one.
 func TestTheWindowActuallyDrawsSomething(t *testing.T) {
-	w := test.NewWindow(window.FirstScreen())
+	w := test.NewWindow(window.FirstScreen(&fakeHost{}))
 	defer w.Close()
 	w.Resize(window.OpenSize)
 
@@ -255,12 +269,26 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 	return found
 }
 
+// entryUnder is the box somebody types into for a labelled field.
+//
+// It looks inside a grouping as well as at the control itself, because a field
+// can be a box with something beside it - the output directory is a box and a
+// button to browse with - and a guard should not have to know which fields are
+// which shape.
 func entryUnder(t *testing.T, o fyne.CanvasObject, label string) *widget.Entry {
 	t.Helper()
 	control := controlUnder(o, label)
-	entry, ok := control.(*widget.Entry)
-	if !ok {
-		t.Fatalf("the field %q is %T rather than a box to type in", label, control)
+	if entry, ok := control.(*widget.Entry); ok {
+		return entry
 	}
-	return entry
+	var found *widget.Entry
+	walk(control, func(obj fyne.CanvasObject) {
+		if entry, ok := obj.(*widget.Entry); ok && found == nil {
+			found = entry
+		}
+	})
+	if found == nil {
+		t.Fatalf("the field %q is %T and holds no box to type in", label, control)
+	}
+	return found
 }
