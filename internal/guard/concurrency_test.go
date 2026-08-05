@@ -30,6 +30,13 @@ var mayBeConcurrent = map[string]string{
 	// Signals arrive on a channel by definition, and the handler has to run
 	// beside the work it interrupts.
 	"cmd/tfg/main.go": "the interrupt handler has to run beside the work it stops",
+	// A window that waits for engine.Run is a window the desktop reports as not
+	// responding, so the run happens beside it. The channel is the other half:
+	// closing the window has to wait for that goroutine to wind down, because
+	// cancelling and exiting at once would end the process inside a file - the
+	// invariant G7 exists to hold. Added 2026-08-05 with the first generate
+	// window, and the owner was told.
+	"internal/gui/window/run.go": "the run happens beside the window, and closing the window waits for it",
 }
 
 // Waiting on cancellation is not the same thing as running in parallel. Every

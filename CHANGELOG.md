@@ -16,6 +16,26 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **The window generates files.** Pick a format, say how big and how many, and
+  press Generate. It writes the same bytes the command line writes from the same
+  settings, because it is the same engine underneath rather than a second one.
+  The settings a format accepts are drawn from the format itself, so choosing
+  PNG offers width and height, choosing WAV offers sample rate, channels, bit
+  depth and content, and each field says what it takes and what it is for.
+  Preview sits before Generate and answers the question that costs nothing to
+  ask: how many files, how many bytes, and how much room is left on the disk.
+  It writes nothing, and it runs the same checks the real run does, so a run it
+  says will work is a run that starts.
+  Progress shows bytes, percentage and an estimate of the time left. Cancel
+  stops the run, and so does closing the window - what was finished stays, the
+  manifest describes exactly that, and neither leaves a half written file
+  behind.
+  A refusal appears in full, with what went wrong, why, what is allowed and
+  what to do instead. The words are the engine's own, so the window and the
+  command line cannot come to disagree about what they accept.
+  The licence notice moved to an About screen, reachable from the generate
+  screen and with a way back. The window opens on the work.
+
 - **A window.** `tfg-gui` opens one, and it is a separate binary from `tfg` on
   purpose: the toolkit that draws it needs a C compiler and OpenGL, and the
   command line needs neither. Nothing about `tfg` changes - a server or a build

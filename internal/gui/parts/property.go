@@ -1,0 +1,135 @@
+package parts
+
+import (
+	"strconv"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/widget"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+)
+
+// PropertyField is a control drawn from a declaration, with the way to read it
+// back.
+type PropertyField struct {
+	// Name is the key this value goes under, exactly as the format declared it.
+	// Never translated - it is a contract key, G8.
+	Name string
+	// Control is the widget itself.
+	Control fyne.CanvasObject
+	// Value is what the user has put in, as text. Text because that is what a
+	// recipe and a --set flag both carry, so the engine judges one thing however
+	// it was asked.
+	Value func() string
+}
+
+// FromProperty draws the field a declaration describes.
+//
+// This is the whole reason properties are declared rather than only named. A
+// declaration carries a name, a kind, a range or a closed set, a default and a
+// sentence - which is everything needed to draw a field, so a format that gains
+// a property gains its field with no window code at all.
+//
+// It validates nothing, and that is G1 rather than an omission. The value goes
+// to the engine as text and the registry refuses what the declaration forbids,
+// in the words the declaration builds. A number box that stops at its own idea
+// of the range would be a second copy of the rules, and the copy would be the
+// one that drifts - with the window quietly accepting or refusing something the
+// command line does not.
+//
+// An empty control sends nothing rather than sending emptiness. The registry
+// reads an empty value as "not stated", which is what leaving a field alone
+// means, so a format that works its own answer out still gets to.
+func FromProperty(p format.Property) PropertyField {
+	switch p.Kind {
+	case format.PropertyChoice:
+		return choiceField(p)
+	case format.PropertyBool:
+		return boolField(p)
+	default:
+		return textField(p)
+	}
+}
+
+// choiceField is a closed set, so it is a list rather than a box to type in.
+// Nobody can misspell a value that is not typed.
+func choiceField(p format.Property) PropertyField {
+	sel := widget.NewSelect(p.Choices, nil)
+	if p.Default != "" {
+		sel.SetSelected(p.Default)
+	}
+	return PropertyField{
+		Name:    p.Name,
+		Control: sel,
+		Value:   func() string { return sel.Selected },
+	}
+}
+
+func boolField(p format.Property) PropertyField {
+	check := widget.NewCheck("", nil)
+	check.SetChecked(p.Default == "true")
+	return PropertyField{
+		Name:    p.Name,
+		Control: check,
+		Value:   func() string { return strconv.FormatBool(check.Checked) },
+	}
+}
+
+// textField covers a number, a size and free text alike, because all three are
+// a box somebody types into and the difference between them is what the engine
+// accepts rather than what the box does.
+//
+// The declared default is filled in rather than shown as a placeholder, when
+// there is one. A placeholder disappears the moment somebody types, so a person
+// who wanted the default back has nothing to type - while a declaration saying
+// nothing means the format works the value out from the size, and that field
+// stays empty on purpose.
+func textField(p format.Property) PropertyField {
+	entry := widget.NewEntry()
+	if p.Default != "" {
+		entry.SetText(p.Default)
+	} else {
+		entry.SetPlaceHolder("worked out from the size")
+	}
+	return PropertyField{
+		Name:    p.Name,
+		Control: entry,
+		Value:   func() string { return entry.Text },
+	}
+}
+
+// PropertyFields draws every field one format declares, in the order it
+// declared them, each with the sentence saying what it takes.
+//
+// The sentence comes from Property.Allowed, which is the one "tfg formats"
+// prints. Two surfaces describing one format in two ways is D1 breaking in the
+// place nobody thinks to compare, so there is one sentence and both read it.
+func PropertyFields(d format.Descriptor) ([]PropertyField, []fyne.CanvasObject) {
+	fields := make([]PropertyField, 0, len(d.Properties))
+	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
+
+	for _, p := range d.Properties {
+		f := FromProperty(p)
+		fields = append(fields, f)
+		objects = append(objects, Field(p.Name, detailOf(p), f.Control))
+	}
+
+	// A rule binding two settings belongs beside them and nowhere else. Drawn
+	// from Min and Max alone, two number boxes would offer twenty thousand by
+	// twenty thousand and the run would refuse the pair - which is the defect
+	// JointLimit was declared to close.
+	for _, j := range d.JointLimits {
+		objects = append(objects, Note(j.Describe()))
+	}
+	return fields, objects
+}
+
+// detailOf is what a property takes and what it is for, in that order. What it
+// takes comes first because that is what somebody looking at an empty box needs.
+func detailOf(p format.Property) string {
+	detail := p.Allowed()
+	if p.Detail != "" {
+		detail += ". " + p.Detail
+	}
+	return detail
+}

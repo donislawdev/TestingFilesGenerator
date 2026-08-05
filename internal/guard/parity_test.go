@@ -30,11 +30,74 @@ import (
 
 // reachableFromTheWindow is what the desktop window can do.
 //
-// Empty, because internal/gui is a seventeen line stub. Entries move here as
-// widgets arrive, and each one has to be true - a capability listed here that
-// the window does not actually offer would make this guard agree with the
-// thing it exists to catch.
-var reachableFromTheWindow = []string{}
+// The bar for moving an entry here is deliberately narrow, because a capability
+// listed as reachable that the window does not actually offer would make this
+// guard agree with the thing it exists to catch. Two things are required, and
+// the second is the one that is easy to skip: there is a control on the screen,
+// AND a guard presses it and finds the value on the other side. Drawing a box
+// that is dropped on the way to the engine looks exactly like drawing one that
+// works.
+//
+// So the section keys are absent on purpose. recipe:targets and recipe:output
+// name a part of a document rather than a setting, no control corresponds to
+// either, and the window produces one target rather than a list - it builds an
+// engine target directly and writes no recipe. They arrive with the screen that
+// edits recipes.
+//
+// Filled on 2026-08-05 with the first generate window. It had been empty since
+// the guard was armed on 2026-08-03, which was the point: the distance started
+// as the whole list rather than as whatever was left after nobody was watching.
+var reachableFromTheWindow = []string{
+	// Every format the registry holds, taken from the registry itself rather
+	// than listed in the window. TestTheWindowOffersEveryFormatTheRegistryHas.
+	"format:csv",
+	"format:html",
+	"format:json",
+	"format:log",
+	"format:md",
+	"format:pdf",
+	"format:png",
+	"format:svg",
+	"format:targz",
+	"format:txt",
+	"format:wav",
+	"format:xml",
+	"format:zip",
+
+	// Drawn from the declaration and nothing else, which is what declaring
+	// properties rather than only naming them was for: the kind picks the
+	// control, the range and the closed set become the sentence under it, and
+	// the refusal comes from the registry in the registry's words. A format that
+	// gains a property gains its field with no window code.
+	// TestTheWindowDrawsAFieldForEveryDeclaredProperty.
+	"property:pdf.page_size",
+	"property:pdf.pages",
+	"property:png.height",
+	"property:png.width",
+	"property:targz.entries",
+	"property:targz.entry_format",
+	"property:targz.entry_size",
+	"property:wav.bit_depth",
+	"property:wav.channels",
+	"property:wav.content",
+	"property:wav.sample_rate",
+	"property:zip.entries",
+	"property:zip.entry_format",
+	"property:zip.entry_size",
+
+	// One target's worth of settings, each with a field and each found again in
+	// the manifest of a run started from the window.
+	// TestWhatIsTypedOnTheScreenIsWhatGetsWritten.
+	"recipe:output.dir",
+	"recipe:seed",
+	"recipe:targets.count",
+	"recipe:targets.format",
+	"recipe:targets.id",
+	"recipe:targets.label",
+	"recipe:targets.name",
+	"recipe:targets.properties",
+	"recipe:targets.size",
+}
 
 // notYetReachable is everything the engine can do that the window cannot.
 //
@@ -51,33 +114,6 @@ var notYetReachable = []string{
 	"preset:size-boundaries",
 	"preset:size-boundaries.limit",
 	"preset:size-boundaries.spread",
-	"format:csv",
-	"format:html",
-	"format:json",
-	"format:log",
-	"format:md",
-	"format:pdf",
-	"format:png",
-	"format:svg",
-	"format:targz",
-	"format:txt",
-	"format:wav",
-	"format:xml",
-	"format:zip",
-	"property:pdf.page_size",
-	"property:pdf.pages",
-	"property:png.height",
-	"property:png.width",
-	"property:wav.bit_depth",
-	"property:wav.channels",
-	"property:wav.content",
-	"property:wav.sample_rate",
-	"property:targz.entries",
-	"property:targz.entry_format",
-	"property:targz.entry_size",
-	"property:zip.entries",
-	"property:zip.entry_format",
-	"property:zip.entry_size",
 	"recipe:allow_nondeterministic",
 	"recipe:targets.group",
 	"recipe:defaults",
@@ -87,24 +123,15 @@ var notYetReachable = []string{
 	"recipe:extends",
 	"recipe:locale",
 	"recipe:output",
-	"recipe:output.dir",
 	"recipe:output.manifest",
 	"recipe:output.split_threshold",
 	"recipe:policy",
-	"recipe:seed",
 	"recipe:targets",
 	"recipe:targets.boundary",
 	"recipe:targets.contains",
-	"recipe:targets.count",
 	"recipe:targets.expected",
 	"recipe:targets.fill",
-	"recipe:targets.format",
-	"recipe:targets.id",
-	"recipe:targets.label",
 	"recipe:targets.mutations",
-	"recipe:targets.name",
-	"recipe:targets.properties",
-	"recipe:targets.size",
 	"recipe:targets.size-range",
 	"recipe:version",
 	"recipe:with",

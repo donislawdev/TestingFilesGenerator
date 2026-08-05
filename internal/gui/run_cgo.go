@@ -36,8 +36,8 @@ const appID = "dev.donislaw.tfg"
 func run(errOut io.Writer) int {
 	a := app.NewWithID(appID)
 	w := a.NewWindow("Testing Files Generator " + version.Version)
-	w.SetContent(window.Start())
-	w.Resize(window.StartSize)
+	window.Open(w)
+	w.Resize(window.OpenSize)
 	w.CenterOnScreen()
 	w.ShowAndRun()
 	return 0
