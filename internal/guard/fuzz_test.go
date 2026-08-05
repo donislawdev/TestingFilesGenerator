@@ -7,6 +7,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -238,6 +239,85 @@ func FuzzParseRecipe(f *testing.F) {
 			for _, size := range tgt.Sizes {
 				if size < 0 {
 					t.Fatalf("target %d was accepted with the size %d", i, size)
+				}
+			}
+		}
+	})
+}
+
+// A preset builds recipe source by hand, out of values a caller supplied.
+//
+// The comment above that builder says every value in it is one the package
+// built itself - an id from a size, a byte count, a format id the registry
+// knows - so none of them needs quoting, and the guard that parses the result
+// back is what keeps that true. That guard expands on the declared defaults
+// only, which is one set of values out of every set somebody can type.
+//
+// This is the other side of it. Whatever comes out of a spread and a limit,
+// expansion either refuses or produces a recipe this build reads. A preset that
+// expands into something the parser rejects is one nobody can run and nobody
+// can eject, and the failure would arrive in the middle of a run rather than at
+// the point somebody typed the value.
+func FuzzPresetExpansion(f *testing.F) {
+	for _, seed := range [][2]string{
+		{"10mb", "1B,1kb,1mb"},
+		{"1", "1"},
+		{"", ""},
+		{"9223372036854775807", "1B"},
+		{"10mb", ",,,"},
+		{"10mb", "1B,1B,1B"},
+		{"10mb", "1kb\n  id: injected"},
+		{"10mb", "1kb#comment"},
+		{"0x10", "1kb"},
+		{"10mb", "-1kb"},
+	} {
+		f.Add(seed[0], seed[1])
+	}
+
+	f.Fuzz(func(t *testing.T, limit, spread string) {
+		p, err := preset.Get("size-boundaries")
+		if err != nil {
+			t.Fatal(err)
+		}
+		args, err := p.Settle(preset.Args{"limit": limit, "spread": spread, "format": "txt"})
+		if err != nil {
+			// Refusing a value its declaration does not allow is the answer,
+			// and it has to carry a sentence somebody can act on.
+			if strings.TrimSpace(err.Error()) == "" {
+				t.Fatal("Settle refused with an empty message")
+			}
+			return
+		}
+		src, err := p.Expand(args)
+		if err != nil {
+			if strings.TrimSpace(err.Error()) == "" {
+				t.Fatal("Expand refused with an empty message")
+			}
+			if src != nil {
+				t.Fatalf("Expand refused with %v and still returned source", err)
+			}
+			return
+		}
+
+		// Accepted. Then it has to be a recipe, because eject prints exactly
+		// these bytes and a run consumes exactly these bytes.
+		rec, err := recipe.Parse(src, "fuzz-preset")
+		if err != nil {
+			t.Fatalf("limit %q and spread %q expanded into something the parser refuses: %v\n--- source ---\n%s",
+				limit, spread, err, src)
+		}
+		if len(rec.Targets) == 0 {
+			t.Fatalf("limit %q and spread %q expanded into a recipe with no targets:\n%s", limit, spread, src)
+		}
+		for _, tgt := range rec.Targets {
+			if tgt.Group == "" {
+				t.Errorf("target %q carries no group", tgt.ID)
+			}
+			// Zero is legal and measured: txt has a minimum of 0 B and skips
+			// its label with a note rather than refusing. Below zero is not.
+			for _, size := range tgt.Sizes {
+				if size < 0 {
+					t.Fatalf("target %q was accepted with the size %d", tgt.ID, size)
 				}
 			}
 		}
