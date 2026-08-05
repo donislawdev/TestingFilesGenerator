@@ -12,9 +12,14 @@ Runs entirely on your machine. No account, no cloud, no network calls.
 > **Status: early development.** Thirteen formats work end to end - text,
 > Markdown, access logs, CSV, JSON, XML, HTML, SVG, PNG, PDF, ZIP, TAR.GZ and
 > WAV. Each one is produced at an exact size and checked against independent
-> tools. Runs can come from a recipe file or from flags, and an archive can say
-> what it holds - and what it holds is real files of the other formats, not
-> random bytes. `verify` and `cleanup` work. The desktop window is not built.
+> tools. Runs can come from a recipe file, from flags, or from a named test
+> question with `--preset`, and an archive can say what it holds - and what it
+> holds is real files of the other formats, not random bytes. `verify` and
+> `cleanup` work.
+>
+> The desktop window opens and shows what this tool is and what its licence
+> means for the files you generate. **It cannot generate anything yet** - every
+> feature listed above is on the command line only.
 
 ## Try it
 
@@ -67,7 +72,8 @@ recipe replaces the fixtures you would otherwise commit.
 - **A manifest that is a test oracle.** Path, size, hash, format, fidelity,
   seed, tool version - and the declared expectation.
 - **Two surfaces, one engine.** Command line for CI, desktop window for
-  manual testing. Neither gets a feature the other lacks.
+  manual testing. Neither gets a feature the other lacks. The window is at the
+  start of that road - see the status note above for where it actually is.
 
 ## Building
 
@@ -77,9 +83,19 @@ Requires Go 1.26.5 or newer.
 go build ./cmd/tfg
 ```
 
-The command line binary builds without CGO on Windows, macOS and Linux. The
-desktop window is a separate binary that needs a C compiler, so it is built
-natively on each system.
+The command line binary builds without CGO on Windows, macOS and Linux, and it
+carries no graphics toolkit and no network stack.
+
+The desktop window is a separate binary:
+
+```
+go build ./cmd/tfg-gui
+```
+
+That one draws through OpenGL and reaches it through C, so building a binary
+with a window in it needs a C compiler and is done natively on each system.
+Built without one it still compiles, and says on start that it has no window
+in it and that everything is available from the command line.
 
 ## Everything inside a generated file is made up
 
