@@ -38,8 +38,10 @@ var layer = map[string]int{
 	"internal/engine": 3,
 	"internal/audit":  3,
 
-	"internal/cli": 4,
-	"internal/gui": 4,
+	"internal/cli":        4,
+	"internal/gui":        4,
+	"internal/gui/parts":  4,
+	"internal/gui/window": 4,
 
 	"cmd/tfg":     5,
 	"cmd/tfg-gui": 5,
@@ -81,6 +83,16 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/targz":      {"internal/format"},
 	"internal/format/wav":        {"internal/format", "internal/format/imagelabel"},
 	"internal/preset":            {"internal/recipe"},
+
+	// The window is composed of parts and the parts know nothing about
+	// windows. That direction is what lets a part be rendered on its own,
+	// which is where the golden images sit - an image of a whole screen
+	// changes with every layout change and stops being looked at.
+	"internal/gui/window": {"internal/gui/parts"},
+	// And the package that opens a real window reaches both. It is the only
+	// one that touches the toolkit's app package, so it is the only one that
+	// needs a C compiler.
+	"internal/gui": {"internal/gui/window", "internal/gui/parts"},
 }
 
 // Edges that a plain layer number would allow but that must never exist.
