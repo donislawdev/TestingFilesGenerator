@@ -431,10 +431,58 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 	}
 }
 
-// textFormats are the formats whose whole output is text. A new one belongs
-// here, and the check below fails on a name that is not a format at all, so the
-// list cannot quietly point at nothing.
+// textFormats are the formats whose whole output is text, and binaryFormats is
+// everything else. Between them they have to name every registered format.
+//
+// Two lists rather than one, and that is the repair. The check below fails on a
+// name that is not a format, so neither list can point at nothing - but until
+// 2026-08-05 nothing asked the other direction, and that direction is the one
+// that matters. A format registered tomorrow simply would not have been checked
+// for valid UTF-8, and the suite would have stayed green while covering less.
+//
+// This is the shape docs/OBSERVATIONS.md now calls out: an audit of
+// completeness has to run FROM THE SOURCE towards the list. Walking the entries
+// already written down cannot, by construction, find what is missing from them.
 var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg"}
+
+var binaryFormats = []string{"pdf", "png", "targz", "wav", "zip"}
+
+// Every registered format is on exactly one of the two lists above.
+//
+// Cheap, and it is the only thing standing between "eight formats are checked
+// for valid UTF-8" and "eight of the formats that existed when somebody last
+// looked". Adding a format now forces the question rather than skipping it in
+// silence.
+func TestEveryFormatIsClassifiedAsTextOrBinary(t *testing.T) {
+	said := map[string]string{}
+	for _, id := range textFormats {
+		said[id] = "text"
+	}
+	for _, id := range binaryFormats {
+		if kind, twice := said[id]; twice {
+			t.Errorf("%s is on both lists, so nobody can tell which it is (%s)", id, kind)
+		}
+		said[id] = "binary"
+	}
+
+	registered := map[string]bool{}
+	for _, id := range format.IDs() {
+		registered[id] = true
+		if said[id] == "" {
+			t.Errorf("the registry has %s and neither list names it, so nothing says whether its "+
+				"output has to be valid UTF-8. Put it on textFormats or on binaryFormats.", id)
+		}
+	}
+	for id := range said {
+		if !registered[id] {
+			t.Errorf("%s is classified and the registry no longer has it - remove the entry", id)
+		}
+	}
+	if len(registered) == 0 {
+		t.Fatal("no format was registered, so this guard would pass without checking anything")
+	}
+	t.Logf("%d format(s): %d text, %d binary", len(registered), len(textFormats), len(binaryFormats))
+}
 
 // Every record format pads its last value to an exact BYTE count and then cuts
 // to length. Today every word in every vocabulary is ASCII, so a byte is a

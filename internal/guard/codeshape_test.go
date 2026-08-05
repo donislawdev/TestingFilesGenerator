@@ -221,3 +221,84 @@ func name(fn *ast.FuncDecl) string {
 	}
 	return recv.String() + "." + fn.Name.Name
 }
+
+// The ceiling counts code and not explanation, and this is what proves it.
+//
+// The exclusion is not a detail. This project asks for comments that say WHY,
+// and a size limit counting them would be a limit on explaining - so the two
+// rules would pull against each other, and the one with a guard would win.
+// That is the shape docs/QUALITY.md names when it says the ceiling is measured
+// without comments.
+//
+// The measure itself had no test until 2026-08-05, so nothing would have
+// noticed the exclusion breaking. It would not have surfaced as a wrong number
+// either - it would have surfaced as a function suddenly over the ceiling for
+// having been explained, which reads like a real finding.
+//
+// Written the way the rule asks for: add N lines of comment and N lines of
+// code to the same function, and require that only the second moves the number.
+func TestTheSizeCeilingCountsCodeAndNotExplanation(t *testing.T) {
+	measure := func(t *testing.T, source string) int {
+		t.Helper()
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, "measured.go", source, parser.ParseComments)
+		if err != nil {
+			t.Fatalf("parsing the sample: %v", err)
+		}
+		return codeLines(strings.Split(source, "\n"), commentLines(fset, file), 1, len(strings.Split(source, "\n")))
+	}
+
+	const bare = `package sample
+
+func f() {
+	a := 1
+	b := 2
+	_ = a + b
+}
+`
+	// Six lines of comment and a blank line, none of which is code.
+	const explained = `package sample
+
+// One.
+// Two.
+// Three.
+/* Four.
+   Five.
+   Six. */
+
+func f() {
+	a := 1
+	b := 2
+	_ = a + b
+}
+`
+	// The same as bare, plus three lines that really are code.
+	const bigger = `package sample
+
+func f() {
+	a := 1
+	b := 2
+	c := 3
+	d := 4
+	e := 5
+	_ = a + b + c + d + e
+}
+`
+
+	base := measure(t, bare)
+	if base == 0 {
+		t.Fatal("the sample measured zero lines of code, so this guard would pass on anything")
+	}
+
+	if n := measure(t, explained); n != base {
+		t.Errorf("adding six lines of comment moved the measure from %d to %d.\n"+
+			"The ceiling would then be a limit on explaining, which is the other rule this project runs on.",
+			base, n)
+	}
+	if n := measure(t, bigger); n != base+3 {
+		t.Errorf("adding three lines of code moved the measure from %d to %d, and %d was expected.\n"+
+			"A measure that does not move for code is not measuring size at all.",
+			base, n, base+3)
+	}
+	t.Logf("%d lines of code, unchanged by six lines of comment, plus three for three lines of code", base)
+}

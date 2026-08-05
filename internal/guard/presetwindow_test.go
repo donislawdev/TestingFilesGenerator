@@ -130,13 +130,30 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 			cliNames, windowNames)
 	}
 
+	// Two empty sets are equal, and an equality that can be satisfied by
+	// emptiness is an equality that proves nothing. The comparison below walks
+	// this list, so a run that produced nothing but a manifest would compare
+	// zero files and pass - which is the shape that took another project's
+	// guard from catching 30 injected faults out of 30 down to 13, with the
+	// mutation report still looking clean.
+	//
+	// size-boundaries is seven files plus the manifest, and asserting the count
+	// here rather than logging it is the whole difference.
+	const wanted = 7
+	if len(cliNames) != wanted+1 {
+		t.Fatalf("the preset produced %d thing(s) and %d files plus a manifest was expected: %v",
+			len(cliNames), wanted, cliNames)
+	}
+
 	// Byte for byte, because "the same set" and "the same files" are different
 	// claims and only the second one is worth anything to somebody whose test
 	// suite hashes them.
+	compared := 0
 	for _, name := range cliNames {
 		if name == "manifest.json" {
 			continue
 		}
+		compared++
 		a, err := os.ReadFile(filepath.Join(fromCLI, name))
 		if err != nil {
 			t.Fatalf("reading %s from the command line run: %v", name, err)
@@ -172,7 +189,11 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 		t.Errorf("the recipe hashes differ, so the two surfaces expanded the preset differently.\n"+
 			"  command line: %s\n  window:       %s", a, b)
 	}
-	t.Logf("%d file(s) identical, one preset block, one recipe hash", len(cliNames)-1)
+	if compared != wanted {
+		t.Errorf("%d file(s) were compared and %d were expected - an equality nothing was measured against",
+			compared, wanted)
+	}
+	t.Logf("%d file(s) identical, one preset block, one recipe hash", compared)
 }
 
 // A parameter the caller left alone is recorded as ours rather than theirs.
