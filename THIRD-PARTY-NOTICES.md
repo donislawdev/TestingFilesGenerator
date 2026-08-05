@@ -151,9 +151,9 @@ None is GPL-2.0-only or LGPL, which would not have been compatible.
 | `github.com/srwiley/oksvg` | v0.0.0-20221011165216-be6e8873101c | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
-| `golang.org/x/image` | v0.24.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/net` | v0.35.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/sys` | v0.30.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/image` | v0.43.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/net` | v0.57.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/sys` | v0.47.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright
 line, which is in the table above for every module.
