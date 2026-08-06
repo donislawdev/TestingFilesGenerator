@@ -230,13 +230,20 @@ func name(fn *ast.FuncDecl) string {
 // That is the shape docs/QUALITY.md names when it says the ceiling is measured
 // without comments.
 //
-// The measure itself had no test until 2026-08-05, so nothing would have
-// noticed the exclusion breaking. It would not have surfaced as a wrong number
-// either - it would have surfaced as a function suddenly over the ceiling for
-// having been explained, which reads like a real finding.
+// This does not discover the rule - it makes it permanent. The exclusion was
+// already proven on 2026-08-02 by tools/probes/probe-shape.py, which padded a
+// function with ninety lines of comment and watched the gate stay green, and
+// that is written down in the provenByProbe entry beside this package and in
+// docs/QUALITY.md section 8.1.
+//
+// What changes here is when the question gets asked. A probe is run by hand,
+// once, by somebody who remembered. This runs on every suite. If the exclusion
+// broke, it would not surface as a wrong number - it would surface as a
+// function suddenly over the ceiling for having been explained, which reads
+// like a real finding and would be repaired in the wrong direction.
 //
 // Written the way the rule asks for: add N lines of comment and N lines of
-// code to the same function, and require that only the second moves the number.
+// code to the same sample, and require that only the second moves the number.
 func TestTheSizeCeilingCountsCodeAndNotExplanation(t *testing.T) {
 	measure := func(t *testing.T, source string) int {
 		t.Helper()
