@@ -192,6 +192,94 @@ func fidelityChecklist(text string) (string, bool) {
 	return rest, true
 }
 
+// boldFormat and boldBytes read a row of the minimum table in section 3, which
+// writes both the format and its number in bold.
+var (
+	boldFormat = regexp.MustCompile(`\*\*([^*]+)\*\*`)
+	boldBytes  = regexp.MustCompile(`\*\*(\d[\d\s]*)\s*B\*\*`)
+)
+
+// minimumTable returns section 3 of the format document, stopping before 3.1.
+// The subsection holds a second table of its own, about which sizes just above
+// the floor cannot be reached, and its numbers mean something else.
+func minimumTable(text string) (string, bool) {
+	start := strings.Index(text, "## 3. ")
+	if start < 0 {
+		return "", false
+	}
+	rest := text[start:]
+	if end := strings.Index(rest, "\n### 3.1"); end >= 0 {
+		return rest[:end], true
+	}
+	return rest, true
+}
+
+// TestTheMinimumTableCarriesTheMeasuredNumberForEveryBuiltFormat holds the
+// table in section 3 to what the registry actually refuses.
+//
+// That table calls itself indicative and says the order of magnitude is what
+// matters. That is right for a format nobody has written yet. It stops being
+// right the moment one is built, because from then on the number is known - and
+// the section claims outright that this test forces the table to be corrected
+// in the same step.
+//
+// It did not. Measured on 2026-08-10: the neighbouring check reads sentences of
+// the shape "the smallest csv is 117 B" out of the format cards and never looks
+// at this table at all. So the table said ZIP and 7Z start at 22 to 35 B while
+// the registry refused anything under 156 B, and said images start at 30 to 70 B
+// while PNG refused under 73 - both with a green suite. A guard described in
+// prose as wider than it is leaves the part nobody checks looking checked.
+func TestTheMinimumTableCarriesTheMeasuredNumberForEveryBuiltFormat(t *testing.T) {
+	root := repoRoot(t)
+	body, err := os.ReadFile(filepath.Join(root, "docs", "MVP-FORMATS.md"))
+	if err != nil {
+		t.Logf("SKIPPED: docs/MVP-FORMATS.md is not here, so nothing was compared. "+
+			"The internal documents are excluded from the repository, so this check only runs on a machine that has them. (%v)", err)
+		return
+	}
+	section, ok := minimumTable(string(body))
+	if !ok {
+		t.Fatal("docs/MVP-FORMATS.md has no minimum table - this guard would pass without checking anything")
+	}
+
+	// Same spelling rule as the checklist above: the table writes TAR.GZ where
+	// the registry says targz.
+	stated := map[string]int64{}
+	for _, row := range strings.Split(section, "\n") {
+		size := boldBytes.FindStringSubmatch(row)
+		if size == nil {
+			continue
+		}
+		n, err := strconv.ParseInt(strings.ReplaceAll(strings.TrimSpace(size[1]), " ", ""), 10, 64)
+		if err != nil {
+			continue
+		}
+		for _, m := range boldFormat.FindAllStringSubmatch(row, -1) {
+			name := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(m[1]), ".", ""))
+			if _, taken := stated[name]; !taken {
+				stated[name] = n
+			}
+		}
+	}
+	if len(stated) == 0 {
+		t.Fatal("no row of the minimum table stated a number - this guard would pass without checking anything")
+	}
+
+	for _, d := range format.All() {
+		got, ok := stated[strings.ToLower(d.ID)]
+		if !ok {
+			t.Errorf("%s is implemented and the minimum table in docs/MVP-FORMATS.md section 3 does not "+
+				"give it a row with a measured number. An indicative range is for formats nobody has "+
+				"written yet - once one is built the number is known", d.ID)
+			continue
+		}
+		if got != d.MinBytes {
+			t.Errorf("%s: the registry refuses anything under %d B and the minimum table says %d B",
+				d.ID, d.MinBytes, got)
+		}
+	}
+}
+
 // statedMinimum reads a line of the shape "minimum ... 1234 B" from the
 // implementation note of one format, when the document carries one.
 var minimumLine = regexp.MustCompile(`(?i)najmniejszy\s+` + "`?" + `?(\w+)` + "`?" + `?[^\n]*?(\d[\d\s]*)\s*B`)

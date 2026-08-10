@@ -124,7 +124,7 @@ in `tfg-gui` and in no other binary this project produces.
 
 Their licences were read from the source of each module before the toolkit was
 added, on 2026-08-05. All are permissive and one way compatible with GPL-3.0:
-twelve BSD 3-Clause, nine MIT, one Apache-2.0, one BSD 2-Clause and one ISC.
+thirteen BSD 3-Clause, ten MIT, one Apache-2.0, one BSD 2-Clause and one ISC.
 None is GPL-2.0-only or LGPL, which would not have been compatible.
 
 One arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
