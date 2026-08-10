@@ -385,6 +385,12 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 		}
 		content := host.content
 
+		// Put something else in first, so this asks whether the button fills
+		// the field rather than whether the field happens to differ. Since
+		// 2026-08-11 the two screens carry one output directory between them,
+		// so arriving here the box already holds what the other screen held -
+		// and comparing against that measured the carrying, not the button.
+		fill(t, content, "output directory", "C:\\neither\\of\\them")
 		before := entryUnder(t, content, "output directory").Text
 		press(t, content, "Choose...")
 

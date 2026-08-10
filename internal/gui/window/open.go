@@ -33,8 +33,24 @@ func Open(h Host) {
 		widget.NewButton(text.ButtonAbout, func() { showAbout() }),
 	)
 
-	showGenerate = func() { h.SetContent(gen.Object()) }
-	showPreset = func() { h.SetContent(pre.Object()) }
+	// The output directory follows whoever is looking, and that is a fix for a
+	// real confusion rather than a convenience. Each screen used to hold its
+	// own box, both starting at the working directory - so they agreed until
+	// somebody changed one, and then silently disagreed. Reported from use on
+	// 2026-08-11: files were written to a chosen directory, the preset screen
+	// was opened, and its run went somewhere else entirely.
+	//
+	// Carried at the moment of moving rather than bound both ways, because
+	// this is the only moment the difference can become visible - and one
+	// direction of copying cannot loop.
+	showGenerate = func() {
+		gen.SetOutDir(pre.OutDir())
+		h.SetContent(gen.Object())
+	}
+	showPreset = func() {
+		pre.SetOutDir(gen.OutDir())
+		h.SetContent(pre.Object())
+	}
 	showAbout = func() { h.SetContent(About(func() { showGenerate() })) }
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The

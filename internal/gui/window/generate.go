@@ -103,6 +103,19 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 // Object is the screen, to put in a window.
 func (g *Generate) Object() fyne.CanvasObject { return g.body }
 
+// OutDir and SetOutDir are how the screens keep one answer to "where do the
+// files go" between them. The window carries it across on the way from one to
+// the other - see Open.
+func (g *Generate) OutDir() string { return g.outDir.Text }
+
+// SetOutDir leaves an empty value alone. Emptying the box is somebody clearing
+// it to type, and copying that over would wipe the other screen's answer.
+func (g *Generate) SetOutDir(dir string) {
+	if dir != "" {
+		g.outDir.SetText(dir)
+	}
+}
+
 func (g *Generate) buildFields() {
 	// Before the select below, which fills it as soon as a format is chosen.
 	// The order is load bearing rather than tidy: choosing a format redraws the

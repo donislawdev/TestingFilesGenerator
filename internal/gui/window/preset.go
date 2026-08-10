@@ -79,6 +79,18 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 // Object is the screen, to put in a window.
 func (p *Preset) Object() fyne.CanvasObject { return p.body }
 
+// OutDir and SetOutDir keep one answer to "where do the files go" across both
+// screens. The window carries it over on the way between them - see Open.
+func (p *Preset) OutDir() string { return p.outDir.Text }
+
+// SetOutDir leaves an empty value alone, for the reason the generate screen
+// gives: an emptied box is somebody about to type, not an answer to copy.
+func (p *Preset) SetOutDir(dir string) {
+	if dir != "" {
+		p.outDir.SetText(dir)
+	}
+}
+
 // onPresetChosen redraws what the chosen preset says and what it takes.
 func (p *Preset) onPresetChosen(id string) {
 	p.paramBox.RemoveAll()
