@@ -117,6 +117,17 @@ because it turns other people's test suites red.
   holding a character a filename cannot carry reached the recipe and broke it,
   because the text of a distance becomes the name of a file. All four were
   found by fuzzing.
+- **Every file of a `size-boundaries` set now says which limit it was built
+  around.** The files were named after their distance from the limit and never
+  after the limit itself, so `at_limit.pdf` from a `--limit 10mb` run and
+  `at_limit.pdf` from a `--limit 5mb` run were one name for two different
+  claims. A directory holding both runs was a directory of guesses, and reading
+  the sizes off the disk was the only way to tell which file was which. They
+  are now called `10mb_at_limit.pdf`, `10mb_under_1kb.pdf` and so on.
+  The files themselves are unchanged, byte for byte. Only the names are
+  different, so a script that opens one by name needs the new name.
+  A limit whose text a filename cannot carry is now refused with a sentence
+  saying so, rather than reaching the recipe.
 - **`tfg validate` no longer refuses a recipe that `tfg generate` accepts.** A
   boundary set names its three files `under_limit`, `at_limit` and
   `over_limit`, and `validate` was checking for collisions against `0001`,
