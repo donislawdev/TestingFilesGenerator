@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // PropertyField is a control drawn from a declaration, with the way to read it
@@ -109,9 +110,9 @@ func textField(p format.Property) PropertyField {
 // default means the format works the value out from the size it was asked for.
 func leftAlone(p format.Property) string {
 	if p.Default == "" {
-		return "worked out from the size"
+		return text.PlaceholderWorkedOut
 	}
-	return "left empty: " + p.Default
+	return text.PlaceholderLeftEmpty(p.Default)
 }
 
 // PropertyFields draws every field one format declares, in the order it

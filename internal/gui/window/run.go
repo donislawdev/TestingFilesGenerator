@@ -15,6 +15,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // The one place in the window where work happens off the interface thread, and
@@ -114,10 +115,10 @@ func newRunner() *runner {
 	r.status.Wrapping = fyne.TextWrapWord
 	r.problem = parts.NewErrorArea()
 
-	r.previewBtn = widget.NewButton("Preview", r.onPreview)
-	r.generateBtn = widget.NewButton("Generate", r.onGenerate)
+	r.previewBtn = widget.NewButton(text.ButtonPreview, r.onPreview)
+	r.generateBtn = widget.NewButton(text.ButtonGenerate, r.onGenerate)
 	r.generateBtn.Importance = widget.HighImportance
-	r.cancelBtn = widget.NewButton("Cancel", r.onCancel)
+	r.cancelBtn = widget.NewButton(text.ButtonCancel, r.onCancel)
 	r.cancelBtn.Disable()
 	return r
 }
@@ -169,15 +170,14 @@ func (r *runner) onPreview() {
 // bytes, and how much room there is for them.
 func previewText(planned []engine.PlannedFile, outDir string) string {
 	total := engine.TotalBytes(planned)
-	text := fmt.Sprintf("%d file(s), %s in total. Nothing has been written.",
-		len(planned), core.HumanBytes(total))
+	line := text.PreviewCost(len(planned), core.HumanBytes(total))
 
 	// A disk we cannot measure is not the same as a disk that is full, so a
 	// failure to read it says nothing rather than inventing a number.
 	if free, err := core.AvailableBytes(outDir); err == nil {
-		text += fmt.Sprintf(" %s has %s free.", outDir, core.HumanBytes(free))
+		line += text.PreviewFreeSpace(outDir, core.HumanBytes(free))
 	}
-	return text
+	return line
 }
 
 // onGenerate plans on the interface thread and writes off it.
@@ -208,7 +208,7 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 
 	r.setRunning(true)
 	r.bar.SetValue(0)
-	r.say(fmt.Sprintf("writing %d file(s)...", len(planned)))
+	r.say(text.WritingFiles(len(planned)))
 
 	// Called by the engine from the goroutine below, once per write inside a
 	// file. Thinned out here, before anything crosses over, so the interface is
@@ -251,19 +251,18 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 // progressText is the line under the bar. Bytes rather than files, because one
 // large file is a run where the file count says nothing for minutes.
 func progressText(p engine.Progress, elapsed time.Duration) string {
-	text := fmt.Sprintf("%d/%d files  %s of %s  %d%%",
-		p.FilesDone, p.FilesTotal,
+	line := text.Progress(p.FilesDone, p.FilesTotal,
 		core.HumanBytes(p.BytesDone), core.HumanBytes(p.BytesTotal),
 		core.Percent(p.BytesDone, p.BytesTotal))
 
 	// The estimate stays quiet until it has enough to go on. A number that
 	// swings wildly for the first second is worse than no number.
 	if elapsed < time.Second || p.BytesDone <= 0 || p.BytesDone >= p.BytesTotal {
-		return text
+		return line
 	}
 	left := time.Duration(float64(elapsed) *
 		float64(p.BytesTotal-p.BytesDone) / float64(p.BytesDone))
-	return text + "  " + core.Roughly(left) + " left"
+	return line + text.TimeLeft(core.Roughly(left))
 }
 
 // saveManifest writes the record of what the run did.
@@ -277,7 +276,7 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 	}
 	path := filepath.Join(opt.OutDir, opt.ManifestName)
 	if err := res.Manifest.Save(path); err != nil {
-		return fmt.Errorf("the files were written and the manifest could not be saved to %s: %w", path, err)
+		return fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
 	}
 	return nil
 }
@@ -308,16 +307,16 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 
 func outcomeText(res *engine.Result, runErr error) string {
 	if res == nil || res.Manifest == nil {
-		return "nothing was produced."
+		return text.NothingProduced
 	}
 	written := len(res.Manifest.Files) - res.Failures
 	switch {
 	case runErr != nil:
-		return fmt.Sprintf("stopped after %d file(s). The manifest describes exactly those.", written)
+		return text.StoppedAfter(written)
 	case res.Failures > 0:
-		return fmt.Sprintf("%d file(s) written, %d could not be produced.", written, res.Failures)
+		return text.WrittenWithFailures(written, res.Failures)
 	}
-	return fmt.Sprintf("%d file(s) written.", written)
+	return text.Written(written)
 }
 
 func notesOf(res *engine.Result) []string {

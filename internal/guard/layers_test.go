@@ -41,6 +41,7 @@ var layer = map[string]int{
 	"internal/cli":        4,
 	"internal/gui":        4,
 	"internal/gui/parts":  4,
+	"internal/gui/text":   4,
 	"internal/gui/window": 4,
 
 	"cmd/tfg":     5,
@@ -88,7 +89,12 @@ var sameLayerAllowed = map[string][]string{
 	// windows. That direction is what lets a part be rendered on its own,
 	// which is where the golden images sit - an image of a whole screen
 	// changes with every layout change and stops being looked at.
-	"internal/gui/window": {"internal/gui/parts"},
+	"internal/gui/window": {"internal/gui/parts", "internal/gui/text"},
+	// The sentences the window shows. It imports nothing of ours - a text
+	// package that reached for the engine to word a message would put half a
+	// message here and half where the engine says it, which is how two
+	// wordings for one thing start.
+	"internal/gui/parts": {"internal/gui/text"},
 	// And the package that opens a real window reaches both. It is the only
 	// one that touches the toolkit's app package, so it is the only one that
 	// needs a C compiler.

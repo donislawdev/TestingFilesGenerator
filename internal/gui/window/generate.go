@@ -1,7 +1,7 @@
 package window
 
 import (
-	"fmt"
+	"errors"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -21,6 +21,7 @@ import (
 	// line in internal/cli since the beginning.
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // Host is what a screen needs of the window it lives in.
@@ -85,7 +86,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g.buildFields()
 
 	g.body = container.NewVScroll(parts.Screen(
-		"Generate files",
+		text.HeadingGenerate,
 		g.settingsSection(),
 		g.propBox,
 		g.actions(links...),
@@ -127,7 +128,7 @@ func (g *Generate) buildFields() {
 	g.size = entry("10mb", "")
 	g.count = entry("1", "")
 	g.id = entry("files", "")
-	g.name = entry("", "left empty: files_0001 and so on")
+	g.name = entry("", text.PlaceholderNameTemplate)
 	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")
 
@@ -149,15 +150,15 @@ func entry(text, placeholder string) *widget.Entry {
 // description of how any of it works.
 func (g *Generate) settingsSection() fyne.CanvasObject {
 	return container.NewVBox(
-		parts.Field("format", "What kind of file to produce. Run out of the list and the tool has no other.", g.formatPick),
-		parts.Field("size", "Exact size of every file. Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes.", g.size),
-		parts.Field("how many", "How many files to produce.", g.count),
-		parts.Field("target id", "Names the group. The seeds are derived from it, so changing it changes the bytes.", g.id),
-		parts.Field("name template", "What the files are called. {index:04} becomes 0001, 0002 and so on.", g.name),
-		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.",
+		parts.Field(text.FieldFormat, text.HintFormat, g.formatPick),
+		parts.Field(text.FieldSize, text.HintSize, g.size),
+		parts.Field(text.FieldCount, text.HintCount, g.count),
+		parts.Field(text.FieldTargetID, text.HintTargetID, g.id),
+		parts.Field(text.FieldNameTemplate, text.HintNameTemplate, g.name),
+		parts.Field(text.FieldOutputDir, text.HintOutputDir,
 			chooserFor(g.host, g.outDir)),
-		parts.Field("seed", "The same seed gives the same bytes, on any machine.", g.seed),
-		parts.Field("self describing label", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.", g.label),
+		parts.Field(text.FieldSeed, text.HintSeed, g.seed),
+		parts.Field(text.FieldLabel, text.HintLabel, g.label),
 	)
 }
 
@@ -186,7 +187,7 @@ func (g *Generate) onFormatChosen(id string) {
 		g.propBox.Refresh()
 		return
 	}
-	g.propBox.Add(parts.Heading("settings for " + d.ID))
+	g.propBox.Add(parts.Heading(text.SettingsFor(d.ID)))
 	for _, o := range objects {
 		g.propBox.Add(o)
 	}
@@ -238,7 +239,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	// there is no second opinion about how many files is too many. A count past
 	// it used to reach make and panic with a stack trace.
 	if count > core.MaxFilesPerRun {
-		return nil, none, fmt.Errorf("this run asks for %d files - %s", count, core.ErrTooManyFiles)
+		return nil, none, errors.New(text.TooManyFiles(count, core.ErrTooManyFiles))
 	}
 
 	return []engine.Target{{

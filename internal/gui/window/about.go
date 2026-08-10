@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
@@ -36,9 +37,9 @@ var OpenSize = fyne.NewSize(720, 720)
 // constant the command prints, so the two cannot come to say different things.
 func About(back func()) fyne.CanvasObject {
 	return parts.Screen(
-		"Testing Files Generator "+version.Version,
-		parts.Prose("Generate test files, and know how the system under test should react to them."),
+		text.HeadingAbout(version.Version),
+		parts.Prose(text.AboutTagline),
 		parts.Prose(version.LicenceNotice),
-		container.NewHBox(widget.NewButton("Back", back)),
+		container.NewHBox(widget.NewButton(text.ButtonBack, back)),
 	)
 }

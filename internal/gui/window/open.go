@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // Open fills the window with the first screen and wires the way between them.
@@ -24,12 +25,12 @@ func Open(h Host) {
 	var showGenerate, showPreset, showAbout func()
 
 	gen := NewGenerate(h,
-		widget.NewButton("Presets", func() { showPreset() }),
-		widget.NewButton("About", func() { showAbout() }),
+		widget.NewButton(text.ButtonPresets, func() { showPreset() }),
+		widget.NewButton(text.ButtonAbout, func() { showAbout() }),
 	)
 	pre := NewPreset(h,
-		widget.NewButton("One target", func() { showGenerate() }),
-		widget.NewButton("About", func() { showAbout() }),
+		widget.NewButton(text.ButtonOneTarget, func() { showGenerate() }),
+		widget.NewButton(text.ButtonAbout, func() { showAbout() }),
 	)
 
 	showGenerate = func() { h.SetContent(gen.Object()) }
@@ -71,7 +72,7 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
 func chooserFor(host Host, box *widget.Entry) fyne.CanvasObject {
-	choose := widget.NewButton("Choose...", func() {
+	choose := widget.NewButton(text.ButtonChoose, func() {
 		host.ChooseDirectory(func(dir string) {
 			if dir != "" {
 				box.SetText(dir)

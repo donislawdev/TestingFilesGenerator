@@ -8,6 +8,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
@@ -57,13 +58,13 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p.seed = entry("0", "")
 
 	p.body = container.NewVScroll(parts.Screen(
-		"Build a set for a question",
-		parts.Field("preset", "What you are testing. The set is worked out from the answer.", p.pick),
+		text.HeadingPreset,
+		parts.Field(text.FieldPreset, text.HintPreset, p.pick),
 		p.about,
 		p.paramBox,
-		parts.Field("output directory", "Where the files and the manifest go. It is created if it is not there.",
+		parts.Field(text.FieldOutputDir, text.HintOutputDir,
 			chooserFor(p.host, p.outDir)),
-		parts.Field("seed", "The same seed gives the same bytes, on any machine.", p.seed),
+		parts.Field(text.FieldSeed, text.HintSeed, p.seed),
 		p.actions(links...),
 		p.progress(),
 		p.problem.Object(),
@@ -101,9 +102,9 @@ func (p *Preset) onPresetChosen(id string) {
 	// Seen on screen on 2026-08-05, which is the only way this kind of thing is
 	// ever seen.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Note("Typically finds:"))
+		p.about.Add(parts.Note(text.PresetCatchesHeading))
 		for _, catch := range chosen.Catches {
-			p.about.Add(parts.Note("   - " + catch))
+			p.about.Add(parts.Note(text.PresetCatchesItem(catch)))
 		}
 	}
 	p.about.Refresh()
