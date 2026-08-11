@@ -21,10 +21,23 @@ func Field(label, detail string, control fyne.CanvasObject) fyne.CanvasObject {
 }
 
 // Note is a quiet line under something, for what a person needs once.
+//
+// Quiet by weight rather than by slant. docs/UX.md section 8.5 says italics
+// never, with a reason rather than a preference: slanted text is harder to
+// read, and hardest for the readers who already have the most trouble. Every
+// hint on both screens was italic until 2026-08-11, which is O71.
+//
+// It is NOT quiet by colour yet, and that is measured rather than postponed
+// out of caution. widget.LowImportance looked like the toolkit's own way to
+// say this, and it renders a label in the disabled colour: measured 2026-08-11
+// as #39393A on #171718, which is 1.55:1 against a threshold of 4.5. That is
+// unreadable, and worse than the italics it would have replaced. The quiet
+// belongs to text-subdued from docs/UX.md section 8.2, which computes to
+// 7.03:1 and arrives with the palette - O70. Until then a hint reads in the
+// ordinary text colour at 16.15:1, which is plain but legible.
 func Note(text string) fyne.CanvasObject {
 	label := widget.NewLabel(text)
 	label.Wrapping = fyne.TextWrapWord
-	label.TextStyle = fyne.TextStyle{Italic: true}
 	return label
 }
 

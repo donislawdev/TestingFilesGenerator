@@ -117,6 +117,17 @@ because it turns other people's test suites red.
   holding a character a filename cannot carry reached the recipe and broke it,
   because the text of a distance becomes the name of a file. All four were
   found by fuzzing.
+- **A preset that cannot build its set no longer answers in command line
+  spelling.** The refusal said "Raise `--limit` above 1051991 B, narrow
+  `--spread`", and the window has no such thing as `--limit` on it - the fields
+  there are called `limit` and `spread`. One sentence is written for both, so
+  it now names the settings the way both of them do.
+
+- **Hints in the window are no longer slanted.** Every line of explanation under
+  every field was italic, on both screens. Slanted text is harder to read, and
+  hardest for the people who already find reading hardest. The words are
+  unchanged.
+
 - **Every file of a `size-boundaries` set now says which limit it was built
   around.** The files were named after their distance from the limit and never
   after the limit itself, so `at_limit.pdf` from a `--limit 10mb` run and
