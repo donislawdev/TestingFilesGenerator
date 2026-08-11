@@ -20,6 +20,26 @@ func Field(label, detail string, control fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewVBox(items...)
 }
 
+// FieldSaying is a field that can carry a refusal of its own, underneath it.
+//
+// UX8 asks for a message near where the error came from, and in a window that
+// means beside the field rather than at the foot of the form. Measured on
+// 2026-08-11: the refusal about "how many" sat 748 px below the box it named,
+// under every other field - and that distance grows with each field added, not
+// with the size of the window.
+//
+// The area holds nothing until there is something to say, so a field that is
+// not being complained about takes exactly the room it took before.
+func FieldSaying(label, detail string, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
+	area := NewErrorArea()
+	items := []fyne.CanvasObject{Heading(label), control}
+	if detail != "" {
+		items = append(items, Note(detail))
+	}
+	items = append(items, area.Object())
+	return container.NewVBox(items...), area
+}
+
 // Toggle is a switch that carries its own name, with the explanation under it.
 //
 // A switch is the one control that does not take a heading above it. Given one

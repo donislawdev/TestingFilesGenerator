@@ -2,6 +2,7 @@ package window
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -85,6 +86,13 @@ type runner struct {
 	status  *widget.Label
 	problem *parts.ErrorArea
 
+	// beside is the area under each field, by the setting the engine names.
+	// A refusal that says which setting it is about lands under that box
+	// instead of at the foot of the form - UX8, and O73, where the message
+	// about "how many" sat 748 px below the field it named. A screen that
+	// registers nothing here keeps every refusal where it always went.
+	beside map[string]*parts.ErrorArea
+
 	// stop ends the run in progress and waits for it. Nil while nothing is
 	// running, and only ever touched on the interface thread.
 	stop func()
@@ -95,6 +103,33 @@ type runner struct {
 	// the real one, so the run says which number it made up. The command line
 	// prints these as "note:" lines and this is the window's half of it.
 	notes []string
+}
+
+// refuse shows a refusal, under the field it is about where it names one.
+//
+// The choice is the engine's rather than the window's. It sets the setting on
+// the error, and this looks it up - the alternative was matching the wording
+// here, which is a second copy of rules the engine owns and the copy that
+// drifts.
+func (r *runner) refuse(err error) {
+	area := r.problem
+	var recipeErr *engine.RecipeError
+	if errors.As(err, &recipeErr) && recipeErr.Setting != "" {
+		if beside, ok := r.beside[recipeErr.Setting]; ok {
+			area = beside
+		}
+	}
+	area.Say(err.Error())
+}
+
+// clearProblems empties every place a refusal can appear, not just the last one
+// used. Clearing only the foot of the form would leave a message under a field
+// after the value that caused it was fixed.
+func (r *runner) clearProblems() {
+	r.problem.Clear()
+	for _, area := range r.beside {
+		area.Clear()
+	}
 }
 
 // say puts a sentence on the status line, under whatever settling had to say.
@@ -146,21 +181,21 @@ func (r *runner) progress() fyne.CanvasObject {
 // the real run goes through, so the answer here is the answer there. Stopping
 // early used to promise success to a run that refused to start on the next line.
 func (r *runner) onPreview() {
-	r.problem.Clear()
+	r.clearProblems()
 	targets, opt, err := r.settle()
 	if err != nil {
-		r.problem.Say(err.Error())
+		r.refuse(err)
 		return
 	}
 	opt.DryRun = true
 
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
-		r.problem.Say(err.Error())
+		r.refuse(err)
 		return
 	}
 	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
-		r.problem.Say(err.Error())
+		r.refuse(err)
 		return
 	}
 	r.say(previewText(planned, opt.OutDir))
@@ -186,15 +221,15 @@ func previewText(planned []engine.PlannedFile, outDir string) string {
 // files - and doing it here is what lets a refusal appear with nothing started
 // and no buttons to put back.
 func (r *runner) onGenerate() {
-	r.problem.Clear()
+	r.clearProblems()
 	targets, opt, err := r.settle()
 	if err != nil {
-		r.problem.Say(err.Error())
+		r.refuse(err)
 		return
 	}
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
-		r.problem.Say(err.Error())
+		r.refuse(err)
 		return
 	}
 	r.startRun(planned, opt)
@@ -293,9 +328,9 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 
 	switch {
 	case runErr != nil:
-		r.problem.Say(runErr.Error())
+		r.refuse(runErr)
 	case saveErr != nil:
-		r.problem.Say(saveErr.Error())
+		r.refuse(saveErr)
 	}
 
 	// Silence is banned. A file that was not produced has to be visible here

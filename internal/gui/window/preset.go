@@ -99,7 +99,7 @@ func (p *Preset) onPresetChosen(id string) {
 
 	chosen, err := preset.Get(id)
 	if err != nil {
-		p.problem.Say(err.Error())
+		p.refuse(err)
 		return
 	}
 

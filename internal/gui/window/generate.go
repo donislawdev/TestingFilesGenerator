@@ -162,13 +162,23 @@ func entry(text, placeholder string) *widget.Entry {
 // the consequence - which is docs/CLAUDE.md on writing for a reader, not a
 // description of how any of it works.
 func (g *Generate) settingsSection() fyne.CanvasObject {
+	// The fields the engine can name in a refusal keep an area of their own, so
+	// the message lands under the box that caused it rather than at the foot of
+	// the form - O73. The engine says which setting, in recipe keys, and this
+	// is the only place that knows which box that is.
+	g.beside = map[string]*parts.ErrorArea{}
+	withArea := func(setting, label, hint string, control fyne.CanvasObject) fyne.CanvasObject {
+		field, area := parts.FieldSaying(label, hint, control)
+		g.beside[setting] = area
+		return field
+	}
 	return container.NewVBox(
 		parts.Field(text.FieldFormat, text.HintFormat, g.formatPick),
 		parts.Field(text.FieldSize, text.HintSize, g.size),
-		parts.Field(text.FieldCount, text.HintCount, g.count),
-		parts.Field(text.FieldTargetID, text.HintTargetID, g.id),
-		parts.Field(text.FieldNameTemplate, text.HintNameTemplate, g.name),
-		parts.Field(text.FieldOutputDir, text.HintOutputDir,
+		withArea(engine.SettingCount, text.FieldCount, text.HintCount, g.count),
+		withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.id),
+		withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate, g.name),
+		withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
 			chooserFor(g.host, g.outDir)),
 		parts.Field(text.FieldSeed, text.HintSeed, g.seed),
 		parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
@@ -190,7 +200,7 @@ func (g *Generate) onFormatChosen(id string) {
 		// The registry filled this menu, so this cannot happen from a press. It
 		// can happen from a build where the two have come apart, and saying so
 		// beats a screen with no settings on it and no reason given.
-		g.problem.Say(err.Error())
+		g.refuse(err)
 		return
 	}
 

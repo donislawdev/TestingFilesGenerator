@@ -14,9 +14,36 @@ import "fmt"
 // makes no sense.
 type RecipeError struct {
 	Detail string
+
+	// Setting is which setting the refusal is about, where it is about one.
+	//
+	// It exists so a window can put the message beside the box that caused it.
+	// UX8 asks for that in as many words - near where the error came from, and
+	// in a window that means beside the field rather than at the foot of the
+	// screen. Measured 2026-08-11: the refusal about "how many" sat 748 px
+	// below the field it named, under every other field, and that distance
+	// grows with each field added rather than with the size of the window.
+	//
+	// The command line ignores it and prints as it always has, so this is
+	// additive. Empty is normal and means the refusal is about the run rather
+	// than about one box - those keep landing where they land today.
+	//
+	// It is spelled as the recipe key rather than as either surface's label,
+	// because the recipe keys are the vocabulary both surfaces already share.
+	// A third naming here is a third thing to keep in step.
+	Setting string
 }
 
 func (e *RecipeError) Error() string { return e.Detail }
+
+// The settings a refusal can point at. Recipe keys, and deliberately not the
+// window's labels or the command line's flags - see RecipeError.Setting.
+const (
+	SettingID     = "id"
+	SettingCount  = "count"
+	SettingName   = "name"
+	SettingOutDir = "output.dir"
+)
 
 // SpaceError is refusing to start because the disk cannot hold the result.
 //

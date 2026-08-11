@@ -215,15 +215,15 @@ type PlannedFile struct {
 // the run rather than about one entry.
 func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
 	if t.ID == "" {
-		return format.Descriptor{}, &RecipeError{Detail: "a target has no id: every target needs a stable id, it anchors the seed and links to the manifest"}
+		return format.Descriptor{}, &RecipeError{Setting: SettingID, Detail: "a target has no id: every target needs a stable id, it anchors the seed and links to the manifest"}
 	}
 	if seen[t.ID] {
-		return format.Descriptor{}, &RecipeError{Detail: fmt.Sprintf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)}
+		return format.Descriptor{}, &RecipeError{Setting: SettingID, Detail: fmt.Sprintf("target id %q is used twice: ids identify targets, so a duplicate is an error rather than a silent overwrite", t.ID)}
 	}
 	seen[t.ID] = true
 
 	if len(t.Sizes) == 0 {
-		return format.Descriptor{}, &RecipeError{Detail: fmt.Sprintf("target %q asks for 0 files: ask for at least one", t.ID)}
+		return format.Descriptor{}, &RecipeError{Setting: SettingCount, Detail: fmt.Sprintf("target %q asks for 0 files: ask for at least one", t.ID)}
 	}
 
 	desc, err := format.Get(t.Format)
@@ -283,7 +283,7 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		}
 	}
 	if opt.OutDir == "" {
-		return nil, &RecipeError{Detail: "the output directory is empty: name a directory, for example ./fixtures, or leave it out to use the current one"}
+		return nil, &RecipeError{Setting: SettingOutDir, Detail: "the output directory is empty: name a directory, for example ./fixtures, or leave it out to use the current one"}
 	}
 
 	for i := range targets {
@@ -440,7 +440,7 @@ func preflight(files []PlannedFile, opt Options) error {
 	// something at it. The system reports ENOTDIR and our mapping only knew
 	// "missing", "no permission" and "already there".
 	if info, err := os.Stat(opt.OutDir); err == nil && !info.IsDir() {
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingOutDir, Detail: fmt.Sprintf(
 			"the output directory %s is a file, not a directory. Point --out at a directory, or at one that does not exist yet and it will be created",
 			opt.OutDir)}
 	}
@@ -832,10 +832,10 @@ func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 func checkFileName(where, name string) error {
 	switch {
 	case name == "":
-		return &RecipeError{Detail: fmt.Sprintf("%s produces a file with no name", where)}
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf("%s produces a file with no name", where)}
 
 	case strings.ContainsAny(name, `/\`):
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Use --out or the output section to choose the directory",
 			where, name)}
 
@@ -854,12 +854,12 @@ func checkFileName(where, name string) error {
 	// travels between machines by design, and one that quietly leaves debris on
 	// somebody else's is worse than one refused on all of them.
 	case strings.Contains(name, ":"):
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which holds a colon. Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere - take the colon out, or ask for the file inside an archive where the name survives",
 			where, name)}
 
 	case name == "." || name == "..":
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which names a directory rather than a file", where, name)}
 
 	// A name Windows stores under a different name than the one it was given.
@@ -876,7 +876,7 @@ func checkFileName(where, name string) error {
 	// the name laboratory, which writes it into an archive rather than onto the
 	// host filesystem for exactly this reason. See D10.
 	case strings.HasSuffix(name, ".") || strings.HasSuffix(name, " "):
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which ends in a dot or a space. Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both. Take the last character off, or ask for the file inside an archive where the name survives",
 			where, name)}
 
@@ -887,7 +887,7 @@ func checkFileName(where, name string) error {
 	// machine failed on the next. That is the failure this rule exists to
 	// prevent, arriving through the rule itself.
 	case filepath.IsAbs(name) || core.HasVolumeName(name):
-		return &RecipeError{Detail: fmt.Sprintf(
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Use --out or the output section to choose the directory",
 			where, name)}
 	}
