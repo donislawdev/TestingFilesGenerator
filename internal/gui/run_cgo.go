@@ -71,10 +71,26 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 }
 
 func run(errOut io.Writer) int {
+	// Said out loud rather than left to be inferred: everything that touches a
+	// widget from the worker goes through fyne.Do, and a static guard checks
+	// it, but the toolkit had no way to know that. Without this it printed
+	// three lines at every start telling the person running it that this
+	// application has not been migrated - a warning about our code, on their
+	// terminal, that was not true.
+	//
+	// Set here rather than passed as a build tag, because a tag has to be
+	// remembered at every build and this cannot be forgotten.
+	app.SetMetadata(fyne.AppMetadata{
+		ID:         appID,
+		Name:       "Testing Files Generator",
+		Version:    version.Version,
+		Migrations: map[string]bool{"fyneDo": true},
+	})
+
 	a := app.NewWithID(appID)
-	// The palette of docs/UX.md sections 8.2 and 8.3, which was computed before
-	// the first widget and described nothing until it was installed here - O70.
-	// It answers for both variants, so the system setting still chooses.
+	// The palette of docs/UX.md sections 8.2 and 8.3, computed before the first
+	// widget and describing nothing until it was installed here - O70. It
+	// answers dark whatever the desktop is set to, by the owner's decision.
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow("Testing Files Generator " + version.Version)
 	window.Open(desktop{w})

@@ -146,6 +146,12 @@ because it turns other people's test suites red.
   setting instead, so an ambiguous `--boundary 15mb` still names both readings
   in bytes and a kept file still says it can be forced.
 
+- **Starting the window no longer prints a warning about itself.** Every start
+  wrote three lines saying this application has not been migrated to the
+  toolkit's threading model. It had been - everything that touches the window
+  from a background task goes through the toolkit's own handoff, and there is a
+  check that keeps it that way. The application simply never said so.
+
 - **The window has its own colours.** Until now it took whatever the toolkit
   shipped, and one thing that cost was the focus ring - the outline saying
   which box the keyboard is in was very nearly the colour of the page behind
