@@ -48,6 +48,36 @@ func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
 	}
 }
 
+// The same holds on the preset screen, where the fields are the preset's own.
+//
+// A separate test rather than a loop, because the two screens name their
+// settings from different places: the generate screen from the recipe keys the
+// engine uses, and this one from the parameters the preset declares. The
+// mechanism is shared and the vocabulary is not, so proving one proves nothing
+// about the other - and the preset screen was the half left undone when the
+// generate screen's refusals were moved on 2026-08-11.
+func TestARefusalAboutAPresetSettingAppearsUnderIt(t *testing.T) {
+	host, generate := screen(t)
+	press(t, generate, "Presets")
+	content := host.content
+
+	fill(t, content, "limit", "512")
+	press(t, content, "Preview")
+
+	const refusal = "cannot build this set"
+
+	field := fieldBox(content, "limit")
+	if field == nil {
+		t.Fatal(`there is no field called "limit", so this guard read the wrong tree`)
+	}
+	if !strings.Contains(allText(field), refusal) {
+		t.Errorf("the refusal is not under the limit it is about. That field shows:\n%s", allText(field))
+	}
+	if rest := allTextExcept(content, field); strings.Contains(rest, refusal) {
+		t.Errorf("the refusal also appears away from its field, so it was added rather than moved:\n%s", rest)
+	}
+}
+
 // fieldBox is the container of a labelled field - heading, control, hint and
 // the place a refusal about it goes.
 func fieldBox(o fyne.CanvasObject, label string) *fyne.Container {

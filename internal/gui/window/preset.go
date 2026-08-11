@@ -121,10 +121,17 @@ func (p *Preset) onPresetChosen(id string) {
 	}
 	p.about.Refresh()
 
+	// Rebuilt from nothing every time a preset is chosen, so the places a
+	// refusal can go are rebuilt with them. Keeping areas belonging to the
+	// previous preset would leave a message under a field that is no longer on
+	// the screen, and nothing would ever clear it.
+	p.beside = map[string]*parts.ErrorArea{}
 	for _, param := range chosen.Parameters {
 		field := parts.FromProperty(param)
 		p.params = append(p.params, field)
-		p.paramBox.Add(parts.Field(param.Name, detailOfParameter(param), field.Control))
+		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), field.Control)
+		p.beside[param.Name] = area
+		p.paramBox.Add(box)
 	}
 	p.paramBox.Refresh()
 }

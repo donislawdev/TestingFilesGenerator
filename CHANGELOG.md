@@ -120,8 +120,9 @@ because it turns other people's test suites red.
 - **A refusal about one setting now appears under that setting.** Asking for 0
   files put the sentence explaining it at the foot of the form, below every
   other field - and that distance grew with each field rather than with the
-  size of the window. The message now sits under the box that caused it. Where
-  a refusal is about the run rather than about one box, it appears where it
+  size of the window. The message now sits under the box that caused it, on
+  both screens: the settings of a target and the settings of a preset. Where a
+  refusal is about the run rather than about one box, it appears where it
   always did.
 
 - **The form no longer stretches to the width of the window.** Maximised on a

@@ -113,9 +113,13 @@ type runner struct {
 // drifts.
 func (r *runner) refuse(err error) {
 	area := r.problem
-	var recipeErr *engine.RecipeError
-	if errors.As(err, &recipeErr) && recipeErr.Setting != "" {
-		if beside, ok := r.beside[recipeErr.Setting]; ok {
+	// An interface rather than a case per error type, so a screen shown a kind
+	// of refusal nobody thought about here still gets it placed. The engine and
+	// the preset package both answer this and neither had to be imported for
+	// the question to be asked.
+	var about interface{ AboutSetting() string }
+	if errors.As(err, &about) && about.AboutSetting() != "" {
+		if beside, ok := r.beside[about.AboutSetting()]; ok {
 			area = beside
 		}
 	}

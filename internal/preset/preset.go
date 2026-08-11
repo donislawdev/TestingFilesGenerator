@@ -191,11 +191,23 @@ type ImpossibleError struct {
 	Preset string
 	Detail string
 	Hint   string
+
+	// Setting is which parameter of the preset the refusal is about, where it
+	// is about one. Named the way the parameter is declared, which is what
+	// both surfaces call it - the flag without its dashes and the label on the
+	// field. See AboutSetting.
+	Setting string
 }
 
 func (e *ImpossibleError) Error() string {
 	return fmt.Sprintf("the preset %s cannot build this set - %s. %s", e.Preset, e.Detail, e.Hint)
 }
+
+// AboutSetting lets a window put this message beside the box that caused it,
+// without the window knowing this type. UX8 asks for a refusal near where the
+// error came from - O73, where it sat at the foot of the form under every
+// other field. Empty means the refusal is about the set rather than one value.
+func (e *ImpossibleError) AboutSetting() string { return e.Setting }
 
 // registry holds what this build knows, written at init and read after.
 //

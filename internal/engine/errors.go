@@ -36,6 +36,12 @@ type RecipeError struct {
 
 func (e *RecipeError) Error() string { return e.Detail }
 
+// AboutSetting lets a window place this message without knowing this type.
+// The preset package answers the same question about its own refusals, and a
+// window that type switched on both would grow a case for every error a screen
+// can be shown.
+func (e *RecipeError) AboutSetting() string { return e.Setting }
+
 // The settings a refusal can point at. Recipe keys, and deliberately not the
 // window's labels or the command line's flags - see RecipeError.Setting.
 const (

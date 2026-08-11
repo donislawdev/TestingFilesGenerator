@@ -213,7 +213,12 @@ func reachable(plan []step, desc format.Descriptor, limit int64) error {
 		}
 		return &ImpossibleError{
 			Preset: boundariesID,
-			Detail: what,
+			// The limit rather than the spread, although the sentence offers
+			// both ways out. The limit is the one number the set is measured
+			// from, so it is where somebody types first - and a message can
+			// only stand beside one box.
+			Setting: "limit",
+			Detail:  what,
 			Hint: fmt.Sprintf(
 				// The settings are named without a leading dash on purpose. This
 				// sentence is built in the engine and both surfaces show it word
