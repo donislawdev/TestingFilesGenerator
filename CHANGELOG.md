@@ -136,11 +136,15 @@ because it turns other people's test suites red.
   the part you click. The words are on the switch now, which also makes them
   part of what you can click.
 
-- **A preset that cannot build its set no longer answers in command line
-  spelling.** The refusal said "Raise `--limit` above 1051991 B, narrow
-  `--spread`", and the window has no such thing as `--limit` on it - the fields
-  there are called `limit` and `spread`. One sentence is written for both, so
-  it now names the settings the way both of them do.
+- **Messages no longer answer in command line spelling.** A preset that could
+  not build its set said "Raise `--limit` above 1051991 B, narrow `--spread`",
+  and the window has no such thing as `--limit` on it - the fields there are
+  called `limit` and `spread`. Fifteen messages were written that way, and all
+  of them can appear in the window, because they are written once and shown by
+  both. They now name the settings the way both surfaces do.
+  Two of them used to hand you a command to paste. They give the values and the
+  setting instead, so an ambiguous `--boundary 15mb` still names both readings
+  in bytes and a kept file still says it can be forced.
 
 - **Hints in the window are no longer slanted.** Every line of explanation under
   every field was italic, on both screens. Slanted text is harder to read, and

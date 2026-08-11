@@ -195,7 +195,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Requested: r.Bytes,
 			Minimum:   bare,
 			Reason:    fmt.Sprintf("a %dx%d picture already encodes to that much before any padding", w, h),
-			Hint:      fmt.Sprintf("Ask for %d B or more, or set a smaller width and height with --set width=... --set height=...", bare),
+			Hint:      fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
 		}
 
 	case r.Bytes < bare+chunkOverhead:

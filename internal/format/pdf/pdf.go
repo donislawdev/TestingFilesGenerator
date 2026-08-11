@@ -202,9 +202,9 @@ func labelCost(label bool) string {
 
 func cleanHint(label bool) string {
 	if label {
-		return ", ask for fewer pages with --set pages=1, or drop the label with --clean"
+		return ", ask for fewer pages by setting pages to 1, or drop the label"
 	}
-	return " or ask for fewer pages with --set pages=1"
+	return " or ask for fewer pages by setting pages to 1"
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

@@ -495,7 +495,7 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 
 func labelHint(label bool) string {
 	if label {
-		return ", or drop the label with --clean"
+		return ", or drop the label"
 	}
 	return ""
 }

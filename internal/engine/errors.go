@@ -64,7 +64,7 @@ type SpaceError struct {
 
 func (e *SpaceError) Error() string {
 	return fmt.Sprintf(
-		"this run needs %d B and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk with --out",
+		"this run needs %d B and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory",
 		e.Needed, e.Path, e.Available)
 }
 
@@ -85,10 +85,10 @@ type CollisionError struct {
 func (e *CollisionError) Error() string {
 	if e.Manifest {
 		return fmt.Sprintf(
-			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory with --out, or move the old manifest aside",
+			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside",
 			e.Path)
 	}
 	return fmt.Sprintf(
-		"%s already exists and this run will not write over it. Generate into an empty directory with --out, or remove the file first",
+		"%s already exists and this run will not write over it. Generate into an empty directory, or remove the file first",
 		e.Path)
 }

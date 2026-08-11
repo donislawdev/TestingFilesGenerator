@@ -359,7 +359,7 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			key := collisionKey(name)
 			if owner, clash := names[key]; clash {
 				return nil, &RecipeError{Detail: collisionDetail(owner, t.ID, name) +
-					" - give one of them a --name template containing " + indexToken}
+					" - give one of them a name template containing " + indexToken}
 			}
 			names[key] = nameOwner{id: t.ID, name: name}
 
@@ -441,7 +441,7 @@ func preflight(files []PlannedFile, opt Options) error {
 	// "missing", "no permission" and "already there".
 	if info, err := os.Stat(opt.OutDir); err == nil && !info.IsDir() {
 		return &RecipeError{Setting: SettingOutDir, Detail: fmt.Sprintf(
-			"the output directory %s is a file, not a directory. Point --out at a directory, or at one that does not exist yet and it will be created",
+			"the output directory %s is a file, not a directory. Point the output directory at a directory, or at one that does not exist yet and it will be created",
 			opt.OutDir)}
 	}
 
@@ -836,7 +836,7 @@ func checkFileName(where, name string) error {
 
 	case strings.ContainsAny(name, `/\`):
 		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
-			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Use --out or the output section to choose the directory",
+			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Choose the directory with the output setting instead",
 			where, name)}
 
 	// A colon, on every system, for the same reason as a separator.
@@ -888,7 +888,7 @@ func checkFileName(where, name string) error {
 	// prevent, arriving through the rule itself.
 	case filepath.IsAbs(name) || core.HasVolumeName(name):
 		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
-			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Use --out or the output section to choose the directory",
+			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Choose the directory with the output setting instead",
 			where, name)}
 	}
 	return nil

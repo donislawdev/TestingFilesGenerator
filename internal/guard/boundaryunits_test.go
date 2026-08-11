@@ -26,7 +26,15 @@ import (
 // and 1_000 rather than guessing what they meant.
 
 func TestAnAmbiguousBoundaryUnitIsRefusedRatherThanGuessed(t *testing.T) {
-	for _, spelling := range []string{"15mb", "15MB", "10kb", "2gb", "15m"} {
+	// Both readings of each spelling, in bytes: the 1000s one most services
+	// mean and the 1024s one some do.
+	for spelling, readings := range map[string][2]string{
+		"15mb": {"15000000", "15728640"},
+		"15MB": {"15000000", "15728640"},
+		"10kb": {"10000", "10240"},
+		"2gb":  {"2000000000", "2147483648"},
+		"15m":  {"15000000", "15728640"},
+	} {
 		dir := t.TempDir()
 		code, _, errOut := run(t, "generate", "--format", "txt",
 			"--boundary", spelling, "--out", dir)
@@ -36,12 +44,21 @@ func TestAnAmbiguousBoundaryUnitIsRefusedRatherThanGuessed(t *testing.T) {
 				"a limit nobody stated", spelling)
 			continue
 		}
-		// Both readings, so the person does not have to work out either of them.
-		// A refusal that does not say what to write instead is a worse tool than
-		// one that guesses.
-		if !strings.Contains(errOut, "--boundary ") {
-			t.Errorf("--boundary %s was refused without a command to use instead: %s",
-				spelling, errOut)
+		// Both readings as numbers, so the person does not have to work either
+		// of them out. A refusal that does not say what to write instead is a
+		// worse tool than one that guesses.
+		//
+		// Asked as numbers rather than as a pasteable "--boundary N" since
+		// 2026-08-11: this sentence is written once in the engine and shown by
+		// both surfaces, and the window has no flags on it, so a spelling only
+		// the command line takes sends the other reader translating. O79, and
+		// the cost of it is exactly this - the command line reader now copies a
+		// number rather than a whole command.
+		for _, want := range readings {
+			if !strings.Contains(errOut, want) {
+				t.Errorf("--boundary %s was refused without naming %s, one of its two readings: %s",
+					spelling, want, errOut)
+			}
 		}
 	}
 }

@@ -143,7 +143,12 @@ func TestCleanupLeavesAChangedFileAloneUnlessForced(t *testing.T) {
 	if !strings.Contains(errOut, victim) || !strings.Contains(errOut, "changed") {
 		t.Errorf("the report does not say which file was kept and why:\n%s", errOut)
 	}
-	if !strings.Contains(errOut, "--force") {
+	// Named as the setting rather than as the flag, since 2026-08-11: this
+	// sentence is written below both surfaces and shown by both, and the window
+	// has no flags on it - so a spelling only the command line takes sends the
+	// other reader translating. O79. What has to survive is that the report
+	// says there is a way through, which is what somebody stuck needs.
+	if !strings.Contains(strings.ToLower(errOut), "force") {
 		t.Errorf("the report does not say how to remove it anyway:\n%s", errOut)
 	}
 	if _, err := os.Stat(full); err != nil {

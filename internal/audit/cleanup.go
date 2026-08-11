@@ -172,10 +172,10 @@ func skipReason(c Candidate, force bool) string {
 	case Absent:
 		return "it was already gone"
 	case Changed:
-		return "it has changed since it was written, so it may not be ours. Pass --force to remove it anyway"
+		return "it has changed since it was written, so it may not be ours. Force the cleanup to remove it anyway"
 	case Unreachable:
 		if force {
-			return "it could not be read, so there is no telling whether it is ours. --force does not cover this"
+			return "it could not be read, so there is no telling whether it is ours. Forcing the cleanup does not cover this"
 		}
 		return "it could not be read, so there is no telling whether it is ours"
 	default:

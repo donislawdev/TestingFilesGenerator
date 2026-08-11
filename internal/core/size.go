@@ -249,7 +249,7 @@ func ParseBoundary(s string) (int64, error) {
 		"boundary %q does not say which limit it means, and this is the one place that decides the answer. "+
 			"The limit belongs to the system you are testing, and %s means %d B to most services and %d B to some. "+
 			"A set built around the wrong one sits entirely past the real limit and tests nothing. "+
-			"Write the exact number: --boundary %d for the first, --boundary %d for the second",
+			"Write the exact number: a boundary of %d for the first, or %d for the second",
 		s, strings.TrimSpace(raw), int64(n*float64(decimal)), binary,
 		int64(n*float64(decimal)), binary)
 }

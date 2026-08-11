@@ -390,7 +390,7 @@ func (p Property) Allows(raw string) (bad string) {
 		}
 	case PropertySize:
 		if _, err := core.ParseSize(raw); err != nil {
-			return "it takes a size written the way --size accepts it, such as 2mb or a plain byte count"
+			return "it takes a size written the way any size is, such as 2mb or a plain byte count"
 		}
 	}
 	return ""
