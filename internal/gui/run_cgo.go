@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -71,6 +72,10 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 
 func run(errOut io.Writer) int {
 	a := app.NewWithID(appID)
+	// The palette of docs/UX.md sections 8.2 and 8.3, which was computed before
+	// the first widget and described nothing until it was installed here - O70.
+	// It answers for both variants, so the system setting still chooses.
+	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow("Testing Files Generator " + version.Version)
 	window.Open(desktop{w})
 	w.Resize(window.OpenSize)
