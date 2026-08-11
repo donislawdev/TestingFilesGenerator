@@ -85,14 +85,23 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g.runner.settle = g.settle
 	g.buildFields()
 
-	g.body = container.NewVScroll(parts.Screen(
-		text.HeadingGenerate,
-		g.settingsSection(),
-		g.propBox,
-		g.actions(links...),
-		g.progress(),
-		g.problem.Object(),
-	))
+	// The actions sit outside the scrolling part, so they stay where they are
+	// while the form moves. Inside it they were under the last field, which on
+	// a form this tall meant scrolling to the end to press Generate - the same
+	// complaint that moved the way between screens to the top.
+	//
+	// The progress and the refusal about the run as a whole belong with them:
+	// what a run is doing is not a section of the form, and a message about a
+	// press that just happened has to be where the press was.
+	g.body = container.NewBorder(
+		nil,
+		parts.ActionBar(g.actions(links...), g.progress(), g.problem.Object()),
+		nil, nil,
+		container.NewVScroll(parts.Screen(
+			text.HeadingGenerate,
+			g.settingsSection(),
+		)),
+	)
 
 	// The format decides which settings exist, so the first one has to be
 	// applied rather than waited for.
@@ -173,15 +182,32 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 		return field
 	}
 	return container.NewVBox(
-		parts.Field(text.FieldFormat, text.HintFormat, g.formatPick),
-		parts.Field(text.FieldSize, text.HintSize, g.size),
-		withArea(engine.SettingCount, text.FieldCount, text.HintCount, g.count),
-		withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.id),
-		withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate, g.name),
-		withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
-			chooserFor(g.host, g.outDir)),
-		parts.Field(text.FieldSeed, text.HintSeed, g.seed),
-		parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
+		parts.Section(text.SectionFormat,
+			parts.Field(text.FieldFormat, text.HintFormat, g.formatPick),
+		),
+		parts.Section(text.SectionConfiguration,
+			// Side by side, because each pair is one thought: how big and how
+			// many, then what the group is called and what the files are called.
+			parts.Row(
+				parts.Field(text.FieldSize, text.HintSize, g.size),
+				withArea(engine.SettingCount, text.FieldCount, text.HintCount, g.count),
+			),
+			parts.Row(
+				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.id),
+				withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate, g.name),
+			),
+			// The settings the chosen format declares land here, under the ones
+			// every format has.
+			g.propBox,
+		),
+		parts.Section(text.SectionOutput,
+			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
+				chooserFor(g.host, g.outDir)),
+			parts.Row(
+				parts.Field(text.FieldSeed, text.HintSeed, g.seed),
+				parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
+			),
+		),
 	)
 }
 

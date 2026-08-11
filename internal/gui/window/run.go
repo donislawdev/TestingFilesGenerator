@@ -157,7 +157,12 @@ func newRunner() *runner {
 	r.previewBtn = widget.NewButton(text.ButtonPreview, r.onPreview)
 	r.generateBtn = widget.NewButton(text.ButtonGenerate, r.onGenerate)
 	r.generateBtn.Importance = widget.HighImportance
+	// Three ranks, so the eye lands on the one that does the work: Generate
+	// filled, Preview plain beside it, Cancel receding until there is something
+	// to cancel. They were three identical buttons in a row, which is a choice
+	// presented as no choice.
 	r.cancelBtn = widget.NewButton(text.ButtonCancel, r.onCancel)
+	r.cancelBtn.Importance = widget.LowImportance
 	r.cancelBtn.Disable()
 	return r
 }

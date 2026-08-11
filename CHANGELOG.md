@@ -146,6 +146,17 @@ because it turns other people's test suites red.
   setting instead, so an ambiguous `--boundary 15mb` still names both readings
   in bytes and a kept file still says it can be forced.
 
+- **The window is grouped, not a single long form.** Every screen was one column
+  of fields with nothing separating one part from another, and the explanations
+  were the same size as the values they explain, so the words outweighed the
+  controls. Settings now sit in named sections, fields that are read together
+  sit side by side, and an explanation is smaller and quieter than the field it
+  belongs to.
+  Preview, Generate and Cancel stay in place while the form scrolls, so
+  producing files no longer means scrolling to the end to find the button. The
+  three of them look like what they are: Generate does the work, Preview is
+  beside it, Cancel waits until there is something to cancel.
+
 - **Moving between the two screens is tabs across the top.** The way to the
   other screen was a button in the row of actions under the last field, so
   changing screen meant scrolling past the whole form to find it. It also read

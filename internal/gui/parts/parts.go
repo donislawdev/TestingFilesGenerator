@@ -23,6 +23,7 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -39,11 +40,53 @@ func Prose(text string) fyne.CanvasObject {
 	return label
 }
 
-// Heading is the one line that says what a screen is for.
+// Heading is the name of one field, above its control.
 func Heading(text string) fyne.CanvasObject {
 	label := widget.NewLabel(text)
 	label.TextStyle = fyne.TextStyle{Bold: true}
 	return label
+}
+
+// Title is the one line that says what a screen is for.
+//
+// Bigger than a field's name rather than the same size in the same weight,
+// which is what it was until 2026-08-11: the title of the screen and the label
+// of every field were one style, so nothing led the eye and the first point of
+// the UX section 7 checklist - squint, and see what stands out - had no answer.
+func Title(text string) fyne.CanvasObject {
+	label := widget.NewLabel(text)
+	label.TextStyle = fyne.TextStyle{Bold: true}
+	label.SizeName = theme.SizeNameSubHeadingText
+	return label
+}
+
+// Section groups fields that answer one question, under a name.
+//
+// A card rather than a run of fields with a bold line above them. The screens
+// were one long column with no grouping, so a form of eight settings read as
+// eight unrelated things - and the toolkit's own card is what draws a surface
+// with a title on it, which means no custom widget to keep working for years.
+func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
+	return widget.NewCard(title, "", container.NewVBox(content...))
+}
+
+// Row puts fields side by side, for the ones that are read together.
+//
+// Size and how many are one thought, and so are the id and the name template.
+// Stacked, each took a full width it did not need and pushed the next one off
+// the screen.
+func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewGridWithColumns(len(fields), fields...)
+}
+
+// ActionBar is the strip that stays put while the form scrolls under it.
+//
+// On a surface of its own rather than floating, and that is not decoration:
+// pinned over a transparent background the scrolling text ran underneath the
+// buttons and through their labels. A card is what the toolkit draws a surface
+// with, and it is what every section on the screen above already is.
+func ActionBar(content ...fyne.CanvasObject) fyne.CanvasObject {
+	return widget.NewCard("", "", container.NewVBox(content...))
 }
 
 // Screen stacks sections with a heading on top.
@@ -55,7 +98,7 @@ func Heading(text string) fyne.CanvasObject {
 // ratchet and only goes down, so the composition has to come first.
 func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
 	all := make([]fyne.CanvasObject, 0, len(sections)+1)
-	all = append(all, Heading(heading))
+	all = append(all, Title(heading))
 	all = append(all, sections...)
 	return container.New(readableWidth{}, container.NewVBox(all...))
 }

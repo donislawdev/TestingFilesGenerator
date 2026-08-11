@@ -57,18 +57,27 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p.outDir = entry(startingDirectory(), "")
 	p.seed = entry("0", "")
 
-	p.body = container.NewVScroll(parts.Screen(
-		text.HeadingPreset,
-		parts.Field(text.FieldPreset, text.HintPreset, p.pick),
-		p.about,
-		p.paramBox,
-		parts.Field(text.FieldOutputDir, text.HintOutputDir,
-			chooserFor(p.host, p.outDir)),
-		parts.Field(text.FieldSeed, text.HintSeed, p.seed),
-		p.actions(links...),
-		p.progress(),
-		p.problem.Object(),
-	))
+	// The same shape as the other screen, so the window is one interface rather
+	// than two. What the preset is and what it finds go in the card with the
+	// chooser, because they are the answer to the question that card asks.
+	p.body = container.NewBorder(
+		nil,
+		parts.ActionBar(p.actions(links...), p.progress(), p.problem.Object()),
+		nil, nil,
+		container.NewVScroll(parts.Screen(
+			text.HeadingPreset,
+			parts.Section(text.SectionPreset,
+				parts.Field(text.FieldPreset, text.HintPreset, p.pick),
+				p.about,
+			),
+			parts.Section(text.SectionSettings, p.paramBox),
+			parts.Section(text.SectionOutput,
+				parts.Field(text.FieldOutputDir, text.HintOutputDir,
+					chooserFor(p.host, p.outDir)),
+				parts.Field(text.FieldSeed, text.HintSeed, p.seed),
+			),
+		)),
+	)
 
 	if len(ids) > 0 {
 		p.pick.SetSelected(ids[0])

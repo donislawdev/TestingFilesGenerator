@@ -204,6 +204,12 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		}
 	case *container.Scroll:
 		walk(v.Content, visit)
+	case *widget.Card:
+		// A card is a widget rather than a container, so nothing below it is
+		// reachable without this - and every field moved inside one on
+		// 2026-08-11. The first symptom was a nil type assertion in a guard
+		// that had been passing for weeks.
+		walk(v.Content, visit)
 	case *container.AppTabs:
 		// Every tab, including the ones not on show. A guard that only saw the
 		// selected one could not ask whether a screen it is not looking at

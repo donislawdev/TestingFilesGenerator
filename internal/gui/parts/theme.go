@@ -111,6 +111,34 @@ func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.C
 	return o.Theme.Color(name, theme.VariantDark)
 }
 
+// Size is our type scale and our spacing, over the toolkit's.
+//
+// The scale is the point rather than the individual numbers: a screen title,
+// a section title, a field name and an explanation are four ranks, and until
+// 2026-08-11 three of them were one size in one weight. Nothing led the eye,
+// which is the first question the UX section 7 checklist asks.
+//
+// The two heading names are swapped from what they sound like, on purpose. The
+// toolkit draws a card's title at SizeNameHeadingText, and a card is a section
+// INSIDE a screen - so the name a screen's own title uses has to end up bigger
+// than the one its cards use, whatever the names suggest. Measured on screen:
+// with the toolkit's 24 and 18 the sections shouted over the page they were on.
+func (o ours) Size(name fyne.ThemeSizeName) float32 {
+	switch name {
+	case theme.SizeNameSubHeadingText:
+		return 20 // the screen title
+	case theme.SizeNameHeadingText:
+		return 17 // a section title, drawn by the card
+	case theme.SizeNameCaptionText:
+		return 12 // an explanation under a field, at 11 it was hard work
+	case theme.SizeNamePadding:
+		return 6 // room between things, the toolkit's 4 was tight
+	case theme.SizeNameCardRadius:
+		return 8
+	}
+	return o.Theme.Size(name)
+}
+
 // Theme is the look of this tool, for the app to install and for a probe or a
 // guard to render with. A picture taken under a different theme is a picture
 // of a screen nobody has.

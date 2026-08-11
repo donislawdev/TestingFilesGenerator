@@ -41,6 +41,9 @@ func About() fyne.CanvasObject {
 	return parts.Screen(
 		text.HeadingAbout(version.Version),
 		parts.Prose(text.AboutTagline),
-		parts.Prose(version.LicenceNotice),
+		// In a card like every other block on every other screen, so this reads
+		// as a page of the application rather than as the one screen that was
+		// left as it was.
+		parts.Section(text.SectionLicence, parts.Prose(version.LicenceNotice)),
 	)
 }

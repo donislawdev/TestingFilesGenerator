@@ -34,6 +34,17 @@ const (
 // Buttons that do something on the screen they are on.
 const ButtonChoose = "Choose..."
 
+// The sections a screen is grouped into. A form of eight settings in one column
+// reads as eight unrelated things, and these are the questions they answer.
+const (
+	SectionFormat        = "File format"
+	SectionConfiguration = "File configuration"
+	SectionOutput        = "Output"
+	SectionPreset        = "Preset"
+	SectionSettings      = "Settings"
+	SectionLicence       = "Licence"
+)
+
 // Field labels on the generate screen, in the order somebody fills them in.
 const (
 	FieldFormat       = "format"

@@ -3,6 +3,7 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -74,10 +75,14 @@ func Toggle(name, detail string, check *widget.Check) fyne.CanvasObject {
 //
 // Under our palette the same widget.LowImportance is text-subdued, #9DA3A8,
 // which computes to 7.03:1. The control was never the problem. O70 and O71.
-func Note(text string) fyne.CanvasObject {
-	label := widget.NewLabel(text)
+func Note(content string) fyne.CanvasObject {
+	label := widget.NewLabel(content)
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.LowImportance
+	// Smaller as well as quieter. At the same size as the value above it, an
+	// explanation of two lines outweighs the field it explains - which is the
+	// screen this one was: more words than controls, and the words winning.
+	label.SizeName = theme.SizeNameCaptionText
 	return label
 }
 
