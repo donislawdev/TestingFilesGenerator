@@ -97,6 +97,37 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 	}
 }
 
+// The window looks the same whatever the desktop is set to.
+//
+// Decision of the owner, 2026-08-11: this program has one look, the dark one.
+// Guarded rather than left to the theme's shape, because the toolkit hands the
+// system's variant to every colour lookup and the obvious way to write a theme
+// is to branch on it - so a screen that quietly went half light on somebody
+// else's desktop is one plausible edit away, and it is the kind of edit that
+// looks correct.
+//
+// The light palette is still measured by the test above. It is computed and
+// not installed, which is a different thing from absent.
+func TestTheWindowKeepsOneLookWhateverTheDesktopSays(t *testing.T) {
+	shipped := parts.Theme()
+	names := []fyne.ThemeColorName{
+		theme.ColorNameBackground, theme.ColorNameForeground, theme.ColorNameError,
+		theme.ColorNameFocus, theme.ColorNameSelection, theme.ColorNameInputBackground,
+		theme.ColorNameForegroundOnPrimary,
+	}
+	for _, name := range names {
+		light := shipped.Color(name, theme.VariantLight)
+		dark := shipped.Color(name, theme.VariantDark)
+		if light != dark {
+			t.Errorf("%s answers %v on a light desktop and %v on a dark one, so the window follows the system setting",
+				name, light, dark)
+		}
+		if want := parts.PaletteColour(name, theme.VariantDark); dark != want {
+			t.Errorf("%s is %v and the dark palette says %v", name, dark, want)
+		}
+	}
+}
+
 // The two variants are actually different colours.
 //
 // A theme that answers with one palette whatever it is asked passes every

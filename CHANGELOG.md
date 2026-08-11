@@ -146,11 +146,12 @@ because it turns other people's test suites red.
   setting instead, so an ambiguous `--boundary 15mb` still names both readings
   in bytes and a kept file still says it can be forced.
 
-- **The window has its own colours, light and dark.** Until now it took
-  whatever the toolkit shipped, and one thing that cost was the focus ring -
-  the outline saying which box the keyboard is in was very nearly the colour of
-  the page behind it. Both looks are worked out against the same readability
-  thresholds, and the system setting still chooses between them.
+- **The window has its own colours.** Until now it took whatever the toolkit
+  shipped, and one thing that cost was the focus ring - the outline saying
+  which box the keyboard is in was very nearly the colour of the page behind
+  it. The colours are worked out against readability thresholds rather than
+  picked.
+  It is one look, dark, whatever the desktop is set to.
 
 - **Hints in the window are no longer slanted, and read as quieter than the
   labels above them.** Every line of explanation under every field was italic,

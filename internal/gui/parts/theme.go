@@ -91,15 +91,24 @@ func hex(r, g, b uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: 0x
 // about are the ones somebody measured.
 type ours struct{ fyne.Theme }
 
+// Color answers dark whatever the system asks for.
+//
+// Decision of the owner, 2026-08-11: this program has one look. The variant is
+// deliberately ignored rather than absent - Fyne passes whichever the desktop
+// is set to, and returning the dark palette for both is what "one look" means
+// here.
+//
+// The light palette below is kept, measured and guarded, and is not installed.
+// That is not an oversight to tidy away later: it is the half of docs/UX.md
+// section 8 that was computed at the same time as the other, and deleting it
+// would throw away work whose whole point was that it is cheapest to do before
+// the widgets exist. If this program ever follows the system setting, the
+// colours are already worked out and already meet their thresholds.
 func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	palette := darkColours
-	if variant == theme.VariantLight {
-		palette = lightColours
-	}
-	if c, ok := palette[name]; ok {
+	if c, ok := darkColours[name]; ok {
 		return c
 	}
-	return o.Theme.Color(name, variant)
+	return o.Theme.Color(name, theme.VariantDark)
 }
 
 // Theme is the look of this tool, for the app to install and for a probe or a
@@ -107,9 +116,19 @@ func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.C
 // of a screen nobody has.
 func Theme() fyne.Theme { return ours{theme.DefaultTheme()} }
 
-// PaletteColour is one colour of the palette, for a guard to measure. Named
-// rather than exported as the maps, so the guard reads it the way a widget
-// does and cannot pass by checking the table against itself.
+// PaletteColour is one colour of either palette, for a guard to measure.
+//
+// It reads the palette for the variant asked about rather than going through
+// Theme, which answers dark for everything. Both are still measured, because
+// the numbers are the thing that took the work and they are what makes the
+// light half usable the day somebody wants it.
 func PaletteColour(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	return Theme().Color(name, variant)
+	palette := darkColours
+	if variant == theme.VariantLight {
+		palette = lightColours
+	}
+	if c, ok := palette[name]; ok {
+		return c
+	}
+	return theme.DefaultTheme().Color(name, variant)
 }
