@@ -146,6 +146,14 @@ because it turns other people's test suites red.
   setting instead, so an ambiguous `--boundary 15mb` still names both readings
   in bytes and a kept file still says it can be forced.
 
+- **Cancel appears when there is a run to cancel, and not before.** It used to
+  sit permanently beside Preview and Generate, greyed out, so a row of two
+  choices read as three.
+
+- **Hovering a button no longer washes its colour out.** The hover shade was
+  being painted over the button instead of blended into it, so pointing at
+  Generate turned it grey.
+
 - **The window is grouped, not a single long form.** Every screen was one column
   of fields with nothing separating one part from another, and the explanations
   were the same size as the values they explain, so the words outweighed the

@@ -10,6 +10,48 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 )
 
+// Cancel is not on the screen while there is nothing to cancel.
+//
+// Asked for on 2026-08-11 after looking at the window. It had been there and
+// greyed, which is a question the screen keeps asking and answering itself -
+// and it sat beside the two buttons that do work, so a row of two choices read
+// as three.
+//
+// Both halves, because hiding it and never bringing it back is the easy way to
+// get this wrong and looks right in a screenshot of an idle window.
+func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
+	dir := t.TempDir()
+	host, content := screen(t)
+
+	cancel := buttonNamed(content, "Cancel")
+	if cancel == nil {
+		t.Fatal("there is no Cancel button at all, so this guard read the wrong tree")
+	}
+	if cancel.Visible() {
+		t.Error("Cancel is on the screen before anything has been started")
+	}
+
+	fill(t, content, "output directory", dir)
+	fill(t, content, "size", "1kb")
+	fill(t, content, "how many", "200")
+	press(t, content, "Generate")
+	if !cancel.Visible() {
+		t.Error("Cancel is not on the screen during a run, so a run cannot be stopped")
+	}
+
+	join(host)
+	waitForManifest(t, dir)
+
+	// And gone again when the run is over. Without this the guard passes on the
+	// constructor alone - it hides the button once at the start, so a screen
+	// that never hid it again would look right until the first run finished.
+	// Proven by mutation: taking the hiding out of the end of a run left this
+	// green until the line below was added.
+	if cancel.Visible() {
+		t.Error("Cancel is still on the screen after the run finished, with nothing left to cancel")
+	}
+}
+
 // Moving between screens is tabs at the top, not buttons at the foot.
 //
 // Reported from use on 2026-08-11. The way to the other screen sat in the row

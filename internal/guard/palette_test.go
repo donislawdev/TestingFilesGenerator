@@ -60,7 +60,8 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 		// Noticed rather than read: 10 in L*, which is a judgement recorded as
 		// a judgement in section 8.1 rather than borrowed from a standard.
 		for _, name := range []fyne.ThemeColorName{theme.ColorNameHover, theme.ColorNameSelection} {
-			if got := lightnessGap(parts.PaletteColour(name, variant.v), background); got < 10 {
+			seen := composite(parts.PaletteColour(name, variant.v), background)
+			if got := lightnessGap(seen, background); got < 10 {
 				t.Errorf("%s: %s differs from the background by %.1f L*, under the 10 that makes it noticeable",
 					variant.name, name, got)
 			}
@@ -91,7 +92,7 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 			contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), background),
 			contrast(parts.PaletteColour(theme.ColorNameFocus, variant.v), background),
 			contrast(parts.PaletteColour(theme.ColorNameError, variant.v), background),
-			lightnessGap(parts.PaletteColour(theme.ColorNameSelection, variant.v), background),
+			lightnessGap(composite(parts.PaletteColour(theme.ColorNameSelection, variant.v), background), background),
 			contrast(parts.PaletteColour(theme.ColorNameForegroundOnPrimary, variant.v),
 				parts.PaletteColour(theme.ColorNamePrimary, variant.v)))
 	}
@@ -148,6 +149,28 @@ func TestTheLightAndDarkPalettesAreNotTheSame(t *testing.T) {
 	if same == len(names) {
 		t.Fatal("every colour matched, so the theme is ignoring the variant entirely")
 	}
+}
+
+// composite lays a colour over another and returns what is actually seen.
+//
+// Some of the palette is translucent on purpose, because the toolkit blends
+// those names rather than painting them - hover is white at 0x22, which is the
+// measured row hover once it is over the page. Measuring the raw value asks
+// about a colour nobody ever sees: it reported hover as 2.0 L* from the
+// background when what is drawn is 19.4. For an opaque colour this is the
+// colour itself, so it can be applied to all of them.
+func composite(over, under color.Color) color.Color {
+	r, g, b, a := over.RGBA()
+	br, bg, bb, _ := under.RGBA()
+	// RGBA reports colours with the alpha already multiplied in, so the top
+	// contributes as it stands. Multiplying by alpha again here reported the
+	// hover as 0.0 L* from the background - a colour that would be invisible,
+	// and is not what the toolkit draws.
+	alpha := float64(a) / 65535
+	mix := func(top, bottom uint32) uint8 {
+		return uint8((float64(top) + float64(bottom)*(1-alpha)) / 257)
+	}
+	return color.NRGBA{R: mix(r, br), G: mix(g, bg), B: mix(b, bb), A: 0xFF}
 }
 
 // contrast is the WCAG ratio between two colours, from 1 to 21.

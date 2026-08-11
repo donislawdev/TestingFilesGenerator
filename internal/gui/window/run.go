@@ -164,6 +164,7 @@ func newRunner() *runner {
 	r.cancelBtn = widget.NewButton(text.ButtonCancel, r.onCancel)
 	r.cancelBtn.Importance = widget.LowImportance
 	r.cancelBtn.Disable()
+	r.cancelBtn.Hide()
 	return r
 }
 
@@ -374,16 +375,23 @@ func notesOf(res *engine.Result) []string {
 // look pressable during a run is a window that invites a second run into a
 // directory the first one is still filling.
 func (r *runner) setRunning(running bool) {
+	// Cancel is hidden rather than greyed when there is nothing to cancel, asked
+	// for on 2026-08-11 after looking at the window. A permanently dead control
+	// is a question the screen keeps asking and answering itself, and it sat
+	// beside the two buttons that do work - so the row read as three choices
+	// where there were two. It appears with the run and goes with it.
 	if running {
 		r.previewBtn.Disable()
 		r.generateBtn.Disable()
 		r.cancelBtn.Enable()
+		r.cancelBtn.Show()
 		r.bar.Show()
 		return
 	}
 	r.previewBtn.Enable()
 	r.generateBtn.Enable()
 	r.cancelBtn.Disable()
+	r.cancelBtn.Hide()
 	r.bar.Hide()
 }
 

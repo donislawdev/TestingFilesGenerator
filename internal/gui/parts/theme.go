@@ -23,17 +23,27 @@ import (
 // ratio compresses against a light background.
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
-		theme.ColorNameBackground:      hex(0x1E, 0x1E, 0x1E),
-		theme.ColorNameForeground:      hex(0xE6, 0xE6, 0xE6),
-		theme.ColorNamePlaceHolder:     hex(0x9D, 0xA3, 0xA8),
-		theme.ColorNameDisabled:        hex(0x9D, 0xA3, 0xA8),
-		theme.ColorNameError:           hex(0xF1, 0x70, 0x7A),
-		theme.ColorNameSuccess:         hex(0x6F, 0xCF, 0x7F),
-		theme.ColorNameWarning:         hex(0xE8, 0xB3, 0x3E),
-		theme.ColorNamePrimary:         hex(0x6F, 0xB7, 0xF0),
-		theme.ColorNameHyperlink:       hex(0x6F, 0xB7, 0xF0),
-		theme.ColorNameFocus:           hex(0x4C, 0x9D, 0xF0),
-		theme.ColorNameHover:           hex(0x3C, 0x3C, 0x3E),
+		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x1E),
+		theme.ColorNameForeground:  hex(0xE6, 0xE6, 0xE6),
+		theme.ColorNamePlaceHolder: hex(0x9D, 0xA3, 0xA8),
+		theme.ColorNameDisabled:    hex(0x9D, 0xA3, 0xA8),
+		theme.ColorNameError:       hex(0xF1, 0x70, 0x7A),
+		theme.ColorNameSuccess:     hex(0x6F, 0xCF, 0x7F),
+		theme.ColorNameWarning:     hex(0xE8, 0xB3, 0x3E),
+		theme.ColorNamePrimary:     hex(0x6F, 0xB7, 0xF0),
+		theme.ColorNameHyperlink:   hex(0x6F, 0xB7, 0xF0),
+		theme.ColorNameFocus:       hex(0x4C, 0x9D, 0xF0),
+		// Translucent, and that is the fix for a defect somebody saw rather
+		// than a preference. The toolkit does not paint this colour, it BLENDS
+		// it over whatever is underneath - so an opaque grey replaced the blue
+		// of the Generate button the moment the pointer touched it, reported on
+		// 2026-08-11 as an ugly colour on hover.
+		//
+		// White at 0x22 over the page comes out at #3C3C3E, which is the row
+		// hover of docs/UX.md section 8.2 to the byte. The measured look is
+		// kept and the behaviour is corrected, because section 8 computed this
+		// as the background of a row and the toolkit uses it on anything.
+		theme.ColorNameHover:           overlay(0xFF, 0xFF, 0xFF, 0x22),
 		theme.ColorNameSelection:       hex(0x2C, 0x4A, 0x6B),
 		theme.ColorNameInputBackground: hex(0x2E, 0x2E, 0x30),
 		theme.ColorNameButton:          hex(0x2E, 0x2E, 0x30),
@@ -56,17 +66,20 @@ var (
 	}
 
 	lightColours = map[fyne.ThemeColorName]color.Color{
-		theme.ColorNameBackground:      hex(0xFF, 0xFF, 0xFF),
-		theme.ColorNameForeground:      hex(0x1A, 0x1A, 0x1A),
-		theme.ColorNamePlaceHolder:     hex(0x59, 0x59, 0x59),
-		theme.ColorNameDisabled:        hex(0x59, 0x59, 0x59),
-		theme.ColorNameError:           hex(0xB3, 0x12, 0x1F),
-		theme.ColorNameSuccess:         hex(0x10, 0x6B, 0x2E),
-		theme.ColorNameWarning:         hex(0x8A, 0x5A, 0x00),
-		theme.ColorNamePrimary:         hex(0x0F, 0x5F, 0xA8),
-		theme.ColorNameHyperlink:       hex(0x0F, 0x5F, 0xA8),
-		theme.ColorNameFocus:           hex(0x0F, 0x62, 0xFE),
-		theme.ColorNameHover:           hex(0xDF, 0xDF, 0xDF),
+		theme.ColorNameBackground:  hex(0xFF, 0xFF, 0xFF),
+		theme.ColorNameForeground:  hex(0x1A, 0x1A, 0x1A),
+		theme.ColorNamePlaceHolder: hex(0x59, 0x59, 0x59),
+		theme.ColorNameDisabled:    hex(0x59, 0x59, 0x59),
+		theme.ColorNameError:       hex(0xB3, 0x12, 0x1F),
+		theme.ColorNameSuccess:     hex(0x10, 0x6B, 0x2E),
+		theme.ColorNameWarning:     hex(0x8A, 0x5A, 0x00),
+		theme.ColorNamePrimary:     hex(0x0F, 0x5F, 0xA8),
+		theme.ColorNameHyperlink:   hex(0x0F, 0x5F, 0xA8),
+		theme.ColorNameFocus:       hex(0x0F, 0x62, 0xFE),
+		// Black rather than white here: this page is white, so its hover is
+		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
+		// which is what section 8.3 measured.
+		theme.ColorNameHover:           overlay(0x00, 0x00, 0x00, 0x20),
 		theme.ColorNameSelection:       hex(0xCF, 0xE4, 0xF7),
 		theme.ColorNameInputBackground: hex(0xEF, 0xEF, 0xEF),
 		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
@@ -82,6 +95,11 @@ var (
 )
 
 func hex(r, g, b uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: 0xFF} }
+
+// overlay is a colour the toolkit blends over whatever is beneath it, rather
+// than one it paints. The distinction is invisible in a palette table and
+// decides what a hovered button looks like.
+func overlay(r, g, b, a uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: a} }
 
 // ours is the palette laid over the toolkit's theme.
 //
