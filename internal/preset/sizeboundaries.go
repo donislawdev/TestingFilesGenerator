@@ -37,7 +37,7 @@ func init() {
 		Reads: []string{"format"},
 
 		SaidWhenDefaulted: map[string]string{
-			"limit": "no --limit was given, so this set is built around " + defaultLimitText +
+			"limit": "no limit was given, so this set is built around " + defaultLimitText +
 				" - that is our placeholder and not your system's limit. Pass the limit your system declares, or the files say nothing about it.",
 		},
 
@@ -215,7 +215,13 @@ func reachable(plan []step, desc format.Descriptor, limit int64) error {
 			Preset: boundariesID,
 			Detail: what,
 			Hint: fmt.Sprintf(
-				"Raise --limit above %d B, narrow --spread, or choose a format with a smaller minimum. The limit asked for was %d B.",
+				// The settings are named without a leading dash on purpose. This
+				// sentence is built in the engine and both surfaces show it word
+				// for word, so a spelling only one of them has sends the other's
+				// reader translating: the window labels these fields "limit" and
+				// "spread", and there is no "--limit" anywhere on it. Seen on
+				// screen 2026-08-11, O79.
+				"Raise the limit above %d B, narrow the spread, or choose a format with a smaller minimum. The limit asked for was %d B.",
 				floor+largest(plan, limit), limit),
 		}
 	}

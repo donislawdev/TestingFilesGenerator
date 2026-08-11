@@ -130,10 +130,22 @@ func TestSizeBoundariesRefusesASetItCannotCompleteRatherThanPartOfIt(t *testing.
 	if !asImpossible(err, &impossible) {
 		t.Fatalf("the refusal is %T and it should say the set cannot be built: %v", err, err)
 	}
-	for _, want := range []string{"size-boundaries", "--limit"} {
+	for _, want := range []string{"size-boundaries", "limit"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Errorf("the refusal does not mention %q:\n%s", want, err)
 		}
+	}
+	// The engine writes this sentence once and both surfaces show it word for
+	// word, so it may not be spelled the way only one of them takes its input.
+	// The window labels these fields "limit" and "spread" and has no "--limit"
+	// on it anywhere, so a reader there was being sent to translate. Seen on a
+	// screenshot of the refused state on 2026-08-11, O79.
+	//
+	// This asks about flag syntax rather than about the two names, because the
+	// defect is the syntax: any "--something" here is a spelling one surface
+	// does not have.
+	if strings.Contains(err.Error(), "--") {
+		t.Errorf("the refusal uses command line flag syntax, which the window has no such thing as:\n%s", err)
 	}
 }
 
