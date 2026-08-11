@@ -171,7 +171,7 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 		parts.Field(text.FieldOutputDir, text.HintOutputDir,
 			chooserFor(g.host, g.outDir)),
 		parts.Field(text.FieldSeed, text.HintSeed, g.seed),
-		parts.Field(text.FieldLabel, text.HintLabel, g.label),
+		parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
 	)
 }
 

@@ -117,6 +117,17 @@ because it turns other people's test suites red.
   holding a character a filename cannot carry reached the recipe and broke it,
   because the text of a distance becomes the name of a file. All four were
   found by fuzzing.
+- **The form no longer stretches to the width of the window.** Maximised on a
+  wide screen every box ran the whole way across - the seed field holding `0`
+  was nearly four thousand pixels wide, and a row that long cannot be followed
+  from its label to its value. The form now stops at a readable width and stays
+  at the left. Nothing wraps that did not wrap before.
+
+- **The self describing label switch says what it is.** It was a bare square
+  with its name above it and its explanation below, so there were no words on
+  the part you click. The words are on the switch now, which also makes them
+  part of what you can click.
+
 - **A preset that cannot build its set no longer answers in command line
   spelling.** The refusal said "Raise `--limit` above 1051991 B, narrow
   `--spread`", and the window has no such thing as `--limit` on it - the fields

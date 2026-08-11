@@ -20,6 +20,22 @@ func Field(label, detail string, control fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewVBox(items...)
 }
 
+// Toggle is a switch that carries its own name, with the explanation under it.
+//
+// A switch is the one control that does not take a heading above it. Given one
+// it arrives as a bare square with the words somewhere else: the name above,
+// the sentence below, and nothing to read on the thing you click. That is what
+// O72 saw on screen. Putting the name on the switch also makes the words part
+// of the target, which is the difference between a click and an aimed click.
+func Toggle(name, detail string, check *widget.Check) fyne.CanvasObject {
+	check.Text = name
+	items := []fyne.CanvasObject{check}
+	if detail != "" {
+		items = append(items, Note(detail))
+	}
+	return container.NewVBox(items...)
+}
+
 // Note is a quiet line under something, for what a person needs once.
 //
 // Quiet by weight rather than by slant. docs/UX.md section 8.5 says italics

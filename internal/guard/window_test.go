@@ -239,6 +239,18 @@ func buttonNamed(o fyne.CanvasObject, name string) *widget.Button {
 	return found
 }
 
+// checkNamed is a switch found by the words on it, which is where a switch
+// carries its name - a heading above one leaves a bare square to click.
+func checkNamed(o fyne.CanvasObject, name string) *widget.Check {
+	var found *widget.Check
+	walk(o, func(obj fyne.CanvasObject) {
+		if c, ok := obj.(*widget.Check); ok && c.Text == name {
+			found = c
+		}
+	})
+	return found
+}
+
 func buttonNames(o fyne.CanvasObject) []string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {

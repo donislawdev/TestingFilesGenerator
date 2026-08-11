@@ -396,9 +396,13 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	fill(t, content, "height", "64")
 
 	// The label is on by default, so turning it off is the change worth making.
-	label, ok := controlUnder(content, "self describing label").(*widget.Check)
-	if !ok {
-		t.Fatal("the self describing label is not a switch")
+	//
+	// Found by the words on the switch rather than by a heading above it. A
+	// switch carries its own name since 2026-08-11 - given a heading it arrived
+	// as a bare square with nothing to read on the part you click, which is O72.
+	label := checkNamed(content, "self describing label")
+	if label == nil {
+		t.Fatal("there is no self describing label switch on the screen")
 	}
 	label.SetChecked(false)
 

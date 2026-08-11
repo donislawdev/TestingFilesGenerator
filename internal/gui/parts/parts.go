@@ -57,5 +57,43 @@ func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
 	all := make([]fyne.CanvasObject, 0, len(sections)+1)
 	all = append(all, Heading(heading))
 	all = append(all, sections...)
-	return container.NewVBox(all...)
+	return container.New(readableWidth{}, container.NewVBox(all...))
+}
+
+// ColumnWidth is as wide as this form is allowed to get, whatever the window
+// does. O72, measured on 2026-08-10 and again on 2026-08-11: maximised to
+// 3862 px, every box was 3848 to 3854 px of it - 99.7 per cent - so the seed
+// field holding "0" was nearly four thousand pixels wide. UX6 puts it as a
+// question rather than a rule: run your eye along a row to the right edge, and
+// if you got lost the row is too long.
+//
+// 820 comes from the longest sentence the form actually holds, which ends at
+// 797 px - the hint under the self describing label - so nothing rewraps and
+// this change only stops the stretching. It is not a claim about the ideal
+// measure: prose is easiest at 45 to 75 characters a line and 820 px is about
+// 112, so the typography pass has room to tighten this. It cannot widen it.
+const ColumnWidth = 820
+
+// readableWidth gives its one child the lesser of the space offered and
+// ColumnWidth, at the left. A VBox stretches its children to whatever it is
+// given, which is the whole window, and that is the entire defect.
+type readableWidth struct{}
+
+func (readableWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) == 0 {
+		return fyne.Size{}
+	}
+	size := objects[0].MinSize()
+	// The height is the child's and is never capped. Only the width is a
+	// choice - a form too tall scrolls, a form too wide cannot be read.
+	size.Width = fyne.Min(size.Width, ColumnWidth)
+	return size
+}
+
+func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	if len(objects) == 0 {
+		return
+	}
+	objects[0].Resize(fyne.NewSize(fyne.Min(size.Width, ColumnWidth), size.Height))
+	objects[0].Move(fyne.NewPos(0, 0))
 }
