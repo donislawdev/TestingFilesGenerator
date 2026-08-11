@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -26,6 +28,12 @@ import (
 // the thing, which is what D1 counts.
 
 // screen is a generate screen with a window that records rather than opens.
+//
+// It returns the generate tab rather than the window, and that distinction
+// arrived with the tabs on 2026-08-11: the window now holds every screen at
+// once, and both work screens have a field called "output directory", so a
+// lookup across the whole thing finds whichever comes first and reads as
+// though it worked.
 func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	t.Helper()
 	host := &fakeHost{}
@@ -33,7 +41,7 @@ func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
-	return host, host.content
+	return host, tabNamed(t, host.content, text.TabOneTarget)
 }
 
 // press finds a button by its label and presses it.

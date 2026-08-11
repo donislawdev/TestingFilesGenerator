@@ -146,6 +146,13 @@ because it turns other people's test suites red.
   setting instead, so an ambiguous `--boundary 15mb` still names both readings
   in bytes and a kept file still says it can be forced.
 
+- **Moving between the two screens is tabs across the top.** The way to the
+  other screen was a button in the row of actions under the last field, so
+  changing screen meant scrolling past the whole form to find it. It also read
+  as something you do to the form, sitting between Preview and Generate, which
+  is not what it is. The licence moved up there too, and no longer needs a Back
+  button - a tab is its own way out.
+
 - **Starting the window no longer prints a warning about itself.** Every start
   wrote three lines saying this application has not been migrated to the
   toolkit's threading model. It had been - everything that touches the window

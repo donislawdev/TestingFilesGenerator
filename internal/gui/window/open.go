@@ -22,15 +22,24 @@ import (
 // lose whatever was typed, and would lose a run in progress along with the only
 // handle on stopping it.
 func Open(h Host) {
-	var showGenerate, showPreset, showAbout func()
+	gen := NewGenerate(h)
+	pre := NewPreset(h)
 
-	gen := NewGenerate(h,
-		widget.NewButton(text.ButtonPresets, func() { showPreset() }),
-		widget.NewButton(text.ButtonAbout, func() { showAbout() }),
-	)
-	pre := NewPreset(h,
-		widget.NewButton(text.ButtonOneTarget, func() { showGenerate() }),
-		widget.NewButton(text.ButtonAbout, func() { showAbout() }),
+	// Tabs across the top rather than buttons at the foot, reported from use on
+	// 2026-08-11. The way between the screens used to sit in the row of actions
+	// under the last field, so changing screen meant scrolling past the whole
+	// form to find it - and nobody scrolls to the bottom to navigate. Moving
+	// between screens is not an action taken on the form, and it was reading
+	// like one.
+	//
+	// About is a tab as well although only the two work screens were asked
+	// about. Leaving it at the foot would have kept exactly the defect being
+	// fixed, for the one screen somebody reaches least often and would look
+	// hardest for. It also loses its Back button: a tab is its own way out.
+	tabs := container.NewAppTabs(
+		container.NewTabItem(text.TabOneTarget, gen.Object()),
+		container.NewTabItem(text.TabPresets, pre.Object()),
+		container.NewTabItem(text.TabAbout, About()),
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -43,15 +52,14 @@ func Open(h Host) {
 	// Carried at the moment of moving rather than bound both ways, because
 	// this is the only moment the difference can become visible - and one
 	// direction of copying cannot loop.
-	showGenerate = func() {
-		gen.SetOutDir(pre.OutDir())
-		h.SetContent(gen.Object())
+	tabs.OnSelected = func(item *container.TabItem) {
+		switch item.Text {
+		case text.TabOneTarget:
+			gen.SetOutDir(pre.OutDir())
+		case text.TabPresets:
+			pre.SetOutDir(gen.OutDir())
+		}
 	}
-	showPreset = func() {
-		pre.SetOutDir(gen.OutDir())
-		h.SetContent(pre.Object())
-	}
-	showAbout = func() { h.SetContent(About(func() { showGenerate() })) }
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The
 	// invariant that the output directory never holds a half written file rests
@@ -69,7 +77,10 @@ func Open(h Host) {
 		h.Close()
 	})
 
-	showGenerate()
+	// The window still opens on the work rather than on the notice, which is
+	// the owner's decision of 2026-08-05 and is now a property of which tab is
+	// first rather than of which screen is installed.
+	h.SetContent(tabs)
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put

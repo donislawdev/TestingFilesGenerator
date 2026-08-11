@@ -7,8 +7,6 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -35,11 +33,14 @@ var OpenSize = fyne.NewSize(720, 720)
 //
 // The text is not repeated here. It comes from version.LicenceNotice, the same
 // constant the command prints, so the two cannot come to say different things.
-func About(back func()) fyne.CanvasObject {
+// It carries no way back, and has not needed one since 2026-08-11: it is a tab,
+// so every other screen is one click away and always visible. As a screen that
+// replaced the whole window it needed a door, and a door somebody could delete
+// without noticing was the thing worth guarding.
+func About() fyne.CanvasObject {
 	return parts.Screen(
 		text.HeadingAbout(version.Version),
 		parts.Prose(text.AboutTagline),
 		parts.Prose(version.LicenceNotice),
-		container.NewHBox(widget.NewButton(text.ButtonBack, back)),
 	)
 }

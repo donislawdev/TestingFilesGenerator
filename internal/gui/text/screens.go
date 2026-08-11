@@ -19,14 +19,20 @@ func HeadingAbout(version string) string {
 // thesis in a line: files, and what should happen to them.
 const AboutTagline = "Generate test files, and know how the system under test should react to them."
 
-// Buttons that move between screens rather than doing anything.
+// The tabs across the top, which are where moving between screens lives.
+//
+// They were buttons in the row of actions under the last field until
+// 2026-08-11, so changing screen meant scrolling past the whole form to find
+// the way out - reported from use. Moving between screens is not an action
+// taken on the form, and sitting among Preview and Generate it read like one.
 const (
-	ButtonPresets   = "Presets"
-	ButtonAbout     = "About"
-	ButtonOneTarget = "One target"
-	ButtonBack      = "Back"
-	ButtonChoose    = "Choose..."
+	TabOneTarget = "One target"
+	TabPresets   = "Presets"
+	TabAbout     = "About"
 )
+
+// Buttons that do something on the screen they are on.
+const ButtonChoose = "Choose..."
 
 // Field labels on the generate screen, in the order somebody fills them in.
 const (

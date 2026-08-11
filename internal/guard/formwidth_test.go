@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
@@ -28,7 +29,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 		host := &fakeHost{}
 		window.Open(host)
 		if screenName == "preset" {
-			press(t, host.content, "Presets")
+			selectTab(t, host.content, "Presets")
 		}
 		content := host.content
 

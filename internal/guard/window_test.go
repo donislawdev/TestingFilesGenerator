@@ -117,7 +117,7 @@ func distinctColours(img image.Image) int {
 // font change and fails for the only reason worth failing for: the sentence
 // went away.
 func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
-	shown := textIn(window.About(func() {}))
+	shown := textIn(window.About())
 
 	for _, want := range []string{
 		"General Public License",
@@ -136,7 +136,7 @@ func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
 // each other, which is exactly the shape in which a second copy gets written
 // and nobody compares the two again.
 func TestTheWindowAndTheCommandQuoteTheSameLicence(t *testing.T) {
-	shown := textIn(window.About(func() {}))
+	shown := textIn(window.About())
 	if !strings.Contains(shown, strings.TrimSpace(version.LicenceNotice)) {
 		t.Error("the window does not show the licence notice verbatim, so it is a second copy now")
 	}
@@ -153,26 +153,17 @@ func TestTheLicenceIsStillReachableFromTheOpeningScreen(t *testing.T) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
-	about := buttonNamed(host.content, "About")
-	if about == nil {
-		t.Fatalf("the opening screen has no way to the licence. Its buttons: %v",
-			buttonNames(host.content))
-	}
-
-	about.OnTapped()
-	shown := textIn(host.content)
+	// A tab since 2026-08-11. It used to be a button in the row of actions at
+	// the foot of the form, so reaching the licence meant scrolling past every
+	// field, and the way back was another button somebody could delete without
+	// noticing. A tab is its own way out, so that door is structural now.
+	shown := textIn(selectTab(t, host.content, "About"))
 	if !strings.Contains(shown, "generate are yours") {
-		t.Errorf("pressing About did not lead to the licence. What is on screen now:\n%s", shown)
+		t.Errorf("the About tab does not lead to the licence. What it shows:\n%s", shown)
 	}
 
-	// And back, or the licence is a room with no door out.
-	if back := buttonNamed(host.content, "Back"); back == nil {
-		t.Error("the licence screen has no way back, so reading it costs the window")
-	} else {
-		back.OnTapped()
-		if buttonNamed(host.content, "Generate") == nil {
-			t.Error("Back did not return to the generate screen")
-		}
+	if generate := selectTab(t, host.content, "One target"); buttonNamed(generate, "Generate") == nil {
+		t.Error("there is no way from the licence back to the work")
 	}
 }
 
@@ -183,9 +174,18 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 	host := &fakeHost{}
 	window.Open(host)
 
-	if buttonNamed(host.content, "Generate") == nil {
-		t.Errorf("the window does not open on the generate screen. Its buttons: %v",
-			buttonNames(host.content))
+	// Asked of the SELECTED tab rather than of the window, and that distinction
+	// is the whole guard now: the tabs hold every screen at once, so looking
+	// for a Generate button anywhere would find one even if the window opened
+	// on the licence.
+	tabs := tabsIn(host.content)
+	if tabs == nil {
+		t.Fatal("the window has no tabs")
+	}
+	if tabs.Selected() == nil || tabs.Selected().Text != "One target" {
+		t.Errorf("the window does not open on the work. Its tabs are %v", tabNames(host.content))
+	} else if buttonNamed(tabs.Selected().Content, "Generate") == nil {
+		t.Error("the tab the window opens on has no Generate button")
 	}
 }
 
@@ -204,7 +204,79 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		}
 	case *container.Scroll:
 		walk(v.Content, visit)
+	case *container.AppTabs:
+		// Every tab, including the ones not on show. A guard that only saw the
+		// selected one could not ask whether a screen it is not looking at
+		// still holds what it should - and the close intercept has to reach a
+		// run on the tab nobody is watching.
+		for _, item := range v.Items {
+			walk(item.Content, visit)
+		}
 	}
+}
+
+// tabsIn is the tab strip of the window, which is where moving between screens
+// lives since 2026-08-11.
+func tabsIn(o fyne.CanvasObject) *container.AppTabs {
+	var found *container.AppTabs
+	walk(o, func(obj fyne.CanvasObject) {
+		if tabs, ok := obj.(*container.AppTabs); ok && found == nil {
+			found = tabs
+		}
+	})
+	return found
+}
+
+// tabNamed is one screen of the window, whether or not it is the one on show.
+//
+// Guards ask for the screen they mean rather than for the window, because the
+// tabs hold every screen at once: both work screens have a field called
+// "output directory", so a lookup across the whole window finds whichever
+// comes first and reads as though it worked.
+func tabNamed(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject {
+	t.Helper()
+	tabs := tabsIn(o)
+	if tabs == nil {
+		t.Fatal("the window has no tabs")
+	}
+	for _, item := range tabs.Items {
+		if item.Text == name {
+			return item.Content
+		}
+	}
+	t.Fatalf("there is no %q tab. The window has: %v", name, tabNames(o))
+	return nil
+}
+
+// selectTab moves to a screen the way a person does, and returns it. Selecting
+// is what carries the output directory across, so pressing is not the same as
+// reading the tab's content.
+func selectTab(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject {
+	t.Helper()
+	tabs := tabsIn(o)
+	if tabs == nil {
+		t.Fatal("the window has no tabs")
+	}
+	for _, item := range tabs.Items {
+		if item.Text == name {
+			tabs.Select(item)
+			return item.Content
+		}
+	}
+	t.Fatalf("there is no %q tab. The window has: %v", name, tabNames(o))
+	return nil
+}
+
+func tabNames(o fyne.CanvasObject) []string {
+	tabs := tabsIn(o)
+	if tabs == nil {
+		return nil
+	}
+	var out []string
+	for _, item := range tabs.Items {
+		out = append(out, item.Text)
+	}
+	return out
 }
 
 // textIn walks a widget tree and collects everything a person would read.

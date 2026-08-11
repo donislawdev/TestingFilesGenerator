@@ -32,13 +32,21 @@ import (
 
 // textCarriers are the calls that put words in front of a person. A literal
 // reaching any of these outside the text package is the defect.
+// This list is kept by hand, so a new way to put words on screen is invisible
+// to this guard until somebody adds it here. That happened on 2026-08-11, three
+// times in one day: Toggle and FieldSaying arrived with the layout work and
+// NewTabItem with the tabs, and every tab title was unchecked until the mutation
+// runner reported this guard staying green on a literal.
 var textCarriers = map[string]bool{
 	"NewButton":      true,
 	"NewLabel":       true,
 	"NewCheck":       true,
+	"NewTabItem":     true,
 	"SetText":        true,
 	"SetPlaceHolder": true,
 	"Field":          true,
+	"FieldSaying":    true,
+	"Toggle":         true,
 	"Prose":          true,
 	"Heading":        true,
 	"Screen":         true,

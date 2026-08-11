@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // A refusal about one setting appears under that setting's box.
@@ -57,9 +59,8 @@ func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
 // about the other - and the preset screen was the half left undone when the
 // generate screen's refusals were moved on 2026-08-11.
 func TestARefusalAboutAPresetSettingAppearsUnderIt(t *testing.T) {
-	host, generate := screen(t)
-	press(t, generate, "Presets")
-	content := host.content
+	host, _ := screen(t)
+	content := selectTab(t, host.content, text.TabPresets)
 
 	fill(t, content, "limit", "512")
 	press(t, content, "Preview")

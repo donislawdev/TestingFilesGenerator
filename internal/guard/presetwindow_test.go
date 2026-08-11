@@ -9,7 +9,9 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -31,15 +33,19 @@ import (
 // So this does not compare the two lists of fields. It runs one preset from
 // both surfaces and compares what lands on the disk.
 
-// presetScreen opens the window and moves to the preset screen.
+// presetScreen opens the window and moves to the preset tab.
+//
+// It returns that tab rather than the window: since 2026-08-11 the window holds
+// every screen at once, and both work screens have a field called "output
+// directory", so a lookup across the whole thing finds whichever comes first.
 func presetScreen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	t.Helper()
-	host, content := screen(t)
-	press(t, content, "Presets")
+	host := &fakeHost{}
+	window.Open(host)
 	if host.content == nil {
-		t.Fatal("pressing Presets put no screen in the window")
+		t.Fatal("opening the window put no screen in it")
 	}
-	return host, host.content
+	return host, selectTab(t, host.content, text.TabPresets)
 }
 
 // The window offers every preset this build registered.
@@ -286,7 +292,7 @@ func hashLine(recorded string) string {
 // unchanged, what changed is that it can be read.
 func TestBothScreensSayWhereTheFilesWillGo(t *testing.T) {
 	host, generate := screen(t)
-	press(t, generate, "Presets")
+	selectTab(t, host.content, "Presets")
 
 	for name, content := range map[string]fyne.CanvasObject{
 		"the generate screen": generate,
@@ -381,7 +387,7 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 
 	for _, screenName := range []string{"generate", "preset"} {
 		if screenName == "preset" {
-			press(t, host.content, "Presets")
+			selectTab(t, host.content, "Presets")
 		}
 		content := host.content
 

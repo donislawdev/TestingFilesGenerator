@@ -27,11 +27,14 @@ func TestBothScreensAgreeWhereTheFilesGo(t *testing.T) {
 	}
 
 	const chosen = "C:\\somewhere\\else"
-	generate := host.content
+	// The tab and not the window. Both work screens have a field of this name,
+	// and controlUnder answers with the LAST one it walks past rather than the
+	// first - so asking the window filled the preset screen's box while reading
+	// as though it had filled this one.
+	generate := tabNamed(t, host.content, text.TabOneTarget)
 	fill(t, generate, text.FieldOutputDir, chosen)
 
-	press(t, generate, text.ButtonPresets)
-	preset := host.content
+	preset := selectTab(t, host.content, text.TabPresets)
 	if got := entryUnder(t, preset, text.FieldOutputDir).Text; got != chosen {
 		t.Errorf("the generate screen was pointed at %q and the preset screen says %q.\n"+
 			"Two boxes that start the same and drift apart is worse than one that is wrong, "+
@@ -42,8 +45,8 @@ func TestBothScreensAgreeWhereTheFilesGo(t *testing.T) {
 	// direction exactly as confusing as before.
 	const second = "C:\\third\\place"
 	fill(t, preset, text.FieldOutputDir, second)
-	press(t, preset, text.ButtonOneTarget)
-	if got := entryUnder(t, host.content, text.FieldOutputDir).Text; got != second {
+	generate = selectTab(t, host.content, text.TabOneTarget)
+	if got := entryUnder(t, generate, text.FieldOutputDir).Text; got != second {
 		t.Errorf("the preset screen was pointed at %q and the generate screen says %q", second, got)
 	}
 }
