@@ -18,11 +18,11 @@ first, so the difference is worth stating rather than leaving to be assumed.
 | binary | what it is | third party code in it |
 |---|---|---|
 | `tfg` | the command line | the Go runtime, and **two** modules: `github.com/goccy/go-yaml` and `golang.org/x/text` |
-| `tfg-gui` | the desktop window | the same, plus **25** more for the graphics toolkit |
+| `tfg-gui` | the desktop window | the same, plus **27** more for the graphics toolkit, one of them on Linux only |
 
 The window is a separate binary because its toolkit needs a C compiler and
 OpenGL, neither of which the command line uses. A server or a build agent
-running `tfg` therefore carries none of the 25, and that is checked rather than
+running `tfg` therefore carries none of the 27, and that is checked rather than
 asserted: a guard in the source compares what the command line binary actually
 links against that list of two.
 
@@ -119,18 +119,29 @@ Source: <https://go.googlesource.com/text>
 
 ## The window binary only
 
-These 26 modules are the graphics toolkit and what it brings with it. They are
+These 27 modules are the graphics toolkit and what it brings with it. They are
 in `tfg-gui` and in no other binary this project produces.
 
 Their licences were read from the source of each module before the toolkit was
 added, on 2026-08-05. All are permissive and one way compatible with GPL-3.0:
-thirteen BSD 3-Clause, ten MIT, one Apache-2.0, one BSD 2-Clause and one ISC.
+thirteen BSD 3-Clause, ten MIT, two Apache-2.0, one BSD 2-Clause and one ISC.
 None is GPL-2.0-only or LGPL, which would not have been compatible.
 
-One arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
+Two arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
 same day with the folder picker, because the toolkit's dialog package
 imports it to decorate folder icons. Its licence was read before it was
 accepted, the same as the others.
+
+`github.com/rymdport/portal` was added on 2026-08-13 and is a different case
+worth stating plainly, because it is the one this file missed. It is in the
+window binary **on Linux only** - the toolkit uses it there for desktop portal
+services - so a listing taken from a build on Windows does not name it, and
+that is how it came to be absent while every check passed. Its licence was read
+from the LICENSE file of v0.4.2 in the module cache and is Apache-2.0. That
+file is the unmodified Apache template with the copyright placeholder left as
+`[yyyy] [name of copyright owner]`, so there is no copyright line to quote and
+the table says so rather than inventing one. The module is published by the
+rymdport project.
 
 | module | version | licence | copyright |
 |---|---|---|---|
@@ -154,6 +165,7 @@ accepted, the same as the others.
 | `github.com/mattn/go-runewidth` | v0.0.24 | MIT | (c) 2016 Yasuhiro Matsumoto |
 | `github.com/nfnt/resize` | v0.0.0-20180221191011-83c6a9932646 | ISC | (c) 2012, Jan Schlicht |
 | `github.com/nicksnyder/go-i18n/v2` | v2.5.1 | MIT | (c) 2014 Nick Snyder https://github.com/nicksnyder |
+| `github.com/rymdport/portal` | v0.4.2 | Apache-2.0 | none stated, see below |
 | `github.com/srwiley/oksvg` | v0.0.0-20221011165216-be6e8873101c | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |

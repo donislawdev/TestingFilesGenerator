@@ -67,10 +67,11 @@ func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 		t.Skipf("no notices file here: %v", err)
 	}
 
-	built := builtVersions(t, "../../cmd/tfg-gui")
+	built, on := shipped(t, "../../cmd/tfg-gui")
 	if len(built) < 5 {
 		t.Fatalf("the build reported %d modules, too few to be the real set", len(built))
 	}
+	t.Logf("%d module(s) across windows, linux and darwin", len(built))
 
 	listed := 0
 	for _, line := range strings.Split(string(body), "\n") {
@@ -105,9 +106,17 @@ func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 	// that in a way a wrong version number does not.
 	if missing := unlisted(string(body), built); len(missing) > 0 {
 		sort.Strings(missing)
+		named := make([]string, 0, len(missing))
+		for _, path := range missing {
+			// Which systems ship it, because the answer decides how hard it is
+			// to notice by hand: a module built everywhere is one somebody
+			// meets, and a module built on one system is one that stayed
+			// invisible for a week.
+			named = append(named, path+"  (on "+on[path]+")")
+		}
 		t.Errorf("%d module(s) are compiled into the window and named nowhere in the notices:\n  %s\n"+
 			"Read the licence out of the module's own source, add a row, and change the counts "+
-			"in the paragraph above the table.", len(missing), strings.Join(missing, "\n  "))
+			"in the paragraph above the table.", len(missing), strings.Join(named, "\n  "))
 	}
 	t.Logf("%d module version(s) in the notices agree with what the window binary links", listed)
 }
@@ -232,12 +241,55 @@ func TestTheNoticesCountsAgreeWithTheTableTheyDescribe(t *testing.T) {
 }
 
 // builtVersions is what a binary really links, module by module.
-func builtVersions(t *testing.T, target string) map[string]string {
+// shipped is every module that ends up in a binary somebody is handed, on any
+// of the systems this project builds for.
+//
+// Across the three rather than on the one the guard happens to run on, and that
+// is a correction made on 2026-08-13 after the guard missed a module for a
+// week. github.com/rymdport/portal is linked into the window on Linux and on
+// no other system, so a listing taken on Windows does not name it - and this
+// guard ran on Windows, said every listed module is built and every built
+// module is listed, and was right about the wrong set. The defect showed up as
+// a red guard under WSL2, which is to say by accident.
+//
+// The notices file travels with binaries for every system. So the question it
+// answers has to be asked for every system, and the platform is carried
+// alongside so that a message can say where a module comes from.
+func shipped(t *testing.T, target string) (map[string]string, map[string]string) {
 	t.Helper()
-	out, err := exec.Command("go", "list", "-deps", "-f",
-		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}", target).Output()
+	versions := map[string]string{}
+	where := map[string]string{}
+	for _, goos := range []string{"windows", "linux", "darwin"} {
+		for path, version := range builtVersions(t, target, goos) {
+			if seen, ok := versions[path]; ok && seen != version {
+				t.Errorf("%s is %s on %s and %s elsewhere, so one binary ships a version the "+
+					"notices cannot both describe", path, version, goos, seen)
+			}
+			versions[path] = version
+			if where[path] == "" {
+				where[path] = goos
+			} else if !strings.Contains(where[path], goos) {
+				where[path] += ", " + goos
+			}
+		}
+	}
+	return versions, where
+}
+
+// builtVersions asks the compiler what one platform's binary links.
+//
+// CGO_ENABLED is set explicitly rather than inherited. The window's toolkit
+// hides its real dependencies behind cgo build constraints, so a shell with
+// CGO_ENABLED=0 reports almost nothing - which is a known noise on this machine
+// and would turn this guard into one that passes by seeing nothing.
+func builtVersions(t *testing.T, target, goos string) map[string]string {
+	t.Helper()
+	cmd := exec.Command("go", "list", "-deps", "-f",
+		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}", target)
+	cmd.Env = append(os.Environ(), "GOOS="+goos, "CGO_ENABLED=1")
+	out, err := cmd.Output()
 	if err != nil {
-		t.Skipf("go list is not available here: %v", err)
+		t.Skipf("go list for %s is not available here: %v", goos, err)
 	}
 	versions := map[string]string{}
 	for _, line := range strings.Split(string(out), "\n") {
