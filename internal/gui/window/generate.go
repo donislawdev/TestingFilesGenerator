@@ -76,12 +76,17 @@ type Generate struct {
 	props   []parts.PropertyField
 	propBox *fyne.Container
 
+	// tips is the sheet the field explanations are drawn on. One per screen,
+	// because a window holds every screen at once and an explanation has to
+	// land on the one somebody is looking at.
+	tips *parts.Tips
+
 	body fyne.CanvasObject
 }
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner(), host: host}
+	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips()}
 	g.runner.settle = g.settle
 	g.buildFields()
 
@@ -93,7 +98,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// The progress and the refusal about the run as a whole belong with them:
 	// what a run is doing is not a section of the form, and a message about a
 	// press that just happened has to be where the press was.
-	g.body = container.NewBorder(
+	// The sheet goes over the whole screen rather than inside the scroll,
+	// because a scroll clips what it draws - an explanation opened near the
+	// foot of the form would be cut off at the edge of the viewport.
+	g.body = g.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(g.actions(links...), g.progress(), g.problem.Object()),
 		nil, nil,
@@ -101,7 +109,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 			text.HeadingGenerate,
 			g.settingsSection(),
 		)),
-	)
+	))
 
 	// The format decides which settings exist, so the first one has to be
 	// applied rather than waited for.
@@ -176,7 +184,7 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 	// the form - O73. The engine says which setting, in recipe keys, and this
 	// is the only place that knows which box that is.
 	g.beside = map[string]*parts.ErrorArea{}
-	withArea := func(setting, label, hint, detail string, control fyne.CanvasObject) fyne.CanvasObject {
+	withArea := func(setting, label, hint string, detail parts.Detail, control fyne.CanvasObject) fyne.CanvasObject {
 		field, area := parts.FieldSaying(label, hint, detail, control)
 		g.beside[setting] = area
 		return field
@@ -188,7 +196,7 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 			// and two gaps - measured at about 60 px on a screen that was 119
 			// px too tall. It belongs here anyway: what kind of file, how big,
 			// how many and what they are called are one set of questions.
-			parts.Field(text.FieldFormat, text.HintFormat, text.DetailFormat, g.formatPick),
+			parts.Field(text.FieldFormat, text.HintFormat, g.tips.Say(text.DetailFormat), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			parts.Row(
@@ -199,25 +207,25 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 				// answer. Measured on the refused screen: "CSV cannot be
 				// smaller than 117 B" landed at the foot of the form, 900 px
 				// under the box that caused it.
-				withArea(format.SettingSize, text.FieldSize, text.HintSize, text.DetailSize,
+				withArea(format.SettingSize, text.FieldSize, text.HintSize, g.tips.Say(text.DetailSize),
 					parts.Numeric(g.size)),
-				withArea(engine.SettingCount, text.FieldCount, "", "", parts.Numeric(g.count)),
+				withArea(engine.SettingCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(g.count)),
 			),
 			parts.Row(
-				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, text.DetailTargetID, g.id),
+				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.tips.Say(text.DetailTargetID), g.id),
 				withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
-					text.DetailNameTemplate, g.name),
+					g.tips.Say(text.DetailNameTemplate), g.name),
 			),
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
 		),
 		parts.Section(text.SectionOutput,
-			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, text.DetailOutputDir,
+			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, g.tips.Say(text.DetailOutputDir),
 				chooserFor(g.host, g.outDir)),
 			parts.Row(
-				parts.Field(text.FieldSeed, text.HintSeed, text.DetailSeed, parts.Numeric(g.seed)),
-				parts.Toggle(text.FieldLabel, "", text.DetailLabel, g.label),
+				parts.Field(text.FieldSeed, text.HintSeed, g.tips.Say(text.DetailSeed), parts.Numeric(g.seed)),
+				parts.Toggle(text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),
 			),
 		),
 	)

@@ -16,13 +16,73 @@ import (
 // with nothing beside it has no reason to be as wide as a row of fields.
 const DetailWidth = 380
 
+// Tips is the sheet a screen's explanations are drawn on.
+//
+// It exists because of where an explanation may NOT go, and that took two
+// wrong answers to establish. The toolkit's overlay layer is the obvious home
+// for anything that floats, and it cannot be used here: while any overlay is
+// up, the driver searches the overlay and nothing else for whatever is under
+// the pointer - internal/driver/util.go, FindObjectAtPositionMatching, where
+// the overlay case replaces the roots rather than being tried before them.
+//
+// So an explanation opened as an overlay makes its own button impossible to
+// find. The button is told the pointer left, it closes the explanation, the
+// overlay goes, the button is found again. That is the flicker, and it is not
+// fixed by making the overlay ignore the mouse - an overlay that matches
+// nothing still stops the search from reaching the button.
+//
+// A sheet inside the screen's own tree has none of that. It is content, so the
+// search walks it like everything else, and the pieces on it answer to nothing
+// - the walk carries on past them and finds the button still underneath.
+type Tips struct {
+	sheet *fyne.Container
+}
+
+// NewTips makes an empty sheet. One per screen.
+func NewTips() *Tips {
+	return &Tips{sheet: container.NewWithoutLayout()}
+}
+
+// Over puts the sheet above a screen, where it covers everything and holds
+// nothing until somebody asks a question.
+//
+// Above the whole screen rather than inside the scrolling part, which is not a
+// detail: a scroll clips what it draws and what it hits, so an explanation
+// opened near the foot of the form would be cut off at the edge of the
+// viewport - and cut off at exactly the end of the sentence.
+func (t *Tips) Over(body fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewStack(body, t.sheet)
+}
+
+// Say is one explanation, ready to be handed to a field.
+func (t *Tips) Say(detail string) Detail {
+	return Detail{Text: detail, on: t}
+}
+
+// Detail is the longer explanation of a field, and where to draw it.
+//
+// The sheet travels with the words rather than being looked up later, because
+// a window holds every screen at once - so "the sheet" is not a thing that can
+// be found from a button, only a thing that can be given to it. Looking it up
+// would find whichever screen the walk reached first, and draw the explanation
+// on a tab nobody is looking at.
+type Detail struct {
+	Text string
+	on   *Tips
+}
+
+// NoDetail is a field with nothing held back, which is most of them. Every
+// setting a format or a preset declares is described in one sentence built
+// from its declaration, so there is no second half to put behind a button.
+var NoDetail = Detail{}
+
 // withDetail puts the button that opens the longer explanation beside a label.
 //
 // Nothing at all when there is nothing more to say, rather than a button that
 // opens an empty box. A control that is always there and sometimes does nothing
 // teaches people to stop pressing it.
-func withDetail(head fyne.CanvasObject, detail string) fyne.CanvasObject {
-	if detail == "" {
+func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
+	if detail.Text == "" || detail.on == nil {
 		return head
 	}
 	return container.NewHBox(head, newDetailButton(detail))
@@ -40,30 +100,26 @@ func withDetail(head fyne.CanvasObject, detail string) fyne.CanvasObject {
 // the quietest thing on the row until somebody wants it.
 //
 // It opens on HOVER, which is what anybody meeting a small letter i expects,
-// and it also opens on a click. Both, deliberately:
-//
-// Hover alone would be unreachable from a keyboard, and UX9 says whatever can
-// be done with a mouse can be done without one. Click alone is what this was
-// on 2026-08-12, and it was reported the same day as the wrong behaviour by
-// somebody who simply pointed at it and waited.
+// and a press toggles it. Both, deliberately: hovering is not something a
+// keyboard can do, and UX9 says whatever the mouse can reach the keyboard can
+// too. The press toggles rather than only opening because somebody who got
+// there without a pointer has no pointer to move away.
 //
 // The toolkit has no tooltip to reach for. Measured in v2.8.0 rather than
-// taken from anybody's word for it: there is no file and no identifier named
-// tooltip anywhere in widget, internal/widget or driver/desktop. What it does
-// have is desktop.Hoverable, which is three methods a widget can answer - so
-// the behaviour is built here rather than depended on, and no third party
-// package enters the graph for it.
+// taken on trust: there is no file and no identifier named tooltip anywhere in
+// widget, internal/widget or driver/desktop. What it does have is
+// desktop.Hoverable, three methods a widget can answer, so this is built here
+// and no third party package enters the graph for it.
 type DetailButton struct {
 	widget.Button
 
-	detail string
-	// close takes the explanation off the screen, and is nil when there is
-	// none up. Only ever touched from the interface thread, like every other
-	// field of a widget here.
-	close func()
+	detail Detail
+	// shown is the box while it is on the sheet, and nil when it is not. Only
+	// ever touched from the interface thread, like every other field here.
+	shown fyne.CanvasObject
 }
 
-func newDetailButton(detail string) *DetailButton {
+func newDetailButton(detail Detail) *DetailButton {
 	b := &DetailButton{detail: detail}
 	b.ExtendBaseWidget(b)
 	b.Icon = theme.InfoIcon()
@@ -84,126 +140,86 @@ func (b *DetailButton) MouseIn(e *desktop.MouseEvent) {
 // times crossing one icon.
 func (b *DetailButton) MouseMoved(*desktop.MouseEvent) {}
 
-// MouseOut takes the explanation away again.
-//
-// The pointer leaving is the only thing that closes it, which is what makes it
-// behave like the tooltip people expect rather than like a dialog somebody has
-// to dismiss.
+// MouseOut takes the explanation away again. The pointer leaving is what
+// closes it, which is what makes it behave like the tooltip people expect
+// rather than like a dialog somebody has to dismiss.
 func (b *DetailButton) MouseOut() {
 	b.Button.MouseOut()
 	b.hide()
 }
 
-// show puts the explanation under the button, or leaves it where it is if it
-// is already there. Opening a second one over the first is what a click after
-// a hover would otherwise do.
 func (b *DetailButton) show() {
-	if b.close != nil {
+	if b.shown != nil {
 		return
 	}
-	b.close = showDetail(b, b.detail)
+	b.shown = b.detail.on.open(b, b.detail.Text)
 }
 
 func (b *DetailButton) hide() {
-	if b.close == nil {
+	if b.shown == nil {
 		return
 	}
-	b.close()
-	b.close = nil
+	b.detail.on.close(b.shown)
+	b.shown = nil
 }
 
-// toggle is what a press does, so somebody who got here with a keyboard has a
-// way back out. The pointer has one already: it leaves.
 func (b *DetailButton) toggle() {
-	if b.close != nil {
+	if b.shown != nil {
 		b.hide()
 		return
 	}
 	b.show()
 }
 
-// showDetail opens the explanation under the button that asked for it and
-// hands back the way to take it down again.
+// open draws one explanation under the button that asked for it and hands back
+// the box, so it can be taken off again.
 //
-// It asks the toolkit for the canvas the button is on rather than being handed
-// one, which is what keeps this package free of the app package - the property
-// that lets every screen here be built and rendered with no C compiler and no
-// graphics environment.
-//
-// A canvas it cannot find means nothing opens. That happens where a tree is
-// built and measured without ever being shown, which several guards do, and a
-// button that panics there would make this package untestable in exactly the
-// place it was designed to be testable.
-//
-// It does NOT use widget.PopUp, and that is the whole of why hovering works.
-// Reported on 2026-08-12: the explanation flickered violently as soon as the
-// pointer moved on the icon. A popup wraps itself in the toolkit's
-// OverlayContainer, that container covers the entire canvas, and it declares
-// itself desktop.Hoverable with empty methods - internal/widget/
-// overlay_container.go, lines 59 to 70. So the instant the explanation opened
-// it became the thing under the pointer, the button was told the pointer had
-// left, the explanation closed, the cover went with it and the button was
-// hovered again. A loop, at the speed of mouse movement.
-//
-// What goes up instead is a plain container holding a rectangle and a label.
-// None of the three answers Hoverable, so the toolkit looks straight through
-// them for something that does and finds the button underneath, still hovered.
-// The stack takes any object and stretches it over the canvas - it is the
-// popup that adds the cover, not the overlay layer.
-func showDetail(near fyne.CanvasObject, detail string) func() {
+// A box drawn where the pointer is not: under the button, and above it when
+// there is no room below. The buttons at the foot of a form are the ones whose
+// explanation would otherwise open past the bottom of the window, where none
+// of it can be read.
+func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	app := fyne.CurrentApp()
 	if app == nil {
 		return nil
 	}
 	driver := app.Driver()
-	canvas := driver.CanvasForObject(near)
-	if canvas == nil {
-		return nil
-	}
 
-	tip := container.NewStack(panelSurface(), container.NewPadded(Prose(detail)))
+	box := container.NewStack(panelSurface(), container.NewPadded(Prose(detail)))
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the
 	// width it currently knows about, and before the first resize that is not
 	// the width it ends up with - so a single pass gives a box one line tall
 	// with the rest of the paragraph outside it.
-	tip.Resize(fyne.NewSize(DetailWidth, tip.MinSize().Height))
-	tip.Resize(fyne.NewSize(DetailWidth, tip.MinSize().Height))
-	tip.Move(below(driver, near, canvas, tip.Size()))
+	box.Resize(fyne.NewSize(DetailWidth, box.MinSize().Height))
+	box.Resize(fyne.NewSize(DetailWidth, box.MinSize().Height))
+	box.Move(t.place(driver, near, box.Size()))
 
-	layer := container.NewWithoutLayout(tip)
-	canvas.Overlays().Add(layer)
-	return func() { canvas.Overlays().Remove(layer) }
+	t.sheet.Add(box)
+	return box
 }
 
-// below is where the explanation opens: under the button, and never past the
-// right hand edge of the window.
-//
-// The clamp is not decoration. These buttons sit beside field names, the right
-// hand column of a two column row starts past the middle of the window, and a
-// box opened at that x with a fixed width runs off the screen - where the part
-// that falls off is the end of every line.
-func below(driver fyne.Driver, near fyne.CanvasObject, canvas fyne.Canvas, tip fyne.Size) fyne.Position {
-	at := driver.AbsolutePositionForObject(near)
-	at.Y += near.Size().Height
+func (t *Tips) close(box fyne.CanvasObject) {
+	t.sheet.Remove(box)
+}
 
-	if rightmost := canvas.Size().Width - tip.Width; at.X > rightmost {
+// place is where the box goes, in the sheet's own coordinates.
+//
+// Both positions are asked of the driver and subtracted, rather than the
+// button's position being used as it stands. The sheet covers the screen and
+// the screen is not the window - there is a tab strip above it - so a position
+// measured from the window would put every explanation too low by the height
+// of that strip.
+func (t *Tips) place(driver fyne.Driver, near fyne.CanvasObject, box fyne.Size) fyne.Position {
+	at := driver.AbsolutePositionForObject(near).Subtract(driver.AbsolutePositionForObject(t.sheet))
+	below := at.Y + near.Size().Height
+
+	if rightmost := t.sheet.Size().Width - box.Width; at.X > rightmost {
 		at.X = fyne.Max(0, rightmost)
 	}
-	// Above the button rather than below it when there is no room below. The
-	// buttons at the foot of a form are the ones whose explanation would
-	// otherwise open past the bottom of the window, where none of it can be
-	// read.
-	if at.Y+tip.Height > canvas.Size().Height {
-		if above := driver.AbsolutePositionForObject(near).Y - tip.Height; above >= 0 {
-			at.Y = above
-		}
+	if below+box.Height > t.sheet.Size().Height && at.Y-box.Height >= 0 {
+		return fyne.NewPos(at.X, at.Y-box.Height)
 	}
-
-	// The layer is placed at the interactive area's origin and its children are
-	// positioned inside it, so an absolute position has to come back to being
-	// relative to that. Zero on a desktop and not on every device.
-	origin, _ := canvas.InteractiveArea()
-	return at.Subtract(origin)
+	return fyne.NewPos(at.X, below)
 }

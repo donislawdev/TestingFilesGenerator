@@ -73,7 +73,7 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 		// three methods of desktop.Hoverable answered by hand - and a hook that
 		// is answered but never wired looks identical from outside.
 		button.MouseIn(&desktop.MouseEvent{})
-		if shown := overlayText(w.Canvas()); !strings.Contains(shown, field.detail) {
+		if shown := allText(content); !strings.Contains(shown, field.detail) {
 			t.Errorf("hovering the button beside %q did not show its explanation.\nWanted: %q\nShown: %q",
 				field.label, field.detail, shown)
 		}
@@ -82,7 +82,7 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 		// on a tooltip that opens and never closes, which is worse than one
 		// that never opens: it covers the field underneath it.
 		button.MouseOut()
-		if shown := overlayText(w.Canvas()); strings.Contains(shown, field.detail) {
+		if shown := allText(content); strings.Contains(shown, field.detail) {
 			t.Errorf("the explanation for %q stayed on screen after the pointer left", field.label)
 		}
 
@@ -91,41 +91,45 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 		// reach the keyboard can too - so the tap has to survive the hover
 		// being added.
 		button.OnTapped()
-		if shown := overlayText(w.Canvas()); !strings.Contains(shown, field.detail) {
+		if shown := allText(content); !strings.Contains(shown, field.detail) {
 			t.Errorf("pressing the button beside %q did not show its explanation.\nWanted: %q\nShown: %q",
 				field.label, field.detail, shown)
 		}
 		// And a second press takes it away again, because somebody who opened
 		// it from a keyboard has no pointer to move off it.
 		button.OnTapped()
-		if shown := overlayText(w.Canvas()); strings.Contains(shown, field.detail) {
+		if shown := allText(content); strings.Contains(shown, field.detail) {
 			t.Errorf("pressing the button beside %q a second time did not take the explanation away", field.label)
 		}
 		button.MouseOut()
 	}
 }
 
-// Nothing the explanation puts on screen answers to the pointer.
+// The explanation never uses the overlay layer.
 //
-// This is the flicker, written as a rule. Reported on 2026-08-12: the
-// explanation strobed as soon as the pointer moved on the icon, and the cause
-// was a loop rather than a redraw. widget.PopUp wraps itself in the toolkit's
-// OverlayContainer, that container is stretched over the whole canvas, and it
-// declares itself desktop.Hoverable with empty methods - internal/widget/
-// overlay_container.go lines 59 to 70. So opening the explanation put a hover
-// target over the button that had opened it: the button was told the pointer
-// had left, it closed the explanation, the cover went with it, the button was
-// hovered again. At the speed of mouse movement.
+// This is the flicker, written as the rule that actually governs it, and it
+// took two goes to find. Reported on 2026-08-12: the explanation strobed as
+// soon as the pointer moved on the icon, then after the first fix it vanished
+// instead. Both are the same cause.
 //
-// The guard beside this one could not see any of that. It opens the
-// explanation and reads it, which is exactly what happens on the first frame of
-// the loop - so it was green throughout, and the defect was reported by
-// somebody moving a mouse.
+// internal/driver/util.go, FindObjectAtPositionMatching: when an overlay is
+// present the driver walks THE OVERLAY AND NOTHING ELSE looking for whatever
+// is under the pointer. It replaces the roots rather than being tried before
+// them. So while any overlay is up the button cannot be found at all - it is
+// told the pointer left, it closes the explanation, the overlay goes, and it
+// is found again.
 //
-// What it asks is the property that makes hovering possible at all: whatever
-// goes on top must be invisible to the pointer, so the toolkit looks through it
-// and finds the button still underneath.
-func TestTheExplanationDoesNotStealThePointerFromTheButton(t *testing.T) {
+// The first fix put a container answering nothing into the overlay, which
+// removed the competing hover target and left the real problem untouched: an
+// overlay that matches nothing still stops the search from reaching the
+// button. That is why this guard asks about the LAYER rather than about what
+// is on it. "Nothing up there is hoverable" was true of the broken version.
+//
+// The guard beside this one cannot see any of it. It opens the explanation and
+// reads it, which is exactly what happens on the first frame of the loop - so
+// it stayed green through both versions, and both were reported by somebody
+// moving a mouse.
+func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 	app := test.NewApp()
 	defer test.NewApp()
 	app.Settings().SetTheme(parts.Theme())
@@ -146,19 +150,18 @@ func TestTheExplanationDoesNotStealThePointerFromTheButton(t *testing.T) {
 	button.MouseIn(&desktop.MouseEvent{})
 	defer button.MouseOut()
 
-	overlays := w.Canvas().Overlays().List()
-	if len(overlays) == 0 {
-		t.Fatal("hovering put nothing on screen, so this guard measured an empty overlay")
+	// It has to be up before its absence anywhere else means anything. A guard
+	// that checked for an empty overlay without opening the explanation would
+	// pass on a button that does nothing.
+	if shown := allText(content); !strings.Contains(shown, text.DetailSize) {
+		t.Fatal("hovering showed nothing, so this guard is measuring a button that does not work")
 	}
 
-	for _, overlay := range overlays {
-		walk(overlay, func(obj fyne.CanvasObject) {
-			if _, steals := obj.(desktop.Hoverable); steals {
-				t.Errorf("the explanation puts a %T on screen and it answers to the pointer.\n"+
-					"Anything hoverable above the button takes the hover that keeps the explanation open, "+
-					"so it closes, uncovers the button, opens again - which is the flicker.", obj)
-			}
-		})
+	if overlays := w.Canvas().Overlays().List(); len(overlays) != 0 {
+		t.Errorf("the explanation put %d thing(s) in the overlay layer, the first a %T.\n"+
+			"While an overlay is up the driver looks for the pointer in the overlay and nowhere else, "+
+			"so the button underneath cannot be found - it is told the pointer left and closes the "+
+			"explanation, which is the flicker.", len(overlays), overlays[0])
 	}
 }
 
@@ -197,17 +200,4 @@ func namedOnScreen(o fyne.CanvasObject) string {
 		return v.Text
 	}
 	return ""
-}
-
-// overlayText is every word currently floating above the screen.
-func overlayText(canvas fyne.Canvas) string {
-	var out []string
-	for _, overlay := range canvas.Overlays().List() {
-		walk(overlay, func(obj fyne.CanvasObject) {
-			if label, ok := obj.(*widget.Label); ok && label.Text != "" {
-				out = append(out, label.Text)
-			}
-		})
-	}
-	return strings.Join(out, "\n")
 }

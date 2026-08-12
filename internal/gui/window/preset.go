@@ -41,12 +41,15 @@ type Preset struct {
 	// about is the question this preset closes and what it typically catches.
 	about *fyne.Container
 
+	// tips is the sheet the field explanations are drawn on. See Generate.
+	tips *parts.Tips
+
 	body fyne.CanvasObject
 }
 
 // NewPreset builds the screen. links are the buttons to the other screens.
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
-	p := &Preset{runner: newRunner(), host: host}
+	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
 	p.runner.settle = p.settle
 
 	p.paramBox = container.NewVBox()
@@ -60,24 +63,24 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// The same shape as the other screen, so the window is one interface rather
 	// than two. What the preset is and what it finds go in the card with the
 	// chooser, because they are the answer to the question that card asks.
-	p.body = container.NewBorder(
+	p.body = p.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(p.actions(links...), p.progress(), p.problem.Object()),
 		nil, nil,
 		container.NewVScroll(parts.Screen(
 			text.HeadingPreset,
 			parts.Section(text.SectionPreset,
-				parts.Field(text.FieldPreset, text.HintPreset, text.DetailPreset, p.pick),
+				parts.Field(text.FieldPreset, text.HintPreset, p.tips.Say(text.DetailPreset), p.pick),
 				p.about,
 			),
 			parts.Section(text.SectionSettings, p.paramBox),
 			parts.Section(text.SectionOutput,
-				parts.Field(text.FieldOutputDir, text.HintOutputDir, text.DetailOutputDir,
+				parts.Field(text.FieldOutputDir, text.HintOutputDir, p.tips.Say(text.DetailOutputDir),
 					chooserFor(p.host, p.outDir)),
-				parts.Field(text.FieldSeed, text.HintSeed, text.DetailSeed, parts.Numeric(p.seed)),
+				parts.Field(text.FieldSeed, text.HintSeed, p.tips.Say(text.DetailSeed), parts.Numeric(p.seed)),
 			),
 		)),
-	)
+	))
 
 	if len(ids) > 0 {
 		p.pick.SetSelected(ids[0])
@@ -144,7 +147,7 @@ func (p *Preset) onPresetChosen(id string) {
 		// One sentence and nothing held back, the same as a format's settings:
 		// what a parameter takes is built from its declaration, so there is no
 		// second half to put behind a button.
-		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), "", field.Control)
+		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), parts.NoDetail, field.Control)
 		p.beside[param.Name] = area
 		p.paramBox.Add(box)
 	}

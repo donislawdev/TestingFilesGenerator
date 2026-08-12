@@ -24,7 +24,7 @@ import (
 // renders is the shape docs/CLAUDE.md warns about: text with no reader becomes
 // pressure on the text beside it, and the label starts trying to say
 // everything on its own.
-func Field(label, hint, detail string, control fyne.CanvasObject) fyne.CanvasObject {
+func Field(label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewVBox(fieldParts(label, hint, detail, control)...)
 }
 
@@ -38,7 +38,7 @@ func Field(label, hint, detail string, control fyne.CanvasObject) fyne.CanvasObj
 //
 // The area holds nothing until there is something to say, so a field that is
 // not being complained about takes exactly the room it took before.
-func FieldSaying(label, hint, detail string, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
+func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
 	area := NewErrorArea()
 	items := append(fieldParts(label, hint, detail, control), area.Object())
 	return container.NewVBox(items...), area
@@ -49,7 +49,7 @@ func FieldSaying(label, hint, detail string, control fyne.CanvasObject) (fyne.Ca
 // One place rather than two, because the pair above differed by a single line
 // and the pair is where a field's shape would quietly come apart - one of them
 // growing a button and the other not.
-func fieldParts(label, hint, detail string, control fyne.CanvasObject) []fyne.CanvasObject {
+func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []fyne.CanvasObject {
 	items := []fyne.CanvasObject{withDetail(Heading(label), detail), control}
 	if hint != "" {
 		items = append(items, Note(hint))
@@ -65,7 +65,7 @@ func fieldParts(label, hint, detail string, control fyne.CanvasObject) []fyne.Ca
 // the sentence below, and nothing to read on the thing you click. That is what
 // O72 saw on screen. Putting the name on the switch also makes the words part
 // of the target, which is the difference between a click and an aimed click.
-func Toggle(name, hint, detail string, check *widget.Check) fyne.CanvasObject {
+func Toggle(name, hint string, detail Detail, check *widget.Check) fyne.CanvasObject {
 	check.Text = name
 	items := []fyne.CanvasObject{withDetail(check, detail)}
 	if hint != "" {

@@ -133,7 +133,7 @@ func PropertyFields(d format.Descriptor) ([]PropertyField, []fyne.CanvasObject) 
 		// sentence built from Allowed, so there is nothing to hold back - and a
 		// button that opened the line already printed underneath would be the
 		// same words twice.
-		objects = append(objects, Field(p.Name, detailOf(p), "", f.Control))
+		objects = append(objects, Field(p.Name, detailOf(p), NoDetail, f.Control))
 	}
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn
