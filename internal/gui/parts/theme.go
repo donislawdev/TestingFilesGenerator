@@ -21,6 +21,15 @@ import (
 // L* rather than at a contrast ratio at all. A single ratio threshold on
 // subtle surfaces measures something different in each variant, because the
 // ratio compresses against a light background.
+// ColorNamePanel is the surface a section is drawn on.
+//
+// A name of ours rather than one of the toolkit's, because the toolkit has
+// none: every colour it offers for a background is either the page itself or
+// something belonging to a control. Naming it here keeps it in the one table
+// the guard measures, which is the whole point of having a palette rather than
+// colours at call sites.
+const ColorNamePanel fyne.ThemeColorName = "panel"
+
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
 		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x1E),
@@ -48,6 +57,39 @@ var (
 		theme.ColorNameInputBackground: hex(0x2E, 0x2E, 0x30),
 		theme.ColorNameButton:          hex(0x2E, 0x2E, 0x30),
 		theme.ColorNameMenuBackground:  hex(0x2E, 0x2E, 0x30),
+
+		// The surface a section is drawn on, and the line round its edge.
+		//
+		// These exist because the toolkit has no colour for a panel. Measured on
+		// 2026-08-12: widget.Card fills itself with ColorNameBackground - the
+		// same name the page uses - so a card came out at exactly the page
+		// colour, 0.00 L* apart, and the only thing marking its edge was a
+		// shadow going the wrong way, down to #151515. Grouping was not faint,
+		// it was absent, and no value put in the palette could have fixed it
+		// because there was no name to put it under.
+		//
+		// The fill splits the gap between the page and an input box rather than
+		// taking the surface value section 8.2 already records. That value is
+		// #2E2E30 and it is what an input box is - a panel painted with it would
+		// swallow every field standing on it. Three surfaces stack here and each
+		// has to be told from the one under it: page 11.3, panel 15.2, input
+		// 19.0 in L*, which is +4.0 and +3.8.
+		//
+		// The line does the work the fill cannot. Four L* is a surface you sense
+		// rather than see, so the edge is what makes a section read as a box at
+		// a glance. The toolkit's own separator could not do it: its dark
+		// variant is pure black - color.go line 219 - so a border drawn with it
+		// is another shadow.
+		//
+		// The colour is 29.4 L* and what gets drawn is not. Measured off the
+		// render on 2026-08-12: a one pixel stroke lands between pixels and is
+		// anti-aliased, so the brightest pixel of the edge comes out at 22.3 -
+		// which is +7.1 from the panel and +11.0 from the page. It reads, and
+		// it reads because of the gap to the page rather than the one to the
+		// panel. Worth keeping straight, because the number in a palette is a
+		// claim about a colour and only the render is a claim about a line.
+		theme.ColorNameSeparator: hex(0x45, 0x45, 0x49),
+		ColorNamePanel:           hex(0x26, 0x26, 0x28),
 
 		// What is written ON one of those colours, which is a different
 		// question from what they contrast with. Section 8 computed them as
@@ -84,6 +126,14 @@ var (
 		theme.ColorNameInputBackground: hex(0xEF, 0xEF, 0xEF),
 		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
 		theme.ColorNameMenuBackground:  hex(0xEF, 0xEF, 0xEF),
+
+		// The same two, worked out the same way against a white page. The gap
+		// between page and input is narrower here - 5.6 L* against 7.7 - so the
+		// panel splits it at 2.8 either side, and the line again carries the
+		// edge at 11.5 L*. Computed rather than installed, like the rest of this
+		// palette.
+		theme.ColorNameSeparator: hex(0xD6, 0xD6, 0xD9),
+		ColorNamePanel:           hex(0xF7, 0xF7, 0xF7),
 
 		// The other way round here, for the same reason: these are dark enough
 		// to read on a white page, so what is written on them is white.

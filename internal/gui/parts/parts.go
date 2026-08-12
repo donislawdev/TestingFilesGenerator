@@ -22,6 +22,7 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -62,12 +63,52 @@ func Title(text string) fyne.CanvasObject {
 
 // Section groups fields that answer one question, under a name.
 //
-// A card rather than a run of fields with a bold line above them. The screens
-// were one long column with no grouping, so a form of eight settings read as
-// eight unrelated things - and the toolkit's own card is what draws a surface
-// with a title on it, which means no custom widget to keep working for years.
+// It draws its own surface rather than using widget.Card, and that is a
+// correction rather than a preference. Measured on 2026-08-12: a card fills
+// itself with ColorNameBackground - card.go line 44 - which is the name the
+// page uses, so every section came out at exactly the page colour. Zero L*
+// apart, with nothing but a shadow at its edge going darker than the page it
+// sat on. The grouping this was introduced for did not exist, and no palette
+// value could have supplied it, because the toolkit has no name for a panel.
+//
+// What replaces the card is three ordinary pieces rather than a widget of our
+// own: a rectangle behind, padded content in front. That keeps a section a
+// plain container, so anything that walks the tree already knows what it is -
+// and a walk that does not know one type stops seeing every field below it,
+// which is exactly what happened when cards arrived.
 func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
-	return widget.NewCard(title, "", container.NewVBox(content...))
+	body := make([]fyne.CanvasObject, 0, len(content)+1)
+	body = append(body, sectionTitle(title))
+	body = append(body, content...)
+	return container.NewStack(panelSurface(), container.NewPadded(container.NewVBox(body...)))
+}
+
+// sectionTitle names a section, at the rank between the screen and a field.
+//
+// The size the card used to draw it at, kept deliberately: the scale is four
+// ranks and this is the second, so moving off the toolkit's widget must not
+// quietly move the type with it.
+func sectionTitle(text string) fyne.CanvasObject {
+	label := widget.NewLabel(text)
+	label.TextStyle = fyne.TextStyle{Bold: true}
+	label.SizeName = theme.SizeNameHeadingText
+	return label
+}
+
+// panelSurface is what a section and the action bar stand on.
+//
+// The colours come from the palette directly rather than through the installed
+// theme, and that is what "one look" means here: this program answers dark
+// whatever the desktop says, so a surface asking the theme what variant is in
+// force would be asking a question that has one answer. It is also the same
+// function the guard measures, so the picture and the measurement cannot come
+// apart.
+func panelSurface() *canvas.Rectangle {
+	rect := canvas.NewRectangle(PaletteColour(ColorNamePanel, theme.VariantDark))
+	rect.StrokeColor = PaletteColour(theme.ColorNameSeparator, theme.VariantDark)
+	rect.StrokeWidth = 1
+	rect.CornerRadius = Theme().Size(theme.SizeNameCardRadius)
+	return rect
 }
 
 // Row puts fields side by side, for the ones that are read together.
@@ -83,10 +124,11 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 //
 // On a surface of its own rather than floating, and that is not decoration:
 // pinned over a transparent background the scrolling text ran underneath the
-// buttons and through their labels. A card is what the toolkit draws a surface
-// with, and it is what every section on the screen above already is.
+// buttons and through their labels. It uses the same surface as a section, so
+// the fix for an invisible card fixed this at the same time - the bar had been
+// drawing itself in the page colour too, which is to say not drawing itself.
 func ActionBar(content ...fyne.CanvasObject) fyne.CanvasObject {
-	return widget.NewCard("", "", container.NewVBox(content...))
+	return container.NewStack(panelSurface(), container.NewPadded(container.NewVBox(content...)))
 }
 
 // Screen stacks sections with a heading on top.
