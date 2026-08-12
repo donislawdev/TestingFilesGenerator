@@ -50,10 +50,31 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 			}
 		}
 
-		// Recognised as a state: 3.0, from WCAG 1.4.11. The focus ring is the
-		// only thing that says where the keyboard is.
-		if got := contrast(parts.PaletteColour(theme.ColorNameFocus, variant.v), background); got < 3.0 {
-			t.Errorf("%s: the focus ring is %.2f:1 against the background, under the 3.0 that makes it a visible state",
+		// Recognised as a state: 3.0, from WCAG 1.4.11. What carries it is the
+		// LINE round a control - parts.Ring - and not the focus colour, which
+		// is a wash the toolkit lays over whatever the control already is.
+		//
+		// The two were one thing until 2026-08-12 and could not be. A menu
+		// fills its whole background with the focus colour and writes the
+		// chosen value across it, so the same colour had to be seen at 3.0
+		// against an untouched box AND read through at 4.5. Those are
+		// 0.182 and 0.137 in relative luminance, in that order, and nothing
+		// lies between them. The window shipped the visible half: #E6E6E6 on
+		// #4C9DF0, measured at 2.28:1.
+		input := parts.PaletteColour(theme.ColorNameInputBackground, variant.v)
+		if got := contrast(parts.PaletteColour(theme.ColorNamePrimary, variant.v), input); got < 3.0 {
+			t.Errorf("%s: the line round a focused control is %.2f:1 against the box it is drawn on, "+
+				"under the 3.0 that makes it a visible state", variant.name, got)
+		}
+
+		// And the wash stays something a value can be read through. This is
+		// the half that was broken, so it is asked about directly rather than
+		// left to follow from the colour being translucent - an opaque focus
+		// colour is one edit away and it looks like a tidy up.
+		focused := composite(parts.PaletteColour(theme.ColorNameFocus, variant.v), input)
+		if got := contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), focused); got < 4.5 {
+			t.Errorf("%s: the value on a focused menu is %.2f:1, under the 4.5 a reader needs. "+
+				"The toolkit fills a menu with this colour and writes the chosen value on top",
 				variant.name, got)
 		}
 
@@ -87,10 +108,10 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 			}
 		}
 
-		t.Logf("%s: foreground %.2f:1, focus %.2f:1, error %.2f:1, selection %.1f L*, on primary %.2f:1",
+		t.Logf("%s: foreground %.2f:1, value on a focused menu %.2f:1, error %.2f:1, selection %.1f L*, on primary %.2f:1",
 			variant.name,
 			contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), background),
-			contrast(parts.PaletteColour(theme.ColorNameFocus, variant.v), background),
+			contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), focused),
 			contrast(parts.PaletteColour(theme.ColorNameError, variant.v), background),
 			lightnessGap(composite(parts.PaletteColour(theme.ColorNameSelection, variant.v), background), background),
 			contrast(parts.PaletteColour(theme.ColorNameForegroundOnPrimary, variant.v),

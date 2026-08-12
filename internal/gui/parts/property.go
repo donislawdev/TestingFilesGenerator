@@ -71,7 +71,7 @@ func FromProperty(p format.Property) PropertyField {
 // choiceField is a closed set, so it is a list rather than a box to type in.
 // Nobody can misspell a value that is not typed.
 func choiceField(p format.Property) PropertyField {
-	sel := widget.NewSelect(p.Choices, nil)
+	sel := NewChooser(p.Choices, nil)
 	sel.PlaceHolder = leftAlone(p)
 	return PropertyField{
 		Name:    p.Name,
@@ -121,7 +121,13 @@ func leftAlone(p format.Property) string {
 // The sentence comes from Property.Allowed, which is the one "tfg formats"
 // prints. Two surfaces describing one format in two ways is D1 breaking in the
 // place nobody thinks to compare, so there is one sentence and both read it.
-func PropertyFields(d format.Descriptor) ([]PropertyField, []fyne.CanvasObject) {
+// It registers each one with the screen, so a setting a format declares can be
+// told it was the one refused. Until 2026-08-12 these were the only fields on
+// either screen that could not: they were built with the plain Field function,
+// which had nowhere to put a refusal, so "width must be between 1 and 20000"
+// appeared at the foot of the form with nothing marked. Thirteen formats
+// declare fourteen of these between them.
+func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.CanvasObject) {
 	fields := make([]PropertyField, 0, len(d.Properties))
 	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
 
@@ -133,7 +139,7 @@ func PropertyFields(d format.Descriptor) ([]PropertyField, []fyne.CanvasObject) 
 		// sentence built from Allowed, so there is nothing to hold back - and a
 		// button that opened the line already printed underneath would be the
 		// same words twice.
-		objects = append(objects, Field(p.Name, detailOf(p), NoDetail, f.Control))
+		objects = append(objects, into.Add(p.Name, p.Name, detailOf(p), NoDetail, f.Control))
 	}
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn

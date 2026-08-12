@@ -24,9 +24,12 @@ import (
 // renders is the shape docs/CLAUDE.md warns about: text with no reader becomes
 // pressure on the text beside it, and the label starts trying to say
 // everything on its own.
-func Field(label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewVBox(fieldParts(label, hint, detail, control)...)
-}
+// The plain Field function is gone as of 2026-08-12, and its absence is the
+// fix rather than a side effect of one. It built a field with nowhere to put a
+// refusal about it, so which boxes could be marked depended on which of two
+// functions somebody typed - and three of eight on one screen got the wrong
+// one, along with every setting a format declares. Fields.Add is the only way
+// in now. See parts.Fields.
 
 // FieldSaying is a field that can carry a refusal of its own, underneath it.
 //
@@ -38,9 +41,16 @@ func Field(label, hint string, detail Detail, control fyne.CanvasObject) fyne.Ca
 //
 // The area holds nothing until there is something to say, so a field that is
 // not being complained about takes exactly the room it took before.
+//
+// The sentence is not alone: the box it is about draws a red edge for as long
+// as the sentence is there. Two marks rather than one on purpose - a colour on
+// its own says nothing to somebody who cannot tell it from the others, and a
+// sentence on its own leaves them looking for which of eight boxes it means.
 func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
+	marked, ring := WithRing(control)
 	area := NewErrorArea()
-	items := append(fieldParts(label, hint, detail, control), area.Object())
+	area.edge = ring
+	items := append(fieldParts(label, hint, detail, marked), area.Object())
 	return container.NewVBox(items...), area
 }
 
@@ -65,13 +75,21 @@ func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []
 // the sentence below, and nothing to read on the thing you click. That is what
 // O72 saw on screen. Putting the name on the switch also makes the words part
 // of the target, which is the difference between a click and an aimed click.
-func Toggle(name, hint string, detail Detail, check *widget.Check) fyne.CanvasObject {
+// It carries no edge of its own. A ring round a switch is a ring round the
+// words as well as the square - measured from a screenshot on 2026-08-12,
+// where it read as a box drawn around a sentence - and a switch has two
+// positions, neither of which the engine can refuse. What it does get is
+// somewhere to speak, because "every field has one" is worth more than the one
+// exception nobody would remember.
+func ToggleSaying(name, hint string, detail Detail, check *widget.Check) (fyne.CanvasObject, *ErrorArea) {
 	check.Text = name
+	area := NewErrorArea()
 	items := []fyne.CanvasObject{withDetail(check, detail)}
 	if hint != "" {
 		items = append(items, Note(hint))
 	}
-	return container.NewVBox(items...)
+	items = append(items, area.Object())
+	return container.NewVBox(items...), area
 }
 
 // Note is a quiet line under something, for what a person needs once.
@@ -114,6 +132,14 @@ func Note(content string) fyne.CanvasObject {
 type ErrorArea struct {
 	label *widget.Label
 	box   *fyne.Container
+
+	// edge is the line round the control this area belongs to, or nil for the
+	// area at the foot of the form, which is about the run rather than about
+	// one box. Set by FieldSaying, so a refusal marks and unmarks the box in
+	// the same call that shows and hides the sentence - two things that would
+	// otherwise be two calls, and the second one is the one somebody forgets on
+	// the path where the run succeeds.
+	edge *Ring
 }
 
 // NewErrorArea returns an area with nothing in it.
@@ -140,6 +166,7 @@ func (a *ErrorArea) Say(text string) {
 	}
 	a.label.SetText(text)
 	a.box.Show()
+	a.mark(true)
 }
 
 // Clear takes the last refusal back, which is what every fresh attempt starts
@@ -148,6 +175,15 @@ func (a *ErrorArea) Say(text string) {
 func (a *ErrorArea) Clear() {
 	a.label.SetText("")
 	a.box.Hide()
+	a.mark(false)
+}
+
+// mark turns the edge of the control this area belongs to on or off. The area
+// at the foot of the form has no control, and says so by having no edge.
+func (a *ErrorArea) mark(refused bool) {
+	if a.edge != nil {
+		a.edge.Refuse(refused)
+	}
 }
 
 // Text is what the area is currently saying, for a guard to read.

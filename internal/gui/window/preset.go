@@ -30,7 +30,7 @@ type Preset struct {
 
 	host Host
 
-	pick   *widget.Select
+	pick   *parts.Chooser
 	outDir *widget.Entry
 	seed   *widget.Entry
 
@@ -43,6 +43,8 @@ type Preset struct {
 
 	// tips is the sheet the field explanations are drawn on. See Generate.
 	tips *parts.Tips
+	// fixed is how many fields this screen has before a preset declares any.
+	fixed int
 
 	body fyne.CanvasObject
 }
@@ -56,7 +58,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p.about = container.NewVBox()
 
 	ids := preset.IDs()
-	p.pick = widget.NewSelect(ids, p.onPresetChosen)
+	p.pick = parts.NewChooser(ids, p.onPresetChosen)
 	p.outDir = entry(startingDirectory(), "")
 	p.seed = entry("0", "")
 
@@ -70,23 +72,37 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		container.NewVScroll(parts.Screen(
 			text.HeadingPreset,
 			parts.Section(text.SectionPreset,
-				parts.Field(text.FieldPreset, text.HintPreset, p.tips.Say(text.DetailPreset), p.pick),
+				p.fields.Add(settingPreset, text.FieldPreset, text.HintPreset,
+					p.tips.Say(text.DetailPreset), p.pick),
 				p.about,
 			),
 			parts.Section(text.SectionSettings, p.paramBox),
 			parts.Section(text.SectionOutput,
-				parts.Field(text.FieldOutputDir, text.HintOutputDir, p.tips.Say(text.DetailOutputDir),
-					chooserFor(p.host, p.outDir)),
-				parts.Field(text.FieldSeed, text.HintSeed, p.tips.Say(text.DetailSeed), parts.Numeric(p.seed)),
+				p.fields.Add(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
+					p.tips.Say(text.DetailOutputDir), chooserFor(p.host, p.outDir)),
+				p.fields.Add(engine.SettingSeed, text.FieldSeed, text.HintSeed,
+					p.tips.Say(text.DetailSeed), parts.Numeric(p.seed)),
 			),
 		)),
 	))
+
+	// Everything built above belongs to the screen whatever preset is chosen.
+	// What a preset declares comes after this mark and is replaced with it.
+	p.fixed = p.fields.Len()
 
 	if len(ids) > 0 {
 		p.pick.SetSelected(ids[0])
 	}
 	return p
 }
+
+// settingPreset is the key the field holding the preset's own name goes under.
+//
+// Not a recipe key, because a recipe has no such setting - a preset is the
+// thing that BECOMES a recipe. It is here so that the box has a key like every
+// other box rather than being the one exception, which is the whole point of
+// the registry.
+const settingPreset = "preset"
 
 // Object is the screen, to put in a window.
 func (p *Preset) Object() fyne.CanvasObject { return p.body }
@@ -136,20 +152,26 @@ func (p *Preset) onPresetChosen(id string) {
 	}
 	p.about.Refresh()
 
-	// Rebuilt from nothing every time a preset is chosen, so the places a
-	// refusal can go are rebuilt with them. Keeping areas belonging to the
-	// previous preset would leave a message under a field that is no longer on
-	// the screen, and nothing would ever clear it.
-	p.beside = map[string]*parts.ErrorArea{}
-	for _, param := range chosen.Parameters {
+	// The previous preset's fields go with their boxes. Left in the registry
+	// they would be places a refusal could still be put, under widgets no
+	// longer on the screen, and nothing would ever clear them.
+	p.fields.KeepFirst(p.fixed)
+	// What the preset declares, then the global settings it supplies a value
+	// for. The same order "tfg preset show" prints them in, which is the whole
+	// of why it is this way round rather than the other: two surfaces listing
+	// one preset's settings differently is D1 fraying in a place nobody
+	// compares.
+	settings := make([]format.Property, 0, len(chosen.Parameters)+len(chosen.Reads))
+	settings = append(settings, chosen.Parameters...)
+	settings = append(settings, chosen.Globals()...)
+	for _, param := range settings {
 		field := parts.FromProperty(param)
 		p.params = append(p.params, field)
 		// One sentence and nothing held back, the same as a format's settings:
 		// what a parameter takes is built from its declaration, so there is no
 		// second half to put behind a button.
-		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), parts.NoDetail, field.Control)
-		p.beside[param.Name] = area
-		p.paramBox.Add(box)
+		p.paramBox.Add(p.fields.Add(param.Name, param.Name, detailOfParameter(param),
+			parts.NoDetail, field.Control))
 	}
 	p.paramBox.Refresh()
 }
@@ -186,7 +208,7 @@ func (p *Preset) given() preset.Args {
 func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	var none engine.Options
 
-	seed, err := wholeNumber("seed", p.seed.Text)
+	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, p.seed.Text)
 	if err != nil {
 		return nil, none, err
 	}

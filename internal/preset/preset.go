@@ -130,6 +130,55 @@ func (p Preset) Check(args Args) error {
 	return nil
 }
 
+// Global is what one of the flags in Reads looks like as a setting somebody
+// fills in, or false for a name this build knows nothing about.
+//
+// It exists because Reads is a list of NAMES and a surface has to draw a
+// control. The command line does not need this - the flag already exists there,
+// with its own wording - and a window has nothing to go on, which is how the
+// preset screen came to offer size-boundaries in one format when the command
+// line offered it in all thirteen. Measured on 2026-08-12: "tfg generate
+// --preset size-boundaries --format png" produces seven PNGs and the window
+// could only ever produce PDFs.
+//
+// The choices are read here rather than declared, because which formats exist
+// is a property of the build and registration order between two packages is not
+// something to rely on.
+//
+// The default is the one the presets in this package use. That is true today
+// with one preset and it is a coupling rather than a design: a second preset
+// reading --format with a different default has to turn this into something the
+// preset declares, and the constant it points at is the one place to notice.
+func Global(name string) (format.Property, bool) {
+	switch name {
+	case "format":
+		return format.Property{
+			Name:    "format",
+			Kind:    format.PropertyChoice,
+			Choices: format.IDs(),
+			Default: defaultFormat,
+			Detail:  "What kind of file the whole set is made of.",
+		}, true
+	}
+	return format.Property{}, false
+}
+
+// Globals is every flag this preset reads, as settings to put on a screen.
+//
+// Anything this build cannot describe is left out rather than drawn as an empty
+// box. A name here that Global knows nothing about is a preset asking for a
+// flag nobody has declared, and a control with no description is worse than the
+// missing control - it looks like it works.
+func (p Preset) Globals() []format.Property {
+	out := make([]format.Property, 0, len(p.Reads))
+	for _, name := range p.Reads {
+		if declared, ok := Global(name); ok {
+			out = append(out, declared)
+		}
+	}
+	return out
+}
+
 // ParameterNames is the declared names, in the order the preset listed them.
 func (p Preset) ParameterNames() []string {
 	out := make([]string, 0, len(p.Parameters))
@@ -233,6 +282,12 @@ func Register(p Preset) {
 	}
 	if _, taken := registry[p.ID]; taken {
 		panic(fmt.Sprintf("preset: %s is registered twice", p.ID))
+	}
+	// A parameter IS a format.Property, so a closed set of values is put in the
+	// same order here as it is over there. One rule for both, in the place each
+	// declaration passes through exactly once.
+	for i := range p.Parameters {
+		format.SortChoices(p.Parameters[i].Choices)
 	}
 	registry[p.ID] = p
 }

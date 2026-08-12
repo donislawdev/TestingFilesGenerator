@@ -55,6 +55,11 @@ var reachableFromTheWindow = []string{
 	"preset:size-boundaries",
 	"preset:size-boundaries.limit",
 	"preset:size-boundaries.spread",
+	// The global flag this preset supplies a value for, drawn from
+	// preset.Global and pressed by TestThePresetScreenCanBuildTheSetInAnyFormat,
+	// which runs the set and reads the bytes back rather than looking at the
+	// menu.
+	"preset:size-boundaries.format",
 
 	// Every format the registry holds, taken from the registry itself rather
 	// than listed in the window. TestTheWindowOffersEveryFormatTheRegistryHas.
@@ -157,9 +162,18 @@ var notYetReachable = []string{
 // 2026-08-04: adding the preset did not redden this, while adding the recipe key
 // group reddened it at once.
 //
-// Reads is deliberately not counted. A preset that supplies a default for
-// --format has not added a capability - the format is already on this list, and
-// counting it twice would make the distance to parity read longer than it is.
+// Reads is counted, and it was not until 2026-08-12. The reasoning for leaving
+// it out was that a preset supplying a default for --format adds no capability,
+// because the format is already on this list - which is true of the format and
+// false of the thing that went missing. "size-boundaries in a format somebody
+// chose" is its own capability and it belongs to a SCREEN: the command line had
+// it from the day the preset was registered, the window could only ever produce
+// PDFs, and this guard was green throughout. Reported by the owner from the
+// screen rather than caught here.
+//
+// So the unit is the pair. A preset reading a flag no surface draws a control
+// for is now a capability nobody has classified, which is what this guard does
+// something about.
 func capabilities() []string {
 	var out []string
 	for _, k := range recipe.Keys() {
@@ -175,6 +189,12 @@ func capabilities() []string {
 		out = append(out, "preset:"+p.ID)
 		for _, param := range p.Parameters {
 			out = append(out, "preset:"+p.ID+"."+param.Name)
+		}
+		// A name here cannot collide with a parameter above it: CLI.md section
+		// 6 calls that a mistake in the definition of the preset, and there is
+		// a guard that refuses to let one ship.
+		for _, name := range p.Reads {
+			out = append(out, "preset:"+p.ID+"."+name)
 		}
 	}
 	sort.Strings(out)

@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -44,7 +45,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 		var worst fyne.CanvasObject
 		walk(content, func(obj fyne.CanvasObject) {
 			switch obj.(type) {
-			case *widget.Entry, *widget.Select, *widget.Check:
+			case *widget.Entry, *parts.Chooser, *widget.Check:
 			default:
 				return
 			}
@@ -131,10 +132,19 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	// Wide, because the defect is stretching and a narrow window hides it.
 	w.Resize(fyne.NewSize(1600, 900))
 	content.Refresh()
-	// A refusal has to exist before its width can be measured. An empty area
-	// is hidden and reports nothing, which is how a guard like this passes
-	// while proving nothing.
-	entryUnder(t, content, text.FieldSize).SetText("1")
+
+	// A run that SUCCEEDS, and that is a correction made on 2026-08-12 after a
+	// mutation run rather than a preference. This used to ask for one byte and
+	// measure the refusal, which stopped landing here the day refusals moved
+	// under the fields they are about - so the bar had nothing on it, every
+	// label the walk found belonged to the form, and removing the width cap
+	// from the bar changed nothing this guard could see. It stayed green
+	// through its own mutation.
+	//
+	// The preview line is the longest thing the bar ever holds: how many, what
+	// kind, how big, and how much room is left, with a path on the end of it.
+	entryUnder(t, content, text.FieldSize).SetText("1mb")
+	entryUnder(t, content, text.FieldOutputDir).SetText(t.TempDir())
 	preview := buttonNamed(content, "Preview")
 	if preview == nil {
 		t.Fatal("the generate screen has no Preview button, so this guard read the wrong tree")
@@ -142,22 +152,27 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	preview.OnTapped()
 	content.Refresh()
 
-	found := 0
+	spoke := false
 	walk(content, func(obj fyne.CanvasObject) {
 		label, ok := obj.(*widget.Label)
 		if !ok || label.Text == "" || !label.Visible() {
 			return
 		}
-		found++
+		// The line the run wrote, told from the form's own labels by what it
+		// says. Counting every visible label instead is what let this guard
+		// pass while the bar was empty.
+		if strings.Contains(label.Text, "nothing written yet") {
+			spoke = true
+		}
 		if got := label.Size().Width; got > parts.ColumnWidth {
-			t.Errorf("a line the run wrote is %.0f px wide in a 1600 px window, over the %d the form uses.\n"+
+			t.Errorf("a line on the action bar is %.0f px wide in a 1600 px window, over the %d the form uses.\n"+
 				"Text: %q", got, parts.ColumnWidth, label.Text)
 		}
 	})
 	w.Close()
 
-	if found == 0 {
-		t.Fatal("nothing on the screen was saying anything, so this guard read the wrong tree")
+	if !spoke {
+		t.Fatal("the run said nothing about itself, so this guard measured the form and not the bar")
 	}
 }
 

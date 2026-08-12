@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -74,7 +75,7 @@ func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 	_, content := screen(t)
 
 	control := controlUnder(content, text.FieldFormat)
-	picker, ok := control.(*widget.Select)
+	picker, ok := control.(*parts.Chooser)
 	if !ok {
 		t.Fatalf("the format field is %T rather than a list to choose from", control)
 	}
@@ -101,7 +102,7 @@ func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 // one "tfg formats" prints rather than a second description of one format.
 func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 	_, content := screen(t)
-	picker := controlUnder(content, text.FieldFormat).(*widget.Select)
+	picker := controlUnder(content, text.FieldFormat).(*parts.Chooser)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -160,7 +161,7 @@ func declares(d format.Descriptor, name string) bool {
 func wrongKindOfControl(p format.Property, control fyne.CanvasObject) string {
 	switch p.Kind {
 	case format.PropertyChoice:
-		if _, ok := control.(*widget.Select); !ok {
+		if _, ok := control.(*parts.Chooser); !ok {
 			return fmt.Sprintf("a %T rather than a list, so its closed set can be misspelled", control)
 		}
 	case format.PropertyBool:
@@ -391,7 +392,7 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	picker := controlUnder(content, text.FieldFormat).(*widget.Select)
+	picker := controlUnder(content, text.FieldFormat).(*parts.Chooser)
 	picker.SetSelected("png")
 
 	fill(t, content, text.FieldOutputDir, dir)

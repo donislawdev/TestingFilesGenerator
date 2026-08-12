@@ -193,7 +193,7 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 // namedOnScreen is the words a heading shows, whether it is a label above a
 // control or a switch carrying its own name.
 func namedOnScreen(o fyne.CanvasObject) string {
-	switch v := o.(type) {
+	switch v := unringed(o).(type) {
 	case *widget.Label:
 		return v.Text
 	case *widget.Check:

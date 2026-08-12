@@ -30,7 +30,10 @@
 // place rather than the wording - renaming a sentence should not rename a key.
 package text
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Buttons on the run controls, in the order G6 puts them: preview before the
 // thing it previews.
@@ -65,8 +68,22 @@ const separator = " · "
 
 // PreviewCost is the line under the buttons after Preview, saying what the run
 // would cost and that nothing exists yet.
-func PreviewCost(count int, total string) string {
-	return files(count) + separator + total + separator + "nothing written yet"
+//
+// It names the kinds of file as well as the count, added on 2026-08-12. On the
+// generate screen that is on the screen anyway, and on the preset screen it is
+// the answer to a question the screen could not otherwise be asked: a preset
+// supplies the format itself unless somebody says otherwise, so "seven files,
+// 70 MiB" left out the one fact that says what they are.
+//
+// The list is left out entirely when there is nothing to list, rather than
+// shown empty. A plan that produces no files is a legal outcome here and it
+// already says so in the count.
+func PreviewCost(count int, formats []string, total string) string {
+	line := files(count)
+	if len(formats) > 0 {
+		line += separator + strings.Join(formats, ", ")
+	}
+	return line + separator + total + separator + "nothing written yet"
 }
 
 // PreviewFreeSpace follows PreviewCost when the disk could be measured. It is
@@ -93,6 +110,39 @@ func Progress(filesDone, filesTotal int, bytesDone, bytesTotal string, percent i
 // TimeLeft is appended to Progress once the estimate is worth showing.
 func TimeLeft(roughly string) string {
 	return "  " + roughly + " left"
+}
+
+// WindowTitle is what the desktop shows in the title bar and in the task
+// switcher, with the version so that a screenshot says which build it is.
+//
+// Here since 2026-08-13, and it had been a literal in the file that opens the
+// window since the day there was a window. The guard could not see it: it
+// worked from a list of the calls that show text, and nobody had thought to put
+// the toolkit's NewWindow on that list. Which is the argument for the rule
+// being the other way round.
+func WindowTitle(version string) string {
+	return "Testing Files Generator " + version
+}
+
+// NoWindowInThisBuild is what the window binary says when it was compiled
+// without the C support its toolkit needs.
+//
+// Four parts, D6: what cannot be done, why, what works instead, and what to do
+// about it.
+const NoWindowInThisBuild = "tfg-gui: this build has no window in it. It was compiled without C support, " +
+	"which the graphics toolkit needs to reach OpenGL. Every feature is available " +
+	"from the command line, which needs neither - run \"tfg --help\". " +
+	"To get a window, use a tfg-gui built for your system rather than this one."
+
+// NotAWholeNumber refuses a box that should hold digits and does not.
+//
+// The field is named by its label rather than by its key, because this is read
+// by somebody looking at the screen - and it arrives from here rather than as a
+// literal at the call site, which is where "how many" and "seed" were until
+// 2026-08-13.
+func NotAWholeNumber(field, value string) string {
+	return fmt.Sprintf("%s is %q, which is not a whole number. Write the digits out, such as 1 or 500",
+		field, value)
 }
 
 // ManifestNotSaved is the error when the files exist and their record does

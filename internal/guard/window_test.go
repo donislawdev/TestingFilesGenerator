@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
@@ -345,7 +346,7 @@ func textIn(o fyne.CanvasObject) string {
 		case *widget.Entry:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
-		case *widget.Select:
+		case *parts.Chooser:
 			b.WriteString(v.Selected)
 			b.WriteString("\n")
 		}
@@ -365,6 +366,12 @@ func buttonNamed(o fyne.CanvasObject, name string) *widget.Button {
 
 // checkNamed is a switch found by the words on it, which is where a switch
 // carries its name - a heading above one leaves a bare square to click.
+//
+// It looks for parts.Switch rather than widget.Check. The window's switches
+// report when the keyboard reaches them, which the toolkit's do not, and a
+// type that embeds another is not that other type - so this asks for the one
+// the window actually builds instead of matching both and pretending they are
+// interchangeable.
 func checkNamed(o fyne.CanvasObject, name string) *widget.Check {
 	var found *widget.Check
 	walk(o, func(obj fyne.CanvasObject) {
@@ -407,10 +414,34 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 			return
 		}
 		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
-			found = box.Objects[1]
+			found = unringed(box.Objects[1])
 		}
 	})
 	return found
+}
+
+// unringed is the control inside the edge that marks it, or the object itself.
+//
+// Every control that can be refused stands under a line it draws when the run
+// says something about it - parts.WithRing - so what sits under a field's name
+// is a stack of the control and a rectangle. Unwrapped here, in the one place
+// every guard finds a control through, so a mark added to the window does not
+// mean an edit in a dozen guards that only wanted the box.
+//
+// Recognised by shape rather than by a type of ours, and that is deliberate:
+// the wrapper has to stay a plain container. Fyne's own painter switches on
+// *fyne.Container, so a named type embedding one would be drawn as an empty
+// object with its children invisible - which is the same lesson the walk above
+// carries, seen from the other side.
+func unringed(o fyne.CanvasObject) fyne.CanvasObject {
+	box, ok := o.(*fyne.Container)
+	if !ok || len(box.Objects) != 2 {
+		return o
+	}
+	if _, isEdge := box.Objects[1].(*canvas.Rectangle); !isEdge {
+		return o
+	}
+	return box.Objects[0]
 }
 
 // headingOf is the name of a field, whether or not it has a button beside it.

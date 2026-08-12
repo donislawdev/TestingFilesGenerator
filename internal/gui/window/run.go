@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -86,12 +87,17 @@ type runner struct {
 	status  *widget.Label
 	problem *parts.ErrorArea
 
-	// beside is the area under each field, by the setting the engine names.
+	// fields is every box on the screen, by the setting the engine names it by.
 	// A refusal that says which setting it is about lands under that box
 	// instead of at the foot of the form - UX8, and O73, where the message
-	// about "how many" sat 748 px below the field it named. A screen that
-	// registers nothing here keeps every refusal where it always went.
-	beside map[string]*parts.ErrorArea
+	// about "how many" sat 748 px below the field it named.
+	//
+	// A registry rather than a map filled in at the call sites, changed on
+	// 2026-08-12. The map was real and it was filled in for five fields of
+	// eight, with every setting a format declares left out - so whether a box
+	// could be marked depended on which of two functions somebody typed when
+	// they added it. Fields.Add is the only way to build a field now.
+	fields *parts.Fields
 
 	// stop ends the run in progress and waits for it. Nil while nothing is
 	// running, and only ever touched on the interface thread.
@@ -105,6 +111,14 @@ type runner struct {
 	notes []string
 }
 
+// Fields is every box on this screen, for a guard to compare against the tree.
+//
+// Exported for one question and it is the question this design exists to
+// answer: is there a control on the screen that is not in here. A control the
+// registry does not know about is a control whose refusal has nowhere to go,
+// and counting them from the registry alone could never find one.
+func (r *runner) Fields() *parts.Fields { return r.fields }
+
 // refuse shows a refusal, under the field it is about where it names one.
 //
 // The choice is the engine's rather than the window's. It sets the setting on
@@ -112,18 +126,19 @@ type runner struct {
 // here, which is a second copy of rules the engine owns and the copy that
 // drifts.
 func (r *runner) refuse(err error) {
-	area := r.problem
 	// An interface rather than a case per error type, so a screen shown a kind
-	// of refusal nobody thought about here still gets it placed. The engine and
-	// the preset package both answer this and neither had to be imported for
-	// the question to be asked.
+	// of refusal nobody thought about here still gets it placed. The engine,
+	// the format registry and the preset package all answer this and none of
+	// them had to be imported for the question to be asked.
 	var about interface{ AboutSetting() string }
 	if errors.As(err, &about) && about.AboutSetting() != "" {
-		if beside, ok := r.beside[about.AboutSetting()]; ok {
-			area = beside
+		if r.fields.Mark(about.AboutSetting(), err.Error()) {
+			return
 		}
 	}
-	area.Say(err.Error())
+	// About the run rather than about one box, or about a setting this screen
+	// does not draw. The foot of the form is where those belong.
+	r.problem.Say(err.Error())
 }
 
 // clearProblems empties every place a refusal can appear, not just the last one
@@ -131,9 +146,7 @@ func (r *runner) refuse(err error) {
 // after the value that caused it was fixed.
 func (r *runner) clearProblems() {
 	r.problem.Clear()
-	for _, area := range r.beside {
-		area.Clear()
-	}
+	r.fields.ClearAll()
 }
 
 // say puts a sentence on the status line, under whatever settling had to say.
@@ -154,7 +167,7 @@ func (r *runner) say(lines ...string) {
 }
 
 func newRunner() *runner {
-	r := &runner{}
+	r := &runner{fields: parts.NewFields()}
 	r.bar = widget.NewProgressBar()
 	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
 	// a very large run inside the range of its own type is the one the command
@@ -235,11 +248,11 @@ func (r *runner) onPreview() {
 	r.say(previewText(planned, opt.OutDir))
 }
 
-// previewText is the cost, before anything exists. G6: how many files, how many
-// bytes, and how much room there is for them.
+// previewText is the cost, before anything exists. G6: how many files, what
+// kind, how many bytes, and how much room there is for them.
 func previewText(planned []engine.PlannedFile, outDir string) string {
 	total := engine.TotalBytes(planned)
-	line := text.PreviewCost(len(planned), core.HumanBytes(total))
+	line := text.PreviewCost(len(planned), formatsOf(planned), core.HumanBytes(total))
 
 	// A disk we cannot measure is not the same as a disk that is full, so a
 	// failure to read it says nothing rather than inventing a number.
@@ -247,6 +260,31 @@ func previewText(planned []engine.PlannedFile, outDir string) string {
 		line += text.PreviewFreeSpace(outDir, core.HumanBytes(free))
 	}
 	return line
+}
+
+// formatsOf is what kinds of file the run would produce, each named once.
+//
+// Read off the plan rather than off the screen, which is what makes it true on
+// both screens. The generate screen has the answer in a menu, and the preset
+// screen does not have it anywhere: a preset states its own targets, so the
+// only place that knows is the plan they came to. A set built in a format
+// nobody chose is exactly the thing somebody wants to catch before it is
+// written.
+//
+// Sorted, so a run of several kinds reads the same way twice. Plans keep the
+// order of the targets they came from, and that order is not something to show
+// somebody as if it meant anything.
+func formatsOf(planned []engine.PlannedFile) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, p := range planned {
+		if id := p.Desc.ID; id != "" && !seen[id] {
+			seen[id] = true
+			out = append(out, id)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 // onGenerate plans on the interface thread and writes off it.
@@ -435,11 +473,40 @@ func (r *runner) Stop() {
 // Turning text into a number is not one of this tool's rules - the command line
 // gets it from the flag package - so this is not a second copy of anything G1
 // protects. What the number then has to satisfy stays with the engine.
-func wholeNumber(what, text string) (int64, error) {
-	n, err := strconv.ParseInt(strings.TrimSpace(text), 10, 64)
+func wholeNumber(setting, field, value string) (int64, error) {
+	n, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf(
-			"%s is %q, which is not a whole number. Write the digits out, such as 1 or 500", what, text)
+		return 0, &aboutField{setting: setting, detail: text.NotAWholeNumber(field, value)}
 	}
 	return n, nil
+}
+
+// aboutField is a refusal the WINDOW made, carrying the box it is about.
+//
+// The engine says which setting its own refusals are about and the window threw
+// that away for its own: reading a size or a count out of a box is the window's
+// work, so "abc is not a whole number" arrived as a plain error with no
+// subject, went to the foot of the form, and marked nothing. Measured on
+// 2026-08-12 - the size field could be marked when a format refused the number
+// and not when the number was not a number, which is the more common mistake of
+// the two.
+type aboutField struct {
+	setting string
+	detail  string
+}
+
+func (e *aboutField) Error() string        { return e.detail }
+func (e *aboutField) AboutSetting() string { return e.setting }
+
+// saying wraps a refusal from somewhere that does not know which box was read.
+// core.ParseSize is shared with the command line, where there are no boxes.
+func saying(setting string, err error) error {
+	if err == nil {
+		return nil
+	}
+	var already interface{ AboutSetting() string }
+	if errors.As(err, &already) && already.AboutSetting() != "" {
+		return err
+	}
+	return &aboutField{setting: setting, detail: err.Error()}
 }

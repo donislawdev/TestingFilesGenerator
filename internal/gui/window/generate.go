@@ -61,7 +61,7 @@ type Generate struct {
 
 	host Host
 
-	formatPick *widget.Select
+	formatPick *parts.Chooser
 	size       *widget.Entry
 	count      *widget.Entry
 	id         *widget.Entry
@@ -75,6 +75,9 @@ type Generate struct {
 	// the settings of a PNG are not the settings of a WAV.
 	props   []parts.PropertyField
 	propBox *fyne.Container
+	// fixed is how many fields this screen has before a format declares any.
+	// What comes after is thrown away and drawn again on every change.
+	fixed int
 
 	// tips is the sheet the field explanations are drawn on. One per screen,
 	// because a window holds every screen at once and an explanation has to
@@ -110,6 +113,9 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 			g.settingsSection(),
 		)),
 	))
+	// Everything built above belongs to the screen whatever format is chosen.
+	// What a format declares comes after this mark and is replaced with it.
+	g.fixed = g.fields.Len()
 
 	// The format decides which settings exist, so the first one has to be
 	// applied rather than waited for.
@@ -146,7 +152,7 @@ func (g *Generate) buildFields() {
 	// gets forgotten - so a fourteenth format appears in this menu on the day it
 	// is registered.
 	ids := format.IDs()
-	g.formatPick = widget.NewSelect(ids, g.onFormatChosen)
+	g.formatPick = parts.NewChooser(ids, g.onFormatChosen)
 	if len(ids) > 0 {
 		// The first rather than a favourite. Something has to be chosen, because
 		// a menu showing nothing turns the first press of Generate into a
@@ -179,16 +185,11 @@ func entry(text, placeholder string) *widget.Entry {
 // the consequence - which is docs/CLAUDE.md on writing for a reader, not a
 // description of how any of it works.
 func (g *Generate) settingsSection() fyne.CanvasObject {
-	// The fields the engine can name in a refusal keep an area of their own, so
-	// the message lands under the box that caused it rather than at the foot of
-	// the form - O73. The engine says which setting, in recipe keys, and this
-	// is the only place that knows which box that is.
-	g.beside = map[string]*parts.ErrorArea{}
-	withArea := func(setting, label, hint string, detail parts.Detail, control fyne.CanvasObject) fyne.CanvasObject {
-		field, area := parts.FieldSaying(label, hint, detail, control)
-		g.beside[setting] = area
-		return field
-	}
+	// Every field goes through the same call and every one of them can be told
+	// it was the box that was refused - O73, and since 2026-08-12 without the
+	// exceptions. The first argument is the key the engine names a setting by,
+	// in recipe keys, and it is what a refusal is matched against.
+	add := g.fields.Add
 	return container.NewVBox(
 		parts.Section(text.SectionConfiguration,
 			// The format used to be a section of its own holding one field.
@@ -196,24 +197,18 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 			// and two gaps - measured at about 60 px on a screen that was 119
 			// px too tall. It belongs here anyway: what kind of file, how big,
 			// how many and what they are called are one set of questions.
-			parts.Field(text.FieldFormat, text.HintFormat, g.tips.Say(text.DetailFormat), g.formatPick),
+			add(engine.SettingFormat, text.FieldFormat, text.HintFormat,
+				g.tips.Say(text.DetailFormat), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			parts.Row(
-				// The size gets an area of its own, added on 2026-08-12. It is
-				// the field most likely to be refused - every format has a
-				// minimum and this is what asks for less than it - and it was
-				// the one field of the four here without somewhere to put the
-				// answer. Measured on the refused screen: "CSV cannot be
-				// smaller than 117 B" landed at the foot of the form, 900 px
-				// under the box that caused it.
-				withArea(format.SettingSize, text.FieldSize, text.HintSize, g.tips.Say(text.DetailSize),
+				add(format.SettingSize, text.FieldSize, text.HintSize, g.tips.Say(text.DetailSize),
 					parts.Numeric(g.size)),
-				withArea(engine.SettingCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(g.count)),
+				add(engine.SettingCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(g.count)),
 			),
 			parts.Row(
-				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.tips.Say(text.DetailTargetID), g.id),
-				withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
+				add(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.tips.Say(text.DetailTargetID), g.id),
+				add(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
 					g.tips.Say(text.DetailNameTemplate), g.name),
 			),
 			// The settings the chosen format declares land here, under the ones
@@ -221,11 +216,12 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 			g.propBox,
 		),
 		parts.Section(text.SectionOutput,
-			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, g.tips.Say(text.DetailOutputDir),
+			add(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, g.tips.Say(text.DetailOutputDir),
 				chooserFor(g.host, g.outDir)),
 			parts.Row(
-				parts.Field(text.FieldSeed, text.HintSeed, g.tips.Say(text.DetailSeed), parts.Numeric(g.seed)),
-				parts.Toggle(text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),
+				add(engine.SettingSeed, text.FieldSeed, text.HintSeed, g.tips.Say(text.DetailSeed),
+					parts.Numeric(g.seed)),
+				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),
 			),
 		),
 	)
@@ -240,6 +236,10 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 func (g *Generate) onFormatChosen(id string) {
 	g.propBox.RemoveAll()
 	g.props = nil
+	// The fields of the format that was chosen before this one go with their
+	// boxes. Left in the registry they would be places a refusal could still be
+	// put, under widgets no longer on the screen.
+	g.fields.KeepFirst(g.fixed)
 
 	d, err := format.Get(id)
 	if err != nil {
@@ -250,7 +250,7 @@ func (g *Generate) onFormatChosen(id string) {
 		return
 	}
 
-	fields, objects := parts.PropertyFields(d)
+	fields, objects := parts.PropertyFields(d, g.fields)
 	g.props = fields
 	if len(objects) == 0 {
 		g.propBox.Refresh()
@@ -292,13 +292,13 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 
 	bytesWanted, err := core.ParseSize(g.size.Text)
 	if err != nil {
-		return nil, none, err
+		return nil, none, saying(format.SettingSize, err)
 	}
-	count, err := wholeNumber("how many", g.count.Text)
+	count, err := wholeNumber(engine.SettingCount, text.FieldCount, g.count.Text)
 	if err != nil {
 		return nil, none, err
 	}
-	seed, err := wholeNumber("seed", g.seed.Text)
+	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, g.seed.Text)
 	if err != nil {
 		return nil, none, err
 	}

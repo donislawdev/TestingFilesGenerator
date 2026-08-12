@@ -95,10 +95,18 @@ var sameLayerAllowed = map[string][]string{
 	// message here and half where the engine says it, which is how two
 	// wordings for one thing start.
 	"internal/gui/parts": {"internal/gui/text"},
-	// And the package that opens a real window reaches both. It is the only
-	// one that touches the toolkit's app package, so it is the only one that
-	// needs a C compiler.
-	"internal/gui": {"internal/gui/window", "internal/gui/parts"},
+	// And the package that opens a real window reaches all three. It is the
+	// only one that touches the toolkit's app package, so it is the only one
+	// that needs a C compiler.
+	//
+	// The text package joined that list on 2026-08-13, when the two sentences
+	// this package says were moved into it: the title on the window itself, and
+	// what the build without C support prints instead of opening one. They had
+	// been literals here since there was a window, and no guard could see them
+	// - the one that watches for words outside the text package worked from a
+	// list of the calls that show text, and nobody had put the toolkit's
+	// NewWindow on it. The rule is the other way round now.
+	"internal/gui": {"internal/gui/window", "internal/gui/parts", "internal/gui/text"},
 }
 
 // Edges that a plain layer number would allow but that must never exist.

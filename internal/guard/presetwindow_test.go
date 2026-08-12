@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
@@ -53,7 +54,7 @@ func TestTheWindowOffersEveryPresetThereIs(t *testing.T) {
 	_, content := presetScreen(t)
 
 	control := controlUnder(content, text.FieldPreset)
-	picker, ok := control.(*widget.Select)
+	picker, ok := control.(*parts.Chooser)
 	if !ok {
 		t.Fatalf("the preset field is %T rather than a list to choose from", control)
 	}
@@ -71,7 +72,7 @@ func TestTheWindowOffersEveryPresetThereIs(t *testing.T) {
 // type, one set of controls, one wording for a refusal.
 func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 	_, content := presetScreen(t)
-	picker := controlUnder(content, text.FieldPreset).(*widget.Select)
+	picker := controlUnder(content, text.FieldPreset).(*parts.Chooser)
 
 	checked := 0
 	for _, p := range preset.All() {
@@ -353,7 +354,7 @@ func TestNoTextSettingDescribesItselfAsText(t *testing.T) {
 // as many items as there are. Only visible by looking at the screen.
 func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 	_, content := presetScreen(t)
-	picker := controlUnder(content, text.FieldPreset).(*widget.Select)
+	picker := controlUnder(content, text.FieldPreset).(*parts.Chooser)
 
 	for _, p := range preset.All() {
 		if len(p.Catches) < 2 {

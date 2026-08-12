@@ -213,8 +213,37 @@ const NumericWidth = 140
 //
 // Only for boxes taking a number. A path, a name template and an id are all
 // things whose length nobody can predict, so those still take the column.
+//
+// It uses a layout of ours rather than the toolkit's grid wrap, and the reason
+// is the edge that marks a refused box: a stack sized by the slot draws its
+// line round the whole half column while the box in it is 140 px, which is a
+// mark that points at the gap beside the field as much as at the field. Naming
+// the layout is what lets WithRing put the line INSIDE this rather than around
+// it. Seen on a render on 2026-08-12, which is the only way that kind of thing
+// is ever seen.
 func Numeric(control fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewGridWrap(fyne.NewSize(NumericWidth, control.MinSize().Height), control)
+	return container.New(fixedWidth{NumericWidth}, control)
+}
+
+// fixedWidth gives its one child a width decided here and the height it asks
+// for.
+type fixedWidth struct{ width float32 }
+
+func (f fixedWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) == 0 {
+		return fyne.Size{}
+	}
+	size := objects[0].MinSize()
+	size.Width = f.width
+	return size
+}
+
+func (f fixedWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	if len(objects) == 0 {
+		return
+	}
+	objects[0].Resize(fyne.NewSize(f.width, size.Height))
+	objects[0].Move(fyne.NewPos(0, 0))
 }
 
 // readableWidth gives its one child the lesser of the space offered and

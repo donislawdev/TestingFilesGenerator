@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -92,7 +93,7 @@ func run(errOut io.Writer) int {
 	// widget and describing nothing until it was installed here - O70. It
 	// answers dark whatever the desktop is set to, by the owner's decision.
 	a.Settings().SetTheme(parts.Theme())
-	w := a.NewWindow("Testing Files Generator " + version.Version)
+	w := a.NewWindow(text.WindowTitle(version.Version))
 	window.Open(desktop{w})
 	w.Resize(window.OpenSize)
 	w.CenterOnScreen()

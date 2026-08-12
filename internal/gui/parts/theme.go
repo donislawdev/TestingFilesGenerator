@@ -41,7 +41,27 @@ var (
 		theme.ColorNameWarning:     hex(0xE8, 0xB3, 0x3E),
 		theme.ColorNamePrimary:     hex(0x6F, 0xB7, 0xF0),
 		theme.ColorNameHyperlink:   hex(0x6F, 0xB7, 0xF0),
-		theme.ColorNameFocus:       hex(0x4C, 0x9D, 0xF0),
+		// Translucent, for the reason the hover below it is - and this one was
+		// left opaque when that was corrected on 2026-08-11, so the same defect
+		// stayed on the screen in a second place for a day.
+		//
+		// The toolkit does not draw this as a ring despite the name every
+		// palette gives it. A menu fills its WHOLE background with it -
+		// select.go, bgColor - and a button blends it over its own colour, so
+		// an opaque value replaced a chosen format with a solid blue bar and
+		// wrote the format's name across it. Measured off the render on
+		// 2026-08-12: #E6E6E6 on #4C9DF0 is 2.28:1, against the 4.5 a reader
+		// needs. Reported from the screen as a field that stays lit after the
+		// choice has been made.
+		//
+		// The value is 0x66 rather than the toolkit's own 0x2a because ours has
+		// to work over an input box rather than over the page: blue at 0x66
+		// over #2E2E30 comes out at #3A5A7D, which leaves the value on it at
+		// 5.73:1. What it can no longer do is say WHERE the keyboard is - a
+		// wash that text survives is a wash nothing else can see either, and
+		// that is arithmetic rather than a compromise. See parts.Ring, which is
+		// what carries the state instead.
+		theme.ColorNameFocus: overlay(0x4C, 0x9D, 0xF0, 0x66),
 		// Translucent, and that is the fix for a defect somebody saw rather
 		// than a preference. The toolkit does not paint this colour, it BLENDS
 		// it over whatever is underneath - so an opaque grey replaced the blue
@@ -56,7 +76,29 @@ var (
 		theme.ColorNameSelection:       hex(0x2C, 0x4A, 0x6B),
 		theme.ColorNameInputBackground: hex(0x2E, 0x2E, 0x30),
 		theme.ColorNameButton:          hex(0x2E, 0x2E, 0x30),
-		theme.ColorNameMenuBackground:  hex(0x2E, 0x2E, 0x30),
+
+		// A menu floats over everything, so it is the LIGHTEST surface rather
+		// than another one at the height of an input box.
+		//
+		// It was #2E2E30 until 2026-08-12, which is the input colour to the
+		// byte, and it opens over a panel at #262628 - 3.8 L* apart, with no
+		// border and no shadow anybody could see. Reported from a screenshot as
+		// a list where everything runs together, and it was: the list, the form
+		// behind it and the box it came from were three surfaces within four
+		// L* of each other.
+		//
+		// #3A3A40 is 24.6 L*, which puts it 9.4 above the panel and 5.6 above
+		// an input. The stack now reads page 11.3, panel 15.2, input 19.0, menu
+		// 24.6 - each one told from the one under it, and the one that floats
+		// furthest from all of them.
+		theme.ColorNameMenuBackground: hex(0x3A, 0x3A, 0x40),
+
+		// And what it casts, which is the other half of floating. The toolkit
+		// draws a shadow under every popup and asks the theme for its colour -
+		// so a shadow nobody set is the toolkit's default over a page darker
+		// than the one it was chosen for. Black at two thirds reads as depth
+		// against #1E1E1E rather than as a smudge.
+		theme.ColorNameShadow: overlay(0x00, 0x00, 0x00, 0xA8),
 
 		// The surface a section is drawn on, and the line round its edge.
 		//
@@ -117,7 +159,9 @@ var (
 		theme.ColorNameWarning:     hex(0x8A, 0x5A, 0x00),
 		theme.ColorNamePrimary:     hex(0x0F, 0x5F, 0xA8),
 		theme.ColorNameHyperlink:   hex(0x0F, 0x5F, 0xA8),
-		theme.ColorNameFocus:       hex(0x0F, 0x62, 0xFE),
+		// The same correction as the dark variant above, at the same alpha:
+		// this is blended over whatever it lands on rather than painted.
+		theme.ColorNameFocus: overlay(0x0F, 0x62, 0xFE, 0x66),
 		// Black rather than white here: this page is white, so its hover is
 		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
 		// which is what section 8.3 measured.
@@ -125,7 +169,11 @@ var (
 		theme.ColorNameSelection:       hex(0xCF, 0xE4, 0xF7),
 		theme.ColorNameInputBackground: hex(0xEF, 0xEF, 0xEF),
 		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
-		theme.ColorNameMenuBackground:  hex(0xEF, 0xEF, 0xEF),
+		// The same reasoning the other way up: on a white page a floating
+		// surface is the lightest thing there is, so it is white and the shadow
+		// is what separates it.
+		theme.ColorNameMenuBackground: hex(0xFF, 0xFF, 0xFF),
+		theme.ColorNameShadow:         overlay(0x00, 0x00, 0x00, 0x40),
 
 		// The same two, worked out the same way against a white page. The gap
 		// between page and input is narrower here - 5.6 L* against 7.7 - so the
@@ -201,6 +249,18 @@ func (o ours) Size(name fyne.ThemeSizeName) float32 {
 		return 12 // an explanation under a field, at 11 it was hard work
 	case theme.SizeNamePadding:
 		return 6 // room between things, the toolkit's 4 was tight
+	case theme.SizeNameInnerPadding:
+		// Room inside a control, above and below whatever it holds. The
+		// toolkit's 8 makes a row of a menu 41 px tall for 13 px of text -
+		// measured off the open list on 2026-08-12, which is 3.1 times the
+		// text and about half again what a desktop menu uses.
+		//
+		// It is the only knob there is: the theme is asked for a size by name
+		// and not by widget, so a menu cannot be tightened on its own. That
+		// makes this a change to the density of everything - a box to type in
+		// is text plus twice this, and so is a button - which is why it went in
+		// against a render of the form rather than of the menu alone.
+		return 6
 	case theme.SizeNameCardRadius:
 		return 8
 	}
