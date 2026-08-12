@@ -82,14 +82,13 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 	for _, screenName := range []string{"generate", "preset"} {
 		host := &fakeHost{}
 		window.Open(host)
-		content := host.content
+
+		// Through the tab rather than across the window. Both work screens
+		// carry a field called seed, and a lookup over the whole window
+		// answers with the last one it walked past without saying so.
+		content := tabNamed(t, host.content, text.TabOneTarget)
 		if screenName == "preset" {
-			// Through the tab rather than across the window. Both work screens
-			// carry a field called seed, and a lookup over the whole window
-			// answers with the last one it walked past without saying so.
 			content = selectTab(t, host.content, text.TabPresets)
-		} else {
-			content = tabNamed(t, host.content, text.TabOneTarget)
 		}
 
 		w := test.NewWindow(content)
