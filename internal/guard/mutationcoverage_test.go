@@ -87,6 +87,13 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestReplacingAFileKeepsTheModeItHad": "checked 2026-08-12 with tools/probes/atomic-replace, run on Windows and on Linux through WSL2. " +
+		"The version this replaced wrote the temporary copy with 0644 and renamed it over the original, and a rename moves the file it renames - " +
+		"so a recipe somebody had made private at 0600 came back at 0644, readable by everyone on the machine. Measured on Linux, on the code that was shipping. " +
+		"It cannot be a mutation entry because the guard SKIPS on Windows, which is where the mutation runner lives: Windows has no permission bits, " +
+		"so the question cannot be put there at all and a substitution would be reported NOT CAUGHT for a guard that is working. " +
+		"The probe is the honest instrument here, because it is the one that can be run where the answer exists.",
+
 	"TestNoNumberATestPrintsIsCopiedIntoTheProse": "checked 2026-08-05 by planting a document in docs/ carrying one bad number per rule - " +
 		"a D1 parity pair, an identifier count, a link count, a mutation breakdown in three spellings, a guard count and a coverage figure. " +
 		"All eight were named, and deleting the file put the run back to green. " +

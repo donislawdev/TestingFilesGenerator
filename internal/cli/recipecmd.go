@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
@@ -50,32 +51,6 @@ func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 		return nil, "", classify(err)
 	}
 	return rec, hash, ExitOK
-}
-
-// replaceFile puts new content in place of a file in one step.
-//
-// "recipe fmt -w" is the only command here that writes over a file somebody
-// wrote by hand, and it was the least careful write in the tool: os.WriteFile
-// truncates first and fills afterwards, so a process ending in between leaves
-// the recipe half its length and no copy of what it was.
-//
-// Every generated file has gone through a temporary name and a rename since
-// the beginning, for exactly this reason, and so does the manifest since
-// earlier today. This is the same thing for the one file that is not ours.
-//
-// The temporary file sits beside the target rather than in the system
-// temporary directory, because a rename across volumes is not one operation
-// and this whole function exists to have one.
-func replaceFile(path string, content []byte) error {
-	tmp := path + ".tfg-writing"
-	if err := os.WriteFile(tmp, content, 0o644); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
-		return err
-	}
-	return nil
 }
 
 // validate runs the checks a run would run and writes nothing at all, so it
@@ -292,7 +267,7 @@ Flags:
 			fmt.Fprintf(errOut, "%s was already settled and was not touched.\n", path)
 			return ExitOK
 		}
-		if err := replaceFile(path, canon); err != nil {
+		if err := core.ReplaceFile(path, canon); err != nil {
 			fmt.Fprintf(errOut, "tfg: cannot write %s: %s\n", path, describeError(err))
 			return ExitIO
 		}
