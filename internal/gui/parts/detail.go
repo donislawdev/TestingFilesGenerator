@@ -57,10 +57,10 @@ type DetailButton struct {
 	widget.Button
 
 	detail string
-	// open is the explanation while it is on screen, and nil when it is not.
-	// Only ever touched from the interface thread, like every other field of a
-	// widget here.
-	open *widget.PopUp
+	// close takes the explanation off the screen, and is nil when there is
+	// none up. Only ever touched from the interface thread, like every other
+	// field of a widget here.
+	close func()
 }
 
 func newDetailButton(detail string) *DetailButton {
@@ -68,7 +68,7 @@ func newDetailButton(detail string) *DetailButton {
 	b.ExtendBaseWidget(b)
 	b.Icon = theme.InfoIcon()
 	b.Importance = widget.LowImportance
-	b.OnTapped = b.show
+	b.OnTapped = b.toggle
 	return b
 }
 
@@ -98,21 +98,32 @@ func (b *DetailButton) MouseOut() {
 // is already there. Opening a second one over the first is what a click after
 // a hover would otherwise do.
 func (b *DetailButton) show() {
-	if b.open != nil {
+	if b.close != nil {
 		return
 	}
-	b.open = showDetail(b, b.detail)
+	b.close = showDetail(b, b.detail)
 }
 
 func (b *DetailButton) hide() {
-	if b.open == nil {
+	if b.close == nil {
 		return
 	}
-	b.open.Hide()
-	b.open = nil
+	b.close()
+	b.close = nil
 }
 
-// showDetail opens the explanation under the button that asked for it.
+// toggle is what a press does, so somebody who got here with a keyboard has a
+// way back out. The pointer has one already: it leaves.
+func (b *DetailButton) toggle() {
+	if b.close != nil {
+		b.hide()
+		return
+	}
+	b.show()
+}
+
+// showDetail opens the explanation under the button that asked for it and
+// hands back the way to take it down again.
 //
 // It asks the toolkit for the canvas the button is on rather than being handed
 // one, which is what keeps this package free of the app package - the property
@@ -123,7 +134,23 @@ func (b *DetailButton) hide() {
 // built and measured without ever being shown, which several guards do, and a
 // button that panics there would make this package untestable in exactly the
 // place it was designed to be testable.
-func showDetail(near fyne.CanvasObject, detail string) *widget.PopUp {
+//
+// It does NOT use widget.PopUp, and that is the whole of why hovering works.
+// Reported on 2026-08-12: the explanation flickered violently as soon as the
+// pointer moved on the icon. A popup wraps itself in the toolkit's
+// OverlayContainer, that container covers the entire canvas, and it declares
+// itself desktop.Hoverable with empty methods - internal/widget/
+// overlay_container.go, lines 59 to 70. So the instant the explanation opened
+// it became the thing under the pointer, the button was told the pointer had
+// left, the explanation closed, the cover went with it and the button was
+// hovered again. A loop, at the speed of mouse movement.
+//
+// What goes up instead is a plain container holding a rectangle and a label.
+// None of the three answers Hoverable, so the toolkit looks straight through
+// them for something that does and finds the button underneath, still hovered.
+// The stack takes any object and stretches it over the canvas - it is the
+// popup that adds the cover, not the overlay layer.
+func showDetail(near fyne.CanvasObject, detail string) func() {
 	app := fyne.CurrentApp()
 	if app == nil {
 		return nil
@@ -134,19 +161,20 @@ func showDetail(near fyne.CanvasObject, detail string) *widget.PopUp {
 		return nil
 	}
 
-	body := container.NewPadded(Prose(detail))
-	pop := widget.NewPopUp(body, canvas)
+	tip := container.NewStack(panelSurface(), container.NewPadded(Prose(detail)))
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the
 	// width it currently knows about, and before the first resize that is not
 	// the width it ends up with - so a single pass gives a box one line tall
 	// with the rest of the paragraph outside it.
-	pop.Resize(fyne.NewSize(DetailWidth, body.MinSize().Height))
-	pop.Resize(fyne.NewSize(DetailWidth, body.MinSize().Height))
+	tip.Resize(fyne.NewSize(DetailWidth, tip.MinSize().Height))
+	tip.Resize(fyne.NewSize(DetailWidth, tip.MinSize().Height))
+	tip.Move(below(driver, near, canvas, tip.Size()))
 
-	pop.ShowAtPosition(below(driver, near, canvas))
-	return pop
+	layer := container.NewWithoutLayout(tip)
+	canvas.Overlays().Add(layer)
+	return func() { canvas.Overlays().Remove(layer) }
 }
 
 // below is where the explanation opens: under the button, and never past the
@@ -156,11 +184,26 @@ func showDetail(near fyne.CanvasObject, detail string) *widget.PopUp {
 // hand column of a two column row starts past the middle of the window, and a
 // box opened at that x with a fixed width runs off the screen - where the part
 // that falls off is the end of every line.
-func below(driver fyne.Driver, near fyne.CanvasObject, canvas fyne.Canvas) fyne.Position {
+func below(driver fyne.Driver, near fyne.CanvasObject, canvas fyne.Canvas, tip fyne.Size) fyne.Position {
 	at := driver.AbsolutePositionForObject(near)
 	at.Y += near.Size().Height
-	if rightmost := canvas.Size().Width - DetailWidth; at.X > rightmost {
+
+	if rightmost := canvas.Size().Width - tip.Width; at.X > rightmost {
 		at.X = fyne.Max(0, rightmost)
 	}
-	return at
+	// Above the button rather than below it when there is no room below. The
+	// buttons at the foot of a form are the ones whose explanation would
+	// otherwise open past the bottom of the window, where none of it can be
+	// read.
+	if at.Y+tip.Height > canvas.Size().Height {
+		if above := driver.AbsolutePositionForObject(near).Y - tip.Height; above >= 0 {
+			at.Y = above
+		}
+	}
+
+	// The layer is placed at the interactive area's origin and its children are
+	// positioned inside it, so an absolute position has to come back to being
+	// relative to that. Zero on a desktop and not on every device.
+	origin, _ := canvas.InteractiveArea()
+	return at.Subtract(origin)
 }

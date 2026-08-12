@@ -95,7 +95,70 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 			t.Errorf("pressing the button beside %q did not show its explanation.\nWanted: %q\nShown: %q",
 				field.label, field.detail, shown)
 		}
+		// And a second press takes it away again, because somebody who opened
+		// it from a keyboard has no pointer to move off it.
+		button.OnTapped()
+		if shown := overlayText(w.Canvas()); strings.Contains(shown, field.detail) {
+			t.Errorf("pressing the button beside %q a second time did not take the explanation away", field.label)
+		}
 		button.MouseOut()
+	}
+}
+
+// Nothing the explanation puts on screen answers to the pointer.
+//
+// This is the flicker, written as a rule. Reported on 2026-08-12: the
+// explanation strobed as soon as the pointer moved on the icon, and the cause
+// was a loop rather than a redraw. widget.PopUp wraps itself in the toolkit's
+// OverlayContainer, that container is stretched over the whole canvas, and it
+// declares itself desktop.Hoverable with empty methods - internal/widget/
+// overlay_container.go lines 59 to 70. So opening the explanation put a hover
+// target over the button that had opened it: the button was told the pointer
+// had left, it closed the explanation, the cover went with it, the button was
+// hovered again. At the speed of mouse movement.
+//
+// The guard beside this one could not see any of that. It opens the
+// explanation and reads it, which is exactly what happens on the first frame of
+// the loop - so it was green throughout, and the defect was reported by
+// somebody moving a mouse.
+//
+// What it asks is the property that makes hovering possible at all: whatever
+// goes on top must be invisible to the pointer, so the toolkit looks through it
+// and finds the button still underneath.
+func TestTheExplanationDoesNotStealThePointerFromTheButton(t *testing.T) {
+	app := test.NewApp()
+	defer test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+
+	host := &fakeHost{}
+	window.Open(host)
+	content := tabNamed(t, host.content, text.TabOneTarget)
+
+	w := test.NewWindow(host.content)
+	defer w.Close()
+	w.Resize(window.OpenSize)
+	host.content.Refresh()
+
+	button := detailButtonBeside(content, text.FieldSize)
+	if button == nil {
+		t.Fatal("there is no explanation button beside the size field, so this guard read the wrong tree")
+	}
+	button.MouseIn(&desktop.MouseEvent{})
+	defer button.MouseOut()
+
+	overlays := w.Canvas().Overlays().List()
+	if len(overlays) == 0 {
+		t.Fatal("hovering put nothing on screen, so this guard measured an empty overlay")
+	}
+
+	for _, overlay := range overlays {
+		walk(overlay, func(obj fyne.CanvasObject) {
+			if _, steals := obj.(desktop.Hoverable); steals {
+				t.Errorf("the explanation puts a %T on screen and it answers to the pointer.\n"+
+					"Anything hoverable above the button takes the hover that keeps the explanation open, "+
+					"so it closes, uncovers the button, opens again - which is the flicker.", obj)
+			}
+		})
 	}
 }
 
