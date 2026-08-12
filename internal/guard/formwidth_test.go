@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 )
 
@@ -29,7 +30,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 		host := &fakeHost{}
 		window.Open(host)
 		if screenName == "preset" {
-			selectTab(t, host.content, "Presets")
+			selectTab(t, host.content, text.TabPresets)
 		}
 		content := host.content
 
@@ -86,18 +87,18 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 			// Through the tab rather than across the window. Both work screens
 			// carry a field called seed, and a lookup over the whole window
 			// answers with the last one it walked past without saying so.
-			content = selectTab(t, host.content, "Presets")
+			content = selectTab(t, host.content, text.TabPresets)
 		} else {
-			content = tabNamed(t, host.content, "One target")
+			content = tabNamed(t, host.content, text.TabOneTarget)
 		}
 
 		w := test.NewWindow(content)
 		w.Resize(fyne.NewSize(1000, 760))
 		content.Refresh()
 
-		numeric := []string{"seed"}
+		numeric := []string{text.FieldSeed}
 		if screenName == "generate" {
-			numeric = []string{"size", "how many", "seed"}
+			numeric = []string{text.FieldSize, text.FieldCount, text.FieldSeed}
 		}
 		for _, label := range numeric {
 			box := entryUnder(t, content, label)
@@ -125,7 +126,7 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	host := &fakeHost{}
 	window.Open(host)
-	content := tabNamed(t, host.content, "One target")
+	content := tabNamed(t, host.content, text.TabOneTarget)
 
 	w := test.NewWindow(content)
 	// Wide, because the defect is stretching and a narrow window hides it.
@@ -134,7 +135,7 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	// A refusal has to exist before its width can be measured. An empty area
 	// is hidden and reports nothing, which is how a guard like this passes
 	// while proving nothing.
-	entryUnder(t, content, "size").SetText("1")
+	entryUnder(t, content, text.FieldSize).SetText("1")
 	preview := buttonNamed(content, "Preview")
 	if preview == nil {
 		t.Fatal("the generate screen has no Preview button, so this guard read the wrong tree")

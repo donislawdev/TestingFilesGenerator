@@ -20,10 +20,22 @@ import (
 // Widened on 2026-08-12, decision of the owner. At 720 the form was narrower
 // than the 820 it is allowed, so the column cap did nothing and every screen
 // scrolled from the moment it opened - and a form that has to be scrolled
-// before it can be read is a form nobody sees the shape of. 1000 leaves the
-// column its full width with a margin either side, and 760 is what the
-// generate screen needs once its explanations stop taking three lines each.
-var OpenSize = fyne.NewSize(1000, 760)
+// before it can be read is a form nobody sees the shape of.
+//
+// The height is measured rather than chosen. tools/probes/formheight prints
+// what the generate form needs against the room the scroll it sits in actually
+// gets: 768 px needed, 786 px given at this size, so it clears with 18 to
+// spare.
+//
+// The room is read off the laid out window rather than worked out from the
+// window height, and that distinction cost an attempt. Subtracting the action
+// bar and forgetting the tab strip above the form said "fits" for a screen
+// whose last field was cut off in the render taken a minute later.
+//
+// The preset screen still scrolls, at 1011 px, and that is not a failure to
+// fix here: it carries a list whose length is the preset's rather than ours,
+// and a window sized for the longest one would be sized for nothing else.
+var OpenSize = fyne.NewSize(1000, 900)
 
 // About is what the licence screen says.
 //

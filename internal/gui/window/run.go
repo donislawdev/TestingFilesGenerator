@@ -137,8 +137,20 @@ func (r *runner) clearProblems() {
 }
 
 // say puts a sentence on the status line, under whatever settling had to say.
+//
+// A line with nothing on it takes no room, the same rule the error area
+// follows. A label holding the empty string still reserves its height, so an
+// idle screen was paying for a sentence nobody had written yet - measured at
+// roughly fifty pixels of the action bar on a screen that scrolls, which is
+// space taken from the form to say nothing.
 func (r *runner) say(lines ...string) {
-	r.status.SetText(strings.Join(append(append([]string{}, r.notes...), lines...), "\n"))
+	said := strings.Join(append(append([]string{}, r.notes...), lines...), "\n")
+	r.status.SetText(said)
+	if said == "" {
+		r.status.Hide()
+		return
+	}
+	r.status.Show()
 }
 
 func newRunner() *runner {
@@ -152,6 +164,8 @@ func newRunner() *runner {
 
 	r.status = widget.NewLabel("")
 	r.status.Wrapping = fyne.TextWrapWord
+	// Nothing to say yet, so nothing takes up room. See say.
+	r.status.Hide()
 	r.problem = parts.NewErrorArea()
 
 	r.previewBtn = widget.NewButton(text.ButtonPreview, r.onPreview)

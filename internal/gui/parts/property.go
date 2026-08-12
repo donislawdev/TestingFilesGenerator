@@ -128,7 +128,12 @@ func PropertyFields(d format.Descriptor) ([]PropertyField, []fyne.CanvasObject) 
 	for _, p := range d.Properties {
 		f := FromProperty(p)
 		fields = append(fields, f)
-		objects = append(objects, Field(p.Name, detailOf(p), f.Control))
+		// No second explanation behind a button here, and that is the
+		// declaration's doing rather than a gap. What a property takes is one
+		// sentence built from Allowed, so there is nothing to hold back - and a
+		// button that opened the line already printed underneath would be the
+		// same words twice.
+		objects = append(objects, Field(p.Name, detailOf(p), "", f.Control))
 	}
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn

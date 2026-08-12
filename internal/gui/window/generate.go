@@ -176,36 +176,48 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 	// the form - O73. The engine says which setting, in recipe keys, and this
 	// is the only place that knows which box that is.
 	g.beside = map[string]*parts.ErrorArea{}
-	withArea := func(setting, label, hint string, control fyne.CanvasObject) fyne.CanvasObject {
-		field, area := parts.FieldSaying(label, hint, control)
+	withArea := func(setting, label, hint, detail string, control fyne.CanvasObject) fyne.CanvasObject {
+		field, area := parts.FieldSaying(label, hint, detail, control)
 		g.beside[setting] = area
 		return field
 	}
 	return container.NewVBox(
-		parts.Section(text.SectionFormat,
-			parts.Field(text.FieldFormat, text.HintFormat, g.formatPick),
-		),
 		parts.Section(text.SectionConfiguration,
+			// The format used to be a section of its own holding one field.
+			// A grouping of one groups nothing, and it cost a title, a surface
+			// and two gaps - measured at about 60 px on a screen that was 119
+			// px too tall. It belongs here anyway: what kind of file, how big,
+			// how many and what they are called are one set of questions.
+			parts.Field(text.FieldFormat, text.HintFormat, text.DetailFormat, g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			parts.Row(
-				parts.Field(text.FieldSize, text.HintSize, parts.Numeric(g.size)),
-				withArea(engine.SettingCount, text.FieldCount, text.HintCount, parts.Numeric(g.count)),
+				// The size gets an area of its own, added on 2026-08-12. It is
+				// the field most likely to be refused - every format has a
+				// minimum and this is what asks for less than it - and it was
+				// the one field of the four here without somewhere to put the
+				// answer. Measured on the refused screen: "CSV cannot be
+				// smaller than 117 B" landed at the foot of the form, 900 px
+				// under the box that caused it.
+				withArea(format.SettingSize, text.FieldSize, text.HintSize, text.DetailSize,
+					parts.Numeric(g.size)),
+				withArea(engine.SettingCount, text.FieldCount, "", "", parts.Numeric(g.count)),
 			),
 			parts.Row(
-				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.id),
-				withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate, g.name),
+				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, text.DetailTargetID, g.id),
+				withArea(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
+					text.DetailNameTemplate, g.name),
 			),
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
 		),
 		parts.Section(text.SectionOutput,
-			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
+			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, text.DetailOutputDir,
 				chooserFor(g.host, g.outDir)),
 			parts.Row(
-				parts.Field(text.FieldSeed, text.HintSeed, parts.Numeric(g.seed)),
-				parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
+				parts.Field(text.FieldSeed, text.HintSeed, text.DetailSeed, parts.Numeric(g.seed)),
+				parts.Toggle(text.FieldLabel, "", text.DetailLabel, g.label),
 			),
 		),
 	)

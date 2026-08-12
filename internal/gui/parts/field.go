@@ -7,18 +7,25 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Field is one labelled control with the sentence that explains it.
+// Field is one labelled control, the line that explains it, and the longer
+// explanation behind a button.
 //
-// The sentence is part of the field rather than a tooltip, and that is G9
-// arriving early. A hint the widget never renders is the shape docs/CLAUDE.md
-// warns about: text with no reader becomes pressure on the text beside it, and
-// the label starts trying to say everything on its own.
-func Field(label, detail string, control fyne.CanvasObject) fyne.CanvasObject {
-	items := []fyne.CanvasObject{Heading(label), control}
-	if detail != "" {
-		items = append(items, Note(detail))
-	}
-	return container.NewVBox(items...)
+// Two lengths rather than one, split on 2026-08-12. The sentence used to be
+// whole and permanent, so a form of eight settings carried eight grey
+// paragraphs and the explanations took more vertical room than the controls
+// did - measured on the generate screen, where the help outweighed the fields
+// it was helping. What stays under a field is the line that says what it does.
+// What goes behind the button is the consequence, the example and the units,
+// which are things somebody needs once.
+//
+// It is a button rather than a tooltip because the toolkit has no tooltips -
+// issue 1650 is still open - and it is visible rather than a hover because a
+// hover is not reachable from a keyboard, which is UX9. A hint the widget never
+// renders is the shape docs/CLAUDE.md warns about: text with no reader becomes
+// pressure on the text beside it, and the label starts trying to say
+// everything on its own.
+func Field(label, hint, detail string, control fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewVBox(fieldParts(label, hint, detail, control)...)
 }
 
 // FieldSaying is a field that can carry a refusal of its own, underneath it.
@@ -31,28 +38,38 @@ func Field(label, detail string, control fyne.CanvasObject) fyne.CanvasObject {
 //
 // The area holds nothing until there is something to say, so a field that is
 // not being complained about takes exactly the room it took before.
-func FieldSaying(label, detail string, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
+func FieldSaying(label, hint, detail string, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
 	area := NewErrorArea()
-	items := []fyne.CanvasObject{Heading(label), control}
-	if detail != "" {
-		items = append(items, Note(detail))
-	}
-	items = append(items, area.Object())
+	items := append(fieldParts(label, hint, detail, control), area.Object())
 	return container.NewVBox(items...), area
 }
 
-// Toggle is a switch that carries its own name, with the explanation under it.
+// fieldParts is the run of pieces every field is made of, in order.
+//
+// One place rather than two, because the pair above differed by a single line
+// and the pair is where a field's shape would quietly come apart - one of them
+// growing a button and the other not.
+func fieldParts(label, hint, detail string, control fyne.CanvasObject) []fyne.CanvasObject {
+	items := []fyne.CanvasObject{withDetail(Heading(label), detail), control}
+	if hint != "" {
+		items = append(items, Note(hint))
+	}
+	return items
+}
+
+// Toggle is a switch that carries its own name, with the explanation behind the
+// button beside it.
 //
 // A switch is the one control that does not take a heading above it. Given one
 // it arrives as a bare square with the words somewhere else: the name above,
 // the sentence below, and nothing to read on the thing you click. That is what
 // O72 saw on screen. Putting the name on the switch also makes the words part
 // of the target, which is the difference between a click and an aimed click.
-func Toggle(name, detail string, check *widget.Check) fyne.CanvasObject {
+func Toggle(name, hint, detail string, check *widget.Check) fyne.CanvasObject {
 	check.Text = name
-	items := []fyne.CanvasObject{check}
-	if detail != "" {
-		items = append(items, Note(detail))
+	items := []fyne.CanvasObject{withDetail(check, detail)}
+	if hint != "" {
+		items = append(items, Note(hint))
 	}
 	return container.NewVBox(items...)
 }

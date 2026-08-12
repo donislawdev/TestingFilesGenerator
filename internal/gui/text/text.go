@@ -40,23 +40,46 @@ const (
 	ButtonCancel   = "Cancel"
 )
 
+// files is a count with its noun, in the right number.
+//
+// The doc above this package has described "file(s)" as a dodge since the day
+// it was written, and said a function is where the decision belongs. Every
+// message here still wrote the brackets until 2026-08-12, so the seam existed
+// and nothing had ever gone through it. This is that function. When a
+// catalogue arrives, Polish picks one of three forms from the number and it
+// picks it here.
+func files(n int) string {
+	if n == 1 {
+		return "1 file"
+	}
+	return fmt.Sprintf("%d files", n)
+}
+
+// separator divides the facts on a status line.
+//
+// They are separate facts and were one sentence: how many files, how big, and
+// whether anything exists yet ran together with a full stop between them, so
+// three unrelated things read as prose and none of them could be found at a
+// glance. Divided, the line is scanned rather than read.
+const separator = " · "
+
 // PreviewCost is the line under the buttons after Preview, saying what the run
 // would cost and that nothing exists yet.
-func PreviewCost(files int, total string) string {
-	return fmt.Sprintf("%d file(s), %s in total. Nothing has been written.", files, total)
+func PreviewCost(count int, total string) string {
+	return files(count) + separator + total + separator + "nothing written yet"
 }
 
 // PreviewFreeSpace follows PreviewCost when the disk could be measured. It is
-// a separate sentence because a disk we cannot read has to say nothing at all
+// a separate fact because a disk we cannot read has to say nothing at all
 // rather than invent a number.
 func PreviewFreeSpace(dir, free string) string {
-	return fmt.Sprintf(" %s has %s free.", dir, free)
+	return separator + free + " free in " + dir
 }
 
 // WritingFiles is the line under the bar at the moment a run starts, before
 // the first progress report arrives.
-func WritingFiles(files int) string {
-	return fmt.Sprintf("writing %d file(s)...", files)
+func WritingFiles(count int) string {
+	return "Writing " + files(count) + "..."
 }
 
 // Progress is the line under the bar during a run. Bytes as well as files,
@@ -79,11 +102,11 @@ func ManifestNotSaved(path string) string {
 }
 
 // NothingProduced is the outcome when a run ended with no manifest at all.
-const NothingProduced = "nothing was produced."
+const NothingProduced = "Nothing was produced."
 
 // StoppedAfter is the outcome of a run that was cancelled or failed part way.
 func StoppedAfter(written int) string {
-	return fmt.Sprintf("stopped after %d file(s). The manifest describes exactly those.", written)
+	return fmt.Sprintf("Stopped after %s. The manifest describes exactly those.", files(written))
 }
 
 // WrittenWithFailures is the outcome when some files could not be produced.
@@ -91,10 +114,10 @@ func StoppedAfter(written int) string {
 // manifest, because "the manifest says which ones" is an answer in a terminal
 // and an instruction to open a ten thousand entry file in a window.
 func WrittenWithFailures(written, failed int) string {
-	return fmt.Sprintf("%d file(s) written, %d could not be produced.", written, failed)
+	return fmt.Sprintf("%s written, %d could not be produced.", files(written), failed)
 }
 
 // Written is the outcome of a run where everything asked for was produced.
 func Written(written int) string {
-	return fmt.Sprintf("%d file(s) written.", written)
+	return files(written) + " written."
 }

@@ -38,20 +38,28 @@ import (
 // NewTabItem with the tabs, and every tab title was unchecked until the mutation
 // runner reported this guard staying green on a literal.
 var textCarriers = map[string]bool{
-	"NewButton":      true,
-	"NewLabel":       true,
-	"NewCheck":       true,
-	"NewTabItem":     true,
-	"SetText":        true,
-	"SetPlaceHolder": true,
-	"Field":          true,
-	"FieldSaying":    true,
-	"Toggle":         true,
-	"Prose":          true,
-	"Heading":        true,
-	"Screen":         true,
-	"Note":           true,
-	"Say":            true,
+	"NewButton":         true,
+	"NewButtonWithIcon": true,
+	"NewLabel":          true,
+	"NewCheck":          true,
+	"NewTabItem":        true,
+	"SetText":           true,
+	"SetPlaceHolder":    true,
+	"Field":             true,
+	"FieldSaying":       true,
+	"Toggle":            true,
+	"Prose":             true,
+	"Heading":           true,
+	// Section names the box a group of fields stands in and Title names the
+	// screen, and neither was on this list until 2026-08-12 - so the three
+	// section headings on the generate screen and the heading of every screen
+	// were words this guard never looked at. Found while reading the list
+	// rather than by the list failing, which is the whole problem with it.
+	"Section": true,
+	"Title":   true,
+	"Screen":  true,
+	"Note":    true,
+	"Say":     true,
 }
 
 // literalArgs returns the non empty string literals handed to a carrier.

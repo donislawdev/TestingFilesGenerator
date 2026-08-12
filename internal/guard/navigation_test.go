@@ -31,9 +31,9 @@ func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 		t.Error("Cancel is on the screen before anything has been started")
 	}
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "1kb")
-	fill(t, content, "how many", "200")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "1kb")
+	fill(t, content, text.FieldCount, "200")
 	press(t, content, "Generate")
 	if !cancel.Visible() {
 		t.Error("Cancel is not on the screen during a run, so a run cannot be stopped")

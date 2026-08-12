@@ -67,14 +67,14 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		container.NewVScroll(parts.Screen(
 			text.HeadingPreset,
 			parts.Section(text.SectionPreset,
-				parts.Field(text.FieldPreset, text.HintPreset, p.pick),
+				parts.Field(text.FieldPreset, text.HintPreset, text.DetailPreset, p.pick),
 				p.about,
 			),
 			parts.Section(text.SectionSettings, p.paramBox),
 			parts.Section(text.SectionOutput,
-				parts.Field(text.FieldOutputDir, text.HintOutputDir,
+				parts.Field(text.FieldOutputDir, text.HintOutputDir, text.DetailOutputDir,
 					chooserFor(p.host, p.outDir)),
-				parts.Field(text.FieldSeed, text.HintSeed, parts.Numeric(p.seed)),
+				parts.Field(text.FieldSeed, text.HintSeed, text.DetailSeed, parts.Numeric(p.seed)),
 			),
 		)),
 	)
@@ -138,7 +138,10 @@ func (p *Preset) onPresetChosen(id string) {
 	for _, param := range chosen.Parameters {
 		field := parts.FromProperty(param)
 		p.params = append(p.params, field)
-		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), field.Control)
+		// One sentence and nothing held back, the same as a format's settings:
+		// what a parameter takes is built from its declaration, so there is no
+		// second half to put behind a button.
+		box, area := parts.FieldSaying(param.Name, detailOfParameter(param), "", field.Control)
 		p.beside[param.Name] = area
 		p.paramBox.Add(box)
 	}

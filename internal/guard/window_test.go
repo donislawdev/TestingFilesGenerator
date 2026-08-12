@@ -2,6 +2,7 @@ package guard
 
 import (
 	"image"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -157,12 +159,12 @@ func TestTheLicenceIsStillReachableFromTheOpeningScreen(t *testing.T) {
 	// the foot of the form, so reaching the licence meant scrolling past every
 	// field, and the way back was another button somebody could delete without
 	// noticing. A tab is its own way out, so that door is structural now.
-	shown := textIn(selectTab(t, host.content, "About"))
+	shown := textIn(selectTab(t, host.content, text.TabAbout))
 	if !strings.Contains(shown, "generate are yours") {
 		t.Errorf("the About tab does not lead to the licence. What it shows:\n%s", shown)
 	}
 
-	if generate := selectTab(t, host.content, "One target"); buttonNamed(generate, "Generate") == nil {
+	if generate := selectTab(t, host.content, text.TabOneTarget); buttonNamed(generate, "Generate") == nil {
 		t.Error("there is no way from the licence back to the work")
 	}
 }
@@ -182,7 +184,7 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	if tabs.Selected() == nil || tabs.Selected().Text != "One target" {
+	if tabs.Selected() == nil || tabs.Selected().Text != text.TabOneTarget {
 		t.Errorf("the window does not open on the work. Its tabs are %v", tabNames(host.content))
 	} else if buttonNamed(tabs.Selected().Content, "Generate") == nil {
 		t.Error("the tab the window opens on has no Generate button")
@@ -218,6 +220,49 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		for _, item := range v.Items {
 			walk(item.Content, visit)
 		}
+	case *widget.PopUp:
+		// A field's longer explanation opens in one of these.
+		walk(v.Content, visit)
+	default:
+		walkUnknown(o, visit)
+	}
+}
+
+// walkUnknown reaches into a widget this walk was never told about.
+//
+// It exists because the same defect had happened four times by 2026-08-12 and
+// would keep happening. Every kind of grouping that is a widget rather than a
+// container has to be named in the switch above - the scroll, the card, the
+// tabs, the popup - and each was added only after a guard had gone QUIET rather
+// than red. That is the shape of it: a walk that meets a type it does not know
+// stops there and reports an empty tree, and an empty tree makes a guard pass
+// while proving nothing. One of them had been green for weeks.
+//
+// Anything holding a single child in Fyne calls that field Content, and it is
+// exported on every one of them - including the container the canvas wraps an
+// overlay in, which lives in the toolkit's internal package and therefore
+// cannot be named in a case at all. That last one is what turned this from a
+// list to keep up to date into something that keeps itself.
+//
+// It is deliberately narrow. One exported field, one name, one type, no
+// recursion into anything else - so a widget that holds children some other way
+// is still missed, and the switch above is still where a case belongs when
+// somebody notices.
+func walkUnknown(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+	value := reflect.ValueOf(o)
+	if value.Kind() != reflect.Ptr || value.IsNil() {
+		return
+	}
+	value = value.Elem()
+	if value.Kind() != reflect.Struct {
+		return
+	}
+	field := value.FieldByName("Content")
+	if !field.IsValid() || !field.CanInterface() {
+		return
+	}
+	if child, ok := field.Interface().(fyne.CanvasObject); ok && child != nil {
+		walk(child, visit)
 	}
 }
 
@@ -352,11 +397,53 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 		if !ok || len(box.Objects) < 2 {
 			return
 		}
-		if head, ok := box.Objects[0].(*widget.Label); ok && head.Text == label {
+		// The heading row of a field with a longer explanation is itself a
+		// label followed by something, so it matches this shape and would
+		// answer with its own button. Walk visits a field before the row
+		// inside it and the last match wins, so without this every field
+		// carrying an explanation reports the button as its control.
+		if isDetailButton(box.Objects[1]) {
+			return
+		}
+		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
 			found = box.Objects[1]
 		}
 	})
 	return found
+}
+
+// headingOf is the name of a field, whether or not it has a button beside it.
+//
+// A heading stopped being a bare label on 2026-08-12: a field with a longer
+// explanation carries the button that opens it on the same line, so the first
+// thing in a field is a row rather than the words. Every lookup here reads the
+// first object of a field, so without this each one silently found nothing -
+// and "silently" is right, because the failure arrives as a nil control at the
+// point of use rather than as a missing field.
+//
+// The same shape as the walk above and the same lesson: a tree gains a kind of
+// grouping and everything that reads the tree has to be told.
+// isDetailButton says whether an object is the button that opens a field's
+// longer explanation.
+//
+// A button carrying an icon and no words. Nothing else on either screen is one
+// - every button a person presses says what it does - so this tells a heading
+// row from a field without either of them having to be marked.
+func isDetailButton(o fyne.CanvasObject) bool {
+	button, ok := o.(*widget.Button)
+	return ok && button.Text == ""
+}
+
+func headingOf(o fyne.CanvasObject) *widget.Label {
+	if label, ok := o.(*widget.Label); ok {
+		return label
+	}
+	row, ok := o.(*fyne.Container)
+	if !ok || len(row.Objects) == 0 {
+		return nil
+	}
+	label, _ := row.Objects[0].(*widget.Label)
+	return label
 }
 
 // entryUnder is the box somebody types into for a labelled field.

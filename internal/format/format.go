@@ -665,6 +665,25 @@ func (e *BelowMinimumError) Error() string {
 		e.Format, e.Minimum, e.Reason, e.Requested, e.Hint)
 }
 
+// SettingSize is the recipe key this refusal is about.
+//
+// Spelled as the recipe key rather than as either surface's label, for the
+// reason engine.RecipeError gives about its own: the keys are the vocabulary
+// both surfaces already share, and a third naming is a third thing to keep in
+// step.
+const SettingSize = "size"
+
+// AboutSetting lets a window put this message beside the box that caused it.
+//
+// The one refusal every format can produce, and until 2026-08-12 the only one
+// of the four fields on that row with nowhere to land - so a message about the
+// size appeared at the foot of the form, 900 px under the box, while a message
+// about the count appeared under the count. It answers the same question the
+// engine and the preset package answer, and none of the three had to know
+// about the others: the window asks an interface rather than switching on a
+// type, which is what made this a method rather than a case.
+func (e *BelowMinimumError) AboutSetting() string { return SettingSize }
+
 // UnknownFormatError is a request for a format nobody registered.
 type UnknownFormatError struct {
 	ID    string

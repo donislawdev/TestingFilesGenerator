@@ -73,7 +73,7 @@ func fill(t *testing.T, o fyne.CanvasObject, label, value string) {
 func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 	_, content := screen(t)
 
-	control := controlUnder(content, "format")
+	control := controlUnder(content, text.FieldFormat)
 	picker, ok := control.(*widget.Select)
 	if !ok {
 		t.Fatalf("the format field is %T rather than a list to choose from", control)
@@ -101,7 +101,7 @@ func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 // one "tfg formats" prints rather than a second description of one format.
 func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 	_, content := screen(t)
-	picker := controlUnder(content, "format").(*widget.Select)
+	picker := controlUnder(content, text.FieldFormat).(*widget.Select)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -186,7 +186,7 @@ func TestTheWindowAsksTheEngineWhetherASizeIsGood(t *testing.T) {
 	_, content := screen(t)
 
 	for _, bad := range []string{"10 potatoes", "1e5", "-4", "1.5", ""} {
-		fill(t, content, "size", bad)
+		fill(t, content, text.FieldSize, bad)
 		press(t, content, "Generate")
 
 		_, want := core.ParseSize(bad)
@@ -208,8 +208,8 @@ func TestTheWindowShowsTheWholeRefusal(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "1")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "1")
 	press(t, content, "Generate")
 
 	shown := errorShown(t, content)
@@ -281,9 +281,9 @@ func TestPreviewSaysTheCostAndWritesNothing(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "4kb")
-	fill(t, content, "how many", "3")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "4kb")
+	fill(t, content, text.FieldCount, "3")
 	press(t, content, "Preview")
 
 	entries, err := os.ReadDir(dir)
@@ -295,7 +295,7 @@ func TestPreviewSaysTheCostAndWritesNothing(t *testing.T) {
 	}
 
 	shown := textIn(content)
-	for _, want := range []string{"3 file(s)", "12.0 KB", "free"} {
+	for _, want := range []string{"3 files", "12.0 KB", "free"} {
 		if !strings.Contains(shown, want) {
 			t.Errorf("the preview does not say %q. The screen says:\n%s", want, shown)
 		}
@@ -312,9 +312,9 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "2kb")
-	fill(t, content, "how many", "4")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "2kb")
+	fill(t, content, text.FieldCount, "4")
 	press(t, content, "Generate")
 
 	waitForManifest(t, dir)
@@ -327,7 +327,7 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 	if !strings.Contains(strings.Join(names, " "), "manifest.json") {
 		t.Errorf("no manifest was written. What is there: %v", names)
 	}
-	if shown := textIn(content); !strings.Contains(shown, "4 file(s) written") {
+	if shown := textIn(content); !strings.Contains(shown, "4 files written") {
 		t.Errorf("the window does not say what it produced. It says:\n%s", shown)
 	}
 }
@@ -347,9 +347,9 @@ func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "64kb")
-	fill(t, content, "how many", "400")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "64kb")
+	fill(t, content, text.FieldCount, "400")
 	press(t, content, "Generate")
 
 	if host.intercept == nil {
@@ -391,15 +391,15 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	picker := controlUnder(content, "format").(*widget.Select)
+	picker := controlUnder(content, text.FieldFormat).(*widget.Select)
 	picker.SetSelected("png")
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "64kb")
-	fill(t, content, "how many", "2")
-	fill(t, content, "target id", "shot")
-	fill(t, content, "name template", "shot_{index:04}.png")
-	fill(t, content, "seed", "4242")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "64kb")
+	fill(t, content, text.FieldCount, "2")
+	fill(t, content, text.FieldTargetID, "shot")
+	fill(t, content, text.FieldNameTemplate, "shot_{index:04}.png")
+	fill(t, content, text.FieldSeed, "4242")
 	fill(t, content, "width", "64")
 	fill(t, content, "height", "64")
 
@@ -408,7 +408,7 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	// Found by the words on the switch rather than by a heading above it. A
 	// switch carries its own name since 2026-08-11 - given a heading it arrived
 	// as a bare square with nothing to read on the part you click, which is O72.
-	label := checkNamed(content, "self describing label")
+	label := checkNamed(content, text.FieldLabel)
 	if label == nil {
 		t.Fatal("there is no self describing label switch on the screen")
 	}
@@ -471,9 +471,9 @@ func TestCancelStopsTheRun(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, "output directory", dir)
-	fill(t, content, "size", "64kb")
-	fill(t, content, "how many", "400")
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "64kb")
+	fill(t, content, text.FieldCount, "400")
 	press(t, content, "Generate")
 
 	cancel := buttonNamed(content, "Cancel")
@@ -502,7 +502,7 @@ func TestCancelStopsTheRun(t *testing.T) {
 	if names := namesIn(t, dir); len(names) >= 401 {
 		t.Errorf("Cancel left %d file(s), which is the whole set", len(names)-1)
 	}
-	if shown := textIn(content); !strings.Contains(shown, "stopped after") {
+	if shown := textIn(content); !strings.Contains(shown, "Stopped after") {
 		t.Errorf("the window does not say the run was stopped. It says:\n%s", shown)
 	}
 }
