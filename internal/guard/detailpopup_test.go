@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
@@ -66,15 +67,35 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 			continue
 		}
 
+		// Pointing at it, which is what somebody meeting a small letter i
+		// actually does. Reported on 2026-08-12: it opened on a click and
+		// people hovered and waited. The toolkit has no tooltip, so this is
+		// three methods of desktop.Hoverable answered by hand - and a hook that
+		// is answered but never wired looks identical from outside.
+		button.MouseIn(&desktop.MouseEvent{})
+		if shown := overlayText(w.Canvas()); !strings.Contains(shown, field.detail) {
+			t.Errorf("hovering the button beside %q did not show its explanation.\nWanted: %q\nShown: %q",
+				field.label, field.detail, shown)
+		}
+
+		// And gone when the pointer leaves. Without this half the guard passes
+		// on a tooltip that opens and never closes, which is worse than one
+		// that never opens: it covers the field underneath it.
+		button.MouseOut()
+		if shown := overlayText(w.Canvas()); strings.Contains(shown, field.detail) {
+			t.Errorf("the explanation for %q stayed on screen after the pointer left", field.label)
+		}
+
+		// A click still works, and that is not a nicety. Hovering is not
+		// something a keyboard can do, and UX9 says whatever the mouse can
+		// reach the keyboard can too - so the tap has to survive the hover
+		// being added.
 		button.OnTapped()
-		shown := overlayText(w.Canvas())
-		if !strings.Contains(shown, field.detail) {
+		if shown := overlayText(w.Canvas()); !strings.Contains(shown, field.detail) {
 			t.Errorf("pressing the button beside %q did not show its explanation.\nWanted: %q\nShown: %q",
 				field.label, field.detail, shown)
 		}
-		for _, o := range w.Canvas().Overlays().List() {
-			w.Canvas().Overlays().Remove(o)
-		}
+		button.MouseOut()
 	}
 }
 
@@ -89,14 +110,14 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 // the thing you click, so the row is the switch and its button. Reading only
 // labels here reported the switch as having no way to open its explanation,
 // which was this guard being wrong rather than the window.
-func detailButtonBeside(o fyne.CanvasObject, label string) *widget.Button {
-	var found *widget.Button
+func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
+	var found *parts.DetailButton
 	walk(o, func(obj fyne.CanvasObject) {
 		row, ok := obj.(*fyne.Container)
 		if !ok || len(row.Objects) != 2 || namedOnScreen(row.Objects[0]) != label {
 			return
 		}
-		if button, isButton := row.Objects[1].(*widget.Button); isButton && button.Text == "" {
+		if button, isButton := row.Objects[1].(*parts.DetailButton); isButton {
 			found = button
 		}
 	})

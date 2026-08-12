@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
@@ -423,15 +424,17 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 //
 // The same shape as the walk above and the same lesson: a tree gains a kind of
 // grouping and everything that reads the tree has to be told.
-// isDetailButton says whether an object is the button that opens a field's
+// isDetailButton says whether an object is the control that shows a field's
 // longer explanation.
 //
-// A button carrying an icon and no words. Nothing else on either screen is one
-// - every button a person presses says what it does - so this tells a heading
-// row from a field without either of them having to be marked.
+// Asked by type rather than by shape. It was "a button with no words" for half
+// a day on 2026-08-12, which worked and was a rule with a shelf life: the first
+// second icon button anywhere on either screen would have been read as one of
+// these, and the failure would have been a guard quietly finding the wrong
+// control rather than an error.
 func isDetailButton(o fyne.CanvasObject) bool {
-	button, ok := o.(*widget.Button)
-	return ok && button.Text == ""
+	_, ok := o.(*parts.DetailButton)
+	return ok
 }
 
 func headingOf(o fyne.CanvasObject) *widget.Label {

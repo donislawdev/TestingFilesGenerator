@@ -3,6 +3,7 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -24,21 +25,91 @@ func withDetail(head fyne.CanvasObject, detail string) fyne.CanvasObject {
 	if detail == "" {
 		return head
 	}
-	return container.NewHBox(head, detailButton(detail))
+	return container.NewHBox(head, newDetailButton(detail))
 }
 
-// detailButton is the small button that opens one field's explanation.
+// DetailButton is the small control that shows one field's explanation.
+//
+// Exported for the same reason ErrorArea is: a guard has to be able to tell it
+// from the controls around it, and the alternative was recognising it by shape
+// - an icon button with no words - which is a rule that holds until somebody
+// adds a second one.
 //
 // An icon rather than a word, because it sits on the same line as the field
 // name and a word there competes with it. Low importance so it recedes: it is
 // the quietest thing on the row until somebody wants it.
-func detailButton(detail string) *widget.Button {
-	var button *widget.Button
-	button = widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
-		showDetail(button, detail)
-	})
-	button.Importance = widget.LowImportance
-	return button
+//
+// It opens on HOVER, which is what anybody meeting a small letter i expects,
+// and it also opens on a click. Both, deliberately:
+//
+// Hover alone would be unreachable from a keyboard, and UX9 says whatever can
+// be done with a mouse can be done without one. Click alone is what this was
+// on 2026-08-12, and it was reported the same day as the wrong behaviour by
+// somebody who simply pointed at it and waited.
+//
+// The toolkit has no tooltip to reach for. Measured in v2.8.0 rather than
+// taken from anybody's word for it: there is no file and no identifier named
+// tooltip anywhere in widget, internal/widget or driver/desktop. What it does
+// have is desktop.Hoverable, which is three methods a widget can answer - so
+// the behaviour is built here rather than depended on, and no third party
+// package enters the graph for it.
+type DetailButton struct {
+	widget.Button
+
+	detail string
+	// open is the explanation while it is on screen, and nil when it is not.
+	// Only ever touched from the interface thread, like every other field of a
+	// widget here.
+	open *widget.PopUp
+}
+
+func newDetailButton(detail string) *DetailButton {
+	b := &DetailButton{detail: detail}
+	b.ExtendBaseWidget(b)
+	b.Icon = theme.InfoIcon()
+	b.Importance = widget.LowImportance
+	b.OnTapped = b.show
+	return b
+}
+
+// MouseIn shows the explanation when the pointer arrives.
+func (b *DetailButton) MouseIn(e *desktop.MouseEvent) {
+	b.Button.MouseIn(e)
+	b.show()
+}
+
+// MouseMoved is required by the interface and has nothing to do. The
+// explanation is already open by the time the pointer is moving inside the
+// button, and reopening it on every movement would rebuild it hundreds of
+// times crossing one icon.
+func (b *DetailButton) MouseMoved(*desktop.MouseEvent) {}
+
+// MouseOut takes the explanation away again.
+//
+// The pointer leaving is the only thing that closes it, which is what makes it
+// behave like the tooltip people expect rather than like a dialog somebody has
+// to dismiss.
+func (b *DetailButton) MouseOut() {
+	b.Button.MouseOut()
+	b.hide()
+}
+
+// show puts the explanation under the button, or leaves it where it is if it
+// is already there. Opening a second one over the first is what a click after
+// a hover would otherwise do.
+func (b *DetailButton) show() {
+	if b.open != nil {
+		return
+	}
+	b.open = showDetail(b, b.detail)
+}
+
+func (b *DetailButton) hide() {
+	if b.open == nil {
+		return
+	}
+	b.open.Hide()
+	b.open = nil
 }
 
 // showDetail opens the explanation under the button that asked for it.
@@ -52,15 +123,15 @@ func detailButton(detail string) *widget.Button {
 // built and measured without ever being shown, which several guards do, and a
 // button that panics there would make this package untestable in exactly the
 // place it was designed to be testable.
-func showDetail(near fyne.CanvasObject, detail string) {
+func showDetail(near fyne.CanvasObject, detail string) *widget.PopUp {
 	app := fyne.CurrentApp()
 	if app == nil {
-		return
+		return nil
 	}
 	driver := app.Driver()
 	canvas := driver.CanvasForObject(near)
 	if canvas == nil {
-		return
+		return nil
 	}
 
 	body := container.NewPadded(Prose(detail))
@@ -75,6 +146,7 @@ func showDetail(near fyne.CanvasObject, detail string) {
 	pop.Resize(fyne.NewSize(DetailWidth, body.MinSize().Height))
 
 	pop.ShowAtPosition(below(driver, near, canvas))
+	return pop
 }
 
 // below is where the explanation opens: under the button, and never past the
