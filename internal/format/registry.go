@@ -3,6 +3,7 @@ package format
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"sync"
 )
 
@@ -31,7 +32,53 @@ func Register(d Descriptor) {
 	if d.Generator == nil {
 		panic(fmt.Sprintf("format: %q has no generator", d.ID))
 	}
+	for i := range d.Properties {
+		SortChoices(d.Properties[i].Choices)
+	}
 	registry[d.ID] = d
+}
+
+// SortChoices puts a closed set in the order somebody looks for a value in.
+//
+// Here rather than in the menu that draws them, and that is the whole point:
+// the same set is a menu in the window, a line of "tfg formats png" and the
+// wording of a refusal, so a sort applied where they are shown would be one
+// order in one surface and the declaration's order in the others. D1 breaks in
+// exactly that kind of place - two surfaces describing one format two ways,
+// where nobody thinks to compare.
+//
+// Numbers sort as numbers. Asked for as alphabetical and written as this on
+// purpose, because a plain string sort puts the WAV bit depths in the order 16,
+// 24, 32, 8 - alphabetical by the letter of the law and wrong to every reader.
+// Every other closed set in this build is words, where the two agree.
+func SortChoices(choices []string) {
+	if numeric(choices) {
+		sort.Slice(choices, func(i, j int) bool {
+			return number(choices[i]) < number(choices[j])
+		})
+		return
+	}
+	sort.Strings(choices)
+}
+
+// numeric says whether every value of a set is a whole number, which is what
+// decides between the two orders. All or nothing: a mixed set has no numeric
+// order to put it in, so it goes alphabetically like any other words.
+func numeric(choices []string) bool {
+	if len(choices) == 0 {
+		return false
+	}
+	for _, c := range choices {
+		if _, err := strconv.ParseInt(c, 10, 64); err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+func number(s string) int64 {
+	n, _ := strconv.ParseInt(s, 10, 64)
+	return n
 }
 
 // Get returns one format by id.

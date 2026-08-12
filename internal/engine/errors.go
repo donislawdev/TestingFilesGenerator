@@ -49,6 +49,15 @@ const (
 	SettingCount  = "count"
 	SettingName   = "name"
 	SettingOutDir = "output.dir"
+	// Two settings nothing refuses today, named here because a surface has to
+	// name every box it draws. A screen that could only name the settings a
+	// refusal already points at is a screen where marking a field is a
+	// property of what somebody remembered to wire, which is the state this
+	// window was in on 2026-08-12 - five fields could carry a refusal and
+	// three could not. docs/UX.md section 7.0.
+	SettingFormat = "format"
+	SettingSeed   = "seed"
+	SettingLabel  = "label"
 )
 
 // SpaceError is refusing to start because the disk cannot hold the result.

@@ -74,9 +74,11 @@ func init() {
 			},
 			{
 				Name: "page_size", Kind: format.PropertyChoice,
-				// Written out rather than read from the map, so the order is
-				// the one a person would expect rather than whatever the map
-				// hands back.
+				// Written out rather than read from the map, so one build
+				// cannot offer a different set from the next. The ORDER is no
+				// longer decided here: registration sorts every closed set, so
+				// the menu in the window, "tfg formats pdf" and the wording of
+				// a refusal all list them the same way round.
 				Choices: []string{"a4", "a3", "a5", "letter", "legal"},
 				Default: "a4",
 				Detail:  "The paper size every page uses.",

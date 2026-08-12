@@ -356,6 +356,18 @@ func (e *PropertyValueError) Error() string {
 	return fmt.Sprintf("%s: %s cannot be %q - %s", e.Format, e.Key, e.Value, e.Reason)
 }
 
+// AboutSetting is the property this refusal is about, so a window can put the
+// message under the box it came from.
+//
+// It was missing until 2026-08-12, and the gap is worth recording because it
+// was invisible from either side. A window cannot place a message it is not
+// told the subject of, so every refusal about a declared setting - width,
+// height, pages, entries, a preset's own parameters - landed at the foot of the
+// form however carefully the window was written. Two of the three interfaces
+// beside this one had the method. This one is the one that fires most often,
+// because it is the one a person hits by typing a number.
+func (e *PropertyValueError) AboutSetting() string { return e.Key }
+
 // Allows reports whether raw is a value this property accepts, and says what
 // is wrong when it is not.
 //
