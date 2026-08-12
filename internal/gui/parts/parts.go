@@ -127,8 +127,16 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 // buttons and through their labels. It uses the same surface as a section, so
 // the fix for an invisible card fixed this at the same time - the bar had been
 // drawing itself in the page colour too, which is to say not drawing itself.
+//
+// The surface runs the whole width and what stands on it does not, which is
+// the one place those two differ on purpose. A bar pinned across the foot is
+// what makes it read as a bar, and the buttons and the run's own messages line
+// up with the form above them instead of starting where the window happens to
+// begin. Until 2026-08-12 they did the latter: the form stopped at 822 px and
+// a refusal about it ran to 1099.
 func ActionBar(content ...fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewStack(panelSurface(), container.NewPadded(container.NewVBox(content...)))
+	standing := container.New(readableWidth{}, container.NewVBox(content...))
+	return container.NewStack(panelSurface(), container.NewPadded(standing))
 }
 
 // Screen stacks sections with a heading on top.
@@ -159,9 +167,36 @@ func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
 // 112, so the typography pass has room to tighten this. It cannot widen it.
 const ColumnWidth = 820
 
+// NumericWidth is as wide as a box holding a number gets.
+//
+// A box is a promise about what goes in it, and one that runs half the window
+// while holding "0" promises something the field cannot take. Measured on
+// 2026-08-12 before this existed: the seed and the count were 397 and 399 px
+// wide for a single digit, because a column split in two hands each half to
+// whatever is in it.
+//
+// 140 px holds eleven digits at the text size this window uses, which covers
+// every number any of these fields accepts - the ceiling on files is seven
+// digits and the largest size anybody types is eight.
+const NumericWidth = 140
+
+// Numeric sizes a control to what it holds rather than to the column it is in.
+//
+// Only for boxes taking a number. A path, a name template and an id are all
+// things whose length nobody can predict, so those still take the column.
+func Numeric(control fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewGridWrap(fyne.NewSize(NumericWidth, control.MinSize().Height), control)
+}
+
 // readableWidth gives its one child the lesser of the space offered and
-// ColumnWidth, at the left. A VBox stretches its children to whatever it is
+// ColumnWidth, centred. A VBox stretches its children to whatever it is
 // given, which is the whole window, and that is the entire defect.
+//
+// Centred rather than left aligned, changed on 2026-08-12. Held at the left it
+// traded one kind of waste for another: at 1100 px the form ended at 822 and
+// left 278 px of nothing down the right hand side, and maximised it left three
+// thousand. Space split either side reads as a margin, and the same space all
+// on one side reads as a column that failed to fill the window.
 type readableWidth struct{}
 
 func (readableWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -179,6 +214,7 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	if len(objects) == 0 {
 		return
 	}
-	objects[0].Resize(fyne.NewSize(fyne.Min(size.Width, ColumnWidth), size.Height))
-	objects[0].Move(fyne.NewPos(0, 0))
+	width := fyne.Min(size.Width, ColumnWidth)
+	objects[0].Resize(fyne.NewSize(width, size.Height))
+	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
 }

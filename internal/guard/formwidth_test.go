@@ -65,6 +65,102 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 	}
 }
 
+// A box holding a number is as wide as a number, not as wide as the column.
+//
+// The other half of the stretching defect, and the half the guard above cannot
+// see: capping the column stopped a field at 820 px, which is still a box the
+// width of a paragraph offered for the digit 0. Measured on 2026-08-12 before
+// this was fixed - the seed was 397 px and the count 399, because a column
+// split in two hands each half to whatever stands in it.
+//
+// It asks about the three fields by name rather than about every box on the
+// screen, because that is the actual rule. A path and a name template take the
+// column on purpose: nobody can predict how long those are, and a short box for
+// a long path is the same defect pointing the other way.
+func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
+	for _, screenName := range []string{"generate", "preset"} {
+		host := &fakeHost{}
+		window.Open(host)
+		content := host.content
+		if screenName == "preset" {
+			// Through the tab rather than across the window. Both work screens
+			// carry a field called seed, and a lookup over the whole window
+			// answers with the last one it walked past without saying so.
+			content = selectTab(t, host.content, "Presets")
+		} else {
+			content = tabNamed(t, host.content, "One target")
+		}
+
+		w := test.NewWindow(content)
+		w.Resize(fyne.NewSize(1000, 760))
+		content.Refresh()
+
+		numeric := []string{"seed"}
+		if screenName == "generate" {
+			numeric = []string{"size", "how many", "seed"}
+		}
+		for _, label := range numeric {
+			box := entryUnder(t, content, label)
+			if got := box.Size().Width; got > parts.NumericWidth {
+				t.Errorf("%s: the box for %q is %.0f px wide, over the %d a number needs.\n"+
+					"A box that size promises a value the field does not take.",
+					screenName, label, got, parts.NumericWidth)
+			}
+		}
+		w.Close()
+	}
+}
+
+// What the run says about itself lines up with the form it is talking about.
+//
+// The action bar draws its surface across the whole window on purpose - that is
+// what makes it read as a bar - and until 2026-08-12 everything standing on it
+// did the same. Measured then: the form stopped at 822 px and a refusal about a
+// field in it ran to 1099, so the longest line on the screen was the one nobody
+// wants to have to read.
+//
+// Only the contents are asked about here. A guard that also demanded the
+// surface stop at the column would be pinning down the one thing that is
+// deliberately different, and the next person to widen the bar would delete it.
+func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
+	host := &fakeHost{}
+	window.Open(host)
+	content := tabNamed(t, host.content, "One target")
+
+	w := test.NewWindow(content)
+	// Wide, because the defect is stretching and a narrow window hides it.
+	w.Resize(fyne.NewSize(1600, 900))
+	content.Refresh()
+	// A refusal has to exist before its width can be measured. An empty area
+	// is hidden and reports nothing, which is how a guard like this passes
+	// while proving nothing.
+	entryUnder(t, content, "size").SetText("1")
+	preview := buttonNamed(content, "Preview")
+	if preview == nil {
+		t.Fatal("the generate screen has no Preview button, so this guard read the wrong tree")
+	}
+	preview.OnTapped()
+	content.Refresh()
+
+	found := 0
+	walk(content, func(obj fyne.CanvasObject) {
+		label, ok := obj.(*widget.Label)
+		if !ok || label.Text == "" || !label.Visible() {
+			return
+		}
+		found++
+		if got := label.Size().Width; got > parts.ColumnWidth {
+			t.Errorf("a line the run wrote is %.0f px wide in a 1600 px window, over the %d the form uses.\n"+
+				"Text: %q", got, parts.ColumnWidth, label.Text)
+		}
+	})
+	w.Close()
+
+	if found == 0 {
+		t.Fatal("nothing on the screen was saying anything, so this guard read the wrong tree")
+	}
+}
+
 // A switch says what it is on the part you click.
 //
 // The other half of O72. Given a heading above it like every other field, a

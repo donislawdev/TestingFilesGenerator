@@ -74,7 +74,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 			parts.Section(text.SectionOutput,
 				parts.Field(text.FieldOutputDir, text.HintOutputDir,
 					chooserFor(p.host, p.outDir)),
-				parts.Field(text.FieldSeed, text.HintSeed, p.seed),
+				parts.Field(text.FieldSeed, text.HintSeed, parts.Numeric(p.seed)),
 			),
 		)),
 	)

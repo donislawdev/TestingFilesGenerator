@@ -189,8 +189,8 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			parts.Row(
-				parts.Field(text.FieldSize, text.HintSize, g.size),
-				withArea(engine.SettingCount, text.FieldCount, text.HintCount, g.count),
+				parts.Field(text.FieldSize, text.HintSize, parts.Numeric(g.size)),
+				withArea(engine.SettingCount, text.FieldCount, text.HintCount, parts.Numeric(g.count)),
 			),
 			parts.Row(
 				withArea(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.id),
@@ -204,7 +204,7 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 			withArea(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
 				chooserFor(g.host, g.outDir)),
 			parts.Row(
-				parts.Field(text.FieldSeed, text.HintSeed, g.seed),
+				parts.Field(text.FieldSeed, text.HintSeed, parts.Numeric(g.seed)),
 				parts.Toggle(text.FieldLabel, text.HintLabel, g.label),
 			),
 		),

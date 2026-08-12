@@ -16,7 +16,14 @@ import (
 // OpenSize is what the window opens at. Wide enough for the generate form to
 // hold its fields and for a refusal to wrap at its own line breaks rather than
 // at the frame, which is G9 as a measurement rather than a wish.
-var OpenSize = fyne.NewSize(720, 720)
+//
+// Widened on 2026-08-12, decision of the owner. At 720 the form was narrower
+// than the 820 it is allowed, so the column cap did nothing and every screen
+// scrolled from the moment it opened - and a form that has to be scrolled
+// before it can be read is a form nobody sees the shape of. 1000 leaves the
+// column its full width with a margin either side, and 760 is what the
+// generate screen needs once its explanations stop taking three lines each.
+var OpenSize = fyne.NewSize(1000, 760)
 
 // About is what the licence screen says.
 //
