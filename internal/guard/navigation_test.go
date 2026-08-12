@@ -52,6 +52,31 @@ func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 	}
 }
 
+// Cancel is drawn as a button, not as words.
+//
+// Reported from the running screen on 2026-08-12. It had been given the lowest
+// importance so it would recede beside Preview and Generate, and the toolkit
+// draws that rank with no fill and no border at all - so the way to stop a run
+// arrived as bare text between two filled buttons, which reads as a disabled
+// label rather than as a control. It is the one thing on the screen somebody
+// reaches for in a hurry.
+//
+// The rank is what this asks about rather than the pixels, and that is a proxy
+// stated as one: whether a surface is painted is the toolkit's decision, and
+// the rank is the whole of what we tell it. Measured before writing this - the
+// lowest rank puts no fill behind the words, and the default rank does.
+func TestCancelIsDrawnAsAButton(t *testing.T) {
+	_, content := screen(t)
+
+	cancel := buttonNamed(content, "Cancel")
+	if cancel == nil {
+		t.Fatal("there is no Cancel button at all, so this guard read the wrong tree")
+	}
+	if cancel.Importance == widget.LowImportance {
+		t.Error("Cancel is drawn at the lowest importance, which paints no surface - so it arrives as bare words beside two filled buttons and reads as disabled")
+	}
+}
+
 // Moving between screens is tabs at the top, not buttons at the foot.
 //
 // Reported from use on 2026-08-11. The way to the other screen sat in the row

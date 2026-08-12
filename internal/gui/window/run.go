@@ -175,8 +175,18 @@ func newRunner() *runner {
 	// filled, Preview plain beside it, Cancel receding until there is something
 	// to cancel. They were three identical buttons in a row, which is a choice
 	// presented as no choice.
+	// Cancel is a button and looks like one. LowImportance draws no surface at
+	// all, so it arrived as bare words beside two filled buttons - which reads
+	// as a disabled label rather than as the way to stop a run, and it is the
+	// one control on the screen somebody reaches for in a hurry. Measured on
+	// the running screen on 2026-08-12: no fill, no border, nothing to aim at
+	// but the text.
+	//
+	// Medium rather than high, which is the zero value and the plain filled
+	// button. The rank it needs is "as pressable as Preview and not competing
+	// with Generate", and Generate is disabled while this one is showing
+	// anyway.
 	r.cancelBtn = widget.NewButton(text.ButtonCancel, r.onCancel)
-	r.cancelBtn.Importance = widget.LowImportance
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 	return r

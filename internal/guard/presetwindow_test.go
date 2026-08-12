@@ -360,14 +360,30 @@ func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 			continue
 		}
 		picker.SetSelected(p.ID)
-		shown := textIn(content)
+
+		// Asked of the text nodes rather than of the joined text, changed on
+		// 2026-08-12 when the marker stopped being part of the string. The old
+		// version searched for "   - " in front of each item, which tied the
+		// guard to one way of drawing a list - so redrawing it properly, with
+		// the marker in a column of its own, failed a guard about whether the
+		// items are separate at all.
+		//
+		// One label per item is what "separate lines" means underneath. It
+		// holds however the list is drawn, and it is what breaks the moment
+		// somebody joins them back into a sentence.
+		labels := map[string]bool{}
+		walk(content, func(obj fyne.CanvasObject) {
+			if l, ok := obj.(*widget.Label); ok {
+				labels[l.Text] = true
+			}
+		})
 		for _, catch := range p.Catches {
-			if !strings.Contains(shown, "\n"+"   - "+catch+"\n") &&
-				!strings.Contains(shown, "   - "+catch) {
-				t.Errorf("%s: %q is not on a line of its own", p.ID, catch)
+			if !labels[catch] {
+				t.Errorf("%s: %q is not shown on its own, so the list is not a list", p.ID, catch)
 			}
 		}
 		// Joined into one sentence they would share a line with each other.
+		shown := textIn(content)
 		if strings.Contains(shown, p.Catches[0]+" and "+p.Catches[1]) ||
 			strings.Contains(shown, p.Catches[0]+", "+p.Catches[1]) {
 			t.Errorf("%s runs its findings together into one sentence", p.ID)

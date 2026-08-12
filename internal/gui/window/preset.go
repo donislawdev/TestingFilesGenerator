@@ -122,11 +122,14 @@ func (p *Preset) onPresetChosen(id string) {
 	// pass" is one item, and joined with commas and an "and" it reads as three.
 	// Seen on screen on 2026-08-05, which is the only way this kind of thing is
 	// ever seen.
+	//
+	// A real list since 2026-08-12. Separate lines was the right call and the
+	// drawing was not: the dash was typed into the string, so it sat in the
+	// text and wrapped with it, and each item carried a full label's spacing -
+	// which left more room between the items than around the whole list.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Note(text.PresetCatchesHeading))
-		for _, catch := range chosen.Catches {
-			p.about.Add(parts.Note(text.PresetCatchesItem(catch)))
-		}
+		p.about.Add(parts.Heading(text.PresetCatchesHeading))
+		p.about.Add(parts.Bullets(chosen.Catches))
 	}
 	p.about.Refresh()
 

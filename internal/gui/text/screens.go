@@ -129,14 +129,11 @@ const PlaceholderNameTemplate = "files_0001"
 // PresetCatchesHeading introduces what a preset typically finds.
 const PresetCatchesHeading = "Typically finds:"
 
-// PresetCatchesItem is one of those, as its own line.
-//
-// A list rather than one sentence, and that came from looking: the items
-// themselves contain commas, so joined with commas and an "and" a three item
-// list read as five. Seen on screen on 2026-08-05.
-func PresetCatchesItem(catch string) string {
-	return "   - " + catch
-}
+// PresetCatchesItem is gone as of 2026-08-12. It put the list marker into the
+// string - "   - " in front of the words - so the marker sat on the text
+// baseline and wrapped along with it, and a wrapped item carried on underneath
+// its own marker. The marker is a column of its own now, drawn by parts.Bullets,
+// which leaves nothing here to word.
 
 // PlaceholderWorkedOut stands in a format setting the format decides for
 // itself when nobody states it. A declaration with no default means the answer

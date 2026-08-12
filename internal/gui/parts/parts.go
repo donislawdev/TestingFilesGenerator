@@ -111,6 +111,35 @@ func panelSurface() *canvas.Rectangle {
 	return rect
 }
 
+// Bullets is a list of short statements, drawn as a list.
+//
+// It replaces a run of labels each starting with a dash typed into the string.
+// That was a list in the way a paragraph is a list: the marker was text, so it
+// sat on the same baseline as the words and wrapped with them, and each item
+// was a separate label carrying a label's full spacing - which put more air
+// between the items than between the list and the things around it.
+//
+// The marker is its own column, so a wrapped item hangs under its own text
+// rather than under the marker. These items wrap: one of them is a sentence
+// about MB against MiB that runs past the width of this card.
+func Bullets(items []string) fyne.CanvasObject {
+	rows := make([]fyne.CanvasObject, 0, len(items))
+	for _, item := range items {
+		marker := widget.NewLabel(bulletMarker)
+		marker.Importance = widget.LowImportance
+		marker.SizeName = theme.SizeNameCaptionText
+		rows = append(rows, container.NewBorder(nil, nil, marker, nil, Note(item)))
+	}
+	return container.NewVBox(rows...)
+}
+
+// bulletMarker is what stands in front of one item.
+//
+// Not a hyphen. D17 keeps the flat hyphen for prose because an en dash is the
+// thing being banned, and this is not prose - it is the marker of a list, where
+// a hyphen reads as a word that lost its other half.
+const bulletMarker = "•"
+
 // Row puts fields side by side, for the ones that are read together.
 //
 // Size and how many are one thought, and so are the id and the name template.
