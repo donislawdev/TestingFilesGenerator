@@ -358,7 +358,7 @@ targets:
 	if code != cli.ExitOK {
 		t.Fatalf("a recipe with a byte order mark was refused, exit %d:\n%s", code, errOut)
 	}
-	if !strings.Contains(stdout, "1 target(s), 1 file(s)") {
+	if !strings.Contains(stdout, "1 target, 1 file") {
 		t.Errorf("the recipe was read but not whole:\n%s", stdout)
 	}
 
@@ -470,7 +470,7 @@ targets:
 			}
 			// Refusing is one failure. Reading only part of it is the worse
 			// one, and it looks like success from the exit code alone.
-			if !strings.Contains(stdout, "1 target(s), 1 file(s)") {
+			if !strings.Contains(stdout, "1 target, 1 file") {
 				t.Errorf("the recipe was read but not whole:\n%s", stdout)
 			}
 

@@ -104,7 +104,7 @@ func TestAnOrdinaryFileCountStillWorks(t *testing.T) {
 	if code != cli.ExitOK {
 		t.Fatalf("an ordinary count was refused: exit %d\n%s", code, errOut)
 	}
-	if !strings.Contains(errOut, "12 file(s)") {
+	if !strings.Contains(errOut, "12 files") {
 		t.Errorf("the plan does not describe the twelve files:\n%s", errOut)
 	}
 }

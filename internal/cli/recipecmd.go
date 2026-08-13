@@ -119,8 +119,8 @@ func validate(args []string, out, errOut io.Writer) int {
 		return ExitOK
 	}
 
-	fmt.Fprintf(out, "%s is valid: %d target(s), %d file(s), %d B total\n%s\n",
-		path, len(rec.Targets), len(planned), engine.TotalBytes(planned), hash)
+	fmt.Fprintf(out, "%s is valid: %s, %s, %d B total\n%s\n",
+		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"), engine.TotalBytes(planned), hash)
 	return ExitOK
 }
 

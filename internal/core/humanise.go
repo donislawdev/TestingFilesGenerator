@@ -47,6 +47,31 @@ func Percent(done, total int64) int {
 	return int(done * 100 / total)
 }
 
+// Count puts a number in front of a person with its noun in the right number:
+// "1 file", "7 files".
+//
+// Every message on the command line wrote "%d file(s)" until 2026-08-13. That
+// is an English dodge around the plural, and the window had stopped using it a
+// day earlier - so the same run was described two ways, and the surface a
+// person meets first described it worse.
+//
+// The caller hands over both words instead of a rule that adds an "s". A rule
+// gets "difference" right and "box" wrong, and it would be wrong quietly, in a
+// line nobody reads twice.
+//
+// A sentence built on this must not put a verb after the count. "1 file were
+// removed" is worse than the dodge it replaces, so write the sentence with
+// nothing in it that agrees with the number - a participle ("1 file removed"),
+// a modal ("1 file would be removed") or a noun phrase ("the only record of 1
+// file") all read the same at every count. Two messages in cleanup were
+// reshaped for exactly this reason.
+func Count(n int, one, many string) string {
+	if n == 1 {
+		return fmt.Sprintf("%d %s", n, one)
+	}
+	return fmt.Sprintf("%d %s", n, many)
+}
+
 // Roughly keeps an estimate at the precision it deserves. Seconds on a two
 // minute estimate are noise that changes every redraw.
 func Roughly(d time.Duration) string {

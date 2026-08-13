@@ -48,7 +48,7 @@ func TestVerifyMatchesADirectoryItJustGenerated(t *testing.T) {
 	if code != cli.ExitOK {
 		t.Fatalf("verify gave %d on an untouched directory:\n%s", code, errOut)
 	}
-	if !strings.Contains(stdout, "3 file(s) checked") {
+	if !strings.Contains(stdout, "3 files checked") {
 		t.Errorf("verify did not say how much it checked, so a run that checked nothing looks the same:\n%s", stdout)
 	}
 
@@ -302,7 +302,7 @@ func TestVerifyDoesNotGoLookingForFilesTheRunSaidItNeverWrote(t *testing.T) {
 	}
 	// One file counted, not three. A count of three would mean the rule was
 	// applied to the report and not to the search.
-	if !strings.Contains(stdout, "1 file(s) checked") {
+	if !strings.Contains(stdout, "1 file checked") {
 		t.Errorf("verify counted entries it should not have claimed:\n%s", stdout)
 	}
 }

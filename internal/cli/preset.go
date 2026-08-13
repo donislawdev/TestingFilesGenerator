@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -535,8 +536,9 @@ func describePreset(e *preset.Expansion, b budget, out io.Writer) {
 		fmt.Fprintf(out, "  --%-12s the global flag, this preset gives it a default\n", name)
 	}
 
-	fmt.Fprintf(out, "\nbudget at these values:\n  %d target(s), %d file(s), %d B total, format %s\n",
-		b.Targets, b.Files, b.Bytes, strings.Join(b.Formats, ", "))
+	fmt.Fprintf(out, "\nbudget at these values:\n  %s, %s, %d B total, format %s\n",
+		core.Count(b.Targets, "target", "targets"), core.Count(b.Files, "file", "files"),
+		b.Bytes, strings.Join(b.Formats, ", "))
 	for _, note := range e.Notes() {
 		fmt.Fprintf(out, "\nnote: %s\n", note)
 	}

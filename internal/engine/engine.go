@@ -300,8 +300,9 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		totalFiles += len(t.Sizes)
 		if totalFiles > core.MaxFilesPerRun {
 			return nil, &RecipeError{Detail: fmt.Sprintf(
-				"this run asks for %d files across %d target(s) - %s",
-				totalFiles, len(targets), core.ErrTooManyFiles)}
+				"this run asks for %s across %s - %s",
+				core.Count(totalFiles, "file", "files"),
+				core.Count(len(targets), "target", "targets"), core.ErrTooManyFiles)}
 		}
 
 		for idx, size := range t.Sizes {

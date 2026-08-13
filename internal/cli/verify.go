@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -83,7 +84,7 @@ Flags:
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(verifyErr))
 			return classify(verifyErr)
 		}
-		fmt.Fprintf(errOut, "tfg: verify was interrupted after %d difference(s) and did not check everything.\n", len(diffs))
+		fmt.Fprintf(errOut, "tfg: verify was interrupted after %s and did not check everything.\n", core.Count(len(diffs), "difference", "differences"))
 		for _, d := range diffs {
 			fmt.Fprintln(errOut, "  "+d.String())
 		}
@@ -119,7 +120,7 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 	}
 
 	if len(diffs) > 0 {
-		fmt.Fprintf(errOut, "tfg: %s does not match %s - %d difference(s):\n", dir, path, len(diffs))
+		fmt.Fprintf(errOut, "tfg: %s does not match %s - %s:\n", dir, path, core.Count(len(diffs), "difference", "differences"))
 		for _, d := range diffs {
 			fmt.Fprintln(errOut, "  "+d.String())
 		}
@@ -133,7 +134,7 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", path)
 		return ExitOK
 	}
-	fmt.Fprintf(out, "%s matches %s: %d file(s) checked\n", dir, path, claimed)
+	fmt.Fprintf(out, "%s matches %s: %s checked\n", dir, path, core.Count(claimed, "file", "files"))
 	return ExitOK
 }
 

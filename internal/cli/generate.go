@@ -376,8 +376,9 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	// Echo the exact byte count. The exact number is the point of this tool,
 	// and it is what any other tool will show when the user goes to check the
 	// file.
-	fmt.Fprintf(errOut, "%d file(s) in %d target(s), %d B total\n",
-		len(planned), len(targets), engine.TotalBytes(planned))
+	fmt.Fprintf(errOut, "%s in %s, %d B total\n",
+		core.Count(len(planned), "file", "files"), core.Count(len(targets), "target", "targets"),
+		engine.TotalBytes(planned))
 
 	echoBoundaries(targets, planned, errOut)
 
@@ -440,7 +441,7 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	}
 
 	if res.Failures > 0 {
-		fmt.Fprintf(errOut, "tfg: %d file(s) could not be produced. The manifest says which ones.\n", res.Failures)
+		fmt.Fprintf(errOut, "tfg: %s could not be produced. The manifest says which ones.\n", core.Count(res.Failures, "file", "files"))
 		return ExitPartial
 	}
 	return ExitOK

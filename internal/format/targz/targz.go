@@ -367,7 +367,8 @@ func contentSummary(groups []format.Content) []map[string]any {
 func describeGroups(groups []format.Content) string {
 	parts := make([]string, 0, len(groups))
 	for _, g := range groups {
-		parts = append(parts, fmt.Sprintf("%d %s file(s) of %d B", g.Count, strings.ToUpper(g.Format), g.Bytes))
+		kind := strings.ToUpper(g.Format)
+		parts = append(parts, fmt.Sprintf("%s of %d B", core.Count(g.Count, kind+" file", kind+" files"), g.Bytes))
 	}
 	return strings.Join(parts, " and ")
 }

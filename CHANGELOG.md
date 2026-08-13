@@ -103,6 +103,21 @@ because it turns other people's test suites red.
   all, rather than an empty one, so "no class" and "a class called nothing"
   stay different.
 
+### Changed
+
+- **Counts are written the way English writes them: "1 file", "7 files".** Every
+  line that counts something - files, targets, differences - used to say
+  "1 file(s)". The window stopped writing the brackets a day before the command
+  line did, so for one day the same run was described two ways depending on
+  which of them you read it from.
+  This changes sentences on standard output and standard error, so a script
+  matching the old wording needs the new one. The machine readable output is
+  not affected: `--json` and the manifest carry the same fields with the same
+  values, and only the wording of sentences written for a person changed.
+  Two messages from `cleanup` were reworded rather than patched. Putting the
+  right number on the noun alone would have left "1 file were removed", which
+  reads worse than the brackets it replaces.
+
 ### Fixed
 
 - **A mistyped `--spread` is your mistake again, not a crash report against

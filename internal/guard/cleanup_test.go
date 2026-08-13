@@ -76,7 +76,7 @@ func TestCleanupRemovesWhatTheManifestListsAndNothingElse(t *testing.T) {
 	if code != cli.ExitOK {
 		t.Fatalf("exit %d:\n%s", code, errOut)
 	}
-	if !strings.Contains(stdout, "3 file(s) removed") {
+	if !strings.Contains(stdout, "3 files removed") {
 		t.Errorf("the report does not say what went:\n%s", stdout)
 	}
 

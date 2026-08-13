@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -118,7 +119,7 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 		return ExitOK
 	}
 
-	fmt.Fprintf(out, "%d file(s) would be removed from %s:\n", countRemovable(cands, force), dir)
+	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), dir)
 	for _, c := range cands {
 		if c.Removable(force) {
 			fmt.Fprintf(out, "  remove %s\n", c.Path)
@@ -158,14 +159,14 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 	// There is no undo, so an interrupted run has to say exactly how far it
 	// got. "Some of them" is not an answer somebody can act on.
 	if removeErr != nil {
-		fmt.Fprintf(errOut, "tfg: cleanup was interrupted. %d file(s) were removed and %d were not - what is gone is gone.\n",
-			removed, len(cands)-removed)
+		fmt.Fprintf(errOut, "tfg: cleanup was interrupted. %s removed, %s left - what is gone is gone.\n",
+			core.Count(removed, "file", "files"), core.Count(len(cands)-removed, "file", "files"))
 		return ExitInterrupted
 	}
 
 	if withManifest {
 		if blocked > 0 {
-			fmt.Fprintf(errOut, "tfg: the manifest was kept because %d file(s) it lists are still there. It is the only record of them.\n", blocked)
+			fmt.Fprintf(errOut, "tfg: the manifest was kept. It is the only record of %s still on disk.\n", core.Count(blocked, "file", "files"))
 		} else if err := os.Remove(path); err != nil {
 			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %s\n", path, describeError(err))
 			return ExitIO
@@ -184,7 +185,7 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return ExitOK
 	}
 
-	fmt.Fprintf(out, "%d file(s) removed from %s\n", removed, dir)
+	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), dir)
 
 	// A file left behind is not a silent outcome. It was reported above, and
 	// the exit code has to carry it too or a script never learns.

@@ -349,7 +349,7 @@ func TestNoPresetDeclaresAParameterThatIsAlreadyAFlag(t *testing.T) {
 // numbers rather than about the rest of the page.
 func budgetLine(shown string) string {
 	for _, line := range strings.Split(shown, "\n") {
-		if strings.Contains(line, "target(s)") && strings.Contains(line, "B total") {
+		if strings.Contains(line, "target") && strings.Contains(line, "B total") {
 			return strings.TrimSpace(line)
 		}
 	}
