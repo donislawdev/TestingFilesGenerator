@@ -87,6 +87,13 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestTabbingReachesTheControlsAndSaysInWhatOrder": "broken by hand on 2026-08-13: parts.Row was made to Hide the row it builds, and the guard went red naming four controls - " +
+		"the size box, the seed box and two explanation buttons - then green again when it was put back. " +
+		"That break is the real failure mode rather than an invented one. Visible() on a child answers for the CHILD, so a control inside a hidden container still reports itself visible " +
+		"while the focus chain, which walks the visible tree, steps straight past it. A section quietly hidden is exactly how a screen stops being operable from the keyboard without looking any different in a screenshot. " +
+		"Not a mutation entry because no substitution of one piece of text for another produces that state today: the failure lives in the disagreement between two ways of asking what is visible, " +
+		"and nothing in the tree says Hide for a substitution to aim at.",
+
 	"TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon": "checked 2026-08-13 with tools/probes/exe-icon.ps1, run on both binaries. " +
 		"It reported 7 of 7 icon images inside tfg-gui.exe and 0 of 7 inside tfg.exe, which is the right answer for a command line with no window. " +
 		"The defect it was written for was reported from a real taskbar the same day: app.SetIcon was in place and working, the window wore our chickpea, " +
