@@ -87,6 +87,15 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon": "checked 2026-08-13 with tools/probes/exe-icon.ps1, run on both binaries. " +
+		"It reported 7 of 7 icon images inside tfg-gui.exe and 0 of 7 inside tfg.exe, which is the right answer for a command line with no window. " +
+		"The defect it was written for was reported from a real taskbar the same day: app.SetIcon was in place and working, the window wore our chickpea, " +
+		"and the taskbar wore the placeholder Windows draws for a binary with no icon resource - because that one is compiled into the exe and had never been. " +
+		"Every guard was green because every guard was asking the toolkit. " +
+		"A probe rather than a mutation because what this guard reads is three committed binary artefacts, and there is no product code beneath it " +
+		"for a substitution in a .go file to break. The staleness it really watches for - a redraw that regenerates the PNG and forgets the ICO - " +
+		"was confirmed by hand: emptying the ICO makes it red, and so does leaving an older .syso in place.",
+
 	"TestReplacingAFileKeepsTheModeItHad": "checked 2026-08-12 with tools/probes/atomic-replace, run on Windows and on Linux through WSL2. " +
 		"The version this replaced wrote the temporary copy with 0644 and renamed it over the original, and a rename moves the file it renames - " +
 		"so a recipe somebody had made private at 0600 came back at 0644, readable by everyone on the machine. Measured on Linux, on the code that was shipping. " +

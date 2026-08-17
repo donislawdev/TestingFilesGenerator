@@ -41,6 +41,7 @@ var layer = map[string]int{
 	"internal/cli":        4,
 	"internal/gui":        4,
 	"internal/gui/parts":  4,
+	"internal/gui/icon":   4,
 	"internal/gui/text":   4,
 	"internal/gui/window": 4,
 
@@ -106,7 +107,7 @@ var sameLayerAllowed = map[string][]string{
 	// - the one that watches for words outside the text package worked from a
 	// list of the calls that show text, and nobody had put the toolkit's
 	// NewWindow on it. The rule is the other way round now.
-	"internal/gui": {"internal/gui/window", "internal/gui/parts", "internal/gui/text"},
+	"internal/gui": {"internal/gui/window", "internal/gui/parts", "internal/gui/text", "internal/gui/icon"},
 }
 
 // Edges that a plain layer number would allow but that must never exist.

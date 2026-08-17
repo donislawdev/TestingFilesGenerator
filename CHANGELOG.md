@@ -103,6 +103,15 @@ because it turns other people's test suites red.
   all, rather than an empty one, so "no class" and "a class called nothing"
   stay different.
 
+- **The program has an icon of its own.** A chickpea, so it is findable in a
+  taskbar, a window switcher and a folder of files instead of wearing the
+  toolkit's logo or the blank placeholder Windows gives a program it cannot
+  identify. On Windows those are two different pictures in two different
+  places, and both are ours now: the window frame gets one from the toolkit,
+  and the taskbar and File Explorer read one compiled into the exe.
+  It is drawn from shapes by a script in this project rather than taken from
+  anywhere, so nothing here is anybody else's artwork.
+
 ### Changed
 
 - **Counts are written the way English writes them: "1 file", "7 files".** Every

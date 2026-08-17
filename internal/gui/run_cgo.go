@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -89,6 +90,13 @@ func run(errOut io.Writer) int {
 	})
 
 	a := app.NewWithID(appID)
+	// The picture the desktop shows for this program, in the taskbar, in the
+	// switcher and on the window itself - the toolkit says an application icon
+	// is also the default icon for every window it opens, so this one line
+	// covers all of them. Without it the toolkit falls back to its own logo,
+	// which is how somebody ends up looking for our window under a name that
+	// is not ours.
+	a.SetIcon(fyne.NewStaticResource("chickpea.png", icon.PNG))
 	// The palette of docs/UX.md sections 8.2 and 8.3, computed before the first
 	// widget and describing nothing until it was installed here - O70. It
 	// answers dark whatever the desktop is set to, by the owner's decision.
