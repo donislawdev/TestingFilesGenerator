@@ -27,12 +27,24 @@ import (
 // internal/gui/parts never import the toolkit's app package - the one that
 // does sits alone behind a build tag.
 //
-// What these guards deliberately do NOT do is compare pixels against a stored
-// image. Fonts differ between the three systems in the matrix and every
-// toolkit update moves a few pixels, so a pixel golden would be a machine for
-// producing false alarms, and a guard that cries wolf is uninstalled by the
-// third week. The two questions worth asking are cheaper and steadier: does it
-// draw anything at all, and does it say the thing it exists to say.
+// What these guards do NOT do is compare pixels against a stored image. Until
+// 2026-08-17 this comment said that could never be done, and half of that was
+// wrong. It read: fonts differ between the three systems in the matrix, so a
+// pixel golden would be a machine for producing false alarms.
+//
+// Measured on 2026-08-17 instead of assumed. Eleven screen states rendered on
+// Windows and on Linux come back identical, and the about screen - the one that
+// is almost entirely text - matches to the byte. What did differ turned out to
+// be input rather than rasterising: a working directory shown in a field, and a
+// progress bar photographed mid run. Both are pinned or excluded, and the
+// comparison now lives in screenpixels_test.go. macOS is still unmeasured, so
+// that guard skips there rather than pretending to cover it.
+//
+// The second half stands and is the price of it: a toolkit update moves pixels,
+// so the stored images get regenerated and looked at when Fyne moves.
+//
+// The two questions these guards ask are still worth asking and stay cheaper:
+// does it draw anything at all, and does it say the thing it exists to say.
 
 // fakeHost is a window that records rather than opens.
 //
