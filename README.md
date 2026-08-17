@@ -77,7 +77,8 @@ recipe replaces the fixtures you would otherwise commit.
 
 ## Building
 
-Requires Go 1.26.5 or newer.
+Requires Go 1.26.5 or newer. The build uses Go 1.26.6, which the Go command
+downloads by itself the first time - nothing to install by hand.
 
 ```
 go build ./cmd/tfg

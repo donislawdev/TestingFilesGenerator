@@ -6,6 +6,19 @@ module github.com/donislawdev/TestingFilesGenerator
 // test in internal/guard reports any drift it causes. See docs/STACK.md.
 go 1.26.5
 
+// What we actually build with, which is not the same statement as the line
+// above. That one is a floor for anybody compiling this. This one says which
+// toolchain produces our binaries, and Go fetches it rather than asking anyone
+// to install it.
+//
+// Raised to 1.26.6 on 2026-08-13 because govulncheck reported five standard
+// library vulnerabilities reachable from the window binary under 1.26.5 - among
+// them net/url, crypto/tls and encoding/xml - all of them fixed in 1.26.6. The
+// command line binary was clean. The byte stability guards were run under the
+// new toolchain before this line moved and none of them shifted, so D11 holds
+// and no major version is owed.
+toolchain go1.26.6
+
 require github.com/goccy/go-yaml v1.19.2
 
 require golang.org/x/text v0.40.0

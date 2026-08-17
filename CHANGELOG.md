@@ -112,6 +112,16 @@ because it turns other people's test suites red.
   It is drawn from shapes by a script in this project rather than taken from
   anywhere, so nothing here is anybody else's artwork.
 
+### Security
+
+- **Built with Go 1.26.6 instead of 1.26.5.** Five standard library
+  vulnerabilities were reachable from the window binary under the older
+  toolchain, among them ones in URL parsing, TLS and XML decoding. All are
+  fixed in 1.26.6. The command line binary was not affected.
+  The bytes of generated files are unchanged: the byte stability guards were
+  run under the new toolchain first, and none of them moved. So file hashes
+  from an earlier build still match and no test suite of yours turns red.
+
 ### Changed
 
 - **Counts are written the way English writes them: "1 file", "7 files".** Every
