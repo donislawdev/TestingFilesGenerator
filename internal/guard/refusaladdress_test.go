@@ -295,6 +295,76 @@ targets:
 	}
 }
 
+// A refused recipe arrives as the problems it holds, and each of them knows
+// which field it is about without anybody asking what a recipe is.
+//
+// This is the join between the address and the thing that uses it. The window
+// places a refusal by opening a joined error into the ones it carries and asking
+// each whether it implements AboutSetting - the engine, the format registry and
+// the preset package all answer it. A refused recipe was the one refusal that
+// arrived as a single error, so however many settings it named, all of it landed
+// at the foot of the form.
+//
+// Three things are checked together because the value is in their conjunction. A
+// recipe that unwraps but whose problems do not answer AboutSetting gives the
+// window nothing to place. Problems that answer it but do not unwrap are never
+// reached. And errors.As for the whole has to keep working, because that is how
+// the command line decides the exit code - an error that stopped being findable
+// would change a code in the frozen table with no guard here going red.
+func TestARefusedRecipeArrivesAsItsProblemsEachKnowingItsField(t *testing.T) {
+	src := `version: 1
+targets:
+  - format: txt
+    count: lots
+`
+	_, err := recipe.Parse([]byte(src), "recipe.yaml")
+
+	var bad *recipe.ValidationError
+	if !errors.As(err, &bad) {
+		t.Fatalf("a refused recipe is no longer findable as a ValidationError, and the\n"+
+			"command line decides the exit code with exactly that question. Got %v", err)
+	}
+	if len(bad.Problems) < 2 {
+		t.Fatalf("this recipe was written to have several problems and reported %d", len(bad.Problems))
+	}
+
+	joined, several := err.(interface{ Unwrap() []error })
+	if !several {
+		t.Fatalf("a refused recipe does not open into the problems it holds, so a surface\n" +
+			"placing refusals one at a time can only ever place the whole block in one\n" +
+			"spot. It needs Unwrap() []error.")
+	}
+
+	opened := joined.Unwrap()
+	if len(opened) != len(bad.Problems) {
+		t.Errorf("the refusal holds %d problems and opens into %d errors",
+			len(bad.Problems), len(opened))
+	}
+
+	for i, one := range opened {
+		var about interface{ AboutSetting() string }
+		if !errors.As(one, &about) {
+			t.Errorf("problem %d does not say which setting it is about, so the window has\n"+
+				"nothing to look a box up by: %v", i+1, one)
+			continue
+		}
+		if got, want := about.AboutSetting(), bad.Problems[i].At; got != want {
+			t.Errorf("problem %d says it is about %q and its address is %q", i+1, got, want)
+		}
+		if about.AboutSetting() == "" {
+			t.Errorf("problem %d has an empty address: %v", i+1, one)
+		}
+	}
+
+	// The whole still reads as the list, because the command line prints this
+	// error and a reader there wants every problem rather than the first.
+	for _, p := range bad.Problems {
+		if !strings.Contains(err.Error(), p.What) {
+			t.Errorf("the message of the whole refusal no longer mentions %q", p.What)
+		}
+	}
+}
+
 // index is the 1-based position of a list entry, which comes out of an address
 // before it is compared with the key it has to be one of.
 var index = regexp.MustCompile(`\[[0-9]+\]`)

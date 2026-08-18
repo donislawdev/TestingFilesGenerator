@@ -40,11 +40,44 @@ func (p Problem) String() string {
 	return fmt.Sprintf("%s - %s.\n  %s.", p.What, p.Why, p.Fix)
 }
 
+// Error makes one problem an error in its own right, so a refused recipe can be
+// handed on as the problems it holds rather than as one block of text.
+func (p Problem) Error() string { return p.String() }
+
+// AboutSetting is the address, under the name the surfaces already ask for it
+// by.
+//
+// The window places a refusal by asking whether it implements this - see
+// runner.refuse in internal/gui/window - and the engine, the format registry
+// and the preset package all answer it already. Answering it here means a
+// refused recipe is placed the same way as everything else rather than by a
+// branch that knows what a recipe problem is.
+func (p Problem) AboutSetting() string { return p.At }
+
 // ValidationError is a recipe that parsed but does not describe a run this
 // build can carry out.
 type ValidationError struct {
 	Name     string
 	Problems []Problem
+}
+
+// Unwrap hands out the problems as errors, so a caller that places refusals one
+// by one can place all of them instead of the first.
+//
+// The window already opens a joined error into the ones it carries and looks
+// each up by the setting it is about, which is how a form with three bad boxes
+// marks three. A refused recipe was the one refusal that arrived as a single
+// error, so all of it landed at the foot of the form however many settings it
+// named. This closes that without the window learning what a recipe is.
+//
+// The message of the whole is unchanged: it still lists every problem, because
+// the command line prints the error and a reader there wants the list.
+func (e *ValidationError) Unwrap() []error {
+	out := make([]error, 0, len(e.Problems))
+	for _, p := range e.Problems {
+		out = append(out, p)
+	}
+	return out
 }
 
 func (e *ValidationError) Error() string {
