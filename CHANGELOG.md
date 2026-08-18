@@ -14,6 +14,19 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- **The expectation reason `extension_denied` is now `extension_rule`.** A recipe using the
+  old spelling is refused, with the list of what is allowed. Rename it in place - nothing
+  else about expectations changes.
+
+  A reason says which rule a case is about, not what the system did to the file. That is
+  what lets the same reason sit under any outcome: a boundary set expects the file one byte
+  under the limit to be **accepted**, and the rule in play is still the size limit. Fourteen
+  of the fifteen reasons were named that way and this one was not - it carried a verdict in
+  its name, so pairing it with `accept` read as a contradiction while every other reason read
+  fine.
+
 ### Added
 - **Both binaries carry their details, and both wear the icon.** Right click either
   `tfg.exe` or `tfg-gui.exe`, open Properties and the Details tab now names the product,

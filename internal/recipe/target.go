@@ -333,9 +333,23 @@ func parseSizeRange(p *problems, where spot, text string) (low, high int64, ok b
 // It is closed on purpose. A reason nobody recognises is a typo, and a typo
 // accepted in silence becomes an expectation no test will ever check - the
 // same failure as an unknown outcome, one level down.
+// The names are neutral about the verdict on purpose, and one of them was not
+// until 2026-08-19.
+//
+// A reason says which rule a case is ABOUT, not what the system did - which is
+// what lets the same reason sit under any outcome. MANIFEST.md's own example for
+// an unspecified outcome carries size_zero, and a boundary set expects the file
+// a byte under the limit to be ACCEPTED with size_limit as the rule in play.
+//
+// extension_denied broke that: it was the only entry of fifteen whose name
+// carried a verdict, so "accept with extension_denied" read as a contradiction
+// while "accept with size_limit" read fine. Reported by the owner, who picked
+// the one entry that did not fit. Renamed to extension_rule rather than the
+// field being restricted, because restricting it would have broken the boundary
+// set - the tool's own flagship case.
 var reasons = map[string]bool{
 	"size_limit": true, "size_zero": true, "count_limit": true,
-	"extension_denied": true, "mime_mismatch": true, "content_malformed": true,
+	"extension_rule": true, "mime_mismatch": true, "content_malformed": true,
 	"filename_invalid": true, "filename_too_long": true, "filename_traversal": true,
 	"dimensions_limit": true, "nesting_depth": true, "encoding_invalid": true,
 	"malware_signature": true, "duplicate": true, "none": true,
