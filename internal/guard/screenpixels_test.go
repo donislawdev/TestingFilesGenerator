@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -153,6 +154,9 @@ func screenScenes() []screenScene {
 		{name: "generate-hovered", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
 			explanationBeside(t, s.tab, text.FieldSize).MouseIn(&desktop.MouseEvent{})
 		}},
+		{name: "generate-unchecked", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+			flipSwitch(t, s.canvas, s.tab, text.FieldLabel)
+		}},
 		{name: "preset", tab: text.TabPresets},
 		{name: "preset-refused", tab: text.TabPresets, set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, "limit", "512")
@@ -165,21 +169,83 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 	writing := os.Getenv("TFG_WRITE_SCREEN_REFERENCE") != ""
 	for _, sc := range screenScenes() {
 		t.Run(sc.name, func(t *testing.T) {
-			got := renderScene(t, sc)
-			reference := filepath.Join("testdata", "screens", sc.name+".png")
+			got, markup := renderScene(t, sc)
+			picture := filepath.Join("testdata", "screens", sc.name+".png")
+			tree := filepath.Join("testdata", "screens", sc.name+".xml")
 			if writing {
-				writeImage(t, reference, got)
-				t.Logf("wrote %s", reference)
+				writeImage(t, picture, got)
+				writeText(t, tree, markup)
+				t.Logf("wrote %s and %s", picture, tree)
 				return
 			}
-			compareAgainstReference(t, sc.name, reference, got)
+			// The tree first, and that order is the whole reason it is kept.
+			// A picture says THAT something changed and a person has to look to
+			// find out what. The tree says it in words, in a diff, and it holds
+			// sizes, positions, colours and every string on the screen - so a
+			// failure that starts here needs no image viewer at all.
+			//
+			// It also splits the two kinds of failure apart. Tree changed means
+			// the screen was built differently. Tree the same and pixels
+			// different means the same screen was drawn differently, which is
+			// what macOS does and what a toolkit update would do.
+			compareMarkup(t, sc.name, tree, markup)
+			compareAgainstReference(t, sc.name, picture, got)
 		})
 	}
 }
 
+// compareMarkup holds the widget tree against the stored one.
+//
+// Exact, on every system, with no tolerance anywhere - measured on 2026-08-18
+// across Windows, Linux and macOS. The markup carries no rasterising, so the
+// rounding that forces a tolerance on the pixels cannot reach it.
+func compareMarkup(t *testing.T, name, reference, got string) {
+	t.Helper()
+
+	stored, err := os.ReadFile(reference)
+	if err != nil {
+		t.Fatalf("there is no stored tree for the %s screen at %s.\n"+
+			"Reason: this guard compares the widget tree as well as the picture.\n"+
+			"What to do: run once with TFG_WRITE_SCREEN_REFERENCE=1 and read what it wrote before committing it.\n"+
+			"Underlying error: %v", name, reference, err)
+	}
+	want := strings.ReplaceAll(string(stored), "\r\n", "\n")
+	if want == got {
+		return
+	}
+
+	line, wantLine, gotLine := firstDifference(want, got)
+	t.Errorf("the %s screen is no longer built the way the stored tree says.\n"+
+		"Reason: line %d differs.\n"+
+		"  stored: %s\n"+
+		"  now:    %s\n"+
+		"What to do: the whole tree is in %s, so git diff shows every change in words. If it was meant, regenerate with TFG_WRITE_SCREEN_REFERENCE=1.",
+		name, line, strings.TrimSpace(wantLine), strings.TrimSpace(gotLine), reference)
+}
+
+// firstDifference names the line somebody should look at. A diff of 351 lines
+// with one changed attribute is unreadable in a test log, and the line number
+// is what makes the stored file worth opening.
+func firstDifference(want, got string) (int, string, string) {
+	wantLines, gotLines := strings.Split(want, "\n"), strings.Split(got, "\n")
+	for i := 0; i < len(wantLines) || i < len(gotLines); i++ {
+		w, g := "", ""
+		if i < len(wantLines) {
+			w = wantLines[i]
+		}
+		if i < len(gotLines) {
+			g = gotLines[i]
+		}
+		if w != g {
+			return i + 1, w, g
+		}
+	}
+	return 0, "", ""
+}
+
 // renderScene builds the window, puts one screen into one state and returns
-// what the canvas holds.
-func renderScene(t *testing.T, sc screenScene) image.Image {
+// both what the canvas holds and how it was built.
+func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 	t.Helper()
 
 	app := test.NewApp()
@@ -221,7 +287,9 @@ func renderScene(t *testing.T, sc screenScene) image.Image {
 	if sc.after != nil {
 		sc.after(t, s)
 	}
-	return w.Canvas().Capture()
+	// Both taken from the same canvas in the same state, so they can never
+	// describe two different moments.
+	return w.Canvas().Capture(), test.RenderToMarkup(w.Canvas())
 }
 
 // pinOutputDirectory replaces whatever the working directory put in the field.
@@ -261,6 +329,38 @@ func pressNamed(t *testing.T, o fyne.CanvasObject, name string) {
 		t.Fatalf("the %q button is disabled, so this state cannot be reached", name)
 	}
 	b.OnTapped()
+}
+
+// flipSwitch turns a switch off the way a person does, through the canvas.
+//
+// Tapping rather than calling SetChecked, and the difference is visible: a tap
+// also takes focus - widget.Check.Tapped calls focusIfNotMobile - so a switch
+// set in code draws no focus ring and a switch pressed by somebody does. The
+// picture would differ from the screen, which is the one thing this guard must
+// never do.
+//
+// The point is inside MinSize rather than the middle of the widget, because
+// Check.Tapped ignores anything past its MinSize width and our switches are
+// stretched to the width of the column. tools/probes/guirender presses the same
+// way for the same reason.
+func flipSwitch(t *testing.T, c fyne.Canvas, o fyne.CanvasObject, label string) {
+	t.Helper()
+	box := checkNamed(o, label)
+	if box == nil {
+		t.Fatalf("there is no switch labelled %q on this screen", label)
+	}
+	before := box.Checked
+
+	at := fyne.CurrentApp().Driver().AbsolutePositionForObject(box)
+	active := box.MinSize()
+	test.TapCanvas(c, at.Add(fyne.NewPos(active.Width/2, box.Size().Height/2)))
+
+	if box.Checked == before {
+		t.Fatalf("a press on the switch %q did not change it, so this state was never built.\n"+
+			"Reason: it is %gx%g at %v and the press reached something else.\n"+
+			"What to do: check whether the switch moved behind another control or off the laid out area.",
+			label, box.Size().Width, box.Size().Height, at)
+	}
 }
 
 func chooserFor(t *testing.T, o fyne.CanvasObject) *parts.Chooser {
@@ -443,6 +543,19 @@ func writeImage(t *testing.T, path string, img image.Image) {
 		t.Fatalf("%v", err)
 	}
 	if err := os.WriteFile(path, buf.Bytes(), 0o644); err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+// writeText stores the widget tree with newlines the way the toolkit produced
+// them, so a checkout on another system does not read as a change on every
+// line. The comparison normalises the same way.
+func writeText(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("%v", err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("%v", err)
 	}
 }
