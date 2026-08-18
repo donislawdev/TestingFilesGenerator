@@ -364,6 +364,39 @@ func Reasons() []string {
 // KnownReason says whether a reason is on the list.
 func KnownReason(r string) bool { return reasons[r] }
 
+// outcomes is the closed list of what a system under test can be expected to do
+// with a file, from docs/MANIFEST.md.
+//
+// A variable rather than four words repeated at each place that checks them,
+// which is what this was until 2026-08-18: the sentence "accept, reject,
+// sanitize or unspecified" appeared in the recipe reader twice more and in the
+// command line twice, and the window was about to be the fifth copy. That is
+// exactly the argument written above Reasons - two copies of a closed list is
+// how the surfaces drift, which is D1 one level down.
+var outcomes = []string{"accept", "reject", "sanitize", "unspecified"}
+
+// Outcomes is the closed list, for the surfaces that have to offer it.
+//
+// Sorted, because a closed set has one order everywhere it is shown and a guard
+// asks for exactly that. These four are alphabetical as written, and sorting
+// says so rather than relying on it.
+func Outcomes() []string {
+	out := make([]string, len(outcomes))
+	copy(out, outcomes)
+	sort.Strings(out)
+	return out
+}
+
+// KnownOutcome says whether an outcome is on the list.
+func KnownOutcome(o string) bool {
+	for _, known := range outcomes {
+		if known == o {
+			return true
+		}
+	}
+	return false
+}
+
 // boundaryText reads the limit a boundary set is built around.
 func boundaryText(p *problems, where spot, v *scalar) string {
 	s, ok := v.value()
@@ -471,8 +504,10 @@ func expectation(p *problems, where spot, v any) (string, string) {
 		return "", ""
 	}
 
-	switch outcome {
-	case "accept", "reject", "sanitize", "unspecified":
+	// Asked of the list rather than repeated here, so the window offering these
+	// four and the reader accepting them cannot come apart.
+	switch {
+	case KnownOutcome(outcome):
 		return outcome, reason
 	default:
 		p.add(where.of("expected"), fmt.Sprintf("%s expects %q, which is not a known outcome", where, outcome),
