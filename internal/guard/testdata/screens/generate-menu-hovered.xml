@@ -399,7 +399,7 @@
 											</widget>
 											<widget pos="0,168" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
-													<rectangle radius="5" size="808x28"/>
+													<rectangle fillColor="hover" radius="5" size="808x28"/>
 													<text pos="32,4" size="776x19">png</text>
 												</widget>
 											</widget>

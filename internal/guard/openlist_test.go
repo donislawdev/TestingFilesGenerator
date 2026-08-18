@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -107,31 +106,51 @@ func TestTheOpenListMarksTheValueThatIsChosen(t *testing.T) {
 		t.Fatal("tapping the format menu put nothing on the canvas, so nothing opened")
 	}
 
-	menu := picker.Opened()
-	if menu == nil {
+	list := picker.Opened()
+	if list == nil {
 		t.Fatal("the menu built no list at all")
 	}
+
+	// The list is asked what it holds, and one function answers that question
+	// and fills the rows - see OpenList.isChosen. Two copies of the rule was
+	// the state this was in for an hour, and a mutation blanking the drawn mark
+	// left this guard green.
+	//
+	// What is DRAWN is held by the stored picture and the stored tree, where
+	// the tick appears as a confirmIcon on one row. Neither guard covers the
+	// other: this one reaches the values below the ceiling, which no picture
+	// can show, and the picture reaches the drawing, which no list can promise.
+	rows := list.Rows()
+	if len(rows) != len(picker.Options) {
+		t.Errorf("the list holds %d values and the menu offers %d", len(rows), len(picker.Options))
+	}
 	marked := 0
-	for _, item := range menu.Items {
-		if item.Checked {
+	for _, row := range rows {
+		if row.Marked {
 			marked++
-			if item.Label != chosen {
-				t.Errorf("the list marks %q and the box holds %q", item.Label, chosen)
+			if row.Label != chosen {
+				t.Errorf("the list marks %q and the box holds %q", row.Label, chosen)
 			}
 		}
 	}
 	if marked != 1 {
 		t.Errorf("%d value(s) are marked in a list of %d, and exactly one is in the box",
-			marked, len(menu.Items))
+			marked, len(rows))
 	}
 }
 
 // listIsOpenOn says whether a list is showing over a canvas.
+//
+// It asks for OUR list rather than the toolkit's popup menu, changed on
+// 2026-08-18 when the list stopped being the toolkit's. That is not a rename:
+// a guard still looking for widget.PopUpMenu would report "nothing opened"
+// however well the new one worked, which is the failure that reads as a defect
+// and is not one.
 func listIsOpenOn(c fyne.Canvas) bool {
 	for _, overlay := range c.Overlays().List() {
 		found := false
 		walk(overlay, func(obj fyne.CanvasObject) {
-			if _, ok := obj.(*widget.PopUpMenu); ok {
+			if _, ok := obj.(*parts.OpenList); ok {
 				found = true
 			}
 		})

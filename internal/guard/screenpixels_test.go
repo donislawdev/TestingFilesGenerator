@@ -183,6 +183,34 @@ func screenScenes() []screenScene {
 		{name: "generate-menu", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
 			chooserFor(t, s.tab).Tapped(&fyne.PointEvent{})
 		}},
+		// The two states the list gained on 2026-08-18 when it stopped being
+		// the toolkit's. A row under the pointer and a row under the keyboard
+		// are drawn differently on purpose - the keyboard wins, so that a
+		// pointer resting somewhere while the arrows are elsewhere does not
+		// show two rows as the current one - and neither had a picture.
+		{name: "generate-menu-hovered", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
+			chooserFor(t, s.tab).Tapped(&fyne.PointEvent{})
+			s.canvas.Capture()
+			list := chooserFor(t, s.tab).Opened()
+			if list == nil {
+				t.Fatal("the press opened no list, so this state cannot be reached")
+			}
+			row := list.RowShowing("png")
+			if row == nil {
+				t.Fatal("no row is drawing png, so there is nothing to hover")
+			}
+			row.MouseIn(&desktop.MouseEvent{})
+		}},
+		{name: "generate-menu-keyed", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
+			picker := chooserFor(t, s.tab)
+			picker.Tapped(&fyne.PointEvent{})
+			list := picker.Opened()
+			if list == nil {
+				t.Fatal("the press opened no list, so this state cannot be reached")
+			}
+			list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
+			list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
+		}},
 		{name: "generate-hovered", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
 			explanationBeside(t, s.tab, text.FieldSize).MouseIn(&desktop.MouseEvent{})
 		}},

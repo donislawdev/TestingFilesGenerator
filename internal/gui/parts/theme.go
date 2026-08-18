@@ -255,11 +255,18 @@ func (o ours) Size(name fyne.ThemeSizeName) float32 {
 		// measured off the open list on 2026-08-12, which is 3.1 times the
 		// text and about half again what a desktop menu uses.
 		//
-		// It is the only knob there is: the theme is asked for a size by name
-		// and not by widget, so a menu cannot be tightened on its own. That
-		// makes this a change to the density of everything - a box to type in
-		// is text plus twice this, and so is a button - which is why it went in
-		// against a render of the form rather than of the menu alone.
+		// The first half of what stood here is true and the conclusion was
+		// wrong, corrected on 2026-08-18. The theme IS asked for a size by name
+		// and not by widget. What that does not follow from is "it is the only
+		// knob there is", which is what this comment said for six days: a theme
+		// can be replaced for a SUBTREE with container.NewThemeOverride, and
+		// nobody had looked. So a list was made denser by moving the padding of
+		// the whole form, the owner reported the list again, and the answer the
+		// second time was a control of our own - see parts/openlist.go.
+		//
+		// This number stays at 6 on its own merits: it is the room inside every
+		// control on the form, it went in against a render of the form, and the
+		// toolkit's 8 was measured as too loose there as well.
 		return 6
 	case theme.SizeNameCardRadius:
 		return 8

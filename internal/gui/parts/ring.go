@@ -2,6 +2,7 @@ package parts
 
 import (
 	"image/color"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -147,17 +148,15 @@ type Chooser struct {
 	// and marked says whether the mark is currently drawn. See PointerFocus.
 	from   PointerFocus
 	marked bool
-	// opened is the list this menu last built, and it is here for a guard.
-	//
-	// The toolkit turns a fyne.Menu into widgets of its own whose type is
-	// unexported, so what is marked cannot be read back off the canvas - only
-	// that something is open. A guard asks both: the canvas for whether a list
-	// appeared, and this for what was in it.
-	opened *fyne.Menu
+	// opened is the list this menu last dropped down, and it is here for a
+	// guard: the canvas says whether a list appeared, and this says what was
+	// in it. Neither alone is worth anything - a list built correctly and never
+	// shown looks right from the widget's side.
+	opened *OpenList
 }
 
-// Opened is the list this menu last built, or nil if it has never been opened.
-func (c *Chooser) Opened() *fyne.Menu { return c.opened }
+// Opened is the list this menu last dropped down, or nil if it never has.
+func (c *Chooser) Opened() *OpenList { return c.opened }
 
 // NewChooser makes a menu of options, in the order it is given them.
 func NewChooser(options []string, changed func(string)) *Chooser {
@@ -209,20 +208,15 @@ func (c *Chooser) FocusLost() {
 // reading it off the canvas means reading a colour and deciding what it meant.
 func (c *Chooser) Marked() bool { return c.marked }
 
-// Tapped opens the list with the current value marked in it.
+// Tapped drops the list down, with the value in the box marked in it.
 //
-// The toolkit's own menu does not mark it. widget.Select builds its items with
-// fyne.NewMenuItem and never sets Checked - select.go, showPopUp - so a list of
-// thirteen formats opens with nothing saying which one is in the box, and the
-// answer is only in the box behind the list somebody is now covering. Reported
-// from a screenshot on 2026-08-12.
-//
-// fyne.MenuItem HAS the field and the renderer reserves a column for it as soon
-// as one item in the menu uses it, so this is the toolkit's own drawing rather
-// than a list of ours. What is replaced is only the building of the items.
+// The list is ours since 2026-08-18 and the box is still the toolkit's. That
+// split is the whole change: what was reported twice was the LIST - its density,
+// and that a letter typed at it did nothing - and none of it could be reached
+// through widget.PopUpMenu. See OpenList for the measurement.
 //
 // The overlay is right here, unlike the sheet the field explanations are drawn
-// on. An open menu SHOULD take the pointer away from everything under it, which
+// on. An open list SHOULD take the pointer away from everything under it, which
 // is the same property that made an overlay wrong for a tooltip.
 func (c *Chooser) Tapped(*fyne.PointEvent) {
 	if c.Disabled() {
@@ -232,8 +226,8 @@ func (c *Chooser) Tapped(*fyne.PointEvent) {
 	if app == nil {
 		return
 	}
-	canvas := app.Driver().CanvasForObject(c)
-	if canvas == nil {
+	surface := app.Driver().CanvasForObject(c)
+	if surface == nil {
 		// Detached between the tap being delivered and this call. The toolkit
 		// answers the same case by doing nothing rather than crashing inside
 		// the overlay machinery.
@@ -241,26 +235,59 @@ func (c *Chooser) Tapped(*fyne.PointEvent) {
 	}
 	// Quietly: the keyboard comes here so the arrows work, and nothing is drawn
 	// to announce it. See FocusGained.
-	c.from.Quietly(func() { canvas.Focus(c) })
+	c.from.Quietly(func() { surface.Focus(c) })
+	c.drop(surface)
+}
 
-	items := make([]*fyne.MenuItem, 0, len(c.Options))
-	for i := range c.Options {
-		option := c.Options[i] // captured per item
-		item := fyne.NewMenuItem(option, func() { c.SetSelected(option) })
-		item.Checked = option == c.Selected
-		items = append(items, item)
-	}
+// drop builds and shows the list. Split out because the shape gate caps a
+// function at eighty lines of logic and because what it does is one thing.
+func (c *Chooser) drop(surface fyne.Canvas) {
+	var pop *widget.PopUp
+	list := NewOpenList(c.Options, c.Selected,
+		func(value string, byKeyboard bool) {
+			pop.Hide()
+			c.SetSelected(value)
+			c.giveBack(surface, byKeyboard)
+		},
+		func(byKeyboard bool) {
+			pop.Hide()
+			c.giveBack(surface, byKeyboard)
+		})
+	pop = widget.NewPopUp(list, surface)
+	c.opened = list
 
-	menu := fyne.NewMenu("", items...)
-	pop := widget.NewPopUpMenu(menu, canvas)
-	if pop == nil {
+	at := fyne.CurrentApp().Driver().AbsolutePositionForObject(c)
+	// Under the box rather than over it, the same place the toolkit put it, and
+	// as wide as the box so the list reads as belonging to that field.
+	pop.Resize(fyne.NewSize(c.Size().Width, list.MinSize().Height))
+	pop.ShowAtPosition(at.Add(fyne.NewPos(0, c.Size().Height)))
+
+	surface.Focus(list)
+	// On the value already in the box, so that pressing Down once does not go
+	// to the first value while the box shows the ninth.
+	list.StartOn(c.Selected)
+}
+
+// giveBack hands the keyboard back to the box when the list closes.
+//
+// The ARIA practices for a combobox ask for it by name at Escape, and it is
+// what stops the keyboard being left on a control that is no longer on screen.
+// Silently when a press closed the list, out loud when a key did - the same
+// rule the rest of this control follows.
+func (c *Chooser) giveBack(surface fyne.Canvas, byKeyboard bool) {
+	c.opened = nil
+	if byKeyboard {
+		surface.Focus(c)
+		// Marked here rather than left to FocusGained. A canvas keeps a
+		// separate focus for an overlay, so closing one restores the box
+		// WITHOUT FocusGained running - measured on 2026-08-18, where Escape
+		// handed the keyboard back and nothing on the box said so.
+		if !c.marked {
+			c.mark()
+		}
 		return
 	}
-	c.opened = menu
-	// Under the box rather than over it, the same place the toolkit puts it.
-	at := app.Driver().AbsolutePositionForObject(c)
-	pop.ShowAtPosition(at.Add(fyne.NewPos(0, c.Size().Height)))
-	pop.Resize(fyne.NewSize(c.Size().Width, pop.MinSize().Height))
+	c.from.Quietly(func() { surface.Focus(c) })
 }
 
 // TypedKey opens the same list from the keyboard.
@@ -283,6 +310,38 @@ func (c *Chooser) TypedKey(event *fyne.KeyEvent) {
 		// Left and right step through the values without opening anything, and
 		// that is the toolkit's behaviour worth keeping.
 		c.Select.TypedKey(event)
+	}
+}
+
+// TypedRune moves to the next value starting with the letter typed, with the
+// list shut.
+//
+// The toolkit has none: widget.Select.TypedRune is "intentionally left blank".
+// So pressing p on a closed format menu did nothing, which is the half of O92c
+// that has nothing to do with the list being open. The ARIA practices put both
+// halves under one expectation - a printable character moves to the values
+// starting with it, collapsed or expanded.
+//
+// It steps from the value after the current one and wraps, so the same letter
+// pressed twice walks through the values sharing it.
+func (c *Chooser) TypedRune(r rune) {
+	if c.Disabled() || len(c.Options) == 0 {
+		return
+	}
+	if !c.marked {
+		c.mark()
+	}
+	want := strings.ToLower(string(r))
+	from := c.SelectedIndex()
+	for step := 1; step <= len(c.Options); step++ {
+		at := (from + step) % len(c.Options)
+		if at < 0 {
+			at += len(c.Options)
+		}
+		if strings.HasPrefix(strings.ToLower(c.Options[at]), want) {
+			c.SetSelectedIndex(at)
+			return
+		}
 	}
 }
 

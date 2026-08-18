@@ -345,17 +345,29 @@
 	</content>
 	<overlay>
 		<widget size="1100x1300" type="*widget.OverlayContainer">
-			<widget pos="146,199" size="808x31" type="*widget.PopUpMenu">
-				<rectangle fillColor="menuBackground" radius="3" shadowBlurRadius="6" shadowColor="shadow" shadowOffset="0,2" size="808x31"/>
-				<widget size="808x31" type="*widget.Scroll">
-					<widget size="808x31" type="*widget.menuBox">
-						<container size="808x31">
-							<widget size="808x31" type="*widget.menuItem">
-								<text pos="32,6" size="770x19">size-boundaries</text>
-								<image pos="6,5" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-							</widget>
-						</container>
-					</widget>
+			<widget pos="146,199" size="808x28" type="*widget.PopUp">
+				<rectangle fillColor="overlayBackground" radius="5" shadowBlurRadius="14" shadowColor="shadow" shadowOffset="0,4" size="808x28"/>
+				<widget size="808x28" type="*parts.OpenList">
+					<container size="808x28">
+						<rectangle fillColor="menuBackground" radius="5" size="808x28"/>
+						<widget size="808x28" type="*container.ThemeOverride">
+							<container size="808x28">
+								<widget size="808x28" type="*widget.List">
+									<widget size="808x28" type="*widget.Scroll">
+										<container size="808x28">
+											<widget size="808x28" type="*widget.listItem">
+												<widget size="808x28" type="*parts.ListRow">
+													<rectangle radius="5" size="808x28"/>
+													<image pos="6,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+													<text pos="32,4" size="776x19">size-boundaries</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
+								</widget>
+							</container>
+						</widget>
+					</container>
 				</widget>
 			</widget>
 		</widget>
