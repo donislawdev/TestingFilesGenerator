@@ -14,6 +14,13 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Fixed
+- **The window menu is dark, like the rest of the window.** Right clicking the title
+  bar brought up Restore, Move, Size, Minimise, Maximise and Close in white against a
+  dark program. That menu is drawn by Windows rather than by this tool, and it follows
+  a setting separate from the one that darkens a title bar. The program now asks for
+  both. Windows only - other desktops draw those menus from their own theme.
+
 ### Added
 - **A Donate button, top right of the window.** It opens the support page in your
   browser. The tool is free and stays free - this pays for the time that goes into it.

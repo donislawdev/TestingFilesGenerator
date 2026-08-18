@@ -113,6 +113,11 @@ func run(errOut io.Writer) int {
 		Migrations: map[string]bool{"fyneDo": true},
 	})
 
+	// Asked before the window exists, because it is a setting for the whole
+	// process rather than for one window, and Windows reads it when it builds
+	// the menus. See darkmenus_windows.go for what it is and what it costs.
+	PreferDarkMenus()
+
 	a := app.NewWithID(appID)
 	// The picture the desktop shows for this program, in the taskbar, in the
 	// switcher and on the window itself - the toolkit says an application icon
