@@ -786,7 +786,12 @@ const indexToken = "{index:04}"
 // The words rather than the arithmetic, because the arithmetic form has a plus
 // sign in it and these files exist to be dropped into upload forms, where a
 // plus sign in a name is a well known way to lose an afternoon.
-var boundaryRoles = [3]string{"under_limit", "at_limit", "over_limit"}
+// Changed on 2026-08-18, decision of the owner. They used to be "under_limit"
+// and "over_limit", which left out the number that matters: the file is one
+// byte under, not merely under. The preset that builds a wider set has always
+// named the distance - 10mb_under_1kb - so this is also two naming schemes
+// becoming one, across a flag and a preset that answer the same question.
+var boundaryRoles = [3]string{"under_1b", "at_limit", "over_1b"}
 
 func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 	tmpl := t.NameTmpl

@@ -216,9 +216,9 @@ func TestTheBoundaryFlagGivesTheThreeSizesAroundTheLimit(t *testing.T) {
 	// anyway, because it says which file is which rather than only that the
 	// three sizes are present somewhere.
 	want := map[string]int64{
-		"files_under_limit.txt": 4095,
-		"files_at_limit.txt":    4096,
-		"files_over_limit.txt":  4097,
+		"files_under_1b.txt": 4095,
+		"files_at_limit.txt": 4096,
+		"files_over_1b.txt":  4097,
 	}
 	got := describeFiles(t, out)
 	if len(got) != len(want) {

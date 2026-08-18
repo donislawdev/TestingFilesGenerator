@@ -21,7 +21,7 @@ import (
 // Measured on 2026-08-04, and it was the false alarm: the two commands each
 // built their own engine targets from the recipe, and the one behind validate
 // left out the limit a boundary set is built around. That limit decides what
-// the three files are called - under_limit, at_limit, over_limit rather than
+// the three files are called - under_1b, at_limit, over_1b rather than
 // 0001, 0002, 0003 - so validate ran its collision check against names nothing
 // would ever produce. A recipe holding a boundary set beside a target named
 // cap_0001.txt was refused with exit 3 while generate wrote four files with no
@@ -74,7 +74,7 @@ func TestValidateAgreesWithGenerateAboutBoundaryNames(t *testing.T) {
 		}
 	}
 	sort.Strings(got)
-	want := []string{"cap_0001.txt", "cap_at_limit.txt", "cap_over_limit.txt", "cap_under_limit.txt"}
+	want := []string{"cap_0001.txt", "cap_at_limit.txt", "cap_over_1b.txt", "cap_under_1b.txt"}
 	if strings.Join(got, ",") != strings.Join(want, ",") {
 		t.Errorf("the run produced %v and the names a boundary set takes are %v", got, want)
 	}

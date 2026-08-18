@@ -7,83 +7,80 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
-// A boundary set is the one place where the number belongs to somebody else.
+// A boundary counts in 1024s, like every other size this tool reads, and the
+// run says out loud which number that came to.
 //
-// Every other size describes a file this tool makes, and the user checks it in
-// Explorer, which counts in 1024s the same way we do. A boundary describes a
-// limit in the system under test, and there the unit is whatever that system
-// chose - "15 MB" on an upload form is 15000000 B far more often than not.
+// It used to be REFUSED. The reasoning written here was that a boundary
+// describes a limit in somebody else's system, where "15 MB" on an upload form
+// means 15000000 B far more often than not - so a set built around 15728640
+// would sit entirely past the real limit and test nothing, while looking right.
 //
-// Reported from manual testing, and the report is the reason this is refused
-// rather than hinted at. A set aimed at a 15 MB form produced three files
-// around 15728640, every one of them over the real limit, and all three were
-// rejected. Nothing was broken and nothing said anything. The tester had
-// files, believed they were the right files, and lost the time anyway.
+// The owner withdrew that on 2026-08-18 out of their own experience: a limit
+// written "15 MB" is worked out in 1024s in almost every system, and the
+// decimal reading is the rare one. The premise was backwards, so what stood on
+// it went with it.
 //
-// So the ambiguity is an error, the same way the recipe already refuses 0x10
-// and 1_000 rather than guessing what they meant.
+// What is guarded instead is the thing that makes accepting it safe, and it was
+// already true: the run prints the limit it built around, in bytes, above the
+// three files. Anybody whose system meant the other number sees it in a dry run
+// before a byte is written, and a plain byte count still passes through for
+// them. That sentence is now load bearing, so it has a guard of its own.
 
-func TestAnAmbiguousBoundaryUnitIsRefusedRatherThanGuessed(t *testing.T) {
-	// Both readings of each spelling, in bytes: the 1000s one most services
-	// mean and the 1024s one some do.
-	for spelling, readings := range map[string][2]string{
-		"15mb": {"15000000", "15728640"},
-		"15MB": {"15000000", "15728640"},
-		"10kb": {"10000", "10240"},
-		"2gb":  {"2000000000", "2147483648"},
-		"15m":  {"15000000", "15728640"},
+func TestABoundarySpelledInUnitsIsTakenAsTheOneWeUseEverywhere(t *testing.T) {
+	// Each spelling with the 1024s value it has to come to. The decimal reading
+	// is named in the failure so that anybody reading it sees both numbers.
+	// Every shape a boundary can be written in, in one table, because they are
+	// one behaviour now. Until 2026-08-18 there were two guards here - one for
+	// the spellings refused as ambiguous and one for the spellings that passed -
+	// and that split described the refusal rather than the tool. With the refusal
+	// gone, 15mb and 15mib are read the same way, so a second guard would have
+	// been a second name for one rule.
+	for spelling, want := range map[string]struct{ binary, decimal string }{
+		"15mb":     {"15728640", "15000000"},
+		"15MB":     {"15728640", "15000000"},
+		"10kb":     {"10240", "10000"},
+		"2gb":      {"2147483648", "2000000000"},
+		"15m":      {"15728640", "15000000"},
+		"15mib":    {"15728640", ""},
+		"2gib":     {"2147483648", ""},
+		"15000000": {"15000000", ""},
+		"1024":     {"1024", ""},
 	} {
-		dir := t.TempDir()
-		code, _, errOut := run(t, "generate", "--format", "txt",
-			"--boundary", spelling, "--out", dir)
-
-		if code == cli.ExitOK {
-			t.Errorf("--boundary %s was accepted, so a set can still be built around "+
-				"a limit nobody stated", spelling)
+		got, err := core.ParseBoundary(spelling)
+		if err != nil {
+			t.Errorf("--boundary %s was refused: %v", spelling, err)
 			continue
 		}
-		// Both readings as numbers, so the person does not have to work either
-		// of them out. A refusal that does not say what to write instead is a
-		// worse tool than one that guesses.
-		//
-		// Asked as numbers rather than as a pasteable "--boundary N" since
-		// 2026-08-11: this sentence is written once in the engine and shown by
-		// both surfaces, and the window has no flags on it, so a spelling only
-		// the command line takes sends the other reader translating. O79, and
-		// the cost of it is exactly this - the command line reader now copies a
-		// number rather than a whole command.
-		for _, want := range readings {
-			if !strings.Contains(errOut, want) {
-				t.Errorf("--boundary %s was refused without naming %s, one of its two readings: %s",
-					spelling, want, errOut)
-			}
+		if fmt := strings.TrimSpace(want.binary); got != mustNumber(t, fmt) {
+			t.Errorf("--boundary %s came to %d B, and counting in 1024s that is %s (the decimal reading is %s)",
+				spelling, got, want.binary, want.decimal)
 		}
 	}
 }
 
-// The unambiguous spellings still work, and they give the sizes they say.
-// Without this half, the refusal could be "fixed" by refusing everything.
-func TestAnUnambiguousBoundaryStillWorks(t *testing.T) {
-	for _, tc := range []struct {
-		spelling string
-		limit    int64
-	}{
-		{"15mib", 15 << 20},
-		{"15000000", 15_000_000},
-		{"1024", 1024},
-		{"2gib", 2 << 30},
-	} {
-		got, err := core.ParseBoundary(tc.spelling)
-		if err != nil {
-			t.Errorf("--boundary %s was refused and it says exactly which limit it "+
-				"means: %v", tc.spelling, err)
-			continue
-		}
-		if got != tc.limit {
-			t.Errorf("--boundary %s gave %d B, expected %d B", tc.spelling, got, tc.limit)
-		}
+// And the run says which number it used, which is what makes the above safe.
+//
+// Without this the tool would take a spelling that CAN mean two things and
+// never mention which one it took - the failure the refusal existed to prevent,
+// arriving quietly instead of loudly.
+func TestABoundaryRunSaysTheNumberItBuiltAround(t *testing.T) {
+	dir := t.TempDir()
+	code, out, errOut := run(t, "generate", "--format", "txt",
+		"--boundary", "15mb", "--out", dir, "--dry-run")
+	if code != cli.ExitOK {
+		t.Fatalf("a boundary of 15mb was refused: exit %d\n%s", code, errOut)
+	}
+	// The line that ANNOUNCES the set, not the number anywhere in the output.
+	// The three file lines carry the byte count as well, so asking whether the
+	// number appears at all left this green when the announcement lost it -
+	// which the mutation runner said out loud on 2026-08-18.
+	if !strings.Contains(errOut, `boundary "files" around 15728640 B`) {
+		t.Errorf("the run built a set around 15728640 B and never says so.\n"+
+			"Reason: 15mb can be read two ways, and printing the byte count is what lets somebody\n"+
+			"whose system meant 15000000 see it before a byte is written.\nWhat it said:\n%s", out)
 	}
 }
 
@@ -103,23 +100,45 @@ func TestASizeKeepsCountingIn1024s(t *testing.T) {
 
 // The recipe key goes through the same door. Recipes travel between teams, so
 // one accepting what the other refuses is the worst of both.
-func TestTheRecipeBoundaryKeyRefusesTheSameSpellings(t *testing.T) {
-	dir := t.TempDir()
-	path := writeRecipe(t, dir, `version: 1
-seed: 7741
-targets:
-  - id: edges
-    format: txt
-    boundary: 15mb
-output:
-  dir: out
-`)
+// The recipe key reads a spelling the same way the flag does.
+//
+// One implementation answers both - core.ParseBoundary - and this is what says
+// so from outside, because the two drifting apart is the failure that would
+// make a recipe and a command line disagree about the same word.
+func TestTheRecipeBoundaryKeyReadsUnitsLikeTheFlag(t *testing.T) {
+	// Through a real recipe rather than by calling the parser. The first
+	// version of this compared core.ParseBoundary with core.ParseSize, which
+	// is the function it calls - so it could not fail, and the mutation runner
+	// could not break it. A guard that asks a question with one answer is a
+	// guard that proves nothing.
+	for spelling, want := range map[string]int64{
+		"15mb":  15 << 20,
+		"10kb":  10 << 10,
+		"15mib": 15 << 20,
+		"1024":  1024,
+	} {
+		rec, err := recipe.Parse([]byte(
+			"version: 1\ntargets:\n  - id: files\n    format: txt\n    boundary: "+spelling+"\n"), "guard")
+		if err != nil {
+			t.Errorf("a recipe with boundary: %s was refused: %v", spelling, err)
+			continue
+		}
+		if len(rec.Targets) != 1 {
+			t.Fatalf("the recipe parsed to %d targets", len(rec.Targets))
+		}
+		if got := rec.Targets[0].BoundaryLimit; got != want {
+			t.Errorf("boundary: %s in a recipe came to %d B, and the flag makes it %d B",
+				spelling, got, want)
+		}
+	}
+}
 
-	code, _, errOut := run(t, "validate", path)
-	if code == cli.ExitOK {
-		t.Fatalf("the recipe was accepted, so a recipe can ask for what a flag cannot")
+// mustNumber turns a spelled out byte count into a number, for the table above.
+func mustNumber(t *testing.T, s string) int64 {
+	t.Helper()
+	n, err := core.ParseSize(s)
+	if err != nil {
+		t.Fatalf("the guard's own expected value %q does not parse: %v", s, err)
 	}
-	if !strings.Contains(errOut, "15000000") {
-		t.Errorf("the refusal did not name the decimal reading: %s", errOut)
-	}
+	return n
 }

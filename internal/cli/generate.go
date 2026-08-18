@@ -455,8 +455,14 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 //
 // Reported by hand: a set built for a 15 MB limit had all three files refused
 // by the service it was aimed at. Nothing was broken. Sizes here count in
-// 1024s, so the set sat around 15728640, and the service meant 15000000 - so
+// 1024s, so the set sat around 15728640, and that service meant 15000000 - so
 // every file was over the limit and the set tested nothing at all.
+//
+// That case is the rare one and the owner said so on 2026-08-18: a limit
+// written "15 MB" is worked out in 1024s in almost every system. Which is why
+// the spelling is no longer refused - and why these lines carry more weight
+// than they did. They are the only place the rare reader sees the number this
+// run actually used, in time to change it.
 func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOut io.Writer) {
 	for i := range targets {
 		t := &targets[i]

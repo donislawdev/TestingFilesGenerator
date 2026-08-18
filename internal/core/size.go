@@ -201,57 +201,29 @@ func ParseSizeRange(text string) (low, high int64, err error) {
 //
 // Here for the same reason as ParseSizeRange - the recipe key and the flag have
 // to mean the same thing, and one implementation is how that stays true.
-// ambiguousUnits are the spellings that mean 1024s here and ten hundreds
-// almost everywhere a limit is written down.
+// ParseBoundary reads the limit of a boundary set.
 //
-// The distinction does not matter for a size, where the number describes a
-// file this tool makes and the user checks in Explorer, which counts in 1024s
-// too. It decides the whole answer for a boundary, where the number belongs to
-// somebody else's system.
-var ambiguousUnits = map[string]int64{
-	"k": 1_000, "kb": 1_000,
-	"m": 1_000_000, "mb": 1_000_000,
-	"g": 1_000_000_000, "gb": 1_000_000_000,
-	"t": 1_000_000_000_000, "tb": 1_000_000_000_000,
-}
-
-// ParseBoundary reads the limit of a boundary set and refuses to guess.
+// It counts in 1024s, the same as every other size this tool reads, and that is
+// the whole of it since 2026-08-18.
 //
-// A boundary set exists to sit either side of a limit that belongs to the
-// system under test, so the unit is whatever that system chose. A form saying
-// "15 MB" means 15000000 B in most services and 15728640 B in some, and a set
-// built around the wrong one sits entirely on one side of the real limit and
-// tests nothing at all.
+// It used to REFUSE a spelling like 15mb rather than guess, on the grounds that
+// a limit belongs to the system under test and "15 MB" on an upload form means
+// 15000000 B far more often than not. The owner withdrew that on 2026-08-18 out
+// of their own experience: a limit written "15 MB" is worked out in 1024s in
+// almost every system, and the decimal reading is the rare one. The premise was
+// backwards, so the refusal built on it went.
 //
-// That is worse than an error, because the files arrive and look right. It was
-// reported exactly that way: a set aimed at a 15 MB limit had all three files
-// refused, and nothing anywhere said why.
+// What made the refusal safe to remove is that the run already answers the
+// question it was asking. A boundary set prints the limit it was built around
+// in bytes - "boundary "files" around 15728640 B" - above the three files, so
+// anybody whose system meant the other number sees it at once, in a dry run,
+// before a byte is written. A plain byte count still passes through for them.
 //
-// So an ambiguous spelling is refused rather than guessed - the same rule the
-// recipe already applies to 0x10 and 1_000, for the same reason. A plain byte
-// count and the spelled out 1024 units are unambiguous and pass through.
+// Here rather than in the flag for the same reason as ParseSizeRange: the
+// recipe key and the flag have to mean the same thing, and one implementation
+// is how that stays true.
 func ParseBoundary(s string) (int64, error) {
-	raw := strings.TrimSpace(s)
-	digits := strings.TrimRight(raw, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
-	unit := strings.ToLower(strings.TrimSpace(raw[len(digits):]))
-
-	decimal, ambiguous := ambiguousUnits[unit]
-	if !ambiguous {
-		return ParseSize(s)
-	}
-
-	binary, err := ParseSize(s)
-	if err != nil {
-		return 0, err
-	}
-	n, _ := strconv.ParseFloat(strings.TrimSpace(digits), 64)
-	return 0, fmt.Errorf(
-		"boundary %q does not say which limit it means, and this is the one place that decides the answer. "+
-			"The limit belongs to the system you are testing, and %s means %d B to most services and %d B to some. "+
-			"A set built around the wrong one sits entirely past the real limit and tests nothing. "+
-			"Write the exact number: a boundary of %d for the first, or %d for the second",
-		s, strings.TrimSpace(raw), int64(n*float64(decimal)), binary,
-		int64(n*float64(decimal)), binary)
+	return ParseSize(s)
 }
 
 // ErrBoundaryTooLarge is a limit with no room above it for the third file.

@@ -52,9 +52,9 @@ func TestABoundarySetSaysWhichFileIsWhich(t *testing.T) {
 	// in the wrong order is worse than one that does not label them, because
 	// it is believed.
 	want := map[string]int64{
-		"files_under_limit.txt": limit - 1,
-		"files_at_limit.txt":    limit,
-		"files_over_limit.txt":  limit + 1,
+		"files_under_1b.txt": limit - 1,
+		"files_at_limit.txt": limit,
+		"files_over_1b.txt":  limit + 1,
 	}
 	for name, size := range want {
 		info, err := os.Stat(dir + string(os.PathSeparator) + name)

@@ -15,6 +15,19 @@ because it turns other people's test suites red.
 ## [Unreleased]
 
 ### Added
+- **The three files of a `--boundary` set say how far from the limit they are.**
+  They were `<id>_under_limit`, `<id>_at_limit` and `<id>_over_limit`, which left
+  out the number that matters: each is exactly one byte from the limit. They are
+  now `<id>_under_1b`, `<id>_at_limit` and `<id>_over_1b`. The `size-boundaries`
+  preset has always named the distance, so a flag and a preset answering the same
+  question now name their files the same way.
+- **`--boundary 15mb` is accepted again and counts in 1024s**, like every other
+  size this tool reads. It was refused between 2026-08-03 and 2026-08-18 on the
+  grounds that a limit written "15 MB" usually means 15000000 B in the system
+  under test - which is the rare case rather than the usual one. The run still
+  prints the limit it built around, in bytes, above the three files and before a
+  byte is written, so a decimal limit is visible in a dry run.
+
 
 - **The window says where the files will go, and lets you browse to it.** The
   output directory is written out in full instead of as a dot, and there is a
