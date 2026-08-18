@@ -22,3 +22,43 @@
  * instead of failing over it.
  */
 1 ICON "chickpea.ico"
+
+/* And what Windows shows in the Details tab of tfg-gui.exe.
+ *
+ * Beside the icon rather than in a file of its own, because both are resources
+ * of the same binary and windres builds one .syso from one script. Two scripts
+ * would mean two commands to remember and one of them getting forgotten.
+ *
+ * The version is NOT authored here. It is the one in internal/version, the
+ * single place it lives and the only place the owner sets it - untouchable rule
+ * 12 - and this is a copy. A guard reads the compiled resource back and holds
+ * it against internal/version, because a copy is a thing that drifts.
+ *
+ * See cmd/tfg/tfg.rc for the same block on the command line binary, and for why
+ * the fourth number of FILEVERSION is a zero rather than a build counter.
+ */
+1 VERSIONINFO
+FILEVERSION 0,1,0,0
+PRODUCTVERSION 0,1,0,0
+FILEOS 0x40004L
+FILETYPE 0x1L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "DonislawDev"
+            VALUE "FileDescription", "Generates test files for QA"
+            VALUE "FileVersion", "0.1.0"
+            VALUE "InternalName", "tfg-gui"
+            VALUE "LegalCopyright", "Copyright (C) 2026 DonislawDev. GNU GPL version 3."
+            VALUE "OriginalFilename", "tfg-gui.exe"
+            VALUE "ProductName", "Testing Files Generator"
+            VALUE "ProductVersion", "0.1.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

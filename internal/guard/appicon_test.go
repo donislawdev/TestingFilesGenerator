@@ -165,7 +165,19 @@ func TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon(t *testing.T) {
 
 	drawing := read("internal", "gui", "icon", "chickpea.png")
 	ico := read("internal", "gui", "icon", "chickpea.ico")
-	compiled := read("cmd", "tfg-gui", "rsrc_windows_amd64.syso")
+
+	// Both binaries, since 2026-08-19. The command line one had no icon at all
+	// and Explorer drew it with the blank placeholder, beside a window binary
+	// that had one - reported by the owner, and already measured by the probe
+	// this guard's comment quotes: 7 of 7 for the window, 0 of 7 for this one.
+	//
+	// One drawing reached from two resource scripts rather than an .ico copied
+	// beside each. Two copies is how the two binaries come to wear different
+	// pictures of the same bean, which is the thing nobody checks.
+	compiled := map[string][]byte{
+		"tfg-gui.exe": read("cmd", "tfg-gui", "rsrc_windows_amd64.syso"),
+		"tfg.exe":     read("cmd", "tfg", "rsrc_windows_amd64.syso"),
+	}
 
 	// The ICO is a directory of images. Windows picks a size per place it draws
 	// one, so the small ones are not decoration - 16 is the taskbar and the
@@ -207,11 +219,14 @@ func TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon(t *testing.T) {
 			"icon are different pictures. Regenerate both - see internal/gui/icon/chickpea.rc")
 	}
 
-	for i, payload := range payloads {
-		if !bytes.Contains(compiled, payload) {
-			t.Errorf("image %d of chickpea.ico is not inside rsrc_windows_amd64.syso, so the "+
-				"compiled resource is older than the icon. Rerun windres - see "+
-				"internal/gui/icon/chickpea.rc", i+1)
+	for binary, resource := range compiled {
+		for i, payload := range payloads {
+			if !bytes.Contains(resource, payload) {
+				t.Errorf("image %d of chickpea.ico is not inside the resource compiled into %s,\n"+
+					"so that resource is older than the icon. Rerun windres - the command is in\n"+
+					"internal/gui/icon/chickpea.rc for the window and cmd/tfg/tfg.rc for the\n"+
+					"command line.", i+1, binary)
+			}
 		}
 	}
 }

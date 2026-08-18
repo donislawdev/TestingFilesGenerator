@@ -14,6 +14,14 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+- **Both binaries carry their details, and both wear the icon.** Right click either
+  `tfg.exe` or `tfg-gui.exe`, open Properties and the Details tab now names the product,
+  the version, the author and the licence. They had none of that, so a tool found on a
+  build agent six months later could not be identified from the file alone. `tfg.exe` also
+  gets the same icon the window has, instead of the blank placeholder Windows draws for a
+  binary it cannot identify.
+
 ### Changed
 - **Preview and Generate sit in the middle of the bar**, and the Donate button moved
   from above the tabs to the left of that same bar. It is on every screen, including
