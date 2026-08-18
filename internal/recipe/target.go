@@ -24,7 +24,7 @@ import (
 // Every problem is collected rather than returned on the first one, because a
 // contains list written by hand usually has more than one thing wrong with it
 // and fixing a recipe one error per run is how people stop using a tool.
-func contentGroups(p *problems, where string, raw []map[string]scalar) []Content {
+func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 	if len(raw) == 0 {
 		// An empty list is not the same as no list. It says "an archive
 		// holding nothing", which is a legitimate thing to test, and the size
@@ -34,7 +34,7 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 
 	out := make([]Content, 0, len(raw))
 	for i, item := range raw {
-		at := fmt.Sprintf("%s: contains entry %d", where, i+1)
+		at := where.entry("contains", i)
 		g := Content{Count: 1}
 
 		// Sorted, because Go randomises map order and these keys become
@@ -44,7 +44,7 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 			switch key {
 			case "format", "count", "size":
 			default:
-				p.add(fmt.Sprintf("%s has the key %q", at, key),
+				p.add(at.key, fmt.Sprintf("%s has the key %q", at, key),
 					"a contains entry describes files with a format, a count and a size, and anything else would be dropped on the way",
 					"remove the key, or move it to the target itself")
 			}
@@ -54,12 +54,12 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 			if s, ok := v.value(); ok && s != "" {
 				g.Format = s
 			} else {
-				p.add(fmt.Sprintf("%s has a format that is not a name", at),
+				p.add(at.of("format"), fmt.Sprintf("%s has a format that is not a name", at),
 					"a format is the id of a format this build supports",
 					"use format: pdf, or run tfg formats to see the list")
 			}
 		} else {
-			p.add(fmt.Sprintf("%s has no format", at),
+			p.add(at.of("format"), fmt.Sprintf("%s has no format", at),
 				"a container holds real files, so each group says which format its files are",
 				"add format: pdf")
 		}
@@ -68,11 +68,11 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 			n, ok := v.number()
 			switch {
 			case !ok:
-				p.add(fmt.Sprintf("%s has a count that is not a whole number", at),
+				p.add(at.of("count"), fmt.Sprintf("%s has a count that is not a whole number", at),
 					"a count is how many files of this group the container holds",
 					"use count: 50")
 			case n < 0:
-				p.add(fmt.Sprintf("%s has a negative count", at),
+				p.add(at.of("count"), fmt.Sprintf("%s has a negative count", at),
 					"a container cannot hold fewer than no files",
 					"use count: 0 for a group that contributes nothing, or drop the entry")
 			default:
@@ -83,11 +83,11 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 		if v, ok := item["size"]; ok {
 			s, ok := v.value()
 			if !ok {
-				p.add(fmt.Sprintf("%s has a size that is neither text nor a number", at),
+				p.add(at.of("size"), fmt.Sprintf("%s has a size that is neither text nor a number", at),
 					"a size is written as 2mb or as a plain byte count",
 					"use size: 2mb or size: 2097152")
 			} else if n, err := core.ParseSize(s); err != nil {
-				p.add(fmt.Sprintf("%s: %v", at, err),
+				p.add(at.of("size"), fmt.Sprintf("%s: %v", at, err),
 					"units count in 1024s, so 10mb is 10485760 bytes",
 					"use a size such as 2mb, 512kb or a plain byte count")
 			} else {
@@ -97,7 +97,7 @@ func contentGroups(p *problems, where string, raw []map[string]scalar) []Content
 			// The same rule as AR10 one level down. Without it the size of the
 			// container could not be worked out before writing, which is the
 			// whole reason contains counts as a way of declaring a size.
-			p.add(fmt.Sprintf("%s has no size", at),
+			p.add(at.of("size"), fmt.Sprintf("%s has no size", at),
 				"the size of the container follows from the size of what it holds, so every group states one",
 				"add size: 2mb")
 		}
@@ -133,18 +133,18 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	t := Target{Label: def.Label}
 	count := 1
 
-	where := fmt.Sprintf("target %d", index+1)
+	where := targetSpot(index, "")
 	if rt.ID != nil && *rt.ID != "" {
 		t.ID = *rt.ID
-		where = fmt.Sprintf("target %q", t.ID)
+		where = targetSpot(index, t.ID)
 	} else {
-		p.add(fmt.Sprintf("%s has no id", where),
+		p.add(where.of("id"), fmt.Sprintf("%s has no id", where),
 			"an id anchors the seed of a target, so editing one target never moves the bytes of another",
 			"give it an id, for example id: invoices")
 	}
 
 	if rt.Format == nil || *rt.Format == "" {
-		p.add(fmt.Sprintf("%s has no format", where),
+		p.add(where.of("format"), fmt.Sprintf("%s has no format", where),
 			"a target has to say what kind of file it produces",
 			"add format: txt, or run \"tfg formats\" to see the whole list")
 	} else {
@@ -155,18 +155,18 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		n, ok := rt.Count.number()
 		switch {
 		case !ok:
-			p.add(fmt.Sprintf("%s has a count of %q, which is not a whole number", where, rt.Count.text),
+			p.add(where.of("count"), fmt.Sprintf("%s has a count of %q, which is not a whole number", where, rt.Count.text),
 				"a count is how many files this target produces, so it is read exactly as written",
 				"write a decimal number such as count: 10")
 		case n <= 0:
-			p.add(fmt.Sprintf("%s asks for %d files", where, n),
+			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
 				"a target that produces nothing is almost always a mistake rather than an intention",
 				"ask for at least one, or delete the target")
 		// Judged before the list is built. The reader used to grow it one entry
 		// at a time and reached a 13 GB allocation on a count of 2^63 - so this
 		// has to refuse the number rather than the result of using it.
 		case n > core.MaxFilesPerRun:
-			p.add(fmt.Sprintf("%s asks for %d files", where, n),
+			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
 				core.ErrTooManyFiles.Error(),
 				fmt.Sprintf("use a count of %d or less, or split the target across several recipes", core.MaxFilesPerRun))
 		default:
@@ -196,13 +196,13 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 }
 
 // refuseSections names the parts of a target this build cannot honour.
-func (rt rawTarget) refuseSections(p *problems, where string) {
+func (rt rawTarget) refuseSections(p *problems, where spot) {
 	if rt.Mutations != nil {
-		p.notYet(where+": mutations", "damaged files arrive with the Chaos Lab",
+		p.notYetIn(where, "mutations", "damaged files arrive with the Chaos Lab",
 			"remove the section")
 	}
 	if rt.Fill != nil {
-		p.notYet(where+": fill", "the fill mode is not settable yet",
+		p.notYetIn(where, "fill", "the fill mode is not settable yet",
 			"remove the line - content is generated from the seed")
 	}
 }
@@ -213,28 +213,28 @@ func (rt rawTarget) refuseSections(p *problems, where string) {
 // is not negotiable: the plan knows the size of every file before anything is
 // written, which is what lets --dry-run report exact numbers and refuses an
 // impossible size before the first file exists.
-func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target) {
+func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 	switch {
 	// Two ways of stating a size in one target is two answers to one question,
 	// and picking one of them quietly is how a recipe stops meaning what it
 	// says. Every pairing is named rather than resolved.
 	case rt.SizeRange != nil && rt.Size != nil:
-		p.add(fmt.Sprintf("%s states both a size and a size-range", where),
+		p.add(where.of("size"), fmt.Sprintf("%s states both a size and a size-range", where),
 			"one names an exact size and the other draws one, so together they say two different things",
 			"keep size for identical files, or keep size-range for a different size each")
 
 	case rt.SizeRange != nil && rt.Boundary != nil:
-		p.add(fmt.Sprintf("%s states both a boundary and a size-range", where),
+		p.add(where.of("boundary"), fmt.Sprintf("%s states both a boundary and a size-range", where),
 			"a boundary is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them",
 			"keep boundary to test a limit, or keep size-range for files of varying size")
 
 	case rt.Boundary != nil && rt.Size != nil:
-		p.add(fmt.Sprintf("%s states both a size and a boundary", where),
+		p.add(where.of("size"), fmt.Sprintf("%s states both a size and a boundary", where),
 			"a boundary already decides the sizes, so a size beside it means two different things at once",
 			"keep boundary for the three sizes around a limit, or keep size for one exact size")
 
 	case rt.Boundary != nil && rt.Count != nil:
-		p.add(fmt.Sprintf("%s states both a count and a boundary", where),
+		p.add(where.of("count"), fmt.Sprintf("%s states both a count and a boundary", where),
 			"a boundary set is exactly three files, one below the limit, one at it and one above",
 			"remove count, or use size with count to ask for identical files")
 
@@ -253,7 +253,7 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 	case rt.Size != nil:
 		s, ok := rt.Size.value()
 		if !ok {
-			p.add(fmt.Sprintf("%s has a size that is neither text nor a number", where),
+			p.add(where.of("size"), fmt.Sprintf("%s has a size that is neither text nor a number", where),
 				"a size is written as 2mb or as a plain byte count",
 				"use size: 2mb or size: 2097152")
 			break
@@ -261,7 +261,7 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 		t.Size = s
 		n, err := core.ParseSize(s)
 		if err != nil {
-			p.add(fmt.Sprintf("%s: %v", where, err),
+			p.add(where.of("size"), fmt.Sprintf("%s: %v", where, err),
 				"units count in 1024s, so 10mb is 10485760 bytes",
 				"use a size such as 2mb, 512kb or a plain byte count")
 			break
@@ -277,7 +277,7 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 		// per file.
 		text, ok := rt.SizeRange.value()
 		if !ok {
-			p.add(fmt.Sprintf("%s has a size-range that is not text", where),
+			p.add(where.of("size-range"), fmt.Sprintf("%s has a size-range that is not text", where),
 				"a range is two sizes with a hyphen between them",
 				"use size-range: 1kb-8kb")
 			break
@@ -306,7 +306,7 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 		}
 
 	default:
-		p.add(fmt.Sprintf("%s has no size", where),
+		p.add(where.of("size"), fmt.Sprintf("%s has no size", where),
 			"every target declares its size, which is what lets a dry run report exact numbers before anything reaches the disk",
 			"add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes")
 	}
@@ -317,10 +317,10 @@ func (rt rawTarget) resolveSize(p *problems, where string, count int, t *Target)
 //
 // The maths is not repeated here on purpose: the flag asks the same question,
 // and one implementation is what keeps the two surfaces meaning the same thing.
-func parseSizeRange(p *problems, where, text string) (low, high int64, ok bool) {
+func parseSizeRange(p *problems, where spot, text string) (low, high int64, ok bool) {
 	lo, hi, err := core.ParseSizeRange(text)
 	if err != nil {
-		p.add(fmt.Sprintf("%s: %v", where, err),
+		p.add(where.of("size-range"), fmt.Sprintf("%s: %v", where, err),
 			"both ends of a range are sizes, and units count in 1024s",
 			"use size-range: 1kb-8kb or a pair of plain byte counts")
 		return 0, 0, false
@@ -365,10 +365,10 @@ func Reasons() []string {
 func KnownReason(r string) bool { return reasons[r] }
 
 // boundaryText reads the limit a boundary set is built around.
-func boundaryText(p *problems, where string, v *scalar) string {
+func boundaryText(p *problems, where spot, v *scalar) string {
 	s, ok := v.value()
 	if !ok {
-		p.add(fmt.Sprintf("%s has a boundary that is neither text nor a number", where),
+		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary that is neither text nor a number", where),
 			"a boundary is one size, and the set is built either side of it",
 			"use boundary: 10mb or a plain byte count")
 		return ""
@@ -383,26 +383,26 @@ func boundaryText(p *problems, where string, v *scalar) string {
 // on it and one just over. The three sizes have to be consecutive, which is
 // why WAV pads the way it does - a format that could only hit even sizes would
 // make two of the three unreachable.
-func boundarySizes(p *problems, where, text string) []int64 {
+func boundarySizes(p *problems, where spot, text string) []int64 {
 	if text == "" {
 		return nil
 	}
 	limit, err := core.ParseBoundary(text)
 	if err != nil {
-		p.add(fmt.Sprintf("%s: %v", where, err),
+		p.add(where.of("boundary"), fmt.Sprintf("%s: %v", where, err),
 			"units count in 1024s, so 10mb is 10485760 bytes",
 			"use a boundary such as 10mb, 512kb or a plain byte count")
 		return nil
 	}
 	if limit < 1 {
-		p.add(fmt.Sprintf("%s has a boundary of %d B", where, limit),
+		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary of %d B", where, limit),
 			"the set needs a size one byte below the limit, and there is nothing below zero",
 			"use a boundary of at least 1 B")
 		return nil
 	}
 	sizes, err := core.BoundarySizes(limit)
 	if err != nil {
-		p.add(fmt.Sprintf("%s has a boundary of %d B", where, limit),
+		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary of %d B", where, limit),
 			err.Error(),
 			"use a boundary at least one byte below the largest number")
 		return nil
@@ -412,7 +412,7 @@ func boundarySizes(p *problems, where, text string) []int64 {
 
 // expectation accepts the short form and the long one. The short form is what
 // most recipes use, and the long form carries a reason.
-func expectation(p *problems, where string, v any) (string, string) {
+func expectation(p *problems, where spot, v any) (string, string) {
 	if v == nil {
 		return "", ""
 	}
@@ -424,14 +424,14 @@ func expectation(p *problems, where string, v any) (string, string) {
 	case map[string]any:
 		o, ok := x["outcome"]
 		if !ok {
-			p.add(fmt.Sprintf("%s declares an expectation with no outcome", where),
+			p.add(where.of("expected"), fmt.Sprintf("%s declares an expectation with no outcome", where),
 				"an expectation says what the system under test should do with the file",
 				"add outcome: accept, reject, sanitize or unspecified")
 			return "", ""
 		}
 		s, ok := scalarText(o)
 		if !ok {
-			p.add(fmt.Sprintf("%s declares an outcome that is not a word", where),
+			p.add(where.of("expected"), fmt.Sprintf("%s declares an outcome that is not a word", where),
 				"an outcome is one of four words",
 				"use accept, reject, sanitize or unspecified")
 			return "", ""
@@ -444,7 +444,7 @@ func expectation(p *problems, where string, v any) (string, string) {
 			switch k {
 			case "outcome", "reason":
 			default:
-				p.add(fmt.Sprintf("%s declares %q inside its expectation", where, k),
+				p.add(where.of("expected"), fmt.Sprintf("%s declares %q inside its expectation", where, k),
 					"an expectation carries an outcome and a reason, and anything else would be dropped without a word",
 					"remove the line, or put the explanation in reason")
 			}
@@ -453,11 +453,11 @@ func expectation(p *problems, where string, v any) (string, string) {
 		if r, ok := x["reason"]; ok {
 			s, ok := scalarText(r)
 			if !ok {
-				p.add(fmt.Sprintf("%s declares a reason that is not a word", where),
+				p.add(where.of("expected.reason"), fmt.Sprintf("%s declares a reason that is not a word", where),
 					"a reason is one value from a closed list",
 					"use one of: "+reasonList())
 			} else if !reasons[s] {
-				p.add(fmt.Sprintf("%s gives the reason %q, which is not on the list", where, s),
+				p.add(where.of("expected.reason"), fmt.Sprintf("%s gives the reason %q, which is not on the list", where, s),
 					"the list is closed so that a report can group by reason, and a typo would make a category of one",
 					"use one of: "+reasonList())
 			} else {
@@ -465,7 +465,7 @@ func expectation(p *problems, where string, v any) (string, string) {
 			}
 		}
 	default:
-		p.add(fmt.Sprintf("%s declares an expectation this build cannot read", where),
+		p.add(where.of("expected"), fmt.Sprintf("%s declares an expectation this build cannot read", where),
 			"an expectation is either one word or a block with an outcome",
 			"use expected: accept, or a block with outcome:")
 		return "", ""
@@ -475,7 +475,7 @@ func expectation(p *problems, where string, v any) (string, string) {
 	case "accept", "reject", "sanitize", "unspecified":
 		return outcome, reason
 	default:
-		p.add(fmt.Sprintf("%s expects %q, which is not a known outcome", where, outcome),
+		p.add(where.of("expected"), fmt.Sprintf("%s expects %q, which is not a known outcome", where, outcome),
 			"a typo accepted in silence becomes an expectation no test will ever check",
 			"use accept, reject, sanitize or unspecified")
 		return "", ""
@@ -485,7 +485,7 @@ func expectation(p *problems, where string, v any) (string, string) {
 // properties are handed to the format as text, exactly as --set does, so both
 // surfaces speak one vocabulary. Whether a key exists at all is the format's
 // answer, not ours.
-func properties(p *problems, where string, in map[string]scalar) map[string]string {
+func properties(p *problems, where spot, in map[string]scalar) map[string]string {
 	if len(in) == 0 {
 		return nil
 	}
@@ -500,7 +500,7 @@ func properties(p *problems, where string, in map[string]scalar) map[string]stri
 	for _, k := range keys {
 		s, ok := in[k].value()
 		if !ok {
-			p.add(fmt.Sprintf("%s: property %q is a list or a block", where, k),
+			p.add(where.of("properties."+k), fmt.Sprintf("%s: property %q is a list or a block", where, k),
 				"a format property is a single value",
 				"give it one value, for example pages: 3")
 			continue

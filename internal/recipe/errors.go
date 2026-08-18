@@ -20,6 +20,20 @@ type Problem struct {
 	What string
 	Why  string
 	Fix  string
+	// At is the setting this problem is about, in the vocabulary the two
+	// surfaces share: a recipe key, with a 1-based index wherever a list is
+	// involved, as in targets[2].size or targets[2].contains[1].format.
+	//
+	// It exists because prose cannot be pointed at a box. A window draws a
+	// field per setting and has to mark the one that was refused, and the
+	// sentence a person reads names a target by its id - which is the right
+	// thing to read and the wrong thing to look a widget up by, since the box
+	// holding a missing id has no id in it yet.
+	//
+	// Empty for a problem about the document as a whole rather than one of its
+	// settings. A reader of this field has to expect that and put such a
+	// refusal where refusals about the whole run go.
+	At string
 }
 
 func (p Problem) String() string {
@@ -66,8 +80,8 @@ type problems struct {
 	list []Problem
 }
 
-func (p *problems) add(what, why, fix string) {
-	p.list = append(p.list, Problem{What: what, Why: why, Fix: fix})
+func (p *problems) add(at, what, why, fix string) {
+	p.list = append(p.list, Problem{What: what, Why: why, Fix: fix, At: at})
 }
 
 // notYet is a key the recipe document describes and this build cannot honour.
@@ -76,7 +90,62 @@ func (p *problems) add(what, why, fix string) {
 // not wrong, the tool is not there yet. Saying "unknown key" would send the
 // reader looking for a typo that does not exist.
 func (p *problems) notYet(key, why, fix string) {
-	p.add(fmt.Sprintf("%s is not in this build yet", key), why, fix)
+	p.add(key, fmt.Sprintf("%s is not in this build yet", key), why, fix)
+}
+
+// notYetIn is the same for a key inside a target, where the sentence names the
+// target and the address does not - see spot.
+func (p *problems) notYetIn(where spot, setting, why, fix string) {
+	p.add(where.of(setting), fmt.Sprintf("%s: %s is not in this build yet", where, setting), why, fix)
+}
+
+// spot is one place in a recipe, in the two vocabularies this tool needs at
+// once: the prose a person reads and the address a window marks a box by.
+//
+// One string cannot do both, and the reason is not tidiness. The prose names a
+// target by its id as soon as it has one, because that is what somebody
+// recognises in a list of twenty targets. The address has to stay positional,
+// because the box that holds a missing id is drawn before anybody types one
+// into it - so the refusal about it cannot be addressed by the id it lacks.
+//
+// It renders as the prose, so every message built with %s reads as it did
+// before this type existed.
+type spot struct {
+	says string
+	key  string
+}
+
+func (s spot) String() string { return s.says }
+
+// of names a setting inside this spot: targets[2] and "size" make
+// targets[2].size. A dotted setting is passed through, for the settings that
+// have a part of their own such as expected.reason.
+func (s spot) of(setting string) string {
+	if s.key == "" {
+		return setting
+	}
+	return s.key + "." + setting
+}
+
+// entry names one item of a list inside this spot, counted from one the way the
+// prose counts, so the two halves agree about which entry is meant.
+func (s spot) entry(list string, index int) spot {
+	return spot{
+		says: fmt.Sprintf("%s: %s entry %d", s.says, list, index+1),
+		key:  fmt.Sprintf("%s.%s[%d]", s.key, list, index+1),
+	}
+}
+
+// targetSpot is where one entry of the targets list is.
+func targetSpot(index int, id string) spot {
+	s := spot{
+		says: fmt.Sprintf("target %d", index+1),
+		key:  fmt.Sprintf("targets[%d]", index+1),
+	}
+	if id != "" {
+		s.says = fmt.Sprintf("target %q", id)
+	}
+	return s
 }
 
 func (p *problems) err() error {

@@ -138,11 +138,20 @@ type validateReport struct {
 }
 
 // validateProblem carries the three parts every refusal in this tool has: what
-// is wrong, why the rule exists, and what to do instead.
+// is wrong, why the rule exists, and what to do instead, plus where it is.
+//
+// The address is additive and stays omitted when there is none, because a
+// problem about the document as a whole has no setting to name. A reader that
+// only knows the three parts keeps working.
 type validateProblem struct {
 	What string `json:"what"`
 	Why  string `json:"why,omitempty"`
 	Fix  string `json:"fix,omitempty"`
+	// At is the setting the problem is about, as a recipe key with a 1-based
+	// index where a list is involved: targets[2].size. A script that groups a
+	// report by field needs this rather than the sentence, which names a target
+	// by its id and cannot be split back apart reliably.
+	At string `json:"at,omitempty"`
 }
 
 // loadRecipeReporting is loadRecipe with the option of a machine readable
@@ -169,7 +178,7 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 		var invalid *recipe.ValidationError
 		if errors.As(err, &invalid) {
 			for _, p := range invalid.Problems {
-				report.Problems = append(report.Problems, validateProblem{What: p.What, Why: p.Why, Fix: p.Fix})
+				report.Problems = append(report.Problems, validateProblem{What: p.What, Why: p.Why, Fix: p.Fix, At: p.At})
 			}
 		} else {
 			report.Problems = append(report.Problems, validateProblem{What: err.Error()})

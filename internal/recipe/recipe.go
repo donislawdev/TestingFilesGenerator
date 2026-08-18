@@ -265,15 +265,15 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 	}
 	switch {
 	case raw.Version == nil:
-		p.add("the recipe has no version",
+		p.add("version", "the recipe has no version",
 			"every recipe declares the schema version it was written against",
 			fmt.Sprintf("add version: %d as the first line", SchemaVersion))
 	case !versionIsNumber:
-		p.add(fmt.Sprintf("version %q is not a whole number", raw.Version.text),
+		p.add("version", fmt.Sprintf("version %q is not a whole number", raw.Version.text),
 			"the version decides how the rest of the file is read, so it is never guessed at",
 			fmt.Sprintf("write version: %d", SchemaVersion))
 	case version != SchemaVersion:
-		p.add(fmt.Sprintf("version %d is not a schema this build knows", version),
+		p.add("version", fmt.Sprintf("version %d is not a schema this build knows", version),
 			fmt.Sprintf("this build understands version %d", SchemaVersion),
 			"upgrade the tool, or write the recipe against the version above")
 	}
@@ -282,7 +282,7 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 	raw.applySettings(p, rec)
 
 	if len(raw.Targets) == 0 {
-		p.add("the recipe asks for no files",
+		p.add("targets", "the recipe asks for no files",
 			"a recipe without targets has nothing to produce",
 			"add at least one entry under targets:")
 		return rec
@@ -293,7 +293,7 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 		t := rt.validate(p, i, rec.Defaults)
 		if t.ID != "" {
 			if seen[t.ID] {
-				p.add(fmt.Sprintf("target id %q is used twice", t.ID),
+				p.add(targetSpot(i, t.ID).of("id"), fmt.Sprintf("target id %q is used twice", t.ID),
 					"an id identifies a target, anchors its seed and links it to the manifest",
 					"give one of them a different id")
 			}
@@ -315,12 +315,12 @@ func (raw rawRecipe) refuseUnsupported(p *problems) {
 			"remove the line - the manifest records the version that ran")
 	}
 	if raw.Locale != nil && *raw.Locale != "en" {
-		p.add(fmt.Sprintf("locale %q is not available in this build", *raw.Locale),
+		p.add("locale", fmt.Sprintf("locale %q is not available in this build", *raw.Locale),
 			"generated content is English only so far",
 			"use locale: en, or leave the line out")
 	}
 	if raw.AllowNondeterministic != nil && *raw.AllowNondeterministic {
-		p.add("allow_nondeterministic: true has nothing to allow in this build",
+		p.add("allow_nondeterministic", "allow_nondeterministic: true has nothing to allow in this build",
 			"every format here repeats to the byte, so no consent is needed",
 			"remove the line - it will be needed by the formats that use a system encoder")
 	}
@@ -348,7 +348,7 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 	if raw.Seed != nil {
 		n, ok := raw.Seed.number()
 		if !ok {
-			p.add(fmt.Sprintf("seed %q is not a whole number", raw.Seed.text),
+			p.add("seed", fmt.Sprintf("seed %q is not a whole number", raw.Seed.text),
 				"the seed decides every byte of the run, so it is read exactly as written and never guessed at",
 				"write a decimal number such as seed: 20260802")
 		} else {

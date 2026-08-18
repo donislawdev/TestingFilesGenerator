@@ -119,8 +119,16 @@ var reachableFromTheWindow = []string{
 //
 // Some entries are here for a second reason - the engine refuses them too, so
 // neither surface has them. extends, with, policy, engine, targets.mutations,
-// targets.fill and defaults.fill are all answered today with "not in this
-// build yet". They stay on this list because a key nobody has built is still a
+// targets.fill, defaults.fill and output.split_threshold are all answered today
+// with "not in this build yet".
+//
+// That is eight, and this sentence said seven until 2026-08-18: it had left out
+// output.split_threshold, which recipe.go has refused all along. Counted from
+// the code that does the refusing rather than from this list, which is the only
+// way it could have been found - a comment has no guard, and the number here
+// looked as settled as the ones a test prints.
+//
+// They stay on this list because a key nobody has built is still a
 // key the window cannot produce, and separating the two reasons would be a
 // second list to keep in step for no gain.
 var notYetReachable = []string{

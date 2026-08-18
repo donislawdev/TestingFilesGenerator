@@ -15,6 +15,15 @@ because it turns other people's test suites red.
 ## [Unreleased]
 
 ### Added
+- **`validate --json` says which setting each problem is about.** Every entry under
+  `problems` gains an `at` field naming the setting, as a recipe key with a
+  position where a list is involved - `targets[2].size`, `targets[1].contains[1].format`,
+  `seed`. A script that groups a refused recipe by field had only the sentence
+  before, and the sentence names a target by its id, which a target refused for
+  having no id does not have. The field is left out when a problem is about the
+  document as a whole rather than one of its settings, so read it as optional.
+  The three parts beside it - `what`, `why` and `fix` - are unchanged.
+
 - **The three files of a `--boundary` set say how far from the limit they are.**
   They were `<id>_under_limit`, `<id>_at_limit` and `<id>_over_limit`, which left
   out the number that matters: each is exactly one byte from the limit. They are

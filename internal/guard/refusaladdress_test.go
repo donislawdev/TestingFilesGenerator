@@ -1,0 +1,335 @@
+package guard
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+)
+
+// A refused recipe says which setting each of its problems is about, and says it
+// in a form something other than a person can act on.
+//
+// RC7 has always reported every problem at once, and the sentences have always
+// named the target: "target 2 has no id". That is the right thing to read and
+// the wrong thing to look a widget up by. The window marks the box a refusal is
+// about by asking a registry keyed on the setting (internal/gui/parts.Fields),
+// so a screen that edits a recipe would have had to take the sentence apart to
+// find the box - and the sentence names a target by its id, which is exactly the
+// thing a target refused for having no id does not have.
+//
+// So a problem carries an address beside its prose: a recipe key with a 1-based
+// index wherever a list is involved. Added on 2026-08-18 for the recipe screen,
+// and it reaches "validate --json" in the same step, because a script grouping a
+// report by field needed it for the same reason and had the same nothing.
+//
+// Two halves, and the second is the one that keeps this honest. The first says
+// the addresses are the ones expected, so an address that loses its setting and
+// points at the target as a whole is caught. The second says every address
+// resolves against recipe.Keys() - which is derived from the structures that
+// read a recipe rather than typed out - so an address naming a setting no recipe
+// has cannot pass. Neither half catches what the other does: a plausible address
+// for the wrong field passes the second, and a made up vocabulary that is
+// internally consistent passes the first.
+func TestEveryRecipeRefusalSaysWhichSettingItIsAbout(t *testing.T) {
+	cases := []struct {
+		name string
+		src  string
+		want []string
+	}{
+		{
+			name: "the settings of the document itself",
+			src: `version: 1
+seed: nonsense
+locale: fr
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+`,
+			// In document order, which is the order refuseUnsupported runs in
+			// before the settings are applied. RC7 reports every problem at once
+			// and the order has to be the same on two runs of one recipe.
+			want: []string{"locale", "seed"},
+		},
+		{
+			name: "a target missing the two things it cannot do without",
+			src: `version: 1
+targets:
+  - size: 1kb
+`,
+			want: []string{"targets[1].id", "targets[1].format"},
+		},
+		{
+			// The prose says target "pngs" and the address says targets[1],
+			// and that difference is the reason this field exists.
+			name: "a count that is not a count",
+			src: `version: 1
+targets:
+  - id: pngs
+    format: png
+    count: many
+    size: 1kb
+`,
+			want: []string{"targets[1].count"},
+		},
+		{
+			// Each clash is addressed to the first setting its sentence names,
+			// because a refusal has one address and a clash has two boxes.
+			name: "two ways of stating one size",
+			src: `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+    size-range: 1kb-8kb
+`,
+			want: []string{"targets[1].size"},
+		},
+		{
+			name: "a boundary beside a count",
+			src: `version: 1
+targets:
+  - id: a
+    format: txt
+    boundary: 10mb
+    count: 3
+`,
+			want: []string{"targets[1].count"},
+		},
+		{
+			name: "a range whose ends are not sizes",
+			src: `version: 1
+targets:
+  - id: a
+    format: txt
+    size-range: small-large
+`,
+			want: []string{"targets[1].size-range"},
+		},
+		{
+			name: "an expectation and the reason inside it",
+			src: `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+    expected:
+      outcome: reject
+      reason: made_up
+`,
+			want: []string{"targets[1].expected.reason"},
+		},
+		{
+			name: "an outcome nobody knows",
+			src: `version: 1
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+    expected: probably
+`,
+			want: []string{"targets[1].expected"},
+		},
+		{
+			// The property name is part of the address, because a format
+			// declares a field per property and every one of them is drawn.
+			name: "a property that is a block",
+			src: `version: 1
+targets:
+  - id: a
+    format: png
+    size: 4kb
+    properties:
+      width:
+        - 1
+        - 2
+`,
+			want: []string{"targets[1].properties.width"},
+		},
+		{
+			name: "an entry of a contains list",
+			src: `version: 1
+targets:
+  - id: arch
+    format: zip
+    contains:
+      - format: pdf
+`,
+			want: []string{"targets[1].contains[1].size"},
+		},
+		{
+			// A key this build refuses is addressed too. A screen has to be
+			// able to mark it rather than leave the reader hunting.
+			name: "keys this build has not built",
+			src: `version: 1
+policy:
+  on_missing_font: fail
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+    fill: random
+`,
+			want: []string{"policy", "targets[1].fill"},
+		},
+		{
+			name: "a document with no targets at all",
+			src: `version: 1
+`,
+			want: []string{"targets"},
+		},
+		{
+			name: "a version that is not one",
+			src: `version: later
+targets:
+  - id: a
+    format: txt
+    size: 1kb
+`,
+			want: []string{"version"},
+		},
+	}
+
+	known := map[string]bool{}
+	for _, k := range recipe.Keys() {
+		known[k] = true
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := recipe.Parse([]byte(c.src), "recipe.yaml")
+			var bad *recipe.ValidationError
+			if !errors.As(err, &bad) {
+				t.Fatalf("this recipe was meant to be refused, and the answer was %v", err)
+			}
+
+			var got []string
+			for _, p := range bad.Problems {
+				if p.At == "" {
+					t.Errorf("no address on the refusal %q.\n"+
+						"Every problem a recipe produces names the setting it is about, so a\n"+
+						"surface can mark the box rather than take the sentence apart.", p.What)
+					continue
+				}
+				got = append(got, p.At)
+				assertAddressResolves(t, known, p.At, p.What)
+			}
+
+			if strings.Join(got, ", ") != strings.Join(c.want, ", ") {
+				t.Errorf("the addresses of this refusal are not the ones expected.\n"+
+					"  wanted: %s\n"+
+					"     got: %s\n"+
+					"An address that names the target but not the setting looks right here and\n"+
+					"leaves a window with nothing to mark.",
+					strings.Join(c.want, ", "), strings.Join(got, ", "))
+			}
+		})
+	}
+}
+
+// The address reaches the machine readable report, and not only the type inside
+// the package.
+//
+// "validate --json" is what a script reads, and a script grouping a refused
+// recipe by field is the reason outside the window for this field to exist. It
+// is carried across in one line, which is exactly the kind of line that gets
+// dropped in a refactor with every other guard staying green - the address would
+// still be right everywhere it was measured and absent everywhere it was used.
+func TestTheMachineReadableReportCarriesTheAddressOfEachRefusal(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "recipe.yaml")
+	// Two problems rather than one, because the report has to carry an address
+	// per problem and a single one cannot show that.
+	if err := os.WriteFile(path, []byte(`version: 1
+targets:
+  - size: 1kb
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var out, errOut bytes.Buffer
+	if code := cli.Run(context.Background(), []string{"validate", path, "--json"}, &out, &errOut); code == cli.ExitOK {
+		t.Fatalf("this recipe was meant to be refused, and validate was happy with it")
+	}
+
+	// The refusal goes to the error stream, because a failed run writes nothing
+	// to stdout - which is its own row of the regression surface.
+	var report struct {
+		Problems []struct {
+			What string `json:"what"`
+			At   string `json:"at"`
+		} `json:"problems"`
+	}
+	if err := json.Unmarshal(errOut.Bytes(), &report); err != nil {
+		t.Fatalf("the report is not readable as JSON: %v\n%s", err, errOut.String())
+	}
+	if len(report.Problems) == 0 {
+		t.Fatalf("the report carries no problems at all:\n%s", errOut.String())
+	}
+
+	want := map[string]bool{
+		"targets[1].id":     true,
+		"targets[1].format": true,
+	}
+	for _, p := range report.Problems {
+		if p.At == "" {
+			t.Errorf("the report gives no address for %q.\n"+
+				"A script that groups a refusal by field has the sentence and nothing\n"+
+				"else, and the sentence names a target by an id it does not have.", p.What)
+			continue
+		}
+		delete(want, p.At)
+	}
+	for missing := range want {
+		t.Errorf("no problem in the report is addressed to %q, and one was expected there", missing)
+	}
+}
+
+// index is the 1-based position of a list entry, which comes out of an address
+// before it is compared with the key it has to be one of.
+var index = regexp.MustCompile(`\[[0-9]+\]`)
+
+// carriesParts is every setting whose address may go one level deeper than the
+// keys do, and it is a named list rather than a rule on purpose.
+//
+// These three hold values a recipe invents: the properties of a format, the
+// parts of an expectation, the entries of a contains list. recipe.Keys() stops
+// at each of them because there is nothing further to walk - a map and an "any"
+// have no fields - so their children cannot be checked against anything. Naming
+// them means a fourth one is a deliberate act rather than a hole that opens
+// quietly.
+var carriesParts = map[string]bool{
+	"targets.properties": true,
+	"targets.expected":   true,
+	"targets.contains":   true,
+}
+
+func assertAddressResolves(t *testing.T, known map[string]bool, at, what string) {
+	t.Helper()
+
+	key := index.ReplaceAllString(at, "")
+	if known[key] {
+		return
+	}
+	if cut := strings.LastIndex(key, "."); cut > 0 {
+		if parent := key[:cut]; known[parent] && carriesParts[parent] {
+			return
+		}
+	}
+
+	t.Errorf("the address %q of the refusal %q is not a setting a recipe has.\n"+
+		"Stripped of its indices it reads %q, which is not among the keys\n"+
+		"recipe.Keys() derives from the structures that read a recipe. An address\n"+
+		"nothing can resolve is worse than none: a surface would look for a box\n"+
+		"under that name, find nothing, and say nothing about it.", at, what, key)
+}
