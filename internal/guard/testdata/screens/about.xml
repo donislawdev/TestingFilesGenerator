@@ -9,13 +9,16 @@
 					<widget pos="104,0" size="63x32" type="*container.tabButton">
 						<text alignment="center" bold pos="6,6" size="51x20">Presets</text>
 					</widget>
-					<widget pos="173,0" size="54x32" type="*container.tabButton">
+					<widget pos="173,0" size="121x32" type="*container.tabButton">
+						<text alignment="center" bold pos="6,6" size="109x20">Several batches</text>
+					</widget>
+					<widget pos="300,0" size="54x32" type="*container.tabButton">
 						<text alignment="center" bold color="hyperlink" pos="6,6" size="42x20">About</text>
 					</widget>
 				</container>
 			</container>
 			<rectangle fillColor="shadow" pos="0,32" size="1088x1"/>
-			<rectangle fillColor="hyperlink" pos="173,32" radius="3" size="54x1"/>
+			<rectangle fillColor="hyperlink" pos="300,32" radius="3" size="54x1"/>
 			<container pos="0,38" size="1088x1250">
 				<container pos="134,0" size="820x1250">
 					<widget size="820x39" type="*widget.Label">

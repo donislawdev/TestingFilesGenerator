@@ -38,15 +38,19 @@ import (
 // that is dropped on the way to the engine looks exactly like drawing one that
 // works.
 //
-// So the section keys are absent on purpose. recipe:targets and recipe:output
-// name a part of a document rather than a setting, no control corresponds to
-// either, and the window produces one target rather than a list - it builds an
-// engine target directly and writes no recipe. They arrive with the screen that
-// edits recipes.
-//
 // Filled on 2026-08-05 with the first generate window. It had been empty since
 // the guard was armed on 2026-08-03, which was the point: the distance started
 // as the whole list rather than as whatever was left after nobody was watching.
+//
+// This is where the section keys used to be ruled out, and the paragraph is
+// replaced rather than deleted because it explained a real thing. It said
+// recipe:targets and recipe:output name a part of a document rather than a
+// setting, that no control corresponds to either, and that the window produced
+// one target rather than a list - building an engine target directly and writing
+// no recipe. It ended "they arrive with the screen that edits recipes", and on
+// 2026-08-18 that screen arrived. It composes a document and the run is made
+// from what comes back out of it, so the sections are produced rather than
+// merely named.
 var reachableFromTheWindow = []string{
 	// A named question, its parameters drawn by the same code that draws a
 	// format's settings - because a preset parameter IS a format.Property.
@@ -110,6 +114,29 @@ var reachableFromTheWindow = []string{
 	"recipe:targets.name",
 	"recipe:targets.properties",
 	"recipe:targets.size",
+
+	// The recipe screen, 2026-08-18. Several batches in one run, with the ways
+	// of asking that one target's worth of form had no room for.
+	//
+	// Every one of these is pressed by TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten,
+	// which runs the screen and reads the manifest off the disk - the narrow bar
+	// this list is meant to be held to, rather than "there is a box for it".
+	//
+	// The three section keys arrive here because the screen composes a document
+	// with those sections in it and the run is made from what comes back out.
+	// They were absent before for the reason written above: no control
+	// corresponds to a section, and the screens that produced one target wrote
+	// no recipe at all.
+	"recipe:targets",
+	"recipe:targets.group",
+	"recipe:targets.boundary",
+	"recipe:targets.contains",
+	"recipe:targets.expected",
+	"recipe:targets.size-range",
+	"recipe:defaults",
+	"recipe:defaults.label",
+	"recipe:output",
+	"recipe:output.manifest",
 }
 
 // notYetReachable is everything the engine can do that the window cannot.
@@ -133,24 +160,14 @@ var reachableFromTheWindow = []string{
 // second list to keep in step for no gain.
 var notYetReachable = []string{
 	"recipe:allow_nondeterministic",
-	"recipe:targets.group",
-	"recipe:defaults",
 	"recipe:defaults.fill",
-	"recipe:defaults.label",
 	"recipe:engine",
 	"recipe:extends",
 	"recipe:locale",
-	"recipe:output",
-	"recipe:output.manifest",
 	"recipe:output.split_threshold",
 	"recipe:policy",
-	"recipe:targets",
-	"recipe:targets.boundary",
-	"recipe:targets.contains",
-	"recipe:targets.expected",
 	"recipe:targets.fill",
 	"recipe:targets.mutations",
-	"recipe:targets.size-range",
 	"recipe:version",
 	"recipe:with",
 }

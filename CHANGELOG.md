@@ -15,6 +15,22 @@ because it turns other people's test suites red.
 ## [Unreleased]
 
 ### Added
+- **A third screen in the window: several batches in one run.** Until now the window
+  produced one batch of files at a time, and everything else a recipe can ask for was
+  reachable only from the command line. The new screen holds a list of batches and runs
+  them together, with the settings the single batch screen had no room for: a size range,
+  a boundary set, a class shared by several batches, a declared expectation and its reason,
+  and the files an archive should hold. Beside them sit the settings the whole run shares -
+  the output directory, the name of the manifest, the seed, and whether a label goes inside
+  each file.
+
+  It reads and writes no recipe file. The batches live in the window and the run is made
+  from them, so nothing is opened and nothing is saved.
+
+  A refusal marks the box it came from, in the batch it came from - so two batches both
+  asking for a size are told apart, and a run refused for three reasons marks three boxes
+  rather than the first.
+
 - **`validate --json` says which setting each problem is about.** Every entry under
   `problems` gains an `at` field naming the setting, as a recipe key with a
   position where a list is involved - `targets[2].size`, `targets[1].contains[1].format`,

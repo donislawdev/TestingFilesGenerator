@@ -9,7 +9,10 @@
 					<widget pos="104,0" size="63x32" type="*container.tabButton">
 						<text alignment="center" bold pos="6,6" size="51x20">Presets</text>
 					</widget>
-					<widget pos="173,0" size="54x32" type="*container.tabButton">
+					<widget pos="173,0" size="121x32" type="*container.tabButton">
+						<text alignment="center" bold pos="6,6" size="109x20">Several batches</text>
+					</widget>
+					<widget pos="300,0" size="54x32" type="*container.tabButton">
 						<text alignment="center" bold pos="6,6" size="42x20">About</text>
 					</widget>
 				</container>

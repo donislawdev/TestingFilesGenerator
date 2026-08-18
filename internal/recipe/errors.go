@@ -173,7 +173,11 @@ func (s spot) entry(list string, index int) spot {
 func targetSpot(index int, id string) spot {
 	s := spot{
 		says: fmt.Sprintf("target %d", index+1),
-		key:  fmt.Sprintf("targets[%d]", index+1),
+		// Built from the same helper a surface uses, so the address a refusal
+		// arrives with and the address a box is registered under cannot differ
+		// in their shape. What they can still differ in is which setting was
+		// meant, and a guard covers that.
+		key: targetPrefix(index + 1),
 	}
 	if id != "" {
 		s.says = fmt.Sprintf("target %q", id)

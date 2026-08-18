@@ -238,6 +238,48 @@ func screenScenes() []screenScene {
 		{name: "preset-menu-setting", tab: text.TabPresets, after: func(t *testing.T, s scene) {
 			menuUnder(t, s.tab, "format").Tapped(&fyne.PointEvent{})
 		}},
+
+		// The recipe screen, which arrived on 2026-08-18. It has states neither
+		// of the others can be put into, and every one of them is here because a
+		// state with no picture is a state nobody has looked at - docs/UX.md
+		// section 7.0 gate 1.
+		{name: "recipe", tab: text.TabRecipe},
+		// A second batch. This is the state the whole screen exists for, and it
+		// is also the one that proves the form does not fall apart when the
+		// blocks repeat - two batches means two fields called Size, two called
+		// Format, and a heading over each block saying which is which.
+		{name: "recipe-two-batches", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddBatch)
+		}},
+		// Everything wrong at once on an untouched screen: no group name and no
+		// size. Both marks belong to the first batch and both have to appear,
+		// which is the rule reported on 2026-08-18 - every bad box, not the
+		// first one.
+		{name: "recipe-refused", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonPreview)
+		}},
+		// One batch filled in and one not, so the marks are in one block and the
+		// other is clean. That is the addressing work arriving on screen: the
+		// refusal says "target 1" and the outline is round the boxes of batch 1.
+		//
+		// The second batch is the one that gets filled, and that is the helper
+		// rather than the intention: fillField finds a box by its label, and two
+		// batches means two boxes labelled "Group name". Left as it is, because
+		// the state is worth a picture either way and the name now says which
+		// block is which. Marking the RIGHT batch is asserted by
+		// TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch, which addresses
+		// fields by position instead of by label.
+		{name: "recipe-refused-with-one-batch-filled", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddBatch)
+			fillField(t, s.tab, text.FieldTargetID, "second")
+			fillField(t, s.tab, text.FieldSize, "1kb")
+			pressNamed(t, s.tab, text.ButtonPreview)
+		}},
+		// What an archive holds, which is the one nested repeating thing in this
+		// window and had no picture anywhere before this screen.
+		{name: "recipe-contents", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddContents)
+		}},
 	}
 }
 

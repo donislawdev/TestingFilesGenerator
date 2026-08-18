@@ -145,7 +145,7 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 		// sentence built from Allowed, so there is nothing to hold back - and a
 		// button that opened the line already printed underneath would be the
 		// same words twice.
-		objects = append(objects, into.Add(p.Name, p.Name, detailOf(p), NoDetail, f.Control))
+		objects = append(objects, into.Add(p.Name, p.Name, PropertyDetail(p), NoDetail, f.Control))
 	}
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn
@@ -158,9 +158,14 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 	return fields, objects
 }
 
-// detailOf is what a property takes and what it is for, in that order. What it
-// takes comes first because that is what somebody looking at an empty box needs.
-func detailOf(p format.Property) string {
+// PropertyDetail is what a property takes and what it is for, in that order.
+// What it takes comes first because that is what somebody looking at an empty
+// box needs.
+//
+// Exported because two screens draw these fields now, and the sentence has to be
+// composed one way. A screen assembling it itself would be D1 breaking in the
+// place nobody compares: two surfaces describing one format in two wordings.
+func PropertyDetail(p format.Property) string {
 	detail := p.Allowed()
 	if p.Detail != "" {
 		detail += ". " + p.Detail

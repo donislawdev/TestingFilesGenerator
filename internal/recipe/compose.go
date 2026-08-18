@@ -290,3 +290,70 @@ func firstControl(value string) (rune, bool) {
 	}
 	return 0, false
 }
+
+// The names of the settings a surface has to address, and the shape of an
+// address itself.
+//
+// Exported for the window. A screen that edits a recipe draws a field per
+// setting and has to register each under the name a refusal will arrive with, so
+// without these it would hold fifteen string literals that agree with this
+// package by coincidence - and the day one of them was misspelled, the refusal
+// would land at the foot of the form with the box beside it unmarked. Silent,
+// and green in every test that did not press that exact field.
+//
+// So the vocabulary lives here, where the reader that produces the addresses
+// lives too. What that still cannot prove is that a screen registers the RIGHT
+// name for a given box: both sides can agree and both be wrong. That is what
+// TestEveryRefusalAboutABatchMarksThatBatchsBox is for, and the two together are
+// what make the pairing safe rather than merely consistent.
+const (
+	KeyTargets  = "targets"
+	KeyVersion  = "version"
+	KeySeed     = "seed"
+	KeyLocale   = "locale"
+	KeyPolicy   = "policy"
+	KeyEngine   = "engine"
+	KeyExtends  = "extends"
+	KeyWith     = "with"
+	KeyContains = "contains"
+
+	KeyID             = "id"
+	KeyFormat         = "format"
+	KeyCount          = "count"
+	KeySize           = "size"
+	KeySizeRange      = "size-range"
+	KeyBoundary       = "boundary"
+	KeyName           = "name"
+	KeyGroup          = "group"
+	KeyLabel          = "label"
+	KeyFill           = "fill"
+	KeyMutations      = "mutations"
+	KeyProperties     = "properties"
+	KeyExpected       = "expected"
+	KeyExpectedReason = "expected.reason"
+
+	KeyOutputDir      = "output.dir"
+	KeyOutputManifest = "output.manifest"
+	KeyDefaultsLabel  = "defaults.label"
+)
+
+// TargetAddress is where one setting of one target lives.
+//
+// The position counts from one, matching the prose: a refusal about the second
+// target says "target 2", and a screen numbering its blocks from zero would send
+// somebody to the wrong one.
+func TargetAddress(position int, setting string) string {
+	return targetPrefix(position) + "." + setting
+}
+
+// targetPrefix is one target without a setting named yet, which is what a
+// refusal about the target as a whole is addressed to.
+func targetPrefix(position int) string {
+	return fmt.Sprintf("%s[%d]", KeyTargets, position)
+}
+
+// ContentAddress is where one setting of one contains entry lives. Both
+// positions count from one, for the reason above.
+func ContentAddress(target, entry int, setting string) string {
+	return fmt.Sprintf("%s.%s[%d].%s", targetPrefix(target), KeyContains, entry, setting)
+}

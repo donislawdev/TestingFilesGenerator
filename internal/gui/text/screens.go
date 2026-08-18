@@ -172,3 +172,95 @@ func SettingsFor(formatID string) string {
 func TooManyFiles(count int64, reason error) string {
 	return fmt.Sprintf("this run asks for %d files - %s", count, reason)
 }
+
+// The recipe screen: several batches in one run.
+//
+// It is the third work screen and the one the parity guard was waiting for.
+// Everything the engine can be asked for that the single batch screen has no
+// room for lives here - a second batch, a size range, a boundary, a class, a
+// declared expectation, the files inside an archive.
+const (
+	HeadingRecipe = "Run several batches together"
+
+	// TabRecipe stands beside "Single batch", and the pair is deliberate: the
+	// difference between the two screens is how many batches, not how advanced
+	// the person is. "Advanced" would have said the other screen is for
+	// beginners, which is not true of anybody generating one batch of files.
+	TabRecipe = "Several batches"
+
+	SectionBatches = "Batches"
+)
+
+// BatchHeading names one batch in the list, counted the way the refusals count.
+//
+// From one rather than from zero, because a refusal about the second batch says
+// "target 2" and a heading saying "Batch 1" above it would send somebody to the
+// wrong block. A function because a number in the middle of a phrase does not
+// sit in the same place in every language.
+func BatchHeading(n int) string {
+	return fmt.Sprintf("Batch %d", n)
+}
+
+// ContentsHeading introduces the files an archive is told to hold.
+const ContentsHeading = "Files inside each archive"
+
+// Field labels used only on the recipe screen. The rest are shared with the
+// single batch screen, because the same setting keeps the same word.
+//
+// FieldGroup is "Class" rather than "Group", and the reason is a collision
+// already in the window: the single batch screen labels a target's id "Group
+// name", because that is what an id does for the person looking at it. Two
+// fields called group on one screen would be worse than a word chosen for the
+// idea, and a class of case is what this actually is.
+const (
+	FieldSizeRange = "Size range"
+	FieldBoundary  = "Around a limit"
+	FieldGroup     = "Class"
+	FieldExpected  = "Expected outcome"
+	FieldReason    = "Why"
+	FieldManifest  = "Manifest file name"
+)
+
+// The line under each of the recipe screen's own fields.
+const (
+	HintSizeRange = "A different size for every file."
+	HintBoundary  = "Three files: one byte under the limit, one on it, one over."
+	HintGroup     = "Marks several batches as one kind of case."
+	HintExpected  = "What the system under test should do with these files."
+	HintReason    = "Which rule should stop them."
+	HintManifest  = "The record of what this run produced."
+)
+
+// The longer explanation behind the button beside each of them.
+const (
+	DetailSizeRange = "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
+	DetailBoundary  = "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
+	DetailGroup     = "It reaches the manifest, so a test can assert about a whole class of case at once."
+	DetailExpected  = "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
+	DetailReason    = "From a closed list, so a report can group by reason. A reason needs an outcome beside it."
+	DetailManifest  = "It goes in the output directory beside the files."
+)
+
+// The three ways of saying how big, offered side by side.
+//
+// One box each rather than a mode to choose first, and the recipe reader is what
+// makes that safe: stating two of them is a refusal it already words and
+// addresses, so filling in two marks the box rather than being quietly resolved.
+// A mode would have been a fourth rule for the window to keep in step.
+const HintSizeExact = "One size for every file. Fill in one of these three."
+
+// Buttons on the recipe screen.
+const (
+	ButtonAddBatch       = "Add a batch"
+	ButtonRemoveBatch    = "Remove"
+	ButtonAddContents    = "Add files inside"
+	ButtonRemoveContents = "Remove"
+)
+
+// PlaceholderNotStated stands in a list nobody has chosen from.
+//
+// A list has no empty position to select, so the placeholder is what says the
+// setting was left alone - and leaving it alone has to stay possible, because a
+// window whose every field arrives carrying a value can never say "I did not
+// state this". Untouchable rule 5.
+const PlaceholderNotStated = "not stated"

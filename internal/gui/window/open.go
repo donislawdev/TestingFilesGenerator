@@ -24,6 +24,7 @@ import (
 func Open(h Host) {
 	gen := NewGenerate(h)
 	pre := NewPreset(h)
+	rec := NewRecipe(h)
 
 	// Tabs across the top rather than buttons at the foot, reported from use on
 	// 2026-08-11. The way between the screens used to sit in the row of actions
@@ -39,6 +40,7 @@ func Open(h Host) {
 	tabs := container.NewAppTabs(
 		container.NewTabItem(text.TabOneTarget, gen.Object()),
 		container.NewTabItem(text.TabPresets, pre.Object()),
+		container.NewTabItem(text.TabRecipe, rec.Object()),
 		container.NewTabItem(text.TabAbout, About()),
 	)
 
@@ -52,12 +54,31 @@ func Open(h Host) {
 	// Carried at the moment of moving rather than bound both ways, because
 	// this is the only moment the difference can become visible - and one
 	// direction of copying cannot loop.
+	// Which screen was being looked at, so the directory can be carried from it
+	// to the next one. Two screens could be written as a switch naming the other
+	// one, and a third makes "the other one" ambiguous - the answer is where
+	// somebody has just been, which is a thing to remember rather than derive.
+	working := map[string]interface {
+		OutDir() string
+		SetOutDir(string)
+	}{
+		text.TabOneTarget: gen,
+		text.TabPresets:   pre,
+		text.TabRecipe:    rec,
+	}
+	showing := text.TabOneTarget
+
 	tabs.OnSelected = func(item *container.TabItem) {
-		switch item.Text {
-		case text.TabOneTarget:
-			gen.SetOutDir(pre.OutDir())
-		case text.TabPresets:
-			pre.SetOutDir(gen.OutDir())
+		from, leaving := working[showing]
+		to, arriving := working[item.Text]
+		if leaving && arriving {
+			to.SetOutDir(from.OutDir())
+		}
+		// Remembered even when the new screen has no directory of its own, so
+		// that About in the middle of two work screens does not strand the
+		// value on the screen before it.
+		if arriving {
+			showing = item.Text
 		}
 	}
 
@@ -74,6 +95,7 @@ func Open(h Host) {
 	h.SetCloseIntercept(func() {
 		gen.Stop()
 		pre.Stop()
+		rec.Stop()
 		h.Close()
 	})
 
