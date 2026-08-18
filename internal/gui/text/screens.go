@@ -264,3 +264,27 @@ const (
 // window whose every field arrives carrying a value can never say "I did not
 // state this". Untouchable rule 5.
 const PlaceholderNotStated = "not stated"
+
+// ButtonDonate asks for money towards the work, and it is a word somebody reads
+// so it is translated like every other.
+//
+// "Donate" rather than "Support" or "Sponsor": it says what pressing it leads
+// to. Support reads like a help desk, which is the one thing this button is
+// not, and a person looking for help would press it and be asked for money.
+const ButtonDonate = "Donate"
+
+// DetailDonate is what the button leads to, for somebody who wants to know
+// before pressing rather than after.
+const DetailDonate = "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it."
+
+// SupportURL is where the button goes.
+//
+// Here rather than in the window because everything the window says lives here,
+// and a bare address in the middle of a screen file is the same defect as a bare
+// sentence: something a person can end up reading, written where nobody looks
+// for it.
+//
+// Deliberately NOT translated, and that is the difference between this and
+// everything above it. An address is the same in every language, and a
+// translated one would be a broken one.
+const SupportURL = "https://donislawdev.com/support/"

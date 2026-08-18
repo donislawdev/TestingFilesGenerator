@@ -15,6 +15,12 @@ because it turns other people's test suites red.
 ## [Unreleased]
 
 ### Added
+- **A Donate button, top right of the window.** It opens the support page in your
+  browser. The tool is free and stays free - this pays for the time that goes into it.
+
+  The program fetches nothing and sends nothing. It hands the address to your desktop,
+  on a press you made, and that is all it does.
+
 - **A third screen in the window: several batches in one run.** Until now the window
   produced one batch of files at a time, and everything else a recipe can ask for was
   reachable only from the command line. The new screen holds a list of batches and runs

@@ -4,6 +4,7 @@ package gui
 
 import (
 	"io"
+	"net/url"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -70,6 +71,29 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 		}
 		chosen(dir.Path())
 	}, d.Window)
+}
+
+// OpenLink hands an address to the desktop's own browser.
+//
+// The program makes no request. It parses the address and passes it to the
+// toolkit, which passes it to the system - so nothing here fetches anything and
+// nothing is sent. That is the line untouchable rule 8 draws, and the reason the
+// Donate button is not a hole in it.
+//
+// net/url is a parser and not a network package, which the guard over these
+// files agrees with: it refuses net, net/http, crypto/tls and their kin, and
+// this is none of them.
+//
+// A refusal to open is swallowed on purpose. There is nothing useful to say to
+// somebody whose desktop has no browser registered, no screen to say it on that
+// would not be a modal about a button they pressed by curiosity, and no harm
+// done - the address is in the About screen for anybody who wants to type it.
+func (d desktop) OpenLink(address string) {
+	parsed, err := url.Parse(address)
+	if err != nil {
+		return
+	}
+	_ = fyne.CurrentApp().OpenURL(parsed)
 }
 
 func run(errOut io.Writer) int {

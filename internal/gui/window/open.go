@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -99,10 +100,29 @@ func Open(h Host) {
 		h.Close()
 	})
 
+	// Donate sits above the tabs, at the right edge, and it is the only control
+	// in this window that is not about producing files.
+	//
+	// Above rather than among them because the tabs are a set of places to be
+	// and this is not one of them - dropped into that row it would read as a
+	// fourth screen. At the right edge because that is where this window already
+	// puts what you press rather than what you read, which is O93.
+	//
+	// It opens the support page in whatever the desktop uses for the web. The
+	// program fetches nothing and sends nothing, which is what keeps untouchable
+	// rule 8 intact - see the carve out written into it on 2026-08-18.
+	donate := widget.NewButton(text.ButtonDonate, func() {
+		h.OpenLink(text.SupportURL)
+	})
+
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
-	h.SetContent(tabs)
+	h.SetContent(container.NewBorder(
+		container.NewHBox(layout.NewSpacer(), donate),
+		nil, nil, nil,
+		tabs,
+	))
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put

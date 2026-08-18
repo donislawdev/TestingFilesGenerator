@@ -49,6 +49,19 @@ type Host interface {
 	// needs that only a real window can do. A stand in answers it with a path,
 	// which is what lets a guard press the button on a machine with no screen.
 	ChooseDirectory(func(string))
+
+	// OpenLink hands an address to whatever the desktop uses for the web.
+	//
+	// The program does not fetch it. It asks the system to, on a press somebody
+	// made, and sends nothing - which is the line untouchable rule 8 draws and
+	// the reason a Donate button does not break it. See the rule for the
+	// wording, and TestTheDonateButtonOpensTheSupportPage for the guard.
+	//
+	// On the interface for the same reason as the picker above: only a real
+	// window can do it, and a stand in records the address instead - so a guard
+	// can press the button on a machine with no browser and still ask where it
+	// was going to go.
+	OpenLink(url string)
 }
 
 // Generate is the screen that produces files from settings somebody chose.

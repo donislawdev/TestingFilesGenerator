@@ -1,0 +1,7 @@
+# The sponsor button GitHub shows on the repository.
+#
+# One custom address rather than a platform, because the page behind it is ours
+# and can say what the money is for. The key and the quoting are from GitHub's
+# own documentation, checked on 2026-08-18: a custom URL holding a colon has to
+# be quoted, which every https address does.
+custom: ["https://donislawdev.com/support/"]

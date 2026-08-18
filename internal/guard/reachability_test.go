@@ -2,7 +2,9 @@ package guard
 
 import (
 	"fmt"
-
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -227,11 +229,41 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			// everything can be reached, and that the chain stays on the
 			// screen a person is looking at. The order is logged, so a change
 			// to it is visible in a run rather than silent.
+			// The chain also holds what belongs to the WINDOW rather than to a
+			// screen, and since 2026-08-18 there is such a control: Donate sits
+			// above the tabs and is reachable from every one of them. That is
+			// right rather than a leak - UX9 asks that everything reachable with
+			// a mouse is reachable from the keyboard, and this button is on the
+			// screen whichever tab is open.
+			//
+			// Named rather than tolerated. A blanket "anything outside the tab is
+			// fine" would have turned this assertion off, and the thing it
+			// catches - focus wandering into the OTHER tabs, which are in the
+			// canvas and laid out - is exactly what it was written for.
+			chrome := map[string]bool{text.ButtonDonate: true}
 			for _, f := range order {
-				if !onScreen[f] {
-					t.Errorf("Tab reaches %s, which is not on the %q screen. Focus is leaving "+
-						"the screen a person is looking at", describeFocusable(f), tab)
+				if onScreen[f] {
+					continue
 				}
+				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+					continue
+				}
+				t.Errorf("Tab reaches %s, which is not on the %q screen. Focus is leaving "+
+					"the screen a person is looking at", describeFocusable(f), tab)
+			}
+
+			// And the window chrome has to be reachable at all, from every
+			// screen, or the button nobody can Tab to is the one asking for
+			// money.
+			reachedChrome := false
+			for _, f := range order {
+				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+					reachedChrome = true
+				}
+			}
+			if !reachedChrome {
+				t.Errorf("the %q button cannot be reached with Tab from the %q screen (UX9)",
+					text.ButtonDonate, tab)
 			}
 		})
 	}
@@ -294,5 +326,67 @@ func TestEveryTabInTheWindowIsOnTheListGuardsWalk(t *testing.T) {
 	if len(inWindow) != len(allTabs()) {
 		t.Errorf("the window has %d tabs and allTabs names %d.\n  window: %v\n  list:   %v",
 			len(inWindow), len(allTabs()), inWindow, allTabs())
+	}
+}
+
+// The Donate button opens the support page, and it opens nothing else.
+//
+// Two things are asserted and the second is the one that would go wrong quietly.
+// A button that opens no address at all is obvious the first time anybody presses
+// it. A button that opens the WRONG address - a typo in the host, a stale page, a
+// path that has moved - looks identical from the inside of this program and is
+// only ever discovered by somebody landing on a 404 while trying to give money.
+//
+// It also pins the shape of untouchable rule 8. The program hands an address to
+// the desktop and sends nothing, which is what the carve out written into that
+// rule on 2026-08-18 permits. A press that instead fetched something would need a
+// network package inside internal/gui, and TestOurOwnWindowCodeDoesNotReachTheNetwork
+// refuses those - so the two guards together say the whole of it.
+func TestTheDonateButtonOpensTheSupportPage(t *testing.T) {
+	host := &fakeHost{}
+	window.Open(host)
+
+	donate := buttonNamed(host.content, text.ButtonDonate)
+	if donate == nil {
+		t.Fatalf("there is no %q button in the window. It carries: %v",
+			text.ButtonDonate, buttonNames(host.content))
+	}
+	if donate.Disabled() {
+		t.Fatal("the Donate button is disabled, so nobody can give anything")
+	}
+
+	if host.openedCount != 0 {
+		t.Fatalf("something opened %q before anybody pressed anything", host.opened)
+	}
+
+	donate.OnTapped()
+
+	if host.openedCount != 1 {
+		t.Fatalf("pressing Donate asked the window to open %d addresses", host.openedCount)
+	}
+	if host.opened != text.SupportURL {
+		t.Errorf("Donate goes to %q and the support page is %q", host.opened, text.SupportURL)
+	}
+}
+
+// The address the button carries is the one in the sponsor file GitHub reads.
+//
+// Two places name where the money goes: this program and .github/FUNDING.yml.
+// They are read by different people at different times and nothing links them,
+// so the day one moves the other keeps pointing at the old page - and the failure
+// is somebody arriving somewhere that no longer takes payments, which nobody here
+// would ever see.
+func TestTheSponsorFileAndTheWindowAgreeWhereTheMoneyGoes(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", ".github", "FUNDING.yml"))
+	if err != nil {
+		// A fresh clone of a source archive has no .github directory, and this
+		// guard reads a document rather than the code - so it says so and stops
+		// rather than failing for a reason that is not a defect.
+		t.Skipf("no sponsor file to compare against: %v", err)
+	}
+	if !strings.Contains(string(raw), text.SupportURL) {
+		t.Errorf(".github/FUNDING.yml does not name %q, so the button in the window and\n"+
+			"the sponsor button on the repository lead to different places.\nThe file says:\n%s",
+			text.SupportURL, raw)
 	}
 }

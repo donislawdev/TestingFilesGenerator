@@ -58,6 +58,9 @@ type fakeHost struct {
 	closed    int
 	picked    string
 	asked     int
+
+	opened      string
+	openedCount int
 }
 
 func (h *fakeHost) SetContent(o fyne.CanvasObject) { h.content = o }
@@ -68,6 +71,15 @@ func (h *fakeHost) Close()                         { h.closed++ }
 // should go, and asked counts how often it was asked. A real picker needs a
 // real window, and the behaviour worth proving is that the button reaches one
 // and that the answer lands in the field.
+// opened is the last address a screen asked to have opened, and openedCount
+// how often. Recorded rather than followed: a stand in that really opened a
+// browser would put a tab on somebody's screen for every guard that runs, and
+// the behaviour worth proving is which address the button was heading for.
+func (h *fakeHost) OpenLink(address string) {
+	h.opened = address
+	h.openedCount++
+}
+
 func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 	h.asked++
 	// Always, including the empty answer that means somebody changed their
