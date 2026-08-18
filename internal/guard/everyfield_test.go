@@ -176,7 +176,7 @@ func inputsIn(o fyne.CanvasObject) []fyne.CanvasObject {
 	var out []fyne.CanvasObject
 	walk(o, func(obj fyne.CanvasObject) {
 		switch obj.(type) {
-		case *widget.Entry, *parts.Chooser, *widget.Check:
+		case *widget.Entry, *parts.Chooser, *parts.Toggle:
 			out = append(out, obj)
 		}
 	})
@@ -189,7 +189,7 @@ func controlName(o fyne.CanvasObject) string {
 		return fmt.Sprintf("the box holding %q", v.Text)
 	case *parts.Chooser:
 		return fmt.Sprintf("the menu showing %q", v.Selected)
-	case *widget.Check:
+	case *parts.Toggle:
 		return fmt.Sprintf("the switch %q", v.Text)
 	}
 	return fmt.Sprintf("a %T", o)

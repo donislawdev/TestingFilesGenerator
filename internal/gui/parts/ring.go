@@ -143,6 +143,10 @@ type Chooser struct {
 	widget.Select
 
 	ring *Ring
+	// from says whether the focus arriving now was put here by the pointer,
+	// and marked says whether the mark is currently drawn. See PointerFocus.
+	from   PointerFocus
+	marked bool
 	// opened is the list this menu last built, and it is here for a guard.
 	//
 	// The toolkit turns a fyne.Menu into widgets of its own whose type is
@@ -166,9 +170,26 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 
 func (c *Chooser) useRing(r *Ring) { c.ring = r }
 
-// FocusGained and FocusLost pass the news to the toolkit first, because the
-// widget's own appearance depends on it, and then to the edge.
+// FocusGained draws the mark only when the keyboard is what put the focus here.
+//
+// A press with the mouse still moves the keyboard into this control, because it
+// has to - the list that opens is driven by the arrow keys. What it no longer
+// does is SAY so. Reported twice from the screen, on 2026-08-12 and again on
+// 2026-08-18: a menu stays painted blue after a value is chosen, and there is
+// nothing left to press that would take the paint off.
+//
+// See PointerFocus for why this is one rule rather than a fix per control.
 func (c *Chooser) FocusGained() {
+	if c.from.Quiet() {
+		return
+	}
+	c.mark()
+}
+
+// mark turns the drawn state on: the toolkit's own first, because the widget's
+// appearance depends on it, and then the edge.
+func (c *Chooser) mark() {
+	c.marked = true
 	c.Select.FocusGained()
 	if c.ring != nil {
 		c.ring.Focus(true)
@@ -176,11 +197,17 @@ func (c *Chooser) FocusGained() {
 }
 
 func (c *Chooser) FocusLost() {
+	c.marked = false
 	c.Select.FocusLost()
 	if c.ring != nil {
 		c.ring.Focus(false)
 	}
 }
+
+// Marked says whether the keyboard mark is drawn, for a guard. The toolkit
+// keeps the same answer in an unexported field of two different widgets, so
+// reading it off the canvas means reading a colour and deciding what it meant.
+func (c *Chooser) Marked() bool { return c.marked }
 
 // Tapped opens the list with the current value marked in it.
 //
@@ -212,7 +239,9 @@ func (c *Chooser) Tapped(*fyne.PointEvent) {
 		// the overlay machinery.
 		return
 	}
-	canvas.Focus(c)
+	// Quietly: the keyboard comes here so the arrows work, and nothing is drawn
+	// to announce it. See FocusGained.
+	c.from.Quietly(func() { canvas.Focus(c) })
 
 	items := make([]*fyne.MenuItem, 0, len(c.Options))
 	for i := range c.Options {
@@ -241,6 +270,12 @@ func (c *Chooser) Tapped(*fyne.PointEvent) {
 // UX9 asks that whatever the mouse can do the keyboard can - which has to mean
 // the same thing, not a second version of it.
 func (c *Chooser) TypedKey(event *fyne.KeyEvent) {
+	// The keyboard has been used, so from here on it is worth saying where it
+	// is. Somebody who opened this list with the mouse and then reached for the
+	// arrows is somebody who now needs to see which control is listening.
+	if !c.marked {
+		c.mark()
+	}
 	switch event.Name {
 	case fyne.KeySpace, fyne.KeyUp, fyne.KeyDown:
 		c.Tapped(nil)

@@ -68,6 +68,7 @@ var notWords = map[string]string{
 	`"CGO_ENABLED=1"`: "an environment variable handed to the compiler",
 	`"true"`:          "compared against a declared default, never shown",
 	`"\n"`:            "what joins the lines of the status area, not a word",
+	`"\n\n"`:          "the blank line between two refusals the form could not place, not a word",
 	`"%s: %w"`:        "how one error is wrapped around another, both already worded",
 	`"•"`:             "the marker in front of a list item, a shape rather than a word",
 	`"panel"`:         "our name for a colour, in the palette the toolkit asks by name",

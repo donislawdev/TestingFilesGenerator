@@ -12,6 +12,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -126,19 +127,95 @@ func (r *runner) Fields() *parts.Fields { return r.fields }
 // here, which is a second copy of rules the engine owns and the copy that
 // drifts.
 func (r *runner) refuse(err error) {
-	// An interface rather than a case per error type, so a screen shown a kind
-	// of refusal nobody thought about here still gets it placed. The engine,
-	// the format registry and the preset package all answer this and none of
-	// them had to be imported for the question to be asked.
-	var about interface{ AboutSetting() string }
-	if errors.As(err, &about) && about.AboutSetting() != "" {
-		if r.fields.Mark(about.AboutSetting(), err.Error()) {
+	var loose []string
+	for _, one := range spread(err) {
+		// An interface rather than a case per error type, so a screen shown a
+		// kind of refusal nobody thought about here still gets it placed. The
+		// engine, the format registry and the preset package all answer this
+		// and none of them had to be imported for the question to be asked.
+		var about interface{ AboutSetting() string }
+		if errors.As(one, &about) && about.AboutSetting() != "" &&
+			r.fields.Mark(about.AboutSetting(), one.Error()) {
+			continue
+		}
+		// About the run rather than about one box, or about a setting this
+		// screen does not draw. The foot of the form is where those belong.
+		loose = append(loose, one.Error())
+	}
+	if len(loose) > 0 {
+		r.problem.Say(strings.Join(loose, "\n\n"))
+	}
+}
+
+// spread opens a refusal that carries several into the ones it carries.
+//
+// The window used to mark ONE box however many were wrong, because everything
+// between the screen and the field registry was singular by type: settle
+// returned at the first bad box, refuse took one error, Mark marked one field.
+// Reported from the screen on 2026-08-18, and it is the window narrowing what
+// the layer below already does - RC7 has the engine refuse a recipe with every
+// problem it has rather than the first, on the grounds that fixing a file one
+// error per run is the cheapest way to make somebody stop using the tool. The
+// same argument applies to a form.
+//
+// errors.Join is what carries them, so nothing here has to be a new error type
+// and a single refusal still arrives as itself. Walked rather than flattened
+// once, because a join can hold a join - the preset screen collects its own and
+// hands on whatever the recipe parser gave it.
+func spread(err error) []error {
+	if err == nil {
+		return nil
+	}
+	joined, several := err.(interface{ Unwrap() []error })
+	if !several {
+		return []error{err}
+	}
+	var out []error
+	for _, one := range joined.Unwrap() {
+		out = append(out, spread(one)...)
+	}
+	return out
+}
+
+// recheck says what is wrong with the screen while somebody is still typing.
+//
+// Asked for from the screen on 2026-08-18: a bad value should turn its box red
+// and give the reason straight away, rather than waiting for a button. It runs
+// the SAME settle the buttons run, which is the whole of the design - there is
+// no second set of rules to write, nothing to keep in step, and a box that can
+// be refused is refused here because it is refused there. A field nobody has
+// added a rule for needs no rule added.
+//
+// Two things it does not do. It leaves the foot of the form alone, because a
+// complaint about the run rather than about a box is not something to shout
+// while somebody is mid-word. And it says nothing about an empty box - see
+// Fields.Blank.
+func (r *runner) recheck(setting string) {
+	// Nothing to check against yet, during the screen being built.
+	if r.settle == nil {
+		return
+	}
+	// A run owns the screen while it lasts. Its progress and its refusals are
+	// not to be wiped by a keystroke.
+	if r.stop != nil {
+		return
+	}
+	// Only this box, in both directions. What the other boxes were told is
+	// about values nobody has just changed, and it is still true - including
+	// the parts of it this cannot see, because a format minimum and a name
+	// already taken are the engine's answers rather than settle's.
+	r.fields.Clear(setting)
+	if r.fields.Blank(setting) {
+		return
+	}
+	_, _, err := r.settle()
+	for _, one := range spread(err) {
+		var about interface{ AboutSetting() string }
+		if errors.As(one, &about) && about.AboutSetting() == setting {
+			r.fields.Mark(setting, one.Error())
 			return
 		}
 	}
-	// About the run rather than about one box, or about a setting this screen
-	// does not draw. The foot of the form is where those belong.
-	r.problem.Say(err.Error())
 }
 
 // clearProblems empties every place a refusal can appear, not just the last one
@@ -168,6 +245,9 @@ func (r *runner) say(lines ...string) {
 
 func newRunner() *runner {
 	r := &runner{fields: parts.NewFields()}
+	// Wired once, here, so that a field added later is covered without anybody
+	// remembering to wire it. See Fields.WhenTypedIn and recheck.
+	r.fields.WhenTypedIn(r.recheck)
 	r.bar = widget.NewProgressBar()
 	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
 	// a very large run inside the range of its own type is the one the command
@@ -211,9 +291,23 @@ func newRunner() *runner {
 // merely as well: --dry-run has to be known about and remembered, and this is
 // on the way to the button beside it. With presets running to several gigabytes
 // and disks that are not always emptier than that, it is not decoration.
+// actions is the bar at the foot of the form. The buttons that run something go
+// at the RIGHT edge of the column, and anything else stays at the left.
+//
+// Measured from the stored tree on 2026-08-18 before this changed: the bar is
+// 820 px wide and the two buttons stood at x=0 and x=73. Nobody had chosen that
+// - it was where an HBox puts things - and the owner asked why they sat over
+// there. Decided on 2026-08-18: the end of the reading path, which is where a
+// form with a fixed action bar puts the thing it wants pressed last. Cancel is
+// hidden until a run starts, so at rest the rightmost button is Generate.
+//
+// The spacer is what does it. An HBox gives every child its minimum width and
+// leaves the rest empty at the end, so without something greedy in front the
+// buttons cannot move.
 func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
-	all := []fyne.CanvasObject{r.previewBtn, r.generateBtn, r.cancelBtn}
-	return container.NewHBox(append(all, extra...)...)
+	all := append([]fyne.CanvasObject{}, extra...)
+	all = append(all, layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn)
+	return container.NewHBox(all...)
 }
 
 func (r *runner) progress() fyne.CanvasObject {

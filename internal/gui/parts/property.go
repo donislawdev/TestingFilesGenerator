@@ -84,7 +84,13 @@ func choiceField(p format.Property) PropertyField {
 // positions and no third one for silence, so it starts where the declaration
 // says and always sends what it shows.
 func boolField(p format.Property) PropertyField {
-	check := widget.NewCheck("", nil)
+	// A Toggle rather than the toolkit's own switch, for the reason Toggle
+	// gives: pressed with the mouse, widget.Check leaves a disc behind it in
+	// the focus colour and never takes it off. Declared settings are the second
+	// place switches come from and the one nobody would remember, because there
+	// is no bool property in the registry today - the first format to declare
+	// one would have arrived with the defect already fixed everywhere else.
+	check := NewToggle("", nil)
 	check.SetChecked(p.Default == "true")
 	return PropertyField{
 		Name:    p.Name,

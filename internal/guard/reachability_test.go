@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 )
@@ -238,7 +239,7 @@ func describeFocusable(f fyne.Focusable) string {
 			return fmt.Sprintf("a box hinting %q", control.PlaceHolder)
 		}
 		return fmt.Sprintf("a box holding %q", control.Text)
-	case *widget.Check:
+	case *parts.Toggle:
 		return fmt.Sprintf("the toggle %q", control.Text)
 	case *widget.Button:
 		return fmt.Sprintf("the %q button", control.Text)

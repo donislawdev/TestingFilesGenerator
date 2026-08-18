@@ -1,6 +1,8 @@
 package parts
 
 import (
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
@@ -56,6 +58,14 @@ func (f *Field) Saying() string { return f.area.Text() }
 type Fields struct {
 	list []*Field
 	by   map[string]*Field
+
+	// tell is called with the setting whose box was typed into.
+	//
+	// It lives here rather than at the call sites because the call sites are
+	// what this type exists to stop trusting. A screen wires it once and every
+	// field ever added is wired with it, including the ones a chosen format or
+	// a chosen preset declares long after the screen was built.
+	tell func(setting string)
 }
 
 // NewFields starts an empty screen.
@@ -73,6 +83,7 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// throws its parameter fields away and draws the new preset's, and an entry
 	// left over would point at a box that is no longer on the screen.
 	s.by[setting] = f
+	s.listen(setting, control)
 	return object
 }
 
@@ -81,12 +92,90 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 // It goes through the same registry as everything else. A switch cannot hold a
 // value the engine refuses today, and leaving it out would be an exception to
 // remember - which is the class of thing this type exists to end.
-func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *widget.Check) fyne.CanvasObject {
+func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
 	object, area := ToggleSaying(name, hint, detail, check)
 	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object}
 	s.list = append(s.list, f)
 	s.by[setting] = f
 	return object
+}
+
+// WhenTypedIn asks to be told whenever anything on this screen is typed into.
+//
+// Set once, before or after the fields exist - Add wires whatever is added from
+// then on, and the fields already there are wired here. A screen that had to
+// call this per field would be the map filled in by hand all over again, which
+// is the defect this whole type was built to end. See docs/UX.md section 7.0.
+func (s *Fields) WhenTypedIn(tell func(setting string)) {
+	s.tell = tell
+	for _, f := range s.list {
+		s.listen(f.Setting, f.Control)
+	}
+}
+
+// listen makes every box under one control report what is typed into it.
+//
+// Chained rather than assigned, because a control that already had something to
+// do on a change keeps doing it. Nothing in this window does today, and a
+// silently dropped callback is the kind of thing nobody notices until the
+// screen stops reacting.
+func (s *Fields) listen(setting string, control fyne.CanvasObject) {
+	for _, box := range boxesIn(control) {
+		already := box.OnChanged
+		box.OnChanged = func(value string) {
+			if already != nil {
+				already(value)
+			}
+			if s.tell != nil {
+				s.tell(setting)
+			}
+		}
+	}
+}
+
+// Blank says whether this field is a box with nothing in it.
+//
+// A screen checking values while somebody types has to tell "wrong" from "not
+// filled in yet". Emptying a box to retype it is the commonest thing anybody
+// does in a form, and a form that turns red the moment the box is empty is
+// worse than one that waits - which is why the toolkit suppresses its own
+// validation while a box has the keyboard, widget/entry_validation.go. Pressing
+// Preview or Generate marks it anyway: by then the person has said they are
+// done.
+func (s *Fields) Blank(setting string) bool {
+	f, found := s.by[setting]
+	if !found {
+		return false
+	}
+	boxes := boxesIn(f.Control)
+	if len(boxes) == 0 {
+		return false
+	}
+	for _, box := range boxes {
+		if strings.TrimSpace(box.Text) != "" {
+			return false
+		}
+	}
+	return true
+}
+
+// boxesIn is every box somebody types into under one control.
+//
+// A walk rather than a cast, because a field's control is rarely the box
+// itself: a number is held to a fixed width by a container round it, and the
+// output directory carries a button beside it.
+func boxesIn(o fyne.CanvasObject) []*widget.Entry {
+	switch it := o.(type) {
+	case *widget.Entry:
+		return []*widget.Entry{it}
+	case *fyne.Container:
+		var out []*widget.Entry
+		for _, child := range it.Objects {
+			out = append(out, boxesIn(child)...)
+		}
+		return out
+	}
+	return nil
 }
 
 // Len is how many fields there are, which is what a screen remembers before it
@@ -123,6 +212,19 @@ func (s *Fields) Mark(setting, message string) bool {
 	}
 	f.Say(message)
 	return true
+}
+
+// Clear takes back whatever one field was complaining about.
+//
+// One rather than all, because the others are complaining about values nobody
+// has touched and those complaints are still true. Wiping them the moment a
+// different box is typed into makes a refusal look answered when it is not -
+// found on 2026-08-18 by the stored tree, where a size the format had refused
+// went unmarked because the scene pinned the output directory afterwards.
+func (s *Fields) Clear(setting string) {
+	if f, found := s.by[setting]; found {
+		f.Clear()
+	}
 }
 
 // ClearAll empties every field, not only the one last used. Clearing one would

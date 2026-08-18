@@ -37,7 +37,15 @@ func TestEveryClosedSetIsRegisteredInOrder(t *testing.T) {
 		}
 	}
 	for _, p := range preset.All() {
-		for _, param := range p.Parameters {
+		// Both kinds of setting a preset puts on a screen. Parameters are its
+		// own and Globals are the flags it reads, and only the first go through
+		// Register - so only the first are sorted by anything. The file kind
+		// list on the preset screen is a Global, it was photographed for the
+		// first time on 2026-08-18, and until that day nothing here looked at
+		// it: it comes out in order because format.IDs happens to sort, which
+		// is a coincidence rather than a rule, and a second global built any
+		// other way would arrive unsorted with everything still green.
+		for _, param := range append(append([]format.Property{}, p.Parameters...), p.Globals()...) {
 			if len(param.Choices) == 0 {
 				continue
 			}

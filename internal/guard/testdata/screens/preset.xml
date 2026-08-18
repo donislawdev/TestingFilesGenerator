@@ -315,14 +315,15 @@
 							<container pos="6,6" size="1076x38">
 								<container pos="128,0" size="820x38">
 									<container size="820x32">
-										<widget size="67x32" type="*widget.Button">
+										<spacer size="670x32"/>
+										<widget pos="670,0" size="67x32" type="*widget.Button">
 											<rectangle fillColor="button" radius="5" size="67x32"/>
 											<rectangle size="67x32"/>
 											<widget pos="6,6" size="55x19" type="*widget.RichText">
 												<text alignment="center" bold size="55x19">Preview</text>
 											</widget>
 										</widget>
-										<widget pos="73,0" size="76x32" type="*widget.Button">
+										<widget pos="743,0" size="76x32" type="*widget.Button">
 											<rectangle fillColor="hyperlink" radius="5" size="76x32"/>
 											<rectangle size="76x32"/>
 											<widget pos="6,6" size="64x19" type="*widget.RichText">

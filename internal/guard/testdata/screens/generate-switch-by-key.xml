@@ -26,11 +26,11 @@
 										<text bold pos="6,6" size="139x27" textSize="20">Generate files</text>
 									</widget>
 								</widget>
-								<container pos="0,45" size="820x685">
-									<container size="820x450">
-										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x450" strokeColor="separator" strokeWidth="1"/>
-										<container size="820x450">
-											<container pos="6,6" size="808x438">
+								<container pos="0,45" size="820x648">
+									<container size="820x375">
+										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x375" strokeColor="separator" strokeWidth="1"/>
+										<container size="820x375">
+											<container pos="6,6" size="808x363">
 												<widget size="808x35" type="*widget.Label">
 													<widget size="808x35" type="*widget.RichText">
 														<text bold pos="6,6" size="150x23" textSize="17">File configuration</text>
@@ -68,8 +68,8 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,144" size="808x178">
-													<container size="401x178">
+												<container pos="0,144" size="808x103">
+													<container size="401x103">
 														<container size="401x32">
 															<widget size="39x32" type="*widget.Label">
 																<widget size="39x32" type="*widget.RichText">
@@ -90,12 +90,12 @@
 																	<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																		<widget size="140x29" type="*widget.entryContent">
 																			<widget size="140x29" type="*widget.RichText">
-																				<text pos="6,5" size="8x19">1</text>
+																				<text pos="6,5" size="37x19">10mb</text>
 																			</widget>
 																		</widget>
 																	</widget>
 																</widget>
-																<rectangle radius="5" size="140x31" strokeColor="error" strokeWidth="2"/>
+																<rectangle radius="5" size="140x31"/>
 															</container>
 														</container>
 														<widget pos="0,75" size="401x28" type="*widget.Label">
@@ -103,17 +103,8 @@
 																<text color="disabled" pos="6,6" size="125x16" textSize="12">Exact size of every file.</text>
 															</widget>
 														</widget>
-														<container pos="0,109" size="401x69">
-															<widget size="401x69" type="*widget.Label">
-																<widget size="401x69" type="*widget.RichText">
-																	<text color="error" pos="6,6" size="378x19">CSV cannot be smaller than 117 B - a table holds a header</text>
-																	<text color="error" pos="6,25" size="334x19">and whole rows, and one of each needs that much.</text>
-																	<text color="error" pos="6,44" size="251x19">Requested: 1 B. Ask for 117 B or more.</text>
-																</widget>
-															</widget>
-														</container>
 													</container>
-													<container pos="407,0" size="401x178">
+													<container pos="407,0" size="401x103">
 														<widget size="401x31" type="*widget.Label">
 															<widget size="401x31" type="*widget.RichText">
 																<text bold pos="6,6" size="74x19">How many</text>
@@ -137,7 +128,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,329" size="808x103">
+												<container pos="0,254" size="808x103">
 													<container size="401x103">
 														<container size="401x32">
 															<widget size="98x32" type="*widget.Label">
@@ -208,12 +199,12 @@
 														</widget>
 													</container>
 												</container>
-												<container pos="0,438" size="808x0">
+												<container pos="0,363" size="808x0">
 												</container>
 											</container>
 										</container>
 									</container>
-									<container pos="0,456" size="820x266">
+									<container pos="0,381" size="820x266">
 										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x266" strokeColor="separator" strokeWidth="1"/>
 										<container size="820x266">
 											<container pos="6,6" size="808x254">
@@ -303,7 +294,7 @@
 													<container pos="407,0" size="401x103">
 														<container size="401x32">
 															<widget size="214x32" type="*parts.Toggle">
-																<circle pos="1,3" size="26x26"/>
+																<circle fillColor="focus" pos="1,3" size="26x26"/>
 																<image pos="4,6" rsc="checkButtonFillIcon" size="iconInlineSize" themed="background"/>
 																<image pos="4,6" rsc="checkButtonCheckedIcon" size="iconInlineSize" themed="primary"/>
 																<text pos="28,0" size="186x32">Write a label inside each file</text>

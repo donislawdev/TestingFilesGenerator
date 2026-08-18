@@ -165,7 +165,7 @@ func wrongKindOfControl(p format.Property, control fyne.CanvasObject) string {
 			return fmt.Sprintf("a %T rather than a list, so its closed set can be misspelled", control)
 		}
 	case format.PropertyBool:
-		if _, ok := control.(*widget.Check); !ok {
+		if _, ok := control.(*parts.Toggle); !ok {
 			return fmt.Sprintf("a %T rather than a switch", control)
 		}
 	default:

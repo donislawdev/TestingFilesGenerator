@@ -196,7 +196,7 @@ func namedOnScreen(o fyne.CanvasObject) string {
 	switch v := unringed(o).(type) {
 	case *widget.Label:
 		return v.Text
-	case *widget.Check:
+	case *parts.Toggle:
 		return v.Text
 	}
 	return ""

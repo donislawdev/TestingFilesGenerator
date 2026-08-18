@@ -142,8 +142,40 @@ func screenScenes() []screenScene {
 			pressNamed(t, s.tab, text.ButtonPreview)
 		}},
 		{name: "generate-chosen", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+			chooseWithThePointer(t, s.canvas, s.tab, "png")
+		}},
+		// The same menu reached the other way. Since 2026-08-18 the two look
+		// different on purpose - the pointer moves the keyboard without saying
+		// so and the keyboard says so - and a picture of only one of them would
+		// leave the rule half looked at.
+		{name: "generate-chosen-by-key", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
 			chooseFormat(t, s.tab, "png")
 			s.canvas.Focus(chooserFor(t, s.tab))
+		}},
+		// The switch with the keyboard in it. The disc behind the square is the
+		// toolkit's own mark and it is what the owner called ugly on 2026-08-18
+		// - it is still here, and this is the state it is still here in. What
+		// changed is that a press no longer produces it, which is what
+		// generate-unchecked shows.
+		{name: "generate-switch-by-key", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+			box := checkNamed(s.tab, text.FieldLabel)
+			if box == nil {
+				t.Fatalf("there is no switch labelled %q on this screen", text.FieldLabel)
+			}
+			s.canvas.Focus(box)
+		}},
+		// A refusal nobody asked for. Typing a value the run cannot use marks
+		// the box straight away since 2026-08-18, with no button pressed - the
+		// state this window had no picture of because it had no such state.
+		{name: "generate-typed", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldSize, "abc")
+		}},
+		// Two bad boxes and two marks. It marked one however many were wrong
+		// until 2026-08-18, so this picture is the whole of what was reported.
+		{name: "generate-refused-both", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldSize, "abc")
+			fillField(t, s.tab, text.FieldCount, "many")
+			pressNamed(t, s.tab, text.ButtonPreview)
 		}},
 		{name: "generate-focused", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
 			s.canvas.Focus(entryUnder(t, s.tab, text.FieldSize))
@@ -161,6 +193,22 @@ func screenScenes() []screenScene {
 		{name: "preset-refused", tab: text.TabPresets, set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, "limit", "512")
 			pressNamed(t, s.tab, text.ButtonPreview)
+		}},
+		// Both lists on this screen, neither of which had ever been opened by
+		// anything in this project. The probe asked every screen for the field
+		// called Format, which only the other screen has, so it stopped with
+		// "there is no format menu to open" and the state read as one this
+		// screen does not have. It has two. docs/UX.md section 7.0 gate 1
+		// counts a state nothing can reach as a finding rather than as an
+		// absence, and this is what that rule was written for.
+		{name: "preset-menu", tab: text.TabPresets, after: func(t *testing.T, s scene) {
+			menuUnder(t, s.tab, text.FieldPreset).Tapped(&fyne.PointEvent{})
+		}},
+		// The list a preset DECLARES, drawn by the same machinery from the same
+		// kind of declaration as a format's own settings, and landing somewhere
+		// else on the form.
+		{name: "preset-menu-setting", tab: text.TabPresets, after: func(t *testing.T, s scene) {
+			menuUnder(t, s.tab, "format").Tapped(&fyne.PointEvent{})
 		}},
 	}
 }
@@ -375,6 +423,41 @@ func chooserFor(t *testing.T, o fyne.CanvasObject) *parts.Chooser {
 func chooseFormat(t *testing.T, o fyne.CanvasObject, format string) {
 	t.Helper()
 	chooserFor(t, o).SetSelected(format)
+}
+
+// menuUnder is the list under any labelled field, on any screen.
+//
+// chooserFor asks for the format menu by name and only one screen has one. This
+// is what the preset screen's own two lists needed, and not having it is why
+// neither had ever been photographed.
+func menuUnder(t *testing.T, o fyne.CanvasObject, label string) *parts.Chooser {
+	t.Helper()
+	chooser, ok := controlUnder(o, label).(*parts.Chooser)
+	if !ok {
+		t.Fatalf("there is no menu under %q on this screen", label)
+	}
+	return chooser
+}
+
+// chooseWithThePointer picks a value the way somebody with a mouse does.
+//
+// The press is what matters and not the value. Since 2026-08-18 a press moves
+// the keyboard into the control WITHOUT drawing the mark that says so, and
+// calling SetSelected on its own never presses anything - so a scene built that
+// way photographs the keyboard path and says nothing about the one that was
+// reported twice from the screen.
+//
+// The list is taken away afterwards because that is what happens: the item that
+// sets the value is inside the popup, and pressing it closes the popup behind
+// itself.
+func chooseWithThePointer(t *testing.T, c fyne.Canvas, o fyne.CanvasObject, format string) {
+	t.Helper()
+	chooser := chooserFor(t, o)
+	chooser.Tapped(&fyne.PointEvent{})
+	chooser.SetSelected(format)
+	if top := c.Overlays().Top(); top != nil {
+		c.Overlays().Remove(top)
+	}
 }
 
 // explanationBeside finds the question mark button that sits next to a field.

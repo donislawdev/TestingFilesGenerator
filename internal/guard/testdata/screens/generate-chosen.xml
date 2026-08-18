@@ -51,7 +51,7 @@
 													</container>
 													<container pos="0,38" size="808x25">
 														<widget size="808x25" type="*parts.Chooser">
-															<rectangle fillColor="focus" radius="5" size="808x25"/>
+															<rectangle fillColor="button" radius="5" size="808x25"/>
 															<rectangle size="0x0"/>
 															<widget pos="6,3" size="776x19" type="*widget.RichText">
 																<text size="25x19">png</text>
@@ -60,7 +60,7 @@
 																<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 															</widget>
 														</widget>
-														<rectangle radius="5" size="808x25" strokeColor="hyperlink" strokeWidth="2"/>
+														<rectangle radius="5" size="808x25"/>
 													</container>
 													<widget pos="0,69" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
@@ -361,7 +361,7 @@
 													</container>
 													<container pos="407,0" size="401x103">
 														<container size="401x32">
-															<widget size="214x32" type="*widget.Check">
+															<widget size="214x32" type="*parts.Toggle">
 																<circle pos="1,3" size="26x26"/>
 																<image pos="4,6" rsc="checkButtonFillIcon" size="iconInlineSize" themed="background"/>
 																<image pos="4,6" rsc="checkButtonCheckedIcon" size="iconInlineSize" themed="primary"/>
@@ -388,14 +388,15 @@
 							<container pos="6,6" size="1076x38">
 								<container pos="128,0" size="820x38">
 									<container size="820x32">
-										<widget size="67x32" type="*widget.Button">
+										<spacer size="670x32"/>
+										<widget pos="670,0" size="67x32" type="*widget.Button">
 											<rectangle fillColor="button" radius="5" size="67x32"/>
 											<rectangle size="67x32"/>
 											<widget pos="6,6" size="55x19" type="*widget.RichText">
 												<text alignment="center" bold size="55x19">Preview</text>
 											</widget>
 										</widget>
-										<widget pos="73,0" size="76x32" type="*widget.Button">
+										<widget pos="743,0" size="76x32" type="*widget.Button">
 											<rectangle fillColor="hyperlink" radius="5" size="76x32"/>
 											<rectangle size="76x32"/>
 											<widget pos="6,6" size="64x19" type="*widget.RichText">

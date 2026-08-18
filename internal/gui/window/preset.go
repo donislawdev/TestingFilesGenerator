@@ -1,6 +1,8 @@
 package window
 
 import (
+	"errors"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -208,15 +210,29 @@ func (p *Preset) given() preset.Args {
 func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	var none engine.Options
 
+	// Collected rather than returned one at a time, for the reason given in
+	// spread: a form that marks one box however many are wrong makes somebody
+	// fix their settings one press per mistake.
+	//
+	// Only the two that do not depend on each other. What a preset expands into
+	// cannot be parsed until it has expanded, so those stay in order - a second
+	// message about a recipe nobody could build would name a cause that is not
+	// the cause.
+	var bad []error
+
 	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, p.seed.Text)
 	if err != nil {
-		return nil, none, err
+		bad = append(bad, err)
 	}
 
 	expanded, err := preset.Expand(p.pick.Selected, p.given())
 	if err != nil {
-		return nil, none, err
+		bad = append(bad, err)
 	}
+	if len(bad) > 0 {
+		return nil, none, errors.Join(bad...)
+	}
+
 	rec, err := recipe.Parse(expanded.Source, p.pick.Selected)
 	if err != nil {
 		return nil, none, err

@@ -81,7 +81,7 @@ func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []
 // positions, neither of which the engine can refuse. What it does get is
 // somewhere to speak, because "every field has one" is worth more than the one
 // exception nobody would remember.
-func ToggleSaying(name, hint string, detail Detail, check *widget.Check) (fyne.CanvasObject, *ErrorArea) {
+func ToggleSaying(name, hint string, detail Detail, check *Toggle) (fyne.CanvasObject, *ErrorArea) {
 	check.Text = name
 	area := NewErrorArea()
 	items := []fyne.CanvasObject{withDetail(check, detail)}

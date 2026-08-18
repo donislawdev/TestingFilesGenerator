@@ -120,17 +120,17 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,379" size="820x403">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x403" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x403">
-										<container pos="6,6" size="808x391">
+								<container pos="0,379" size="820x366">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x366" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x366">
+										<container pos="6,6" size="808x354">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="69x23" textSize="17">Settings</text>
 												</widget>
 											</widget>
-											<container pos="0,41" size="808x388">
-												<container size="808x177">
+											<container pos="0,41" size="808x313">
+												<container size="808x102">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="32x19">limit</text>
@@ -143,29 +143,23 @@
 															<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																<widget size="808x29" type="*widget.entryContent">
 																	<widget size="808x29" type="*widget.RichText">
-																		<text pos="6,5" size="24x19">512</text>
+																		<text color="disabled" pos="6,5" size="37x19">10mb</text>
+																	</widget>
+																	<widget size="808x29" type="*widget.RichText">
+																		<text pos="6,5" size="0x19"></text>
 																	</widget>
 																</widget>
 															</widget>
 														</widget>
-														<rectangle radius="5" size="808x31" strokeColor="error" strokeWidth="2"/>
+														<rectangle radius="5" size="808x31"/>
 													</container>
 													<widget pos="0,74" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
 															<text color="disabled" pos="6,6" size="718x16" textSize="12">a size such as 2mb, or a plain byte count, default 10mb. The size limit your system declares. Everything else is measured from it.</text>
 														</widget>
 													</widget>
-													<container pos="0,108" size="808x69">
-														<widget size="808x69" type="*widget.Label">
-															<widget size="808x69" type="*widget.RichText">
-																<text color="error" pos="6,6" size="762x19">the preset size-boundaries cannot build this set - under_1mb would be -1048064 B, and a file cannot be smaller than</text>
-																<text color="error" pos="6,25" size="755x19">nothing. Raise the limit above 1051991 B, narrow the spread, or choose a format with a smaller minimum. The limit</text>
-																<text color="error" pos="6,44" size="134x19">asked for was 512 B.</text>
-															</widget>
-														</widget>
-													</container>
 												</container>
-												<container pos="0,183" size="808x102">
+												<container pos="0,108" size="808x102">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="47x19">spread</text>
@@ -194,7 +188,7 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,292" size="808x96">
+												<container pos="0,217" size="808x96">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="48x19">format</text>
@@ -223,7 +217,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,788" size="820x266">
+								<container pos="0,751" size="820x266">
 									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x266" strokeColor="separator" strokeWidth="1"/>
 									<container size="820x266">
 										<container pos="6,6" size="808x254">
@@ -349,4 +343,21 @@
 			</container>
 		</widget>
 	</content>
+	<overlay>
+		<widget size="1100x1300" type="*widget.OverlayContainer">
+			<widget pos="146,199" size="808x31" type="*widget.PopUpMenu">
+				<rectangle fillColor="menuBackground" radius="3" shadowBlurRadius="6" shadowColor="shadow" shadowOffset="0,2" size="808x31"/>
+				<widget size="808x31" type="*widget.Scroll">
+					<widget size="808x31" type="*widget.menuBox">
+						<container size="808x31">
+							<widget size="808x31" type="*widget.menuItem">
+								<text pos="32,6" size="770x19">size-boundaries</text>
+								<image pos="6,5" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+							</widget>
+						</container>
+					</widget>
+				</widget>
+			</widget>
+		</widget>
+	</overlay>
 </canvas>

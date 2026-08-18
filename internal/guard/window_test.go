@@ -384,10 +384,10 @@ func buttonNamed(o fyne.CanvasObject, name string) *widget.Button {
 // type that embeds another is not that other type - so this asks for the one
 // the window actually builds instead of matching both and pretending they are
 // interchangeable.
-func checkNamed(o fyne.CanvasObject, name string) *widget.Check {
-	var found *widget.Check
+func checkNamed(o fyne.CanvasObject, name string) *parts.Toggle {
+	var found *parts.Toggle
 	walk(o, func(obj fyne.CanvasObject) {
-		if c, ok := obj.(*widget.Check); ok && c.Text == name {
+		if c, ok := obj.(*parts.Toggle); ok && c.Text == name {
 			found = c
 		}
 	})

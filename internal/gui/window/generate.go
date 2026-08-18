@@ -68,7 +68,7 @@ type Generate struct {
 	name       *widget.Entry
 	outDir     *widget.Entry
 	seed       *widget.Entry
-	label      *widget.Check
+	label      *parts.Toggle
 
 	// props are the fields drawn from whatever the chosen format declares, and
 	// propBox is where they are put. Rebuilt on every change of format, because
@@ -168,7 +168,7 @@ func (g *Generate) buildFields() {
 	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")
 
-	g.label = widget.NewCheck("", nil)
+	g.label = parts.NewToggle("", nil)
 	g.label.SetChecked(true)
 }
 
@@ -290,25 +290,39 @@ func (g *Generate) properties() map[string]string {
 func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	var none engine.Options
 
+	// Every box is read before any of them is given up on, so a screen with
+	// three bad values marks three fields rather than the first one. See spread
+	// in run.go for what carries them and why this is not the window inventing
+	// a rule of its own.
+	var bad []error
+
 	bytesWanted, err := core.ParseSize(g.size.Text)
 	if err != nil {
-		return nil, none, saying(format.SettingSize, err)
+		bad = append(bad, saying(format.SettingSize, err))
 	}
 	count, err := wholeNumber(engine.SettingCount, text.FieldCount, g.count.Text)
-	if err != nil {
-		return nil, none, err
-	}
-	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, g.seed.Text)
-	if err != nil {
-		return nil, none, err
-	}
-
+	switch {
+	case err != nil:
+		bad = append(bad, err)
 	// Asked before the list is built, because building it is the failure. The
 	// same ceiling and the same sentence the command line uses, from core, so
 	// there is no second opinion about how many files is too many. A count past
 	// it used to reach make and panic with a stack trace.
-	if count > core.MaxFilesPerRun {
-		return nil, none, errors.New(text.TooManyFiles(count, core.ErrTooManyFiles))
+	//
+	// It names its box since 2026-08-18. It is a refusal about "how many" and
+	// it went to the foot of the form with nothing marked, which is the same
+	// defect as reading a number out of a box and losing the subject.
+	case count > core.MaxFilesPerRun:
+		bad = append(bad, saying(engine.SettingCount,
+			errors.New(text.TooManyFiles(count, core.ErrTooManyFiles))))
+	}
+	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, g.seed.Text)
+	if err != nil {
+		bad = append(bad, err)
+	}
+
+	if len(bad) > 0 {
+		return nil, none, errors.Join(bad...)
 	}
 
 	return []engine.Target{{
