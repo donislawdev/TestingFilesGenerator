@@ -32,9 +32,11 @@ import (
 // bar and forgetting the tab strip above the form said "fits" for a screen
 // whose last field was cut off in the render taken a minute later.
 //
-// The preset screen still scrolls, at 1011 px, and that is not a failure to
-// fix here: it carries a list whose length is the preset's rather than ours,
-// and a window sized for the longest one would be sized for nothing else.
+// The preset screen still scrolls, at 1019 px on 2026-08-18, and that is not
+// a failure to fix here: it carries a list whose length is the preset's rather
+// than ours, and a window sized for the longest one would be sized for nothing
+// else. The number is reprinted by tools/probes/formheight, so it is worth
+// re-reading rather than trusting - it said 1011 when it was written.
 var OpenSize = fyne.NewSize(1000, 900)
 
 // About is what the licence screen says.

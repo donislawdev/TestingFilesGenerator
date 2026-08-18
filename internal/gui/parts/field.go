@@ -84,7 +84,7 @@ func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []
 func ToggleSaying(name, hint string, detail Detail, check *Toggle) (fyne.CanvasObject, *ErrorArea) {
 	check.Text = name
 	area := NewErrorArea()
-	items := []fyne.CanvasObject{withDetail(check, detail)}
+	items := []fyne.CanvasObject{withDetail(WithRoomForItsName(check), detail)}
 	if hint != "" {
 		items = append(items, Note(hint))
 	}

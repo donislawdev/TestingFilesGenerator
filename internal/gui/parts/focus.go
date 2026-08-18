@@ -1,7 +1,11 @@
 package parts
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -65,6 +69,43 @@ func NewToggle(name string, changed func(bool)) *Toggle {
 	t.OnChanged = changed
 	t.ExtendBaseWidget(t)
 	return t
+}
+
+// WithRoomForItsName puts a switch on the screen with its words clear of its
+// square.
+//
+// Measured off the stored tree on 2026-08-18, after the focus disc stopped
+// being drawn for a press and stopped filling the space: the square spans x=4
+// to x=24 and the words start at x=28, so four pixels separate a 20 px box from
+// the sentence beside it and they read as touching. O95.
+//
+// The arithmetic is the toolkit's - checkRenderer.Layout puts the words at
+// iconInline + innerPadding + 2 * inputBorder and the square at innerPadding/2 +
+// inputBorder - so the gap is half the inner padding minus one border. There is
+// no size named for it. Raising the inner padding FOR THIS SUBTREE moves the
+// two apart without touching a single box or button on the form, which is the
+// knob a note in theme.go said did not exist until 2026-08-18. See
+// parts/openlist.go for where that was found.
+func WithRoomForItsName(t *Toggle) fyne.CanvasObject {
+	return container.NewThemeOverride(t, roomierToggle{})
+}
+
+// roomierToggle is our theme with more room inside a switch and nowhere else.
+type roomierToggle struct{}
+
+func (roomierToggle) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
+	return Theme().Color(n, v)
+}
+func (roomierToggle) Font(s fyne.TextStyle) fyne.Resource     { return Theme().Font(s) }
+func (roomierToggle) Icon(n fyne.ThemeIconName) fyne.Resource { return Theme().Icon(n) }
+func (roomierToggle) Size(n fyne.ThemeSizeName) float32 {
+	if n == theme.SizeNameInnerPadding {
+		// Ten rather than six takes the gap from four pixels to six, which is
+		// what the rows of an open list use between their mark and their words.
+		// One number for "a small gap beside a glyph" across the window.
+		return 10
+	}
+	return Theme().Size(n)
 }
 
 // Tapped flips the switch and takes the keyboard without drawing the mark.

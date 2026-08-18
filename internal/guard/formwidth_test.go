@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
@@ -198,5 +199,55 @@ func TestASwitchCarriesItsOwnName(t *testing.T) {
 	})
 	if found == 0 {
 		t.Fatal("no switch was found, so this guard read the wrong tree")
+	}
+}
+
+// The words of a switch stand clear of its square.
+//
+// Seen on the render on 2026-08-18, after the focus disc stopped being drawn
+// for a press: the disc had been filling that space, so taking it off the
+// pointer's path uncovered a defect that was always there. Measured off the
+// stored tree - the square spanned x=4 to x=24 and the words started at x=28,
+// which is four pixels between a 20 px box and a sentence, and they read as
+// touching. O95.
+//
+// The number is asked as "at least as much as a list row uses", so there is one
+// answer in this window to "how much room goes beside a glyph" rather than two
+// numbers drifting apart.
+func TestTheWordsOfASwitchStandClearOfItsSquare(t *testing.T) {
+	_, content := screenOnACanvas(t)
+
+	box := checkNamed(content, text.FieldLabel)
+	if box == nil {
+		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel)
+	}
+
+	// Asked of the RENDERER rather than of a tree walk. What a switch draws
+	// lives inside checkRenderer and a walk cannot get in - it stops at the
+	// widget and reports a switch that draws nothing, which is not what a
+	// person sees.
+	var square *canvas.Image
+	var words *canvas.Text
+	for _, drawn := range test.WidgetRenderer(box).Objects() {
+		switch v := drawn.(type) {
+		case *canvas.Image:
+			if square == nil {
+				square = v
+			}
+		case *canvas.Text:
+			if words == nil {
+				words = v
+			}
+		}
+	}
+	if square == nil || words == nil {
+		t.Fatal("the switch draws no square or no words, so this guard read the wrong tree")
+	}
+
+	gap := words.Position().X - (square.Position().X + square.Size().Width)
+	if least := float32(6); gap < least {
+		t.Errorf("%.0f px separate the switch from its words, and %.0f is the least that reads as a gap.\n"+
+			"Reason: they touched until 2026-08-18, hidden until then by the focus disc that a press no longer draws.\n"+
+			"What to do: keep parts.WithRoomForItsName round the switch.", gap, least)
 	}
 }

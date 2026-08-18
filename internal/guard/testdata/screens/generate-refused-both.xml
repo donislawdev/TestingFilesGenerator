@@ -308,17 +308,21 @@
 														</widget>
 													</container>
 													<container pos="407,0" size="401x103">
-														<container size="401x32">
-															<widget size="214x32" type="*parts.Toggle">
-																<circle pos="1,3" size="26x26"/>
-																<image pos="4,6" rsc="checkButtonFillIcon" size="iconInlineSize" themed="background"/>
-																<image pos="4,6" rsc="checkButtonCheckedIcon" size="iconInlineSize" themed="primary"/>
-																<text pos="28,0" size="186x32">Write a label inside each file</text>
+														<container size="401x39">
+															<widget size="222x39" type="*container.ThemeOverride">
+																<container size="222x39">
+																	<widget size="222x39" type="*parts.Toggle">
+																		<circle pos="1,4" size="30x30"/>
+																		<image pos="6,9" rsc="checkButtonFillIcon" size="iconInlineSize" themed="background"/>
+																		<image pos="6,9" rsc="checkButtonCheckedIcon" size="iconInlineSize" themed="primary"/>
+																		<text pos="32,0" size="190x39">Write a label inside each file</text>
+																	</widget>
+																</container>
 															</widget>
-															<widget pos="220,0" size="32x32" type="*parts.DetailButton">
-																<rectangle radius="5" size="32x32"/>
-																<rectangle size="32x32"/>
-																<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+															<widget pos="228,0" size="32x39" type="*parts.DetailButton">
+																<rectangle radius="5" size="32x39"/>
+																<rectangle size="32x39"/>
+																<image fillMode="contain" pos="6,9" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
 															</widget>
 														</container>
 													</container>

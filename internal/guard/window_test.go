@@ -446,6 +446,14 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 // object with its children invisible - which is the same lesson the walk above
 // carries, seen from the other side.
 func unringed(o fyne.CanvasObject) fyne.CanvasObject {
+	// A theme wrapper first, because it says nothing about what the control IS.
+	// The label switch went inside one on 2026-08-18 to buy the room between
+	// its square and its words, and every lookup that reads a control by type
+	// stopped finding it - the explanation guard said the switch had no button
+	// beside it, which was untrue and read exactly like a defect.
+	if over, wrapped := o.(*container.ThemeOverride); wrapped {
+		return unringed(over.Content)
+	}
 	box, ok := o.(*fyne.Container)
 	if !ok || len(box.Objects) != 2 {
 		return o
@@ -453,6 +461,9 @@ func unringed(o fyne.CanvasObject) fyne.CanvasObject {
 	if _, isEdge := box.Objects[1].(*canvas.Rectangle); !isEdge {
 		return o
 	}
+	// One layer, not all of them. Peeling until nothing peels reached INSIDE a
+	// control - the preset run stopped writing a manifest, because a field
+	// lookup came back with a piece of a box rather than the box.
 	return box.Objects[0]
 }
 
