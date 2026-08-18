@@ -48,8 +48,15 @@ func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 	return host.content, w.Canvas()
 }
 
+// allTabs is every screen in the window, and it is a hand written list watched
+// by a guard rather than trusted.
+//
+// A list like this is the quiet way a screen goes unchecked: the recipe screen
+// arrived on 2026-08-18 and every guard walking these tabs stayed green while
+// looking at three of the four. Passing by not looking is worse than failing.
+// TestEveryTabInTheWindowIsOnTheListGuardsWalk keeps it honest.
 func allTabs() []string {
-	return []string{text.TabOneTarget, text.TabPresets, text.TabAbout}
+	return []string{text.TabOneTarget, text.TabPresets, text.TabRecipe, text.TabAbout}
 }
 
 // What this defends. A button a person can see is a button a person can press.
@@ -254,4 +261,38 @@ func offScreenNote(onScreen map[fyne.Focusable]bool, f fyne.Focusable) string {
 		return ""
 	}
 	return "   <- NOT ON THIS SCREEN"
+}
+
+// Every tab the window has is on the list the guards walk.
+//
+// This is the guard for a hole rather than for a behaviour, and it exists
+// because the hole was real. The recipe screen arrived on 2026-08-18 and
+// allTabs still named three screens, so every guard that walks the tabs - can
+// each control be reached with the keyboard, can every button really be pressed
+// - kept passing while never once looking at the new one. Nothing was red.
+// Nothing had a reason to be.
+//
+// A guard that quietly covers less than it did is the worst kind, because the
+// green is what everybody reads. Compared against the window itself rather than
+// against a second list somebody keeps.
+func TestEveryTabInTheWindowIsOnTheListGuardsWalk(t *testing.T) {
+	host := &fakeHost{}
+	window.Open(host)
+
+	inWindow := tabNames(host.content)
+	walked := map[string]bool{}
+	for _, name := range allTabs() {
+		walked[name] = true
+	}
+
+	for _, name := range inWindow {
+		if !walked[name] {
+			t.Errorf("the window has a %q tab and allTabs does not name it, so every guard\n"+
+				"walking the tabs is passing without ever looking at that screen.", name)
+		}
+	}
+	if len(inWindow) != len(allTabs()) {
+		t.Errorf("the window has %d tabs and allTabs names %d.\n  window: %v\n  list:   %v",
+			len(inWindow), len(allTabs()), inWindow, allTabs())
+	}
 }
