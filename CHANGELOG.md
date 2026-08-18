@@ -14,6 +14,14 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Changed
+- **Preview and Generate sit in the middle of the bar**, and the Donate button moved
+  from above the tabs to the left of that same bar. It is on every screen, including
+  About.
+- **A little more space between the panels on every screen.** With a panel per batch
+  stacked one under another, two of them a hair apart read as one panel with a line
+  across it.
+
 ### Fixed
 - **The window menu is dark, like the rest of the window.** Right clicking the title
   bar brought up Restore, Move, Size, Minimise, Maximise and Close in white against a

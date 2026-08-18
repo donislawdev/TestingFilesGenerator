@@ -9,20 +9,25 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// The buttons that run something sit at the right hand end of the form.
+// The buttons that run something sit in the middle of the form.
 //
-// Asked about from the screen on 2026-08-18: they stood at the left and the
-// owner asked why. The honest answer was that nobody had chosen it - measured
-// from the stored tree that morning, the bar is 820 px wide and the two buttons
-// were at x=0 and x=73, which is where a horizontal box puts things when
-// nothing pushes them. Decided the same day: the end of the reading path, which
-// is where a form with a fixed action bar puts the thing it wants pressed last.
+// The owner's decision of 2026-08-19, and it REVERSES the one of 2026-08-18
+// that this guard used to hold. Both came from looking at the built window, and
+// the earlier reasoning is kept rather than deleted because it was a choice and
+// not a mistake - a reader who sees only the new rule cannot tell whether the
+// old one was ever tried.
+//
+// What it said before: they stood at the left, the owner asked why, and the
+// honest answer was that nobody had chosen it - measured from the stored tree
+// that morning, the bar is 820 px wide and the two buttons were at x=0 and
+// x=73, which is where a horizontal box puts things when nothing pushes them.
+// It was then set to the right edge, as the end of the reading path.
 //
 // Written as a guard rather than left to the stored picture because the two
 // answer different questions. The picture says the screen has not changed. This
 // says which arrangement was chosen, so somebody reading the failure is told
 // what the rule is rather than being handed two images to compare.
-func TestTheButtonsThatRunSomethingSitAtTheRightEdge(t *testing.T) {
+func TestTheButtonsThatRunSomethingSitInTheMiddle(t *testing.T) {
 	_, content := screenOnACanvas(t)
 
 	run := buttonNamed(content, text.ButtonGenerate)
@@ -37,25 +42,28 @@ func TestTheButtonsThatRunSomethingSitAtTheRightEdge(t *testing.T) {
 	// Within one padding of the edge. An exact number would be a copy of the
 	// layout's arithmetic rather than a statement about where the button is.
 	const slack = 8
-	right := run.Position().X + run.Size().Width
-	if gap := row.Size().Width - right; gap > slack {
-		t.Errorf("the %q button ends %.1f px short of the right edge of a bar %.1f px wide.\n"+
-			"Reason: the action bar was decided on 2026-08-18 to end at the right of the column,\n"+
-			"so the last thing read is the thing to press.\n"+
-			"What to do: keep the spacer in front of the buttons in runner.actions.",
-			text.ButtonGenerate, gap, row.Size().Width)
-	}
 
-	// And the other half: a bar that is only as wide as its buttons would pass
-	// the check above while looking exactly like the arrangement that was
-	// reported.
 	first := buttonNamed(content, text.ButtonPreview)
 	if first == nil {
 		t.Fatalf("there is no %q button, so this guard read the wrong tree", text.ButtonPreview)
 	}
-	if first.Position().X <= slack {
-		t.Errorf("the %q button starts at x=%.1f in a bar %.1f px wide, which is the left hand "+
-			"arrangement that was reported", text.ButtonPreview, first.Position().X, row.Size().Width)
+
+	// The group is measured rather than one button, because being centred is a
+	// property of the pair: either one alone can sit near the middle while the
+	// two of them are plainly off to one side.
+	before := first.Position().X
+	after := row.Size().Width - (run.Position().X + run.Size().Width)
+
+	if before <= slack || after <= slack {
+		t.Errorf("the run buttons are hard against an edge: %.1f px before them and %.1f px "+
+			"after, in a bar %.1f px wide. They were moved to the middle on 2026-08-19.",
+			before, after, row.Size().Width)
+	}
+	if diff := before - after; diff > slack || diff < -slack {
+		t.Errorf("the run buttons are not centred: %.1f px before them and %.1f px after, in a "+
+			"bar %.1f px wide. What to do: keep a spacer at BOTH ends of the group in "+
+			"runner.actions, because one spacer can only push the group to an end.",
+			before, after, row.Size().Width)
 	}
 }
 

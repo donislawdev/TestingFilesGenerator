@@ -132,7 +132,8 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(r.actions(links...), r.progress(), r.problem.Object()),
+		parts.ActionBar(r.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
+			r.progress(), r.problem.Object()),
 		nil, nil,
 		container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox)),
 	))
@@ -199,12 +200,18 @@ func (r *Recipe) rebuild() {
 	r.batchBox.RemoveAll()
 	r.outBox.RemoveAll()
 
+	panels := make([]fyne.CanvasObject, 0, len(r.batches)+1)
 	for i, b := range r.batches {
-		r.batchBox.Add(r.batchBlock(i, b))
+		panels = append(panels, r.batchBlock(i, b))
 	}
 	// Under the batches rather than in the output section, where it sat until the
 	// screen was looked at. Adding a batch is not a setting of where files go.
-	r.batchBox.Add(widget.NewButton(text.ButtonAddBatch, r.addBatch))
+	panels = append(panels, widget.NewButton(text.ButtonAddBatch, r.addBatch))
+	// Stacked rather than added straight to the box, so the space between two
+	// batches is the space between two panels. Added one by one they sat as close
+	// together as two fields inside one of them, and two panels a hair apart read
+	// as one panel with a line across it - reported on 2026-08-19.
+	r.batchBox.Add(parts.Stacked(panels...))
 	// After the batches, so that Tab walks the screen in the order it is read.
 	r.outBox.Add(r.outputSection())
 

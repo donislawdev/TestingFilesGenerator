@@ -1,38 +1,40 @@
 <canvas padded size="1100x1300">
 	<content>
-		<container pos="6,6" size="1088x1288">
-			<widget pos="0,38" size="1088x1250" type="*container.AppTabs">
+		<widget pos="6,6" size="1088x1288" type="*container.AppTabs">
+			<container size="1088x32">
 				<container size="1088x32">
-					<container size="1088x32">
-						<widget size="98x32" type="*container.tabButton">
-							<text alignment="center" bold pos="6,6" size="86x20">Single batch</text>
-						</widget>
-						<widget pos="104,0" size="63x32" type="*container.tabButton">
-							<text alignment="center" bold pos="6,6" size="51x20">Presets</text>
-						</widget>
-						<widget pos="173,0" size="121x32" type="*container.tabButton">
-							<text alignment="center" bold pos="6,6" size="109x20">Several batches</text>
-						</widget>
-						<widget pos="300,0" size="54x32" type="*container.tabButton">
-							<text alignment="center" bold color="hyperlink" pos="6,6" size="42x20">About</text>
-						</widget>
-					</container>
+					<widget size="98x32" type="*container.tabButton">
+						<text alignment="center" bold pos="6,6" size="86x20">Single batch</text>
+					</widget>
+					<widget pos="104,0" size="63x32" type="*container.tabButton">
+						<text alignment="center" bold pos="6,6" size="51x20">Presets</text>
+					</widget>
+					<widget pos="173,0" size="121x32" type="*container.tabButton">
+						<text alignment="center" bold pos="6,6" size="109x20">Several batches</text>
+					</widget>
+					<widget pos="300,0" size="54x32" type="*container.tabButton">
+						<text alignment="center" bold color="hyperlink" pos="6,6" size="42x20">About</text>
+					</widget>
 				</container>
-				<rectangle fillColor="shadow" pos="0,32" size="1088x1"/>
-				<rectangle fillColor="hyperlink" pos="300,32" radius="3" size="54x1"/>
-				<container pos="0,38" size="1088x1212">
-					<container pos="134,0" size="820x1212">
+			</container>
+			<rectangle fillColor="shadow" pos="0,32" size="1088x1"/>
+			<rectangle fillColor="hyperlink" pos="300,32" radius="3" size="54x1"/>
+			<container pos="0,38" size="1088x1250">
+				<container size="1088x1200">
+					<container pos="134,0" size="820x1200">
 						<widget size="820x39" type="*widget.Label">
 							<widget size="820x39" type="*widget.RichText">
 								<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
 							</widget>
 						</widget>
-						<widget pos="0,45" size="820x31" type="*widget.Label">
+						<rectangle pos="0,45" size="820x10"/>
+						<widget pos="0,61" size="820x31" type="*widget.Label">
 							<widget size="820x31" type="*widget.RichText">
 								<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
 							</widget>
 						</widget>
-						<container pos="0,82" size="820x370">
+						<rectangle pos="0,98" size="820x10"/>
+						<container pos="0,114" size="820x370">
 							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x370" strokeColor="separator" strokeWidth="1"/>
 							<container size="820x370">
 								<container pos="6,6" size="808x358">
@@ -66,17 +68,25 @@
 						</container>
 					</container>
 				</container>
-			</widget>
-			<container size="1088x32">
-				<spacer size="1024x32"/>
-				<widget pos="1024,0" size="63x32" type="*widget.Button">
-					<rectangle fillColor="button" radius="5" size="63x32"/>
-					<rectangle size="63x32"/>
-					<widget pos="6,6" size="51x19" type="*widget.RichText">
-						<text alignment="center" bold size="51x19">Donate</text>
-					</widget>
-				</widget>
+				<container pos="0,1206" size="1088x44">
+					<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x44" strokeColor="separator" strokeWidth="1"/>
+					<container size="1088x44">
+						<container pos="6,6" size="1076x32">
+							<container pos="128,0" size="820x32">
+								<container size="820x32">
+									<widget size="63x32" type="*widget.Button">
+										<rectangle fillColor="button" radius="5" size="63x32"/>
+										<rectangle size="63x32"/>
+										<widget pos="6,6" size="51x19" type="*widget.RichText">
+											<text alignment="center" bold size="51x19">Donate</text>
+										</widget>
+									</widget>
+								</container>
+							</container>
+						</container>
+					</container>
+				</container>
 			</container>
-		</container>
+		</widget>
 	</content>
 </canvas>

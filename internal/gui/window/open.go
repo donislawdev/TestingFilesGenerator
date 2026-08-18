@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -42,7 +41,7 @@ func Open(h Host) {
 		container.NewTabItem(text.TabOneTarget, gen.Object()),
 		container.NewTabItem(text.TabPresets, pre.Object()),
 		container.NewTabItem(text.TabRecipe, rec.Object()),
-		container.NewTabItem(text.TabAbout, About()),
+		container.NewTabItem(text.TabAbout, About(h)),
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -100,35 +99,36 @@ func Open(h Host) {
 		h.Close()
 	})
 
-	// Donate sits above the tabs, at the right edge, and it is the only control
-	// in this window that is not about producing files.
-	//
-	// Above rather than among them because the tabs are a set of places to be
-	// and this is not one of them - dropped into that row it would read as a
-	// fourth screen. At the right edge because that is where this window already
-	// puts what you press rather than what you read, which is O93.
-	//
-	// It opens the support page in whatever the desktop uses for the web. The
-	// program fetches nothing and sends nothing, which is what keeps untouchable
-	// rule 8 intact - see the carve out written into it on 2026-08-18.
-	donate := widget.NewButton(text.ButtonDonate, func() {
-		h.OpenLink(text.SupportURL)
-	})
-
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
-	h.SetContent(container.NewBorder(
-		container.NewHBox(layout.NewSpacer(), donate),
-		nil, nil, nil,
-		tabs,
-	))
+	h.SetContent(tabs)
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put
 // it in. It is what a guard renders, and it is the same tree Open installs.
 func FirstScreen(h Host) fyne.CanvasObject {
 	return NewGenerate(h).Object()
+}
+
+// donateButton asks for money towards the work, at the left of the bar a screen
+// keeps its actions in.
+//
+// Moved there from a strip above the tabs on 2026-08-19, on the owner's
+// decision. It is built per screen rather than once for the window, and that is
+// what the move costs: every screen has to place it, including About, which has
+// no run to start and gets a bar holding nothing else. The alternative was a
+// second strip under the tabs, which is two bars at the foot of one window.
+//
+// It stays on every screen either way, which is not decoration - a button asking
+// for money that appears on some screens and not others is a button people
+// conclude they imagined.
+//
+// It opens the support page in whatever the desktop uses for the web. The
+// program fetches nothing and sends nothing, which is what keeps untouchable
+// rule 8 intact - see the carve out written into it on 2026-08-18.
+func donateButton(h Host) fyne.CanvasObject {
+	return widget.NewButton(text.ButtonDonate, func() { h.OpenLink(text.SupportURL) })
 }
 
 // chooserFor is the output directory box with a way to browse to one.

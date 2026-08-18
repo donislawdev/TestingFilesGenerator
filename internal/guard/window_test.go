@@ -145,7 +145,7 @@ func distinctColours(img image.Image) int {
 // font change and fails for the only reason worth failing for: the sentence
 // went away.
 func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
-	shown := textIn(window.About())
+	shown := textIn(window.About(&fakeHost{}))
 
 	for _, want := range []string{
 		"General Public License",
@@ -164,7 +164,7 @@ func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
 // each other, which is exactly the shape in which a second copy gets written
 // and nobody compares the two again.
 func TestTheWindowAndTheCommandQuoteTheSameLicence(t *testing.T) {
-	shown := textIn(window.About())
+	shown := textIn(window.About(&fakeHost{}))
 	if !strings.Contains(shown, strings.TrimSpace(version.LicenceNotice)) {
 		t.Error("the window does not show the licence notice verbatim, so it is a second copy now")
 	}

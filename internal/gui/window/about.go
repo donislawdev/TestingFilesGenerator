@@ -7,6 +7,7 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -58,8 +59,8 @@ var OpenSize = fyne.NewSize(1000, 900)
 // so every other screen is one click away and always visible. As a screen that
 // replaced the whole window it needed a door, and a door somebody could delete
 // without noticing was the thing worth guarding.
-func About() fyne.CanvasObject {
-	return parts.Screen(
+func About(h Host) fyne.CanvasObject {
+	page := parts.Screen(
 		text.HeadingAbout(version.Version),
 		parts.Prose(text.AboutTagline),
 		// In a card like every other block on every other screen, so this reads
@@ -67,4 +68,15 @@ func About() fyne.CanvasObject {
 		// left as it was.
 		parts.Section(text.SectionLicence, parts.Prose(version.LicenceNotice)),
 	)
+
+	// The same bar the work screens carry, holding only the Donate button.
+	//
+	// This screen starts no run and has nothing else to put there, so the bar is
+	// almost empty - and it is here anyway, because the button moved into that
+	// bar on 2026-08-19 and a button asking for money that is missing from one
+	// screen in four is one people conclude they imagined. It is also the screen
+	// somebody reads when deciding what this program costs them, which is the
+	// worst one to leave it off.
+	return container.NewBorder(
+		nil, parts.ActionBar(container.NewHBox(donateButton(h))), nil, nil, page)
 }

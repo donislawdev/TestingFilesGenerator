@@ -22,6 +22,8 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
+	"image/color"
+
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
@@ -176,10 +178,8 @@ func ActionBar(content ...fyne.CanvasObject) fyne.CanvasObject {
 // function would arrive as an argument for raising the cap. The cap is a
 // ratchet and only goes down, so the composition has to come first.
 func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
-	all := make([]fyne.CanvasObject, 0, len(sections)+1)
-	all = append(all, Title(heading))
-	all = append(all, sections...)
-	return container.New(readableWidth{}, container.NewVBox(all...))
+	return container.New(readableWidth{},
+		Stacked(append([]fyne.CanvasObject{Title(heading)}, sections...)...))
 }
 
 // ColumnWidth is as wide as this form is allowed to get, whatever the window
@@ -275,4 +275,44 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	width := fyne.Min(size.Width, ColumnWidth)
 	objects[0].Resize(fyne.NewSize(width, size.Height))
 	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
+}
+
+// SectionGap is the space between two panels, over and above the padding a
+// vertical box already puts between its children.
+//
+// Reported from use on 2026-08-18, looking at the recipe screen: with a panel
+// per batch stacked one under another, the gap the toolkit leaves is small
+// enough that two panels read as one long one with a line across it. The edge
+// of a panel is what says where a batch begins, and it was doing that job at the
+// same strength as the gap between two fields inside it.
+//
+// Applied wherever panels are stacked rather than inside Section, so a panel
+// used on its own carries no stray space under it.
+const SectionGap = 10
+
+// Stacked puts panels one under another with SectionGap between them.
+//
+// A spacer object rather than a padded container, because layout.NewSpacer in a
+// vertical box is greedy - it takes all the room that is going, which in a
+// scrolling form means one enormous gap and everything below it pushed off the
+// screen.
+func Stacked(panels ...fyne.CanvasObject) fyne.CanvasObject {
+	if len(panels) == 0 {
+		return container.NewVBox()
+	}
+	spaced := make([]fyne.CanvasObject, 0, len(panels)*2-1)
+	for i, panel := range panels {
+		if i > 0 {
+			spaced = append(spaced, gap())
+		}
+		spaced = append(spaced, panel)
+	}
+	return container.NewVBox(spaced...)
+}
+
+// gap is one fixed piece of empty space.
+func gap() fyne.CanvasObject {
+	space := canvas.NewRectangle(color.Transparent)
+	space.SetMinSize(fyne.NewSize(0, SectionGap))
+	return space
 }

@@ -305,9 +305,25 @@ func newRunner() *runner {
 // leaves the rest empty at the end, so without something greedy in front the
 // buttons cannot move.
 func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
-	all := append([]fyne.CanvasObject{}, extra...)
-	all = append(all, layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn)
-	return container.NewHBox(all...)
+	// Centred, on the owner's decision of 2026-08-19, which reverses the one of
+	// 2026-08-18 that put them at the right edge. Both were reports from
+	// looking at the built window, and the reasoning for the first is kept
+	// above rather than deleted because it was not wrong - it was a choice, and
+	// this is a different one.
+	//
+	// A spacer at each end rather than one, because a single greedy spacer only
+	// pushes: it can put the group at one end or the other and never in the
+	// middle.
+	middle := container.NewHBox(
+		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn, layout.NewSpacer())
+	if len(extra) == 0 {
+		return middle
+	}
+	// Anything else in this row is laid over the top at the left rather than
+	// placed before the buttons. Put in the same row, it would take width from
+	// one side only and the buttons would sit off centre by half of it.
+	return container.NewStack(middle, container.NewHBox(
+		append(append([]fyne.CanvasObject{}, extra...), layout.NewSpacer())...))
 }
 
 func (r *runner) progress() fyne.CanvasObject {

@@ -69,7 +69,8 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// chooser, because they are the answer to the question that card asks.
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(p.actions(links...), p.progress(), p.problem.Object()),
+		parts.ActionBar(p.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
+			p.progress(), p.problem.Object()),
 		nil, nil,
 		container.NewVScroll(parts.Screen(
 			text.HeadingPreset,

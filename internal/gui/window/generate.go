@@ -119,7 +119,8 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// foot of the form would be cut off at the edge of the viewport.
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(g.actions(links...), g.progress(), g.problem.Object()),
+		parts.ActionBar(g.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
+			g.progress(), g.problem.Object()),
 		nil, nil,
 		container.NewVScroll(parts.Screen(
 			text.HeadingGenerate,

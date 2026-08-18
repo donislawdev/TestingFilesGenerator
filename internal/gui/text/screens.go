@@ -227,7 +227,7 @@ const (
 	HintBoundary  = "Three files: one byte under the limit, one on it, one over."
 	HintGroup     = "Marks several batches as one kind of case."
 	HintExpected  = "What the system under test should do with these files."
-	HintReason    = "Which rule should stop them."
+	HintReason    = "Which rule this is about."
 	HintManifest  = "The record of what this run produced."
 )
 
@@ -237,7 +237,7 @@ const (
 	DetailBoundary  = "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
 	DetailGroup     = "It reaches the manifest, so a test can assert about a whole class of case at once."
 	DetailExpected  = "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
-	DetailReason    = "From a closed list, so a report can group by reason. A reason needs an outcome beside it."
+	DetailReason    = "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it."
 	DetailManifest  = "It goes in the output directory beside the files."
 )
 
