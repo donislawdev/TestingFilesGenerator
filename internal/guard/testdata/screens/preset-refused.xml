@@ -125,16 +125,16 @@
 									</container>
 								</container>
 								<rectangle pos="0,395" size="820x10"/>
-								<container pos="0,411" size="820x420">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x420" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x420">
-										<container pos="6,6" size="808x408">
+								<container pos="0,411" size="820x403">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x403" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x403">
+										<container pos="6,6" size="808x391">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="69x23" textSize="17">Settings</text>
 												</widget>
 											</widget>
-											<container pos="0,41" size="808x405">
+											<container pos="0,41" size="808x388">
 												<container size="808x177">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
@@ -199,7 +199,7 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,292" size="808x112">
+												<container pos="0,292" size="808x96">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="48x19">format</text>
@@ -210,7 +210,7 @@
 															<rectangle fillColor="button" radius="5" size="808x25"/>
 															<rectangle size="0x0"/>
 															<widget pos="6,3" size="776x19" type="*widget.RichText">
-																<text size="22x19">pdf</text>
+																<text size="100x19">not stated - pdf</text>
 															</widget>
 															<widget pos="782,2" size="20x20" type="*widget.Icon">
 																<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
@@ -218,10 +218,9 @@
 														</widget>
 														<rectangle radius="5" size="808x25"/>
 													</container>
-													<widget pos="0,68" size="808x44" type="*widget.Label">
-														<widget size="808x44" type="*widget.RichText">
-															<text color="disabled" pos="6,6" size="764x16" textSize="12">one of: bmp, csv, docx, gif, html, ico, jpg, json, log, md, pdf, png, pptx, svg, targz, txt, wav, xlsx, xml, zip, default pdf. What kind of file the</text>
-															<text color="disabled" pos="6,22" size="118x16" textSize="12">whole set is made of.</text>
+													<widget pos="0,68" size="808x28" type="*widget.Label">
+														<widget size="808x28" type="*widget.RichText">
+															<text color="disabled" pos="6,6" size="235x16" textSize="12">What kind of file the whole set is made of.</text>
 														</widget>
 													</widget>
 												</container>
@@ -229,8 +228,8 @@
 										</container>
 									</container>
 								</container>
-								<rectangle pos="0,837" size="820x10"/>
-								<container pos="0,853" size="820x266">
+								<rectangle pos="0,820" size="820x10"/>
+								<container pos="0,836" size="820x266">
 									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x266" strokeColor="separator" strokeWidth="1"/>
 									<container size="820x266">
 										<container pos="6,6" size="808x254">

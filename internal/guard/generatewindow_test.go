@@ -117,8 +117,23 @@ func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 			if bad := wrongKindOfControl(p, control); bad != "" {
 				t.Errorf("%s.%s is %s", d.ID, p.Name, bad)
 			}
-			if shown := textIn(content); !strings.Contains(shown, p.Allowed()) {
-				t.Errorf("the field for %s.%s does not say what it takes (%q)", d.ID, p.Name, p.Allowed())
+			// A closed set says what it takes with its menu rather than in
+			// prose, since 2026-08-19 (O105). What it still has to say is what
+			// it is FOR - the sentence spelling twenty format names out under
+			// a menu offering the same twenty was two lines of duplication on
+			// a screen that does not fit as it is.
+			want := p.Allowed()
+			if p.Kind == format.PropertyChoice {
+				want = p.Detail
+			}
+			if shown := textIn(content); want != "" && !strings.Contains(shown, want) {
+				t.Errorf("the field for %s.%s does not say %q", d.ID, p.Name, want)
+			}
+			if p.Kind == format.PropertyChoice {
+				if shown := textIn(content); strings.Contains(shown, p.Allowed()) {
+					t.Errorf("the field for %s.%s lists its values in prose (%q) as well as in the "+
+						"menu above them", d.ID, p.Name, p.Allowed())
+				}
 			}
 			checked++
 		}

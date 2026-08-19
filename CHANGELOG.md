@@ -99,6 +99,18 @@ because it turns other people's test suites red.
 - **The window opens taller**, 1000 px instead of 900. The forms are still taller than that
   and still scroll. This does not fix that, it makes it shorter.
 
+- **A setting you pick from a list now shows when you have not picked anything.** Lists with a
+  default started on that default drawn exactly like a value you had chosen, so there was no
+  way to tell "pdf because nobody said otherwise" from "pdf because I chose it" - and once you
+  had changed it, no way back to saying nothing. They start on `not stated - pdf` now, and you
+  can return to it. Leaving it there records the value in the manifest as defaulted, which is
+  the same thing leaving the flag off does on the command line.
+
+- **The line under a list no longer repeats the list.** The `format` setting spelled all twenty
+  formats out in a sentence directly under the menu offering the same twenty, and it grew by a
+  name every time a format was added. It says what the setting is for. `tfg formats` and the
+  refusals on the command line still name every value, because there is no menu to read there.
+
 ### Added
 - **Three image formats: `bmp`, `gif` and `ico`.** Both surfaces offer them, `tfg formats`
   describes them, and every size they accept is exact to the byte.

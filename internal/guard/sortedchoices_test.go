@@ -116,8 +116,17 @@ func TestAMenuOffersItsChoicesInTheDeclaredOrder(t *testing.T) {
 				continue
 			}
 			checked++
-			if got, want := strings.Join(menu.Options, ","), strings.Join(p.Choices, ","); got != want {
-				t.Errorf("the menu for %s.%s offers %s and the declaration says %s", d.ID, p.Name, got, want)
+			// A setting with a declared default gets one extra entry in front,
+			// meaning "I did not state this" - the only way a menu can say
+			// that, because the toolkit paints its placeholder in the same
+			// colour as a real choice (O104). The declared values follow it in
+			// their declared order, which is what this is about.
+			want := p.Choices
+			if p.Default != "" {
+				want = append([]string{text.ChoiceLeftAlone(p.Default)}, p.Choices...)
+			}
+			if got, want := strings.Join(menu.Options, ","), strings.Join(want, ","); got != want {
+				t.Errorf("the menu for %s.%s offers %s and it should offer %s", d.ID, p.Name, got, want)
 			}
 		}
 	}

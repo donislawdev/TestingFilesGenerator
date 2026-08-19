@@ -70,13 +70,38 @@ func FromProperty(p format.Property) PropertyField {
 
 // choiceField is a closed set, so it is a list rather than a box to type in.
 // Nobody can misspell a value that is not typed.
+// choiceField is a menu, and where the setting has a declared default the menu
+// carries an entry for not stating it.
+//
+// The entry exists because a menu cannot show silence the way a text box can.
+// The toolkit paints a menu's placeholder in the ordinary foreground colour, so
+// a default nobody chose read exactly like a choice somebody made - and once
+// the menu had been moved off it there was no way back to saying nothing at
+// all. See text.ChoiceLeftAlone, and O104 for the measurement.
+//
+// Its value is the empty string, which is what every other field sends when it
+// was left alone, so nothing downstream learns that menus are a special case.
 func choiceField(p format.Property) PropertyField {
-	sel := NewChooser(p.Choices, nil)
+	options, notStated := p.Choices, ""
+	if p.Default != "" {
+		notStated = text.ChoiceLeftAlone(p.Default)
+		options = append([]string{notStated}, p.Choices...)
+	}
+
+	sel := NewChooser(options, nil)
 	sel.PlaceHolder = leftAlone(p)
+	if notStated != "" {
+		sel.SetSelected(notStated)
+	}
 	return PropertyField{
 		Name:    p.Name,
 		Control: sel,
-		Value:   func() string { return sel.Selected },
+		Value: func() string {
+			if sel.Selected == notStated {
+				return ""
+			}
+			return sel.Selected
+		},
 	}
 }
 
@@ -166,9 +191,34 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 // composed one way. A screen assembling it itself would be D1 breaking in the
 // place nobody compares: two surfaces describing one format in two wordings.
 func PropertyDetail(p format.Property) string {
-	detail := p.Allowed()
+	detail := allowedOnAScreen(p)
 	if p.Detail != "" {
-		detail += ". " + p.Detail
+		if detail != "" {
+			detail += ". "
+		}
+		detail += p.Detail
 	}
 	return detail
+}
+
+// allowedOnAScreen is what a setting takes, for somebody who can see the
+// control as well as the sentence.
+//
+// It is Property.Allowed everywhere except a closed set of values, and there it
+// says nothing, because the menu above the sentence IS the list. The format
+// setting spelled all twenty out in prose - two lines of a screen that is
+// already taller than its window, duplicating the menu directly above them, and
+// growing by one more name with every format this project adds (O105).
+//
+// The command line keeps the list, and that is the point of doing this here
+// rather than in Allowed: in a terminal there is no menu to read it off, so the
+// sentence is the only place the values exist.
+// The default is not said here either, and that is not an omission: the menu's
+// first entry says "not stated" and carries the default in its own words, so
+// repeating it under the control would be the same duplication one line down.
+func allowedOnAScreen(p format.Property) string {
+	if p.Kind == format.PropertyChoice {
+		return ""
+	}
+	return p.Allowed()
 }

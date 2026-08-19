@@ -184,13 +184,15 @@ func (p *Preset) onPresetChosen(id string) {
 }
 
 // detailOfParameter is what a parameter takes and what it is for, in that
-// order - the same sentence the command line prints, from the declaration.
+// order, composed by the one function both screens use.
+//
+// It held its own copy of that composition until 2026-08-19, which is the shape
+// PropertyDetail exists to prevent - and the copy had already stopped agreeing
+// with the original, because the original learned not to spell a menu's values
+// out in prose and this one had not. Two surfaces describing one setting in two
+// wordings is D1 fraying where nobody compares.
 func detailOfParameter(param format.Property) string {
-	detail := param.Allowed()
-	if param.Detail != "" {
-		detail += ". " + param.Detail
-	}
-	return detail
+	return parts.PropertyDetail(param)
 }
 
 // given is what the user typed, by parameter name. A field left empty is left

@@ -157,6 +157,25 @@ func PlaceholderLeftEmpty(declared string) string {
 	return declared
 }
 
+// ChoiceLeftAlone is the first entry of a menu whose setting has a declared
+// default, and it means "I did not state this".
+//
+// A menu needs a real entry for it where a text box needs none, and the reason
+// is measured rather than a preference: the toolkit draws a menu's placeholder
+// in the ordinary foreground colour, exactly like a value somebody picked, so
+// "pdf, because nobody said otherwise" and "pdf, because I chose it" looked
+// identical - measured on 2026-08-19 at RGB(230,230,230) for both, against
+// RGB(157,163,168) for a text box's placeholder, which the toolkit does dim.
+// Colour cannot carry the difference here, so words do.
+//
+// It also gives the setting a way BACK. A menu with only real values in it can
+// be moved off "not stated" and never returned to it, and being able to say
+// nothing is what lets the manifest record the value as defaulted rather than
+// chosen - which is a promise this window makes (O104).
+func ChoiceLeftAlone(declared string) string {
+	return PlaceholderNotStated + " - " + declared
+}
+
 // SettingsFor heads the block of fields a chosen format declares.
 //
 // A function rather than a constant with the id glued on: languages do not
