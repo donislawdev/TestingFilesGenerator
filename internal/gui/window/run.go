@@ -104,6 +104,16 @@ type runner struct {
 	// running, and only ever touched on the interface thread.
 	stop func()
 
+	// destination is where this screen would write, asked for rather than
+	// stored, because the box it comes from is edited after this is wired.
+	// Nil on a screen that has no such box, and the status line simply stays
+	// empty there.
+	destination func() string
+
+	// resting is true while nothing pressed has spoken. The status line
+	// carries the destination until then and whatever was pressed afterwards.
+	resting bool
+
 	// notes is what settling had to say out loud, set by settle rather than
 	// worked out here. Silence is banned: a set built around a limit we
 	// invented carries expectations that read exactly like a set built around
@@ -200,6 +210,9 @@ func (r *runner) recheck(setting string) {
 	if r.stop != nil {
 		return
 	}
+	// Typing in the destination box moves the destination, and the line saying
+	// where the files go is worth nothing if it names the old one.
+	r.sayDestination()
 	// Only this box, in both directions. What the other boxes were told is
 	// about values nobody has just changed, and it is still true - including
 	// the parts of it this cannot see, because a format minimum and a name
@@ -235,16 +248,46 @@ func (r *runner) clearProblems() {
 // space taken from the form to say nothing.
 func (r *runner) say(lines ...string) {
 	said := strings.Join(append(append([]string{}, r.notes...), lines...), "\n")
-	r.status.SetText(said)
 	if said == "" {
+		r.sayDestination()
+		return
+	}
+	r.resting = false
+	r.status.SetText(said)
+	r.status.Show()
+}
+
+// sayDestination puts where the files will go on the status line, while there
+// is nothing louder to put there.
+//
+// The line is kept clear for a run whether or not there is one, so at rest it
+// was empty space in the one part of the screen that never scrolls away - and
+// the destination is the one field that is off the bottom of every form when
+// the window opens. It is also the only field that decides where somebody
+// else's disk gets written to, so the cost of not seeing it is not symmetric
+// with the cost of not seeing the others (O102).
+//
+// It gives way to anything a run has to say and does not come back, because a
+// preview and an outcome are answers to something that was just pressed. A
+// preview names the same directory in its own sentence anyway.
+func (r *runner) sayDestination() {
+	if !r.resting || r.destination == nil {
+		r.status.SetText("")
 		r.status.Hide()
 		return
 	}
+	dir := strings.TrimSpace(r.destination())
+	if dir == "" {
+		r.status.SetText("")
+		r.status.Hide()
+		return
+	}
+	r.status.SetText(text.WritingTo(dir))
 	r.status.Show()
 }
 
 func newRunner() *runner {
-	r := &runner{fields: parts.NewFields()}
+	r := &runner{fields: parts.NewFields(), resting: true}
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
@@ -326,8 +369,10 @@ func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
 		append(append([]fyne.CanvasObject{}, extra...), layout.NewSpacer())...))
 }
 
+// progress is where a run says what it is doing, and it keeps its height
+// whether or not there is a run. See parts.WithRoomForARun for why.
 func (r *runner) progress() fyne.CanvasObject {
-	return container.NewVBox(r.bar, r.status)
+	return parts.WithRoomForARun(container.NewVBox(r.bar, r.status))
 }
 
 // onPreview says what the run would cost and writes nothing.

@@ -2,6 +2,7 @@ package window
 
 import (
 	"os"
+	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -164,12 +165,35 @@ func chooserFor(host Host, box *widget.Entry) fyne.CanvasObject {
 // The destination itself is unchanged. What changes is that it is legible
 // before the button is pressed rather than after the files have appeared.
 //
-// A working directory we cannot read leaves the dot, because a dot that means
-// "here" is still better than a path that is wrong.
+// A working directory we cannot read leaves the folder name on its own, which
+// lands in the same place by a shorter route, because a relative name that
+// means "here" is still better than a path that is wrong.
 func startingDirectory() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		return "."
+		return OutputFolderName
 	}
-	return dir
+	return filepath.Join(dir, OutputFolderName)
 }
+
+// OutputFolderName is the folder the window offers to write into, under
+// whatever directory the program was started from.
+//
+// A folder of our own rather than the working directory itself, and the reason
+// is what a double click does. Started from a desktop, the working directory is
+// the folder the program was unpacked into - so the offered destination was
+// somebody's Downloads, and a set of ten thousand files went straight into it,
+// mixed in with everything already there. Deleting them again means picking
+// them out by hand, because nothing marks which ones arrived this way.
+//
+// One named folder makes that a single thing to delete, and it is visible in
+// the field before anybody presses anything. Nothing is written until a run
+// starts, and the engine makes the folder then - measured on 2026-08-19, a run
+// and a preview into a directory that does not exist both succeed - so this
+// costs an empty folder nobody asked for exactly never.
+//
+// The command line still defaults to the directory you are standing in, and
+// that difference is deliberate for the same reason the full path above is:
+// in a terminal you typed your way to that directory and you know which one it
+// is (O103).
+const OutputFolderName = "tfg-out"

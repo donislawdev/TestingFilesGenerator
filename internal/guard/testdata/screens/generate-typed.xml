@@ -21,9 +21,9 @@
 			<rectangle fillColor="hyperlink" pos="0,32" radius="3" size="98x1"/>
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1250">
-					<widget size="1088x1194" type="*widget.Scroll">
-						<container size="1088x1194">
-							<container pos="134,0" size="820x1194">
+					<widget size="1088x1125" type="*widget.Scroll">
+						<container size="1088x1125">
+							<container pos="134,0" size="820x1125">
 								<widget size="820x39" type="*widget.Label">
 									<widget size="820x39" type="*widget.RichText">
 										<text bold pos="6,6" size="139x27" textSize="20">Generate files</text>
@@ -393,11 +393,11 @@
 							</container>
 						</container>
 					</widget>
-					<container pos="0,1200" size="1088x50">
-						<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x50" strokeColor="separator" strokeWidth="1"/>
-						<container size="1088x50">
-							<container pos="6,6" size="1076x38">
-								<container pos="128,0" size="820x38">
+					<container pos="0,1131" size="1088x118">
+						<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x118" strokeColor="separator" strokeWidth="1"/>
+						<container size="1088x118">
+							<container pos="6,6" size="1076x106">
+								<container pos="128,0" size="820x106">
 									<container size="820x32">
 										<container size="820x32">
 											<spacer size="335x32"/>
@@ -428,7 +428,14 @@
 											<spacer pos="69,0" size="756x32"/>
 										</container>
 									</container>
-									<container pos="0,38" size="820x0">
+									<container pos="0,38" size="820x68">
+										<container size="820x31">
+											<widget size="820x31" type="*widget.Label">
+												<widget size="820x31" type="*widget.RichText">
+													<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
+												</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 							</container>

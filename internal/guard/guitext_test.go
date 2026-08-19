@@ -51,14 +51,16 @@ import (
 // is not a number, so two sentences a person reads were built outside the text
 // package and no carrier list would ever have named them.
 var notWords = map[string]string{
-	`"10mb"`:           "the size a fresh screen starts at, a value rather than prose",
-	`"1"`:              "how many files a fresh screen starts at",
-	`"0"`:              "the seed a fresh screen starts at",
-	`"files"`:          "the group name a fresh screen starts at, and a recipe value",
-	`"tfg-gui"`:        "recorded in the manifest as the command that ran, a contract value",
-	`"chickpea.png"`:   "the name the toolkit files the icon resource under, never shown",
-	`"preset"`:         "the key the preset field is registered under, not a label",
-	`"."`:              "the working directory, when the system will not say which one it is",
+	`"10mb"`:         "the size a fresh screen starts at, a value rather than prose",
+	`"1"`:            "how many files a fresh screen starts at",
+	`"0"`:            "the seed a fresh screen starts at",
+	`"files"`:        "the group name a fresh screen starts at, and a recipe value",
+	`"tfg-gui"`:      "recorded in the manifest as the command that ran, a contract value",
+	`"chickpea.png"`: "the name the toolkit files the icon resource under, never shown",
+	`"preset"`:       "the key the preset field is registered under, not a label",
+	`"."`:            "the working directory, when the system will not say which one it is",
+	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +
+		"prose, and translating it would move where somebody's files land",
 	`". "`:             "what joins two sentences the declaration already carries",
 	`"png"`:            "a format id in a comment example rather than a label",
 	`"uxtheme.dll"`:    "a Windows library this program loads, a file name and not a word",

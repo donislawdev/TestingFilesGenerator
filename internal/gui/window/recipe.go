@@ -143,6 +143,10 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// single batch screen needs, and for the same reason.
 	r.batches[0].formatPick.SetSelected(format.IDs()[0])
 	r.rebuild()
+
+	// Said last, once the box it reads exists.
+	r.runner.destination = r.OutDir
+	r.runner.sayDestination()
 	return r
 }
 

@@ -143,6 +143,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// applied rather than waited for.
 	g.ready = true
 	g.onFormatChosen(g.formatPick.Selected)
+
+	// Said last, once the box it reads exists.
+	g.runner.destination = g.OutDir
+	g.runner.sayDestination()
 	return g
 }
 

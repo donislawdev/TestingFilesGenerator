@@ -93,6 +93,17 @@ func PreviewFreeSpace(dir, free string) string {
 	return separator + free + " free in " + dir
 }
 
+// WritingTo is what the status line says when a run has not said anything yet.
+//
+// The destination is the one field on these forms that is off the screen when
+// the window opens, and it is the only one that decides where somebody else's
+// disk gets written to. It sits here because the line is kept clear for a run
+// whether or not there is one, so saying this costs no room at all - and a
+// preview replaces it with a sentence that names the same directory.
+func WritingTo(dir string) string {
+	return "Files will go to " + dir
+}
+
 // WritingFiles is the line under the bar at the moment a run starts, before
 // the first progress report arrives.
 func WritingFiles(count int) string {

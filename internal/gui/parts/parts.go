@@ -316,3 +316,62 @@ func gap() fyne.CanvasObject {
 	space.SetMinSize(fyne.NewSize(0, SectionGap))
 	return space
 }
+
+// WithRoomForARun keeps the height a run's own messages need, whether or not
+// there is a run.
+//
+// A hidden widget takes no room in this toolkit, so the progress bar and the
+// status line cost nothing at rest and their full height the moment a run
+// starts. The bar at the foot of the form grew from 48 px to 116 px on the
+// press of Generate, and the form above it lost exactly that much - so the
+// field under the pointer moved out from under it, at the one moment somebody
+// is looking at the buttons rather than at the form. Reported by the owner as
+// the bar expanding oddly, then measured from the stored screens (O101).
+//
+// The height is measured from real widgets rather than written down as a
+// number, because a number would be a copy of the theme's arithmetic and would
+// drift the first time a font or a padding changed.
+//
+// The bar and ONE line, which is the tallest the ordinary path gets rather
+// than the tallest it can get. A preview says one line and no bar, a run says
+// one line and the bar, so one line and the bar covers both jumps the owner
+// reported and costs about 60 px rather than the 87 px that keeping two lines
+// costs. The room matters here: these screens are already taller than the
+// window they open in (O102).
+//
+// A finished run can say more than that, because it prints one line per note
+// and a manifest's notes are not bounded - so this cannot promise the bar never
+// grows, and pretending otherwise would be a reserve sized for a number nobody
+// measured. It grows rather than clipping, because a message nobody can read is
+// worse than a bar that moved.
+func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
+	// "Ag" is this project's measuring sample - an ascender and a descender,
+	// so the line is as tall as a line ever gets. It is never drawn.
+	sample := container.NewVBox(widget.NewProgressBar(), widget.NewLabel("Ag"))
+	return container.New(&reserving{height: sample.MinSize().Height}, content)
+}
+
+// reserving is a layout that never reports less height than it was asked to
+// keep, and lays its content out at the top of it.
+type reserving struct{ height float32 }
+
+func (r *reserving) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.NewSize(0, r.height)
+	for _, o := range objects {
+		needs := o.MinSize()
+		if needs.Width > size.Width {
+			size.Width = needs.Width
+		}
+		if needs.Height > size.Height {
+			size.Height = needs.Height
+		}
+	}
+	return size
+}
+
+func (r *reserving) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(size.Width, o.MinSize().Height))
+		o.Move(fyne.NewPos(0, 0))
+	}
+}

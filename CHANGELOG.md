@@ -76,6 +76,29 @@ because it turns other people's test suites red.
   `tfg.exe` is unchanged. It still writes to the terminal you run it from, which is what a
   command line tool is for.
 
+- **The window offers a `tfg-out` folder to write into, instead of the folder it was started
+  from.** Started by double clicking it, the old default was wherever you had unpacked the
+  program - so a run of ten thousand files went straight into that folder, mixed in with
+  everything already there and with nothing marking which files were new. Now they go to one
+  named folder you can delete in a single go. The field is still yours to change, and the
+  folder is only made when a run starts.
+
+  `tfg` on the command line is unchanged and still writes to the directory you are standing
+  in, because there you chose that directory by walking to it.
+
+- **The window says where the files will go, without scrolling for it.** The line sits at the
+  foot of the window and stays there. The output directory is at the bottom of a form that is
+  taller than the window, so it was the one setting deciding where your disk gets written to
+  that you could not see before pressing Generate.
+
+- **The form no longer jumps when you press Preview or Generate.** The foot of the window
+  used to grow by the height of the progress bar and its message the moment you pressed
+  something, which slid the whole form upward - twice per run, at the moment you were
+  looking at the buttons. That room is now kept whether or not a run is going.
+
+- **The window opens taller**, 1000 px instead of 900. The forms are still taller than that
+  and still scroll. This does not fix that, it makes it shorter.
+
 ### Added
 - **Three image formats: `bmp`, `gif` and `ico`.** Both surfaces offer them, `tfg formats`
   describes them, and every size they accept is exact to the byte.

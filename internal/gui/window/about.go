@@ -38,7 +38,25 @@ import (
 // than ours, and a window sized for the longest one would be sized for nothing
 // else. The number is reprinted by tools/probes/formheight, so it is worth
 // re-reading rather than trusting - it said 1011 when it was written.
-var OpenSize = fyne.NewSize(1000, 900)
+// Raised from 900 on 2026-08-19, on the owner's decision, because at 900 none
+// of the three forms fitted the room it left them (O102).
+//
+// 1000 rather than more, and the ceiling is somebody else's screen rather than
+// taste. A window taller than the screen it opens on cannot be reached at the
+// bottom at all, which is worse than one that scrolls, and this toolkit offers
+// no portable way to ask how big the screen is - checked in the driver
+// interface on 2026-08-19, there is none - so the number has to be safe rather
+// than clever. A 1080p screen leaves about 1040 px once the taskbar has taken
+// its share, so 1000 fits it with room to spare and the owner's own screen,
+// measured the same day at 3840x2088 of usable area, is not the constraint.
+//
+// It does not make the forms fit and is not meant to: Single batch needs 958 px
+// of form and gets 826 px here. On a 1080p screen it would not fit even
+// maximised, which is a fact about the form rather than about the window. What
+// it does is take the shortfall from 232 px to 132 px, and the destination -
+// the one field whose absence had a named cost - is on the status line now
+// whatever the window is doing.
+var OpenSize = fyne.NewSize(1000, 1000)
 
 // About is what the licence screen says.
 //

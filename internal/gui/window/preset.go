@@ -96,6 +96,10 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	if len(ids) > 0 {
 		p.pick.SetSelected(ids[0])
 	}
+
+	// Said last, once the box it reads exists.
+	p.runner.destination = p.OutDir
+	p.runner.sayDestination()
 	return p
 }
 
