@@ -634,9 +634,193 @@ def check_targz(data):
     ok(f"{len(entries)} entries, comment {len(comment)} B, tar {len(tar)} B")
 
 
+def check_bmp(data):
+    if data[:2] != b"BM":
+        fail("the signature is not a BMP signature")
+    if len(data) < 54:
+        fail(f"the file is {len(data)} B and the two headers alone are 54 B")
+
+    declared, offbits = struct.unpack("<I", data[2:6])[0], struct.unpack("<I", data[10:14])[0]
+    # A tolerant reader never looks at this. A wrong size here is exactly the
+    # kind of defect that passes every viewer and breaks a parser.
+    if declared != len(data):
+        fail(f"the header says the file is {declared} B and it is {len(data)} B")
+
+    header = struct.unpack("<I", data[14:18])[0]
+    if header != 40:
+        fail(f"the info header is {header} B, and this generator writes the 40 B form")
+
+    width, height = struct.unpack("<ii", data[18:26])
+    planes, depth = struct.unpack("<HH", data[26:30])
+    compression, image_bytes = struct.unpack("<II", data[30:38])
+
+    if width < 1:
+        fail(f"the width is {width}")
+    if height == 0:
+        fail("the height is zero")
+    if planes != 1:
+        fail(f"the header declares {planes} colour planes and a BMP has one")
+    if depth not in (1, 4, 8, 16, 24, 32):
+        fail(f"the header declares {depth} bits per pixel")
+    if compression != 0:
+        fail(f"the header declares compression {compression} and this generator writes none")
+
+    rows = abs(height)
+    stride = (width * depth + 31) // 32 * 4
+    if image_bytes not in (0, stride * rows):
+        fail(f"the header says the pixels are {image_bytes} B and the geometry gives {stride * rows} B")
+    if offbits < 54:
+        fail(f"the pixels are said to start at {offbits}, inside the headers")
+    if offbits + stride * rows > len(data):
+        fail(f"the pixels run to {offbits + stride * rows} and the file ends at {len(data)}")
+
+    gap = offbits - 54
+    ok(f"{width}x{rows}, {depth} bit, stride {stride} B, gap {gap} B, size field agrees")
+
+
+def gif_blocks(data, pos):
+    """Walk a chain of sub blocks and return where it ends."""
+    while True:
+        if pos >= len(data):
+            fail("a chain of sub blocks runs off the end of the file")
+        size = data[pos]
+        pos += 1
+        if size == 0:
+            return pos
+        if pos + size > len(data):
+            fail(f"a sub block of {size} B runs past the end of the file")
+        pos += size
+
+
+def check_gif(data):
+    if data[:6] not in (b"GIF87a", b"GIF89a"):
+        fail("the signature is not a GIF signature")
+    if len(data) < 14:
+        fail(f"the file is {len(data)} B and the screen descriptor alone needs 13 B")
+
+    width, height, packed = struct.unpack("<HHB", data[6:11])
+    pos = 13
+    table = 0
+    if packed & 0x80:
+        table = 3 * (1 << ((packed & 0x07) + 1))
+        pos += table
+        if pos > len(data):
+            fail(f"the colour table of {table} B runs past the end of the file")
+
+    images, extensions, comment = 0, 0, 0
+    while True:
+        if pos >= len(data):
+            fail("the file ends with no trailer")
+        marker = data[pos]
+        pos += 1
+        if marker == 0x3B:
+            break
+        if marker == 0x21:
+            if pos >= len(data):
+                fail("an extension has no label")
+            label = data[pos]
+            pos += 1
+            if label == 0xFE:
+                start = pos
+                pos = gif_blocks(data, pos)
+                comment += pos - start - 1
+            else:
+                pos = gif_blocks(data, pos)
+            extensions += 1
+            continue
+        if marker == 0x2C:
+            if pos + 9 > len(data):
+                fail("an image descriptor runs past the end of the file")
+            local = data[pos + 8]
+            pos += 9
+            if local & 0x80:
+                pos += 3 * (1 << ((local & 0x07) + 1))
+            if pos >= len(data):
+                fail("an image has no code size")
+            pos += 1
+            pos = gif_blocks(data, pos)
+            images += 1
+            continue
+        fail(f"the byte {marker:#04x} at offset {pos - 1} is not a block marker")
+
+    # A tolerant reader stops at the trailer and never looks further. Bytes
+    # after it are outside the data stream, so a file carrying them is not the
+    # file it claims to be.
+    if pos != len(data):
+        fail(f"the trailer is at {pos - 1} and the file holds {len(data) - pos} B after it")
+    if images < 1:
+        fail("there is no image block")
+    ok(f"{width}x{height}, table {table} B, {images} image(s), "
+       f"{extensions} extension(s), {comment} B of comment")
+
+
+def check_ico(data):
+    if len(data) < 6:
+        fail(f"the file is {len(data)} B and the directory header alone is 6 B")
+    reserved, kind, count = struct.unpack("<HHH", data[:6])
+    if reserved != 0:
+        fail(f"the reserved field is {reserved} and it has to be zero")
+    if kind != 1:
+        fail(f"the type is {kind} and an icon is 1")
+    if count < 1:
+        fail("the directory says it holds no images")
+    if 6 + 16 * count > len(data):
+        fail(f"the directory of {count} entries runs past the end of the file")
+
+    described = []
+    for i in range(count):
+        at = 6 + 16 * i
+        side_w, side_h = data[at], data[at + 1]
+        length, offset = struct.unpack("<II", data[at + 8:at + 16])
+        want_w = side_w if side_w else 256
+        want_h = side_h if side_h else 256
+        if offset < 6 + 16 * count:
+            fail(f"image {i} starts at {offset}, inside the directory")
+        if offset + length > len(data):
+            fail(f"image {i} runs to {offset + length} and the file ends at {len(data)}")
+        blob = data[offset:offset + length]
+        described.append((want_w, want_h, len(blob), inside_icon(i, blob, want_w, want_h)))
+
+    shapes = ", ".join(f"{w}x{h} {kindname} {n} B" for w, h, n, kindname in described)
+    ok(f"{count} image(s): {shapes}")
+
+
+def inside_icon(index, blob, want_w, want_h):
+    """Say what sits inside one directory entry, and check it against the entry."""
+    if blob[:8] == b"\x89PNG\r\n\x1a\n":
+        if len(blob) < 24 or blob[12:16] != b"IHDR":
+            fail(f"image {index} starts like a PNG and has no IHDR")
+        w, h = struct.unpack(">II", blob[16:24])
+        if (w, h) != (want_w, want_h):
+            fail(f"the directory says image {index} is {want_w}x{want_h} and the PNG inside is {w}x{h}")
+        return "png"
+
+    if len(blob) < 40:
+        fail(f"image {index} is {len(blob)} B, too small for a bitmap header")
+    header = struct.unpack("<I", blob[:4])[0]
+    if header != 40:
+        fail(f"image {index} has a {header} B bitmap header, and 40 B is the form icons use")
+    w, h = struct.unpack("<ii", blob[4:12])
+    depth = struct.unpack("<H", blob[14:16])[0]
+    # The height of an embedded bitmap counts the colour rows and the mask
+    # rows together, so it is twice the height the directory states. Getting
+    # this wrong gives an icon that draws upside down or half transparent, and
+    # no reader complains about the header itself.
+    if w != want_w:
+        fail(f"the directory says image {index} is {want_w} wide and the bitmap says {w}")
+    if h != want_h * 2:
+        fail(f"the bitmap for image {index} declares height {h} and it has to be twice {want_h}")
+    colour = (w * depth + 31) // 32 * 4 * want_h
+    mask = (w + 31) // 32 * 4 * want_h
+    if 40 + colour + mask != len(blob):
+        fail(f"image {index} needs {40 + colour + mask} B for header, pixels and mask and holds {len(blob)}")
+    return f"{depth} bit bitmap"
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
-          "svg": check_svg, "html": check_html, "targz": check_targz}
+          "svg": check_svg, "html": check_html, "targz": check_targz,
+          "bmp": check_bmp, "gif": check_gif, "ico": check_ico}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

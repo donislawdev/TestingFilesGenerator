@@ -214,7 +214,7 @@
 													</container>
 													<widget pos="0,68" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
-															<text color="disabled" pos="6,6" size="693x16" textSize="12">one of: csv, html, json, log, md, pdf, png, svg, targz, txt, wav, xml, zip, default pdf. What kind of file the whole set is made of.</text>
+															<text color="disabled" pos="6,6" size="768x16" textSize="12">one of: bmp, csv, gif, html, ico, json, log, md, pdf, png, svg, targz, txt, wav, xml, zip, default pdf. What kind of file the whole set is made of.</text>
 														</widget>
 													</widget>
 												</container>
@@ -373,59 +373,59 @@
 							<container size="808x224">
 								<widget size="808x224" type="*widget.List">
 									<widget size="808x224" type="*widget.Scroll">
-										<container size="808x364">
+										<container size="808x448">
 											<widget size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">csv</text>
+													<text pos="32,4" size="776x19">bmp</text>
 												</widget>
 											</widget>
 											<widget pos="0,28" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">html</text>
+													<text pos="32,4" size="776x19">csv</text>
 												</widget>
 											</widget>
 											<widget pos="0,56" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">json</text>
+													<text pos="32,4" size="776x19">gif</text>
 												</widget>
 											</widget>
 											<widget pos="0,84" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">log</text>
+													<text pos="32,4" size="776x19">html</text>
 												</widget>
 											</widget>
 											<widget pos="0,112" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">md</text>
+													<text pos="32,4" size="776x19">ico</text>
 												</widget>
 											</widget>
 											<widget pos="0,140" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">pdf</text>
+													<text pos="32,4" size="776x19">json</text>
 												</widget>
 											</widget>
 											<widget pos="0,168" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">png</text>
+													<text pos="32,4" size="776x19">log</text>
 												</widget>
 											</widget>
 											<widget pos="0,196" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">svg</text>
+													<text pos="32,4" size="776x19">md</text>
 												</widget>
 											</widget>
 											<widget pos="0,224" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">targz</text>
+													<text pos="32,4" size="776x19">pdf</text>
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">
@@ -460,8 +460,8 @@
 											<linearGradient endColor="shadow" pos="0,-8" size="808x8"/>
 										</widget>
 										<widget pos="802,0" size="6x224" type="*widget.scrollBarArea">
-											<widget pos="3,0" size="3x137" type="*widget.scrollBar">
-												<rectangle fillColor="scrollbar" radius="3" size="3x137"/>
+											<widget pos="3,0" size="3x112" type="*widget.scrollBar">
+												<rectangle fillColor="scrollbar" radius="3" size="3x112"/>
 											</widget>
 										</widget>
 									</widget>

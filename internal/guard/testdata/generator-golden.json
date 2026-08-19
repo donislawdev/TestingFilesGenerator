@@ -3,65 +3,58 @@
   "measured_on": "2026-08-01",
   "seed": 7741,
   "files": {
-    "txt_4kib": {
-      "bytes": 4096,
-      "sha256": "26a697bd184868acaa1da3f474b32a063e1b76e55ced42e38e79fdc63cf66161"
+    "bmp_100kib_sized_to_fit": {
+      "bytes": 102400,
+      "sha256": "07fb4045fd8ec4225f2ada3b93a5c93e7122612db35334cdf5f446dde0775310",
+      "measured_on": "2026-08-19"
     },
-    "txt_4kib_no_label": {
-      "bytes": 4096,
-      "sha256": "bb9c887212279acd53caa0afea2a82079725a61dabf4581880308169a6ffd95e"
-    },
-    "png_64kib": {
+    "bmp_64kib": {
       "bytes": 65536,
-      "sha256": "85e174c37ebd91b39afdd5b4ca906d7b996c8ceb43a287424412b08ab815e521"
-    },
-    "pdf_16kib": {
-      "bytes": 16384,
-      "sha256": "f5a4b84a7729ca4f314d51641c4318ed238401bff023599a94cc1e065b42679d"
-    },
-    "wav_32kib": {
-      "bytes": 32768,
-      "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
-    },
-    "zip_16kib": {
-      "bytes": 16384,
-      "sha256": "480b35575b9cec5bcdcdf02d066f4ad8b4b967969aecbeb2e49d7a451a14fdaf"
-    },
-    "zip_with_three_pdfs": {
-      "bytes": 65536,
-      "sha256": "2f45c46662ab65d2f598d65446ba0476067fb5c6297dc497d580a0fcd1752fbe"
-    },
-    "zip_past_the_comment_limit": {
-      "bytes": 262144,
-      "sha256": "fae918bc961420dd675dd9a90005d319c93856d56b5c3f9aeeb1150baf41a6df"
-    },
-    "md_8kib": {
-      "bytes": 8192,
-      "sha256": "8ded1f648a9d9704182ab04aa8c4ce61128268eccad89cf9b3c525fd1edcfa95"
-    },
-    "log_8kib": {
-      "bytes": 8192,
-      "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"
+      "sha256": "104f7e575aab983a1c25f12e69fbf978b87ee5feb47962ea6a2a64c921df110a",
+      "measured_on": "2026-08-19"
     },
     "csv_8kib": {
       "bytes": 8192,
       "sha256": "9c27e8266485816183ac867c69fe3ae797aeab185a2f5b38c99acdc957076998"
     },
-    "json_8kib": {
-      "bytes": 8192,
-      "sha256": "0b717f6295487af0afa21c68e2fc5649239eb010089079b9364f9b8fd2538a30"
-    },
-    "xml_8kib": {
-      "bytes": 8192,
-      "sha256": "7b0bfb9e55775dda3373ab0c42f10642a11ebed39764e6659fcf0412d3786c0b"
-    },
-    "xml_8kib_no_label": {
-      "bytes": 8192,
-      "sha256": "e3abef37b6ec306f92c1d489401500741fd6fced5b4838b487d055faa1e2af28"
+    "gif_64kib": {
+      "bytes": 65536,
+      "sha256": "659e48806e3abe402148f8246921769d66f3ea9d2f73e94888a3fb7abcf76977",
+      "measured_on": "2026-08-19"
     },
     "html_8kib": {
       "bytes": 8192,
       "sha256": "7fcd7bd8fa49fb5e7392ef33d8f1537c96dabb2157bbda7cfe2eba75c02513a7"
+    },
+    "ico_32kib": {
+      "bytes": 32768,
+      "sha256": "da019bf067004ef7290aca46a5e6d68dd4d0c77bf419511a01166ff17e425f2b",
+      "measured_on": "2026-08-19"
+    },
+    "ico_32kib_png_inside": {
+      "bytes": 32768,
+      "sha256": "72197d05fa9cccac8545d01b5878ea2f5b3e69cb13a3120f546e8a4ece799d01",
+      "measured_on": "2026-08-19"
+    },
+    "json_8kib": {
+      "bytes": 8192,
+      "sha256": "0b717f6295487af0afa21c68e2fc5649239eb010089079b9364f9b8fd2538a30"
+    },
+    "log_8kib": {
+      "bytes": 8192,
+      "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"
+    },
+    "md_8kib": {
+      "bytes": 8192,
+      "sha256": "8ded1f648a9d9704182ab04aa8c4ce61128268eccad89cf9b3c525fd1edcfa95"
+    },
+    "pdf_16kib": {
+      "bytes": 16384,
+      "sha256": "f5a4b84a7729ca4f314d51641c4318ed238401bff023599a94cc1e065b42679d"
+    },
+    "png_64kib": {
+      "bytes": 65536,
+      "sha256": "85e174c37ebd91b39afdd5b4ca906d7b996c8ceb43a287424412b08ab815e521"
     },
     "svg_8kib": {
       "bytes": 8192,
@@ -72,15 +65,47 @@
       "sha256": "03bba423e483a3606a8d43e40ea24e98356e1e07ef474c9178cb5cdf084384a6",
       "measured_on": "2026-08-04"
     },
+    "targz_past_the_comment_limit": {
+      "bytes": 262144,
+      "sha256": "0031527861ad2753e25ab242a8415fdf1c027f0be377de948894778caa26e0eb",
+      "measured_on": "2026-08-04"
+    },
     "targz_with_three_pdfs": {
       "bytes": 65536,
       "sha256": "84a776cc5439d9a7edb29018dca7b0fb1462f7b57a374de34c21b0cf7f601eb5",
       "measured_on": "2026-08-04"
     },
-    "targz_past_the_comment_limit": {
+    "txt_4kib": {
+      "bytes": 4096,
+      "sha256": "26a697bd184868acaa1da3f474b32a063e1b76e55ced42e38e79fdc63cf66161"
+    },
+    "txt_4kib_no_label": {
+      "bytes": 4096,
+      "sha256": "bb9c887212279acd53caa0afea2a82079725a61dabf4581880308169a6ffd95e"
+    },
+    "wav_32kib": {
+      "bytes": 32768,
+      "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
+    },
+    "xml_8kib": {
+      "bytes": 8192,
+      "sha256": "7b0bfb9e55775dda3373ab0c42f10642a11ebed39764e6659fcf0412d3786c0b"
+    },
+    "xml_8kib_no_label": {
+      "bytes": 8192,
+      "sha256": "e3abef37b6ec306f92c1d489401500741fd6fced5b4838b487d055faa1e2af28"
+    },
+    "zip_16kib": {
+      "bytes": 16384,
+      "sha256": "480b35575b9cec5bcdcdf02d066f4ad8b4b967969aecbeb2e49d7a451a14fdaf"
+    },
+    "zip_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "0031527861ad2753e25ab242a8415fdf1c027f0be377de948894778caa26e0eb",
-      "measured_on": "2026-08-04"
+      "sha256": "fae918bc961420dd675dd9a90005d319c93856d56b5c3f9aeeb1150baf41a6df"
+    },
+    "zip_with_three_pdfs": {
+      "bytes": 65536,
+      "sha256": "2f45c46662ab65d2f598d65446ba0476067fb5c6297dc497d580a0fcd1752fbe"
     }
   },
   "remeasured": [

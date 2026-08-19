@@ -220,7 +220,7 @@
 													</container>
 													<widget pos="0,68" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
-															<text color="disabled" pos="6,6" size="693x16" textSize="12">one of: csv, html, json, log, md, pdf, png, svg, targz, txt, wav, xml, zip, default pdf. What kind of file the whole set is made of.</text>
+															<text color="disabled" pos="6,6" size="768x16" textSize="12">one of: bmp, csv, gif, html, ico, json, log, md, pdf, png, svg, targz, txt, wav, xml, zip, default pdf. What kind of file the whole set is made of.</text>
 														</widget>
 													</widget>
 												</container>

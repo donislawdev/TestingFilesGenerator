@@ -527,7 +527,8 @@ func Strict(formatID, path string) Result {
 // StrictKnows says whether the structural checker covers a format.
 func StrictKnows(formatID string) bool {
 	switch formatID {
-	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html":
+	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",
+		"bmp", "gif", "ico":
 		return true
 	}
 	return false

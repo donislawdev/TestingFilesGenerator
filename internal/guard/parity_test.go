@@ -67,8 +67,11 @@ var reachableFromTheWindow = []string{
 
 	// Every format the registry holds, taken from the registry itself rather
 	// than listed in the window. TestTheWindowOffersEveryFormatTheRegistryHas.
+	"format:bmp",
 	"format:csv",
+	"format:gif",
 	"format:html",
+	"format:ico",
 	"format:json",
 	"format:log",
 	"format:md",
@@ -87,6 +90,13 @@ var reachableFromTheWindow = []string{
 	// the refusal comes from the registry in the registry's words. A format that
 	// gains a property gains its field with no window code.
 	// TestTheWindowDrawsAFieldForEveryDeclaredProperty.
+	"property:bmp.height",
+	"property:bmp.width",
+	"property:gif.height",
+	"property:gif.width",
+	"property:ico.embed",
+	"property:ico.height",
+	"property:ico.width",
 	"property:pdf.page_size",
 	"property:pdf.pages",
 	"property:png.height",

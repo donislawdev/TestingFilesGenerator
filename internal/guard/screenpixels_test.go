@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -195,9 +196,25 @@ func screenScenes() []screenScene {
 			if list == nil {
 				t.Fatal("the press opened no list, so this state cannot be reached")
 			}
-			row := list.RowShowing("png")
+			// A row that is being drawn and is not the one already chosen, so
+			// that hover and the mark on the current value can be told apart.
+			// Asked of the list rather than named: the list has a ceiling and
+			// scrolls under it, so naming a format put this state one
+			// registration away from pointing at a row nobody can see. That
+			// is exactly what happened when the sixteenth format arrived and
+			// png went below the fold.
+			var row *parts.ListRow
+			for _, id := range format.IDs() {
+				if id == chooserFor(t, s.tab).Selected {
+					continue
+				}
+				if r := list.RowShowing(id); r != nil {
+					row = r
+					break
+				}
+			}
 			if row == nil {
-				t.Fatal("no row is drawing png, so there is nothing to hover")
+				t.Fatal("the open list is drawing no row other than the chosen one, so there is nothing to hover")
 			}
 			row.MouseIn(&desktop.MouseEvent{})
 		}},

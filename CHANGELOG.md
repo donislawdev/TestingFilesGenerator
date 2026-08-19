@@ -28,6 +28,28 @@ because it turns other people's test suites red.
   fine.
 
 ### Added
+- **Three image formats: `bmp`, `gif` and `ico`.** Both surfaces offer them, `tfg formats`
+  describes them, and every size they accept is exact to the byte.
+
+  - **BMP** is uncompressed, so the picture is grown to fill the size you asked for
+    rather than sitting in a corner of it. Ask for 100 kB and you get a 184 by 185
+    picture, not a thumbnail followed by 99 kB of filler. Set `width` or `height` and
+    the other side is worked out from what is left. Smallest file: 58 B.
+  - **GIF** carries one frame, and its colour table is sized to the picture instead of
+    always being the full 256 entries - a full table costs 768 B and would put the
+    smallest GIF at 799 B. Smallest file: 41 B. Three sizes just above a bare picture
+    cannot be produced at all, because the block the padding lives in costs 3 B empty
+    and 5 B carrying anything. Asking for one of them is refused with all three
+    reachable sizes named.
+  - **ICO** holds one image, and you choose what sits inside it with
+    `--set embed=bmp` or `--set embed=png`. A bitmap inside is read by every version of
+    Windows. A PNG inside makes a much smaller file and wants Windows Vista or newer.
+    Sides go up to 256, which is the format's own ceiling. Smallest file: 70 B.
+
+  All three carry the label burned into the pixels, like PNG. All three were opened by
+  hand: BMP in Paint, GIF and ICO in Windows Photos.
+
+### Added
 - **Both binaries carry their details, and both wear the icon.** Right click either
   `tfg.exe` or `tfg-gui.exe`, open Properties and the Details tab now names the product,
   the version, the author and the licence. They had none of that, so a tool found on a

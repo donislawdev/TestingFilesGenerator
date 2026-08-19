@@ -47,6 +47,22 @@ func goldenCases() map[string]engine.Target {
 		"png_64kib": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 		"pdf_16kib": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 16384), Label: true},
+		"bmp_64kib": {ID: "g", Format: "bmp", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64"}},
+
+		// The one format whose picture is grown to fill the request, so the
+		// dimensions are arithmetic rather than a setting. Pinned without them,
+		// because that arithmetic is what a refactor would move.
+		"bmp_100kib_sized_to_fit": {ID: "g", Format: "bmp", Sizes: engine.Uniform(1, 102400), Label: true},
+		"gif_64kib": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64"}},
+		"ico_32kib": {ID: "g", Format: "ico", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"width": "32", "height": "32"}},
+
+		// What sits inside an icon changes every byte of it, so both answers
+		// are pinned rather than only the one the default picks.
+		"ico_32kib_png_inside": {ID: "g", Format: "ico", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"width": "32", "height": "32", "embed": "png"}},
 		"wav_32kib": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 32768), Label: true},
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},
