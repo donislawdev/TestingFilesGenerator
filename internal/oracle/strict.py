@@ -833,7 +833,7 @@ def opc_open(data):
         fail("the package is not a readable ZIP: %s" % exc)
 
 
-def opc_check(data, roots, kind):
+def opc_check(data, roots, kind, key):
     """Checks every OOXML package has to pass, whatever is inside it.
 
     Written to the packaging specification rather than to what a viewer will
@@ -921,8 +921,18 @@ def opc_check(data, roots, kind):
 
     padding = [i for i in z.infolist() if i.filename.startswith("tfg/")]
     pad = padding[0].file_size if padding else 0
-    ok("%s, %d parts, %d B of padding, comment %d B"
-       % (kind, len(names), pad, len(z.comment)))
+    try:
+        read = opc_readback(data, key)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        # A reader refusing the package is a verdict about the package, and it
+        # has to read as one. Letting the exception out gave a stack trace and
+        # "the checker said nothing useful", which names the wrong culprit.
+        fail("an independent reader would not read the package: %s: %s"
+             % (type(exc).__name__, str(exc)[:120]))
+    ok("%s, %d parts, %d B of padding, comment %d B, %s"
+       % (kind, len(names), pad, len(z.comment), read))
 
 
 def opc_resolve(base, target):
@@ -933,19 +943,87 @@ def opc_resolve(base, target):
     return posixpath.normpath(posixpath.join(base, target)).replace("\\", "/")
 
 
+
+def opc_readback(data, key):
+    """Czyta pakiet NIEZALEZNA implementacja OPC i sprawdza, ze cos w nim jest.
+
+    Do 2026-08-19 czytnik OOXML na tej maszynie byl jeden - LibreOffice - i to
+    bylo zapisane jako najslabszy pomiar w projekcie. Wlasciciel doinstalowal
+    python-docx, openpyxl i python-pptx, czyli trzy osobne implementacje, zadna
+    nie dzielaca kodu z LibreOffice ani ze soba.
+
+    Stoi to tutaj, a nie wsrod wyrocznie, z powodu, ktory warto znac: format
+    deklaruje JEDNA wyrocznie (`Descriptor.Oracle`), a to pole wychodzi do
+    `tfg formats --json`, wiec poszerzenie go jest zmiana nosna. Warstwa
+    strukturalna juz biegnie per format i pyta „czy plik jest naprawde dobrze
+    zbudowany" - a biblioteka odmawiajaca odczytu odpowiada dokladnie na to.
+
+    Brak biblioteki NIE jest porazka. Zostaje wtedy nazwany w wyniku, zeby
+    przebieg, ktory sprawdzil mniej, nie wygladal jak ten, ktory sprawdzil
+    wszystko.
+    """
+    import io as _io
+
+    if key == "docx":
+        try:
+            from docx import Document
+        except ImportError:
+            return "python-docx nieobecny"
+        texts = [p.text for p in Document(_io.BytesIO(data)).paragraphs]
+        if not texts:
+            fail("python-docx otworzyl dokument i nie znalazl w nim ani jednego akapitu")
+        return "python-docx odczytal %d akapit(ow)" % len(texts)
+
+    if key == "xlsx":
+        try:
+            from openpyxl import load_workbook
+        except ImportError:
+            return "openpyxl nieobecny"
+        book = load_workbook(_io.BytesIO(data), read_only=True)
+        sheet = book[book.sheetnames[0]]
+        rows = sum(1 for _ in sheet.iter_rows(values_only=True))
+        book.close()
+        if rows < 1:
+            fail("openpyxl otworzyl skoroszyt i nie znalazl w nim ani jednego wiersza")
+        return "openpyxl odczytal %d wiersz(y)" % rows
+
+    if key == "pptx":
+        try:
+            from pptx import Presentation
+        except ImportError:
+            return "python-pptx nieobecny"
+        deck = Presentation(_io.BytesIO(data))
+        # Chodzimy po KSZTALTACH kazdego slajdu, nie po ich liczbie. Zmierzone
+        # 2026-08-19: python-pptx liczy slajdy z `presentation.xml` i nigdy nie
+        # zaglada do samej czesci slajdu, wiec slajd podmieniony na `<nonsense/>`
+        # przechodzil. To ta sama klasa co „otwarcie to nie odczyt" przy
+        # obrazach, gdzie dopiero porownanie pikseli nazwalo tolerancyjnych.
+        slides, shapes = 0, 0
+        for slide in deck.slides:
+            slides += 1
+            for shape in slide.shapes:
+                shapes += 1
+        if slides < 1:
+            fail("python-pptx otworzyl prezentacje i nie znalazl w niej ani jednego slajdu")
+        if shapes < 1:
+            fail("python-pptx przeszedl po %d slajdzie(ach) i nie znalazl na nich ani jednego ksztaltu" % slides)
+        return "python-pptx odczytal %d slajd(ow) i %d ksztalt(ow)" % (slides, shapes)
+
+    return "brak niezaleznego czytnika"
+
 def check_docx(data):
-    opc_check(data, ["word/document.xml"], "Word document")
+    opc_check(data, ["word/document.xml"], "Word document", "docx")
 
 
 def check_xlsx(data):
-    opc_check(data, ["xl/workbook.xml"], "Excel workbook")
+    opc_check(data, ["xl/workbook.xml"], "Excel workbook", "xlsx")
 
 
 def check_pptx(data):
     opc_check(data, ["ppt/presentation.xml",
                      "ppt/slideMasters/slideMaster1.xml",
                      "ppt/slideLayouts/slideLayout1.xml",
-                     "ppt/theme/theme1.xml"], "PowerPoint presentation")
+                     "ppt/theme/theme1.xml"], "PowerPoint presentation", "pptx")
 
 
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
