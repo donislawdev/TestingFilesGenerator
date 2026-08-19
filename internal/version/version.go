@@ -30,12 +30,19 @@ const Version = "0.1.0"
 // either direction costs them either a tool or a lawyer.
 //
 // The full licence text is not here. It is 674 lines, which is wrong for a
-// terminal and wrong for a window, so this points at the file instead.
+// terminal and wrong for a window, so this points at where it is instead.
+//
+// It points at the canonical address as well as at the file, since 2026-08-19.
+// Both sentences named a file and nothing else, and somebody who downloaded
+// only the window binary has neither file next to it - so the one screen whose
+// entire purpose is pointing somewhere was pointing at nothing. Naming a place
+// that is always there costs a line and removes the dead end (O108).
 const LicenceNotice = `Testing Files Generator
 Copyright (C) 2026 DonislawDev
 
-Released under the GNU General Public License, version 3. The full text is in
-the LICENSE file beside the source.
+Released under the GNU General Public License, version 3. The full text is at
+https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have
+the source or the full release.
 
 There is no warranty, to the extent the law allows.
 
@@ -45,5 +52,6 @@ reach them. You can generate fixtures, commit them and ship them inside a
 closed source product with no obligation of any kind.
 
 Code from other projects is compiled into this program. Their licences and
-copyright notices are in THIRD-PARTY-NOTICES.md.
+copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source
+and with the full release.
 `

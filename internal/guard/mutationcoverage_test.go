@@ -32,6 +32,12 @@ import (
 // means saying out loud that a guard is unproven. The list should only ever get
 // shorter.
 var notProvenByMutation = map[string]bool{
+	// The property is the ABSENCE of an override, and no substitution can
+	// remove code nobody wrote. It is on this list rather than the one below
+	// because it is genuinely unproven: it drives the box directly, so it would
+	// catch that box being replaced by something that is not a text box, and it
+	// would NOT catch a wrapper put in front of one and stealing the presses.
+	"TestThreeClicksInABoxSelectWhatIsInIt":                           true,
 	"TestAFreshRunIntoAnEmptyDirectoryStillWorks":                     true,
 	"TestCleanupNeverReachesOutsideTheDirectory":                      true,
 	"TestVerifyNeverReachesOutsideTheDirectory":                       true,

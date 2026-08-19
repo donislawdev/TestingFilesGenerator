@@ -130,10 +130,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 		parts.ActionBar(g.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
 			g.progress(), g.problem.Object()),
 		nil, nil,
-		container.NewVScroll(parts.Screen(
+		g.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingGenerate,
 			g.settingsSection(),
-		)),
+		))),
 	))
 	// Everything built above belongs to the screen whatever format is chosen.
 	// What a format declares comes after this mark and is replaced with it.

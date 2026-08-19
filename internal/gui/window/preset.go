@@ -72,7 +72,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		parts.ActionBar(p.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
 			p.progress(), p.problem.Object()),
 		nil, nil,
-		container.NewVScroll(parts.Screen(
+		p.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingPreset,
 			parts.Section(text.SectionPreset,
 				p.fields.Add(settingPreset, text.FieldPreset, text.HintPreset,
@@ -86,7 +86,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 				p.fields.Add(engine.SettingSeed, text.FieldSeed, text.HintSeed,
 					p.tips.Say(text.DetailSeed), parts.Numeric(p.seed)),
 			),
-		)),
+		))),
 	))
 
 	// Everything built above belongs to the screen whatever preset is chosen.

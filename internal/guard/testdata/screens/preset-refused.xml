@@ -22,8 +22,8 @@
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1250">
 					<widget size="1088x1125" type="*widget.Scroll">
-						<container size="1088x1125">
-							<container pos="134,0" size="820x1125">
+						<container size="1088x1141">
+							<container pos="134,0" size="820x1141">
 								<widget size="820x39" type="*widget.Label">
 									<widget size="820x39" type="*widget.RichText">
 										<text bold pos="6,6" size="249x27" textSize="20">Build a set for a question</text>
@@ -125,10 +125,10 @@
 									</container>
 								</container>
 								<rectangle pos="0,395" size="820x10"/>
-								<container pos="0,411" size="820x403">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x403" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x403">
-										<container pos="6,6" size="808x391">
+								<container pos="0,411" size="820x441">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x441" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x441">
+										<container pos="6,6" size="808x429">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="69x23" textSize="17">Settings</text>
@@ -144,12 +144,13 @@
 													<container pos="0,37" size="808x31">
 														<widget size="808x31" type="*widget.Entry">
 															<rectangle fillColor="button" pos="1,1" radius="5" size="806x29"/>
-															<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
+															<rectangle radius="5" size="806x29" strokeColor="hyperlink" strokeWidth="1"/>
 															<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																<widget size="808x29" type="*widget.entryContent">
 																	<widget size="808x29" type="*widget.RichText">
 																		<text pos="6,5" size="24x19">512</text>
 																	</widget>
+																	<rectangle fillColor="hyperlink" pos="5,5" size="1x19"/>
 																</widget>
 															</widget>
 														</widget>
@@ -228,8 +229,8 @@
 										</container>
 									</container>
 								</container>
-								<rectangle pos="0,820" size="820x10"/>
-								<container pos="0,836" size="820x266">
+								<rectangle pos="0,858" size="820x10"/>
+								<container pos="0,874" size="820x266">
 									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x266" strokeColor="separator" strokeWidth="1"/>
 									<container size="820x266">
 										<container pos="6,6" size="808x254">
@@ -320,6 +321,14 @@
 								</container>
 							</container>
 						</container>
+						<widget pos="0,1125" size="1088x0" type="*widget.Shadow">
+							<linearGradient endColor="shadow" pos="0,-8" size="1088x8"/>
+						</widget>
+						<widget pos="1082,0" size="6x1125" type="*widget.scrollBarArea">
+							<widget pos="3,0" size="3x1109" type="*widget.scrollBar">
+								<rectangle fillColor="scrollbar" radius="3" size="3x1109"/>
+							</widget>
+						</widget>
 					</widget>
 					<container pos="0,1131" size="1088x118">
 						<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x118" strokeColor="separator" strokeWidth="1"/>
@@ -360,7 +369,7 @@
 										<container size="820x31">
 											<widget size="820x31" type="*widget.Label">
 												<widget size="820x31" type="*widget.RichText">
-													<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
+													<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
 												</widget>
 											</widget>
 										</container>

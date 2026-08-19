@@ -34,33 +34,35 @@
 							</widget>
 						</widget>
 						<rectangle pos="0,98" size="820x10"/>
-						<container pos="0,114" size="820x370">
-							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x370" strokeColor="separator" strokeWidth="1"/>
-							<container size="820x370">
-								<container pos="6,6" size="808x358">
+						<container pos="0,114" size="820x408">
+							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x408" strokeColor="separator" strokeWidth="1"/>
+							<container size="820x408">
+								<container pos="6,6" size="808x396">
 									<widget size="808x35" type="*widget.Label">
 										<widget size="808x35" type="*widget.RichText">
 											<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
 										</widget>
 									</widget>
-									<widget pos="0,41" size="808x317" type="*widget.Label">
-										<widget size="808x317" type="*widget.RichText">
+									<widget pos="0,41" size="808x355" type="*widget.Label">
+										<widget size="808x355" type="*widget.RichText">
 											<text pos="6,6" size="150x19">Testing Files Generator</text>
 											<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>
 											<text pos="6,44" size="0x19"></text>
-											<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is in</text>
-											<text pos="6,82" size="227x19">the LICENSE file beside the source.</text>
-											<text pos="6,101" size="0x19"></text>
-											<text pos="6,120" size="325x19">There is no warranty, to the extent the law allows.</text>
-											<text pos="6,139" size="0x19"></text>
-											<text pos="6,158" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
-											<text pos="6,177" size="490x19">output of this program and not derived works of it, so this licence does not</text>
-											<text pos="6,196" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
-											<text pos="6,215" size="347x19">closed source product with no obligation of any kind.</text>
-											<text pos="6,234" size="0x19"></text>
-											<text pos="6,254" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
-											<text pos="6,273" size="336x19">copyright notices are in THIRD-PARTY-NOTICES.md.</text>
-											<text pos="6,292" size="0x19"></text>
+											<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is at</text>
+											<text pos="6,82" size="509x19">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have</text>
+											<text pos="6,101" size="191x19">the source or the full release.</text>
+											<text pos="6,120" size="0x19"></text>
+											<text pos="6,139" size="325x19">There is no warranty, to the extent the law allows.</text>
+											<text pos="6,158" size="0x19"></text>
+											<text pos="6,177" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
+											<text pos="6,196" size="490x19">output of this program and not derived works of it, so this licence does not</text>
+											<text pos="6,215" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
+											<text pos="6,234" size="347x19">closed source product with no obligation of any kind.</text>
+											<text pos="6,254" size="0x19"></text>
+											<text pos="6,273" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
+											<text pos="6,292" size="530x19">copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source</text>
+											<text pos="6,311" size="161x19">and with the full release.</text>
+											<text pos="6,330" size="0x19"></text>
 										</widget>
 									</widget>
 								</container>

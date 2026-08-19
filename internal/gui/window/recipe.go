@@ -1,6 +1,8 @@
 package window
 
 import (
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -135,7 +137,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		parts.ActionBar(r.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
 			r.progress(), r.problem.Object()),
 		nil, nil,
-		container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox)),
+		r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -177,6 +179,19 @@ func (r *Recipe) newBatch() *batch {
 		group:     widget.NewEntry(),
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
+	// What happens if the box is left alone, in the place a box says that.
+	//
+	// The single batch screen arrives with "files" and "1" typed into the same
+	// two settings and this screen arrives empty, which read as one of the two
+	// being wrong. Neither is: a value typed in is a value stated, and on this
+	// screen an unstated setting has to stay unstated, because that is what
+	// makes the recipe leave the key out. The difference is deliberate and it
+	// was written down only in the code, so from the screen it looked like an
+	// inconsistency (O109). A placeholder says it without stating anything.
+	// The id is not given one, and that is the difference between a setting
+	// with a default and a setting without: a batch with no id is refused
+	// rather than filled in, because an id is what anchors a batch's seed.
+	b.count.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultCount)))
 
 	// Nothing is filled in with a default, on either list. A list carrying a
 	// value cannot say "I did not state this", and an expectation nobody stated

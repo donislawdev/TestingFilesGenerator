@@ -284,6 +284,15 @@ const (
 // state this". Untouchable rule 5.
 const PlaceholderNotStated = "not stated"
 
+// RefusedBeforeWriting is what the foot of the form says when a press was
+// turned down and every reason for it went onto a box.
+//
+// Without it the press had no visible answer at all: the boxes were already
+// marked, the marks may be well off the bottom of a form that does not fit its
+// window, and nothing where the button is changed. It carries no count, because
+// the boxes themselves say which ones and how many.
+const RefusedBeforeWriting = "Nothing was written. Check the settings marked above."
+
 // ButtonDonate asks for money towards the work, and it is a word somebody reads
 // so it is translated like every other.
 //

@@ -239,6 +239,46 @@ func (s *Fields) ClearAll() {
 // is the order they appear on the screen.
 func (s *Fields) All() []*Field { return s.list }
 
+// Lookup is the field one setting is drawn by, or nil where this screen draws
+// none - which is ordinary rather than exceptional, since a refusal can name a
+// setting the screen it landed on does not have.
+func (s *Fields) Lookup(setting string) *Field { return s.by[setting] }
+
+// Freeze takes every control out of use while a run is going, and gives them
+// back afterwards.
+//
+// The buttons that start a run were already dealt with - two of them looking
+// pressable during a run invites a second run into the directory the first one
+// is still filling - but the form itself stayed fully editable, with nothing
+// saying whether changing the output directory mid run affected the files being
+// written into the old one. It almost certainly did not, and the person doing
+// it had no way to know that (O106).
+//
+// Registry wide rather than a list of controls to freeze, for the reason the
+// registry exists: a field added later is covered without anybody remembering.
+// Controls that cannot be disabled are skipped rather than reported, because
+// this is not the place that decides what a control is.
+func (s *Fields) Freeze(frozen bool) {
+	for _, f := range s.list {
+		// The registered object is sometimes a container fixing the control's
+		// width rather than the control - see inside, which is where asking
+		// the wrapper instead cost this a silent no-op.
+		found := inside(f.Control, func(o fyne.CanvasObject) bool {
+			_, ok := o.(fyne.Disableable)
+			return ok
+		})
+		if found == nil {
+			continue
+		}
+		control := found.(fyne.Disableable)
+		if frozen {
+			control.Disable()
+			continue
+		}
+		control.Enable()
+	}
+}
+
 // Controls is every control a person types into, for a guard comparing the
 // registry against the tree. That comparison is the answer to "what about the
 // fiftieth field": a control on the screen that is not here is a control whose

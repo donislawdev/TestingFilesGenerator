@@ -104,6 +104,11 @@ type runner struct {
 	// running, and only ever touched on the interface thread.
 	stop func()
 
+	// scroll is the part of this screen that moves, so a refusal can bring the
+	// box it is about into view. Set by the screen, because only the screen
+	// that built it knows which scroll holds its form.
+	scroll *container.Scroll
+
 	// destination is where this screen would write, asked for rather than
 	// stored, because the box it comes from is edited after this is wired.
 	// Nil on a screen that has no such box, and the status line simply stays
@@ -138,6 +143,10 @@ func (r *runner) Fields() *parts.Fields { return r.fields }
 // drifts.
 func (r *runner) refuse(err error) {
 	var loose []string
+	// The first box a refusal lands on, so the form can be brought to it. A
+	// refusal that marks a box the person cannot see reads as a button that did
+	// nothing - see parts.Reveal and O107.
+	first := ""
 	for _, one := range spread(err) {
 		// An interface rather than a case per error type, so a screen shown a
 		// kind of refusal nobody thought about here still gets it placed. The
@@ -146,6 +155,9 @@ func (r *runner) refuse(err error) {
 		var about interface{ AboutSetting() string }
 		if errors.As(one, &about) && about.AboutSetting() != "" &&
 			r.fields.Mark(about.AboutSetting(), one.Error()) {
+			if first == "" {
+				first = about.AboutSetting()
+			}
 			continue
 		}
 		// About the run rather than about one box, or about a setting this
@@ -154,6 +166,19 @@ func (r *runner) refuse(err error) {
 	}
 	if len(loose) > 0 {
 		r.problem.Say(strings.Join(loose, "\n\n"))
+	}
+	if first == "" {
+		return
+	}
+	// Every problem went onto a box, so the foot of the form says nothing and
+	// the only sign the press was even received is a red box that may be off
+	// the screen. Both halves of the answer are here: a sentence where the
+	// button is, and the form moved to the first box that needs attention.
+	if len(loose) == 0 {
+		r.say(text.RefusedBeforeWriting)
+	}
+	if field := r.fields.Lookup(first); field != nil {
+		parts.Reveal(r.scroll, field.Control)
 	}
 }
 
@@ -271,7 +296,15 @@ func (r *runner) say(lines ...string) {
 // preview and an outcome are answers to something that was just pressed. A
 // preview names the same directory in its own sentence anyway.
 func (r *runner) sayDestination() {
-	if !r.resting || r.destination == nil {
+	// Once something louder has spoken, this says nothing at all - including
+	// not clearing what was said. Clearing was the first version and it was
+	// wrong in a way only the stored screens caught: a refusal put its sentence
+	// at the foot, the next keystroke ran the live check, and the check called
+	// this, which wiped the sentence somebody had just been given.
+	if !r.resting {
+		return
+	}
+	if r.destination == nil {
 		r.status.SetText("")
 		r.status.Hide()
 		return
@@ -597,6 +630,13 @@ func (r *runner) setRunning(running bool) {
 	// is a question the screen keeps asking and answering itself, and it sat
 	// beside the two buttons that do work - so the row read as three choices
 	// where there were two. It appears with the run and goes with it.
+	// The form goes with them. It stayed editable through a run, so somebody
+	// could change the output directory while files were going into the old
+	// one and nothing said which run that applied to - almost certainly none of
+	// them, which is exactly the answer a person cannot reach from looking
+	// (O106).
+	r.fields.Freeze(running)
+
 	if running {
 		r.previewBtn.Disable()
 		r.generateBtn.Disable()
@@ -610,6 +650,15 @@ func (r *runner) setRunning(running bool) {
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 	r.bar.Hide()
+}
+
+// keepScroll remembers the scrolling area on the way past, so that a refusal
+// can bring the box it is about into view. It hands the scroll straight back,
+// so a screen wires it by wrapping the call it was already making rather than
+// by finding somewhere to put an extra statement.
+func (r *runner) keepScroll(scroll *container.Scroll) *container.Scroll {
+	r.scroll = scroll
+	return scroll
 }
 
 func (r *runner) onCancel() { r.Stop() }

@@ -129,9 +129,16 @@ type rawTarget struct {
 	Fill      *string             `yaml:"fill"`
 }
 
+// DefaultCount is how many files a target produces when it does not say.
+//
+// Exported so that the window can show it as what happens if the box is left
+// empty, rather than keeping a second copy of the number - which is the shape
+// that put one answer in tfg formats and another in the generator once already.
+const DefaultCount = 1
+
 func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	t := Target{Label: def.Label}
-	count := 1
+	count := DefaultCount
 
 	where := targetSpot(index, "")
 	if rt.ID != nil && *rt.ID != "" {

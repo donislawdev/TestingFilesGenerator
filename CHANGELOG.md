@@ -106,6 +106,24 @@ because it turns other people's test suites red.
   can return to it. Leaving it there records the value in the manifest as defaulted, which is
   the same thing leaving the flag off does on the command line.
 
+- **Generate now says when it refused, instead of looking like a dead button.** With a bad
+  value somewhere on the form, pressing Generate marked the box and put the reason under it -
+  both of which could be far below the bottom of the window, so from where you were sitting
+  the button did nothing. It now says `Nothing was written` at the foot, scrolls to the first
+  setting that needs attention and puts the cursor in it.
+
+- **The form cannot be edited while a run is writing.** The boxes stayed live, so you could
+  change the output directory halfway through a run with nothing telling you which files that
+  applied to. They are greyed for the length of the run and come back afterwards.
+
+- **`About` no longer points only at files you may not have.** It named the `LICENSE` file and
+  `THIRD-PARTY-NOTICES.md`, and if you downloaded just the program you have neither. It gives
+  the address of the licence text as well. `tfg license` says the same, for the same reason.
+
+- **The batch screen says what an empty box will do.** `How many` shows `1` as what you get by
+  leaving it alone. It stays empty on purpose - a box with a value in it cannot say the setting
+  was never stated, and that is what keeps the key out of the recipe.
+
 - **The line under a list no longer repeats the list.** The `format` setting spelled all twenty
   formats out in a sentence directly under the menu offering the same twenty, and it grew by a
   name every time a format was added. It says what the setting is for. `tfg formats` and the

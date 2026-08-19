@@ -118,12 +118,13 @@
 															<container size="140x31">
 																<widget size="140x31" type="*widget.Entry">
 																	<rectangle fillColor="button" pos="1,1" radius="5" size="138x29"/>
-																	<rectangle radius="5" size="138x29" strokeColor="inputBorder" strokeWidth="1"/>
+																	<rectangle radius="5" size="138x29" strokeColor="hyperlink" strokeWidth="1"/>
 																	<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																		<widget size="140x29" type="*widget.entryContent">
 																			<widget size="140x29" type="*widget.RichText">
 																				<text pos="6,5" size="8x19">0</text>
 																			</widget>
+																			<rectangle fillColor="hyperlink" pos="5,5" size="1x19"/>
 																		</widget>
 																	</widget>
 																</widget>
@@ -431,7 +432,7 @@
 										<container size="820x31">
 											<widget size="820x31" type="*widget.Label">
 												<widget size="820x31" type="*widget.RichText">
-													<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
+													<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
 												</widget>
 											</widget>
 										</container>
