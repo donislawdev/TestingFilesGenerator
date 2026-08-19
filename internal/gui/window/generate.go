@@ -88,6 +88,14 @@ type Generate struct {
 	// the settings of a PNG are not the settings of a WAV.
 	props   []parts.PropertyField
 	propBox *fyne.Container
+	// ready says the screen is far enough built for a change of format to
+	// redraw anything. Setting the first selection fires the callback from
+	// inside buildFields, before the mark below exists and before the fields
+	// that never move have been registered - so without this the settings of
+	// the opening format are registered twice and a refusal about one of them
+	// lands under a box that is not the one it is about. It only showed when a
+	// format declaring settings became the first in the menu.
+	ready bool
 	// fixed is how many fields this screen has before a format declares any.
 	// What comes after is thrown away and drawn again on every change.
 	fixed int
@@ -133,6 +141,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 
 	// The format decides which settings exist, so the first one has to be
 	// applied rather than waited for.
+	g.ready = true
 	g.onFormatChosen(g.formatPick.Selected)
 	return g
 }
@@ -248,6 +257,9 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 // that is enough to draw the field - so a format that gains a setting gains its
 // field, its wording and its refusal without a line of window code.
 func (g *Generate) onFormatChosen(id string) {
+	if !g.ready {
+		return
+	}
 	g.propBox.RemoveAll()
 	g.props = nil
 	// The fields of the format that was chosen before this one go with their
