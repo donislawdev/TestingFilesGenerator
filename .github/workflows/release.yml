@@ -1,0 +1,311 @@
+name: Release
+
+# Nothing here publishes by itself.
+#
+# A release happens when the owner pushes a tag, and that push is the command -
+# his instruction of 2026-08-19. Running this by hand from the Actions tab
+# builds every binary and attaches them to the run instead, so the whole
+# pipeline can be tried without a release existing and without a tag being
+# spent. The publish job below is the only one that writes anything to the
+# repository, and it is fenced off behind the tag.
+#
+# The release is created as a DRAFT. The tag starts it, the owner still presses
+# publish, and until he does nobody can download a half correct release. Drop
+# --draft in the publish step to have a tag go straight out.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+# Read only by default. The one job that needs to write says so itself.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # The same pin CI carries. A release built on a different toolchain than the
+  # one the byte stability guards ran under is a release nobody measured.
+  GO_VERSION: "1.26.6"
+
+jobs:
+  check:
+    name: the tree is green and the tag agrees with the code
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: test
+        # A release built from a red tree is the one kind of release that
+        # cannot be taken back, because the binaries are already on somebody's
+        # disk. This is the same command CI runs.
+        run: go test ./... -count=1
+
+      - name: what version the code says
+        id: version
+        # Asked of the program rather than read out of the source, so this
+        # cannot drift from what a manifest will record.
+        run: |
+          set -euo pipefail
+          version="$(go run ./cmd/tfg version)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "the code says $version"
+
+      - name: the tag says the same as the code
+        if: startsWith(github.ref, 'refs/tags/')
+        # The version lives in internal/version and only the owner raises it -
+        # immutable rule 12, and under it a major bump is a statement about
+        # file hashes in other people's CI. A tag that disagrees with the code
+        # would put one number in the release page and another one in every
+        # manifest the release writes, and the manifest is the copy that turns
+        # up months later attached to somebody's failing test.
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          code="${{ steps.version.outputs.version }}"
+          if [ "$tag" != "$code" ]; then
+            echo "The tag is ${GITHUB_REF_NAME} and internal/version says ${code}."
+            echo "Raise the version in the code first, commit it, then tag that commit."
+            exit 1
+          fi
+          echo "tag and code agree on ${code}"
+
+  cli:
+    name: command line binaries
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # The command line binary has no C in it and no graphics toolkit, so one
+      # runner cross compiles the lot. That is not a shortcut: it is the same
+      # property the dependency guard exists to keep, and building all six from
+      # one place is how it stays visible if it ever stops being true.
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: build and package every target
+        run: |
+          set -euo pipefail
+          version="${{ needs.check.outputs.version }}"
+          mkdir -p dist
+
+          for target in \
+            windows/amd64 windows/arm64 \
+            linux/amd64 linux/arm64 \
+            darwin/amd64 darwin/arm64
+          do
+            os="${target%/*}"
+            arch="${target#*/}"
+
+            work="$(mktemp -d)"
+            binary="tfg"
+            if [ "$os" = "windows" ]; then
+              binary="tfg.exe"
+            fi
+
+            # -trimpath keeps the build machine's directory names out of the
+            # binary. On a public release that is a privacy line as much as a
+            # reproducibility one.
+            GOOS="$os" GOARCH="$arch" go build -trimpath -o "${work}/${binary}" ./cmd/tfg
+
+            # The notices travel with the binary because their licences require
+            # it - see THIRD-PARTY-NOTICES.md, which says so itself. The licence
+            # and the readme go along for the person who downloaded an archive
+            # and nothing else.
+            cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
+
+            base="tfg_${version}_${os}_${arch}"
+            if [ "$os" = "windows" ]; then
+              (cd "${work}" && zip -q -r "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
+            else
+              tar -czf "dist/${base}.tar.gz" -C "${work}" .
+            fi
+            echo "packaged ${base}"
+          done
+
+          ls -l dist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cli
+          path: dist/*
+          if-no-files-found: error
+
+  gui:
+    name: window binary on ${{ matrix.os }}
+    needs: check
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      # One system failing should not throw away the binaries that did build.
+      # A release missing one platform is a decision the owner can make. A
+      # release missing all of them because one runner was busy is not.
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          # macos-latest is Apple silicon. The Intel label is listed separately
+          # by actions/runner-images and is the only one in this file whose
+          # availability to this account has not been tried yet - if it turns
+          # out not to be offered, drop the line and the Intel Mac keeps the
+          # command line binary, which is cross compiled above.
+          - macos-latest
+          - macos-26-intel
+    env:
+      # The window reaches OpenGL through C, so this one cannot be cross
+      # compiled the way the command line binary is. Each system builds its
+      # own, which is also the first time this project has built a real
+      # windowed binary anywhere but the owner's machine.
+      CGO_ENABLED: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: graphics and windowing headers
+        if: runner.os == 'Linux'
+        # Taken from the toolkit's own CI rather than from a list somebody
+        # remembered. No GitHub runner carries these by default, and without
+        # them the toolkit's app package does not compile at all.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libx11-dev \
+            libxkbcommon-dev \
+            xorg-dev
+
+      - name: build and package
+        run: |
+          set -euo pipefail
+          version="${{ needs.check.outputs.version }}"
+          os="$(go env GOOS)"
+          arch="$(go env GOARCH)"
+          work="$(mktemp -d)"
+          mkdir -p dist
+
+          if [ "$os" = "windows" ]; then
+            # The linker flags come from the file and nowhere else, so that a
+            # release and a local build cannot drift. Without them Windows
+            # hangs a black console window behind the program. Windows only:
+            # the flag names a Windows subsystem and means nothing elsewhere.
+            go build -trimpath -ldflags="$(cat .github/gui-ldflags)" \
+              -o "${work}/tfg-gui.exe" ./cmd/tfg-gui
+          else
+            go build -trimpath -o "${work}/tfg-gui" ./cmd/tfg-gui
+          fi
+
+          cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
+
+          base="tfg-gui_${version}_${os}_${arch}"
+          if [ "$os" = "windows" ]; then
+            (cd "${work}" && 7z a -tzip -bso0 "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
+          else
+            tar -czf "dist/${base}.tar.gz" -C "${work}" .
+          fi
+          echo "packaged ${base}"
+          ls -l dist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gui-${{ matrix.os }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: publish the release
+    needs: [check, cli, gui]
+    # The only job that writes anything, and the only one fenced behind a tag.
+    # Running this workflow by hand stops before here on purpose.
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: incoming
+          merge-multiple: true
+
+      - name: one list of what is being published
+        run: |
+          set -euo pipefail
+          cd incoming
+          sha256sum ./* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: notes
+        run: |
+          set -euo pipefail
+          {
+            echo "Generate test files, and know how the system under test should react to them."
+            echo
+            echo "## What to download"
+            echo
+            echo "- \`tfg_*\` is the command line. It carries no graphics toolkit and no network stack."
+            echo "- \`tfg-gui_*\` is the desktop window. Same engine, same features."
+            echo
+            echo "Match the file to your system and architecture. Check what you downloaded against"
+            echo "\`SHA256SUMS.txt\`."
+            echo
+            echo "## These binaries are not signed"
+            echo
+            echo "Signing is not set up yet, so your system will say so."
+            echo
+            echo "- **Windows** shows a SmartScreen warning. More info, then Run anyway."
+            echo "- **macOS** refuses to open it on the first try. Open it from the right click menu,"
+            echo "  or allow it in System Settings under Privacy and Security."
+            echo "- **Linux** says nothing, but you may need \`chmod +x\`."
+            echo
+            echo "If that is not a trade you want to make, build from source - it takes one command"
+            echo "and the readme has it."
+            echo
+            echo "## Everything that changed"
+            echo
+            echo "See [CHANGELOG.md](CHANGELOG.md)."
+          } > notes.md
+          cat notes.md
+
+      - name: create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # A draft, so the tag starts the release and the owner finishes it. It
+        # is also the last chance to read the notes before anybody downloads
+        # anything. A tag whose name carries a hyphen - v0.2.0-rc1 - is marked
+        # a prerelease as well.
+        run: |
+          set -euo pipefail
+          flags=(--draft --title "${GITHUB_REF_NAME}" --notes-file notes.md)
+          case "${GITHUB_REF_NAME}" in
+            *-*) flags+=(--prerelease) ;;
+          esac
+          gh release create "${GITHUB_REF_NAME}" "${flags[@]}" incoming/*
+          echo "drafted ${GITHUB_REF_NAME} - publish it from the Releases page"
