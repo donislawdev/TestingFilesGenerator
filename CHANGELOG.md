@@ -67,6 +67,15 @@ because it turns other people's test suites red.
   available to test against**, so if you use these against Word, Excel or PowerPoint,
   that is the one thing nobody has checked.
 
+### Fixed
+- **The window no longer opens a black console window next to it.** Starting `tfg-gui.exe`
+  used to give you two windows: the program, and an empty terminal that stayed in the
+  taskbar for as long as the program ran and shut the program down if you closed it. Only
+  the program opens now.
+
+  `tfg.exe` is unchanged. It still writes to the terminal you run it from, which is what a
+  command line tool is for.
+
 ### Added
 - **Three image formats: `bmp`, `gif` and `ico`.** Both surfaces offer them, `tfg formats`
   describes them, and every size they accept is exact to the byte.

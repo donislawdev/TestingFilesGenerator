@@ -197,7 +197,15 @@ jobs:
         # that build needs a C compiler per platform and is done natively -
         # docs/STACK.md section 4.4. Naming the gap beats implying it is
         # covered.
-        run: go build ./cmd/tfg-gui
+        #
+        # The linker flags come from the file rather than from this line, so
+        # that the release build and this one cannot drift apart. The file is
+        # the single place they live, the same way the coverage threshold is.
+        # Without them Windows attaches a console window to the program, which
+        # it decides from one number in the PE header - and that number is what
+        # the guard reads, out of a binary it builds rather than out of this
+        # command.
+        run: go build -ldflags="$(cat .github/gui-ldflags)" ./cmd/tfg-gui
 
   govulncheck:
     name: known vulnerabilities
