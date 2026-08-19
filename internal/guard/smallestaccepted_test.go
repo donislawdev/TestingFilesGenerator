@@ -83,6 +83,64 @@ func TestTheMinimumThisToolPrintsIsASizeItAccepts(t *testing.T) {
 	}
 }
 
+// And it stands whatever the seed is.
+//
+// The two guards around this one each run once, with whatever seed the tool
+// picks by default, and that is not enough for the failure this is about. A
+// floor that walks with the seed satisfies both of them and is still wrong:
+// somebody reads one number and gets a refusal on the run after the one that
+// worked.
+//
+// The project has met that failure three times. PDF on 2026-08-03, where the
+// page text was drawn at random so the floor ranged from 3090 B to 3499 B over
+// 200 seeds. OOXML on 2026-08-19, where filler words of different lengths gave
+// every seed a different smallest package. JPG on 2026-08-19, where the picture
+// is shifted by the seed and one changed pixel changes how many bytes the
+// entropy coder emits - 596 B to 598 B at one pixel.
+//
+// All three were closed in the generator. None of them was caught by a guard,
+// because until now there was none that varied the seed, and the regression
+// surface said this was covered. It reads as covered because the row was
+// written when the PDF fix landed, and the fix was proven by a probe rather
+// than by anything that runs on every change.
+//
+// It sweeps the seed DENSELY and through the engine rather than through the
+// command line, and that is a measurement rather than a preference. Measured on
+// 2026-08-19 with the JPG floor deliberately computed from one seed instead of
+// the worst of them: asking the built tool for its own printed minimum was
+// accepted at ALL 128 command line seeds tried. The reason is that the seed a
+// target uses is derived - seed(target) = H(run seed, target id) - so a handful
+// of command line seeds are a handful of arbitrary draws from the space that
+// actually matters, and the band that fails is one or two values wide. A guard
+// sampling five of them would have found that defect about one time in twenty
+// five, which is worse than no guard because it reads like one.
+func TestTheMinimumThisToolPrintsStandsWhateverTheSeedIs(t *testing.T) {
+	// 256 consecutive values. Picked because every seeded variation this
+	// project has met folds the seed through a small modulus - the picture
+	// offset in JPG and PNG is seed % 256 - so consecutive values cover the
+	// whole space rather than sampling it.
+	const seeds = 256
+
+	for _, d := range format.All() {
+		t.Run(d.ID, func(t *testing.T) {
+			// The advertised floor, not the structural one. They differ for
+			// several formats - zip is 156 B structurally and 8382 B as an
+			// ordinary run - and it is the advertised number a person types.
+			floor := d.SmallestAccepted(format.Request{Label: true})
+			for seed := uint64(0); seed < seeds; seed++ {
+				_, err := d.Generator.Plan(format.Request{
+					Bytes: floor, Seed: seed, Label: true,
+				})
+				if err != nil {
+					t.Fatalf("the registry says the minimum is %d B and seed %d refuses it: %v\n"+
+						"A floor that moves with the seed means somebody reads one number and gets "+
+						"a refusal on the run after the one that worked.", floor, seed, err)
+				}
+			}
+		})
+	}
+}
+
 // And it is the smallest such size, not merely one that works. A number well
 // above the real floor would satisfy the guard above while telling somebody
 // they cannot ask for a file they can have.
