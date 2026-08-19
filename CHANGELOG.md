@@ -28,6 +28,31 @@ because it turns other people's test suites red.
   fine.
 
 ### Added
+- **Three Office formats: `docx`, `xlsx` and `pptx`.** Real packages, not renamed ZIPs:
+  each one opens, renders and carries the label in text you can read.
+
+  - **DOCX** holds paragraphs. `--set paragraphs=40` for a longer document. Smallest
+    file: 1227 B.
+  - **XLSX** holds one sheet. `--set rows=500 --set columns=8` for a grid. Smallest
+    file: 1735 B.
+  - **PPTX** holds slides. `--set slides=12`. Smallest file: 4826 B - a presentation
+    needs a slide master, a layout and a theme whether it shows them or not, which is
+    why it costs more than the other two.
+
+  The size you ask for beyond the document itself is carried by an extra part inside
+  the package. Every size from the smallest upwards is reachable, with no gaps.
+
+  One thing worth knowing before you compare files: for a workbook and a presentation,
+  turning the label OFF with `--clean` makes the file slightly BIGGER, because the
+  label takes the place of the filler text in the first cell or on the first slide
+  rather than being added to it. In a Word document the label is an extra paragraph
+  and `--clean` makes the file smaller, as you would expect.
+
+  These were opened and rendered with LibreOffice 26.2.5.2. **Microsoft Office was not
+  available to test against**, so if you use these against Word, Excel or PowerPoint,
+  that is the one thing nobody has checked.
+
+### Added
 - **Three image formats: `bmp`, `gif` and `ico`.** Both surfaces offer them, `tfg formats`
   describes them, and every size they accept is exact to the byte.
 

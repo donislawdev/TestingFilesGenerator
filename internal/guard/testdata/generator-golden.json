@@ -17,6 +17,16 @@
       "bytes": 8192,
       "sha256": "9c27e8266485816183ac867c69fe3ae797aeab185a2f5b38c99acdc957076998"
     },
+    "docx_32kib": {
+      "bytes": 32768,
+      "sha256": "ba7994133148c6016a7b2c2bd1361c8b98b9b55abbf9471fa5256ce746dc7c66",
+      "measured_on": "2026-08-19"
+    },
+    "docx_32kib_many_paragraphs": {
+      "bytes": 32768,
+      "sha256": "11a40c75a83468e9adddc9fc00ce9f4edd3a658cc03cc81c3700ed2238230cd4",
+      "measured_on": "2026-08-19"
+    },
     "gif_64kib": {
       "bytes": 65536,
       "sha256": "659e48806e3abe402148f8246921769d66f3ea9d2f73e94888a3fb7abcf76977",
@@ -56,6 +66,16 @@
       "bytes": 65536,
       "sha256": "85e174c37ebd91b39afdd5b4ca906d7b996c8ceb43a287424412b08ab815e521"
     },
+    "pptx_32kib": {
+      "bytes": 32768,
+      "sha256": "5ff36a308816c9938deba34d83d175a33df1f757acc872ba39305c46282ebdb4",
+      "measured_on": "2026-08-19"
+    },
+    "pptx_32kib_five_slides": {
+      "bytes": 32768,
+      "sha256": "6a9db5085b0b8d2b288290c2169422307d7d61f8eb08c3c1cfe880c7189b4555",
+      "measured_on": "2026-08-19"
+    },
     "svg_8kib": {
       "bytes": 8192,
       "sha256": "1cfeca2a6632e55c7575115b14e75aa7fff2ad42543f76d46e2199842910e84a"
@@ -86,6 +106,16 @@
     "wav_32kib": {
       "bytes": 32768,
       "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
+    },
+    "xlsx_32kib": {
+      "bytes": 32768,
+      "sha256": "11c19f918b1a996634117117c63e337513db7cadaa1872880482b59abfc7e1da",
+      "measured_on": "2026-08-19"
+    },
+    "xlsx_32kib_grid": {
+      "bytes": 32768,
+      "sha256": "c60de4f39aac004d4cc42369fc59e910dca5224b12567deaade3e63c85a3163e",
+      "measured_on": "2026-08-19"
     },
     "xml_8kib": {
       "bytes": 8192,

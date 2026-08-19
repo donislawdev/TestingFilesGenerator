@@ -817,10 +817,142 @@ def inside_icon(index, blob, want_w, want_h):
     return f"{depth} bit bitmap"
 
 
+OPC_NS_CT = "{http://schemas.openxmlformats.org/package/2006/content-types}"
+OPC_NS_REL = "{http://schemas.openxmlformats.org/package/2006/relationships}"
+
+# Measured 2026-08-19: a reader stops accepting the package above this.
+OPC_COMMENT_LIMIT = 512
+
+
+def opc_open(data):
+    import io as _io
+    import zipfile
+    try:
+        return zipfile.ZipFile(_io.BytesIO(data))
+    except Exception as exc:
+        fail("the package is not a readable ZIP: %s" % exc)
+
+
+def opc_check(data, roots, kind):
+    """Checks every OOXML package has to pass, whatever is inside it.
+
+    Written to the packaging specification rather than to what a viewer will
+    put up with. Two of these were found the hard way and neither is visible to
+    a ZIP tool: an entry carrying its sizes after the data instead of in the
+    header, which LibreOffice's Writer and Impress filters refuse while its Calc
+    filter accepts, and an archive comment above 512 B, which every ZIP reader
+    accepts and no OOXML reader does.
+    """
+    import xml.etree.ElementTree as ET
+
+    z = opc_open(data)
+    names = [i.filename for i in z.infolist()]
+
+    if len(z.comment) > OPC_COMMENT_LIMIT:
+        fail("the archive comment is %d B and a reader stops at %d B"
+             % (len(z.comment), OPC_COMMENT_LIMIT))
+
+    for info in z.infolist():
+        if info.flag_bits & 0x08:
+            fail("the entry %s carries its sizes after the data instead of in "
+                 "the header, which an Office reader refuses" % info.filename)
+
+    if "[Content_Types].xml" not in names:
+        fail("there is no [Content_Types].xml, so nothing says what the parts are")
+    if "_rels/.rels" not in names:
+        fail("there is no _rels/.rels, so nothing points at the document")
+
+    try:
+        types = ET.fromstring(z.read("[Content_Types].xml"))
+    except ET.ParseError as exc:
+        fail("[Content_Types].xml is not well formed: %s" % exc)
+
+    defaults = {e.get("Extension", "").lower(): e.get("ContentType")
+                for e in types.findall(OPC_NS_CT + "Default")}
+    overrides = {e.get("PartName"): e.get("ContentType")
+                 for e in types.findall(OPC_NS_CT + "Override")}
+
+    for part, ct in overrides.items():
+        if part.lstrip("/") not in names:
+            fail("the content types name %s and the package does not hold it" % part)
+        if not ct:
+            fail("the content types give %s no type" % part)
+
+    # Every part needs a type, from an override or from its extension. The
+    # reader measured here does not check this - the specification does.
+    for name in names:
+        if name.endswith("/"):
+            continue
+        ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+        if ("/" + name) in overrides:
+            continue
+        if ext in defaults:
+            continue
+        fail("the part %s has no content type, by override or by extension" % name)
+
+    roots_found = []
+    for name in names:
+        if not name.endswith(".xml") and not name.endswith(".rels"):
+            continue
+        try:
+            root = ET.fromstring(z.read(name))
+        except ET.ParseError as exc:
+            fail("the part %s is not well formed XML: %s" % (name, exc))
+        roots_found.append((name, root.tag))
+
+    # Relationship targets have to exist, or a reader follows a link to nothing.
+    for name in names:
+        if not name.endswith(".rels"):
+            continue
+        base = name.rsplit("_rels/", 1)[0]
+        rels = ET.fromstring(z.read(name))
+        for rel in rels.findall(OPC_NS_REL + "Relationship"):
+            if rel.get("TargetMode") == "External":
+                continue
+            target = rel.get("Target", "")
+            resolved = opc_resolve(base, target)
+            if resolved not in names:
+                fail("%s points at %s and the package does not hold it"
+                     % (name, resolved))
+
+    for want in roots:
+        if want not in names:
+            fail("a %s needs %s and the package does not hold it" % (kind, want))
+
+    padding = [i for i in z.infolist() if i.filename.startswith("tfg/")]
+    pad = padding[0].file_size if padding else 0
+    ok("%s, %d parts, %d B of padding, comment %d B"
+       % (kind, len(names), pad, len(z.comment)))
+
+
+def opc_resolve(base, target):
+    """Turns a relationship target into a path inside the package."""
+    import posixpath
+    if target.startswith("/"):
+        return target.lstrip("/")
+    return posixpath.normpath(posixpath.join(base, target)).replace("\\", "/")
+
+
+def check_docx(data):
+    opc_check(data, ["word/document.xml"], "Word document")
+
+
+def check_xlsx(data):
+    opc_check(data, ["xl/workbook.xml"], "Excel workbook")
+
+
+def check_pptx(data):
+    opc_check(data, ["ppt/presentation.xml",
+                     "ppt/slideMasters/slideMaster1.xml",
+                     "ppt/slideLayouts/slideLayout1.xml",
+                     "ppt/theme/theme1.xml"], "PowerPoint presentation")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
-          "bmp": check_bmp, "gif": check_gif, "ico": check_ico}
+          "bmp": check_bmp, "gif": check_gif, "ico": check_ico,
+          "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":
     if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:

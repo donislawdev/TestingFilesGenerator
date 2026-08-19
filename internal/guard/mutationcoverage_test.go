@@ -56,7 +56,6 @@ var notProvenByMutation = map[string]bool{
 	"TestNothingIsEverWrittenOverInSilence":                           true,
 	"TestOracleStaysOutOfProductionCode":                              true,
 	"TestPlanningTenThousandFilesStaysCheap":                          true,
-	"TestSizeBelowTheMinimumIsRefused":                                true,
 	"TestSizesCountIn1024s":                                           true,
 	"TestStandardLibraryOutputHasNotDrifted":                          true,
 	"TestTextInTheRepositoryIsAsciiOnly":                              true,

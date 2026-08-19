@@ -47,6 +47,22 @@ func goldenCases() map[string]engine.Target {
 		"png_64kib": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 		"pdf_16kib": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 16384), Label: true},
+		// The three Office packages, each at a size well above its floor. What
+		// they pin is a whole OPC container: the parts, their order, the
+		// compression of each one and the padding part that settles the size.
+		"docx_32kib": {ID: "g", Format: "docx", Sizes: engine.Uniform(1, 32768), Label: true},
+		"xlsx_32kib": {ID: "g", Format: "xlsx", Sizes: engine.Uniform(1, 32768), Label: true},
+		"pptx_32kib": {ID: "g", Format: "pptx", Sizes: engine.Uniform(1, 32768), Label: true},
+
+		// With content, because how many paragraphs, rows or slides there are
+		// changes every byte of the package rather than only its length.
+		"docx_32kib_many_paragraphs": {ID: "g", Format: "docx", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"paragraphs": "40"}},
+		"xlsx_32kib_grid": {ID: "g", Format: "xlsx", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"rows": "25", "columns": "4"}},
+		"pptx_32kib_five_slides": {ID: "g", Format: "pptx", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"slides": "5"}},
+
 		"bmp_64kib": {ID: "g", Format: "bmp", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 
