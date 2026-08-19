@@ -87,7 +87,12 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 // a line of label together, which is what it exists to hold.
 func TestTheRoomKeptForARunHoldsTheBarAndALine(t *testing.T) {
 	held := parts.WithRoomForARun(container.NewVBox()).MinSize().Height
-	needed := container.NewVBox(widget.NewProgressBar(), widget.NewLabel("one")).MinSize().Height
+	// The track is measured wrapped, because wrapped is how the screen puts it
+	// there. Measured bare, this asked for the toolkit's own 31 px and would
+	// have failed a reserve that is right - which is a guard reporting a defect
+	// in itself.
+	needed := container.NewVBox(
+		parts.Slim(widget.NewProgressBar()), widget.NewLabel("one")).MinSize().Height
 
 	if held < needed {
 		t.Errorf("the bar keeps %.0f px for a run's messages and they need %.0f px, so the form "+
@@ -153,11 +158,17 @@ func runMessages(o fyne.CanvasObject) (*widget.ProgressBar, *widget.Label) {
 		var foundBar *widget.ProgressBar
 		var foundLabel *widget.Label
 		for _, child := range box.Objects {
-			switch it := child.(type) {
-			case *widget.ProgressBar:
-				foundBar = it
-			case *widget.Label:
+			// The label has to be a child of this box, because that is what
+			// says this is the row a run talks in. The track is looked for
+			// underneath the child instead: it is wrapped in parts.Slim since
+			// 2026-08-19, and a guard that insisted on a bare widget here read
+			// the wrapper and declared the screen had no progress bar.
+			if it, ok := child.(*widget.Label); ok {
 				foundLabel = it
+				continue
+			}
+			if it := progressUnder(child); it != nil {
+				foundBar = it
 			}
 		}
 		if foundBar != nil && foundLabel != nil {
@@ -165,4 +176,15 @@ func runMessages(o fyne.CanvasObject) (*widget.ProgressBar, *widget.Label) {
 		}
 	})
 	return bar, status
+}
+
+// progressUnder finds the progress track at or beneath an object.
+func progressUnder(o fyne.CanvasObject) *widget.ProgressBar {
+	var found *widget.ProgressBar
+	walk(o, func(obj fyne.CanvasObject) {
+		if it, ok := obj.(*widget.ProgressBar); ok && found == nil {
+			found = it
+		}
+	})
+	return found
 }

@@ -74,8 +74,12 @@
 					<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x44" strokeColor="separator" strokeWidth="1"/>
 					<container size="1088x44">
 						<container pos="6,6" size="1076x32">
-							<container pos="128,0" size="820x32">
-								<container size="820x32">
+							<container size="1076x32">
+								<container pos="128,0" size="820x32">
+								</container>
+							</container>
+							<container size="1076x32">
+								<container size="1076x32">
 									<widget size="63x32" type="*widget.Button">
 										<rectangle fillColor="button" radius="5" size="63x32"/>
 										<rectangle size="63x32"/>

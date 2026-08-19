@@ -165,9 +165,63 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 // up with the form above them instead of starting where the window happens to
 // begin. Until 2026-08-12 they did the latter: the form stopped at 822 px and
 // a refusal about it ran to 1099.
-func ActionBar(content ...fyne.CanvasObject) fyne.CanvasObject {
-	standing := container.New(readableWidth{}, container.NewVBox(content...))
+//
+// The rail is the exception, on the owner's decision of 2026-08-19: it stands
+// at the left edge of the bar rather than in that column. What it holds is
+// what the run is not about - Donate, and adding a batch - so lining it up
+// with the form bought nothing and spent 78 px of margin saying so. Pass nil
+// on a screen that has none.
+func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
+	column := container.New(readableWidth{}, container.NewVBox(content...))
+	standing := fyne.CanvasObject(column)
+	if rail != nil {
+		// Laid over the column rather than beside it. Sharing the row, the rail
+		// would take width from one side only and the buttons the column
+		// centres would sit off centre by half of it.
+		//
+		// The vertical box is what keeps the rail one row tall. Handed straight
+		// to a stack it would be resized to the whole bar, and a Donate button
+		// as tall as the bar is what the first attempt drew.
+		standing = container.NewStack(column, container.NewVBox(rail))
+	}
 	return container.NewStack(panelSurface(), container.NewPadded(standing))
+}
+
+// SlimHeight is how tall a progress track is drawn.
+//
+// The toolkit's progress bar is as tall as the words "100%" and the padding
+// around them, because it writes the percentage inside itself. The line
+// directly under it already ends with that same percentage - see text.Progress
+// - so the number stood on the screen twice and the second copy cost 23 px of
+// a bar the owner asked to make smaller. Measured from the stored tree on
+// 2026-08-19: the bar was 31 px and the line under it another 31.
+const SlimHeight = 8
+
+// Slim draws a control at SlimHeight, whatever height it asks for.
+//
+// A layout may resize a child below its minimum. Only the minimum this
+// container reports for itself is what the form above it has to give up.
+func Slim(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.New(slim{}, o)
+}
+
+type slim struct{}
+
+func (slim) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.NewSize(0, SlimHeight)
+	for _, o := range objects {
+		if width := o.MinSize().Width; width > size.Width {
+			size.Width = width
+		}
+	}
+	return size
+}
+
+func (slim) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(size.Width, SlimHeight))
+		o.Move(fyne.NewPos(0, 0))
+	}
 }
 
 // Screen stacks sections with a heading on top.
@@ -347,7 +401,12 @@ func gap() fyne.CanvasObject {
 func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
 	// "Ag" is this project's measuring sample - an ascender and a descender,
 	// so the line is as tall as a line ever gets. It is never drawn.
-	sample := container.NewVBox(widget.NewProgressBar(), widget.NewLabel("Ag"))
+	//
+	// The track is measured through Slim for the same reason the rest is
+	// measured at all: a reserve is only right while it matches what a run
+	// actually puts here, and a reserve left at the toolkit's own height would
+	// have kept all 23 px the slim track gave back.
+	sample := container.NewVBox(Slim(widget.NewProgressBar()), widget.NewLabel("Ag"))
 	return container.New(&reserving{height: sample.MinSize().Height}, content)
 }
 

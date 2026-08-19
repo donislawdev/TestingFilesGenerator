@@ -96,5 +96,5 @@ func About(h Host) fyne.CanvasObject {
 	// somebody reads when deciding what this program costs them, which is the
 	// worst one to leave it off.
 	return container.NewBorder(
-		nil, parts.ActionBar(container.NewHBox(donateButton(h))), nil, nil, page)
+		nil, parts.ActionBar(rail(donateButton(h))), nil, nil, page)
 }

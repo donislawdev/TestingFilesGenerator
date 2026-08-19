@@ -334,6 +334,10 @@ func newRunner() *runner {
 	// a very large run inside the range of its own type is the one the command
 	// line already uses.
 	r.bar.Max = 100
+	// Nothing written inside the track. The line under it ends with the same
+	// percentage already (text.Progress), so this was the number twice, and
+	// the words are the copy worth keeping - they say what is being counted.
+	r.bar.TextFormatter = func() string { return "" }
 	r.bar.Hide()
 
 	r.status = widget.NewLabel("")
@@ -385,7 +389,7 @@ func newRunner() *runner {
 // The spacer is what does it. An HBox gives every child its minimum width and
 // leaves the rest empty at the end, so without something greedy in front the
 // buttons cannot move.
-func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
+func (r *runner) actions() fyne.CanvasObject {
 	// Centred, on the owner's decision of 2026-08-19, which reverses the one of
 	// 2026-08-18 that put them at the right edge. Both were reports from
 	// looking at the built window, and the reasoning for the first is kept
@@ -395,22 +399,24 @@ func (r *runner) actions(extra ...fyne.CanvasObject) fyne.CanvasObject {
 	// A spacer at each end rather than one, because a single greedy spacer only
 	// pushes: it can put the group at one end or the other and never in the
 	// middle.
-	middle := container.NewHBox(
+	//
+	// Everything that is not one of these buttons went to the bar's rail on
+	// 2026-08-19 - see parts.ActionBar. It used to be laid over this row, which
+	// kept it inside the form's column and so a margin away from the edge.
+	return container.NewHBox(
 		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn, layout.NewSpacer())
-	if len(extra) == 0 {
-		return middle
-	}
-	// Anything else in this row is laid over the top at the left rather than
-	// placed before the buttons. Put in the same row, it would take width from
-	// one side only and the buttons would sit off centre by half of it.
-	return container.NewStack(middle, container.NewHBox(
-		append(append([]fyne.CanvasObject{}, extra...), layout.NewSpacer())...))
+}
+
+// rail is what stands at the left edge of the action bar: the buttons that are
+// not about this run. See parts.ActionBar.
+func rail(items ...fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewHBox(items...)
 }
 
 // progress is where a run says what it is doing, and it keeps its height
 // whether or not there is a run. See parts.WithRoomForARun for why.
 func (r *runner) progress() fyne.CanvasObject {
-	return parts.WithRoomForARun(container.NewVBox(r.bar, r.status))
+	return parts.WithRoomForARun(container.NewVBox(parts.Slim(r.bar), r.status))
 }
 
 // onPreview says what the run would cost and writes nothing.
