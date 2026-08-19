@@ -68,6 +68,10 @@ type Recipe struct {
 	batchBox *fyne.Container
 	outBox   *fyne.Container
 
+	// addBtn lives in the bar at the foot rather than in the form, because the
+	// form scrolls and one batch is taller than the window (O112).
+	addBtn *widget.Button
+
 	outDir   *widget.Entry
 	manifest *widget.Entry
 	seed     *widget.Entry
@@ -132,9 +136,16 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.outBox = container.NewVBox()
 	r.batches = []*batch{r.newBatch()}
 
+	// In the bar rather than in the list, so the one control that makes this
+	// screen what it is does not depend on scrolling to reach - see rebuild.
+	// It is disabled with the rest of the form while a run is going, because
+	// adding a batch mid run would rebuild the form under the run.
+	r.addBtn = widget.NewButton(text.ButtonAddBatch, r.addBatch)
+	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
+
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(r.actions(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
+		parts.ActionBar(r.actions(append([]fyne.CanvasObject{donateButton(host), r.addBtn}, links...)...),
 			r.progress(), r.problem.Object()),
 		nil, nil,
 		r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox))),
@@ -223,9 +234,12 @@ func (r *Recipe) rebuild() {
 	for i, b := range r.batches {
 		panels = append(panels, r.batchBlock(i, b))
 	}
-	// Under the batches rather than in the output section, where it sat until the
-	// screen was looked at. Adding a batch is not a setting of where files go.
-	panels = append(panels, widget.NewButton(text.ButtonAddBatch, r.addBatch))
+	// Adding a batch is NOT in this list any more, as of 2026-08-19. It sat at
+	// the end of it - under the output section before that - and one batch is
+	// already taller than the window, so the only control that makes this
+	// screen different from the other two was off the bottom of it when the
+	// screen opened. It is in the bar at the foot now, which does not scroll
+	// (O112).
 	// Stacked rather than added straight to the box, so the space between two
 	// batches is the space between two panels. Added one by one they sat as close
 	// together as two fields inside one of them, and two panels a hair apart read

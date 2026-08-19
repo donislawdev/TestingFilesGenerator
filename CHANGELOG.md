@@ -124,6 +124,18 @@ because it turns other people's test suites red.
   leaving it alone. It stays empty on purpose - a box with a value in it cannot say the setting
   was never stated, and that is what keeps the key out of the recipe.
 
+- **`Add a batch` is always visible on the batch screen.** It sat at the end of the list of
+  batches, and one batch is taller than the window - so the one thing that screen exists for
+  was off the bottom of it when it opened. It is in the bar at the foot now, beside the run
+  buttons, and greyed while a run is going.
+
+- **A list no longer opens through the bottom of the window.** Opening the format list near
+  the foot of a form showed four of its twenty values with the rest past the edge, covering
+  the buttons. It opens upward when there is more room above, and is cut to the room there is.
+
+- **All three ways of giving a size say that only one may be used.** `Size`, `Size range` and
+  `Around a limit` sit side by side and only one can be filled in, but only the first said so.
+
 - **The line under a list no longer repeats the list.** The `format` setting spelled all twenty
   formats out in a sentence directly under the menu offering the same twenty, and it grew by a
   name every time a format was added. It says what the setting is for. `tfg formats` and the

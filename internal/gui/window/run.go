@@ -104,6 +104,11 @@ type runner struct {
 	// running, and only ever touched on the interface thread.
 	stop func()
 
+	// alsoDisabled are controls that are neither fields nor run buttons and
+	// still have no business being pressed while a run is going. The batch
+	// screen's "add a batch" is one: pressing it rebuilds the form under a run.
+	alsoDisabled []fyne.Disableable
+
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
 	// that built it knows which scroll holds its form.
@@ -636,6 +641,13 @@ func (r *runner) setRunning(running bool) {
 	// them, which is exactly the answer a person cannot reach from looking
 	// (O106).
 	r.fields.Freeze(running)
+	for _, control := range r.alsoDisabled {
+		if running {
+			control.Disable()
+			continue
+		}
+		control.Enable()
+	}
 
 	if running {
 		r.previewBtn.Disable()

@@ -257,15 +257,67 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	c.opened = list
 
 	at := fyne.CurrentApp().Driver().AbsolutePositionForObject(c)
-	// Under the box rather than over it, the same place the toolkit put it, and
-	// as wide as the box so the list reads as belonging to that field.
-	pop.Resize(fyne.NewSize(c.Size().Width, list.MinSize().Height))
-	pop.ShowAtPosition(at.Add(fyne.NewPos(0, c.Size().Height)))
+	// As wide as the box, so the list reads as belonging to that field. How
+	// tall and which side of the box it goes on is worked out from the room
+	// that is actually left - see roomForList.
+	height, top := roomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height)
+	// Told to the list rather than only to the popup, because a popup is never
+	// laid out smaller than its content's minimum - so resizing alone left the
+	// list its full height and the shortening did nothing.
+	list.LimitTo(height)
+	pop.Resize(fyne.NewSize(c.Size().Width, height))
+	pop.ShowAtPosition(fyne.NewPos(at.X, top))
 
 	surface.Focus(list)
 	// On the value already in the box, so that pressing Down once does not go
 	// to the first value while the box shows the ninth.
 	list.StartOn(c.Selected)
+}
+
+// listEdgeGap is the space kept between an open list and the edge of the
+// window, so that a list filling the room still reads as sitting inside it.
+const listEdgeGap = 8
+
+// roomForList decides how tall an open list may be and where its top goes.
+//
+// It used to go under the box at its full height, always, which is right until
+// the box is near the foot of a form - and every form here is taller than its
+// window, so a menu low on one opened straight through the bottom edge. The
+// format menu showed four of its twenty values that way, with the rest past the
+// edge and the run buttons underneath it (O113).
+//
+// Two things fix it and both are needed. It opens UPWARD when there is more
+// room above the box than below it, which is what every desktop menu does. And
+// it is cut to the room on whichever side it lands, rather than to a fixed
+// number of rows - the eight row ceiling is about not covering the form, and it
+// says nothing about a window that has less than eight rows left.
+//
+// Arithmetic rather than widgets so that it can be checked directly. The screen
+// level guard opens a real menu and measures the overlay, which is the half
+// that catches this being wired up wrongly.
+func roomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
+	below := canvasHeight - (boxTop + boxHeight) - listEdgeGap
+	above := boxTop - listEdgeGap
+	if below < 0 {
+		below = 0
+	}
+	if above < 0 {
+		above = 0
+	}
+
+	if wanted <= below {
+		return wanted, boxTop + boxHeight
+	}
+	if above > below {
+		if wanted > above {
+			wanted = above
+		}
+		return wanted, boxTop - wanted
+	}
+	if wanted > below {
+		wanted = below
+	}
+	return wanted, boxTop + boxHeight
 }
 
 // giveBack hands the keyboard back to the box when the list closes.

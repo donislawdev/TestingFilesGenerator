@@ -63,6 +63,9 @@ type OpenList struct {
 	widget.BaseWidget
 
 	options []string
+	// room is how much height the window has left for this list, or nought for
+	// no limit. See LimitTo and MinSize.
+	room float32
 	// chosen is the value in the box, marked with a tick. Empty when the box
 	// shows a default nobody has confirmed - see the note in preset.go about a
 	// filled field making "I did not say" impossible to express.
@@ -179,8 +182,26 @@ func (l *OpenList) MinSize() fyne.Size {
 	if rows < 1 {
 		rows = 1
 	}
-	return fyne.NewSize(l.list.MinSize().Width, float32(rows)*listRowHeight())
+	height := float32(rows) * listRowHeight()
+	// The room the window has left beats the row ceiling, where there is less
+	// of it. The ceiling is about not covering the form and says nothing about
+	// a window with fewer than eight rows to spare - and this has to happen in
+	// MinSize rather than by resizing the popup afterwards, because a popup is
+	// never laid out smaller than its content's minimum. Measured on
+	// 2026-08-19: asking for 195 px around a list whose minimum was 224 gave
+	// 224 (O113).
+	if l.room > 0 && height > l.room {
+		height = l.room
+	}
+	if height < listRowHeight() {
+		height = listRowHeight()
+	}
+	return fyne.NewSize(l.list.MinSize().Width, height)
 }
+
+// LimitTo tells the list how much room it has, so it can be shorter than its
+// row ceiling when the window is shorter than that. Nought means no limit.
+func (l *OpenList) LimitTo(room float32) { l.room = room }
 
 func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// The surface is drawn here rather than left to the popup, so that the
