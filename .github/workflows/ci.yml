@@ -164,7 +164,14 @@ jobs:
             golang.org/x/tools/go/vcs \
             gopkg.in/check.v1 \
             gopkg.in/yaml.v3)
-          actual=$(go list -m -f '{{.Path}}' all | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | sort)
+          # LC_ALL=C on every sort here, and on the written list too. Measured on
+          # 2026-08-20, the first run this job ever had on macOS: both lists
+          # held the same 68 modules and the comparison still failed, because
+          # BSD sort and GNU sort disagree about where a hyphen goes. The check
+          # is a string comparison, so an ordering difference reads exactly like
+          # a dependency appearing out of nowhere.
+          expected=$(printf '%s\n' "$expected" | LC_ALL=C sort)
+          actual=$(go list -m -f '{{.Path}}' all | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | LC_ALL=C sort)
           if [ "$actual" != "$expected" ]; then
             echo "the module list changed."
             echo "expected: $expected"
@@ -173,7 +180,7 @@ jobs:
           fi
           echo "dependencies unchanged, $(echo "$expected" | wc -l) modules"
 
-          linked=$(go list -deps -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
+          linked=$(go list -deps -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | LC_ALL=C sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
           wanted=$(printf '%s\n' github.com/goccy/go-yaml golang.org/x/text)
           if [ "$linked" != "$wanted" ]; then
             echo "the command line binary links a different set of modules."

@@ -1,0 +1,63 @@
+version: 2
+
+# Keeps dependencies current without a human polling release pages.
+#
+# - github-actions: the pinned action majors in .github/workflows. Grouped, so
+#   one pull request carries the whole bump rather than one per action.
+# - gomod: go.mod and go.sum. NOT grouped, and that is the difference from the
+#   actions above - see below.
+#
+# cooldown holds a newly published version back for a week before it is proposed
+# here. It closes the window the tj-actions and trivy-action compromises used, a
+# poisoned release pulled in within hours of publication, and it costs a week of
+# latency on updates nobody is waiting for.
+#
+# It does NOT delay security fixes. Cooldown applies to version updates, and
+# Dependabot security updates are a separate mechanism.
+#
+# Two things about this repository that a reviewer needs to know before merging
+# any of these, and neither is obvious from the diff:
+#
+#   1. A dependency bump can change the bytes of a generated file, and this
+#      project promises those bytes inside a major version (D11). The byte
+#      stability guards have to be green on the branch before a gomod pull
+#      request is merged, and a bump that moves them is a major version
+#      question rather than routine tidying. That is the owner's call.
+#
+#   2. CI will go red on a gomod pull request by design, and that is not a
+#      fault to work around. One job pins the exact module graph and a second
+#      pins what the command line binary links, so a new or renamed module
+#      fails the run until the expected list is updated in the same commit.
+#      The point is that a dependency arriving as somebody's transitive import
+#      cannot land quietly - immutable rule 11 asks for a licence check on
+#      every one of them, and GPL-3.0 makes that a real question rather than
+#      a formality.
+#
+# None of these are merged on a green tick alone. Every one is checked locally
+# first, with the full suite, before it is accepted - the owner's rule, and the
+# reason the two points above are written here rather than left to be
+# rediscovered on a Monday morning by whoever opens the pull request.
+#
+# Grouped for actions and ungrouped for Go on purpose. An action bump is one
+# decision about the build. A Go module bump is a licence question and a byte
+# stability question per module, and a group would hide four of those behind
+# one review.
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5

@@ -85,8 +85,25 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 			// deterministic - measured identical across runs - while wall clock
 			// speed is not, so a time based gate would be flaky on CI runners
 			// and a flaky guard gets switched off.
+			//
+			// Deterministic across runs of the SAME binary, which is the part
+			// that needed saying. The race detector allocates on its own
+			// account, so the number it produces is not the number this ceiling
+			// was measured against. Found on 2026-08-20, the first race run
+			// this project has had since the toolkit arrived: pptx counted 130
+			// against a ceiling of 128, while the byte figure above stayed at
+			// 871 KiB for a 64 MiB file - so the property this guard exists for
+			// was never in doubt, only the instrument.
+			//
+			// The byte check is deliberately left running under the detector.
+			// It is the half that answers "is the whole file in memory", and it
+			// answers it just as well with instrumentation in the way.
 			objects := int64(after.Mallocs - before.Mallocs)
-			if objects > allocCeiling {
+			switch {
+			case raceEnabled:
+				t.Logf("%s: object ceiling not applied under the race detector, which allocates on its own account - %d objects seen",
+					d.ID, objects)
+			case objects > allocCeiling:
 				t.Errorf("%s allocated %d objects producing a %d B file, ceiling is %d - something in the loop is allocating per item",
 					d.ID, objects, size, allocCeiling)
 			}
