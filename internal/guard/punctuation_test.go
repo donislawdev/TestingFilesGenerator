@@ -54,7 +54,9 @@ var (
 
 // proseFaults reports what is wrong with one stretch of prose, in the words an
 // author needs to fix it.
-func proseFaults(text string) []string {
+// symbols says whether a symbol such as an emoji is allowed in this text. It is
+// true for the shop window and false everywhere else - see symbolsAllowed.
+func proseFaults(text string, symbols bool) []string {
 	text = entityRef.ReplaceAllString(text, "")
 
 	var out []string
@@ -99,6 +101,8 @@ func proseFaults(text string) []string {
 		// those bytes stand for - a rule that forbade it would make the one
 		// comment that needs them say less.
 		switch {
+		case unicode.Is(unicode.So, r) && symbols:
+			continue
 		case unicode.Is(unicode.So, r):
 			out = append(out, fmt.Sprintf("%q - a symbol belongs in the project's own notes, not in text that ships", r))
 		case r == '…' || r == '‘' || r == '’' || r == '“' || r == '”':
@@ -160,7 +164,7 @@ func markdownFaults(t *testing.T, root string) ([]string, int) {
 		}
 		checked++
 		for i, prose := range markdownProse(string(body)) {
-			for _, fault := range proseFaults(prose) {
+			for _, fault := range proseFaults(prose, symbolsAllowed[name]) {
 				faults = append(faults,
 					fmt.Sprintf("%s:%d holds %s", name, i+1, fault))
 			}
@@ -190,7 +194,7 @@ func goFileFaults(t *testing.T, path, rel string, literals bool) []string {
 	}
 	for _, group := range file.Comments {
 		for _, comment := range group.List {
-			for _, fault := range proseFaults(commentProse(comment.Text)) {
+			for _, fault := range proseFaults(commentProse(comment.Text), false) {
 				at(comment.Pos(), fault)
 			}
 		}
@@ -203,7 +207,7 @@ func goFileFaults(t *testing.T, path, rel string, literals bool) []string {
 		if !ok || lit.Kind != token.STRING {
 			return true
 		}
-		for _, fault := range proseFaults(lit.Value) {
+		for _, fault := range proseFaults(lit.Value, false) {
 			at(lit.Pos(), fault)
 		}
 		return true

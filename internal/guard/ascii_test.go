@@ -49,9 +49,34 @@ var englishFiles = []string{
 	"THIRD-PARTY-NOTICES.md",
 }
 
+// symbolsAllowed names the files that may hold a symbol such as an emoji.
+//
+// README is the shop window, and the owner decided on 2026-08-20 that an emoji
+// belongs in it where one helps: the people reading it are deciding whether to
+// try this at all, and for that audience a marker beside a heading is ordinary
+// writing rather than decoration.
+//
+// One list, read by both guards, because they were about to disagree. This file
+// stops refusing characters above 127 in a listed file, and the punctuation
+// guard stops refusing symbols in one - and that is the whole of it. Everything
+// else rule 13 asks for still holds there: every dash but the flat one, the
+// minus sign, the semicolon, and the curly quotes and ellipsis a word processor
+// substitutes. Those last are refused for a reason an emoji does not share -
+// they read like the character somebody would type and are not it, so a search
+// for the line fails.
+//
+// Proven rather than asserted: a mutation puts an en dash in README and the
+// punctuation guard has to still go red.
+var symbolsAllowed = map[string]bool{
+	"README.md": true,
+}
+
 func TestTextInTheRepositoryIsAsciiOnly(t *testing.T) {
 	root := repoRoot(t)
 	for _, name := range englishFiles {
+		if symbolsAllowed[name] {
+			continue
+		}
 		b, err := os.ReadFile(filepath.Join(root, name))
 		if err != nil {
 			t.Errorf("reading %s: %v - it is listed as English text but is not there", name, err)
