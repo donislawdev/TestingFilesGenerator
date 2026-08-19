@@ -214,8 +214,8 @@
 													</container>
 													<widget pos="0,68" size="808x44" type="*widget.Label">
 														<widget size="808x44" type="*widget.RichText">
-															<text color="disabled" pos="6,6" size="777x16" textSize="12">one of: bmp, csv, docx, gif, html, ico, json, log, md, pdf, png, pptx, svg, targz, txt, wav, xlsx, xml, zip, default pdf. What kind of file the whole</text>
-															<text color="disabled" pos="6,22" size="81x16" textSize="12">set is made of.</text>
+															<text color="disabled" pos="6,6" size="764x16" textSize="12">one of: bmp, csv, docx, gif, html, ico, jpg, json, log, md, pdf, png, pptx, svg, targz, txt, wav, xlsx, xml, zip, default pdf. What kind of file the</text>
+															<text color="disabled" pos="6,22" size="118x16" textSize="12">whole set is made of.</text>
 														</widget>
 													</widget>
 												</container>

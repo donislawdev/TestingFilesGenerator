@@ -46,6 +46,21 @@
       "sha256": "72197d05fa9cccac8545d01b5878ea2f5b3e69cb13a3120f546e8a4ece799d01",
       "measured_on": "2026-08-19"
     },
+    "jpg_192kib_many_segments": {
+      "bytes": 196608,
+      "sha256": "bc04329ae6f341939d74ffcbdb3d31f28eeb4c26100c6d1908a6fd34d0cbcbd5",
+      "measured_on": "2026-08-19"
+    },
+    "jpg_32kib": {
+      "bytes": 32768,
+      "sha256": "bd4018c137a92705b91bead03111a2be410e2cad6ade50ea4903314c9453f419",
+      "measured_on": "2026-08-19"
+    },
+    "jpg_narrow_label_omitted": {
+      "bytes": 32768,
+      "sha256": "dfa744e8895370e1690091db090092c47eb5911ad9f394b169626d56ef6822b1",
+      "measured_on": "2026-08-19"
+    },
     "json_8kib": {
       "bytes": 8192,
       "sha256": "0b717f6295487af0afa21c68e2fc5649239eb010089079b9364f9b8fd2538a30"

@@ -214,8 +214,8 @@
 													</container>
 													<widget pos="0,68" size="808x44" type="*widget.Label">
 														<widget size="808x44" type="*widget.RichText">
-															<text color="disabled" pos="6,6" size="777x16" textSize="12">one of: bmp, csv, docx, gif, html, ico, json, log, md, pdf, png, pptx, svg, targz, txt, wav, xlsx, xml, zip, default pdf. What kind of file the whole</text>
-															<text color="disabled" pos="6,22" size="81x16" textSize="12">set is made of.</text>
+															<text color="disabled" pos="6,6" size="764x16" textSize="12">one of: bmp, csv, docx, gif, html, ico, jpg, json, log, md, pdf, png, pptx, svg, targz, txt, wav, xlsx, xml, zip, default pdf. What kind of file the</text>
+															<text color="disabled" pos="6,22" size="118x16" textSize="12">whole set is made of.</text>
 														</widget>
 													</widget>
 												</container>
@@ -374,7 +374,7 @@
 							<container size="808x224">
 								<widget size="808x224" type="*widget.List">
 									<widget size="808x224" type="*widget.Scroll">
-										<container size="808x532">
+										<container size="808x560">
 											<widget size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
@@ -414,19 +414,19 @@
 											<widget pos="0,168" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">json</text>
+													<text pos="32,4" size="776x19">jpg</text>
 												</widget>
 											</widget>
 											<widget pos="0,196" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">log</text>
+													<text pos="32,4" size="776x19">json</text>
 												</widget>
 											</widget>
 											<widget pos="0,224" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">md</text>
+													<text pos="32,4" size="776x19">log</text>
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">
@@ -461,8 +461,8 @@
 											<linearGradient endColor="shadow" pos="0,-8" size="808x8"/>
 										</widget>
 										<widget pos="802,0" size="6x224" type="*widget.scrollBarArea">
-											<widget pos="3,0" size="3x94" type="*widget.scrollBar">
-												<rectangle fillColor="scrollbar" radius="3" size="3x94"/>
+											<widget pos="3,0" size="3x89" type="*widget.scrollBar">
+												<rectangle fillColor="scrollbar" radius="3" size="3x89"/>
 											</widget>
 										</widget>
 									</widget>

@@ -129,7 +129,7 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 var structurallyChecked = map[string]bool{
 	"png": true, "wav": true, "pdf": true, "zip": true, "targz": true,
 	"log": true, "csv": true, "json": true, "xml": true, "svg": true, "html": true,
-	"bmp": true, "gif": true, "ico": true,
+	"bmp": true, "gif": true, "ico": true, "jpg": true,
 	"docx": true, "xlsx": true, "pptx": true,
 }
 

@@ -1011,6 +1011,89 @@ def opc_readback(data, key):
 
     return "brak niezaleznego czytnika"
 
+def check_jpg(data):
+    """JPEG walked segment by segment, against the specification.
+
+    The tolerant readers are worth very little here and that is measured, not
+    assumed (MVP-FORMATS.md 2.10). Of six deliberately broken files, GDI+ and
+    exiftool called four of them fine - a flipped byte in the scan, bytes
+    injected into the scan, a missing end marker and a file cut in half - and
+    ffprobe accepted one whose signature was not even a JPEG signature. So
+    this layer carries most of the weight for this format.
+
+    What it asks that no reader here does: every segment length has to be
+    consistent with where the next marker actually is, and nothing may follow
+    the end of image marker.
+    """
+    if data[:2] != b"\xFF\xD8":
+        fail("the file does not start with the start of image marker")
+    if data[-2:] != b"\xFF\xD9":
+        fail("the file does not end with the end of image marker")
+
+    pos, segments, comments, comment_bytes = 2, 0, 0, 0
+    scans, width, height = 0, None, None
+
+    while pos + 1 < len(data):
+        if data[pos] != 0xFF:
+            fail(f"a marker was expected at offset {pos} and the file holds {data[pos]:#04x}")
+        marker = data[pos + 1]
+
+        if marker == 0xD8:
+            fail(f"a second start of image marker at offset {pos}")
+        if marker == 0xD9:
+            pos += 2
+            break
+        if marker == 0x01 or 0xD0 <= marker <= 0xD7:
+            # Markers that carry no payload at all.
+            pos += 2
+            continue
+
+        if pos + 4 > len(data):
+            fail(f"the segment at offset {pos} has no room for its length")
+        length = struct.unpack(">H", data[pos + 2:pos + 4])[0]
+        if length < 2:
+            fail(f"the segment at offset {pos} declares a length of {length}, and the field counts itself")
+        end = pos + 2 + length
+        if end > len(data):
+            fail(f"the segment at offset {pos} declares {length} B and the file ends after {len(data) - pos - 2}")
+
+        segments += 1
+        if marker == 0xFE:
+            comments += 1
+            comment_bytes += length - 2
+        if marker in (0xC0, 0xC1, 0xC2, 0xC3) and length >= 7:
+            height, width = struct.unpack(">HH", data[pos + 5:pos + 9])
+
+        pos = end
+
+        if marker == 0xDA:
+            scans += 1
+            # The entropy coded data has no length of its own. It ends at the
+            # first marker that is neither a stuffed FF00 nor a restart.
+            scan = pos
+            while scan + 1 < len(data):
+                if data[scan] != 0xFF:
+                    scan += 1
+                    continue
+                nxt = data[scan + 1]
+                if nxt == 0x00 or 0xD0 <= nxt <= 0xD7 or nxt == 0xFF:
+                    scan += 2 if nxt != 0xFF else 1
+                    continue
+                break
+            if scan + 1 >= len(data):
+                fail("the scan runs to the end of the file without a closing marker")
+            pos = scan
+
+    if pos != len(data):
+        fail(f"the end of image marker is at {pos} and {len(data) - pos} B follow it")
+    if scans < 1:
+        fail("there is no scan, so the file carries no image data")
+    if width is None:
+        fail("there is no frame header, so nothing says how large the picture is")
+    ok(f"{width}x{height}, {segments} segments, {scans} scan(s), "
+       f"{comments} comment(s) carrying {comment_bytes} B")
+
+
 def check_docx(data):
     opc_check(data, ["word/document.xml"], "Word document", "docx")
 
@@ -1029,7 +1112,7 @@ def check_pptx(data):
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
-          "bmp": check_bmp, "gif": check_gif, "ico": check_ico,
+          "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":

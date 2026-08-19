@@ -79,6 +79,26 @@ func goldenCases() map[string]engine.Target {
 		// are pinned rather than only the one the default picks.
 		"ico_32kib_png_inside": {ID: "g", Format: "ico", Sizes: engine.Uniform(1, 32768), Label: true,
 			Properties: map[string]string{"width": "32", "height": "32", "embed": "png"}},
+
+		// The first lossy format. Its bytes are pinned like every other, and
+		// what that pins is different: not that the picture survives a round
+		// trip, which JPEG never promises, but that the same request encodes
+		// to the same file. Quality is named rather than left to the default,
+		// because the default is a number somebody may change and this case
+		// has to keep measuring the same thing if they do.
+		// A picture too narrow for the label, so the omitted label path is
+		// pinned too. Without it, drawing a label the picture has no room for
+		// changes nothing any case measures - checked by breaking it.
+		"jpg_narrow_label_omitted": {ID: "g", Format: "jpg", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"width": "8", "height": "8", "quality": "90"}},
+		"jpg_32kib": {ID: "g", Format: "jpg", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64", "quality": "90"}},
+
+		// Padding past what one comment segment can carry, which is the shape
+		// no other format has - PNG refuses beyond one chunk and this one
+		// writes as many segments as the size needs.
+		"jpg_192kib_many_segments": {ID: "g", Format: "jpg", Sizes: engine.Uniform(1, 196608), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64", "quality": "90"}},
 		"wav_32kib": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 32768), Label: true},
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},

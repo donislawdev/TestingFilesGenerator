@@ -28,6 +28,21 @@ because it turns other people's test suites red.
   fine.
 
 ### Added
+- **`jpg`.** Real JPEG pictures, with the label drawn into the image. `--set quality=1`
+  through `--set quality=100` trades detail for a smaller picture, and `--set width=` and
+  `--set height=` fix the dimensions. Smallest file: 602 B.
+
+  - **JPEG throws detail away by design**, so the picture that comes back out of a viewer
+    is not pixel for pixel the one that went in. That is the format, not this tool. Asking
+    for the same size with the same seed still gives you the same file, byte for byte, as
+    every other format here does.
+  - **The label is readable but not perfectly sharp**, and at a low quality it gets softer.
+    Every other format in this tool draws it crisply. If you need a picture whose label is
+    exact, use `png`.
+  - **Every size from 602 B upward works.** Most formats here cannot produce the handful of
+    sizes just above their smallest file - `png` misses eleven of them - because the piece
+    they pad with costs more than the difference. This one has no such gap.
+
 - **Three Office formats: `docx`, `xlsx` and `pptx`.** Real packages, not renamed ZIPs:
   each one opens, renders and carries the label in text you can read.
 
