@@ -968,7 +968,7 @@ def opc_readback(data, key):
         try:
             from docx import Document
         except ImportError:
-            return "python-docx nieobecny"
+            return "no reader: python-docx"
         texts = [p.text for p in Document(_io.BytesIO(data)).paragraphs]
         if not texts:
             fail("python-docx otworzyl dokument i nie znalazl w nim ani jednego akapitu")
@@ -978,7 +978,7 @@ def opc_readback(data, key):
         try:
             from openpyxl import load_workbook
         except ImportError:
-            return "openpyxl nieobecny"
+            return "no reader: openpyxl"
         book = load_workbook(_io.BytesIO(data), read_only=True)
         sheet = book[book.sheetnames[0]]
         rows = sum(1 for _ in sheet.iter_rows(values_only=True))
@@ -991,7 +991,7 @@ def opc_readback(data, key):
         try:
             from pptx import Presentation
         except ImportError:
-            return "python-pptx nieobecny"
+            return "no reader: python-pptx"
         deck = Presentation(_io.BytesIO(data))
         # Chodzimy po KSZTALTACH kazdego slajdu, nie po ich liczbie. Zmierzone
         # 2026-08-19: python-pptx liczy slajdy z `presentation.xml` i nigdy nie

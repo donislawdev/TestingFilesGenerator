@@ -35,7 +35,15 @@ jobs:
       # The engine, the command line and the tests build without CGO on every
       # system. Only the desktop window needs a C compiler, and it is built
       # separately.
-      CGO_ENABLED: "0"
+      #
+      # macOS is the exception and it is the toolkit's, not ours. Measured on
+      # 2026-08-20, the first run this matrix had since the toolkit arrived:
+      # with CGO off, vet cannot type check fyne's own internal/widget on
+      # darwin - subscribeScrollerStyle and three others are undefined, because
+      # the file defining them is behind a build tag that CGO off removes.
+      # Nothing of ours is involved and there is nothing of ours to fix, so that
+      # one runner pays for a C toolchain it already has.
+      CGO_ENABLED: ${{ matrix.os == 'macos-latest' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -220,6 +228,21 @@ jobs:
           check-latest: false
           cache: true
 
+      - name: the headers the toolkit needs
+        # The window reaches OpenGL through C, so anything that builds or
+        # analyses the whole tree on Linux compiles GLFW - and no runner carries
+        # its headers. Measured on 2026-08-20, the first run after the
+        # repository went public and so the first one this job has ever had
+        # against the toolkit: "wayland-client-core.h: No such file or
+        # directory", and the job never reached our code at all.
+        #
+        # Taken from the toolkit's own CI rather than from a remembered list.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
+        shell: bash
+
       - name: govulncheck
         # The official Go vulnerability scanner. BSD-3-Clause, read from the
         # LICENSE file of the pinned version rather than recalled. Run rather
@@ -243,6 +266,21 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
           cache: true
+
+      - name: the headers the toolkit needs
+        # The window reaches OpenGL through C, so anything that builds or
+        # analyses the whole tree on Linux compiles GLFW - and no runner carries
+        # its headers. Measured on 2026-08-20, the first run after the
+        # repository went public and so the first one this job has ever had
+        # against the toolkit: "wayland-client-core.h: No such file or
+        # directory", and the job never reached our code at all.
+        #
+        # Taken from the toolkit's own CI rather than from a remembered list.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
+        shell: bash
 
       - name: staticcheck
         # MIT, pinned. Run rather than imported, so it never enters go.mod and
@@ -276,6 +314,21 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
           cache: true
+
+      - name: the headers the toolkit needs
+        # The window reaches OpenGL through C, so anything that builds or
+        # analyses the whole tree on Linux compiles GLFW - and no runner carries
+        # its headers. Measured on 2026-08-20, the first run after the
+        # repository went public and so the first one this job has ever had
+        # against the toolkit: "wayland-client-core.h: No such file or
+        # directory", and the job never reached our code at all.
+        #
+        # Taken from the toolkit's own CI rather than from a remembered list.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
+        shell: bash
 
       - name: test under the race detector
         # A data race is the one defect class here that nothing else notices. It

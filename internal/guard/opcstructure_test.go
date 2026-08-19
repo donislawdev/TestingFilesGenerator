@@ -8,12 +8,22 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
 )
+
+// noReader is what the structural checker says when the library that reads a
+// package back is not installed. It names the library after it, and the wording
+// lives in internal/oracle/strict.py.
+//
+// A marker rather than a match on the whole sentence, so that naming a
+// different library does not silently turn this guard back into one that
+// cannot tell blind approval from real approval.
+const noReader = "no reader:"
 
 // An Office package can be a faultless ZIP and still not be a document.
 //
@@ -80,6 +90,21 @@ func TestTheStructuralCheckerRefusesAPackageThatIsNotADocument(t *testing.T) {
 			res := checkPackage(t, dir, id+"-"+d.Extension, broken.make(good))
 			if !res.Available {
 				t.Skip("the structural checker is not available here")
+			}
+			// The checker runs, and cannot see. A missing reader library is
+			// deliberately not a failure over there - it is named in the output
+			// instead - but the defect this case plants is exactly the one only
+			// that reader finds, so approval here means nobody looked. Read as
+			// a pass it would be a guard that goes green by being blind, which
+			// is the worst of the three outcomes.
+			//
+			// Found on the first CI run after the repository went public, on
+			// 2026-08-20. No runner carries these libraries and the owner's
+			// machine has carried them since 2026-08-19, so nothing local could
+			// have shown it.
+			if strings.Contains(res.Output, noReader) {
+				t.Skipf("%s: %s, so a broken package cannot be told from a whole one here",
+					id, strings.TrimSpace(res.Output[strings.Index(res.Output, noReader):]))
 			}
 			if res.Err == nil {
 				t.Errorf("%s with %s passed the structural checker, which said: %s",
