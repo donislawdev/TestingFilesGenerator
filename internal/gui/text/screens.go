@@ -275,8 +275,8 @@ const (
 
 // The line under each of the recipe screen's own fields.
 const (
-	HintSizeRange = "A different size for every file." + OneSizeSettingOnly
-	HintBoundary  = "Three files: one byte under the limit, one on it, one over." + OneSizeSettingOnly
+	HintSizeRange = "A different size for every file."
+	HintBoundary  = "Three files: one byte under the limit, one on it, one over."
 	HintGroup     = "Marks several batches as one kind of case."
 	HintExpected  = "What the system under test should do with these files."
 	HintReason    = "Which rule this is about."
@@ -299,7 +299,7 @@ const (
 // makes that safe: stating two of them is a refusal it already words and
 // addresses, so filling in two marks the box rather than being quietly resolved.
 // A mode would have been a fourth rule for the window to keep in step.
-const HintSizeExact = "One size for every file." + OneSizeSettingOnly
+const HintSizeExact = "One size for every file."
 
 // OneSizeSettingOnly goes under EVERY one of the three ways of stating a size,
 // not just the first.
@@ -310,12 +310,18 @@ const HintSizeExact = "One size for every file." + OneSizeSettingOnly
 // two beside it simply described themselves and said nothing about excluding
 // each other (O114).
 //
-// A sentence under each rather than a control that shows one box at a time.
+// A sentence over the three rather than a control that shows one box at a time.
 // The control would be the better answer and it is a change to the shape of
 // this screen, which has a recorded decision and a rejected variant behind it -
 // so it is not something to do on the way past. Written down in the
 // observation rather than left as a preference.
-const OneSizeSettingOnly = " Fill in one of these three."
+//
+// Said once rather than three times, from 2026-08-20. It was the tail of each
+// of the three hints, so the row carried "Fill in one of these three." three
+// times in one line of the screen - which is the rule turned into noise, and
+// two lines of height on a form that does not fit. What stays under each box is
+// what THAT box does, which is the only part of the three that differs.
+const OneSizeSettingOnly = "Fill in one of these three."
 
 // Buttons on the recipe screen.
 const (

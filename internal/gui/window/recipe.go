@@ -300,6 +300,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		//
 		// One of the three was a narrow box until this was looked at, which made
 		// three alternatives read as three unrelated fields.
+		parts.Note(text.OneSizeSettingOnly),
 		r.fields.Row(
 			add(recipe.KeySize, text.FieldSize, text.HintSizeExact,
 				r.tips.Say(text.DetailSize), b.size),

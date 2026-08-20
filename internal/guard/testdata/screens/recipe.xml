@@ -22,8 +22,8 @@
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1250">
 					<widget size="1088x1136" type="*widget.Scroll">
-						<container size="1088x1221">
-							<container pos="134,0" size="820x1221">
+						<container size="1088x1259">
+							<container pos="134,0" size="820x1259">
 								<container size="820x39">
 									<widget pos="6,0" size="808x39" type="*widget.Label">
 										<widget size="808x39" type="*widget.RichText">
@@ -31,12 +31,12 @@
 										</widget>
 									</widget>
 								</container>
-								<container pos="0,53" size="820x853">
-									<container size="820x853">
-										<container size="820x853">
-											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x853" strokeColor="separator" strokeWidth="1"/>
-											<container size="820x853">
-												<container pos="6,6" size="808x841">
+								<container pos="0,53" size="820x890">
+									<container size="820x890">
+										<container size="820x890">
+											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x890" strokeColor="separator" strokeWidth="1"/>
+											<container size="820x890">
+												<container pos="6,6" size="808x878">
 													<widget size="808x35" type="*widget.Label">
 														<widget size="808x35" type="*widget.RichText">
 															<text bold pos="6,6" size="63x23" textSize="17">Batch 1</text>
@@ -142,7 +142,12 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,243" size="808x109">
+													<widget pos="0,243" size="808x28" type="*widget.Label">
+														<widget size="808x28" type="*widget.RichText">
+															<text color="disabled" pos="6,6" size="138x16" textSize="12">Fill in one of these three.</text>
+														</widget>
+													</widget>
+													<container pos="0,280" size="808x109">
 														<container size="808x109">
 															<container size="265x109">
 																<container size="265x32">
@@ -174,10 +179,9 @@
 																	</widget>
 																	<rectangle radius="5" size="265x31"/>
 																</container>
-																<widget pos="0,65" size="265x44" type="*widget.Label">
-																	<widget size="265x44" type="*widget.RichText">
-																		<text color="disabled" pos="6,6" size="229x16" textSize="12">One size for every file. Fill in one of these</text>
-																		<text color="disabled" pos="6,22" size="33x16" textSize="12">three.</text>
+																<widget pos="0,65" size="265x28" type="*widget.Label">
+																	<widget size="265x28" type="*widget.RichText">
+																		<text color="disabled" pos="6,6" size="124x16" textSize="12">One size for every file.</text>
 																	</widget>
 																</widget>
 															</container>
@@ -211,10 +215,9 @@
 																	</widget>
 																	<rectangle radius="5" size="265x31"/>
 																</container>
-																<widget pos="0,65" size="265x44" type="*widget.Label">
-																	<widget size="265x44" type="*widget.RichText">
-																		<text color="disabled" pos="6,6" size="231x16" textSize="12">A different size for every file. Fill in one of</text>
-																		<text color="disabled" pos="6,22" size="67x16" textSize="12">these three.</text>
+																<widget pos="0,65" size="265x28" type="*widget.Label">
+																	<widget size="265x28" type="*widget.RichText">
+																		<text color="disabled" pos="6,6" size="160x16" textSize="12">A different size for every file.</text>
 																	</widget>
 																</widget>
 															</container>
@@ -251,13 +254,13 @@
 																<widget pos="0,65" size="265x44" type="*widget.Label">
 																	<widget size="265x44" type="*widget.RichText">
 																		<text color="disabled" pos="6,6" size="245x16" textSize="12">Three files: one byte under the limit, one on</text>
-																		<text color="disabled" pos="6,22" size="207x16" textSize="12">it, one over. Fill in one of these three.</text>
+																		<text color="disabled" pos="6,22" size="65x16" textSize="12">it, one over.</text>
 																	</widget>
 																</widget>
 															</container>
 														</container>
 													</container>
-													<container pos="0,361" size="808x93">
+													<container pos="0,399" size="808x93">
 														<container size="808x93">
 															<container size="401x93">
 																<container size="401x32">
@@ -333,7 +336,7 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,464" size="808x87">
+													<container pos="0,501" size="808x87">
 														<container size="808x87">
 															<container size="401x87">
 																<container size="401x32">
@@ -401,12 +404,12 @@
 															</container>
 														</container>
 													</container>
-													<widget pos="0,560" size="808x35" type="*widget.Label">
+													<widget pos="0,597" size="808x35" type="*widget.Label">
 														<widget size="808x35" type="*widget.RichText">
 															<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
 														</widget>
 													</widget>
-													<container pos="0,604" size="808x93">
+													<container pos="0,642" size="808x93">
 														<container size="808x93">
 															<container size="808x32">
 																<widget size="53x32" type="*widget.Label">
@@ -446,7 +449,7 @@
 															</widget>
 														</container>
 													</container>
-													<container pos="0,707" size="808x93">
+													<container pos="0,744" size="808x93">
 														<container size="808x93">
 															<container size="808x32">
 																<widget size="59x32" type="*widget.Label">
@@ -486,7 +489,7 @@
 															</widget>
 														</container>
 													</container>
-													<widget pos="0,809" size="808x32" type="*widget.Button">
+													<widget pos="0,846" size="808x32" type="*widget.Button">
 														<rectangle fillColor="button" radius="5" size="808x32"/>
 														<rectangle size="808x32"/>
 														<widget pos="351,6" size="105x19" type="*widget.RichText">
@@ -498,7 +501,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,920" size="820x301">
+								<container pos="0,958" size="820x301">
 									<container size="820x301">
 										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x301" strokeColor="separator" strokeWidth="1"/>
 										<container size="820x301">
@@ -661,8 +664,8 @@
 							<linearGradient endColor="shadow" pos="0,-8" size="1088x8"/>
 						</widget>
 						<widget pos="1082,0" size="6x1136" type="*widget.scrollBarArea">
-							<widget pos="3,0" size="3x1057" type="*widget.scrollBar">
-								<rectangle fillColor="scrollbar" radius="3" size="3x1057"/>
+							<widget pos="3,0" size="3x1025" type="*widget.scrollBar">
+								<rectangle fillColor="scrollbar" radius="3" size="3x1025"/>
 							</widget>
 						</widget>
 					</widget>
