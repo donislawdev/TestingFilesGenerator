@@ -36,6 +36,7 @@ import (
 // counting, and 1.5 is the weakest version of that claim: the pair this
 // replaced was 1.15 apart.
 func TestAFieldHoldsTogetherMoreTightlyThanTwoFieldsDo(t *testing.T) {
+	ourTheme(t)
 	content, _ := laidOutWindow(t)
 	generate := tabContent(t, content, text.TabOneTarget)
 
@@ -71,6 +72,7 @@ func TestAFieldHoldsTogetherMoreTightlyThanTwoFieldsDo(t *testing.T) {
 // against a constant: a screen can be built in a way that never reaches the
 // spacing, and a guard reading the constant would not notice.
 func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
+	ourTheme(t)
 	content, _ := laidOutWindow(t)
 
 	seen := map[string][]float32{}
@@ -110,6 +112,7 @@ func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
 // because a boundary drawn more weakly than the padding inside a panel groups
 // the wrong things.
 func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
+	ourTheme(t)
 	content, _ := laidOutWindow(t)
 	generate := tabContent(t, content, text.TabOneTarget)
 
@@ -172,7 +175,7 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 		if !is || label.Text != words {
 			return
 		}
-		found, ok = band{Y: at.Y, Height: o.Size().Height}, true
+		found, ok = band{X: at.X, Y: at.Y, Height: o.Size().Height}, true
 	})
 	return found, ok
 }
@@ -204,13 +207,13 @@ func objectBox(screen fyne.CanvasObject, target fyne.CanvasObject) (band, bool) 
 		if ok || o != target {
 			return
 		}
-		found, ok = band{Y: at.Y, Height: o.Size().Height}, true
+		found, ok = band{X: at.X, Y: at.Y, Height: o.Size().Height}, true
 	})
 	return found, ok
 }
 
-// band is one thing on the screen, reduced to what this file asks about.
-type band struct{ Y, Height float32 }
+// band is one thing on the screen, reduced to what these guards ask about.
+type band struct{ X, Y, Height float32 }
 
 // sectionGaps is the empty space between each pair of panels on one screen,
 // top to bottom.

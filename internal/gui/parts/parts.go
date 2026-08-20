@@ -187,7 +187,17 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 // with the form bought nothing and spent 78 px of margin saying so. Pass nil
 // on a screen that has none.
 func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
-	column := container.New(readableWidth{}, container.NewVBox(content...))
+	// The padding goes inside the column as well as around the bar, and that is
+	// what puts the bar's own words on the same left edge as the form's.
+	//
+	// Measured on 2026-08-20: the outer padding here is cancelled by the
+	// centring. A section is 820 px wide with its padding INSIDE it, so its
+	// fields start 6 px in from its edge - while this column is centred within
+	// what the padding left over, which puts it back at the section's edge
+	// rather than at its content. The status line and every field name on the
+	// screen above it were 6 px apart, which is the distance that reads as a
+	// mistake rather than as an indent.
+	column := container.New(readableWidth{}, container.NewPadded(container.NewVBox(content...)))
 	standing := fyne.CanvasObject(column)
 	if rail != nil {
 		// Laid over the column rather than beside it. Sharing the row, the rail
@@ -248,7 +258,51 @@ func (slim) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // ratchet and only goes down, so the composition has to come first.
 func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.New(readableWidth{},
-		Stacked(append([]fyne.CanvasObject{Title(heading)}, sections...)...))
+		Stacked(append([]fyne.CanvasObject{Indented(Title(heading))}, sections...)...))
+}
+
+// Indented puts something that stands outside a panel on the same left edge as
+// the fields inside one.
+//
+// A screen title sits on the column, and a panel puts its own padding between
+// its edge and its content - so the two were 6 px apart. Not enough to read as
+// an indent and too much to read as alignment, which is the worst of the three
+// possible distances. Measured on 2026-08-20: the title's words started at 97
+// and every field name under it at 103.
+func Indented(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.New(indent{}, o)
+}
+
+// indent is the layout behind Indented. Horizontal only: the vertical scale
+// above already says how far apart these things stand.
+//
+// It asks the installed theme at layout time rather than holding a number, and
+// that is not caution. A panel gets its inset from container.NewPadded, which
+// reads the installed theme - so an indent taken from our own palette object
+// agrees with it only while the two are the same. They are not always: a test
+// canvas that has not installed our theme pads by 4 where we pad by 6, and the
+// first version of this was 2 px out under exactly that canvas. Alignment is a
+// relationship between two things, so it has to be read from the same place
+// both of them read it from.
+type indent struct{}
+
+func (indent) by() float32 { return theme.Padding() }
+
+func (i indent) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.NewSize(0, 0)
+	for _, o := range objects {
+		min := o.MinSize()
+		size.Width = fyne.Max(size.Width, min.Width+i.by()*2)
+		size.Height = fyne.Max(size.Height, min.Height)
+	}
+	return size
+}
+
+func (i indent) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(fyne.Max(0, size.Width-i.by()*2), size.Height))
+		o.Move(fyne.NewPos(i.by(), 0))
+	}
 }
 
 // ColumnWidth is as wide as this form is allowed to get, whatever the window

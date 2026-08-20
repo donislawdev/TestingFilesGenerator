@@ -21,14 +21,16 @@
 			<rectangle fillColor="hyperlink" pos="0,32" radius="3" size="98x1"/>
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1250">
-					<widget size="1088x1148" type="*widget.Scroll">
-						<container size="1088x1148">
-							<container pos="134,0" size="820x1148">
-								<widget size="820x39" type="*widget.Label">
-									<widget size="820x39" type="*widget.RichText">
-										<text bold pos="6,6" size="139x27" textSize="20">Generate files</text>
+					<widget size="1088x1136" type="*widget.Scroll">
+						<container size="1088x1136">
+							<container pos="134,0" size="820x1136">
+								<container size="820x39">
+									<widget pos="6,0" size="808x39" type="*widget.Label">
+										<widget size="808x39" type="*widget.RichText">
+											<text bold pos="6,6" size="139x27" textSize="20">Generate files</text>
+										</widget>
 									</widget>
-								</widget>
+								</container>
 								<container pos="0,53" size="820x642">
 									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x642" strokeColor="separator" strokeWidth="1"/>
 									<container size="820x642">
@@ -399,46 +401,48 @@
 							</container>
 						</container>
 					</widget>
-					<container pos="0,1154" size="1088x95">
-						<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x95" strokeColor="separator" strokeWidth="1"/>
-						<container size="1088x95">
-							<container pos="6,6" size="1076x83">
-								<container size="1076x83">
-									<container pos="128,0" size="820x83">
-										<container size="820x32">
-											<spacer size="335x32"/>
-											<widget pos="335,0" size="67x32" type="*widget.Button">
-												<rectangle fillColor="button" radius="5" size="67x32"/>
-												<rectangle size="67x32"/>
-												<widget pos="6,6" size="55x19" type="*widget.RichText">
-													<text alignment="center" bold size="55x19">Preview</text>
-												</widget>
-											</widget>
-											<widget pos="408,0" size="76x32" type="*widget.Button">
-												<rectangle fillColor="hyperlink" radius="5" size="76x32"/>
-												<rectangle size="76x32"/>
-												<widget pos="6,6" size="64x19" type="*widget.RichText">
-													<text alignment="center" bold color="foregroundOnError" size="64x19">Generate</text>
-												</widget>
-											</widget>
-											<spacer pos="490,0" size="335x32"/>
-										</container>
-										<container pos="0,38" size="820x45">
-											<widget size="820x45" type="*widget.Scroll">
-												<container size="820x45">
-													<container size="820x8">
-													</container>
-													<widget pos="0,14" size="820x31" type="*widget.Label">
-														<widget size="820x31" type="*widget.RichText">
-															<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
-														</widget>
+					<container pos="0,1142" size="1088x107">
+						<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x107" strokeColor="separator" strokeWidth="1"/>
+						<container size="1088x107">
+							<container pos="6,6" size="1076x95">
+								<container size="1076x95">
+									<container pos="128,0" size="820x95">
+										<container pos="6,6" size="808x83">
+											<container size="808x32">
+												<spacer size="329x32"/>
+												<widget pos="329,0" size="67x32" type="*widget.Button">
+													<rectangle fillColor="button" radius="5" size="67x32"/>
+													<rectangle size="67x32"/>
+													<widget pos="6,6" size="55x19" type="*widget.RichText">
+														<text alignment="center" bold size="55x19">Preview</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+												<widget pos="402,0" size="76x32" type="*widget.Button">
+													<rectangle fillColor="hyperlink" radius="5" size="76x32"/>
+													<rectangle size="76x32"/>
+													<widget pos="6,6" size="64x19" type="*widget.RichText">
+														<text alignment="center" bold color="foregroundOnError" size="64x19">Generate</text>
+													</widget>
+												</widget>
+												<spacer pos="484,0" size="329x32"/>
+											</container>
+											<container pos="0,38" size="808x45">
+												<widget size="808x45" type="*widget.Scroll">
+													<container size="808x45">
+														<container size="808x8">
+														</container>
+														<widget pos="0,14" size="808x31" type="*widget.Label">
+															<widget size="808x31" type="*widget.RichText">
+																<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
+											</container>
 										</container>
 									</container>
 								</container>
-								<container size="1076x83">
+								<container size="1076x95">
 									<container size="1076x32">
 										<widget size="63x32" type="*widget.Button">
 											<rectangle fillColor="button" radius="5" size="63x32"/>

@@ -22,11 +22,13 @@
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1200">
 					<container pos="134,0" size="820x1200">
-						<widget size="820x39" type="*widget.Label">
-							<widget size="820x39" type="*widget.RichText">
-								<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
+						<container size="820x39">
+							<widget pos="6,0" size="808x39" type="*widget.Label">
+								<widget size="808x39" type="*widget.RichText">
+									<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
+								</widget>
 							</widget>
-						</widget>
+						</container>
 						<widget pos="0,53" size="820x31" type="*widget.Label">
 							<widget size="820x31" type="*widget.RichText">
 								<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
@@ -74,6 +76,8 @@
 						<container pos="6,6" size="1076x32">
 							<container size="1076x32">
 								<container pos="128,0" size="820x32">
+									<container pos="6,6" size="808x20">
+									</container>
 								</container>
 							</container>
 							<container size="1076x32">
