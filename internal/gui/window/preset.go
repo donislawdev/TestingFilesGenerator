@@ -56,8 +56,8 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
 	p.runner.settle = p.settle
 
-	p.paramBox = container.NewVBox()
-	p.about = container.NewVBox()
+	p.paramBox = parts.FieldColumn()
+	p.about = parts.FieldColumn()
 
 	ids := preset.IDs()
 	p.pick = parts.NewChooser(ids, p.onPresetChosen)

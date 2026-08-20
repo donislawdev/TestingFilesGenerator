@@ -132,7 +132,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 		nil, nil,
 		g.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingGenerate,
-			g.settingsSection(),
+			g.settingsSection()...,
 		))),
 	))
 	// Everything built above belongs to the screen whatever format is chosen.
@@ -172,7 +172,7 @@ func (g *Generate) buildFields() {
 	// settings that format declares, and the toolkit fires that the moment a
 	// selection is set. Built the other way round this crashed on the way up,
 	// which is how the order was found.
-	g.propBox = container.NewVBox()
+	g.propBox = parts.FieldColumn()
 
 	// Every format this build registered, asked of the registry rather than
 	// listed here. A list here would be a second place to edit, and the one that
@@ -211,13 +211,23 @@ func entry(text, placeholder string) *widget.Entry {
 // Every sentence under a field says what the field does and, where it matters,
 // the consequence - which is docs/CLAUDE.md on writing for a reader, not a
 // description of how any of it works.
-func (g *Generate) settingsSection() fyne.CanvasObject {
+// settingsSection is the panels this screen is made of, handed to the screen
+// one by one.
+//
+// Returned as a list rather than wrapped in a box of its own, and that is the
+// fix rather than a tidy-up: Screen puts GapSection between the panels it is
+// given, so a screen that hands it ONE box gets that gap around the box and
+// the toolkit's padding inside it. Measured on 2026-08-20 - two sections 7 px
+// apart here against 23 px on the preset screen, which is the same relationship
+// drawn two ways. Worse than uneven: 7 px is less than the padding inside a
+// panel, so Output read as glued to the panel above it.
+func (g *Generate) settingsSection() []fyne.CanvasObject {
 	// Every field goes through the same call and every one of them can be told
 	// it was the box that was refused - O73, and since 2026-08-12 without the
 	// exceptions. The first argument is the key the engine names a setting by,
 	// in recipe keys, and it is what a refusal is matched against.
 	add := g.fields.Add
-	return container.NewVBox(
+	return []fyne.CanvasObject{
 		parts.Section(text.SectionConfiguration,
 			// The format used to be a section of its own holding one field.
 			// A grouping of one groups nothing, and it cost a title, a surface
@@ -251,7 +261,7 @@ func (g *Generate) settingsSection() fyne.CanvasObject {
 				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),
 			),
 		),
-	)
+	}
 }
 
 // onFormatChosen redraws the settings the chosen format declares.

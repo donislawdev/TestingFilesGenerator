@@ -27,23 +27,21 @@
 								<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
 							</widget>
 						</widget>
-						<rectangle pos="0,45" size="820x10"/>
-						<widget pos="0,61" size="820x31" type="*widget.Label">
+						<widget pos="0,53" size="820x31" type="*widget.Label">
 							<widget size="820x31" type="*widget.RichText">
 								<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
 							</widget>
 						</widget>
-						<rectangle pos="0,98" size="820x10"/>
-						<container pos="0,114" size="820x408">
-							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x408" strokeColor="separator" strokeWidth="1"/>
-							<container size="820x408">
-								<container pos="6,6" size="808x396">
+						<container pos="0,98" size="820x411">
+							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x411" strokeColor="separator" strokeWidth="1"/>
+							<container size="820x411">
+								<container pos="6,6" size="808x399">
 									<widget size="808x35" type="*widget.Label">
 										<widget size="808x35" type="*widget.RichText">
 											<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
 										</widget>
 									</widget>
-									<widget pos="0,41" size="808x355" type="*widget.Label">
+									<widget pos="0,44" size="808x355" type="*widget.Label">
 										<widget size="808x355" type="*widget.RichText">
 											<text pos="6,6" size="150x19">Testing Files Generator</text>
 											<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>

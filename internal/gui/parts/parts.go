@@ -22,7 +22,6 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
-	"image/color"
 
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -82,7 +81,19 @@ func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
 	body := make([]fyne.CanvasObject, 0, len(content)+1)
 	body = append(body, sectionTitle(title))
 	body = append(body, content...)
-	return container.NewStack(panelSurface(), container.NewPadded(container.NewVBox(body...)))
+	return container.NewStack(panelSurface(), container.NewPadded(Column(GapField, body...)))
+}
+
+// FieldColumn stacks fields the way a section stacks them, for the boxes a screen
+// refills at run time.
+//
+// The settings a format declares and the parameters a preset declares arrive
+// after the screen is built, into a box of their own. Left as plain vertical
+// boxes those fields sat at the toolkit's padding while every field around
+// them sat at GapField - one rhythm above the box and another inside it, on
+// the same screen.
+func FieldColumn(children ...fyne.CanvasObject) *fyne.Container {
+	return Column(GapField, children...)
 }
 
 // sectionTitle names a section, at the rank between the screen and a field.
@@ -132,7 +143,11 @@ func Bullets(items []string) fyne.CanvasObject {
 		marker.SizeName = theme.SizeNameCaptionText
 		rows = append(rows, container.NewBorder(nil, nil, marker, nil, Note(item)))
 	}
-	return container.NewVBox(rows...)
+	// Tight, because these items are one list rather than a run of separate
+	// statements. Measured on 2026-08-20 at the toolkit's padding: 35 px
+	// between items carrying 12 px of text, which is nearly three times the
+	// type and reads as loose beside the form next to it.
+	return Column(GapTight, rows...)
 }
 
 // bulletMarker is what stands in front of one item.
@@ -331,44 +346,94 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
 }
 
-// SectionGap is the space between two panels, over and above the padding a
-// vertical box already puts between its children.
+// The vertical scale. Three steps, and the ratio between them is the point
+// rather than the individual numbers.
 //
-// Reported from use on 2026-08-18, looking at the recipe screen: with a panel
-// per batch stacked one under another, the gap the toolkit leaves is small
-// enough that two panels read as one long one with a line across it. The edge
-// of a panel is what says where a batch begins, and it was doing that job at the
-// same strength as the gap between two fields inside it.
+// Measured on 2026-08-20, before this existed: every gap in the form came out
+// of the theme's one padding value, so the distance from a label to its own
+// control and the distance from the end of one field to the start of the next
+// were 20 px and 23 px. The form said "these belong together" and "this group
+// has ended" with the same space, which is the whole of what spacing is for.
+// A picture of it reads as a wall of text, and that was the first finding of
+// the design audit.
 //
-// Applied wherever panels are stacked rather than inside Section, so a panel
-// used on its own carries no stray space under it.
-const SectionGap = 10
+// The steps have to be far enough apart to be read without counting. The pairs
+// above were fifteen per cent apart, which the eye does not resolve.
+const (
+	// GapTight is the space inside one field, between its name, its control
+	// and the sentence under it. Those are one thing, so they sit close.
+	GapTight = 1
+	// GapField is the space between two fields in a section.
+	GapField = 9
+	// GapSection is the space between two panels.
+	//
+	// Reported from use on 2026-08-18, looking at the recipe screen: with a
+	// panel per batch stacked one under another, the gap the toolkit left was
+	// small enough that two panels read as one long one with a line across it.
+	// The edge of a panel is what says where a batch begins, and it was doing
+	// that job at the same strength as the gap between two fields inside it.
+	//
+	// Applied wherever panels are stacked rather than inside Section, so a
+	// panel used on its own carries no stray space under it.
+	GapSection = 14
+)
 
-// Stacked puts panels one under another with SectionGap between them.
+// SectionGap is the older name for GapSection, kept because that is the name
+// the recipe screen and the guards were written against.
+const SectionGap = GapSection
+
+// Column stacks its children with one fixed gap, whatever the theme's padding
+// is.
 //
-// A spacer object rather than a padded container, because layout.NewSpacer in a
-// vertical box is greedy - it takes all the room that is going, which in a
-// scrolling form means one enormous gap and everything below it pushed off the
-// screen.
-func Stacked(panels ...fyne.CanvasObject) fyne.CanvasObject {
-	if len(panels) == 0 {
-		return container.NewVBox()
-	}
-	spaced := make([]fyne.CanvasObject, 0, len(panels)*2-1)
-	for i, panel := range panels {
-		if i > 0 {
-			spaced = append(spaced, gap())
-		}
-		spaced = append(spaced, panel)
-	}
-	return container.NewVBox(spaced...)
+// A layout of our own rather than a spacer between the children of a vertical
+// box, and that is what makes the three steps above mean anything: a vertical
+// box adds its own padding on top of whatever is put between its children, so
+// a spacer can only ever make a gap BIGGER. The tightest step this form needs
+// is smaller than that padding.
+//
+// It skips what is hidden, which is the behaviour WithRoomForARun and the
+// error area under every field are built on - a hidden widget costs no height.
+func Column(gap float32, children ...fyne.CanvasObject) *fyne.Container {
+	return container.New(column{gap: gap}, children...)
 }
 
-// gap is one fixed piece of empty space.
-func gap() fyne.CanvasObject {
-	space := canvas.NewRectangle(color.Transparent)
-	space.SetMinSize(fyne.NewSize(0, SectionGap))
-	return space
+// column is the layout behind Column.
+type column struct{ gap float32 }
+
+func (c column) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.NewSize(0, 0)
+	shown := 0
+	for _, o := range objects {
+		if !o.Visible() {
+			continue
+		}
+		min := o.MinSize()
+		size.Width = fyne.Max(size.Width, min.Width)
+		size.Height += min.Height
+		shown++
+	}
+	if shown > 1 {
+		size.Height += c.gap * float32(shown-1)
+	}
+	return size
+}
+
+func (c column) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	y := float32(0)
+	for _, o := range objects {
+		if !o.Visible() {
+			continue
+		}
+		height := o.MinSize().Height
+		o.Resize(fyne.NewSize(size.Width, height))
+		o.Move(fyne.NewPos(0, y))
+		y += height + c.gap
+	}
+}
+
+// Stacked puts panels one under another with GapSection between them.
+func Stacked(panels ...fyne.CanvasObject) fyne.CanvasObject {
+	return Column(GapSection, panels...)
 }
 
 // WithRoomForARun keeps the height a run's own messages need, whether or not

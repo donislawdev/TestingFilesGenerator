@@ -132,8 +132,8 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.seed = widget.NewEntry()
 	r.label = parts.NewToggle(text.FieldLabel, nil)
 
-	r.batchBox = container.NewVBox()
-	r.outBox = container.NewVBox()
+	r.batchBox = parts.FieldColumn()
+	r.outBox = parts.FieldColumn()
 	r.batches = []*batch{r.newBatch()}
 
 	// In the bar rather than in the list, so the one control that makes this

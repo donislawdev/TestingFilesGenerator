@@ -29,17 +29,16 @@
 										<text bold pos="6,6" size="249x27" textSize="20">Build a set for a question</text>
 									</widget>
 								</widget>
-								<rectangle pos="0,45" size="820x10"/>
-								<container pos="0,61" size="820x327">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x327" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x327">
-										<container pos="6,6" size="808x315">
+								<container pos="0,53" size="820x319">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x319" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x319">
+										<container pos="6,6" size="808x307">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="53x23" textSize="17">Preset</text>
 												</widget>
 											</widget>
-											<container pos="0,41" size="808x97">
+											<container pos="0,44" size="808x87">
 												<container size="808x32">
 													<widget size="56x32" type="*widget.Label">
 														<widget size="56x32" type="*widget.RichText">
@@ -52,7 +51,7 @@
 														<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
 													</widget>
 												</container>
-												<container pos="0,38" size="808x25">
+												<container pos="0,33" size="808x25">
 													<widget size="808x25" type="*parts.Chooser">
 														<rectangle fillColor="button" radius="5" size="808x25"/>
 														<rectangle size="0x0"/>
@@ -65,24 +64,24 @@
 													</widget>
 													<rectangle radius="5" size="808x25"/>
 												</container>
-												<widget pos="0,69" size="808x28" type="*widget.Label">
+												<widget pos="0,59" size="808x28" type="*widget.Label">
 													<widget size="808x28" type="*widget.RichText">
 														<text color="disabled" pos="6,6" size="120x16" textSize="12">What you are testing.</text>
 													</widget>
 												</widget>
 											</container>
-											<container pos="0,144" size="808x171">
+											<container pos="0,140" size="808x167">
 												<widget size="808x31" type="*widget.Label">
 													<widget size="808x31" type="*widget.RichText">
 														<text pos="6,6" size="332x19">Is a size limit enforced exactly where it is declared?</text>
 													</widget>
 												</widget>
-												<widget pos="0,37" size="808x31" type="*widget.Label">
+												<widget pos="0,40" size="808x31" type="*widget.Label">
 													<widget size="808x31" type="*widget.RichText">
 														<text bold pos="6,6" size="103x19">Typically finds:</text>
 													</widget>
 												</widget>
-												<container pos="0,74" size="808x97">
+												<container pos="0,80" size="808x87">
 													<container size="808x28">
 														<widget pos="22,0" size="785x28" type="*widget.Label">
 															<widget size="785x28" type="*widget.RichText">
@@ -95,7 +94,7 @@
 															</widget>
 														</widget>
 													</container>
-													<container pos="0,34" size="808x28">
+													<container pos="0,29" size="808x28">
 														<widget pos="22,0" size="785x28" type="*widget.Label">
 															<widget size="785x28" type="*widget.RichText">
 																<text color="disabled" pos="6,6" size="547x16" textSize="12">MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass</text>
@@ -107,7 +106,7 @@
 															</widget>
 														</widget>
 													</container>
-													<container pos="0,68" size="808x28">
+													<container pos="0,58" size="808x28">
 														<widget pos="22,0" size="785x28" type="*widget.Label">
 															<widget size="785x28" type="*widget.RichText">
 																<text color="disabled" pos="6,6" size="297x16" textSize="12">a limit enforced in the browser and not on the server</text>
@@ -124,24 +123,23 @@
 										</container>
 									</container>
 								</container>
-								<rectangle pos="0,395" size="820x10"/>
-								<container pos="0,411" size="820x366">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x366" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x366">
-										<container pos="6,6" size="808x354">
+								<container pos="0,387" size="820x345">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x345" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x345">
+										<container pos="6,6" size="808x333">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="69x23" textSize="17">Settings</text>
 												</widget>
 											</widget>
-											<container pos="0,41" size="808x313">
-												<container size="808x102">
+											<container pos="0,44" size="808x289">
+												<container size="808x92">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="32x19">limit</text>
 														</widget>
 													</widget>
-													<container pos="0,37" size="808x31">
+													<container pos="0,32" size="808x31">
 														<widget size="808x31" type="*widget.Entry">
 															<rectangle fillColor="button" pos="1,1" radius="5" size="806x29"/>
 															<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
@@ -158,19 +156,19 @@
 														</widget>
 														<rectangle radius="5" size="808x31"/>
 													</container>
-													<widget pos="0,74" size="808x28" type="*widget.Label">
+													<widget pos="0,64" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
 															<text color="disabled" pos="6,6" size="718x16" textSize="12">a size such as 2mb, or a plain byte count, default 10mb. The size limit your system declares. Everything else is measured from it.</text>
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,108" size="808x102">
+												<container pos="0,101" size="808x92">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="47x19">spread</text>
 														</widget>
 													</widget>
-													<container pos="0,37" size="808x31">
+													<container pos="0,32" size="808x31">
 														<widget size="808x31" type="*widget.Entry">
 															<rectangle fillColor="button" pos="1,1" radius="5" size="806x29"/>
 															<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
@@ -187,19 +185,19 @@
 														</widget>
 														<rectangle radius="5" size="808x31"/>
 													</container>
-													<widget pos="0,74" size="808x28" type="*widget.Label">
+													<widget pos="0,64" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
 															<text color="disabled" pos="6,6" size="593x16" textSize="12">sizes separated by commas, default 1B,1kb,1mb. How far either side of the limit to reach, as a list of sizes.</text>
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,217" size="808x96">
+												<container pos="0,203" size="808x86">
 													<widget size="808x31" type="*widget.Label">
 														<widget size="808x31" type="*widget.RichText">
 															<text bold pos="6,6" size="48x19">format</text>
 														</widget>
 													</widget>
-													<container pos="0,37" size="808x25">
+													<container pos="0,32" size="808x25">
 														<widget size="808x25" type="*parts.Chooser">
 															<rectangle fillColor="button" radius="5" size="808x25"/>
 															<rectangle size="0x0"/>
@@ -212,7 +210,7 @@
 														</widget>
 														<rectangle radius="5" size="808x25"/>
 													</container>
-													<widget pos="0,68" size="808x28" type="*widget.Label">
+													<widget pos="0,58" size="808x28" type="*widget.Label">
 														<widget size="808x28" type="*widget.RichText">
 															<text color="disabled" pos="6,6" size="235x16" textSize="12">What kind of file the whole set is made of.</text>
 														</widget>
@@ -222,17 +220,16 @@
 										</container>
 									</container>
 								</container>
-								<rectangle pos="0,783" size="820x10"/>
-								<container pos="0,799" size="820x266">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x266" strokeColor="separator" strokeWidth="1"/>
-									<container size="820x266">
-										<container pos="6,6" size="808x254">
+								<container pos="0,746" size="820x252">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x252" strokeColor="separator" strokeWidth="1"/>
+									<container size="820x252">
+										<container pos="6,6" size="808x240">
 											<widget size="808x35" type="*widget.Label">
 												<widget size="808x35" type="*widget.RichText">
 													<text bold pos="6,6" size="61x23" textSize="17">Output</text>
 												</widget>
 											</widget>
-											<container pos="0,41" size="808x104">
+											<container pos="0,44" size="808x94">
 												<container size="808x32">
 													<widget size="129x32" type="*widget.Label">
 														<widget size="129x32" type="*widget.RichText">
@@ -245,7 +242,7 @@
 														<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
 													</widget>
 												</container>
-												<container pos="0,38" size="808x32">
+												<container pos="0,33" size="808x32">
 													<container size="808x32">
 														<widget size="727x32" type="*widget.Entry">
 															<rectangle fillColor="button" pos="1,1" radius="5" size="725x30"/>
@@ -268,13 +265,13 @@
 													</container>
 													<rectangle radius="5" size="808x32"/>
 												</container>
-												<widget pos="0,76" size="808x28" type="*widget.Label">
+												<widget pos="0,66" size="808x28" type="*widget.Label">
 													<widget size="808x28" type="*widget.RichText">
 														<text color="disabled" pos="6,6" size="204x16" textSize="12">Where the files and the manifest go.</text>
 													</widget>
 												</widget>
 											</container>
-											<container pos="0,151" size="808x103">
+											<container pos="0,147" size="808x93">
 												<container size="808x32">
 													<widget size="45x32" type="*widget.Label">
 														<widget size="45x32" type="*widget.RichText">
@@ -287,7 +284,7 @@
 														<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
 													</widget>
 												</container>
-												<container pos="0,38" size="808x31">
+												<container pos="0,33" size="808x31">
 													<container size="140x31">
 														<widget size="140x31" type="*widget.Entry">
 															<rectangle fillColor="button" pos="1,1" radius="5" size="138x29"/>
@@ -303,7 +300,7 @@
 														<rectangle radius="5" size="140x31"/>
 													</container>
 												</container>
-												<widget pos="0,75" size="808x28" type="*widget.Label">
+												<widget pos="0,65" size="808x28" type="*widget.Label">
 													<widget size="808x28" type="*widget.RichText">
 														<text color="disabled" pos="6,6" size="208x16" textSize="12">The same seed gives the same bytes.</text>
 													</widget>
@@ -376,7 +373,7 @@
 	</content>
 	<overlay>
 		<widget size="1100x1300" type="*widget.OverlayContainer">
-			<widget pos="146,215" size="808x28" type="*widget.PopUp">
+			<widget pos="146,205" size="808x28" type="*widget.PopUp">
 				<rectangle fillColor="overlayBackground" radius="5" shadowBlurRadius="14" shadowColor="shadow" shadowOffset="0,4" size="808x28"/>
 				<widget size="808x28" type="*parts.OpenList">
 					<container size="808x28">

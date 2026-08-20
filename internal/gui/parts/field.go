@@ -51,7 +51,7 @@ func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (
 	area := NewErrorArea()
 	area.edge = ring
 	items := append(fieldParts(label, hint, detail, marked), area.Object())
-	return container.NewVBox(items...), area
+	return Column(GapTight, items...), area
 }
 
 // fieldParts is the run of pieces every field is made of, in order.
@@ -89,7 +89,7 @@ func ToggleSaying(name, hint string, detail Detail, check *Toggle) (fyne.CanvasO
 		items = append(items, Note(hint))
 	}
 	items = append(items, area.Object())
-	return container.NewVBox(items...), area
+	return Column(GapTight, items...), area
 }
 
 // Note is a quiet line under something, for what a person needs once.
