@@ -291,8 +291,54 @@ func (r *runner) say(lines ...string) {
 		return
 	}
 	r.resting = false
+	// Back to the ordinary colour unless the caller says otherwise. Anything
+	// coloured is coloured about one run, so it has to be cleared by the next
+	// thing said - otherwise a green line from a finished run stays green over
+	// the progress of the one after it.
+	r.status.Importance = widget.MediumImportance
 	r.status.SetText(said)
 	r.status.Show()
+}
+
+// toneOfOutcome colours what a finished run said.
+//
+// The strongest moment this program has was drawn more weakly than anything
+// else on the screen. Measured off a render on 2026-08-20: "3 files written."
+// came out at #E6E6E6, the same grey, the same size and the same weight as
+// the neutral line that names the output folder - while a refusal is four
+// lines of red. The screen shouted about a mistake and whispered about
+// success.
+//
+// The colours were already there and already measured. ColorNameSuccess and
+// ColorNameWarning have been in both palettes since the palette was written
+// and were used by nothing at all - checked across the whole tree on
+// 2026-08-20, the only semantic colour reaching the screen was the error red.
+//
+// Three outcomes rather than two, because "written with failures" is not
+// success and is not a refusal either. Silence is banned here (untouchable
+// rule 6), so a run that skipped files has to look different from one that did
+// not, and amber is the palette's word for that.
+//
+// Colour is never the only carrier - UX1 - and it is not one here either: the
+// sentences already differ. What colour adds is which of the three a person is
+// looking at, before reading it.
+//
+// A mark in front of the words was considered and left out. It would either go
+// into the message, where it meets the ASCII rules and the guard that pins
+// what the first line says, or beside it, where it pushes the line off the
+// left edge every other line on the screen stands on.
+func (r *runner) toneOfOutcome(res *engine.Result, runErr error) {
+	switch {
+	case runErr != nil:
+		r.status.Importance = widget.WarningImportance
+	case res == nil || res.Manifest == nil:
+		r.status.Importance = widget.WarningImportance
+	case res.Failures > 0:
+		r.status.Importance = widget.WarningImportance
+	default:
+		r.status.Importance = widget.SuccessImportance
+	}
+	r.status.Refresh()
 }
 
 // sayDestination puts where the files will go on the status line, while there
@@ -617,6 +663,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 	// answer in a terminal and an instruction to open a file with ten thousand
 	// entries in a window.
 	r.say(append([]string{outcomeText(res, runErr)}, notesOf(res)...)...)
+	r.toneOfOutcome(res, runErr)
 }
 
 func outcomeText(res *engine.Result, runErr error) string {
