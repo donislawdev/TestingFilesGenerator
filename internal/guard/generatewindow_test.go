@@ -174,6 +174,12 @@ func declares(d format.Descriptor, name string) bool {
 // wrongKindOfControl says when a declaration got a control that cannot express
 // it. A closed set drawn as a box to type in is how a value gets misspelled.
 func wrongKindOfControl(p format.Property, control fyne.CanvasObject) string {
+	// A registered control is sometimes a wrapper. Since 2026-08-20 a box for a
+	// number is drawn at a width of its own, and the thing that decides the
+	// width is what gets registered - so asking the registered object what type
+	// it is answers about the wrapper. The same trap parts.inside exists for,
+	// and it reported nine formats as drawing a container where a box belongs.
+	control = controlItself(control)
 	switch p.Kind {
 	case format.PropertyChoice:
 		if _, ok := control.(*parts.Chooser); !ok {
@@ -189,6 +195,23 @@ func wrongKindOfControl(p format.Property, control fyne.CanvasObject) string {
 		}
 	}
 	return ""
+}
+
+// controlItself is the widget under whatever was registered, found by looking
+// for something that is not a plain container.
+func controlItself(o fyne.CanvasObject) fyne.CanvasObject {
+	box, is := o.(*fyne.Container)
+	if !is {
+		return o
+	}
+	for _, child := range box.Objects {
+		if found := controlItself(child); found != nil {
+			if _, stillABox := found.(*fyne.Container); !stillABox {
+				return found
+			}
+		}
+	}
+	return o
 }
 
 // G1: the window has no arithmetic of its own, it asks the engine.

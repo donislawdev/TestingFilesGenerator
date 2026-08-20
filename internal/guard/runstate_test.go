@@ -4,7 +4,10 @@ import (
 	"strings"
 	"testing"
 
+	"fyne.io/fyne/v2"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 )
 
 // The form cannot be edited while a run is going.
@@ -71,6 +74,24 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 	}
 	if scroll.Offset.Y != 0 {
 		t.Fatalf("the form did not start at the top, so a move cannot be told from where it began")
+	}
+
+	// A window short enough that the form certainly does not fit, and the
+	// state is ASSERTED rather than assumed.
+	//
+	// It used to rely on the opening size, and on 2026-08-20 that stopped being
+	// enough: the settings a format declares are drawn two to a row now, so the
+	// generate form came down to 826 px in 837 px of room and the seed box this
+	// scrolls to was already on the screen. Nothing was broken and this guard
+	// went red honestly - it had stopped reaching the state it exists for,
+	// which is the same shape as observation O118.
+	w.Resize(fyne.NewSize(window.OpenSize.Width, 500))
+	content.Refresh()
+	w.Resize(fyne.NewSize(window.OpenSize.Width, 501))
+	content.Refresh()
+	if room, form := scroll.Size().Height, scroll.Content.MinSize().Height; form <= room {
+		t.Fatalf("the form is %.0f px in %.0f px of room, so nothing has to scroll and this guard "+
+			"would pass without asking its question", form, room)
 	}
 
 	// The seed sits in the last section, which is the part off the bottom of

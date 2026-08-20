@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -162,6 +163,21 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 	fields := make([]PropertyField, 0, len(d.Properties))
 	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
 
+	// Narrow ones are collected as they come and laid out two to a row, so a
+	// row is only flushed when something wide arrives or the list runs out.
+	var pending []fyne.CanvasObject
+	flush := func() {
+		for len(pending) > 0 {
+			if len(pending) == 1 {
+				objects = append(objects, pending[0])
+				pending = nil
+				break
+			}
+			objects = append(objects, Row(pending[0], pending[1]))
+			pending = pending[2:]
+		}
+	}
+
 	for _, p := range d.Properties {
 		f := FromProperty(p)
 		fields = append(fields, f)
@@ -170,8 +186,15 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 		// sentence built from Allowed, so there is nothing to hold back - and a
 		// button that opened the line already printed underneath would be the
 		// same words twice.
-		objects = append(objects, into.Add(p.Name, p.Name, PropertyDetail(p), NoDetail, f.Control))
+		object := into.Add(p.Name, p.Name, PropertyDetail(p), NoDetail, ShapedFor(p, f.Control))
+		if narrowOnAScreen(p) {
+			pending = append(pending, object)
+			continue
+		}
+		flush()
+		objects = append(objects, object)
 	}
+	flush()
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn
 	// from Min and Max alone, two number boxes would offer twenty thousand by
@@ -181,6 +204,53 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 		objects = append(objects, Note(j.Describe()))
 	}
 	return fields, objects
+}
+
+// ShapedFor gives a control the width the value in it needs.
+//
+// A box is a promise about what goes in it. Measured off a render on
+// 2026-08-20: the width and height boxes of a BMP were 806 px wide for a whole
+// number from 1 to 20000, on a screen where "how many" - also a whole number -
+// was 140. The declaration says which of the two a setting is, so nothing here
+// names a format.
+//
+// Only numbers and sizes. A closed set is as wide as its longest value plus
+// the arrow, and free text has no length to promise.
+// The width is the wider of the number box every other whole number on these
+// screens uses and whatever it takes to show this field's own placeholder.
+// Shrinking to the first alone clipped "worked out from the size" mid-word -
+// which is the same defect the other way up, since a box has to be able to
+// show what it is already showing.
+func ShapedFor(p format.Property, control fyne.CanvasObject) fyne.CanvasObject {
+	if !narrowOnAScreen(p) {
+		return control
+	}
+	return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p))), control)
+}
+
+// roomFor is how wide a box has to be to show a string without cutting it.
+//
+// The toolkit lays an entry's text out inside two paddings on each side. Asked
+// of the font rather than guessed from a character count, because the font is
+// proportional and "worked out from the size" is mostly narrow letters.
+func roomFor(words string) float32 {
+	size := fyne.MeasureText(words, theme.TextSize(), fyne.TextStyle{})
+	return size.Width + theme.InnerPadding()*2 + theme.Padding()*2
+}
+
+// narrowOnAScreen is whether a setting's value is short enough that a full
+// width box would be lying about it.
+//
+// It also decides which settings go two to a row, and those are one question
+// rather than two: a row of two is only readable when neither of them wanted
+// the width in the first place.
+func narrowOnAScreen(p format.Property) bool {
+	switch p.Kind {
+	case format.PropertyInt, format.PropertySize:
+		return true
+	default:
+		return false
+	}
 }
 
 // PropertyDetail is what a property takes and what it is for, in that order.

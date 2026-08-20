@@ -345,7 +345,16 @@ const NumericWidth = 140
 // it. Seen on a render on 2026-08-12, which is the only way that kind of thing
 // is ever seen.
 func Numeric(control fyne.CanvasObject) fyne.CanvasObject {
-	return container.New(fixedWidth{NumericWidth}, control)
+	return Sized(NumericWidth, control)
+}
+
+// Sized draws a control at a width worked out by the caller.
+//
+// Numeric is the common case and this is the one behind it, for the fields
+// whose width comes from what they have to show rather than from a constant -
+// see ShapedFor.
+func Sized(width float32, control fyne.CanvasObject) fyne.CanvasObject {
+	return container.New(fixedWidth{width}, control)
 }
 
 // fixedWidth gives its one child a width decided here and the height it asks
