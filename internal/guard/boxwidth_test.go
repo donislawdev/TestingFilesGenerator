@@ -178,3 +178,72 @@ func typedInWidth(control fyne.CanvasObject) float32 {
 	}
 	return widest
 }
+
+// The same rule on the screen that draws the same settings again.
+//
+// Two screens build a field from a declaration: the single batch screen and
+// the batch list. They went through different code and only one of them was
+// fixed on the first try - which is the shape D1 keeps coming apart in, one
+// surface at a time. Measured before this: the batch list drew bmp.width at
+// the full column width while the single batch screen drew it at 178 px.
+func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
+	ourTheme(t)
+	host := &fakeHost{}
+	window.Open(host)
+	if host.content == nil {
+		t.Fatal("opening the window put no screen in it")
+	}
+	batches := selectTab(t, host.content, text.TabRecipe)
+	w := test.NewWindow(host.content)
+	t.Cleanup(w.Close)
+	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+
+	picker, ok := controlUnder(batches, text.FieldFormat).(*parts.Chooser)
+	if !ok {
+		t.Fatal("the first batch has no format list, so this guard read the wrong tree")
+	}
+	// Laid out again after each choice, because choosing rebuilds this part of
+	// the tree and a box that has not been laid out reports the size it asks
+	// for rather than the size it got. That is what let the first version of
+	// this guard pass against a screen drawing every box at the full width.
+	layOut := func() {
+		w.Resize(fyne.NewSize(window.OpenSize.Width, 1599))
+		w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+	}
+
+	checked := 0
+	for _, d := range format.All() {
+		narrow := false
+		for _, p := range d.Properties {
+			if p.Kind == format.PropertyInt || p.Kind == format.PropertySize {
+				narrow = true
+			}
+		}
+		if !narrow {
+			continue
+		}
+		picker.SetSelected(d.ID)
+		layOut()
+		for _, p := range d.Properties {
+			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
+				continue
+			}
+			control := controlUnder(batches, settingLabelOf(p))
+			if control == nil {
+				t.Errorf("%s declares %q and the batch screen draws no field for it", d.ID, p.Name)
+				continue
+			}
+			if width := typedInWidth(control); width > float32(parts.ColumnWidth)/2 {
+				t.Errorf("on the batch screen %s.%s holds a %s and its box is %.0f px of a %.0f px column",
+					d.ID, p.Name, p.Kind, width, float32(parts.ColumnWidth))
+			}
+			checked++
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no format with a number reached the batch screen, so this guard checked nothing")
+	}
+}
+
+// settingLabelOf is what the label above a declared setting reads.
+func settingLabelOf(p format.Property) string { return p.Name }

@@ -426,21 +426,23 @@
 															</widget>
 														</widget>
 														<container pos="0,32" size="808x31">
-															<widget size="808x31" type="*widget.Entry">
-																<rectangle fillColor="button" pos="1,1" radius="5" size="806x29"/>
-																<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
-																<widget pos="0,1" size="808x29" type="*widget.Scroll">
-																	<widget size="808x29" type="*widget.entryContent">
-																		<widget size="808x29" type="*widget.RichText">
-																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
-																		</widget>
-																		<widget size="808x29" type="*widget.RichText">
-																			<text pos="6,5" size="0x19"></text>
+															<container size="188x31">
+																<widget size="188x31" type="*widget.Entry">
+																	<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
+																	<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
+																	<widget pos="0,1" size="188x29" type="*widget.Scroll">
+																		<widget size="188x29" type="*widget.entryContent">
+																			<widget size="188x29" type="*widget.RichText">
+																				<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
+																			</widget>
+																			<widget size="188x29" type="*widget.RichText">
+																				<text pos="6,5" size="0x19"></text>
+																			</widget>
 																		</widget>
 																	</widget>
 																</widget>
-															</widget>
-															<rectangle radius="5" size="808x31"/>
+																<rectangle radius="5" size="188x31"/>
+															</container>
 														</container>
 														<widget pos="0,64" size="808x28" type="*widget.Label">
 															<widget size="808x28" type="*widget.RichText">
@@ -455,21 +457,23 @@
 															</widget>
 														</widget>
 														<container pos="0,32" size="808x31">
-															<widget size="808x31" type="*widget.Entry">
-																<rectangle fillColor="button" pos="1,1" radius="5" size="806x29"/>
-																<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
-																<widget pos="0,1" size="808x29" type="*widget.Scroll">
-																	<widget size="808x29" type="*widget.entryContent">
-																		<widget size="808x29" type="*widget.RichText">
-																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
-																		</widget>
-																		<widget size="808x29" type="*widget.RichText">
-																			<text pos="6,5" size="0x19"></text>
+															<container size="188x31">
+																<widget size="188x31" type="*widget.Entry">
+																	<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
+																	<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
+																	<widget pos="0,1" size="188x29" type="*widget.Scroll">
+																		<widget size="188x29" type="*widget.entryContent">
+																			<widget size="188x29" type="*widget.RichText">
+																				<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
+																			</widget>
+																			<widget size="188x29" type="*widget.RichText">
+																				<text pos="6,5" size="0x19"></text>
+																			</widget>
 																		</widget>
 																	</widget>
 																</widget>
-															</widget>
-															<rectangle radius="5" size="808x31"/>
+																<rectangle radius="5" size="188x31"/>
+															</container>
 														</container>
 														<widget pos="0,64" size="808x28" type="*widget.Label">
 															<widget size="808x28" type="*widget.RichText">

@@ -341,8 +341,13 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) []fyne.Canva
 
 	out := []fyne.CanvasObject{parts.Heading(text.SettingsFor(b.formatPick.Selected))}
 	for i, f := range b.props {
+		// Shaped here as well as on the single batch screen. The two draw the
+		// same declarations through different code, and only one of them was
+		// given the width on the first try - which is how a difference between
+		// two surfaces starts.
 		out = append(out, r.fields.Add(at(recipe.KeyProperties+"."+f.Name), f.Name,
-			parts.PropertyDetail(b.declared[i]), parts.NoDetail, f.Control))
+			parts.PropertyDetail(b.declared[i]), parts.NoDetail,
+			parts.ShapedFor(b.declared[i], f.Control)))
 	}
 	// A rule binding two settings belongs beside them. Two number boxes drawn
 	// from a range alone would offer a pair the run then refuses.
