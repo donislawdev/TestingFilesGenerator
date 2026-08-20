@@ -494,7 +494,7 @@ jobs:
         # The corpus a failing run leaves behind is the whole value of the run,
         # and it lives in the runner's cache directory rather than the tree.
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fuzz-findings
           path: |
