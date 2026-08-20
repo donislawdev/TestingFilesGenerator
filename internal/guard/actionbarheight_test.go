@@ -277,8 +277,8 @@ func scrollIn(o fyne.CanvasObject) *container.Scroll {
 // Found as a pair rather than separately, because the status line is an
 // ordinary label and every screen has several - the one that belongs to a run
 // is the one sharing a container with the bar.
-func runMessages(o fyne.CanvasObject) (*widget.ProgressBar, *widget.Label) {
-	var bar *widget.ProgressBar
+func runMessages(o fyne.CanvasObject) (*parts.Progress, *widget.Label) {
+	var bar *parts.Progress
 	var status *widget.Label
 
 	walk(o, func(obj fyne.CanvasObject) {
@@ -286,7 +286,7 @@ func runMessages(o fyne.CanvasObject) (*widget.ProgressBar, *widget.Label) {
 		if !ok || bar != nil {
 			return
 		}
-		var foundBar *widget.ProgressBar
+		var foundBar *parts.Progress
 		var foundLabel *widget.Label
 		for _, child := range box.Objects {
 			// The label has to be a child of this box, because that is what
@@ -310,10 +310,17 @@ func runMessages(o fyne.CanvasObject) (*widget.ProgressBar, *widget.Label) {
 }
 
 // progressUnder finds the progress track at or beneath an object.
-func progressUnder(o fyne.CanvasObject) *widget.ProgressBar {
-	var found *widget.ProgressBar
+//
+// The type changed on 2026-08-20 when the track became a control of ours, and
+// it matters that this helper changed with it: nothing in the package would
+// have failed to compile, and runMessages only pairs a bar with a label when
+// it finds both - so a helper left looking for the toolkit's widget would have
+// gone on finding nothing and every guard reading a run's messages would have
+// stopped reading them.
+func progressUnder(o fyne.CanvasObject) *parts.Progress {
+	var found *parts.Progress
 	walk(o, func(obj fyne.CanvasObject) {
-		if it, ok := obj.(*widget.ProgressBar); ok && found == nil {
+		if it, ok := obj.(*parts.Progress); ok && found == nil {
 			found = it
 		}
 	})

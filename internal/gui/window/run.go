@@ -84,7 +84,7 @@ type runner struct {
 	generateBtn *widget.Button
 	cancelBtn   *widget.Button
 
-	bar     *widget.ProgressBar
+	bar     *parts.Progress
 	status  *widget.Label
 	problem *parts.ErrorArea
 
@@ -383,15 +383,15 @@ func newRunner() *runner {
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
-	r.bar = widget.NewProgressBar()
+	r.bar = parts.NewProgress()
 	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
 	// a very large run inside the range of its own type is the one the command
 	// line already uses.
 	r.bar.Max = 100
-	// Nothing written inside the track. The line under it ends with the same
-	// percentage already (text.Progress), so this was the number twice, and
-	// the words are the copy worth keeping - they say what is being counted.
-	r.bar.TextFormatter = func() string { return "" }
+	// Nothing is written inside the track, which is now a property of the
+	// control rather than a formatter turned off: the line under it ends with
+	// the same percentage already (text.Progress), so the number stood on the
+	// screen twice.
 	r.bar.Hide()
 
 	r.status = widget.NewLabel("")
