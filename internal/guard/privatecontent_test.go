@@ -78,17 +78,6 @@ func privateFaults(text string) []string {
 			// this project's own commit trailers carry one.
 			case p.name == "an e-mail address" && strings.Contains(strings.ToLower(m[0]), "noreply"):
 				continue
-			// The address in Dependabot's own footer, published by GitHub on
-			// every such commit in the world. It arrived on 2026-08-20 with the
-			// first two update branches and it is the same class as the no-reply
-			// above: a service, not a person, and not the owner's.
-			//
-			// This one had to be settled BEFORE those branches were merged. A
-			// commit message cannot be edited once it is in the history without
-			// rewriting it, so merging first would have left a guard that fails
-			// on main for ever and a rule nobody could obey.
-			case p.name == "an e-mail address" && strings.EqualFold(m[0], "support@github.com"):
-				continue
 			}
 			out = append(out, p.name+": "+m[0])
 		}
@@ -249,9 +238,62 @@ func TestNoCommitMessageCarriesPrivateContent(t *testing.T) {
 	if !strings.Contains(log, " ") {
 		t.Fatal("the history was read without the subjects and bodies, so this guard would pass while looking at hashes")
 	}
-	if faults := privateFaults(log); len(faults) > 0 {
+	if faults := privateFaults(withoutIdentityTrailers(log)); len(faults) > 0 {
 		t.Errorf("%d place(s) in the history carry something that should not be public:\n  %s",
 			len(faults), strings.Join(faults, "\n  "))
+	}
+}
+
+// identityTrailer matches the lines at the foot of a message that say who a
+// change belongs to, rather than saying anything.
+var identityTrailer = regexp.MustCompile(
+	`(?i)^\s*(co-authored-by|signed-off-by|reported-by|reviewed-by|acked-by|tested-by|helped-by|suggested-by):`)
+
+// withoutIdentityTrailers drops those lines before the scan.
+//
+// This is the rule the test above already states about the author line, applied
+// to the place the same information turns up second. An address in a trailer is
+// how git names a person, and an address in the text of a message is something
+// that slipped in - the guard is aimed at the second.
+//
+// Written on 2026-08-20, when GitHub squashed a Dependabot pull request and put
+// "Co-authored-by: <the owner>" into the message it generated. Worth being
+// exact about what that was and was not: the address was already on every
+// commit in this repository as the author, by the owner's own git config, so
+// the trailer published nothing that was not already published. Rewriting the
+// history to remove it would have left the author lines untouched and changed
+// nothing real, which is why it was not done.
+//
+// What this does NOT excuse is an address written into a subject or a body.
+// TestAnAddressInTheTextOfAMessageIsStillFound holds that line.
+func withoutIdentityTrailers(log string) string {
+	var keep []string
+	for _, line := range strings.Split(log, "\n") {
+		if identityTrailer.MatchString(line) {
+			continue
+		}
+		keep = append(keep, line)
+	}
+	return strings.Join(keep, "\n")
+}
+
+// Dropping the trailers must not drop anything else, or the guard above is
+// satisfied by a filter that quietly removes the evidence.
+func TestAnAddressInTheTextOfAMessageIsStillFound(t *testing.T) {
+	message := strings.Join([]string{
+		"recipe: something",
+		"",
+		"Reported by somebody" + "@" + "customer.example, who sent the file.",
+		"",
+		"Co-authored-by: Somebody Else <somebody" + "@" + "example.org>",
+	}, "\n")
+
+	faults := privateFaults(withoutIdentityTrailers(message))
+	if len(faults) != 1 {
+		t.Fatalf("expected the address in the body and only that, got %v", faults)
+	}
+	if !strings.Contains(faults[0], "customer.example") {
+		t.Errorf("the wrong address was found: %v", faults)
 	}
 }
 
