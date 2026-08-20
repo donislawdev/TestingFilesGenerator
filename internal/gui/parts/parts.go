@@ -394,10 +394,21 @@ func gap() fyne.CanvasObject {
 // window they open in (O102).
 //
 // A finished run can say more than that, because it prints one line per note
-// and a manifest's notes are not bounded - so this cannot promise the bar never
-// grows, and pretending otherwise would be a reserve sized for a number nobody
-// measured. It grows rather than clipping, because a message nobody can read is
-// worse than a bar that moved.
+// and a manifest's notes are not bounded.
+//
+// That used to mean the height grew with the message, and it was written down
+// here as a deliberate choice: a message nobody can read is worse than a bar
+// that moved. Measured on 2026-08-20, the cost of that choice was 19 px of form
+// per extra line - two lines took 849 px down to 830, three to 811 - at the one
+// moment somebody is looking at the buttons rather than at the form. The owner
+// reversed the choice that day.
+//
+// So the reserve is now a ceiling as well as a floor, and the message scrolls
+// inside it. That keeps the original reason intact rather than trading it away:
+// nothing is clipped and nothing becomes unreadable, it is reached by scrolling
+// instead of by pushing the form. The height no longer depends on what a run
+// has to say, which is the only way this can hold for a number of notes that
+// comes from somebody else's preset.
 func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
 	// "Ag" is this project's measuring sample - an ascender and a descender,
 	// so the line is as tall as a line ever gets. It is never drawn.
@@ -407,11 +418,23 @@ func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
 	// actually puts here, and a reserve left at the toolkit's own height would
 	// have kept all 23 px the slim track gave back.
 	sample := container.NewVBox(Slim(widget.NewProgressBar()), widget.NewLabel("Ag"))
-	return container.New(&reserving{height: sample.MinSize().Height}, content)
+
+	// Scrolled rather than clipped, and vertical only - a status line that
+	// scrolled sideways would hide the start of its own sentence.
+	inside := container.NewVScroll(content)
+	return container.New(&reserving{height: sample.MinSize().Height}, inside)
 }
 
 // reserving is a layout that never reports less height than it was asked to
 // keep, and lays its content out at the top of it.
+//
+// It does not need a matching ceiling, and one was tried and taken out again on
+// 2026-08-20. What holds the height down is the scroll above: a scroll asks for
+// almost nothing, so the larger of the two is always the reserve. Adding the
+// ceiling here as well changed no measurement and could not be broken on
+// purpose - the guard stayed green with it removed - and defensive code that
+// cannot be broken is not a safeguard, it is a second explanation of the same
+// thing for the next person to reconcile.
 type reserving struct{ height float32 }
 
 func (r *reserving) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -430,7 +453,9 @@ func (r *reserving) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
 func (r *reserving) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	for _, o := range objects {
-		o.Resize(fyne.NewSize(size.Width, o.MinSize().Height))
+		// Given the whole box rather than its own minimum, so the scroll inside
+		// fills the reserve and knows how much of the message it can show.
+		o.Resize(size)
 		o.Move(fyne.NewPos(0, 0))
 	}
 }

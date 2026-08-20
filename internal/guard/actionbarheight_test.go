@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -125,8 +126,74 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 						"enough for what the status line says here, or the wrapper was dropped.",
 						state.name, atRest, duringRun, atRest-duringRun)
 				}
+
+				// A finished run prints one line per note, and the notes come
+				// out of somebody else's preset and out of the result - so how
+				// many there are is data rather than something this tree
+				// decides. Until 2026-08-20 each extra line took 19 px off the
+				// form. The reserve is a ceiling now and the message scrolls
+				// inside it, which is what makes this assertable at all: there
+				// is no line count that could be reserved for.
+				status.SetText("a first line\na second line\na third line\na fourth line")
+				settle(content, w)
+
+				if withNotes := scroll.Size().Height; withNotes != atRest {
+					t.Errorf("resting %s, a run that says four lines leaves the form %.0f px "+
+						"against %.0f px at rest, so it moves %.0f px.\n"+
+						"What to do: parts.WithRoomForARun keeps a fixed height and scrolls the message "+
+						"inside it. A message taller than that room has to scroll rather than push the "+
+						"form, because the number of lines comes from a preset and cannot be reserved for.",
+						state.name, withNotes, atRest, atRest-withNotes)
+				}
 			})
 		}
+	}
+}
+
+// What the run has to say comes first, and what settling had to say comes under
+// it.
+//
+// This only became a rule on 2026-08-20. Until then the box grew to hold
+// whatever was in it, so every line was read whatever order they were in, and
+// the notes came first on purpose - they are context for the sentence below
+// them. Once the room became a ceiling with the message scrolling inside it,
+// the first line turned into the only one certain to be seen, and a note about
+// a default this tool invented is not what somebody pressed the button to find
+// out. Seen rather than reasoned about: a finished run showed "no limit was
+// given, so this set is built around 10mb..." with "7 files written." out of
+// sight below it.
+//
+// Asked through Preview because it goes down the same path and writes nothing,
+// so this stays a guard about words rather than a guard that generates files.
+func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
+	content, w := screenInAWindow(t, text.TabPresets)
+
+	// Nothing is filled in. A note is what the run says about a value nobody
+	// gave it, so leaving the settings alone is what produces one at all.
+	press(t, content, text.ButtonPreview)
+	settle(content, w)
+
+	_, status := runMessages(content)
+	if status == nil {
+		t.Fatal("the presets screen has no status line, so this guard read the wrong tree")
+	}
+	lines := strings.Split(status.Text, "\n")
+	if len(lines) < 2 {
+		t.Fatalf("the preview said %q, which is one line - this guard needs a run that also carries "+
+			"a note, or it is checking the order of a list with one thing in it", status.Text)
+	}
+	// Matched on the tail of the preview's own sentence rather than on a word
+	// like "file", because the note talks about files too - an earlier version
+	// of this checked for that and stayed green with the order reversed, which
+	// is a guard that reads like one and is not.
+	marker := text.PreviewCost(1, nil, "1 B")
+	tail := marker[strings.LastIndex(marker, " ")+1:]
+	if !strings.Contains(lines[0], tail) {
+		t.Errorf("the first line of the status is %q, and the preview's own sentence is not it.\n"+
+			"That sentence has to come first, because the room for these messages is a ceiling and "+
+			"the message scrolls inside it - so the first line is the only one certain to be read. "+
+			"A note about a default this tool chose is not that line.\nAll of it:\n%s",
+			lines[0], status.Text)
 	}
 }
 

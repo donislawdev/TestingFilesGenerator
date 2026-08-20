@@ -421,15 +421,17 @@
 											<spacer pos="490,0" size="335x32"/>
 										</container>
 										<container pos="0,38" size="820x45">
-											<container size="820x45">
-												<container size="820x8">
-												</container>
-												<widget pos="0,14" size="820x31" type="*widget.Label">
-													<widget size="820x31" type="*widget.RichText">
-														<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
+											<widget size="820x45" type="*widget.Scroll">
+												<container size="820x45">
+													<container size="820x8">
+													</container>
+													<widget pos="0,14" size="820x31" type="*widget.Label">
+														<widget size="820x31" type="*widget.RichText">
+															<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
+														</widget>
 													</widget>
-												</widget>
-											</container>
+												</container>
+											</widget>
 										</container>
 									</container>
 								</container>

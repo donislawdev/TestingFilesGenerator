@@ -269,15 +269,23 @@ func (r *runner) clearProblems() {
 	r.fields.ClearAll()
 }
 
-// say puts a sentence on the status line, under whatever settling had to say.
+// say puts a sentence on the status line, above whatever settling had to say.
 //
 // A line with nothing on it takes no room, the same rule the error area
 // follows. A label holding the empty string still reserves its height, so an
 // idle screen was paying for a sentence nobody had written yet - measured at
 // roughly fifty pixels of the action bar on a screen that scrolls, which is
 // space taken from the form to say nothing.
+//
+// The notes used to come first, and that was right while this box grew to fit
+// whatever was in it. It stopped being right on 2026-08-20, when the room here
+// became a ceiling and the message started scrolling inside it: the first line
+// is the only one certain to be read, and a note about a default we invented is
+// not the line somebody is waiting for. Looked at rather than reasoned about -
+// a finished run showed "no limit was given, so this set is built around
+// 10mb..." with "7 files written." out of sight below it.
 func (r *runner) say(lines ...string) {
-	said := strings.Join(append(append([]string{}, r.notes...), lines...), "\n")
+	said := strings.Join(append(append([]string{}, lines...), r.notes...), "\n")
 	if said == "" {
 		r.sayDestination()
 		return

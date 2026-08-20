@@ -1105,15 +1105,17 @@
 											<spacer pos="490,0" size="335x32"/>
 										</container>
 										<container pos="0,38" size="820x45">
-											<container size="820x45">
-												<container size="820x8">
-												</container>
-												<widget pos="0,14" size="820x31" type="*widget.Label">
-													<widget size="820x31" type="*widget.RichText">
-														<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
+											<widget size="820x45" type="*widget.Scroll">
+												<container size="820x45">
+													<container size="820x8">
+													</container>
+													<widget pos="0,14" size="820x31" type="*widget.Label">
+														<widget size="820x31" type="*widget.RichText">
+															<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
+														</widget>
 													</widget>
-												</widget>
-											</container>
+												</container>
+											</widget>
 										</container>
 									</container>
 								</container>

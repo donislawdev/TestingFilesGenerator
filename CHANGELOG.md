@@ -31,6 +31,16 @@ because it turns other people's test suites red.
 - The answer in the README about slow runs on Windows said the cost was the
   antivirus opening each file. That was wrong, and it is corrected.
 
+- In the window, the form no longer shifts under the pointer when a run has
+  more than one line to say. The bar at the foot keeps one height now and a
+  longer message scrolls inside it, instead of growing and pushing every field
+  upward at the moment you are reading the buttons.
+
+- What a run says now comes above the notes about settings you did not fill in,
+  rather than below them. With the bar keeping one height, the first line is
+  the one you are sure to see, and "7 files written." is more use there than a
+  note explaining a default.
+
 ## [0.1.0] - 2026-08-20
 
 Initial release.
