@@ -175,7 +175,7 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 		if !is || label.Text != words {
 			return
 		}
-		found, ok = band{X: at.X, Y: at.Y, Height: o.Size().Height}, true
+		found, ok = band{X: at.X, Y: at.Y, Width: o.Size().Width, Height: o.Size().Height}, true
 	})
 	return found, ok
 }
@@ -207,13 +207,13 @@ func objectBox(screen fyne.CanvasObject, target fyne.CanvasObject) (band, bool) 
 		if ok || o != target {
 			return
 		}
-		found, ok = band{X: at.X, Y: at.Y, Height: o.Size().Height}, true
+		found, ok = band{X: at.X, Y: at.Y, Width: o.Size().Width, Height: o.Size().Height}, true
 	})
 	return found, ok
 }
 
 // band is one thing on the screen, reduced to what these guards ask about.
-type band struct{ X, Y, Height float32 }
+type band struct{ X, Y, Width, Height float32 }
 
 // sectionGaps is the empty space between each pair of panels on one screen,
 // top to bottom.

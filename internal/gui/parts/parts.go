@@ -178,6 +178,38 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewGridWithColumns(len(fields), fields...)
 }
 
+// Divider is a line between two things standing side by side.
+//
+// The rail at the left of the action bar carries Donate and, on the batch
+// screen, Add a batch. Side by side in the same style they read as a pair, and
+// they are the two least related buttons in the window: one adds to the form in
+// front of you, the other hands an address to your browser. Reported in the
+// design audit of 2026-08-20 and answered here rather than by moving the
+// button, because a guard already keeps Add a batch reachable without
+// scrolling and putting it under the last batch would break exactly that.
+//
+// A separator from the palette at the width of a stroke, so it reads as a
+// boundary rather than as a third control.
+func Divider() fyne.CanvasObject {
+	line := canvas.NewRectangle(PaletteColour(theme.ColorNameSeparator, theme.VariantDark))
+	line.SetMinSize(fyne.NewSize(1, 0))
+	return container.New(dividerLayout{}, line)
+}
+
+// dividerLayout keeps the line one pixel wide and gives it room on either side.
+type dividerLayout struct{}
+
+func (dividerLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	return fyne.NewSize(1+theme.Padding()*4, 0)
+}
+
+func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(1, size.Height))
+		o.Move(fyne.NewPos(theme.Padding()*2, 0))
+	}
+}
+
 // ActionBar is the strip that stays put while the form scrolls under it.
 //
 // On a surface of its own rather than floating, and that is not decoration:

@@ -723,7 +723,10 @@
 																<text alignment="center" bold size="51x19">Donate</text>
 															</widget>
 														</widget>
-														<widget pos="69,0" size="94x32" type="*widget.Button">
+														<container pos="69,0" size="25x32">
+															<rectangle fillColor="separator" pos="12,0" size="1x32"/>
+														</container>
+														<widget pos="100,0" size="94x32" type="*widget.Button">
 															<rectangle fillColor="button" radius="5" size="94x32"/>
 															<rectangle size="94x32"/>
 															<widget pos="6,6" size="82x19" type="*widget.RichText">

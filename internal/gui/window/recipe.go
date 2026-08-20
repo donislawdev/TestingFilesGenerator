@@ -145,7 +145,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), r.addBtn}, links...)...),
+		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
 			r.actions(), r.progress(), r.problem.Object()),
 		nil, nil,
 		r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox))),
