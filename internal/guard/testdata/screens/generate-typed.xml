@@ -25,9 +25,9 @@
 						<container size="1088x1250">
 							<container size="1088x1250">
 								<container size="1088x1250">
-									<widget size="1088x1136" type="*widget.Scroll">
-										<container size="1088x1136">
-											<container pos="134,0" size="820x1136">
+									<widget size="1088x1148" type="*widget.Scroll">
+										<container size="1088x1148">
+											<container pos="134,0" size="820x1148">
 												<container size="820x39">
 													<widget pos="6,0" size="808x39" type="*widget.Label">
 														<widget size="808x39" type="*widget.RichText">
@@ -429,13 +429,13 @@
 											</container>
 										</container>
 									</widget>
-									<container pos="0,1142" size="1088x107">
-										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x107" strokeColor="separator" strokeWidth="1"/>
-										<container size="1088x107">
-											<container pos="6,6" size="1076x95">
-												<container size="1076x95">
-													<container pos="128,0" size="820x95">
-														<container pos="6,6" size="808x83">
+									<container pos="0,1154" size="1088x95">
+										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x95" strokeColor="separator" strokeWidth="1"/>
+										<container size="1088x95">
+											<container pos="6,6" size="1076x83">
+												<container size="1076x83">
+													<container pos="128,0" size="820x83">
+														<container pos="6,0" size="808x83">
 															<container size="808x32">
 																<spacer size="329x32"/>
 																<widget pos="329,0" size="67x32" type="*widget.Button">
@@ -470,7 +470,7 @@
 														</container>
 													</container>
 												</container>
-												<container size="1076x95">
+												<container size="1076x83">
 													<container size="1076x32">
 														<widget size="63x32" type="*widget.Button">
 															<rectangle fillColor="button" radius="5" size="63x32"/>

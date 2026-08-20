@@ -209,7 +209,7 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	// rather than at its content. The status line and every field name on the
 	// screen above it were 6 px apart, which is the distance that reads as a
 	// mistake rather than as an indent.
-	column := container.New(readableWidth{}, container.NewPadded(container.NewVBox(content...)))
+	column := container.New(readableWidth{}, Indented(container.NewVBox(content...)))
 	standing := fyne.CanvasObject(column)
 	if rail != nil {
 		// Laid over the column rather than beside it. Sharing the row, the rail

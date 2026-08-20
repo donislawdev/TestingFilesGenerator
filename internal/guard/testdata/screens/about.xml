@@ -80,7 +80,7 @@
 										<container pos="6,6" size="1076x32">
 											<container size="1076x32">
 												<container pos="128,0" size="820x32">
-													<container pos="6,6" size="808x20">
+													<container pos="6,0" size="808x32">
 													</container>
 												</container>
 											</container>

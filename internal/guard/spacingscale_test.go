@@ -293,6 +293,12 @@ func atAbsolute(root fyne.CanvasObject, visit func(fyne.CanvasObject, fyne.Posit
 			for _, item := range v.Items {
 				step(item.Content, at)
 			}
+		case *container.ThemeOverride:
+			// Every screen is wrapped in one of these since 2026-08-20. A walk
+			// that stops here reports a screen with nothing on it, and three
+			// guards using this helper failed with "no such field" rather than
+			// with anything about what they were asking.
+			step(v.Content, at)
 		}
 	}
 	step(root, fyne.NewPos(0, 0))
