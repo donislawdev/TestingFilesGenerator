@@ -247,3 +247,45 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 
 // settingLabelOf is what the label above a declared setting reads.
 func settingLabelOf(p format.Property) string { return text.SettingLabel(p.Name) }
+
+// Two narrow settings share a row, on both screens that draw them.
+//
+// Two boxes for a number stacked one above the other cost a row of height each
+// and leave two thirds of the panel empty beside them. Measured on 2026-08-20:
+// pairing them took the batch screen from 1259 px to 1173.
+//
+// Both screens, because the width went into one of them first and the other
+// kept drawing full width boxes until the next commit - and then the pairing
+// went into one of them first as well. It is the same declaration drawn by two
+// pieces of code, so it is the same defect waiting twice.
+func TestTwoNarrowSettingsShareARowOnEveryScreenThatDrawsThem(t *testing.T) {
+	ourTheme(t)
+	content, _ := laidOutWindow(t)
+
+	for _, tab := range []string{text.TabOneTarget, text.TabRecipe} {
+		t.Run(tab, func(t *testing.T) {
+			screen := tabContent(t, content, tab)
+
+			picker, ok := controlUnder(screen, text.FieldFormat).(*parts.Chooser)
+			if !ok {
+				t.Fatal("this screen has no format list, so this guard read the wrong tree")
+			}
+			// A format declaring two narrow settings and nothing else between
+			// them, so "same row" is a question this can ask at all.
+			picker.SetSelected("bmp")
+
+			width, ok := labelBox(screen, text.SettingLabel("width"))
+			if !ok {
+				t.Fatal("bmp declares width and no label on this screen says so")
+			}
+			height, ok := labelBox(screen, text.SettingLabel("height"))
+			if !ok {
+				t.Fatal("bmp declares height and no label on this screen says so")
+			}
+			if off := width.Y - height.Y; off > 1 || off < -1 {
+				t.Errorf("width sits at %.0f px and height at %.0f px, so two boxes holding four digits each "+
+					"take a row of the form apiece", width.Y, height.Y)
+			}
+		})
+	}
+}

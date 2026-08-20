@@ -186,20 +186,3 @@ func allText(o fyne.CanvasObject) string {
 	})
 	return strings.Join(out, "\n")
 }
-
-// allTextExcept is every label on the screen that is not inside skip.
-func allTextExcept(o fyne.CanvasObject, skip fyne.CanvasObject) string {
-	inside := map[fyne.CanvasObject]bool{}
-	walk(skip, func(obj fyne.CanvasObject) { inside[obj] = true })
-
-	var out []string
-	walk(o, func(obj fyne.CanvasObject) {
-		if inside[obj] {
-			return
-		}
-		if l, ok := obj.(*widget.Label); ok && l.Text != "" {
-			out = append(out, l.Text)
-		}
-	})
-	return strings.Join(out, "\n")
-}

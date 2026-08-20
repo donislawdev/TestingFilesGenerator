@@ -163,20 +163,8 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 	fields := make([]PropertyField, 0, len(d.Properties))
 	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
 
-	// Narrow ones are collected as they come and laid out two to a row, so a
-	// row is only flushed when something wide arrives or the list runs out.
-	var pending []fyne.CanvasObject
-	flush := func() {
-		for len(pending) > 0 {
-			if len(pending) == 1 {
-				objects = append(objects, pending[0])
-				pending = nil
-				break
-			}
-			objects = append(objects, into.Row(pending[0], pending[1]))
-			pending = pending[2:]
-		}
-	}
+	pair := PairNarrow(into.Row)
+	flush := func() { objects = append(objects, pair.rest()...) }
 
 	for _, p := range d.Properties {
 		f := FromProperty(p)
@@ -192,7 +180,7 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 		object := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(p),
 			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control))
 		if narrowOnAScreen(p) {
-			pending = append(pending, object)
+			pair.add(object)
 			continue
 		}
 		flush()
@@ -256,6 +244,50 @@ func narrowOnAScreen(p format.Property) bool {
 		return false
 	}
 }
+
+// PairNarrow lays settings two to a row where both of them are narrow.
+//
+// Two boxes for a number stacked one above the other cost a row of height each
+// and leave two thirds of the panel empty beside them. Which ones are narrow is
+// the declared kind, so nothing here names a format - and both screens that
+// draw a format's settings go through this, which is the point. The width went
+// into one of them first and the other kept drawing full width boxes for a
+// commit, which is the shape D1 comes apart in.
+func PairNarrow(row func(...fyne.CanvasObject) fyne.CanvasObject) *Pairs {
+	return &Pairs{row: row}
+}
+
+// Pairs collects narrow fields until something wide arrives or the list ends.
+type Pairs struct {
+	row     func(...fyne.CanvasObject) fyne.CanvasObject
+	pending []fyne.CanvasObject
+}
+
+func (p *Pairs) add(object fyne.CanvasObject) { p.pending = append(p.pending, object) }
+
+// Add takes one narrow field, for a caller outside this package.
+func (p *Pairs) Add(object fyne.CanvasObject) { p.add(object) }
+
+func (p *Pairs) rest() []fyne.CanvasObject {
+	var out []fyne.CanvasObject
+	for len(p.pending) > 0 {
+		if len(p.pending) == 1 {
+			out = append(out, p.pending[0])
+			p.pending = nil
+			break
+		}
+		out = append(out, p.row(p.pending[0], p.pending[1]))
+		p.pending = p.pending[2:]
+	}
+	return out
+}
+
+// Rest is everything collected so far, in rows, for a caller outside this
+// package.
+func (p *Pairs) Rest() []fyne.CanvasObject { return p.rest() }
+
+// Narrow says whether a declared setting is one this would pair.
+func Narrow(p format.Property) bool { return narrowOnAScreen(p) }
 
 // PropertyDetail is what a property takes and what it is for, in that order.
 // What it takes comes first because that is what somebody looking at an empty

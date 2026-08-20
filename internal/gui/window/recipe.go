@@ -342,15 +342,24 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) []fyne.Canva
 	}
 
 	out := []fyne.CanvasObject{parts.SettingsHeading(text.SettingsFor(b.formatPick.Selected))}
+	// The same pairing the single batch screen uses, through the same code.
+	pair := parts.PairNarrow(r.fields.Row)
 	for i, f := range b.props {
 		// Shaped here as well as on the single batch screen. The two draw the
 		// same declarations through different code, and only one of them was
 		// given the width on the first try - which is how a difference between
 		// two surfaces starts.
-		out = append(out, r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
+		object := r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
 			parts.PropertyDetail(b.declared[i]), r.tips.Say(text.SettingKey(f.Name)),
-			parts.ShapedFor(b.declared[i], f.Control)))
+			parts.ShapedFor(b.declared[i], f.Control))
+		if parts.Narrow(b.declared[i]) {
+			pair.Add(object)
+			continue
+		}
+		out = append(out, pair.Rest()...)
+		out = append(out, object)
 	}
+	out = append(out, pair.Rest()...)
 	// A rule binding two settings belongs beside them. Two number boxes drawn
 	// from a range alone would offer a pair the run then refuses.
 	if d, err := format.Get(b.formatPick.Selected); err == nil {
