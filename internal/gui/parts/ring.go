@@ -148,6 +148,9 @@ type Chooser struct {
 	// and marked says whether the mark is currently drawn. See PointerFocus.
 	from   PointerFocus
 	marked bool
+	// KindOf says what picture goes in front of a value. Nil on a menu whose
+	// values are not things of different kinds, which is most of them.
+	KindOf func(string) fyne.Resource
 	// opened is the list this menu last dropped down, and it is here for a
 	// guard: the canvas says whether a list appeared, and this says what was
 	// in it. Neither alone is worth anything - a list built correctly and never
@@ -253,6 +256,7 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 			pop.Hide()
 			c.giveBack(surface, byKeyboard)
 		})
+	list.KindOf = c.KindOf
 	pop = widget.NewPopUp(list, surface)
 	c.opened = list
 

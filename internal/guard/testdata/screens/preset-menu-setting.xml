@@ -411,55 +411,55 @@
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
 													<image pos="6,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-													<text pos="32,4" size="776x19">not stated - pdf</text>
+													<text pos="32,4" size="770x19">not stated - pdf</text>
 												</widget>
 											</widget>
 											<widget pos="0,28" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">bmp</text>
+													<text pos="32,4" size="770x19">bmp</text>
 												</widget>
 											</widget>
 											<widget pos="0,56" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">csv</text>
+													<text pos="32,4" size="770x19">csv</text>
 												</widget>
 											</widget>
 											<widget pos="0,84" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">docx</text>
+													<text pos="32,4" size="770x19">docx</text>
 												</widget>
 											</widget>
 											<widget pos="0,112" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">gif</text>
+													<text pos="32,4" size="770x19">gif</text>
 												</widget>
 											</widget>
 											<widget pos="0,140" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">html</text>
+													<text pos="32,4" size="770x19">html</text>
 												</widget>
 											</widget>
 											<widget pos="0,168" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">ico</text>
+													<text pos="32,4" size="770x19">ico</text>
 												</widget>
 											</widget>
 											<widget pos="0,196" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">jpg</text>
+													<text pos="32,4" size="770x19">jpg</text>
 												</widget>
 											</widget>
 											<widget pos="0,224" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">json</text>
+													<text pos="32,4" size="770x19">json</text>
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">

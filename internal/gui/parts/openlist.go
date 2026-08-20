@@ -96,6 +96,11 @@ type OpenList struct {
 	// Every entry is current whatever the list has scrolled past, because a
 	// recycled row is refilled before it is shown and fill is what writes here.
 	rows map[widget.ListItemID]*ListRow
+
+	// KindOf says what picture goes in front of one value, or nil for a list
+	// whose values are not things of different kinds. Set from outside, because
+	// only the screen putting values in knows what they are.
+	KindOf func(string) fyne.Resource
 }
 
 // NewOpenList builds the list. take is called with the value somebody settled
@@ -122,6 +127,10 @@ func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
 	}
 	value := l.options[id]
 	r.label = value
+	r.kind = nil
+	if l.KindOf != nil {
+		r.kind = l.KindOf(value)
+	}
 	r.marked = l.isChosen(value)
 	r.active = l.shown && id == l.active
 	r.onTap = func() { l.take(value, false) }
@@ -151,6 +160,20 @@ func (l *OpenList) Rows() []Choice {
 // drawn mark left the guard green, because the guard was reading the other
 // copy. A rule with two homes is a rule no test can pin down.
 func (l *OpenList) isChosen(value string) bool { return value == l.chosen }
+
+// DrawnRows is every row the list has actually built, for a guard that has to
+// ask what is on the screen rather than what the list holds.
+//
+// Rows above answers from the options, which is the right half for "what is in
+// this list" and the wrong half for "what does a row draw". A picture that
+// never reaches a row would pass the first and fail this one.
+func (l *OpenList) DrawnRows() []*ListRow {
+	out := make([]*ListRow, 0, len(l.rows))
+	for _, row := range l.rows {
+		out = append(out, row)
+	}
+	return out
+}
 
 // RowShowing is the row currently drawing one value, or nil if that value is
 // scrolled out of sight. For a guard that needs to press or hover a real row.

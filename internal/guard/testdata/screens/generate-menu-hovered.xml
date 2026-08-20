@@ -503,55 +503,64 @@
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
 													<image pos="6,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-													<text pos="32,4" size="776x19">bmp</text>
+													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">bmp</text>
 												</widget>
 											</widget>
 											<widget pos="0,28" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle fillColor="hover" radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">csv</text>
+													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">csv</text>
 												</widget>
 											</widget>
 											<widget pos="0,56" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">docx</text>
+													<image pos="32,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">docx</text>
 												</widget>
 											</widget>
 											<widget pos="0,84" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">gif</text>
+													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">gif</text>
 												</widget>
 											</widget>
 											<widget pos="0,112" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">html</text>
+													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">html</text>
 												</widget>
 											</widget>
 											<widget pos="0,140" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">ico</text>
+													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">ico</text>
 												</widget>
 											</widget>
 											<widget pos="0,168" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">jpg</text>
+													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">jpg</text>
 												</widget>
 											</widget>
 											<widget pos="0,196" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">json</text>
+													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">json</text>
 												</widget>
 											</widget>
 											<widget pos="0,224" size="808x28" type="*widget.listItem">
 												<widget size="808x28" type="*parts.ListRow">
 													<rectangle radius="5" size="808x28"/>
-													<text pos="32,4" size="776x19">log</text>
+													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="744x19">log</text>
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">

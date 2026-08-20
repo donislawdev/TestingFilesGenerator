@@ -214,6 +214,7 @@ func (r *Recipe) newBatch() *batch {
 	b.reason.PlaceHolder = text.PlaceholderNotStated
 
 	b.formatPick = parts.NewChooser(format.IDs(), func(id string) {
+		b.formatPick.KindOf = parts.KindOfFile
 		r.onFormatChosen(b, id)
 	})
 	return b

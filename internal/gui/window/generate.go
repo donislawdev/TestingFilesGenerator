@@ -180,6 +180,7 @@ func (g *Generate) buildFields() {
 	// is registered.
 	ids := format.IDs()
 	g.formatPick = parts.NewChooser(ids, g.onFormatChosen)
+	g.formatPick.KindOf = parts.KindOfFile
 	if len(ids) > 0 {
 		// The first rather than a favourite. Something has to be chosen, because
 		// a menu showing nothing turns the first press of Generate into a
