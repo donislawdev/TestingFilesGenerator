@@ -34,48 +34,112 @@ import (
 // run. A real run would make this guard depend on ten thousand files being
 // written while it holds a stopwatch, and it would measure the same two Show
 // calls at the end of it.
+//
+// It is asked twice per screen, and the second way is the one that carries the
+// weight. Measured on 2026-08-20 with the reserve deliberately taken out:
+//
+//	resting with a destination on the line   849 px -> 849 px   no jump
+//	resting with nothing to say              886 px -> 849 px   jumps 37 px
+//
+// So for two weeks this guard was green against a build with the reserve
+// removed, and it was green honestly - it never reached the state the reserve
+// exists for. The window proposes an output folder of its own (O102), the
+// status line carries that destination while nothing louder is there, and a
+// label with text in it never collapsed - so the case the wrapper was written
+// for stopped being the case the guard set up. Clearing the output box is what
+// puts the screen back into it: runner.sayDestination hides the line when there
+// is no destination to name, and a hidden widget takes no room in this toolkit.
+// See observation O118.
 func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
-	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
-		t.Run(tab, func(t *testing.T) {
-			content, w := screenInAWindow(t, tab)
-
-			scroll := scrollIn(content)
-			if scroll == nil {
-				t.Fatal("this screen has no scrolling area, so this guard read the wrong tree")
-			}
-			atRest := scroll.Size().Height
-			if atRest <= 0 {
-				t.Fatal("the scrolling area has no height, so this guard would pass without checking anything")
-			}
-
-			bar, status := runMessages(content)
-			if bar == nil || status == nil {
-				t.Fatal("this screen has no progress bar and status line, so this guard read the wrong tree")
-			}
-
-			// What a run says on the ordinary path: one line. A preview says
-			// what it would cost, a run in flight says how far it has got, and
-			// a run that finished says how many files it wrote.
-			status.SetText("Wrote 10000 files.")
-			status.Show()
-			bar.Show()
-
-			content.Refresh()
-			w.Resize(window.OpenSize)
-			content.Refresh()
-			w.Resize(window.OpenSize)
-
-			duringRun := scroll.Size().Height
-			if duringRun != atRest {
-				t.Errorf("the form has %.0f px at rest and %.0f px once a run is talking, so it "+
-					"jumps %.0f px under the pointer.\n"+
-					"What to do: the run's messages are wrapped in parts.WithRoomForARun, which keeps "+
-					"their height whether or not there is a run. Either that room is no longer big "+
-					"enough for what the status line says here, or the wrapper was dropped.",
-					atRest, duringRun, atRest-duringRun)
-			}
-		})
+	restingStates := []struct {
+		name          string
+		clearTheBox   bool
+		wantResting   bool
+		whyItIsWorthA string
+	}{
+		{
+			name:          "with a destination on the line",
+			whyItIsWorthA: "the ordinary path, where the status line already carries the output folder",
+		},
+		{
+			name:        "with nothing to say",
+			clearTheBox: true,
+			wantResting: true,
+			whyItIsWorthA: "the state the reserve exists for - no destination, so the line is hidden " +
+				"and costs nothing until a run speaks",
+		},
 	}
+
+	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+		for _, state := range restingStates {
+			t.Run(tab+"/"+state.name, func(t *testing.T) {
+				content, w := screenInAWindow(t, tab)
+
+				scroll := scrollIn(content)
+				if scroll == nil {
+					t.Fatal("this screen has no scrolling area, so this guard read the wrong tree")
+				}
+				bar, status := runMessages(content)
+				if bar == nil || status == nil {
+					t.Fatal("this screen has no progress bar and status line, so this guard read the wrong tree")
+				}
+
+				if state.clearTheBox {
+					box := entryUnder(t, content, text.FieldOutputDir)
+					if box == nil {
+						t.Fatalf("the %s screen has no output directory box, so this guard read the wrong tree", tab)
+					}
+					box.SetText("")
+					settle(content, w)
+				}
+
+				// Whether the line is actually hidden is asserted rather than
+				// assumed. If a later change keeps something on it at rest,
+				// this state stops being the state the reserve is for, and
+				// this guard has to say so instead of quietly measuring the
+				// other one twice - which is exactly how it went blind before.
+				if state.wantResting && status.Visible() {
+					t.Fatalf("the status line still says %q with no destination, so this guard is not in "+
+						"the state it means to check (%s)", status.Text, state.whyItIsWorthA)
+				}
+
+				atRest := scroll.Size().Height
+				if atRest <= 0 {
+					t.Fatal("the scrolling area has no height, so this guard would pass without checking anything")
+				}
+
+				// What a run says on the ordinary path: one line. A preview says
+				// what it would cost, a run in flight says how far it has got, and
+				// a run that finished says how many files it wrote.
+				status.SetText("Wrote 10000 files.")
+				status.Show()
+				bar.Show()
+				settle(content, w)
+
+				duringRun := scroll.Size().Height
+				if duringRun != atRest {
+					t.Errorf("resting %s, the form has %.0f px and once a run is talking it has %.0f px, "+
+						"so it jumps %.0f px under the pointer.\n"+
+						"What to do: the run's messages are wrapped in parts.WithRoomForARun, which keeps "+
+						"their height whether or not there is a run. Either that room is no longer big "+
+						"enough for what the status line says here, or the wrapper was dropped.",
+						state.name, atRest, duringRun, atRest-duringRun)
+				}
+			})
+		}
+	}
+}
+
+// settle lays the screen out again after something on it changed size.
+//
+// Resizing to the size the window is already at does nothing, so the two calls
+// are to a different size and back. A guard that skips this reads the size from
+// before its own change and compares it with itself.
+func settle(content fyne.CanvasObject, w fyne.Window) {
+	content.Refresh()
+	w.Resize(fyne.NewSize(window.OpenSize.Width, window.OpenSize.Height-1))
+	content.Refresh()
+	w.Resize(window.OpenSize)
 }
 
 // The room kept for a run's messages is real room, not a number that happens to
