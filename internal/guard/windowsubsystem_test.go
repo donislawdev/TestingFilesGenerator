@@ -69,6 +69,21 @@ func TestTheWindowBinaryStartsWithoutAConsole(t *testing.T) {
 		},
 	} {
 		t.Run(binary.name, func(t *testing.T) {
+			// This one has to build something, which the three other guards
+			// that shell out to the toolchain already say out loud when they
+			// cannot. tools/linux-check.py cross compiles the test binary here
+			// and carries it into a container that deliberately has no Go, so
+			// without this the whole Linux run failed on a missing toolchain
+			// rather than on anything about this tree - and said so in words
+			// that read like a defect in the product.
+			//
+			// A build that runs and fails is still fatal below. Only the
+			// absence of the toolchain is a skip, because a guard that cannot
+			// be run is not a guard that passed.
+			if _, err := exec.LookPath("go"); err != nil {
+				t.Skipf("no Go toolchain here, so nothing can be built to read a header from: %v", err)
+			}
+
 			built := filepath.Join(t.TempDir(), binary.name)
 
 			args := []string{"build"}
