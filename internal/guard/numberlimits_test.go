@@ -93,6 +93,56 @@ targets:
 	}
 }
 
+// The same number, inside a container rather than on the target.
+//
+// This is the sibling path the guard above never walked, and it was still
+// broken on 2026-08-20 - three weeks after the target path was fixed. CodeQL
+// pointed at the narrowing conversion behind it and the measurement turned it
+// from a warning into an incident: validating this recipe took the process to
+// 12.9 GB before it was killed, which is the same allocator the comment at the
+// top of this file records from 2026-08-03.
+//
+// So the lesson this test carries is not about counts. A rule enforced at one
+// place that reads a number is enforced at ONE place, and every sibling that
+// reads the same number is a separate question - `contains` had its own reader,
+// its own switch and its own missing case.
+//
+// validate rather than generate, deliberately: the refusal has to come before
+// anything is planned, and a test that produced files would be measuring a
+// later stage.
+func TestAnImpossibleFileCountInsideAContainerIsRefused(t *testing.T) {
+	dir := t.TempDir()
+	path := writeRecipe(t, dir, `version: 1
+targets:
+  - id: boom
+    format: zip
+    contains:
+      - format: txt
+        count: 9223372036854775807
+        size: 1kb
+`)
+
+	code, stdout, errOut := run(t, "validate", path)
+	if code != cli.ExitRecipe {
+		t.Errorf("exit %d, expected %d:\n%s", code, cli.ExitRecipe, errOut)
+	}
+	if !strings.Contains(errOut, "1000000") {
+		t.Errorf("the refusal does not say what the limit is:\n%s", errOut)
+	}
+	// The address matters as much as the refusal here. A container entry is one
+	// of several, so "too many files" without saying which entry sends somebody
+	// back to a list to guess.
+	if !strings.Contains(errOut, "contains") {
+		t.Errorf("the refusal does not say which part of the recipe it is about:\n%s", errOut)
+	}
+	if strings.Contains(errOut, "fatal error") || strings.Contains(errOut, "out of memory") {
+		t.Errorf("the allocator was reached instead of the check:\n%s", errOut)
+	}
+	if stdout != "" {
+		t.Errorf("a failed run wrote to stdout:\n%s", stdout)
+	}
+}
+
 // The other direction, so the fix cannot be "refuse everything". An ordinary
 // count has to keep working, and the boundary itself has to be reachable in
 // principle rather than off by one.

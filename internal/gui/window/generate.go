@@ -331,6 +331,14 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 		bad = append(bad, saying(format.SettingSize, err))
 	}
 	count, err := wholeNumber(engine.SettingCount, text.FieldCount, g.count.Text)
+	// files is what the engine is handed, and it is only ever set on the branch
+	// that has already been past the ceiling. Written this way rather than
+	// converting further down, so the bound and the narrowing sit in one
+	// expression - the same shape internal/recipe uses for the same number.
+	// Reading it out of a variable set several lines later is what left a
+	// scanner unable to see the check on 2026-08-20, and a check a reader
+	// cannot follow is worth less than one they can.
+	files := 0
 	switch {
 	case err != nil:
 		bad = append(bad, err)
@@ -345,6 +353,8 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	case count > core.MaxFilesPerRun:
 		bad = append(bad, saying(engine.SettingCount,
 			errors.New(text.TooManyFiles(count, core.ErrTooManyFiles))))
+	default:
+		files = int(count)
 	}
 	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, g.seed.Text)
 	if err != nil {
@@ -358,7 +368,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	return []engine.Target{{
 			ID:         g.id.Text,
 			Format:     g.formatPick.Selected,
-			Sizes:      engine.Uniform(int(count), bytesWanted),
+			Sizes:      engine.Uniform(files, bytesWanted),
 			NameTmpl:   g.name.Text,
 			Label:      g.label.Checked,
 			Properties: g.properties(),
