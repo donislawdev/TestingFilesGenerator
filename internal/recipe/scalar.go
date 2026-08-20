@@ -3,6 +3,8 @@ package recipe
 import (
 	"strconv"
 	"strings"
+
+	"github.com/goccy/go-yaml"
 )
 
 // scalar is one value of a recipe, kept as the text its author wrote.
@@ -56,6 +58,28 @@ func (s *scalar) UnmarshalYAML(b []byte) error {
 		first, last := t[0], t[len(t)-1]
 		if (first == '"' && last == '"') || (first == '\'' && last == '\'') {
 			s.quoted = true
+			// A quoted scalar is the one place YAML's own rules apply to the
+			// characters inside it, so it is the one place the raw text is the
+			// wrong answer. Taking the quotes off by hand leaves a backslash
+			// doubled and a \n as two characters, and the encoder quotes
+			// exactly the values that need it - so a recipe written by this
+			// tool and read back by it disagreed with itself about every
+			// Windows path.
+			//
+			// Found on 2026-08-20 by the guard that puts awkward characters
+			// through Compose and Parse and demands they come back unchanged.
+			// It fired the moment text fields started arriving here, which is
+			// what that guard is for: numbers never carry an escape, so this
+			// was invisible until they did.
+			//
+			// Plain scalars are left exactly as written, which is the whole
+			// point of this type. YAML does no escape processing on them, so
+			// there is nothing to decode and 010 stays 010.
+			var decoded string
+			if err := yaml.Unmarshal(b, &decoded); err == nil {
+				s.text = decoded
+				return nil
+			}
 			t = t[1 : len(t)-1]
 		}
 	}

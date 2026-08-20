@@ -225,30 +225,30 @@ type rawRecipe struct {
 	// YAML decide what the digits mean. See scalar.go for the five spellings
 	// this quietly got wrong before.
 	Version *scalar `yaml:"version"`
-	Engine  *string `yaml:"engine"`
+	Engine  *scalar `yaml:"engine"`
 	Seed    *scalar `yaml:"seed"`
-	Locale  *string `yaml:"locale"`
+	Locale  *scalar `yaml:"locale"`
 
 	Defaults *rawDefaults `yaml:"defaults"`
 	Targets  []rawTarget  `yaml:"targets"`
 
-	AllowNondeterministic *bool `yaml:"allow_nondeterministic"`
+	AllowNondeterministic *scalar `yaml:"allow_nondeterministic"`
 
 	Policy  map[string]any `yaml:"policy"`
-	Extends *string        `yaml:"extends"`
+	Extends *scalar        `yaml:"extends"`
 	With    map[string]any `yaml:"with"`
 
 	Output *rawOutput `yaml:"output"`
 }
 
 type rawDefaults struct {
-	Label *bool   `yaml:"label"`
-	Fill  *string `yaml:"fill"`
+	Label *scalar `yaml:"label"`
+	Fill  *scalar `yaml:"fill"`
 }
 
 type rawOutput struct {
-	Dir            *string `yaml:"dir"`
-	Manifest       *string `yaml:"manifest"`
+	Dir            *scalar `yaml:"dir"`
+	Manifest       *scalar `yaml:"manifest"`
 	SplitThreshold *scalar `yaml:"split_threshold"`
 }
 
@@ -314,12 +314,12 @@ func (raw rawRecipe) refuseUnsupported(p *problems) {
 		p.notYet("engine", "the tool version this recipe requires is not checked yet",
 			"remove the line - the manifest records the version that ran")
 	}
-	if raw.Locale != nil && *raw.Locale != "en" {
-		p.add("locale", fmt.Sprintf("locale %q is not available in this build", *raw.Locale),
+	if locale, ok := oneValue(p, "locale", "locale", "locale: en", raw.Locale); ok && locale != "en" {
+		p.add("locale", fmt.Sprintf("locale %q is not available in this build", locale),
 			"generated content is English only so far",
 			"use locale: en, or leave the line out")
 	}
-	if raw.AllowNondeterministic != nil && *raw.AllowNondeterministic {
+	if on, ok := oneFlag(p, "allow_nondeterministic", "allow_nondeterministic", raw.AllowNondeterministic); ok && on {
 		p.add("allow_nondeterministic", "allow_nondeterministic: true has nothing to allow in this build",
 			"every format here repeats to the byte, so no consent is needed",
 			"remove the line - it will be needed by the formats that use a system encoder")
@@ -362,8 +362,8 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 			p.notYet("defaults.fill", "the fill mode is not settable yet",
 				"remove the line - content is generated from the seed")
 		}
-		if raw.Defaults.Label != nil {
-			rec.Defaults.Label = *raw.Defaults.Label
+		if on, ok := oneFlag(p, "defaults.label", "defaults.label", raw.Defaults.Label); ok {
+			rec.Defaults.Label = on
 		}
 	}
 
@@ -372,11 +372,11 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 			p.notYet("output.split_threshold", "the manifest is always written as one file so far",
 				"remove the line")
 		}
-		if raw.Output.Dir != nil {
-			rec.Output.Dir = *raw.Output.Dir
+		if dir, ok := oneValue(p, "output.dir", "output.dir", "dir: ./fixtures", raw.Output.Dir); ok {
+			rec.Output.Dir = dir
 		}
-		if raw.Output.Manifest != nil {
-			rec.Output.Manifest = *raw.Output.Manifest
+		if name, ok := oneValue(p, "output.manifest", "output.manifest", "manifest: manifest.json", raw.Output.Manifest); ok {
+			rec.Output.Manifest = name
 		}
 	}
 }

@@ -580,6 +580,18 @@ The one link in the whole program is the Donate button in the window, and
 pressing it hands the address to your browser. Your browser makes that
 connection, if you ask for it. The program never opens one.
 
+### Why is a run over thousands of files slow on Windows?
+
+Because something is looking at every file as it is opened, and on Windows that
+is usually the antivirus.
+
+Measured on the same build, same machine, 3000 files of 1 kB: `verify` takes
+about 22 seconds on Windows and about 0.2 seconds on Linux in a container. The
+work is identical, so what differs is the cost of opening a file. If your
+fixtures live somewhere you can add an antivirus exclusion for, that is the
+lever - the files this tool writes are synthesised from a seed and contain
+nothing to scan.
+
 ### What if I ask for something impossible?
 
 You get an error saying why, with a suggestion, and no file. Silence and silent

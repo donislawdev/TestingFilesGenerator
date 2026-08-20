@@ -121,10 +121,10 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 }
 
 type rawTarget struct {
-	ID     *string `yaml:"id"`
-	Format *string `yaml:"format"`
+	ID     *scalar `yaml:"id"`
+	Format *scalar `yaml:"format"`
 	Count  *scalar `yaml:"count"`
-	Name   *string `yaml:"name"`
+	Name   *scalar `yaml:"name"`
 	Label  *bool   `yaml:"label"`
 
 	// Size accepts what a person writes: 2mb as text, or a plain byte count
@@ -133,13 +133,13 @@ type rawTarget struct {
 
 	Properties map[string]scalar `yaml:"properties"`
 	Expected   any               `yaml:"expected"`
-	Group      *string           `yaml:"group"`
+	Group      *scalar           `yaml:"group"`
 
 	Boundary  *scalar             `yaml:"boundary"`
 	SizeRange *scalar             `yaml:"size-range"`
 	Contains  []map[string]scalar `yaml:"contains"`
 	Mutations []map[string]any    `yaml:"mutations"`
-	Fill      *string             `yaml:"fill"`
+	Fill      *scalar             `yaml:"fill"`
 }
 
 // DefaultCount is how many files a target produces when it does not say.
@@ -154,8 +154,8 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	count := DefaultCount
 
 	where := targetSpot(index, "")
-	if rt.ID != nil && *rt.ID != "" {
-		t.ID = *rt.ID
+	if id, ok := oneValue(p, where.of("id"), where.String()+" id", "id: invoices", rt.ID); ok && id != "" {
+		t.ID = id
 		where = targetSpot(index, t.ID)
 	} else {
 		p.add(where.of("id"), fmt.Sprintf("%s has no id", where),
@@ -163,12 +163,13 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 			"give it an id, for example id: invoices")
 	}
 
-	if rt.Format == nil || *rt.Format == "" {
+	format, formatGiven := oneValue(p, where.of("format"), where.String()+" format", "format: txt", rt.Format)
+	if !formatGiven || format == "" {
 		p.add(where.of("format"), fmt.Sprintf("%s has no format", where),
 			"a target has to say what kind of file it produces",
 			"add format: txt, or run \"tfg formats\" to see the whole list")
 	} else {
-		t.Format = *rt.Format
+		t.Format = format
 	}
 
 	if rt.Count != nil {
@@ -200,16 +201,16 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	}
 	rt.resolveSize(p, where, count, &t)
 
-	if rt.Name != nil {
-		t.Name = *rt.Name
+	if name, ok := oneValue(p, where.of("name"), where.String()+" name", "name: invoice_{index:04}.pdf", rt.Name); ok {
+		t.Name = name
 	}
 	if rt.Label != nil {
 		t.Label = *rt.Label
 	}
 
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
-	if rt.Group != nil {
-		t.Group = *rt.Group
+	if group, ok := oneValue(p, where.of("group"), where.String()+" group", "group: invoices", rt.Group); ok {
+		t.Group = group
 	}
 	t.Properties = properties(p, where, rt.Properties)
 	return t
