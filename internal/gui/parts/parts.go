@@ -266,33 +266,6 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 // 2026-08-19: the bar was 31 px and the line under it another 31.
 const SlimHeight = 8
 
-// Slim draws a control at SlimHeight, whatever height it asks for.
-//
-// A layout may resize a child below its minimum. Only the minimum this
-// container reports for itself is what the form above it has to give up.
-func Slim(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.New(slim{}, o)
-}
-
-type slim struct{}
-
-func (slim) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	size := fyne.NewSize(0, SlimHeight)
-	for _, o := range objects {
-		if width := o.MinSize().Width; width > size.Width {
-			size.Width = width
-		}
-	}
-	return size
-}
-
-func (slim) Layout(objects []fyne.CanvasObject, size fyne.Size) {
-	for _, o := range objects {
-		o.Resize(fyne.NewSize(size.Width, SlimHeight))
-		o.Move(fyne.NewPos(0, 0))
-	}
-}
-
 // Screen stacks sections with a heading on top.
 //
 // Windows compose sections rather than laying themselves out in one function.
@@ -585,11 +558,16 @@ func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
 	// "Ag" is this project's measuring sample - an ascender and a descender,
 	// so the line is as tall as a line ever gets. It is never drawn.
 	//
-	// The track is measured through Slim for the same reason the rest is
-	// measured at all: a reserve is only right while it matches what a run
-	// actually puts here, and a reserve left at the toolkit's own height would
-	// have kept all 23 px the slim track gave back.
-	sample := container.NewVBox(Slim(widget.NewProgressBar()), widget.NewLabel("Ag"))
+	// Measured against the control the screen really puts here, which is the
+	// whole reason this sample exists: a reserve is only right while it matches
+	// what a run actually draws.
+	//
+	// It was the toolkit's bar in a wrapper that forced it to 8 px until
+	// 2026-08-20, and the answer was right by coincidence - the wrapper and our
+	// own track name the same constant. The mutation runner is what said so:
+	// taking the wrapper off the bar on the screen broke nothing, because our
+	// track had stopped needing it.
+	sample := container.NewVBox(NewProgress(), widget.NewLabel("Ag"))
 
 	// Scrolled rather than clipped, and vertical only - a status line that
 	// scrolled sideways would hide the start of its own sentence.

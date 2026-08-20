@@ -218,12 +218,12 @@ func settle(content fyne.CanvasObject, w fyne.Window) {
 // a line of label together, which is what it exists to hold.
 func TestTheRoomKeptForARunHoldsTheBarAndALine(t *testing.T) {
 	held := parts.WithRoomForARun(container.NewVBox()).MinSize().Height
-	// The track is measured wrapped, because wrapped is how the screen puts it
-	// there. Measured bare, this asked for the toolkit's own 31 px and would
-	// have failed a reserve that is right - which is a guard reporting a defect
-	// in itself.
+	// The track our own screen puts here, not the toolkit's. It used to be the
+	// toolkit's inside a wrapper that forced its height, and both answered 8 px
+	// - so this was right by coincidence rather than because it was measuring
+	// what a run draws.
 	needed := container.NewVBox(
-		parts.Slim(widget.NewProgressBar()), widget.NewLabel("one")).MinSize().Height
+		parts.NewProgress(), widget.NewLabel("one")).MinSize().Height
 
 	if held < needed {
 		t.Errorf("the bar keeps %.0f px for a run's messages and they need %.0f px, so the form "+

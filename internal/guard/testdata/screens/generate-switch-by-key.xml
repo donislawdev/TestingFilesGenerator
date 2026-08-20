@@ -452,9 +452,7 @@
 															<container pos="0,38" size="808x45">
 																<widget size="808x45" type="*widget.Scroll">
 																	<container size="808x45">
-																		<container size="808x8">
-																		</container>
-																		<widget pos="0,14" size="808x31" type="*widget.Label">
+																		<widget size="808x31" type="*widget.Label">
 																			<widget size="808x31" type="*widget.RichText">
 																				<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
 																			</widget>

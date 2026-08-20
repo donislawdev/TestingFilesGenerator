@@ -470,7 +470,7 @@ func rail(items ...fyne.CanvasObject) fyne.CanvasObject {
 // progress is where a run says what it is doing, and it keeps its height
 // whether or not there is a run. See parts.WithRoomForARun for why.
 func (r *runner) progress() fyne.CanvasObject {
-	return parts.WithRoomForARun(container.NewVBox(parts.Slim(r.bar), r.status))
+	return parts.WithRoomForARun(container.NewVBox(r.bar, r.status))
 }
 
 // onPreview says what the run would cost and writes nothing.
