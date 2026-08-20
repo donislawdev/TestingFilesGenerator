@@ -317,8 +317,81 @@ jobs:
         # sentence. Zero findings with the config in place.
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.7.0 ./...
 
+  touched:
+    name: what this push touched
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      concurrency: ${{ steps.look.outputs.concurrency }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The comparison needs the earlier commit, and the default checkout
+          # fetches one.
+          fetch-depth: 0
+
+      - name: did anything concurrent change
+        id: look
+        # The three files concurrency is allowed to live in are not a guess.
+        # They are the map in internal/guard/concurrency_test.go, and a fourth
+        # file growing a goroutine turns that guard red before it gets here - so
+        # this list cannot quietly fall behind the tree.
+        #
+        # go.mod is watched as well. A toolchain or dependency change can alter
+        # what the detector sees even when none of our own lines moved.
+        #
+        # Anything unclear counts as touched. A first push, a branch with no
+        # comparable parent, a pull request event with no before - all answer
+        # true, because the cost of running the detector when it was not needed
+        # is ten minutes and the cost of skipping it when it was is a data race
+        # in somebody else's file.
+        run: |
+          set -euo pipefail
+          watched='internal/format/registry.go cmd/tfg/main.go internal/gui/window/run.go go.mod'
+          before="${{ github.event.before }}"
+          if [ -z "$before" ] \
+            || [ "$before" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "${before}^{commit}" 2>/dev/null
+          then
+            echo "no earlier commit to compare against, so this counts as touched"
+            echo "concurrency=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed="$(git diff --name-only "$before" "${{ github.sha }}")"
+          echo "changed in this push:"
+          echo "$changed"
+
+          hit=false
+          for f in $watched; do
+            if printf '%s\n' "$changed" | grep -qx "$f"; then
+              echo "  -> $f is one of the files the race detector is for"
+              hit=true
+            fi
+          done
+          echo "concurrency=$hit" >> "$GITHUB_OUTPUT"
+        shell: bash
+
   race:
     name: race detector
+    needs: touched
+    # Not on every push, decided on 2026-08-20 after the owner asked what it was
+    # costing. Measured that day: 10m31s on the runner, against about a minute
+    # for the whole matrix - so it was the longest thing in the run by a factor
+    # of ten, on every push, including the ones that only touched a document.
+    #
+    # What makes that safe to change rather than a corner cut: concurrency in
+    # this tree is confined to three files by a guard that fails if a fourth
+    # grows a goroutine. A push that does not touch them cannot introduce a race
+    # for this to find, so running it there bought nothing.
+    #
+    # Three ways in now. A push that touches one of those files, the weekly
+    # sweep that fuzzing already uses, and by hand. The weekly run is what
+    # catches a race that arrives through a dependency rather than through us.
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      needs.touched.outputs.concurrency == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:

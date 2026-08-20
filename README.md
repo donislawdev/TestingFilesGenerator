@@ -2,10 +2,14 @@
 
 **Generate test files for QA, and know how the system under test should react to them.**
 
-[![Licence: GPL v3](https://img.shields.io/badge/licence-GPL--3.0-blue.svg)](LICENSE)
-[![Go](https://img.shields.io/badge/go-1.26%2B-00ADD8.svg)](https://go.dev)
-[![Platforms](https://img.shields.io/badge/platforms-windows%20%7C%20macos%20%7C%20linux-lightgrey.svg)](https://github.com/donislawdev/TestingFilesGenerator/releases)
+[![Download](https://img.shields.io/github/v/release/donislawdev/TestingFilesGenerator?label=download&color=2ea043&logo=github&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 [![CI](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml/badge.svg)](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml)
+[![Licence](https://img.shields.io/badge/licence-GPL--3.0-A42E2B?logo=gnu&logoColor=white)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white)](https://go.dev)
+
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 
 A free, open source tool that creates **real test files** - PDF, PNG, JPG, ZIP,
 DOCX, XLSX and fourteen more - at **any exact size you ask for**. It also writes
