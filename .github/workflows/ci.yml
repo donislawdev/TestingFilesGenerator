@@ -197,21 +197,27 @@ jobs:
       - name: build the command line binary
         run: go build ./cmd/tfg
 
-      - name: build the window binary without a C toolchain
+      - name: build the window binary
         # The toolkit arrived on 2026-08-05 and this step still passes, which
         # is the point of how it was wired in. Reaching the toolkit's app
         # package needs CGO and, on Linux, X11 development headers no runner
         # carries by default - so that one file sits behind a cgo build tag and
         # everything building a widget tree sits outside it.
         #
-        # CGO_ENABLED is 0 for this job, so this proves the tree still compiles
-        # where there is no compiler and no graphics. The tests go further:
-        # they render a screen to an image and read it, also with CGO off.
+        # On Linux and Windows CGO_ENABLED is 0, so this proves the tree still
+        # compiles where there is no compiler and no graphics. The tests go
+        # further: they render a screen to an image and read it, also with CGO
+        # off.
         #
-        # What it does NOT prove is that the windowed binary links, because
-        # that build needs a C compiler per platform and is done natively -
-        # docs/STACK.md section 4.4. Naming the gap beats implying it is
-        # covered.
+        # On macOS it proves something else, and better - the windowed binary
+        # actually LINKS. That runner has CGO on because the toolkit cannot be
+        # type checked on darwin without it, so the build here is the real one.
+        # Which closes half of the gap this comment used to name: linking was
+        # done natively and nowhere but on the owner's machine.
+        #
+        # The flags below are Windows only. -H windowsgui names a Windows
+        # subsystem, and handing it to the darwin linker is what turned this
+        # step red on 2026-08-20 the moment macOS gained a C toolchain.
         #
         # The linker flags come from the file rather than from this line, so
         # that the release build and this one cannot drift apart. The file is
@@ -220,7 +226,14 @@ jobs:
         # it decides from one number in the PE header - and that number is what
         # the guard reads, out of a binary it builds rather than out of this
         # command.
-        run: go build -ldflags="$(cat .github/gui-ldflags)" ./cmd/tfg-gui
+        run: |
+          set -euo pipefail
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            go build -ldflags="$(cat .github/gui-ldflags)" ./cmd/tfg-gui
+          else
+            go build ./cmd/tfg-gui
+          fi
+        shell: bash
 
   govulncheck:
     name: known vulnerabilities

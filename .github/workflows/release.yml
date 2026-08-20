@@ -106,13 +106,28 @@ jobs:
           version="${{ needs.check.outputs.version }}"
           mkdir -p dist
 
+          # Go calls it darwin and almost nobody else does. The name on a
+          # download is read by somebody deciding whether it is the file for
+          # their machine, and "darwin" asks them to already know - the owner's
+          # point on 2026-08-20. The GOOS stays darwin, because that is what
+          # the compiler is told. Only the label a person reads changes.
+          friendly() {
+            case "$1" in
+              darwin) echo "macos" ;;
+              *) echo "$1" ;;
+            esac
+          }
+
+          # No darwin/amd64. Intel Macs are not supported, decided by the owner
+          # on 2026-08-20 - Apple silicon only.
           for target in \
             windows/amd64 windows/arm64 \
             linux/amd64 linux/arm64 \
-            darwin/amd64 darwin/arm64
+            darwin/arm64
           do
             os="${target%/*}"
             arch="${target#*/}"
+            label="$(friendly "$os")"
 
             work="$(mktemp -d)"
             binary="tfg"
@@ -131,7 +146,7 @@ jobs:
             # and nothing else.
             cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
 
-            base="tfg_${version}_${os}_${arch}"
+            base="tfg_${version}_${label}_${arch}"
             if [ "$os" = "windows" ]; then
               (cd "${work}" && zip -q -r "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
             else
@@ -162,13 +177,11 @@ jobs:
         os:
           - windows-latest
           - ubuntu-latest
-          # macos-latest is Apple silicon. The Intel label is listed separately
-          # by actions/runner-images and is the only one in this file whose
-          # availability to this account has not been tried yet - if it turns
-          # out not to be offered, drop the line and the Intel Mac keeps the
-          # command line binary, which is cross compiled above.
+          # Apple silicon only. macos-26-intel was here for one release and was
+          # measured working, so this is a decision rather than a limitation:
+          # the owner does not support Intel Macs, so nothing is built for them
+          # and nothing pretends to be.
           - macos-latest
-          - macos-26-intel
     env:
       # The window reaches OpenGL through C, so this one cannot be cross
       # compiled the way the command line binary is. Each system builds its
@@ -206,6 +219,15 @@ jobs:
           version="${{ needs.check.outputs.version }}"
           os="$(go env GOOS)"
           arch="$(go env GOARCH)"
+          # Same rename as the command line archives above, and for the same
+          # reason: darwin is what the compiler is told, macos is what a person
+          # recognises on a download page.
+          # if rather than a && chain: under set -e a false test would end the
+          # step, and it would end it on every system that is not macOS.
+          label="$os"
+          if [ "$os" = "darwin" ]; then
+            label="macos"
+          fi
           work="$(mktemp -d)"
           mkdir -p dist
 
@@ -222,7 +244,7 @@ jobs:
 
           cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
 
-          base="tfg-gui_${version}_${os}_${arch}"
+          base="tfg-gui_${version}_${label}_${arch}"
           if [ "$os" = "windows" ]; then
             (cd "${work}" && 7z a -tzip -bso0 "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
           else

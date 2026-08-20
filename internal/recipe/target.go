@@ -75,6 +75,19 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 				p.add(at.of("count"), fmt.Sprintf("%s has a negative count", at),
 					"a container cannot hold fewer than no files",
 					"use count: 0 for a group that contributes nothing, or drop the entry")
+			// The same ceiling the count of a target gets, and for the same
+			// reason - judged before the list is built, because building it is
+			// the failure. It was missing here until 2026-08-20, when CodeQL
+			// pointed at the conversion below and the measurement behind it
+			// turned out to be real rather than theoretical: one entry asking
+			// for 2^63-1 files took this process to 12.9 GB and had to be
+			// killed. The target path had been refusing that number since
+			// 2026-08-03 and this path never learned it.
+			case n > core.MaxFilesPerRun:
+				p.add(at.of("count"), fmt.Sprintf("%s asks for %d files", at, n),
+					core.ErrTooManyFiles.Error(),
+					fmt.Sprintf("use a count of %d or less, or split the container across several entries",
+						core.MaxFilesPerRun))
 			default:
 				g.Count = int(n)
 			}

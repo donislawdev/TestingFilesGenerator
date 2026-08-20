@@ -78,6 +78,17 @@ func privateFaults(text string) []string {
 			// this project's own commit trailers carry one.
 			case p.name == "an e-mail address" && strings.Contains(strings.ToLower(m[0]), "noreply"):
 				continue
+			// The address in Dependabot's own footer, published by GitHub on
+			// every such commit in the world. It arrived on 2026-08-20 with the
+			// first two update branches and it is the same class as the no-reply
+			// above: a service, not a person, and not the owner's.
+			//
+			// This one had to be settled BEFORE those branches were merged. A
+			// commit message cannot be edited once it is in the history without
+			// rewriting it, so merging first would have left a guard that fails
+			// on main for ever and a rule nobody could obey.
+			case p.name == "an e-mail address" && strings.EqualFold(m[0], "support@github.com"):
+				continue
 			}
 			out = append(out, p.name+": "+m[0])
 		}
