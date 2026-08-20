@@ -81,10 +81,10 @@ func TestTheMarkGoesWhenTheValueIsFixed(t *testing.T) {
 // left undone the last time a refusal moved.
 func TestTheBoxARefusalIsAboutIsMarkedOnThePresetScreenToo(t *testing.T) {
 	_, content := presetScreen(t)
-	fill(t, content, "limit", "512")
+	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")
 
-	marked := edgeOf(t, content, "limit")
+	marked := edgeOf(t, content, text.SettingLabel("limit"))
 	if marked.StrokeWidth <= 0 {
 		t.Error("the limit was refused and its box draws no edge")
 	}
@@ -138,19 +138,19 @@ func TestTheMenuTheKeyboardIsInDrawsALine(t *testing.T) {
 // A refusal outranks the keyboard, because one of the two stops the run.
 func TestARefusedBoxStaysRedWhileTheKeyboardIsInIt(t *testing.T) {
 	_, content := presetScreen(t)
-	fill(t, content, "limit", "512")
+	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")
 
-	picker, ok := controlUnder(content, "format").(*parts.Chooser)
+	picker, ok := controlUnder(content, text.SettingLabel("format")).(*parts.Chooser)
 	if !ok {
-		t.Fatalf("the format setting of the preset is %T rather than a menu", controlUnder(content, "format"))
+		t.Fatalf("the format setting of the preset is %T rather than a menu", controlUnder(content, text.SettingLabel("format")))
 	}
 	// The keyboard arrives somewhere else entirely, so this is about the box
 	// that was refused rather than about the one being used.
 	picker.FocusGained()
 	defer picker.FocusLost()
 
-	marked := edgeOf(t, content, "limit")
+	marked := edgeOf(t, content, text.SettingLabel("limit"))
 	if want := parts.PaletteColour(theme.ColorNameError, theme.VariantDark); !sameColour(marked.StrokeColor, want) {
 		t.Errorf("the refused limit is drawn %v rather than in the error colour", marked.StrokeColor)
 	}

@@ -236,7 +236,7 @@ func screenScenes() []screenScene {
 		}},
 		{name: "preset", tab: text.TabPresets},
 		{name: "preset-refused", tab: text.TabPresets, set: func(t *testing.T, s scene) {
-			fillField(t, s.tab, "limit", "512")
+			fillField(t, s.tab, text.SettingLabel("limit"), "512")
 			pressNamed(t, s.tab, text.ButtonPreview)
 		}},
 		// Both lists on this screen, neither of which had ever been opened by
@@ -253,7 +253,7 @@ func screenScenes() []screenScene {
 		// kind of declaration as a format's own settings, and landing somewhere
 		// else on the form.
 		{name: "preset-menu-setting", tab: text.TabPresets, after: func(t *testing.T, s scene) {
-			menuUnder(t, s.tab, "format").Tapped(&fyne.PointEvent{})
+			menuUnder(t, s.tab, text.SettingLabel("format")).Tapped(&fyne.PointEvent{})
 		}},
 
 		// The recipe screen, which arrived on 2026-08-18. It has states neither

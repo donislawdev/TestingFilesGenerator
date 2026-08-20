@@ -3,7 +3,7 @@ package guard
 import (
 	"testing"
 
-	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -55,8 +55,22 @@ func TestTheActionBarStillReservesRoomForARun(t *testing.T) {
 	app.Settings().SetTheme(parts.Theme())
 	t.Cleanup(func() { test.NewApp() })
 
-	empty := parts.WithRoomForARun(fyne.CanvasObject(widget.NewLabel(""))).MinSize().Height
-	if empty <= 0 {
-		t.Error("the wrapper that keeps room for a run reserves nothing, so the form moves when a run starts")
+	// A HIDDEN child, which is the whole point: a hidden widget costs no height
+	// in this toolkit, so the bar shrinks the moment a run stops talking and
+	// grows the moment it starts. What the wrapper does is hold that room open.
+	//
+	// The first version of this asked an empty label instead, and an empty
+	// label is still a label - it has a height of its own, so the wrapper
+	// could be removed entirely and the guard stayed green. Caught by the
+	// mutation runner.
+	quiet := widget.NewLabel("")
+	quiet.Hide()
+
+	bare := container.NewVBox(quiet).MinSize().Height
+	held := parts.WithRoomForARun(container.NewVBox(quiet)).MinSize().Height
+
+	if held <= bare {
+		t.Errorf("a bar with nothing to say asks for %.1f px and the same thing unwrapped asks for %.1f px,"+
+			" so no room is being held open and the form moves when a run starts", held, bare)
 	}
 }

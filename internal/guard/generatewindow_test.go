@@ -232,7 +232,21 @@ func TestTheWindowAsksTheEngineWhetherASizeIsGood(t *testing.T) {
 		if want == nil {
 			t.Fatalf("%q was supposed to be a size the engine refuses", bad)
 		}
-		if shown := errorShown(t, content); shown != want.Error() {
+		// Compared without regard to case, since 2026-08-20, and that is a
+		// narrow thing to give up rather than a loosening.
+		//
+		// The window names the box the way the screen names it - the label
+		// above it rather than the key a recipe writes - so a refusal about the
+		// size begins "Size" where the engine wrote "size". That is the ONE
+		// word this window is allowed to change, in a message the engine still
+		// wrote every other word of.
+		//
+		// What this guard is for survives whole. A window with its own idea of
+		// what a size looks like would produce a different sentence rather than
+		// a differently capitalised one, and would go on to accept or refuse
+		// something the command line does not - which is the thing that cannot
+		// be seen from outside any other way.
+		if shown := errorShown(t, content); !strings.EqualFold(shown, want.Error()) {
 			t.Errorf("for size %q the window says\n  %s\nand the engine says\n  %s", bad, shown, want)
 		}
 	}
@@ -439,8 +453,8 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	fill(t, content, text.FieldTargetID, "shot")
 	fill(t, content, text.FieldNameTemplate, "shot_{index:04}.png")
 	fill(t, content, text.FieldSeed, "4242")
-	fill(t, content, "width", "64")
-	fill(t, content, "height", "64")
+	fill(t, content, text.SettingLabel("width"), "64")
+	fill(t, content, text.SettingLabel("height"), "64")
 
 	// The label is on by default, so turning it off is the change worth making.
 	//

@@ -6,8 +6,11 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // The window says everything it says from one package, and this is what keeps
@@ -142,6 +145,25 @@ func TestTheWindowSaysNothingItDoesNotSayFromTheTextPackage(t *testing.T) {
 			checked++
 			if _, excused := notWords[lit.Value]; excused || lit.Value == `""` {
 				return true
+			}
+			// A registered format id is a contract key rather than a word.
+			//
+			// A rule instead of twenty entries in the list above, added
+			// 2026-08-20 with the table that sorts every format into a kind of
+			// file for the menu. The ids are the same strings a recipe writes
+			// and "tfg formats" prints - untouchable rule 10 - so translating
+			// one would break somebody's recipe rather than help them read the
+			// screen.
+			//
+			// Narrower than excusing the file it appears in, which was the
+			// other way of doing this: a real word typed into that table is
+			// still caught, and the ids in it are already compared against the
+			// registry by TestEveryRegisteredFormatHasAKind - so a wrong one is
+			// caught there rather than being quietly excused here.
+			if id, err := strconv.Unquote(lit.Value); err == nil {
+				if _, known := format.Get(id); known == nil {
+					return true
+				}
 			}
 			t.Errorf("%s:%d holds %s where a person can read it.\n"+
 				"Text somebody reads belongs in internal/gui/text, because D9 gives this surface "+

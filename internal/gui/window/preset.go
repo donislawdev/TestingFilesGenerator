@@ -174,11 +174,17 @@ func (p *Preset) onPresetChosen(id string) {
 	for _, param := range settings {
 		field := parts.FromProperty(param)
 		p.params = append(p.params, field)
-		// One sentence and nothing held back, the same as a format's settings:
-		// what a parameter takes is built from its declaration, so there is no
-		// second half to put behind a button.
-		p.paramBox.Add(p.fields.Add(param.Name, param.Name, detailOfParameter(param),
-			parts.NoDetail, field.Control))
+		// Labelled and shaped the way a format's own settings are. A preset
+		// declares its parameters as the same type and they were the third
+		// place drawing them, so they carried limit and spread as labels while
+		// every other name on the screen was written out - and their boxes ran
+		// the width of the panel for a size.
+		//
+		// The key a recipe writes goes behind the button, which is what makes
+		// the label a translation rather than a loss.
+		p.paramBox.Add(p.fields.Add(param.Name, text.SettingLabel(param.Name),
+			detailOfParameter(param), p.tips.Say(text.SettingKey(param.Name)),
+			parts.ShapedFor(param, field.Control)))
 	}
 	p.paramBox.Refresh()
 }

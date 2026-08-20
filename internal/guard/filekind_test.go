@@ -36,8 +36,8 @@ func TestThePresetScreenCanBuildTheSetInAnyFormat(t *testing.T) {
 
 	host, content := presetScreen(t)
 	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, "limit", "2mb")
-	choose(t, content, "format", "png")
+	fill(t, content, text.SettingLabel("limit"), "2mb")
+	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
 	waitForManifest(t, dir)
 	join(host)
@@ -89,8 +89,8 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 
 	host, content := presetScreen(t)
 	fill(t, content, text.FieldOutputDir, fromWindow)
-	fill(t, content, "limit", "2mb")
-	choose(t, content, "format", "png")
+	fill(t, content, text.SettingLabel("limit"), "2mb")
+	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
 	waitForManifest(t, fromWindow)
 	join(host)
@@ -153,7 +153,7 @@ func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 
 	_, presets := presetScreen(t)
 	fill(t, presets, text.FieldOutputDir, t.TempDir())
-	choose(t, presets, "format", "wav")
+	choose(t, presets, text.SettingLabel("format"), "wav")
 	press(t, presets, "Preview")
 	shown := allText(presets)
 	if !strings.Contains(shown, "wav") {

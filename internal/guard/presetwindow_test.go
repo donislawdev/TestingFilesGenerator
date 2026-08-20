@@ -126,7 +126,7 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 
 	host, content := presetScreen(t)
 	fill(t, content, text.FieldOutputDir, fromWindow)
-	fill(t, content, "limit", "2mb")
+	fill(t, content, text.SettingLabel("limit"), "2mb")
 	press(t, content, "Generate")
 	waitForManifest(t, fromWindow)
 	join(host)
@@ -214,7 +214,7 @@ func TestThePresetScreenSaysWhichNumbersWereOurs(t *testing.T) {
 
 	fill(t, content, text.FieldOutputDir, dir)
 	// limit left at its declared default, spread stated by hand.
-	fill(t, content, "spread", "1kb")
+	fill(t, content, text.SettingLabel("spread"), "1kb")
 	press(t, content, "Generate")
 	waitForManifest(t, dir)
 	join(host)

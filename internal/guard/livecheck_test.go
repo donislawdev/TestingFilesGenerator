@@ -142,11 +142,42 @@ func sayingUnder(t *testing.T, o fyne.CanvasObject, label string) string {
 	if box == nil {
 		t.Fatalf("there is no field labelled %q, so this guard read the wrong tree", label)
 	}
+	// The smallest block holding both the field and something red, rather than
+	// the field alone. Since 2026-08-20 two fields share a row and their
+	// messages are laid out under it across the full width, so a message is no
+	// longer a descendant of its own field - see Fields.Row and the reason
+	// there.
+	//
+	// In a row this reads the messages of both fields in it. That is enough for
+	// what these guards ask - whether anything is being said around this box -
+	// and WHICH box a message is about is answered by the edge drawn on it,
+	// which has guards of its own.
+	var best *fyne.Container
 	var said []string
-	walk(box, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Importance == widget.DangerImportance && l.Text != "" {
-			said = append(said, l.Text)
+	walk(o, func(obj fyne.CanvasObject) {
+		block, ok := obj.(*fyne.Container)
+		if !ok || !holds(block, box) {
+			return
+		}
+		var red []string
+		walk(block, func(inner fyne.CanvasObject) {
+			if l, is := inner.(*widget.Label); is && l.Importance == widget.DangerImportance && l.Text != "" {
+				red = append(red, l.Text)
+			}
+		})
+		if len(red) == 0 {
+			return
+		}
+		if best == nil || countObjects(block) < countObjects(best) {
+			best, said = block, red
 		}
 	})
 	return strings.Join(said, "\n")
+}
+
+// countObjects is how big a block is, for picking the smallest one.
+func countObjects(o fyne.CanvasObject) int {
+	n := 0
+	walk(o, func(fyne.CanvasObject) { n++ })
+	return n
 }

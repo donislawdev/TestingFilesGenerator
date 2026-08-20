@@ -78,13 +78,13 @@ func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
 func TestARefusalAboutAPresetSettingAppearsUnderIt(t *testing.T) {
 	content, w := screenInAWindow(t, text.TabPresets)
 
-	fill(t, content, "limit", "512")
+	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")
 	settle(content, w)
 
 	const refusal = "cannot build this set"
 
-	sawItOnce(t, content, "limit", refusal)
+	sawItOnce(t, content, text.SettingLabel("limit"), refusal)
 }
 
 // sawItOnce is the whole of what these three guards ask: the message is beside
