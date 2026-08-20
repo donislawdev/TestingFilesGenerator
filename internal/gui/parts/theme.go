@@ -35,12 +35,30 @@ var (
 		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x1E),
 		theme.ColorNameForeground:  hex(0xE6, 0xE6, 0xE6),
 		theme.ColorNamePlaceHolder: hex(0x9D, 0xA3, 0xA8),
-		theme.ColorNameDisabled:    hex(0x9D, 0xA3, 0xA8),
-		theme.ColorNameError:       hex(0xF1, 0x70, 0x7A),
-		theme.ColorNameSuccess:     hex(0x6F, 0xCF, 0x7F),
-		theme.ColorNameWarning:     hex(0xE8, 0xB3, 0x3E),
-		theme.ColorNamePrimary:     hex(0x6F, 0xB7, 0xF0),
-		theme.ColorNameHyperlink:   hex(0x6F, 0xB7, 0xF0),
+		// A step of its own between a value and a hint, since 2026-08-20.
+		//
+		// It was the placeholder colour exactly, so a box switched off for the
+		// length of a run drew the value somebody typed in the same grey as the
+		// hint in an empty box beside it - "you cannot edit this right now" and
+		// "there is nothing here yet" said with one colour. Measured off a
+		// render of a run in flight: the format box read #9DA3A8 for "txt" and
+		// the width box read #9DA3A8 for "worked out from the size".
+		//
+		// Three steps now, and the gaps are what was picked rather than the
+		// values: 91.3, 80.3 and 66.7 in L*, which is 11.0 and 13.6 apart. The
+		// palette's own yardstick for "noticeable" is 10.
+		//
+		// Brighter rather than dimmer, because a disabled value is content
+		// somebody typed and a hint is not - and dimming it further would have
+		// made the one thing a person wants to re-read during a run the hardest
+		// thing on the screen to read. A button loses its fill when it is
+		// disabled, so it does not need the text to carry the whole message.
+		theme.ColorNameDisabled:  hex(0xC2, 0xC8, 0xCD),
+		theme.ColorNameError:     hex(0xF1, 0x70, 0x7A),
+		theme.ColorNameSuccess:   hex(0x6F, 0xCF, 0x7F),
+		theme.ColorNameWarning:   hex(0xE8, 0xB3, 0x3E),
+		theme.ColorNamePrimary:   hex(0x6F, 0xB7, 0xF0),
+		theme.ColorNameHyperlink: hex(0x6F, 0xB7, 0xF0),
 		// Translucent, for the reason the hover below it is - and this one was
 		// left opaque when that was corrected on 2026-08-11, so the same defect
 		// stayed on the screen in a second place for a day.
@@ -153,12 +171,15 @@ var (
 		theme.ColorNameBackground:  hex(0xFF, 0xFF, 0xFF),
 		theme.ColorNameForeground:  hex(0x1A, 0x1A, 0x1A),
 		theme.ColorNamePlaceHolder: hex(0x59, 0x59, 0x59),
-		theme.ColorNameDisabled:    hex(0x59, 0x59, 0x59),
-		theme.ColorNameError:       hex(0xB3, 0x12, 0x1F),
-		theme.ColorNameSuccess:     hex(0x10, 0x6B, 0x2E),
-		theme.ColorNameWarning:     hex(0x8A, 0x5A, 0x00),
-		theme.ColorNamePrimary:     hex(0x0F, 0x5F, 0xA8),
-		theme.ColorNameHyperlink:   hex(0x0F, 0x5F, 0xA8),
+		// The same three steps the other way up: on a white page "closer to
+		// the value" means darker. 9.3, 25.8 and 37.8 in L*, 16.5 and 12.1
+		// apart.
+		theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x3D),
+		theme.ColorNameError:     hex(0xB3, 0x12, 0x1F),
+		theme.ColorNameSuccess:   hex(0x10, 0x6B, 0x2E),
+		theme.ColorNameWarning:   hex(0x8A, 0x5A, 0x00),
+		theme.ColorNamePrimary:   hex(0x0F, 0x5F, 0xA8),
+		theme.ColorNameHyperlink: hex(0x0F, 0x5F, 0xA8),
 		// The same correction as the dark variant above, at the same alpha:
 		// this is blended over whatever it lands on rather than painted.
 		theme.ColorNameFocus: overlay(0x0F, 0x62, 0xFE, 0x66),

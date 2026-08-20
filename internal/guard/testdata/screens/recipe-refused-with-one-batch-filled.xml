@@ -105,7 +105,7 @@
 																	<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																		<widget size="401x29" type="*widget.entryContent">
 																			<widget size="401x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="401x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -145,7 +145,7 @@
 																		<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																			<widget size="140x29" type="*widget.entryContent">
 																				<widget size="140x29" type="*widget.RichText">
-																					<text color="disabled" pos="6,5" size="8x19">1</text>
+																					<text color="placeholder" pos="6,5" size="8x19">1</text>
 																				</widget>
 																				<widget size="140x29" type="*widget.RichText">
 																					<text pos="6,5" size="0x19"></text>
@@ -179,7 +179,7 @@
 																	<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																		<widget size="265x29" type="*widget.entryContent">
 																			<widget size="265x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="265x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -229,7 +229,7 @@
 																	<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																		<widget size="265x29" type="*widget.entryContent">
 																			<widget size="265x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="265x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -266,7 +266,7 @@
 																	<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																		<widget size="265x29" type="*widget.entryContent">
 																			<widget size="265x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="265x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -305,7 +305,7 @@
 																	<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																		<widget size="401x29" type="*widget.entryContent">
 																			<widget size="401x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="64x19">files_0001</text>
+																				<text color="placeholder" pos="6,5" size="64x19">files_0001</text>
 																			</widget>
 																			<widget size="401x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -341,7 +341,7 @@
 																	<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																		<widget size="401x29" type="*widget.entryContent">
 																			<widget size="401x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="401x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -442,7 +442,7 @@
 																<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																	<widget size="808x29" type="*widget.entryContent">
 																		<widget size="808x29" type="*widget.RichText">
-																			<text color="disabled" pos="6,5" size="164x19">worked out from the size</text>
+																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
 																		</widget>
 																		<widget size="808x29" type="*widget.RichText">
 																			<text pos="6,5" size="0x19"></text>
@@ -471,7 +471,7 @@
 																<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																	<widget size="808x29" type="*widget.entryContent">
 																		<widget size="808x29" type="*widget.RichText">
-																			<text color="disabled" pos="6,5" size="164x19">worked out from the size</text>
+																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
 																		</widget>
 																		<widget size="808x29" type="*widget.RichText">
 																			<text pos="6,5" size="0x19"></text>
@@ -596,7 +596,7 @@
 																		<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																			<widget size="140x29" type="*widget.entryContent">
 																				<widget size="140x29" type="*widget.RichText">
-																					<text color="disabled" pos="6,5" size="8x19">1</text>
+																					<text color="placeholder" pos="6,5" size="8x19">1</text>
 																				</widget>
 																				<widget size="140x29" type="*widget.RichText">
 																					<text pos="6,5" size="0x19"></text>
@@ -664,7 +664,7 @@
 																	<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																		<widget size="265x29" type="*widget.entryContent">
 																			<widget size="265x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="265x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -701,7 +701,7 @@
 																	<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																		<widget size="265x29" type="*widget.entryContent">
 																			<widget size="265x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="265x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -740,7 +740,7 @@
 																	<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																		<widget size="401x29" type="*widget.entryContent">
 																			<widget size="401x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="64x19">files_0001</text>
+																				<text color="placeholder" pos="6,5" size="64x19">files_0001</text>
 																			</widget>
 																			<widget size="401x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -776,7 +776,7 @@
 																	<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																		<widget size="401x29" type="*widget.entryContent">
 																			<widget size="401x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="401x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
@@ -877,7 +877,7 @@
 																<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																	<widget size="808x29" type="*widget.entryContent">
 																		<widget size="808x29" type="*widget.RichText">
-																			<text color="disabled" pos="6,5" size="164x19">worked out from the size</text>
+																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
 																		</widget>
 																		<widget size="808x29" type="*widget.RichText">
 																			<text pos="6,5" size="0x19"></text>
@@ -906,7 +906,7 @@
 																<widget pos="0,1" size="808x29" type="*widget.Scroll">
 																	<widget size="808x29" type="*widget.entryContent">
 																		<widget size="808x29" type="*widget.RichText">
-																			<text color="disabled" pos="6,5" size="164x19">worked out from the size</text>
+																			<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
 																		</widget>
 																		<widget size="808x29" type="*widget.RichText">
 																			<text pos="6,5" size="0x19"></text>
@@ -1007,7 +1007,7 @@
 																<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																	<widget size="401x29" type="*widget.entryContent">
 																		<widget size="401x29" type="*widget.RichText">
-																			<text color="disabled" pos="6,5" size="88x19">manifest.json</text>
+																			<text color="placeholder" pos="6,5" size="88x19">manifest.json</text>
 																		</widget>
 																		<widget size="401x29" type="*widget.RichText">
 																			<text pos="6,5" size="0x19"></text>
@@ -1044,7 +1044,7 @@
 																	<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																		<widget size="140x29" type="*widget.entryContent">
 																			<widget size="140x29" type="*widget.RichText">
-																				<text color="disabled" pos="6,5" size="0x19"></text>
+																				<text color="placeholder" pos="6,5" size="0x19"></text>
 																			</widget>
 																			<widget size="140x29" type="*widget.RichText">
 																				<text pos="6,5" size="0x19"></text>
