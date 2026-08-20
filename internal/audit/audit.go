@@ -108,10 +108,16 @@ func (e *EscapeError) Error() string {
 // the second half of the rule docs/SECURITY.md section 2.4 states: a name from
 // somebody else's file is a name, and where it lands is settled after the links
 // have been followed rather than by reading the string.
-func resolved(dir string, f manifest.File) (string, error) {
-	full := filepath.Join(dir, filepath.FromSlash(f.Path))
-	if core.EscapesAfterResolving(dir, full) {
-		return "", &EscapeError{Dir: dir, Path: f.Path}
+//
+// The boundary is worked out once by the caller and handed in, rather than
+// worked out here from the directory name. Passing it as a value is what makes
+// resolving it per entry impossible to write by accident: there is no directory
+// string in scope to resolve. See core.Boundary for what that is worth in
+// seconds, and observation O117 for the measurement.
+func resolved(b core.Boundary, f manifest.File) (string, error) {
+	full := filepath.Join(b.Dir(), filepath.FromSlash(f.Path))
+	if b.Escapes(full) {
+		return "", &EscapeError{Dir: b.Dir(), Path: f.Path}
 	}
 	return full, nil
 }
@@ -149,6 +155,7 @@ func Claimed(m *manifest.Manifest) []manifest.File {
 // directory is the one answer this must never give.
 func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) ([]Difference, error) {
 	claimed := Claimed(m)
+	boundary := core.NewBoundary(dir)
 
 	present, err := walk(dir)
 	if err != nil {
@@ -164,7 +171,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		}
 		seen[f.Path] = true
 
-		full, err := resolved(dir, f)
+		full, err := resolved(boundary, f)
 		if err != nil {
 			return nil, err
 		}

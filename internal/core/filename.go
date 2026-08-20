@@ -96,27 +96,128 @@ func hasVolumeName(p string) bool {
 // paths on purpose, and a workspace that is itself a link has to keep working.
 // The question is only where the path ends up.
 func EscapesAfterResolving(dir, full string) bool {
-	base, err := resolveAsFarAsItExists(dir)
+	return NewBoundary(dir).Escapes(full)
+}
+
+// Boundary is the directory a run was pointed at, with the links on the way
+// followed once instead of once per entry.
+//
+// It exists for speed, and the speed is not a detail. Judging one entry used to
+// resolve the whole directory from the root down, and a run judges thousands of
+// them. Measured on 2026-08-20 with 3000 entries, verify on Windows:
+// resolving the directory again for every entry was 5665 ms of a 13.4 s run,
+// and resolving each file from the root down was another 8703 ms - against
+// 626 ms to actually open and hash all 3000 files. On Windows the cost of
+// filepath.EvalSymlinks grows with the depth of the path, about 0.24 ms per
+// component here, so both numbers are really the same mistake: walking the
+// same ancestors over and over. The full measurement is observation O117.
+//
+// What it does NOT cache is the part that does the work. Every entry still gets
+// its own walk below the boundary, asking the filesystem in the state it is in
+// at that moment - see crossesUnresolvedLink. Only the boundary itself is
+// settled once, and that is the directory the person named, whose own
+// redirections are their business rather than ours.
+type Boundary struct {
+	named    string
+	abs      string
+	resolved string
+	known    bool
+}
+
+// NewBoundary follows the links on the way to dir, once.
+//
+// The absolute spelling is kept beside the name because filepath.Rel refuses to
+// compare a relative path against an absolute one, and the directory arrives
+// however the person typed it - "tfg verify ./tfg-out/manifest.json" is the
+// ordinary way to run this. Without it the cheap comparison in Escapes would
+// fail for exactly the people who type the shorter thing, fall back to the
+// expensive reading, and be slow in the field while every guard here stayed
+// green: they all build their directories with t.TempDir, which is absolute.
+func NewBoundary(dir string) Boundary {
+	b := Boundary{named: dir, abs: dir}
+	if abs, err := filepath.Abs(dir); err == nil {
+		b.abs = abs
+	}
+	r, err := resolveAsFarAsItExists(dir)
 	if err != nil {
 		// Nothing could be resolved, so nothing can be judged. Saying "it
 		// escapes" would refuse an ordinary run on a path we simply could not
 		// examine, and the caller checks the text separately.
+		return b
+	}
+	b.resolved, b.known = r, true
+	return b
+}
+
+// Dir is the directory as the caller named it, before any link was followed.
+func (b Boundary) Dir() string { return b.named }
+
+// Escapes reports whether full lands outside this boundary once the links on
+// the way have been followed.
+//
+// It gives the same answer as resolving both ends, in every case. The saving is
+// not a different rule, it is the same rule reached without walking the
+// ancestors again, and it only applies to the case where nothing redirects at
+// all - which is every ordinary run.
+//
+// The reasoning, because getting it wrong here is a containment bug. When a
+// path is written inside the directory we were given and no step below that
+// directory redirects anywhere, the path as written IS the real path: the
+// ancestors resolve to the boundary we already resolved, and the steps below it
+// resolve to themselves. So it is inside, and resolving it could not have said
+// otherwise.
+//
+// The moment a step below the boundary does redirect, that shortcut stops
+// holding and the thorough reading decides. It has to, and this was nearly got
+// wrong: a link inside the directory that points at another file inside the
+// same directory is NOT an escape, and the old reading allows it - it follows
+// the link, lands inside, and says so. Refusing it here because a link was
+// seen would turn a contained directory into a hard refusal, which is a change
+// to what this tool accepts rather than a change to how fast it answers.
+func (b Boundary) Escapes(full string) bool {
+	if !b.known {
 		return false
 	}
+	target, err := filepath.Abs(full)
+	if err != nil {
+		return false
+	}
+	// Written inside the directory we were given, and nothing below that
+	// directory redirects anywhere. Then the path as written is the real path,
+	// and resolving it from the root down could not have said otherwise.
+	if rel, err := filepath.Rel(b.abs, target); err == nil && !climbsOut(rel) && !crossesUnresolvedLink(b.resolved, rel) {
+		return false
+	}
+	// Anything else is a question rather than an answer, and the thorough
+	// reading is what answers it. A path written outside the name can still be
+	// inside once the links are followed, and a redirection below the boundary
+	// can point either way.
+	return b.escapesTheThoroughWay(full)
+}
+
+// escapesTheThoroughWay is the original reading: resolve both ends and compare
+// them. Kept for a full path that was not written inside the directory, where
+// the cheap comparison above has no shared prefix to work from.
+func (b Boundary) escapesTheThoroughWay(full string) bool {
 	target, err := resolveAsFarAsItExists(full)
 	if err != nil {
 		return false
 	}
-	rel, err := filepath.Rel(base, target)
+	rel, err := filepath.Rel(b.resolved, target)
 	if err != nil {
 		// Different volumes have no relative path between them, which is as
 		// far outside as it gets.
 		return true
 	}
-	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+	if climbsOut(rel) {
 		return true
 	}
-	return crossesUnresolvedLink(base, rel)
+	return crossesUnresolvedLink(b.resolved, rel)
+}
+
+// climbsOut reports whether a relative path steps above what it is relative to.
+func climbsOut(rel string) bool {
+	return rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
 
 // crossesUnresolvedLink reports whether any step from base down to rel is a

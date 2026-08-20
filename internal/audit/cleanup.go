@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -59,12 +60,14 @@ func (c Candidate) Removable(force bool) bool {
 // prints this list. A person gets to read what is about to disappear before it
 // does, and CLI.md section 9 rules out asking them interactively.
 func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate, error) {
+	boundary := core.NewBoundary(dir)
+
 	var out []Candidate
 	for _, f := range Claimed(m) {
 		if err := ctx.Err(); err != nil {
 			return out, err
 		}
-		full, err := resolved(dir, f)
+		full, err := resolved(boundary, f)
 		if err != nil {
 			// Nothing is inspected and nothing is offered. A list that points
 			// outside the directory is not a list this tool acts on, and the
@@ -131,6 +134,23 @@ type Outcome struct {
 // was removed stays removed, and the caller reports both halves - there is no
 // undo, so the report is the only record.
 func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]Outcome, error) {
+	// This pass works the boundary out for itself rather than taking Inspect's,
+	// which is the same rule as the one below: the two passes are separated by
+	// however long somebody spends reading the preview, and nothing learned
+	// before that pause is carried across it.
+	//
+	// Inside this pass the boundary is settled once. What that does and does not
+	// cover is worth being exact about, because this is the one operation here
+	// that destroys data. Every entry still gets its own walk below the
+	// boundary, asked of the filesystem at the moment that entry is removed - so
+	// a link planted under the directory mid-run is still caught. What is not
+	// re-asked is the directory the person named. Swapping that for a link
+	// halfway through was never caught: the old reading resolved both ends
+	// through the new link and found them agreeing, so it reported "inside" too.
+	// Redirections above the boundary are the caller's own, as the comment on
+	// crossesUnresolvedLink says.
+	boundary := core.NewBoundary(dir)
+
 	var out []Outcome
 	for _, c := range cands {
 		if err := ctx.Err(); err != nil {
@@ -148,7 +168,7 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 		// separated by however long a person spends reading the preview, and
 		// this is the one operation in the tool that destroys data - so the
 		// question is put to the filesystem in the state it is in now.
-		full, err := resolved(dir, manifest.File{Path: c.Path})
+		full, err := resolved(boundary, manifest.File{Path: c.Path})
 		if err != nil {
 			return out, err
 		}

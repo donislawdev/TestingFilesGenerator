@@ -14,6 +14,23 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Changed
+
+- `verify` and `cleanup` are much faster over large runs on Windows. Checking
+  that an entry stays inside the output directory used to work the directory
+  out again for every single file, and working it out is expensive on Windows -
+  more so the deeper the directory sits. It is now worked out once per command.
+  Measured on 3000 files of 1 kB: `verify` went from about 17 seconds to about
+  0.9 seconds from a deep path, and from about 2.4 seconds to about 0.5 seconds
+  from a short one. Linux was already fast and is unchanged.
+
+  Nothing about what the two commands accept or refuse has changed. A file that
+  leaves the directory through a link or a junction is still refused, and a
+  directory reached through a link still works.
+
+- The answer in the README about slow runs on Windows said the cost was the
+  antivirus opening each file. That was wrong, and it is corrected.
+
 ## [0.1.0] - 2026-08-20
 
 Initial release.

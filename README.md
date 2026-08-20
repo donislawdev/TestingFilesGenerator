@@ -580,17 +580,24 @@ The one link in the whole program is the Donate button in the window, and
 pressing it hands the address to your browser. Your browser makes that
 connection, if you ask for it. The program never opens one.
 
-### Why is a run over thousands of files slow on Windows?
+### Why is a run over thousands of files slower on Windows?
 
-Because something is looking at every file as it is opened, and on Windows that
-is usually the antivirus.
+Because Windows charges more for every path it looks at, and a command that
+goes over thousands of files looks at thousands of paths.
 
-Measured on the same build, same machine, 3000 files of 1 kB: `verify` takes
-about 22 seconds on Windows and about 0.2 seconds on Linux in a container. The
-work is identical, so what differs is the cost of opening a file. If your
-fixtures live somewhere you can add an antivirus exclusion for, that is the
-lever - the files this tool writes are synthesised from a seed and contain
-nothing to scan.
+Measured on the same machine, 3000 files of 1 kB: `verify` takes about
+0.9 seconds on Windows and about 0.2 seconds on Linux in a container. How deep
+your output directory sits changes the Windows figure - the same 3000 files
+verify in about half that from a short path like `C:\fixtures`, because every
+folder above them is part of what gets looked at.
+
+An earlier version of this answer said the cost was the antivirus scanning
+each file as it was opened, and that `verify` took about 22 seconds. Measuring
+it properly showed the reading was wrong: opening and reading all 3000 files
+was a small part of that time and working out paths was most of it. That has
+been fixed, and the numbers above are what it costs now. If a scanner does
+watch the folder you generate into, an exclusion still helps - the files this
+tool writes are made up from a seed and contain nothing to find.
 
 ### What if I ask for something impossible?
 
