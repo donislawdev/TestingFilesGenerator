@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -38,11 +39,13 @@ func Open(h Host) {
 	// about. Leaving it at the foot would have kept exactly the defect being
 	// fixed, for the one screen somebody reaches least often and would look
 	// hardest for. It also loses its Back button: a tab is its own way out.
+	// Every screen goes back to the ordinary theme, because the strip they hang
+	// under is drawn quieter and a theme reaches everything below it.
 	tabs := container.NewAppTabs(
-		container.NewTabItem(text.TabOneTarget, gen.Object()),
-		container.NewTabItem(text.TabPresets, pre.Object()),
-		container.NewTabItem(text.TabRecipe, rec.Object()),
-		container.NewTabItem(text.TabAbout, About(h)),
+		container.NewTabItem(text.TabOneTarget, parts.AtFullStrength(gen.Object())),
+		container.NewTabItem(text.TabPresets, parts.AtFullStrength(pre.Object())),
+		container.NewTabItem(text.TabRecipe, parts.AtFullStrength(rec.Object())),
+		container.NewTabItem(text.TabAbout, parts.AtFullStrength(About(h))),
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -103,7 +106,10 @@ func Open(h Host) {
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
-	h.SetContent(tabs)
+	// The strip reads with one point of focus: the tab somebody is on is in the
+	// accent colour and the others are quiet. Until 2026-08-20 it was the other
+	// way round by contrast - the chosen one was the dimmest label there.
+	h.SetContent(parts.QuietUnlessChosen(tabs))
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put

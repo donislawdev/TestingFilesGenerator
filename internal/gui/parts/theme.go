@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -299,6 +300,47 @@ func (o ours) Size(name fyne.ThemeSizeName) float32 {
 // guard to render with. A picture taken under a different theme is a picture
 // of a screen nobody has.
 func Theme() fyne.Theme { return ours{theme.DefaultTheme()} }
+
+// QuietUnlessChosen dims the ordinary text colour for one part of the screen.
+//
+// The tab strip is the reason it exists. The toolkit draws the tab somebody is
+// on in the accent colour and every other tab in the ordinary foreground -
+// tabs.go, the two lines either side of 716 - so measured off a render on
+// 2026-08-20 the SELECTED tab stood at 7.71 against the page while the three
+// nobody is on stood at 13.36. The one that is chosen was the dimmest label in
+// the strip, and four names competed at full strength for a strip that has one
+// answer.
+//
+// A theme for a subtree rather than a colour at a call site, because the strip
+// is drawn inside the toolkit's own renderer and there is nothing there to
+// hand a colour to. That mechanism is container.NewThemeOverride, which this
+// project spent six days believing did not exist - the comment claiming the
+// theme was "the only knob there is" was wrong, and this is the second place
+// the correction pays.
+//
+// Everything else falls through to our own theme, so the strip keeps the
+// palette, the sizes and the spacing the rest of the window has.
+func QuietUnlessChosen(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewThemeOverride(o, quiet{Theme()})
+}
+
+// AtFullStrength puts a subtree back on the ordinary theme.
+//
+// The screens live inside the tab container, so anything applied to the strip
+// reaches them as well. This is what stops a dimmer strip from dimming every
+// word on the form under it.
+func AtFullStrength(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewThemeOverride(o, Theme())
+}
+
+type quiet struct{ fyne.Theme }
+
+func (q quiet) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNameForeground {
+		return q.Theme.Color(theme.ColorNamePlaceHolder, variant)
+	}
+	return q.Theme.Color(name, variant)
+}
 
 // PaletteColour is one colour of either palette, for a guard to measure.
 //

@@ -1,99 +1,107 @@
 <canvas padded size="1100x1300">
 	<content>
-		<widget pos="6,6" size="1088x1288" type="*container.AppTabs">
-			<container size="1088x32">
-				<container size="1088x32">
-					<widget size="98x32" type="*container.tabButton">
-						<text alignment="center" bold pos="6,6" size="86x20">Single batch</text>
-					</widget>
-					<widget pos="104,0" size="63x32" type="*container.tabButton">
-						<text alignment="center" bold pos="6,6" size="51x20">Presets</text>
-					</widget>
-					<widget pos="173,0" size="121x32" type="*container.tabButton">
-						<text alignment="center" bold pos="6,6" size="109x20">Several batches</text>
-					</widget>
-					<widget pos="300,0" size="54x32" type="*container.tabButton">
-						<text alignment="center" bold color="hyperlink" pos="6,6" size="42x20">About</text>
-					</widget>
-				</container>
-			</container>
-			<rectangle fillColor="shadow" pos="0,32" size="1088x1"/>
-			<rectangle fillColor="hyperlink" pos="300,32" radius="3" size="54x1"/>
-			<container pos="0,38" size="1088x1250">
-				<container size="1088x1200">
-					<container pos="134,0" size="820x1200">
-						<container size="820x39">
-							<widget pos="6,0" size="808x39" type="*widget.Label">
-								<widget size="808x39" type="*widget.RichText">
-									<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
-								</widget>
+		<widget pos="6,6" size="1088x1288" type="*container.ThemeOverride">
+			<container size="1088x1288">
+				<widget size="1088x1288" type="*container.AppTabs">
+					<container size="1088x32">
+						<container size="1088x32">
+							<widget size="98x32" type="*container.tabButton">
+								<text alignment="center" bold color="placeholder" pos="6,6" size="86x20">Single batch</text>
 							</widget>
-						</container>
-						<widget pos="0,53" size="820x31" type="*widget.Label">
-							<widget size="820x31" type="*widget.RichText">
-								<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
+							<widget pos="104,0" size="63x32" type="*container.tabButton">
+								<text alignment="center" bold color="placeholder" pos="6,6" size="51x20">Presets</text>
 							</widget>
-						</widget>
-						<container pos="0,98" size="820x411">
-							<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x411" strokeColor="separator" strokeWidth="1"/>
-							<container size="820x411">
-								<container pos="6,6" size="808x399">
-									<widget size="808x35" type="*widget.Label">
-										<widget size="808x35" type="*widget.RichText">
-											<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
-										</widget>
-									</widget>
-									<widget pos="0,44" size="808x355" type="*widget.Label">
-										<widget size="808x355" type="*widget.RichText">
-											<text pos="6,6" size="150x19">Testing Files Generator</text>
-											<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>
-											<text pos="6,44" size="0x19"></text>
-											<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is at</text>
-											<text pos="6,82" size="509x19">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have</text>
-											<text pos="6,101" size="191x19">the source or the full release.</text>
-											<text pos="6,120" size="0x19"></text>
-											<text pos="6,139" size="325x19">There is no warranty, to the extent the law allows.</text>
-											<text pos="6,158" size="0x19"></text>
-											<text pos="6,177" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
-											<text pos="6,196" size="490x19">output of this program and not derived works of it, so this licence does not</text>
-											<text pos="6,215" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
-											<text pos="6,234" size="347x19">closed source product with no obligation of any kind.</text>
-											<text pos="6,254" size="0x19"></text>
-											<text pos="6,273" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
-											<text pos="6,292" size="530x19">copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source</text>
-											<text pos="6,311" size="161x19">and with the full release.</text>
-											<text pos="6,330" size="0x19"></text>
-										</widget>
-									</widget>
-								</container>
-							</container>
+							<widget pos="173,0" size="121x32" type="*container.tabButton">
+								<text alignment="center" bold color="placeholder" pos="6,6" size="109x20">Several batches</text>
+							</widget>
+							<widget pos="300,0" size="54x32" type="*container.tabButton">
+								<text alignment="center" bold color="hyperlink" pos="6,6" size="42x20">About</text>
+							</widget>
 						</container>
 					</container>
-				</container>
-				<container pos="0,1206" size="1088x44">
-					<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x44" strokeColor="separator" strokeWidth="1"/>
-					<container size="1088x44">
-						<container pos="6,6" size="1076x32">
-							<container size="1076x32">
-								<container pos="128,0" size="820x32">
-									<container pos="6,6" size="808x20">
+					<rectangle fillColor="shadow" pos="0,32" size="1088x1"/>
+					<rectangle fillColor="hyperlink" pos="300,32" radius="3" size="54x1"/>
+					<widget pos="0,38" size="1088x1250" type="*container.ThemeOverride">
+						<container size="1088x1250">
+							<container size="1088x1250">
+								<container size="1088x1200">
+									<container pos="134,0" size="820x1200">
+										<container size="820x39">
+											<widget pos="6,0" size="808x39" type="*widget.Label">
+												<widget size="808x39" type="*widget.RichText">
+													<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
+												</widget>
+											</widget>
+										</container>
+										<widget pos="0,53" size="820x31" type="*widget.Label">
+											<widget size="820x31" type="*widget.RichText">
+												<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
+											</widget>
+										</widget>
+										<container pos="0,98" size="820x411">
+											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x411" strokeColor="separator" strokeWidth="1"/>
+											<container size="820x411">
+												<container pos="6,6" size="808x399">
+													<widget size="808x35" type="*widget.Label">
+														<widget size="808x35" type="*widget.RichText">
+															<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
+														</widget>
+													</widget>
+													<widget pos="0,44" size="808x355" type="*widget.Label">
+														<widget size="808x355" type="*widget.RichText">
+															<text pos="6,6" size="150x19">Testing Files Generator</text>
+															<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>
+															<text pos="6,44" size="0x19"></text>
+															<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is at</text>
+															<text pos="6,82" size="509x19">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have</text>
+															<text pos="6,101" size="191x19">the source or the full release.</text>
+															<text pos="6,120" size="0x19"></text>
+															<text pos="6,139" size="325x19">There is no warranty, to the extent the law allows.</text>
+															<text pos="6,158" size="0x19"></text>
+															<text pos="6,177" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
+															<text pos="6,196" size="490x19">output of this program and not derived works of it, so this licence does not</text>
+															<text pos="6,215" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
+															<text pos="6,234" size="347x19">closed source product with no obligation of any kind.</text>
+															<text pos="6,254" size="0x19"></text>
+															<text pos="6,273" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
+															<text pos="6,292" size="530x19">copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source</text>
+															<text pos="6,311" size="161x19">and with the full release.</text>
+															<text pos="6,330" size="0x19"></text>
+														</widget>
+													</widget>
+												</container>
+											</container>
+										</container>
+									</container>
+								</container>
+								<container pos="0,1206" size="1088x44">
+									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x44" strokeColor="separator" strokeWidth="1"/>
+									<container size="1088x44">
+										<container pos="6,6" size="1076x32">
+											<container size="1076x32">
+												<container pos="128,0" size="820x32">
+													<container pos="6,6" size="808x20">
+													</container>
+												</container>
+											</container>
+											<container size="1076x32">
+												<container size="1076x32">
+													<widget size="63x32" type="*widget.Button">
+														<rectangle fillColor="button" radius="5" size="63x32"/>
+														<rectangle size="63x32"/>
+														<widget pos="6,6" size="51x19" type="*widget.RichText">
+															<text alignment="center" bold size="51x19">Donate</text>
+														</widget>
+													</widget>
+												</container>
+											</container>
+										</container>
 									</container>
 								</container>
 							</container>
-							<container size="1076x32">
-								<container size="1076x32">
-									<widget size="63x32" type="*widget.Button">
-										<rectangle fillColor="button" radius="5" size="63x32"/>
-										<rectangle size="63x32"/>
-										<widget pos="6,6" size="51x19" type="*widget.RichText">
-											<text alignment="center" bold size="51x19">Donate</text>
-										</widget>
-									</widget>
-								</container>
-							</container>
 						</container>
-					</container>
-				</container>
+					</widget>
+				</widget>
 			</container>
 		</widget>
 	</content>
