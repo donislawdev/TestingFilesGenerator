@@ -139,7 +139,7 @@ func screenScenes() []screenScene {
 		}},
 		{name: "generate-refused-setting", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
 			chooseFormat(t, s.tab, "png")
-			fillField(t, s.tab, "width", "99999")
+			fillField(t, s.tab, text.SettingLabel("width"), "99999")
 			pressNamed(t, s.tab, text.ButtonPreview)
 		}},
 		{name: "generate-chosen", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {

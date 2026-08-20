@@ -173,7 +173,7 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 				pending = nil
 				break
 			}
-			objects = append(objects, Row(pending[0], pending[1]))
+			objects = append(objects, into.Row(pending[0], pending[1]))
 			pending = pending[2:]
 		}
 	}

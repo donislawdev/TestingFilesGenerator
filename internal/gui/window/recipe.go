@@ -288,7 +288,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	rows = append(rows,
 		add(recipe.KeyFormat, text.FieldFormat, text.HintFormat,
 			r.tips.Say(text.DetailFormat), b.formatPick),
-		parts.Row(
+		r.fields.Row(
 			add(recipe.KeyID, text.FieldTargetID, text.HintTargetID,
 				r.tips.Say(text.DetailTargetID), b.id),
 			add(recipe.KeyCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(b.count)),
@@ -300,7 +300,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		//
 		// One of the three was a narrow box until this was looked at, which made
 		// three alternatives read as three unrelated fields.
-		parts.Row(
+		r.fields.Row(
 			add(recipe.KeySize, text.FieldSize, text.HintSizeExact,
 				r.tips.Say(text.DetailSize), b.size),
 			add(recipe.KeySizeRange, text.FieldSizeRange, text.HintSizeRange,
@@ -308,13 +308,13 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 			add(recipe.KeyBoundary, text.FieldBoundary, text.HintBoundary,
 				r.tips.Say(text.DetailBoundary), b.boundary),
 		),
-		parts.Row(
+		r.fields.Row(
 			add(recipe.KeyName, text.FieldNameTemplate, text.HintNameTemplate,
 				r.tips.Say(text.DetailNameTemplate), b.name),
 			add(recipe.KeyGroup, text.FieldGroup, text.HintGroup,
 				r.tips.Say(text.DetailGroup), b.group),
 		),
-		parts.Row(
+		r.fields.Row(
 			add(recipe.KeyExpected, text.FieldExpected, text.HintExpected,
 				r.tips.Say(text.DetailExpected), b.expected),
 			add(recipe.KeyExpectedReason, text.FieldReason, text.HintReason,
@@ -383,7 +383,7 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 			return recipe.ContentAddress(index+1, j+1, setting)
 		}
 		entry := j
-		rows = append(rows, parts.Row(
+		rows = append(rows, r.fields.Row(
 			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat, "", parts.NoDetail, c.formatPick),
 			r.fields.Add(at(recipe.KeyCount), text.FieldCount, "", parts.NoDetail, parts.Numeric(c.count)),
 			r.fields.Add(at(recipe.KeySize), text.FieldSize, "", parts.NoDetail, parts.Numeric(c.size)),
@@ -408,7 +408,7 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	return parts.Section(text.SectionOutput,
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir, text.HintOutputDir,
 			r.tips.Say(text.DetailOutputDir), chooserFor(r.host, r.outDir)),
-		parts.Row(
+		r.fields.Row(
 			r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest, text.HintManifest,
 				r.tips.Say(text.DetailManifest), r.manifest),
 			r.fields.Add(recipe.KeySeed, text.FieldSeed, text.HintSeed,

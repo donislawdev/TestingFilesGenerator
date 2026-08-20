@@ -46,12 +46,12 @@ import (
 // as the sentence is there. Two marks rather than one on purpose - a colour on
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
-func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (fyne.CanvasObject, *ErrorArea) {
+func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
 	marked, ring := WithRing(control)
-	area := NewErrorArea()
+	area = NewErrorArea()
 	area.edge = ring
-	items := append(fieldParts(label, hint, detail, marked), area.Object())
-	return Column(GapTight, items...), area
+	body = Column(GapTight, fieldParts(label, hint, detail, marked)...)
+	return Column(GapTight, body, area.Object()), body, area
 }
 
 // fieldParts is the run of pieces every field is made of, in order.
@@ -81,15 +81,15 @@ func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []
 // positions, neither of which the engine can refuse. What it does get is
 // somewhere to speak, because "every field has one" is worth more than the one
 // exception nobody would remember.
-func ToggleSaying(name, hint string, detail Detail, check *Toggle) (fyne.CanvasObject, *ErrorArea) {
+func ToggleSaying(name, hint string, detail Detail, check *Toggle) (object, body fyne.CanvasObject, area *ErrorArea) {
 	check.Text = name
-	area := NewErrorArea()
+	area = NewErrorArea()
 	items := []fyne.CanvasObject{withDetail(WithRoomForItsName(check), detail)}
 	if hint != "" {
 		items = append(items, Note(hint))
 	}
-	items = append(items, area.Object())
-	return Column(GapTight, items...), area
+	body = Column(GapTight, items...)
+	return Column(GapTight, body, area.Object()), body, area
 }
 
 // Note is a quiet line under something, for what a person needs once.

@@ -238,12 +238,12 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 				g.tips.Say(text.DetailFormat), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
-			parts.Row(
+			g.fields.Row(
 				add(format.SettingSize, text.FieldSize, text.HintSize, g.tips.Say(text.DetailSize),
 					parts.Numeric(g.size)),
 				add(engine.SettingCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(g.count)),
 			),
-			parts.Row(
+			g.fields.Row(
 				add(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.tips.Say(text.DetailTargetID), g.id),
 				add(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
 					g.tips.Say(text.DetailNameTemplate), g.name),
@@ -255,7 +255,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 		parts.Section(text.SectionOutput,
 			add(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, g.tips.Say(text.DetailOutputDir),
 				chooserFor(g.host, g.outDir)),
-			parts.Row(
+			g.fields.Row(
 				add(engine.SettingSeed, text.FieldSeed, text.HintSeed, g.tips.Say(text.DetailSeed),
 					parts.Numeric(g.seed)),
 				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),

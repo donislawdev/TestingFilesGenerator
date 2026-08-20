@@ -34,6 +34,9 @@ type Field struct {
 
 	area   *ErrorArea
 	object fyne.CanvasObject
+	// body is the field without the room under it for a refusal, so a row can
+	// put the refusals of every field in it across the whole width.
+	body fyne.CanvasObject
 }
 
 // Object is the field, to put on a screen.
@@ -76,8 +79,8 @@ func NewFields() *Fields { return &Fields{by: map[string]*Field{}} }
 // Every field gets an area for its refusal and an edge round its control. There
 // is no variant without them, on purpose: the variant IS the defect.
 func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
-	object, area := FieldSaying(label, hint, detail, control)
-	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object}
+	object, body, area := FieldSaying(label, hint, detail, control)
+	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	// Last one wins, which is what a rebuilt screen needs: the preset screen
 	// throws its parameter fields away and draws the new preset's, and an entry
@@ -93,11 +96,52 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 // value the engine refuses today, and leaving it out would be an exception to
 // remember - which is the class of thing this type exists to end.
 func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
-	object, area := ToggleSaying(name, hint, detail, check)
-	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object}
+	object, body, area := ToggleSaying(name, hint, detail, check)
+	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	s.by[setting] = f
 	return object
+}
+
+// Row puts fields side by side and gives their refusals the whole width.
+//
+// A refusal in this tool has four parts - what happened, why, what is allowed,
+// what to do instead - so it is a sentence and not a word. Inside a column of
+// a row it gets half the form to say that in. Measured off a render on
+// 2026-08-20: a size below what BMP can make wrapped onto four lines in the
+// left column while the right half of the panel was empty, and the four lines
+// pushed everything under them down by three.
+//
+// So the controls share the row and the messages do not. The message still
+// belongs to its own field - it is the same area, marked and cleared with the
+// same box - it is just laid out where there is room to read it.
+//
+// Given something that is not a field it falls back to putting it in the row
+// whole, because a row of one field and one plain object is a shape this
+// screen is allowed to build.
+func (s *Fields) Row(objects ...fyne.CanvasObject) fyne.CanvasObject {
+	bodies := make([]fyne.CanvasObject, 0, len(objects))
+	areas := make([]fyne.CanvasObject, 0, len(objects))
+	for _, o := range objects {
+		f := s.holding(o)
+		if f == nil || f.body == nil {
+			bodies = append(bodies, o)
+			continue
+		}
+		bodies = append(bodies, f.body)
+		areas = append(areas, f.area.Object())
+	}
+	return Column(GapTight, append([]fyne.CanvasObject{Row(bodies...)}, areas...)...)
+}
+
+// holding is the field one object is the whole of, or nil.
+func (s *Fields) holding(object fyne.CanvasObject) *Field {
+	for _, f := range s.list {
+		if f.object == object {
+			return f
+		}
+	}
+	return nil
 }
 
 // WhenTypedIn asks to be told whenever anything on this screen is typed into.
@@ -210,8 +254,37 @@ func (s *Fields) Mark(setting, message string) bool {
 	if !ok {
 		return false
 	}
-	f.Say(message)
+	f.Say(inTheWordsOnScreen(f, message))
 	return true
+}
+
+// inTheWordsOnScreen puts a refusal into the vocabulary of the screen it is
+// shown on.
+//
+// The engine words a refusal once for both surfaces, and it names the setting
+// by the key a recipe writes - "bmp: width cannot be ...". On the command line
+// that is the only name there is. In this window, since 2026-08-20, the box
+// above the message is called Width, so the refusal was naming something the
+// screen does not have. That defect arrived WITH the labels: before them the
+// key and the label were the same string.
+//
+// The key is swapped for the label rather than the message being reworded here.
+// Wording it twice is D1 coming apart in the place nobody compares - the
+// engine's sentence stays the engine's sentence, and only the name of the box
+// is the name this screen uses for it.
+//
+// The last part of a dotted address rather than the whole of it: a batch
+// addresses its settings as targets[0].properties.width, and the words on the
+// screen are Width.
+func inTheWordsOnScreen(f *Field, message string) string {
+	key := f.Setting
+	if at := strings.LastIndex(key, "."); at >= 0 {
+		key = key[at+1:]
+	}
+	if key == "" || f.Label == "" || key == f.Label {
+		return message
+	}
+	return strings.ReplaceAll(message, key, f.Label)
 }
 
 // Clear takes back whatever one field was complaining about.
