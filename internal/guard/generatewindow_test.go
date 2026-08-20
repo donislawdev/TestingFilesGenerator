@@ -109,7 +109,7 @@ func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 		picker.SetSelected(d.ID)
 
 		for _, p := range d.Properties {
-			control := controlUnder(content, p.Name)
+			control := controlUnder(content, text.SettingLabel(p.Name))
 			if control == nil {
 				t.Errorf("%s declares %q and the window draws no field for it", d.ID, p.Name)
 				continue
@@ -149,7 +149,7 @@ func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 				if declares(d, p.Name) {
 					continue
 				}
-				if controlUnder(content, p.Name) != nil {
+				if controlUnder(content, text.SettingLabel(p.Name)) != nil {
 					t.Errorf("choosing %s left the field %q of %s on screen", d.ID, p.Name, other.ID)
 				}
 			}

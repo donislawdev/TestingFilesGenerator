@@ -109,10 +109,10 @@ func TestAMenuOffersItsChoicesInTheDeclaredOrder(t *testing.T) {
 			if len(p.Choices) == 0 {
 				continue
 			}
-			menu, ok := controlUnder(content, p.Name).(*parts.Chooser)
+			menu, ok := controlUnder(content, text.SettingLabel(p.Name)).(*parts.Chooser)
 			if !ok {
 				t.Errorf("%s.%s is a closed set and the window draws %T for it",
-					d.ID, p.Name, controlUnder(content, p.Name))
+					d.ID, p.Name, controlUnder(content, text.SettingLabel(p.Name)))
 				continue
 			}
 			checked++

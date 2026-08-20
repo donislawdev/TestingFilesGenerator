@@ -86,7 +86,7 @@ func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 		}
 
 		for _, param := range p.Parameters {
-			control := controlUnder(content, param.Name)
+			control := controlUnder(content, text.SettingLabel(param.Name))
 			if control == nil {
 				t.Errorf("%s declares the parameter %q and the window draws no field for it", p.ID, param.Name)
 				continue

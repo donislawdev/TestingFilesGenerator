@@ -159,7 +159,7 @@ func leftAlone(p format.Property) string {
 // which had nowhere to put a refusal, so "width must be between 1 and 20000"
 // appeared at the foot of the form with nothing marked. Thirteen formats
 // declare fourteen of these between them.
-func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.CanvasObject) {
+func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
 	fields := make([]PropertyField, 0, len(d.Properties))
 	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
 
@@ -181,12 +181,16 @@ func PropertyFields(d format.Descriptor, into *Fields) ([]PropertyField, []fyne.
 	for _, p := range d.Properties {
 		f := FromProperty(p)
 		fields = append(fields, f)
-		// No second explanation behind a button here, and that is the
-		// declaration's doing rather than a gap. What a property takes is one
-		// sentence built from Allowed, so there is nothing to hold back - and a
-		// button that opened the line already printed underneath would be the
-		// same words twice.
-		object := into.Add(p.Name, p.Name, PropertyDetail(p), NoDetail, ShapedFor(p, f.Control))
+		// The label is the window's own wording and the key a recipe writes
+		// is behind the button. Until 2026-08-20 the key WAS the label, so a
+		// screen where every other name is capitalised and spaced carried
+		// bit_depth and entry_size among them.
+		//
+		// The button is what makes that safe rather than a loss: this is a tool
+		// whose window and whose recipe file are two ways into one engine, so
+		// somebody who finds a setting here has to be able to write it down.
+		object := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(p),
+			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control))
 		if narrowOnAScreen(p) {
 			pending = append(pending, object)
 			continue

@@ -290,13 +290,13 @@ func (g *Generate) onFormatChosen(id string) {
 		return
 	}
 
-	fields, objects := parts.PropertyFields(d, g.fields)
+	fields, objects := parts.PropertyFields(d, g.fields, g.tips)
 	g.props = fields
 	if len(objects) == 0 {
 		g.propBox.Refresh()
 		return
 	}
-	g.propBox.Add(parts.Heading(text.SettingsFor(d.ID)))
+	g.propBox.Add(parts.SettingsHeading(text.SettingsFor(d.ID)))
 	for _, o := range objects {
 		g.propBox.Add(o)
 	}

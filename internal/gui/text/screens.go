@@ -1,6 +1,9 @@
 package text
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Headings, one per screen. They name what the screen is for rather than what
 // it contains, which is why the preset one is a question.
@@ -182,7 +185,37 @@ func ChoiceLeftAlone(declared string) string {
 // agree on where a name goes in a phrase, and this is the seam that lets one
 // move it without finding every caller.
 func SettingsFor(formatID string) string {
-	return "settings for " + formatID
+	return "Settings for " + formatID
+}
+
+// SettingLabel is what the name above a declared setting reads.
+//
+// A format declares its settings under the key a recipe writes - width,
+// bit_depth, entry_size - and until 2026-08-20 the window put that key on the
+// screen as the label. Two naming systems in one visual style: the names this
+// window writes are capitalised and spaced, and the ones coming out of the
+// registry were not, so half the labels on the screen looked written and half
+// looked leaked.
+//
+// It changes only what is drawn. The key is what a refusal is matched against
+// and what goes into a recipe, and neither of those goes through here - see
+// SettingKey for where the key stays visible.
+func SettingLabel(key string) string {
+	if key == "" {
+		return key
+	}
+	spaced := strings.ReplaceAll(key, "_", " ")
+	return strings.ToUpper(spaced[:1]) + spaced[1:]
+}
+
+// SettingKey says what to write in a recipe for the field being looked at.
+//
+// The other half of SettingLabel, and the reason the change is not a loss.
+// This is a tool whose window and whose recipe file are two ways into one
+// engine, so a person who finds a setting on the screen has to be able to
+// write it down - and the key is the only spelling that works there.
+func SettingKey(key string) string {
+	return "Written as " + key + " in a recipe."
 }
 
 // TooManyFiles refuses a run before the list is built, because building it is

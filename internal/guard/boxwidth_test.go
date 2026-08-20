@@ -36,7 +36,7 @@ func TestABoxForANumberIsNotAsWideAsTheForm(t *testing.T) {
 			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
 				continue
 			}
-			control := controlUnder(generate, p.Name)
+			control := controlUnder(generate, settingLabelOf(p))
 			if control == nil {
 				t.Errorf("%s declares %q and the window draws no field for it", d.ID, p.Name)
 				continue
@@ -73,7 +73,7 @@ func TestABoxIsWideEnoughForItsOwnPlaceholder(t *testing.T) {
 			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
 				continue
 			}
-			control := controlUnder(generate, p.Name)
+			control := controlUnder(generate, settingLabelOf(p))
 			if control == nil {
 				continue
 			}
@@ -246,4 +246,4 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 }
 
 // settingLabelOf is what the label above a declared setting reads.
-func settingLabelOf(p format.Property) string { return p.Name }
+func settingLabelOf(p format.Property) string { return text.SettingLabel(p.Name) }

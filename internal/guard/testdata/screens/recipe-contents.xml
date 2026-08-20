@@ -22,8 +22,8 @@
 			<container pos="0,38" size="1088x1250">
 				<container size="1088x1250">
 					<widget size="1088x1136" type="*widget.Scroll">
-						<container size="1088x1322">
-							<container pos="134,0" size="820x1322">
+						<container size="1088x1328">
+							<container pos="134,0" size="820x1328">
 								<container size="820x39">
 									<widget pos="6,0" size="808x39" type="*widget.Label">
 										<widget size="808x39" type="*widget.RichText">
@@ -31,12 +31,12 @@
 										</widget>
 									</widget>
 								</container>
-								<container pos="0,53" size="820x953">
-									<container size="820x953">
-										<container size="820x953">
-											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x953" strokeColor="separator" strokeWidth="1"/>
-											<container size="820x953">
-												<container pos="6,6" size="808x941">
+								<container pos="0,53" size="820x959">
+									<container size="820x959">
+										<container size="820x959">
+											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x959" strokeColor="separator" strokeWidth="1"/>
+											<container size="820x959">
+												<container pos="6,6" size="808x947">
 													<widget size="808x35" type="*widget.Label">
 														<widget size="808x35" type="*widget.RichText">
 															<text bold pos="6,6" size="63x23" textSize="17">Batch 1</text>
@@ -391,18 +391,25 @@
 															</widget>
 														</container>
 													</container>
-													<widget pos="0,560" size="808x31" type="*widget.Label">
-														<widget size="808x31" type="*widget.RichText">
-															<text bold pos="6,6" size="115x19">settings for bmp</text>
+													<widget pos="0,560" size="808x35" type="*widget.Label">
+														<widget size="808x35" type="*widget.RichText">
+															<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
 														</widget>
 													</widget>
-													<container pos="0,600" size="808x92">
-														<widget size="808x31" type="*widget.Label">
-															<widget size="808x31" type="*widget.RichText">
-																<text bold pos="6,6" size="40x19">width</text>
+													<container pos="0,604" size="808x93">
+														<container size="808x32">
+															<widget size="53x32" type="*widget.Label">
+																<widget size="53x32" type="*widget.RichText">
+																	<text bold pos="6,6" size="41x19">Width</text>
+																</widget>
 															</widget>
-														</widget>
-														<container pos="0,32" size="808x31">
+															<widget pos="59,0" size="32x32" type="*parts.DetailButton">
+																<rectangle radius="5" size="32x32"/>
+																<rectangle size="32x32"/>
+																<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+															</widget>
+														</container>
+														<container pos="0,33" size="808x31">
 															<container size="188x31">
 																<widget size="188x31" type="*widget.Entry">
 																	<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
@@ -421,19 +428,26 @@
 																<rectangle radius="5" size="188x31"/>
 															</container>
 														</container>
-														<widget pos="0,64" size="808x28" type="*widget.Label">
+														<widget pos="0,65" size="808x28" type="*widget.Label">
 															<widget size="808x28" type="*widget.RichText">
 																<text color="disabled" pos="6,6" size="691x16" textSize="12">whole number of pixels from 1 to 20000. How wide the picture is. Left out, the picture is sized to fill the bytes you asked for.</text>
 															</widget>
 														</widget>
 													</container>
-													<container pos="0,702" size="808x92">
-														<widget size="808x31" type="*widget.Label">
-															<widget size="808x31" type="*widget.RichText">
-																<text bold pos="6,6" size="45x19">height</text>
+													<container pos="0,707" size="808x93">
+														<container size="808x32">
+															<widget size="59x32" type="*widget.Label">
+																<widget size="59x32" type="*widget.RichText">
+																	<text bold pos="6,6" size="47x19">Height</text>
+																</widget>
 															</widget>
-														</widget>
-														<container pos="0,32" size="808x31">
+															<widget pos="65,0" size="32x32" type="*parts.DetailButton">
+																<rectangle radius="5" size="32x32"/>
+																<rectangle size="32x32"/>
+																<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+															</widget>
+														</container>
+														<container pos="0,33" size="808x31">
 															<container size="188x31">
 																<widget size="188x31" type="*widget.Entry">
 																	<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
@@ -452,13 +466,13 @@
 																<rectangle radius="5" size="188x31"/>
 															</container>
 														</container>
-														<widget pos="0,64" size="808x28" type="*widget.Label">
+														<widget pos="0,65" size="808x28" type="*widget.Label">
 															<widget size="808x28" type="*widget.RichText">
 																<text color="disabled" pos="6,6" size="682x16" textSize="12">whole number of pixels from 1 to 20000. How tall the picture is. Left out, the picture is sized to fill the bytes you asked for.</text>
 															</widget>
 														</widget>
 													</container>
-													<container pos="0,803" size="808x138">
+													<container pos="0,809" size="808x138">
 														<widget size="808x31" type="*widget.Label">
 															<widget size="808x31" type="*widget.RichText">
 																<text bold pos="6,6" size="168x19">Files inside each archive</text>
@@ -558,7 +572,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,1021" size="820x301">
+								<container pos="0,1027" size="820x301">
 									<container size="820x301">
 										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x301" strokeColor="separator" strokeWidth="1"/>
 										<container size="820x301">
@@ -715,8 +729,8 @@
 							<linearGradient endColor="shadow" pos="0,-8" size="1088x8"/>
 						</widget>
 						<widget pos="1082,0" size="6x1136" type="*widget.scrollBarArea">
-							<widget pos="3,0" size="3x976" type="*widget.scrollBar">
-								<rectangle fillColor="scrollbar" radius="3" size="3x976"/>
+							<widget pos="3,0" size="3x972" type="*widget.scrollBar">
+								<rectangle fillColor="scrollbar" radius="3" size="3x972"/>
 							</widget>
 						</widget>
 					</widget>

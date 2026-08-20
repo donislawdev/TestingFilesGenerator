@@ -96,6 +96,18 @@ func FieldColumn(children ...fyne.CanvasObject) *fyne.Container {
 	return Column(GapField, children...)
 }
 
+// SettingsHeading names the block of fields a chosen format declares.
+//
+// A rank of its own rather than a field's name in bold, which is what it was
+// until 2026-08-20: "settings for bmp" sat in the same size and the same
+// weight as the label of the box under it, so a heading and the thing it heads
+// were drawn identically and the block had no top edge. It is the same rank a
+// section title uses, because that is what it is - a group of fields under a
+// name, inside a panel that already has one.
+func SettingsHeading(title string) fyne.CanvasObject {
+	return sectionTitle(title)
+}
+
 // sectionTitle names a section, at the rank between the screen and a field.
 //
 // The size the card used to draw it at, kept deliberately: the scale is four
