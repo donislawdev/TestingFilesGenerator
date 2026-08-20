@@ -281,7 +281,10 @@ jobs:
         run: |
           set -euo pipefail
           cd incoming
-          sha256sum ./* > SHA256SUMS.txt
+          # Bare names rather than ./name. Somebody checking one download runs
+          # sha256sum -c beside the file they just fetched, and a leading ./ is
+          # one more thing between them and an answer.
+          sha256sum -- * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: notes
