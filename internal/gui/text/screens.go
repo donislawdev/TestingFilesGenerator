@@ -51,9 +51,14 @@ const (
 	// below it, where the rest of "what should this file be" already lived.
 	SectionConfiguration = "File configuration"
 	SectionOutput        = "Output"
-	SectionPreset        = "Preset"
-	SectionSettings      = "Settings"
-	SectionLicence       = "Licence"
+	// Not "Preset". The card was called that and so was the first field
+	// inside it, so the same word stood twice within 40 px in two different
+	// ranks of type - which reads as unfinished naming rather than as a
+	// grouping. It names what the card is for instead, which is the one thing
+	// the field label cannot say.
+	SectionPreset   = "The question"
+	SectionSettings = "Settings"
+	SectionLicence  = "Licence"
 )
 
 // Field labels on the generate screen, in the order somebody fills them in.

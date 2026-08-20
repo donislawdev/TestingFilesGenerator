@@ -41,7 +41,7 @@
 														<container pos="6,6" size="808x307">
 															<widget size="808x35" type="*widget.Label">
 																<widget size="808x35" type="*widget.RichText">
-																	<text bold pos="6,6" size="53x23" textSize="17">Preset</text>
+																	<text bold pos="6,6" size="110x23" textSize="17">The question</text>
 																</widget>
 															</widget>
 															<container pos="0,44" size="808x87">
