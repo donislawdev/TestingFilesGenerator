@@ -1,6 +1,6 @@
 # Testing Files Generator
 
-**Generate test files for QA, and know how the system under test should react to them.**
+**Generate test files for QA, and know how the system under test should react to them.**. A free, open source tool that creates **real test files** - PDF, PNG, JPG, ZIP, DOCX, XLSX and fourteen more - at **any exact size you ask for**. It also writes down what your application should do with each one. Command line and desktop app, fully offline, on Windows, macOS and Linux.
 
 [![Download](https://img.shields.io/github/v/release/donislawdev/TestingFilesGenerator?label=download&color=2ea043&logo=github&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 [![CI](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml/badge.svg)](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml)
@@ -11,10 +11,10 @@
 [![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 
-A free, open source tool that creates **real test files** - PDF, PNG, JPG, ZIP,
-DOCX, XLSX and fourteen more - at **any exact size you ask for**. It also writes
-down what your application should do with each one. Command line and desktop
-app, fully offline, on Windows, macOS and Linux.
+
+
+⭐ **If it saved you time, leave a star.** That is how the next tester who needs it finds out it
+exists.
 
 ![The desktop window of Testing Files Generator, set up to write a batch of test files](.github/window.png)
 
@@ -652,7 +652,7 @@ realistic distributions.
 
 ## 📄 Licence
 
-Copyright (C) 2026 DonislawDev.
+Copyright (C) 2026 DonislawDev. The project is built with an AI-assisted workflow.
 
 Released under the GNU General Public License, version 3. The full text is in
 [LICENSE](LICENSE). Run `tfg license` for the short version, including what it
