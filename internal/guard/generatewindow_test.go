@@ -602,3 +602,45 @@ func namesIn(t *testing.T, dir string) []string {
 	sort.Strings(out)
 	return out
 }
+
+// What this defends. A run can be stopped from the moment it starts, and not a
+// moment after.
+//
+// This reads the source, which is not how this package likes to work. The
+// reason is that there is nothing else to ask. The defect is a window between
+// two statements: the worker goroutine is started, files begin to be written,
+// and the handle that cancels and waits for it is assigned on the next line. A
+// window closed inside that gap finds nothing to call, waits for nothing, and
+// ends the process somewhere inside a file with no manifest - G7, and the one
+// thing the output directory is promised never to hold.
+//
+// It cannot be reached by running anything. The gap is a few instructions wide
+// and no test can be made to land in it reliably, so a guard that tried would
+// be green for the same reason a broken one is. The ordering IS the fix, so the
+// ordering is what gets asserted.
+func TestARunIsStoppableFromTheMomentItStarts(t *testing.T) {
+	body := readFile(t, "../gui/window/run.go")
+
+	const signature = "func (r *runner) startRun("
+	from := strings.Index(body, signature)
+	if from < 0 {
+		t.Fatalf("there is no %s in run.go, so this guard is looking at something that has been renamed", signature)
+	}
+	fn := body[from:]
+	if end := strings.Index(fn, "\n}\n"); end > 0 {
+		fn = fn[:end]
+	}
+
+	handle := strings.Index(fn, "r.stop = func()")
+	worker := strings.Index(fn, "go func()")
+	switch {
+	case handle < 0:
+		t.Fatal("startRun no longer assigns r.stop, so nothing would stop a run at all")
+	case worker < 0:
+		t.Fatal("startRun no longer starts a goroutine, so this guard is reading the wrong function")
+	case handle > worker:
+		t.Error("startRun starts the worker before it assigns r.stop.\n" +
+			"Reason: between those two statements files are being written and Stop has nothing to call, so closing the window there ends the process inside a file with no manifest.\n" +
+			"What to do: assign r.stop first. ctx, cancel and done all exist by then, so nothing is gained by waiting.")
+	}
+}

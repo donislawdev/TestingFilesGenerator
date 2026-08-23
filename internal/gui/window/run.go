@@ -100,9 +100,33 @@ type runner struct {
 	// they added it. Fields.Add is the only way to build a field now.
 	fields *parts.Fields
 
-	// stop ends the run in progress and waits for it. Nil while nothing is
-	// running, and only ever touched on the interface thread.
+	// stop ends the run in progress and waits for it, and is only ever touched
+	// on the interface thread.
+	//
+	// It is deliberately left in place once a run has ended rather than
+	// cleared, and that is a threading decision rather than an oversight.
+	// Clearing it would be a write from the worker under the toolkit's test
+	// driver, where fyne.Do runs on the calling goroutine - so -race would
+	// report a race that production does not have, and the honest way out is a
+	// handle that is safe to hold on to. Calling it after the run has ended
+	// cancels a finished context and receives from a closed channel, both of
+	// which return at once.
+	//
+	// So it says nothing about whether a run is going. It used to be asked
+	// that, and the answer was wrong from the second run onwards - see running.
 	stop func()
+
+	// running is whether a run owns the screen, and it exists because stop
+	// cannot answer that. Asking stop was a real defect and a quiet one: it is
+	// set on the first Generate and never cleared, so from then on every live
+	// check returned at its first line. Fields stopped being checked while
+	// being typed in and stopped being unmarked once corrected, and the screen
+	// looked exactly the same doing it.
+	//
+	// Only ever touched on the interface thread, which is what makes a plain
+	// bool enough - setRunning is called from there, and the worker gets back
+	// through fyne.Do before it reaches this.
+	running bool
 
 	// alsoDisabled are controls that are neither fields nor run buttons and
 	// still have no business being pressed while a run is going. The batch
@@ -237,7 +261,7 @@ func (r *runner) recheck(setting string) {
 	}
 	// A run owns the screen while it lasts. Its progress and its refusals are
 	// not to be wiped by a keystroke.
-	if r.stop != nil {
+	if r.running {
 		return
 	}
 	// Typing in the destination box moves the destination, and the line saying
@@ -584,6 +608,23 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 		})
 	}
 
+	// Cancelling and waiting, in that order, is the whole of G7. Closing the
+	// window is not a signal, so nothing else brings the run to a stop - and
+	// ending the process without waiting would leave it somewhere inside a file
+	// with no manifest, which is the one thing the output directory is promised
+	// never to hold.
+	//
+	// Set BEFORE the goroutine starts, and that ordering is the whole point.
+	// The other way round there is a window - short, and real - where files are
+	// being written and this is still nil, so closing the window in it finds
+	// nothing to call, waits for nothing, and ends the process somewhere inside
+	// a file. ctx, cancel and done all exist already, so there is nothing to
+	// gain by waiting.
+	r.stop = func() {
+		cancel()
+		<-done
+	}
+
 	go func() {
 		res, runErr := engine.Run(ctx, planned, opt)
 		// The manifest is written here rather than after crossing back, because
@@ -596,16 +637,6 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 		fyne.Do(func() { r.runFinished(res, runErr, saveErr) })
 		close(done)
 	}()
-
-	// Cancelling and waiting, in that order, is the whole of G7. Closing the
-	// window is not a signal, so nothing else brings the run to a stop - and
-	// ending the process without waiting would leave it somewhere inside a file
-	// with no manifest, which is the one thing the output directory is promised
-	// never to hold.
-	r.stop = func() {
-		cancel()
-		<-done
-	}
 }
 
 // progressText is the line under the bar. Bytes rather than files, because one
@@ -641,13 +672,10 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 	return nil
 }
 
-// stop is deliberately left in place rather than cleared here, and that is a
-// threading decision rather than an oversight. Clearing it would be a write
-// from the worker under the toolkit's test driver, where fyne.Do runs on the
-// calling goroutine - so -race would report a race that production does not
-// have, and the honest way out is a handle that is safe to hold on to. Calling
-// it after the run has ended cancels a finished context and receives from a
-// closed channel, both of which return at once.
+// runFinished is the end of a run, back on the interface thread.
+//
+// Note what it does not do: clear stop. That is deliberate and the reason is at
+// the declaration of the field.
 func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 	r.setRunning(false)
 
@@ -691,6 +719,10 @@ func notesOf(res *engine.Result) []string {
 // look pressable during a run is a window that invites a second run into a
 // directory the first one is still filling.
 func (r *runner) setRunning(running bool) {
+	// The state itself, before any of the controls. Everything below is what
+	// the state looks like - this is the state, and it is what the live check
+	// asks. See the running field.
+	r.running = running
 	// Cancel is hidden rather than greyed when there is nothing to cancel, asked
 	// for on 2026-08-11 after looking at the window. A permanently dead control
 	// is a question the screen keeps asking and answering itself, and it sat

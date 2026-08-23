@@ -92,6 +92,12 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestARunIsStoppableFromTheMomentItStarts": "checked 2026-08-23 with tools/probes/run-stop-order.py, which reproduces the original defect faithfully: it moves the assignment of r.stop " +
+		"to after the goroutine that writes the files, builds, and runs the guard. Reported CAUGHT, and the file was restored. " +
+		"A probe rather than a mutation entry for two reasons, and the first one is the interesting one. The obvious substitution - deleting the handle - does NOT compile, because cancel is then unused, " +
+		"and a mutation that does not compile proves nothing while reporting as though it did. The faithful version is a MOVE of fifteen lines rather than a substitution of one piece of text for another, " +
+		"and mutate.py entries have to be literals.",
+
 	"TestTabbingReachesTheControlsAndSaysInWhatOrder": "broken by hand on 2026-08-13: parts.Row was made to Hide the row it builds, and the guard went red naming four controls - " +
 		"the size box, the seed box and two explanation buttons - then green again when it was put back. " +
 		"That break is the real failure mode rather than an invented one. Visible() on a child answers for the CHILD, so a control inside a hidden container still reports itself visible " +

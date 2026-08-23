@@ -181,3 +181,58 @@ func countObjects(o fyne.CanvasObject) int {
 	walk(o, func(fyne.CanvasObject) { n++ })
 	return n
 }
+
+// What this defends. A screen keeps checking what is typed into it after a run
+// has finished, instead of quietly going deaf.
+//
+// This was a real defect and it is the shape worth remembering, not the line
+// that fixed it. The live check asked "is a run going" by looking at the handle
+// that stops one - and that handle is deliberately never cleared, for a
+// threading reason that is good and is written down at its declaration. So from
+// the first Generate onwards the check returned at its first line, for the rest
+// of the session. Fields stopped being marked while being typed in and stopped
+// being unmarked once corrected.
+//
+// Nothing about the screen looked different. Every guard for the live check
+// still passed, because every one of them started from a screen that had never
+// run anything. That is the gap this closes: the state was reachable only by
+// doing something first.
+func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
+	dir := t.TempDir()
+	host, content := screen(t)
+
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "2kb")
+	fill(t, content, text.FieldCount, "2")
+	press(t, content, "Generate")
+	waitForManifest(t, dir)
+	join(host)
+
+	// Asserted rather than assumed. A guard that reaches this line with the run
+	// still going would be testing the frozen form and passing for the wrong
+	// reason - O118, which has already happened twice in this package.
+	box := entryUnder(t, content, text.FieldSize)
+	if box == nil {
+		t.Fatal("there is no size box, so this guard read the wrong tree")
+	}
+	if box.Disabled() {
+		t.Fatal("the form is still frozen, so this guard never reached the state it is about: a run that has ENDED")
+	}
+
+	fill(t, content, text.FieldSize, "abc")
+	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+		t.Error("a size that is not a size was typed after a run had finished and the box says nothing.\n" +
+			"The screen has stopped checking what is typed into it, and looks no different doing so.")
+	}
+	if said := sayingUnder(t, content, text.FieldSize); said == "" {
+		t.Error("the box was marked after a finished run and given no reason, so the colour is the whole of the message")
+	}
+
+	// And the other half: it still comes back off. A screen that can mark but
+	// not unmark leaves a corrected field looking wrong for the rest of the
+	// session.
+	fill(t, content, text.FieldSize, "10mb")
+	if left := edgeOf(t, content, text.FieldSize).StrokeWidth; left != 0 {
+		t.Errorf("the size was corrected after a finished run and its box still draws an edge %.1f px wide", left)
+	}
+}
