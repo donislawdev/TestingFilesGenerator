@@ -56,19 +56,38 @@ import (
 //     of this set on purpose, and saying so here is the point - a set that
 //     quietly skipped it would read as covering everything.
 //
-// macOS, measured on the owner's Mac Mini on 2026-08-17 rather than assumed.
-// All eleven screens differ there, and the shape of the difference is what
-// decided the design: a few thousand pixels spread over the whole window, never
-// more than 2 of 255 in any channel. Same glyphs, same layout, same colours -
-// the last bit of edge blending rounds the other way.
+// arm64 draws the same screen a shade differently, and the tolerance below is
+// for that. Measured twice rather than assumed, on two different systems:
+// the owner's Mac Mini on 2026-08-17, and Linux in a container on 2026-08-23.
+// Both round the same way - a few thousand pixels spread over the whole window,
+// never more than 3 of 255 in any channel. Same glyphs, same layout, same
+// colours - the last bit of edge blending rounds the other way.
+//
+// It is the ARCHITECTURE, not the system, and that took a second measurement to
+// see. The first one only had a Mac, so the difference was written down as a
+// macOS thing and the tolerance was keyed on the operating system. Then Linux
+// on arm64 came back with the same rounding, and Linux on amd64 - the same
+// binary, the same references, the same container, the same moment - came back
+// identical to the byte. Two arm64 platforms round, two amd64 platforms do not.
+// Keying this on darwin was reading one measurement as if it were the rule.
+//
+// The strongest part of that measurement is not the pixels. The widget tree,
+// compared separately below, matched to the byte on all twenty five screens -
+// and it carries sizes, positions, colours and every string on the screen. So
+// the layout is identical and only the rasterising differs, which is exactly
+// the case this file calls "tree the same and pixels different".
 //
 // So the tolerance is on how FAR a channel moved, not on how many pixels moved,
-// and it applies only where that rounding was measured. The two worlds are
-// eight times apart: narrowing one field by a single pixel - the smallest real
-// change this window can make - moves a channel by 16.
+// and it applies only where that rounding was measured.
 //
-// What is still NOT proven: whether 2 belongs to macOS or to that one machine
-// and that one version of it. One Mac, measured once.
+// What is still NOT proven, and both matter:
+//
+//   - darwin/amd64. There is no Intel Mac to measure and it is not a supported
+//     target - release.yml says so - so this stops giving it a tolerance rather
+//     than carrying an untested claim about it.
+//   - WHY arm64 rounds the other way. Go allows FMA contraction on arm64 and
+//     not on amd64, which would do it, but that is a hypothesis nobody here
+//     measured. Named so the next person knows it is a lead, not a finding.
 //
 // To regenerate after a deliberate change:
 //
@@ -89,19 +108,77 @@ const (
 // tools/probes/guirender pins the same string for its -compare mode.
 const pinnedOutputDirectory = "/tfg/out"
 
-// macOSBlendTolerance is how far one channel may move on macOS before this
-// stops calling it rounding. Measured at 2 on every screen, so this is double
-// that - and still four times below the 16 that the smallest real change makes.
-const macOSBlendTolerance = 4
+// measuredArmBlend is the largest channel distance arm64 was actually seen to
+// move: 2 of 255 on twenty four screens and 3 on preset-refused, measured
+// 2026-08-23 across all twenty five, and 2 on the Mac on 2026-08-17.
+const measuredArmBlend = 3
 
-// pixelTolerance is deliberately different per system rather than uniform.
-// Windows and Linux were measured at exactly zero, and taking a tolerance there
-// would give away accuracy this guard actually has.
+// smallestRealChange is how far a channel moves when this window makes the
+// smallest change it CAN make - one field narrowed by one pixel. Measured
+// 2026-08-23 by doing exactly that, parts.NumericWidth from 140 to 139, and
+// reading what this guard reported: twenty four of the twenty five screens
+// moved, by at least 16, typically 16, up to 203.
+//
+// It is written down so the tolerance can be held against a measurement rather
+// than against a feeling, which is what the test below does.
+const smallestRealChange = 16
+
+// armBlendTolerance is how far one channel may move on arm64 before this stops
+// calling it rounding. Double the measured 3, so a machine that rounds slightly
+// harder than the two measured ones does not go red - and still comfortably
+// under the 16 that the smallest real change makes.
+//
+// Written as its own number rather than as measuredArmBlend * 2, and that is
+// not a style choice. Derived from the measurement, it can never fall below it,
+// so the test below would be holding it against a bound arithmetic already
+// guarantees - a check that reads like one and cannot fail. It is a decision
+// sitting between two measurements, so it is spelled as one.
+const armBlendTolerance = 6
+
+// pixelTolerance is deliberately different per architecture rather than
+// uniform. amd64 was measured at exactly zero on Windows and on Linux, and
+// taking a tolerance there would give away accuracy this guard actually has.
 func pixelTolerance() int {
-	if runtime.GOOS == "darwin" {
-		return macOSBlendTolerance
+	if runtime.GOARCH == "arm64" {
+		return armBlendTolerance
 	}
 	return 0
+}
+
+// What this defends. A tolerance is the one thing in this file that can make it
+// pass for the wrong reason, and it can do that quietly - a number nudged up
+// far enough stops the pictures from ever disagreeing again, and a green run
+// looks the same either way.
+//
+// So the number is held against the two measurements that bracket it: the
+// rounding it has to absorb, and the smallest real change it must never
+// absorb. Both are recorded above with the date they were taken.
+//
+// This asks about the constants rather than about a rendering on purpose,
+// because it has to mean something on the machine it runs on. The arm64 branch
+// is dead code on amd64, so a test that only rendered would be green here no
+// matter what that branch said - which is the shape of guard this project has
+// been bitten by more than once.
+func TestTheBlendToleranceStaysBetweenTheRoundingAndTheSmallestRealChange(t *testing.T) {
+	if armBlendTolerance < measuredArmBlend {
+		t.Errorf("the arm64 tolerance is %d, below the %d that was actually measured.\n"+
+			"Reason: a tolerance under the rounding it exists for makes arm64 red for edge blending.\n"+
+			"What to do: either raise it back above the measurement or measure again and move both numbers together.",
+			armBlendTolerance, measuredArmBlend)
+	}
+	if limit := smallestRealChange / 2; armBlendTolerance > limit {
+		t.Errorf("the arm64 tolerance is %d, more than half of the %d that the smallest real change makes.\n"+
+			"Reason: at that size it starts being able to hide a change somebody meant to see, which is the one thing this guard exists to catch.\n"+
+			"Allowed: at most %d.\n"+
+			"What to do: if a machine really rounds that hard, measure it and say so - do not widen this to make a run go green.",
+			armBlendTolerance, smallestRealChange, limit)
+	}
+	if runtime.GOARCH != "arm64" && pixelTolerance() != 0 {
+		t.Errorf("this is %s and the tolerance is %d rather than 0.\n"+
+			"Reason: amd64 was measured at exactly zero on Windows and on Linux, so any tolerance here throws away accuracy this guard has.\n"+
+			"What to do: keep the tolerance on the architecture that was measured to need it.",
+			runtime.GOARCH, pixelTolerance())
+	}
 }
 
 // scene is one screen in one state, ready to be photographed.
@@ -627,7 +704,7 @@ func compareAgainstReference(t *testing.T, name, reference string, got image.Ima
 		// starts climbing, the tolerance is covering something it was not
 		// measured to cover, and nobody would see that from a green run.
 		t.Logf("%d pixels differ by at most %d of 255, which is inside the %d allowed on %s - treated as edge blending",
-			differing, worst, pixelTolerance(), runtime.GOOS)
+			differing, worst, pixelTolerance(), runtime.GOARCH)
 		return
 	}
 	dir := saveEvidence(t, name, wantPix, gotPix)
