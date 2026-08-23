@@ -42,6 +42,13 @@ func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
+	// Nothing this window started may outlive the test that started it. A
+	// preview now answers from a worker, and under the test driver fyne.Do
+	// runs on the calling goroutine - so a preview still in flight when a test
+	// ends is a second goroutine shaping text inside the NEXT test. That is
+	// not a theory: it panicked inside the font shaper, in a guard that had
+	// nothing to do with previews.
+	t.Cleanup(func() { join(host) })
 	return host, tabNamed(t, host.content, text.TabOneTarget)
 }
 
@@ -332,12 +339,18 @@ func indexOf(all []string, want string) int {
 // Preview says what it would cost and writes nothing at all.
 func TestPreviewSaysTheCostAndWritesNothing(t *testing.T) {
 	dir := t.TempDir()
-	_, content := screen(t)
+	host, content := screen(t)
 
 	fill(t, content, text.FieldOutputDir, dir)
 	fill(t, content, text.FieldSize, "4kb")
 	fill(t, content, text.FieldCount, "3")
 	press(t, content, "Preview")
+	// A preview crosses to a worker now, so its answer arrives after the press
+	// returns. Joined rather than polled: polling reads widgets from this
+	// goroutine while the worker writes them, and under the test driver that is
+	// two goroutines in the font shaper at once. It panics there, in whatever
+	// test happens to be running.
+	join(host)
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {

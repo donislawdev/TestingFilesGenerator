@@ -146,6 +146,22 @@ type runner struct {
 
 	// resting is true while nothing pressed has spoken. The status line
 	// carries the destination until then and whatever was pressed afterwards.
+	//
+	// One way only, and that is worth knowing before relying on it: nothing
+	// sets it back. So the destination line is live until the first press and
+	// never again, and the call to sayDestination in the live check is doing
+	// something only for that first stretch.
+	//
+	// It was tempting to make typing restore it, and that is wrong for a
+	// measured reason - see sayDestination. A refusal puts its sentence on this
+	// same line, and the live check runs on the next keystroke, so restoring
+	// here would wipe the sentence somebody had just been given.
+	//
+	// The consequence left standing: after a preview, editing a field leaves a
+	// cost on the line that was worked out for the old values. The answer to
+	// that is a summary that is always live rather than a sentence that has to
+	// be defended - the report calls it the permanent line in the action bar,
+	// and this whole mechanism goes when that lands.
 	resting bool
 
 	// notes is what settling had to say out loud, set by settle rather than
@@ -230,15 +246,28 @@ func spread(err error) []error {
 	if err == nil {
 		return nil
 	}
-	joined, several := err.(interface{ Unwrap() []error })
-	if !several {
-		return []error{err}
+	if joined, several := err.(interface{ Unwrap() []error }); several {
+		var out []error
+		for _, one := range joined.Unwrap() {
+			out = append(out, spread(one)...)
+		}
+		return out
 	}
-	var out []error
-	for _, one := range joined.Unwrap() {
-		out = append(out, spread(one)...)
+	// A join under a single wrapper is still a join. The type assertion above
+	// only sees the outermost layer, so one fmt.Errorf("%s: %w", ...) anywhere
+	// on the way here turns five marked boxes back into one paragraph at the
+	// foot of the form - which is the defect this function exists to prevent.
+	//
+	// Nothing wraps a join today: settle returns errors.Join straight out on
+	// both screens. So this is not fixing anything that is broken, it is
+	// removing the way it comes back - and it comes back silently, because the
+	// guards for marking all build their errors with a bare join.
+	if inner := errors.Unwrap(err); inner != nil {
+		if _, several := inner.(interface{ Unwrap() []error }); several {
+			return spread(inner)
+		}
 	}
-	return out
+	return []error{err}
 }
 
 // recheck says what is wrong with the screen while somebody is still typing.
@@ -266,6 +295,9 @@ func (r *runner) recheck(setting string) {
 	}
 	// Typing in the destination box moves the destination, and the line saying
 	// where the files go is worth nothing if it names the old one.
+	//
+	// This only reaches the line while nothing pressed has spoken - see
+	// resting. Said here because the call reads as though it always does.
 	r.sayDestination()
 	// Only this box, in both directions. What the other boxes were told is
 	// about values nobody has just changed, and it is still true - including
@@ -504,6 +536,13 @@ func (r *runner) progress() fyne.CanvasObject {
 // checks for free space and for a name already taken live in the same preflight
 // the real run goes through, so the answer here is the answer there. Stopping
 // early used to promise success to a run that refused to start on the next line.
+// The preflight it goes through is disk work - free space, and every name it
+// would take - so this crosses to a worker rather than doing it here. It used
+// to run on the interface thread, and on a large set or a directory on a
+// network share that is a window which stops drawing: no bar, no way out, and
+// both buttons still looking pressable because nothing had said the screen was
+// busy. Nobody measured how long it takes, which is the point - the answer
+// depends on somebody else's disk.
 func (r *runner) onPreview() {
 	r.clearProblems()
 	targets, opt, err := r.settle()
@@ -518,8 +557,41 @@ func (r *runner) onPreview() {
 		r.refuse(err)
 		return
 	}
-	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
-		r.refuse(err)
+
+	// Occupied, but with nothing to cancel and nothing to put on the bar. See
+	// setBusy - both of those are properties of a dry run that were measured.
+	r.setBusy(true, false)
+	r.say(text.WorkingOutTheCost)
+
+	done := make(chan struct{})
+
+	// Waited for on the way out, even though a preview writes nothing and there
+	// would be no half written file to protect. What it does do is touch
+	// widgets when it comes back, so a preview still in flight after the window
+	// has gone is a worker drawing into a screen that is being torn down.
+	//
+	// Waiting is all this can do. preflight takes no context, so there is
+	// nothing to cancel - and that is why the button is not offered either.
+	// Before this change the same wait happened on every preview and blocked
+	// the whole window rather than only the closing of it.
+	//
+	// Set before the goroutine starts, for the reason startRun spells out.
+	r.stop = func() { <-done }
+
+	go func() {
+		_, runErr := engine.Run(context.Background(), planned, opt)
+		// Do rather than DoAndWait, for the same reason startRun gives: the
+		// interface thread must never be left waiting on a worker.
+		fyne.Do(func() { r.previewFinished(planned, opt, runErr) })
+		close(done)
+	}()
+}
+
+// previewFinished is the end of a preview, back on the interface thread.
+func (r *runner) previewFinished(planned []engine.PlannedFile, opt engine.Options, runErr error) {
+	r.setBusy(false, false)
+	if runErr != nil {
+		r.refuse(runErr)
 		return
 	}
 	r.say(previewText(planned, opt.OutDir))
@@ -718,11 +790,27 @@ func notesOf(res *engine.Result) []string {
 // setRunning is the screen in one state or the other. Two buttons that both
 // look pressable during a run is a window that invites a second run into a
 // directory the first one is still filling.
-func (r *runner) setRunning(running bool) {
+func (r *runner) setRunning(running bool) { r.setBusy(running, running) }
+
+// setBusy is the same thing with the two halves told apart: whether the screen
+// is occupied, and whether there is anything to interrupt.
+//
+// They came apart when the preview stopped blocking the interface thread. A
+// preview occupies the screen exactly as a run does - both buttons off, the
+// form frozen - but it has nothing to show on the bar and nothing to cancel,
+// and both of those are measured rather than assumed:
+//
+//   - A dry run returns before the writing loop, so OnProgress never fires. A
+//     bar shown for it would sit at nought until the answer arrived, which is
+//     what a stuck run looks like.
+//   - preflight takes no context. It is where a preview spends its time, and it
+//     cannot be interrupted, so a Cancel offered here would be a button that
+//     does nothing while looking like the way out.
+func (r *runner) setBusy(busy, stoppable bool) {
 	// The state itself, before any of the controls. Everything below is what
 	// the state looks like - this is the state, and it is what the live check
 	// asks. See the running field.
-	r.running = running
+	r.running = busy
 	// Cancel is hidden rather than greyed when there is nothing to cancel, asked
 	// for on 2026-08-11 after looking at the window. A permanently dead control
 	// is a question the screen keeps asking and answering itself, and it sat
@@ -733,25 +821,32 @@ func (r *runner) setRunning(running bool) {
 	// one and nothing said which run that applied to - almost certainly none of
 	// them, which is exactly the answer a person cannot reach from looking
 	// (O106).
-	r.fields.Freeze(running)
+	r.fields.Freeze(busy)
 	for _, control := range r.alsoDisabled {
-		if running {
+		if busy {
 			control.Disable()
 			continue
 		}
 		control.Enable()
 	}
 
-	if running {
+	if busy {
 		r.previewBtn.Disable()
 		r.generateBtn.Disable()
+	} else {
+		r.previewBtn.Enable()
+		r.generateBtn.Enable()
+	}
+
+	// Only a run gets these two. See the note above for why a preview gets
+	// neither, and note that both are put away whenever the screen goes idle -
+	// so a preview started after a run cannot leave a stale bar behind.
+	if busy && stoppable {
 		r.cancelBtn.Enable()
 		r.cancelBtn.Show()
 		r.bar.Show()
 		return
 	}
-	r.previewBtn.Enable()
-	r.generateBtn.Enable()
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 	r.bar.Hide()

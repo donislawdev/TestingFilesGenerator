@@ -166,11 +166,14 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 // Asked through Preview because it goes down the same path and writes nothing,
 // so this stays a guard about words rather than a guard that generates files.
 func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabPresets)
+	content, w, host := screenInAWindowWithHost(t, text.TabPresets)
 
 	// Nothing is filled in. A note is what the run says about a value nobody
 	// gave it, so leaving the settings alone is what produces one at all.
 	press(t, content, text.ButtonPreview)
+	// This preview is ACCEPTED, so it answers from a worker. Joined before the
+	// status line is read - see join.
+	join(host)
 	settle(content, w)
 
 	_, status := runMessages(content)
@@ -238,6 +241,15 @@ func TestTheRoomKeptForARunHoldsTheBarAndALine(t *testing.T) {
 // on the first pass that is not the width it ends up with.
 func screenInAWindow(t *testing.T, tab string) (fyne.CanvasObject, fyne.Window) {
 	t.Helper()
+	content, w, _ := screenInAWindowWithHost(t, tab)
+	return content, w
+}
+
+// screenInAWindowWithHost is the same thing for a guard that has to wait for
+// the window's own workers - see join. Most do not, so most use the pair
+// above and this stays out of their way.
+func screenInAWindowWithHost(t *testing.T, tab string) (fyne.CanvasObject, fyne.Window, *fakeHost) {
+	t.Helper()
 
 	app := test.NewApp()
 	app.Settings().SetTheme(parts.Theme())
@@ -258,7 +270,11 @@ func screenInAWindow(t *testing.T, tab string) (fyne.CanvasObject, fyne.Window) 
 	content.Refresh()
 	w.Resize(window.OpenSize)
 
-	return content, w
+	// Nothing this window started may outlive the test that started it - see
+	// the note on screen().
+	t.Cleanup(func() { join(host) })
+
+	return content, w, host
 }
 
 // scrollIn is the scrolling area a screen puts its form in.

@@ -110,6 +110,14 @@ func WritingFiles(count int) string {
 	return "Writing " + files(count) + "..."
 }
 
+// WorkingOutTheCost is what a preview says while it is going.
+//
+// A preview does disk work - it asks how much room there is and whether any of
+// the names are taken - and on a slow or a networked directory that is not
+// instant. It says so rather than leaving the screen looking idle while both
+// buttons are greyed out with no explanation.
+const WorkingOutTheCost = "Working out what this would cost..."
+
 // Progress is the line under the bar during a run. Bytes as well as files,
 // because one large file is a run where the file count says nothing for
 // minutes.

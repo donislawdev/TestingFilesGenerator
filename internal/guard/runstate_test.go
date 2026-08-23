@@ -117,3 +117,91 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 			"press that did nothing.", text.RefusedBeforeWriting)
 	}
 }
+
+// What this defends. A preview does its disk work somewhere other than the
+// interface thread, and says the screen is busy while it does.
+//
+// The preflight a preview goes through asks how much room the disk has and
+// whether any of the names it would write are taken. That is somebody else's
+// disk, possibly a network share, and nobody can put a number on it. Run on
+// the interface thread it is a window that stops drawing - with both buttons
+// still looking pressable, because nothing had said the screen was busy.
+//
+// Two halves, checked two ways, and the split is deliberate:
+//
+//   - The end state is run for real, below.
+//   - The handing-off itself is read out of the source, because racing it
+//     would be a flaky guard. To see a preview mid flight the test would have
+//     to catch it before it finished, and a preview of three small files
+//     finishes in no time - so the assertion would pass or fail on timing.
+//     O111 is what a guard like that costs.
+func TestAPreviewDoesItsDiskWorkOffTheInterfaceThread(t *testing.T) {
+	body := readFile(t, "../gui/window/run.go")
+
+	const signature = "func (r *runner) onPreview("
+	from := strings.Index(body, signature)
+	if from < 0 {
+		t.Fatalf("there is no %s in run.go, so this guard is looking at something that has been renamed", signature)
+	}
+	fn := body[from:]
+	if end := strings.Index(fn, "\n}\n"); end > 0 {
+		fn = fn[:end]
+	}
+
+	worker := strings.Index(fn, "go func()")
+	call := strings.Index(fn, "engine.Run(")
+	busy := strings.Index(fn, "r.setBusy(true")
+	switch {
+	case call < 0:
+		t.Fatal("onPreview no longer goes through engine.Run, so a preview has stopped answering the same question the run does")
+	case worker < 0:
+		t.Error("onPreview calls engine.Run without handing it to a goroutine.\n" +
+			"Reason: its preflight reads the disk, so on a large set or a network share the window stops drawing with no bar and no way out.\n" +
+			"What to do: cross to a worker and come back through fyne.Do, the way startRun does.")
+	case call < worker:
+		t.Error("onPreview calls engine.Run before it starts its goroutine, so the disk work is still on the interface thread.")
+	}
+
+	// And that it says so. Checked here rather than by running a preview and
+	// looking, for the same timing reason: the busy state exists only between
+	// the press and the answer, and on three small files that is no time at
+	// all. What a run CAN check is that the screen comes back, and that is the
+	// guard below.
+	switch {
+	case busy < 0:
+		t.Error("onPreview never puts the screen into its busy state.\n" +
+			"Reason: both buttons stay looking pressable while a preview reads the disk, so a second press starts a second one.")
+	case busy > worker:
+		t.Error("onPreview marks the screen busy only after starting its worker, which is a gap where the preview is running and the screen says it is idle.")
+	}
+}
+
+// And the end state, run for real: a preview leaves the screen idle and usable.
+func TestAPreviewGivesTheScreenBackWhenItIsDone(t *testing.T) {
+	dir := t.TempDir()
+	host, content := screen(t)
+
+	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldSize, "4kb")
+	fill(t, content, text.FieldCount, "3")
+	press(t, content, "Preview")
+	join(host)
+
+	box := entryUnder(t, content, text.FieldSize)
+	if box == nil {
+		t.Fatal("there is no size box, so this guard read the wrong tree")
+	}
+	if box.Disabled() {
+		t.Error("the form is still frozen after the preview finished, so the screen never comes back")
+	}
+	for _, name := range []string{"Preview", "Generate"} {
+		if b := buttonNamed(content, name); b == nil || b.Disabled() {
+			t.Errorf("%q is still disabled after the preview finished", name)
+		}
+	}
+	// A preview has nothing to cancel - preflight takes no context - so the
+	// button that offers a way out must not be sitting there afterwards either.
+	if b := buttonNamed(content, "Cancel"); b != nil && b.Visible() {
+		t.Error("Cancel is still on the screen after a preview, offering a way out of something that is not happening")
+	}
+}

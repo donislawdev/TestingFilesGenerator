@@ -151,6 +151,9 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 		t.Fatal("the generate screen has no Preview button, so this guard read the wrong tree")
 	}
 	preview.OnTapped()
+	// The answer comes from a worker now, so it has to be here before the tree
+	// is read. See join.
+	join(host)
 	content.Refresh()
 
 	spoke := false

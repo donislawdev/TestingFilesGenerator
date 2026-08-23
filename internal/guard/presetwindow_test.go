@@ -46,6 +46,9 @@ func presetScreen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
+	// Same reason as screen(): nothing this window started may outlive the test
+	// that started it.
+	t.Cleanup(func() { join(host) })
 	return host, selectTab(t, host.content, text.TabPresets)
 }
 

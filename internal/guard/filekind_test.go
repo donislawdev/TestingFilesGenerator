@@ -143,18 +143,20 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 // seven files and 70 MiB without saying what they were. G6 makes the preview
 // the thing somebody presses instead of finding out by writing gigabytes.
 func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
-	_, generate := screen(t)
+	generateHost, generate := screen(t)
 	choose(t, generate, text.FieldFormat, "png")
 	fill(t, generate, text.FieldOutputDir, t.TempDir())
 	press(t, generate, "Preview")
+	join(generateHost)
 	if shown := allText(generate); !strings.Contains(shown, "png") {
 		t.Errorf("the preview does not say what it would write. It says:\n%s", shown)
 	}
 
-	_, presets := presetScreen(t)
+	presetHost, presets := presetScreen(t)
 	fill(t, presets, text.FieldOutputDir, t.TempDir())
 	choose(t, presets, text.SettingLabel("format"), "wav")
 	press(t, presets, "Preview")
+	join(presetHost)
 	shown := allText(presets)
 	if !strings.Contains(shown, "wav") {
 		t.Errorf("the preset preview does not say what it would write. It says:\n%s", shown)
