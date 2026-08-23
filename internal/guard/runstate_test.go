@@ -205,3 +205,52 @@ func TestAPreviewGivesTheScreenBackWhenItIsDone(t *testing.T) {
 		t.Error("Cancel is still on the screen after a preview, offering a way out of something that is not happening")
 	}
 }
+
+// What this defends. A preview that is turned down leaves the screen exactly as
+// usable as it found it.
+//
+// This is the edge the busy state introduced. A preview marks the screen
+// occupied and hands the disk work to a worker, and the worker is the only
+// thing that hands the screen back - so a refusal that reached the busy state
+// without starting a worker would freeze the form for the rest of the session.
+// Today the refusal returns first and nothing is frozen, and that ordering is
+// the whole of the correctness here.
+//
+// Nothing else was watching it. The guards for refusals check that the right
+// box is marked and the right sentence appears, and every one of them would
+// still pass with the form dead underneath.
+func TestARefusedPreviewLeavesTheScreenUsable(t *testing.T) {
+	for _, c := range []struct{ name, field, value string }{
+		// Refused while settling, which is where a bad value is caught.
+		{"a size that is not a size", text.FieldSize, "abc"},
+		// Refused deeper, by the engine, for a size no format can make.
+		{"a size below every minimum", text.FieldSize, "1"},
+		// Legal and degenerate: nothing to do at all.
+		{"nothing to produce", text.FieldCount, "0"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			_, content := screen(t)
+			fill(t, content, text.FieldOutputDir, t.TempDir())
+			fill(t, content, c.field, c.value)
+			press(t, content, text.ButtonPreview)
+
+			// No worker was started, so there is nothing to join - and that is
+			// exactly why this can freeze: the thing that gives the screen back
+			// never runs.
+			box := entryUnder(t, content, text.FieldSize)
+			if box == nil {
+				t.Fatal("there is no size box, so this guard read the wrong tree")
+			}
+			if box.Disabled() {
+				t.Error("the preview was refused and the form is frozen.\n" +
+					"Reason: the screen is marked busy before the refusal is known, and only a worker hands it back - so a refused press leaves the form dead for the rest of the session.\n" +
+					"What to do: settle and plan before marking the screen busy.")
+			}
+			for _, name := range []string{text.ButtonPreview, text.ButtonGenerate} {
+				if b := buttonNamed(content, name); b == nil || b.Disabled() {
+					t.Errorf("%q is disabled after a refused preview, so nothing can be tried again", name)
+				}
+			}
+		})
+	}
+}
