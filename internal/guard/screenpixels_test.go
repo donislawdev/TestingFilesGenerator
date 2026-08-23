@@ -2,6 +2,7 @@ package guard
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -159,6 +160,51 @@ func pixelTolerance() int {
 // is dead code on amd64, so a test that only rendered would be green here no
 // matter what that branch said - which is the shape of guard this project has
 // been bitten by more than once.
+// What this defends. A failing screen has to be diagnosable where it fails.
+//
+// This reported the first differing line only, and on the machine holding the
+// reference that is enough - the line number plus git diff is better than a
+// wall of text. On a runner there is no file to diff, so the first line was
+// the whole of the evidence, and O115 sat open for three days over a
+// difference nobody could see the shape of. One run with every line listed
+// named the cause in minutes: macOS was not drawing a scroll bar.
+//
+// So the cap matters as much as the listing. Unbounded, a redesign would paste
+// several hundred lines into a log and the next person would go back to
+// reading the first one.
+func TestAFailingScreenNamesEveryLineThatMovedNotJustTheFirst(t *testing.T) {
+	want := "a\nb\nc\nd"
+	got := "a\nB\nc\nD"
+
+	shown, total := differingLines(want, got, 10)
+	if total != 2 {
+		t.Errorf("counted %d differing lines, want 2.\n"+
+			"Reason: a failure that counts wrong understates how much of the screen moved.", total)
+	}
+	for _, line := range []string{"line 2", "line 4", "b", "B", "d", "D"} {
+		if !strings.Contains(shown, line) {
+			t.Errorf("the report leaves out %q.\n"+
+				"Reason: a line that moved and is not named cannot be diagnosed from a log, which is the whole point of this.\n"+
+				"What it said:\n%s", line, shown)
+		}
+	}
+
+	// The cap, and that it says what it hid. Silently showing the first N would
+	// read exactly like a complete report.
+	shown, total = differingLines(want, got, 1)
+	if total != 2 {
+		t.Errorf("the cap changed the count to %d, want 2 - the cap is on what is shown, not on what is counted", total)
+	}
+	if strings.Contains(shown, "line 4") {
+		t.Errorf("the cap of 1 still listed a second line:\n%s", shown)
+	}
+	if !strings.Contains(shown, "1 more") {
+		t.Errorf("the report stops at the cap without saying anything was left out.\n"+
+			"Reason: a truncated list that does not say it is truncated reads as the whole story.\n"+
+			"What it said:\n%s", shown)
+	}
+}
+
 func TestTheBlendToleranceStaysBetweenTheRoundingAndTheSmallestRealChange(t *testing.T) {
 	if armBlendTolerance < measuredArmBlend {
 		t.Errorf("the arm64 tolerance is %d, below the %d that was actually measured.\n"+
@@ -451,20 +497,32 @@ func compareMarkup(t *testing.T, name, reference, got string) {
 		return
 	}
 
-	line, wantLine, gotLine := firstDifference(want, got)
+	shown, total := differingLines(want, got, markupLinesShown)
 	t.Errorf("the %s screen is no longer built the way the stored tree says.\n"+
-		"Reason: line %d differs.\n"+
-		"  stored: %s\n"+
-		"  now:    %s\n"+
+		"Reason: %d line(s) differ.\n%s"+
 		"What to do: the whole tree is in %s, so git diff shows every change in words. If it was meant, regenerate with TFG_WRITE_SCREEN_REFERENCE=1.",
-		name, line, strings.TrimSpace(wantLine), strings.TrimSpace(gotLine), reference)
+		name, total, shown, reference)
 }
 
-// firstDifference names the line somebody should look at. A diff of 351 lines
-// with one changed attribute is unreadable in a test log, and the line number
-// is what makes the stored file worth opening.
-func firstDifference(want, got string) (int, string, string) {
+// markupLinesShown caps how much of the diff goes into the failure. A tree is
+// a few hundred lines and a redesign changes most of them, so this is a log
+// message rather than a diff viewer - but see differingLines for why it is not
+// one line either.
+const markupLinesShown = 20
+
+// differingLines lists every line that moved, up to a cap, and says how many
+// there were in total.
+//
+// It used to report only the first one, and the reasoning was sound for the
+// machine the reference lives on: the line number plus git diff beats pasting
+// 351 lines into a log. What that missed is the machine that never writes the
+// file. On a CI runner there is nothing to git diff, so the first line was the
+// entire evidence available - which is how O115 sat open with a difference
+// nobody could see the shape of. A failure has to be readable where it happens.
+func differingLines(want, got string, cap int) (string, int) {
 	wantLines, gotLines := strings.Split(want, "\n"), strings.Split(got, "\n")
+	var b strings.Builder
+	total := 0
 	for i := 0; i < len(wantLines) || i < len(gotLines); i++ {
 		w, g := "", ""
 		if i < len(wantLines) {
@@ -473,11 +531,19 @@ func firstDifference(want, got string) (int, string, string) {
 		if i < len(gotLines) {
 			g = gotLines[i]
 		}
-		if w != g {
-			return i + 1, w, g
+		if w == g {
+			continue
+		}
+		total++
+		if total <= cap {
+			fmt.Fprintf(&b, "  line %d\n    stored: %s\n    now:    %s\n",
+				i+1, strings.TrimSpace(w), strings.TrimSpace(g))
 		}
 	}
-	return 0, "", ""
+	if total > cap {
+		fmt.Fprintf(&b, "  ... and %d more line(s) not shown\n", total-cap)
+	}
+	return b.String(), total
 }
 
 // renderScene builds the window, puts one screen into one state and returns
