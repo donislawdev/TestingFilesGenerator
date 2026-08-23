@@ -160,6 +160,57 @@ func pixelTolerance() int {
 // is dead code on amd64, so a test that only rendered would be green here no
 // matter what that branch said - which is the shape of guard this project has
 // been bitten by more than once.
+// screensAreCompared says whether this run holds the screens against their
+// stored pictures.
+//
+// A function taking its inputs rather than reading them, and that is the whole
+// point: a skip cannot be guarded from the outside, because a skipped test is
+// a green test. Widen the condition by accident and every screen stops being
+// checked without one thing going red. Asked this way it can be tested about
+// a system this machine is not, and a mutation that widens it goes red.
+func screensAreCompared(writing bool, ci, goos string) bool {
+	if writing {
+		return true
+	}
+	if ci == "" {
+		return true
+	}
+	// macOS only, and the reason is at the skip below.
+	return goos != "darwin"
+}
+
+// What this defends. The comparison stops on exactly one system, for a reason
+// that was measured, and nowhere else.
+//
+// This is the guard for a skip, which is the one shape that cannot report its
+// own failure - a test that stops early passes. For three days the whole of CI
+// was skipped over a difference nobody had explained, and nothing said so on
+// any run. So the condition is a function and this asks it about all four
+// cases, including the two this machine cannot be.
+func TestTheScreensAreComparedOnCIEverywhereButMacOS(t *testing.T) {
+	cases := []struct {
+		writing bool
+		ci      string
+		goos    string
+		want    bool
+		why     string
+	}{
+		{false, "1", "linux", true, "Linux on CI was measured to agree, screen for screen"},
+		{false, "1", "windows", true, "Windows on CI was measured to agree, screen for screen"},
+		{false, "1", "darwin", false, "macOS hides scroll bars, so nine screens legitimately differ"},
+		{false, "", "darwin", true, "off CI, a Mac compares against its own screens"},
+		{true, "1", "darwin", true, "writing references has to render everywhere"},
+	}
+	for _, c := range cases {
+		if got := screensAreCompared(c.writing, c.ci, c.goos); got != c.want {
+			t.Errorf("with writing=%v CI=%q GOOS=%q the screens are compared=%v, want %v.\n"+
+				"Reason: %s.\n"+
+				"What to do: a skip is green, so widening this quietly stops every screen from being checked. Narrow it back or measure the system that needs it.",
+				c.writing, c.ci, c.goos, got, c.want, c.why)
+		}
+	}
+}
+
 // What this defends. A failing screen has to be diagnosable where it fails.
 //
 // This reported the first differing line only, and on the machine holding the
@@ -425,30 +476,31 @@ func screenScenes() []screenScene {
 
 func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 	writing := os.Getenv("TFG_WRITE_SCREEN_REFERENCE") != ""
-	if !writing && os.Getenv("CI") != "" {
-		// Measured on 2026-08-20, the first CI run after the repository went
-		// public and so the first one this guard has ever had: generate-typed
-		// is 952 px tall on both the Linux and the Windows runner where the
-		// stored tree says 933. One screen of the set, on two systems, and not
-		// the other twenty four.
+	if !screensAreCompared(writing, os.Getenv("CI"), runtime.GOOS) {
+		// This used to skip the whole of CI, for a difference nobody could
+		// explain: one screen came back 19 px taller on both runners. That is
+		// measured and gone - both runners now agree, screen for screen - but
+		// it went away while the design audit redrew every reference, so it was
+		// never understood and could come back. The history is in O115.
 		//
-		// It is not the operating system. The same test binary passes on Linux
-		// in a container, and it passes on the machine the reference was made
-		// on, which is Windows - so the runner disagrees with a machine running
-		// the same system. It is not the font either, or every screen carrying
-		// a wrapping sentence would move rather than the one that grows a
-		// validation message.
+		// What remains is macOS, and this one IS explained. Fyne asks the
+		// system for its "Show scroll bars" setting and honours it: with the
+		// default, a scroll bar only appears while scrolling. So every screen
+		// that has one - the four with a menu open and the five recipe states -
+		// draws without the *widget.scrollBar the stored tree carries, and no
+		// screen without one differs. Not a fault, and not something a pixel
+		// tolerance can absorb: it is a widget that is there or is not.
 		//
-		// So the cause is not known, and this skip says that rather than
-		// pretending. What is NOT done here is the tempting thing: regenerating
-		// the reference until CI agrees would pin the pictures to a machine
-		// nobody looks at, and the whole point of this guard is that somebody
-		// looks. It stays enforced where it earns its keep - on the machine
-		// making the change, through preflight, before a push.
+		// Measured: building with Fyne's own ci tag makes all three systems
+		// agree, because that tag forces the always-visible bar. It is not used
+		// here, and that is deliberate - the same tag gates Fyne's whole app
+		// package including the real drivers, so it would quietly change what
+		// several other guards are compiled against. Trading a known skip for
+		// an unknown one is not a trade.
 		//
-		// Open as an observation. Remove this the moment the difference is
-		// explained, not before.
-		t.Skip("the stored screens are compared where they were made, not on CI - see the comment above")
+		// So the comparison runs on Linux and on Windows, on every push, and
+		// stops here only on the system that has a reason.
+		t.Skip("the stored screens are not compared on macOS - the system hides scroll bars, see the comment above")
 	}
 	for _, sc := range screenScenes() {
 		t.Run(sc.name, func(t *testing.T) {
