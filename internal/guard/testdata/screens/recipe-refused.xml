@@ -39,7 +39,7 @@
 													<container pos="0,53" size="820x945">
 														<container size="820x945">
 															<container size="820x945">
-																<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x945" strokeColor="separator" strokeWidth="1"/>
+																<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x945"/>
 																<container size="820x945">
 																	<container pos="6,6" size="808x933">
 																		<widget size="808x35" type="*widget.Label">
@@ -63,7 +63,7 @@
 																				</container>
 																				<container pos="0,33" size="808x25">
 																					<widget size="808x25" type="*parts.Chooser">
-																						<rectangle fillColor="button" radius="5" size="808x25"/>
+																						<rectangle fillColor="inputBackground" radius="5" size="808x25"/>
 																						<rectangle size="0x0"/>
 																						<widget pos="6,3" size="776x19" type="*widget.RichText">
 																							<text size="30x19">bmp</text>
@@ -98,7 +98,7 @@
 																					</container>
 																					<container pos="0,33" size="401x31">
 																						<widget size="401x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="399x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																							<rectangle radius="5" size="399x29" strokeColor="hyperlink" strokeWidth="1"/>
 																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																								<widget size="401x29" type="*widget.entryContent">
@@ -129,7 +129,7 @@
 																					<container pos="0,32" size="401x31">
 																						<container size="140x31">
 																							<widget size="140x31" type="*widget.Entry">
-																								<rectangle fillColor="button" pos="1,1" radius="5" size="138x29"/>
+																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="138x29"/>
 																								<rectangle radius="5" size="138x29" strokeColor="inputBorder" strokeWidth="1"/>
 																								<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																									<widget size="140x29" type="*widget.entryContent">
@@ -179,7 +179,7 @@
 																					</container>
 																					<container pos="0,33" size="265x31">
 																						<widget size="265x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="263x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
 																							<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																								<widget size="265x29" type="*widget.entryContent">
@@ -215,7 +215,7 @@
 																					</container>
 																					<container pos="0,33" size="265x31">
 																						<widget size="265x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="263x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
 																							<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																								<widget size="265x29" type="*widget.entryContent">
@@ -251,7 +251,7 @@
 																					</container>
 																					<container pos="0,33" size="265x31">
 																						<widget size="265x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="263x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
 																							<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="265x29" type="*widget.Scroll">
 																								<widget size="265x29" type="*widget.entryContent">
@@ -301,7 +301,7 @@
 																					</container>
 																					<container pos="0,33" size="401x31">
 																						<widget size="401x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="399x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																							<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																								<widget size="401x29" type="*widget.entryContent">
@@ -337,7 +337,7 @@
 																					</container>
 																					<container pos="0,33" size="401x31">
 																						<widget size="401x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="399x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																							<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																								<widget size="401x29" type="*widget.entryContent">
@@ -377,7 +377,7 @@
 																					</container>
 																					<container pos="0,33" size="401x25">
 																						<widget size="401x25" type="*parts.Chooser">
-																							<rectangle fillColor="button" radius="5" size="401x25"/>
+																							<rectangle fillColor="inputBackground" radius="5" size="401x25"/>
 																							<rectangle size="0x0"/>
 																							<widget pos="6,3" size="369x19" type="*widget.RichText">
 																								<text size="66x19">not stated</text>
@@ -409,7 +409,7 @@
 																					</container>
 																					<container pos="0,33" size="401x25">
 																						<widget size="401x25" type="*parts.Chooser">
-																							<rectangle fillColor="button" radius="5" size="401x25"/>
+																							<rectangle fillColor="inputBackground" radius="5" size="401x25"/>
 																							<rectangle size="0x0"/>
 																							<widget pos="6,3" size="369x19" type="*widget.RichText">
 																								<text size="66x19">not stated</text>
@@ -451,7 +451,7 @@
 																					<container pos="0,33" size="401x31">
 																						<container size="188x31">
 																							<widget size="188x31" type="*widget.Entry">
-																								<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
+																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
 																								<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
 																								<widget pos="0,1" size="188x29" type="*widget.Scroll">
 																									<widget size="188x29" type="*widget.entryContent">
@@ -490,7 +490,7 @@
 																					<container pos="0,33" size="401x31">
 																						<container size="188x31">
 																							<widget size="188x31" type="*widget.Entry">
-																								<rectangle fillColor="button" pos="1,1" radius="5" size="186x29"/>
+																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
 																								<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
 																								<widget pos="0,1" size="188x29" type="*widget.Scroll">
 																									<widget size="188x29" type="*widget.entryContent">
@@ -529,7 +529,7 @@
 													</container>
 													<container pos="0,1012" size="820x301">
 														<container size="820x301">
-															<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x301" strokeColor="separator" strokeWidth="1"/>
+															<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x301"/>
 															<container size="820x301">
 																<container pos="6,6" size="808x289">
 																	<widget size="808x35" type="*widget.Label">
@@ -554,7 +554,7 @@
 																			<container pos="0,33" size="808x32">
 																				<container size="808x32">
 																					<widget size="727x32" type="*widget.Entry">
-																						<rectangle fillColor="button" pos="1,1" radius="5" size="725x30"/>
+																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="725x30"/>
 																						<rectangle radius="5" size="725x30" strokeColor="inputBorder" strokeWidth="1"/>
 																						<widget pos="0,1" size="727x30" type="*widget.Scroll">
 																							<widget size="727x30" type="*widget.entryContent">
@@ -598,7 +598,7 @@
 																				</container>
 																				<container pos="0,33" size="401x31">
 																					<widget size="401x31" type="*widget.Entry">
-																						<rectangle fillColor="button" pos="1,1" radius="5" size="399x29"/>
+																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																						<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																						<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																							<widget size="401x29" type="*widget.entryContent">
@@ -635,7 +635,7 @@
 																				<container pos="0,33" size="401x31">
 																					<container size="140x31">
 																						<widget size="140x31" type="*widget.Entry">
-																							<rectangle fillColor="button" pos="1,1" radius="5" size="138x29"/>
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="138x29"/>
 																							<rectangle radius="5" size="138x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																								<widget size="140x29" type="*widget.entryContent">
@@ -701,7 +701,7 @@
 										<linearGradient endColor="background" pos="0,1128" size="1088x20"/>
 									</container>
 									<container pos="0,1154" size="1088x95">
-										<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x95" strokeColor="separator" strokeWidth="1"/>
+										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1088x95"/>
 										<container size="1088x95">
 											<container pos="6,6" size="1076x83">
 												<container size="1076x83">

@@ -128,10 +128,14 @@ func sectionTitle(text string) fyne.CanvasObject {
 // force would be asking a question that has one answer. It is also the same
 // function the guard measures, so the picture and the measurement cannot come
 // apart.
+// It has no border, and that is the point rather than a simplification. A
+// border was drawn here and around every box to type in, at one pixel in a
+// near enough colour - so the one mark this form uses to say "your value goes
+// here" was also the mark it used to say "these things belong together", and a
+// mark that means two things means neither. The surface still groups, by being
+// a surface. The border belongs to the fields now.
 func panelSurface() *canvas.Rectangle {
 	rect := canvas.NewRectangle(PaletteColour(ColorNamePanel, theme.VariantDark))
-	rect.StrokeColor = PaletteColour(theme.ColorNameSeparator, theme.VariantDark)
-	rect.StrokeWidth = 1
 	rect.CornerRadius = Theme().Size(theme.SizeNameCardRadius)
 	return rect
 }

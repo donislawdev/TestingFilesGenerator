@@ -91,10 +91,26 @@ var (
 		// hover of docs/UX.md section 8.2 to the byte. The measured look is
 		// kept and the behaviour is corrected, because section 8 computed this
 		// as the background of a row and the toolkit uses it on anything.
-		theme.ColorNameHover:           overlay(0xFF, 0xFF, 0xFF, 0x22),
-		theme.ColorNameSelection:       hex(0x2C, 0x4A, 0x6B),
-		theme.ColorNameInputBackground: hex(0x2E, 0x2E, 0x30),
-		theme.ColorNameButton:          hex(0x2E, 0x2E, 0x30),
+		theme.ColorNameHover:     overlay(0xFF, 0xFF, 0xFF, 0x22),
+		theme.ColorNameSelection: hex(0x2C, 0x4A, 0x6B),
+		// A box to type in has to be findable without reading a word, and until
+		// 2026-08-23 it was not. Measured on the palette as it stood: a field
+		// sat 8 of 255 above the panel it is drawn on, a ratio of 1.11, and its
+		// border came from the toolkit's default 11 above the fill. Three
+		// surfaces within sixteen steps of each other, so the eye had nothing
+		// to count fields by.
+		//
+		// The step is 18 now against the panel and 29 from fill to border,
+		// which is 2.3 and 2.6 times what it was. Deliberately still a raised
+		// surface rather than a sunken one: a well reads well on a card and
+		// disappears where there is no card, and a field measured at 1.06
+		// against the window background would be worse than what it replaced.
+		theme.ColorNameInputBackground: hex(0x38, 0x38, 0x3D),
+		theme.ColorNameInputBorder:     hex(0x55, 0x55, 0x5C),
+		// A button is no longer the same colour as a box to type in. It was,
+		// exactly, and that is half of why a menu and a field were one object
+		// with an arrow on the end of it - see the note on Chooser.
+		theme.ColorNameButton: hex(0x2E, 0x2E, 0x30),
 
 		// A menu floats over everything, so it is the LIGHTEST surface rather
 		// than another one at the height of an input box.
@@ -106,11 +122,26 @@ var (
 		// behind it and the box it came from were three surfaces within four
 		// L* of each other.
 		//
-		// #3A3A40 is 24.6 L*, which puts it 9.4 above the panel and 5.6 above
-		// an input. The stack now reads page 11.3, panel 15.2, input 19.0, menu
-		// 24.6 - each one told from the one under it, and the one that floats
+		// It moved again on 2026-08-23, and that is the interesting part: making
+		// a field visible pushed the input to 23.7 L*, which left the menu 0.9
+		// above it. The value had not changed and the relationship it was
+		// chosen for had - one number in a stack cannot be moved on its own.
+		// Exactly the defect described above, reintroduced by a change aimed
+		// somewhere else, and caught by recomputing the stack rather than by
+		// looking at it.
+		//
+		// The first attempt at the new value aimed at the 5.6 the paragraph
+		// above records and landed at 5.8 - and went red, because the guard for
+		// an open list asks for 6.2. Worth keeping: the prose here carried the
+		// distance that WAS measured, the guard carries the distance that is
+		// REQUIRED, and reading the prose for the threshold got it wrong by a
+		// margin no one would see by looking.
+		//
+		// #48484F is 30.8 L*, which puts it 7.1 above an input and 15.6 above
+		// the panel. The stack reads page 11.3, panel 15.2, input 23.7, menu
+		// 30.8: each one told from the one under it, and the one that floats
 		// furthest from all of them.
-		theme.ColorNameMenuBackground: hex(0x3A, 0x3A, 0x40),
+		theme.ColorNameMenuBackground: hex(0x48, 0x48, 0x4F),
 
 		// And what it casts, which is the other half of floating. The toolkit
 		// draws a shadow under every popup and asks the theme for its colour -
@@ -131,16 +162,22 @@ var (
 		//
 		// The fill splits the gap between the page and an input box rather than
 		// taking the surface value section 8.2 already records. That value is
-		// #2E2E30 and it is what an input box is - a panel painted with it would
-		// swallow every field standing on it. Three surfaces stack here and each
-		// has to be told from the one under it: page 11.3, panel 15.2, input
-		// 19.0 in L*, which is +4.0 and +3.8.
+		// what an input box is - a panel painted with it would swallow every
+		// field standing on it. Three surfaces stack here and each has to be
+		// told from the one under it: page 11.3, panel 17.2, input 23.7 in L*,
+		// which is +5.9 and +6.5.
 		//
-		// The line does the work the fill cannot. Four L* is a surface you sense
-		// rather than see, so the edge is what makes a section read as a box at
-		// a glance. The toolkit's own separator could not do it: its dark
-		// variant is pure black - color.go line 219 - so a border drawn with it
-		// is another shadow.
+		// It used to be 15.2, and the line round the edge did the work the fill
+		// could not - four L* is a surface you sense rather than see. That line
+		// is gone as of 2026-08-23 and the fill was lifted to replace it,
+		// because the same one pixel border was what every box to type in used
+		// to say "your value goes here". A mark meaning two things means
+		// neither, and a container can group by being a surface where a field
+		// cannot: a field has to say where the typing goes.
+		//
+		// So the numbers above are load bearing now in a way they were not.
+		// TestASectionDrawsItsOwnSurface holds the fill against the page with
+		// no edge to fall back on.
 		//
 		// The colour is 29.4 L* and what gets drawn is not. Measured off the
 		// render on 2026-08-12: a one pixel stroke lands between pixels and is
@@ -149,8 +186,13 @@ var (
 		// it reads because of the gap to the page rather than the one to the
 		// panel. Worth keeping straight, because the number in a palette is a
 		// claim about a colour and only the render is a claim about a line.
+		//
+		// It is no longer the panel's edge - see the note above - so the only
+		// thing drawn with it now is parts.Divider. The measurement stays
+		// because it is about a one pixel line on this page, which is what a
+		// divider is.
 		theme.ColorNameSeparator: hex(0x45, 0x45, 0x49),
-		ColorNamePanel:           hex(0x26, 0x26, 0x28),
+		ColorNamePanel:           hex(0x2A, 0x2A, 0x2D),
 
 		// What is written ON one of those colours, which is a different
 		// question from what they contrast with. Section 8 computed them as
@@ -187,9 +229,14 @@ var (
 		// Black rather than white here: this page is white, so its hover is
 		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
 		// which is what section 8.3 measured.
-		theme.ColorNameHover:           overlay(0x00, 0x00, 0x00, 0x20),
-		theme.ColorNameSelection:       hex(0xCF, 0xE4, 0xF7),
-		theme.ColorNameInputBackground: hex(0xEF, 0xEF, 0xEF),
+		theme.ColorNameHover:     overlay(0x00, 0x00, 0x00, 0x20),
+		theme.ColorNameSelection: hex(0xCF, 0xE4, 0xF7),
+		// The same step, worked out the same way against a white page. Here a
+		// field is the sunken one - on white there is nowhere lighter to go -
+		// so it sits below the panel rather than above it, 16 of 255 down
+		// instead of the 8 it was, with a border 63 below the fill.
+		theme.ColorNameInputBackground: hex(0xE7, 0xE7, 0xEA),
+		theme.ColorNameInputBorder:     hex(0xA8, 0xA8, 0xB0),
 		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
 		// The same reasoning the other way up: on a white page a floating
 		// surface is the lightest thing there is, so it is white and the shadow
@@ -203,7 +250,7 @@ var (
 		// edge at 11.5 L*. Computed rather than installed, like the rest of this
 		// palette.
 		theme.ColorNameSeparator: hex(0xD6, 0xD6, 0xD9),
-		ColorNamePanel:           hex(0xF7, 0xF7, 0xF7),
+		ColorNamePanel:           hex(0xF4, 0xF4, 0xF5),
 
 		// The other way round here, for the same reason: these are dark enough
 		// to read on a white page, so what is written on them is white.

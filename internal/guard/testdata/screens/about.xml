@@ -39,7 +39,7 @@
 											</widget>
 										</widget>
 										<container pos="0,98" size="820x411">
-											<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="820x411" strokeColor="separator" strokeWidth="1"/>
+											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x411"/>
 											<container size="820x411">
 												<container pos="6,6" size="808x399">
 													<widget size="808x35" type="*widget.Label">
@@ -75,7 +75,7 @@
 									</container>
 								</container>
 								<container pos="0,1206" size="1088x44">
-									<rectangle fillColor="rgba(38,38,40,255)" radius="8" size="1088x44" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1088x44"/>
 									<container size="1088x44">
 										<container pos="6,6" size="1076x32">
 											<container size="1076x32">

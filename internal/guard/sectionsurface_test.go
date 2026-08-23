@@ -57,8 +57,7 @@ func TestASectionDrawsItsOwnSurface(t *testing.T) {
 		}
 		surface := found[0]
 
-		page := parts.PaletteColour(theme.ColorNameBackground, theme.VariantDark)
-		if surface.FillColor == page {
+		if surface.FillColor == parts.PaletteColour(theme.ColorNameBackground, theme.VariantDark) {
 			t.Errorf("%s is filled with the page colour, so it is not a surface at all", subject.what)
 		}
 		if want := parts.PaletteColour(parts.ColorNamePanel, theme.VariantDark); surface.FillColor != want {
@@ -66,14 +65,28 @@ func TestASectionDrawsItsOwnSurface(t *testing.T) {
 				subject.what, surface.FillColor, want)
 		}
 
-		// The edge carries the visibility, because the fill on its own is four
-		// L* and that is a surface you sense rather than see. A stroke of zero
-		// width is a panel with no boundary, which is where this started.
-		if surface.StrokeWidth <= 0 {
-			t.Errorf("%s has no line round it, so its edge is left to a shadow", subject.what)
+		// No line round it, and the protection that line used to give has moved
+		// rather than gone. Both halves matter and they are checked together.
+		//
+		// It used to be drawn with one, because the fill on its own was 4.0 L*
+		// off the page - a surface you sense rather than see - and a panel with
+		// no boundary is where this started. What changed on 2026-08-23 is that
+		// the same one pixel line was also what every box to type in used to
+		// say "your value goes here". One mark meaning two things means
+		// neither, and the field is the one that needs it.
+		//
+		// So the fill has to do the work alone now, and that is asserted here
+		// rather than assumed: a border removed without lifting the surface
+		// would leave exactly the panel this file was written about.
+		if surface.StrokeWidth != 0 {
+			t.Errorf("%s draws a line round itself %.1f px wide.\n"+
+				"Reason: a border is what a box to type in uses, so a container wearing one makes the mark mean nothing.\n"+
+				"What to do: let the surface group by being a surface.", subject.what, surface.StrokeWidth)
 		}
-		if surface.StrokeColor == surface.FillColor {
-			t.Errorf("%s has a line the same colour as its fill, which draws nothing", subject.what)
+		page := parts.PaletteColour(theme.ColorNameBackground, theme.VariantDark)
+		if gap := lightnessGap(surface.FillColor, page); gap < 5 {
+			t.Errorf("%s is %.1f L* off the page with no line round it, and 5 is the least that reads as a surface.\n"+
+				"Reason: the edge used to carry this and no longer does, so the fill is all there is.", subject.what, gap)
 		}
 	}
 }
@@ -136,5 +149,46 @@ func TestEachSurfaceIsToldFromTheOneUnderIt(t *testing.T) {
 
 		t.Logf("%s: page to panel %.1f L*, panel to input %.1f L*, of %.1f available",
 			variant.name, toPage, toInput, total)
+	}
+}
+
+// What this defends. The one mark this form uses for "your value goes here" is
+// visible, and it is ours.
+//
+// The fill tells a field from the card it stands on. The border is the other
+// half, and until 2026-08-23 the palette did not set it at all - it fell
+// through to the toolkit's default, which is 11 of 255 off a fill chosen for a
+// different palette. So the mark that says a box is a box was inherited from
+// somebody else's colours and nobody had measured it here.
+//
+// Both variants, because the light half is kept measured rather than kept
+// warm - see the note at the top of the palette.
+func TestABoxToTypeInWearsAMarkThatCanBeSeen(t *testing.T) {
+	for _, variant := range []struct {
+		name string
+		v    fyne.ThemeVariant
+	}{{"dark", theme.VariantDark}, {"light", theme.VariantLight}} {
+		fill := parts.PaletteColour(theme.ColorNameInputBackground, variant.v)
+		border := parts.PaletteColour(theme.ColorNameInputBorder, variant.v)
+		// Against its own fill, or the box has an edge nobody can find.
+		if gap := lightnessGap(border, fill); gap < 8 {
+			t.Errorf("%s: the border of a box to type in is %.1f L* from its fill, and 8 is the least that draws an edge.\n"+
+				"Reason: this is the only mark left saying where a value goes, now that containers do not wear one.",
+				variant.name, gap)
+		}
+		// The fill against the panel is NOT asked about here, and leaving it out
+		// is deliberate. The guard above already holds it, as a share of the
+		// room each variant has rather than as a number - and a fixed number
+		// was tried here first and went red on the light half at 4.5, which is
+		// the exact trap that guard's comment describes. Two guards on one
+		// question, disagreeing, would have been worse than one.
+		//
+		// Ours rather than the toolkit's. Left unset it answers from a palette
+		// computed against colours this program does not use.
+		if border == theme.DefaultTheme().Color(theme.ColorNameInputBorder, variant.v) {
+			t.Errorf("%s: the border of a box to type in is the toolkit's default, so it was never measured against this palette",
+				variant.name)
+		}
+		t.Logf("%s: fill to border %.1f L*", variant.name, lightnessGap(border, fill))
 	}
 }
