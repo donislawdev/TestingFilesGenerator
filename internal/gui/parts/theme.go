@@ -148,7 +148,22 @@ var (
 		// so a shadow nobody set is the toolkit's default over a page darker
 		// than the one it was chosen for. Black at two thirds reads as depth
 		// against #1E1E1E rather than as a smudge.
-		theme.ColorNameShadow: overlay(0x00, 0x00, 0x00, 0xA8),
+		// NOTHING, since 2026-08-24, and it is a decision off the screen
+		// rather than off a measurement. Black at two thirds under a popup read
+		// as a hard dark band along the bottom edge of the open format list -
+		// reported as the thing the eye keeps landing on.
+		//
+		// What is lost is nothing, because the shadow was never what told the
+		// list from the form. The menu surface does that on its own and the
+		// numbers are already in this file: 30.8 L* against a panel at 17.2,
+		// which is 13.6 apart against the 10 this palette calls noticeable.
+		// The shadow was the second mark and the second mark was the loud one.
+		//
+		// It reaches the format list and nothing else that matters. The longer
+		// explanation behind a field's button is drawn on our own sheet rather
+		// than as a popup - see parts.Tips - so it never asked the theme for a
+		// shadow and does not lose one.
+		theme.ColorNameShadow: color.Transparent,
 
 		// The surface a section is drawn on, and the line round its edge.
 		//

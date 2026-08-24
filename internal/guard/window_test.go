@@ -524,6 +524,24 @@ func isHeadingExtra(o fyne.CanvasObject) bool {
 	return star
 }
 
+// everythingSaid is every word a screen offers, visible or behind a button.
+//
+// The line under a field moved behind its button on 2026-08-24, so a guard
+// asking "does this screen say what the setting takes" and reading only the
+// rendered text would now answer no about a screen that says it perfectly well.
+// The question those guards ask is whether the words are THERE and reachable,
+// not which of the two places they sit in - so this answers that question and
+// the placement is asked about by the guards built for it.
+func everythingSaid(o fyne.CanvasObject) string {
+	said := textIn(o)
+	walk(o, func(obj fyne.CanvasObject) {
+		if b, ok := obj.(*parts.DetailButton); ok {
+			said += "\n" + b.Explanation()
+		}
+	})
+	return said
+}
+
 // detailButtonIn is the explanation button somewhere in a heading row, or nil.
 //
 // A search rather than row.Objects[1], which is what three separate guards and

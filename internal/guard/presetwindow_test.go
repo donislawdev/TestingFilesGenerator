@@ -84,7 +84,7 @@ func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 		// The question is what somebody chooses by. A list of ids says nothing
 		// about which one answers what they came to ask, and the question is the
 		// whole reason a preset is not just a recipe with a name.
-		if shown := textIn(content); !strings.Contains(shown, p.Question) {
+		if shown := everythingSaid(content); !strings.Contains(shown, p.Question) {
 			t.Errorf("the screen does not show the question %s closes: %q", p.ID, p.Question)
 		}
 
@@ -97,7 +97,7 @@ func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 			if bad := wrongKindOfControl(param, control); bad != "" {
 				t.Errorf("%s.%s is %s", p.ID, param.Name, bad)
 			}
-			if shown := textIn(content); !strings.Contains(shown, param.Allowed()) {
+			if shown := everythingSaid(content); !strings.Contains(shown, param.Allowed()) {
 				t.Errorf("the field for %s.%s does not say what it takes (%q)",
 					p.ID, param.Name, param.Allowed())
 			}
@@ -230,7 +230,7 @@ func TestThePresetScreenSaysWhichNumbersWereOurs(t *testing.T) {
 	if !strings.Contains(block, "limit") || strings.Contains(defaultedIn(block), "spread") {
 		t.Errorf("the run marked the wrong parameters as ours. Its preset block:\n%s", block)
 	}
-	if shown := textIn(content); !strings.Contains(shown, "placeholder") {
+	if shown := everythingSaid(content); !strings.Contains(shown, "placeholder") {
 		t.Errorf("the window does not say out loud that the limit is a number we invented. It says:\n%s", shown)
 	}
 }

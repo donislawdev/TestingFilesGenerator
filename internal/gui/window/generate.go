@@ -141,7 +141,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
 			g.actions(), g.progress(), g.problem.Object()),
 		nil, nil,
-		parts.WithMoreBelow(g.keepScroll(container.NewVScroll(parts.Screen(
+		(g.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingGenerate,
 			g.settingsSection()...,
 		)))),

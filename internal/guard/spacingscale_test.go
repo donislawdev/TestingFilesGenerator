@@ -41,7 +41,7 @@ func TestAFieldHoldsTogetherMoreTightlyThanTwoFieldsDo(t *testing.T) {
 	generate := tabContent(t, content, text.TabOneTarget)
 
 	inside := gapBelowLabel(t, generate, text.FieldFormat)
-	between := gapBetween(t, generate, text.HintFormat, text.FieldSize)
+	between := gapBelowField(t, generate, text.FieldFormat, text.FieldSize)
 
 	if inside <= 0 || between <= 0 {
 		t.Fatalf("measured %.1f px inside a field and %.1f px between two, and neither can be zero", inside, between)
@@ -120,7 +120,7 @@ func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	if len(gaps) == 0 {
 		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
 	}
-	between := gapBetween(t, generate, text.HintFormat, text.FieldSize)
+	between := gapBelowField(t, generate, text.FieldFormat, text.FieldSize)
 	for _, gap := range gaps {
 		if gap <= between {
 			t.Errorf("two sections are %.1f px apart and two fields inside one are %.1f px apart."+
@@ -145,16 +145,26 @@ func tabContent(t *testing.T, window fyne.CanvasObject, tab string) fyne.CanvasO
 	return content
 }
 
-// gapBetween is the empty space between the bottom of one labelled thing and
-// the top of the next, both named by the words on them.
-func gapBetween(t *testing.T, screen fyne.CanvasObject, above, below string) float32 {
+// gapBelowField is the room between the bottom of one field and the name of
+// the next.
+//
+// It measures from the CONTROL rather than from the line under it, and that is
+// the change of 2026-08-24 rather than a different question: the line under a
+// field moved behind the button beside its name, so the last thing a field
+// draws is the box itself. Measured the old way this reported the distance from
+// a label that is no longer there.
+func gapBelowField(t *testing.T, screen fyne.CanvasObject, above, below string) float32 {
 	t.Helper()
-	top, topOK := labelBox(screen, above)
-	bottom, bottomOK := labelBox(screen, below)
-	if !topOK {
-		t.Fatalf("no label reading %q on this screen", above)
+	control := controlUnder(screen, above)
+	if control == nil {
+		t.Fatalf("no control under %q", above)
 	}
-	if !bottomOK {
+	top, ok := objectBox(screen, control)
+	if !ok {
+		t.Fatalf("the control under %q is not laid out", above)
+	}
+	bottom, ok := labelBox(screen, below)
+	if !ok {
 		t.Fatalf("no label reading %q on this screen", below)
 	}
 	return bottom.Y - (top.Y + top.Height)

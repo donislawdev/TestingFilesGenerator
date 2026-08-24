@@ -192,15 +192,20 @@ func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 // button, because a guard already keeps Add a batch reachable without
 // scrolling and putting it under the last batch would break exactly that.
 //
-// A separator from the palette at the width of a stroke, so it reads as a
-// boundary rather than as a third control.
+// ROOM rather than a line, since 2026-08-24. The line was reported from the
+// screen as something the eye keeps landing on, and it was doing a job that
+// distance does on its own - the guard behind this has always asked for a gap
+// wider than the one between two buttons that DO belong together, and never for
+// anything drawn. So the protection stays exactly as strong and the mark goes.
+//
+// The width is unchanged, which is the point: nothing moved, one rectangle
+// stopped being painted.
 func Divider() fyne.CanvasObject {
-	line := canvas.NewRectangle(PaletteColour(theme.ColorNameSeparator, theme.VariantDark))
-	line.SetMinSize(fyne.NewSize(1, 0))
-	return container.New(dividerLayout{}, line)
+	return container.New(dividerLayout{})
 }
 
-// dividerLayout keeps the line one pixel wide and gives it room on either side.
+// dividerLayout is the room a boundary takes. It held a one pixel line until
+// 2026-08-24 and now holds nothing, so the name is about what it separates.
 type dividerLayout struct{}
 
 func (dividerLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -208,6 +213,8 @@ func (dividerLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
 }
 
 func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	// Nothing to lay out since the line went, and the loop stays because the
+	// layout is what owns the width either way.
 	for _, o := range objects {
 		o.Resize(fyne.NewSize(1, size.Height))
 		o.Move(fyne.NewPos(theme.Padding()*2, 0))

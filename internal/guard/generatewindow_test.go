@@ -133,11 +133,11 @@ func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 			if p.Kind == format.PropertyChoice {
 				want = p.Detail
 			}
-			if shown := textIn(content); want != "" && !strings.Contains(shown, want) {
+			if shown := everythingSaid(content); want != "" && !strings.Contains(shown, want) {
 				t.Errorf("the field for %s.%s does not say %q", d.ID, p.Name, want)
 			}
 			if p.Kind == format.PropertyChoice {
-				if shown := textIn(content); strings.Contains(shown, p.Allowed()) {
+				if shown := everythingSaid(content); strings.Contains(shown, p.Allowed()) {
 					t.Errorf("the field for %s.%s lists its values in prose (%q) as well as in the "+
 						"menu above them", d.ID, p.Name, p.Allowed())
 				}
@@ -393,7 +393,7 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 	if !strings.Contains(strings.Join(names, " "), "manifest.json") {
 		t.Errorf("no manifest was written. What is there: %v", names)
 	}
-	if shown := textIn(content); !strings.Contains(shown, "4 files written") {
+	if shown := everythingSaid(content); !strings.Contains(shown, "4 files written") {
 		t.Errorf("the window does not say what it produced. It says:\n%s", shown)
 	}
 }
@@ -568,7 +568,7 @@ func TestCancelStopsTheRun(t *testing.T) {
 	if names := namesIn(t, dir); len(names) >= 401 {
 		t.Errorf("Cancel left %d file(s), which is the whole set", len(names)-1)
 	}
-	if shown := textIn(content); !strings.Contains(shown, "Stopped after") {
+	if shown := everythingSaid(content); !strings.Contains(shown, "Stopped after") {
 		t.Errorf("the window does not say the run was stopped. It says:\n%s", shown)
 	}
 }

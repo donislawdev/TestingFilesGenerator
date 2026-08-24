@@ -77,7 +77,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
 			p.actions(), p.progress(), p.problem.Object()),
 		nil, nil,
-		parts.WithMoreBelow(p.keepScroll(container.NewVScroll(parts.Screen(
+		(p.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingPreset,
 			parts.Section(text.SectionPreset,
 				p.fields.Add(settingPreset, text.FieldPreset, text.HintPreset,

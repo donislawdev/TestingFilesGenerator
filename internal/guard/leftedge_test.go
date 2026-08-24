@@ -58,11 +58,15 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		tab   string
 		words []string
 	}{
+		// The deepest rank used to be the line under a field. That line moved
+		// behind the button beside the field's name on 2026-08-24, so what is
+		// left standing on this edge is the heading a format's settings get.
+		// Four ranks either way, which is what this is about.
 		{text.TabOneTarget, []string{
 			text.HeadingGenerate,
 			text.SectionConfiguration,
 			text.FieldFormat,
-			text.HintFormat,
+			text.SettingsFor("bmp"),
 		}},
 		// The preset screen names its section and its first field with the
 		// same word, so only one of the two can be found by its text. Asked
@@ -71,7 +75,7 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		{text.TabPresets, []string{
 			text.HeadingPreset,
 			text.SectionPreset,
-			text.HintPreset,
+			text.PresetCatchesHeading,
 		}},
 		{text.TabRecipe, []string{
 			text.HeadingRecipe,

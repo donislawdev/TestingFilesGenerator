@@ -357,6 +357,27 @@ const PlaceholderNotStated = "not stated"
 // the longer explanation an icon.
 const RequiredMark = "*"
 
+// OneExplanation joins the line that says what a field does to the longer
+// explanation of it, in that order.
+//
+// Here rather than where the two are put together, because joining two
+// sentences is a decision about writing: what separates them, and which comes
+// first. The guard for text outside this package caught the space doing that
+// job in parts, and it was right to - a language that ends a sentence some
+// other way needs one place to change it.
+//
+// What it does first, then the detail of it. Somebody opening this wants to
+// know what the setting is before they read what it takes.
+func OneExplanation(line, detail string) string {
+	switch {
+	case line == "":
+		return detail
+	case detail == "":
+		return line
+	}
+	return line + " " + detail
+}
+
 // ExactBytes says what a size somebody typed comes to, counted out.
 //
 // It exists because "10mb" is two different numbers depending on who is

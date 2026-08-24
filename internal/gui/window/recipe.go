@@ -155,7 +155,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
 			r.actions(), r.progress(), r.problem.Object()),
 		nil, nil,
-		parts.WithMoreBelow(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox)))),
+		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings

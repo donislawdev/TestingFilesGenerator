@@ -170,7 +170,11 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 // Every field gets an area for its refusal and an edge round its control. There
 // is no variant without them, on purpose: the variant IS the defect.
 func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
-	object, body, area := FieldSaying(label, hint, detail, s.required[setting], s.counter(setting, control), control)
+	// The line under a field is now the first sentence behind its button - see
+	// alsoSaying. Folded here rather than at the thirty-two call sites, so a
+	// field that still carries one is not something anybody can write.
+	object, body, area := FieldSaying(label, "", alsoSaying(hint, detail),
+		s.required[setting], s.counter(setting, control), control)
 	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	// Last one wins, which is what a rebuilt screen needs: the preset screen
@@ -187,7 +191,7 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 // value the engine refuses today, and leaving it out would be an exception to
 // remember - which is the class of thing this type exists to end.
 func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
-	object, body, area := ToggleSaying(name, hint, detail, check)
+	object, body, area := ToggleSaying(name, "", alsoSaying(hint, detail), check)
 	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	s.by[setting] = f

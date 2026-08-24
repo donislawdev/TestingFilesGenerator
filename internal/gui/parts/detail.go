@@ -6,6 +6,8 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // DetailWidth is how wide the longer explanation gets when it opens.
@@ -71,10 +73,37 @@ type Detail struct {
 	on   *Tips
 }
 
-// NoDetail is a field with nothing held back, which is most of them. Every
-// setting a format or a preset declares is described in one sentence built
-// from its declaration, so there is no second half to put behind a button.
+// NoDetail is a field with nothing held back at all.
 var NoDetail = Detail{}
+
+// alsoSaying puts the line that used to sit under a field in front of the
+// longer explanation behind its button.
+//
+// Everything a field has to say lives behind the button as of 2026-08-24,
+// which is the owner's decision and follows the convention rather than a
+// measurement: a form elsewhere is a control and a tooltip, and a paragraph
+// standing under every box is not a shape people meet in other programs.
+//
+// It is a MOVE and not a deletion, and that distinction is the whole of why
+// this is safe. The line said what the field does, the button held the units,
+// the example and the consequence, and both are now one explanation in reading
+// order - what it does first, because that is what somebody wants before the
+// detail of it. A field whose line simply vanished would have lost the only
+// sentence saying what it was for.
+//
+// A field with a line and no button cannot happen today and would be a defect
+// if it did, because the line would have nowhere to go. Nothing here can spot
+// that, so TestNothingAFieldSaysIsLostBehindAMissingButton does.
+func alsoSaying(line string, detail Detail) Detail {
+	if line == "" {
+		return detail
+	}
+	// Joined by the text package, which is where every word a person reads is
+	// composed. The first attempt put the space between them here and the guard
+	// for that rule caught it - correctly, because what separates two sentences
+	// is a decision about writing rather than about widgets.
+	return Detail{Text: text.OneExplanation(line, detail.Text), on: detail.on}
+}
 
 // withDetail puts the button that opens the longer explanation beside a label.
 //
@@ -127,6 +156,19 @@ func newDetailButton(detail Detail) *DetailButton {
 	b.OnTapped = b.toggle
 	return b
 }
+
+// Explanation is what this button holds, for a guard to read without opening it.
+//
+// Exported on 2026-08-24, when the line under every field moved behind the
+// button and the guards asking "does the window say what this setting takes"
+// stopped finding the sentence in the visible text. Opening thirty popups to
+// read thirty sentences would be slower and would answer a different question -
+// whether the popup renders - which parts/detailpopup already asks about one.
+//
+// It is the words rather than the widget on purpose: a guard that reached in
+// for the Detail could start driving the sheet, and where the explanation is
+// drawn is this type's business.
+func (b *DetailButton) Explanation() string { return b.detail.Text }
 
 // MouseIn shows the explanation when the pointer arrives.
 func (b *DetailButton) MouseIn(e *desktop.MouseEvent) {
