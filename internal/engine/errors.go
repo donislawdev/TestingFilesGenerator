@@ -1,6 +1,10 @@
 package engine
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+)
 
 // Errors carry what went wrong in a form the surface above can turn into an
 // exit code, without the engine knowing anything about exit codes.
@@ -34,7 +38,18 @@ type RecipeError struct {
 	Setting string
 }
 
-func (e *RecipeError) Error() string { return e.Detail }
+func (e *RecipeError) Error() string {
+	return e.InTheWordsOf(core.LastSettingSegment(e.Setting))
+}
+
+// InTheWordsOf is this refusal with the setting named the way one surface names
+// it - see core.SettingSlot. Error is this with the recipe key.
+func (e *RecipeError) InTheWordsOf(name string) string {
+	if name == "" {
+		name = core.LastSettingSegment(e.Setting)
+	}
+	return core.InTheWordsOf(e.Detail, name)
+}
 
 // AboutSetting lets a window place this message without knowing this type.
 // The preset package answers the same question about its own refusals, and a

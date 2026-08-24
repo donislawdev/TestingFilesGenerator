@@ -1,6 +1,7 @@
 package parts
 
 import (
+	"errors"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -344,12 +345,12 @@ func (s *Fields) KeepFirst(n int) {
 // Mark shows a refusal under the field it is about, and says whether it found
 // one. A caller that gets false has a message about something this screen has
 // no box for, and it belongs at the foot of the form.
-func (s *Fields) Mark(setting, message string) bool {
+func (s *Fields) Mark(setting string, err error) bool {
 	f, ok := s.by[setting]
 	if !ok {
 		return false
 	}
-	f.Say(inTheWordsOnScreen(f, message))
+	f.Say(inTheWordsOnScreen(f, err))
 	return true
 }
 
@@ -358,28 +359,36 @@ func (s *Fields) Mark(setting, message string) bool {
 //
 // The engine words a refusal once for both surfaces, and it names the setting
 // by the key a recipe writes - "bmp: width cannot be ...". On the command line
-// that is the only name there is. In this window, since 2026-08-20, the box
-// above the message is called Width, so the refusal was naming something the
-// screen does not have. That defect arrived WITH the labels: before them the
-// key and the label were the same string.
+// that is the only name there is. In this window the box above the message is
+// called Width, so an unchanged refusal names something the screen does not
+// have. That defect arrived WITH the labels on 2026-08-20: before them the key
+// and the label were the same string.
 //
-// The key is swapped for the label rather than the message being reworded here.
-// Wording it twice is D1 coming apart in the place nobody compares - the
-// engine's sentence stays the engine's sentence, and only the name of the box
-// is the name this screen uses for it.
+// The refusal is ASKED for its own sentence in another name rather than having
+// one searched for in it. From 2026-08-20 to 2026-08-25 this ran
+// strings.ReplaceAll over the finished message, and rendering every screen in
+// its refused state measured what that does:
 //
-// The last part of a dotted address rather than the whole of it: a batch
-// addresses its settings as targets[0].properties.width, and the words on the
-// screen are Width.
-func inTheWordsOnScreen(f *Field, message string) string {
-	key := f.Setting
-	if at := strings.LastIndex(key, "."); at >= 0 {
-		key = key[at+1:]
+//   - "the output Output directoryectory is empty", because the key behind
+//     Output directory is "dir" and it lives inside "directory". Also
+//     identifies, formats, sizes and size-range.
+//   - "for example Group name: invoices", offering a recipe key no recipe has,
+//     because the example quoted the key as a key.
+//   - "an Group name", because the article in front of it stayed.
+//
+// Searching prose for a short word cannot be made safe by more rules about
+// which matches to skip - each rule is a guess about English. The sentence
+// says where its own name goes instead, and anything without a slot is shown
+// exactly as the engine wrote it, which is the state this window was in before
+// the labels and is merely plain rather than wrong. See core.SettingSlot.
+func inTheWordsOnScreen(f *Field, err error) string {
+	var reworded interface {
+		InTheWordsOf(string) string
 	}
-	if key == "" || f.Label == "" || key == f.Label {
-		return message
+	if f.Label != "" && errors.As(err, &reworded) {
+		return reworded.InTheWordsOf(f.Label)
 	}
-	return strings.ReplaceAll(message, key, f.Label)
+	return err.Error()
 }
 
 // Clear takes back whatever one field was complaining about.

@@ -35,7 +35,7 @@ import (
 func ParseSize(s string) (int64, error) {
 	raw := strings.TrimSpace(s)
 	if raw == "" {
-		return 0, fmt.Errorf("empty size: write a number of bytes or a size such as 10mb, 1.5gib or 700kB")
+		return 0, SettingErrorf(SettingSize, "empty {setting}: write a number of bytes or a size such as 10mb, 1.5gib or 700kB")
 	}
 
 	digits := strings.TrimRight(raw, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
@@ -43,7 +43,7 @@ func ParseSize(s string) (int64, error) {
 	digits = strings.TrimSpace(digits)
 
 	if digits == "" {
-		return 0, fmt.Errorf("size %q has no number: write something like 10mb or 1048576", s)
+		return 0, SettingErrorf(SettingSize, "{setting} %q has no number: write something like 10mb or 1048576", s)
 	}
 
 	multiplier, ok := unitBytes(unit)
@@ -52,17 +52,17 @@ func ParseSize(s string) (int64, error) {
 		// of this sentence said kb was for thousands, which is the opposite of
 		// what the tool does and appeared in the one place somebody has
 		// already got their units wrong.
-		return 0, fmt.Errorf("size %q uses an unknown unit %q: use b, kb, mb, gb or tb, all counting in 1024s, and kib, mib, gib or tib for the same thing spelled out", s, unit)
+		return 0, SettingErrorf(SettingSize, "{setting} %q uses an unknown unit %q: use b, kb, mb, gb or tb, all counting in 1024s, and kib, mib, gib or tib for the same thing spelled out", s, unit)
 	}
 
 	// A whole number with no unit, or with a unit, is the common case and
 	// stays in integer arithmetic so nothing is lost on the way.
 	if n, err := strconv.ParseInt(digits, 10, 64); err == nil {
 		if n < 0 {
-			return 0, fmt.Errorf("size %q is negative: a file cannot be smaller than zero bytes", s)
+			return 0, SettingErrorf(SettingSize, "{setting} %q is negative: a file cannot be smaller than zero bytes", s)
 		}
 		if multiplier != 1 && n > math.MaxInt64/multiplier {
-			return 0, fmt.Errorf("size %q is too large to express in bytes", s)
+			return 0, SettingErrorf(SettingSize, "{setting} %q is too large to express in bytes", s)
 		}
 		return n * multiplier, nil
 	}
@@ -79,16 +79,16 @@ func ParseSize(s string) (int64, error) {
 	//
 	// The decimal point stays, because 1.5gib is a real thing people write.
 	if !plainDecimal(digits) {
-		return 0, fmt.Errorf(
-			"size %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", s)
+		return 0, SettingErrorf(SettingSize,
+			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", s)
 	}
 
 	f, err := strconv.ParseFloat(digits, 64)
 	if err != nil {
-		return 0, fmt.Errorf("size %q is not a number: write something like 10mb, 1.5gib or 1048576", s)
+		return 0, SettingErrorf(SettingSize, "{setting} %q is not a number: write something like 10mb, 1.5gib or 1048576", s)
 	}
 	if f < 0 {
-		return 0, fmt.Errorf("size %q is negative: a file cannot be smaller than zero bytes", s)
+		return 0, SettingErrorf(SettingSize, "{setting} %q is negative: a file cannot be smaller than zero bytes", s)
 	}
 
 	exact := f * float64(multiplier)
@@ -101,12 +101,12 @@ func ParseSize(s string) (int64, error) {
 	// accepted and came back as -9223372036854775808. ParseInt refuses it for
 	// being out of range, so it reaches the float path, which does not.
 	if exact >= float64(math.MaxInt64) {
-		return 0, fmt.Errorf("size %q is too large to express in bytes", s)
+		return 0, SettingErrorf(SettingSize, "{setting} %q is too large to express in bytes", s)
 	}
 	n := int64(exact)
 	if exact != math.Trunc(exact) {
-		return 0, fmt.Errorf(
-			"size %q is not a whole number of bytes: it works out to %.4f bytes. Ask for %d or %d instead",
+		return 0, SettingErrorf(SettingSize,
+			"{setting} %q is not a whole number of bytes: it works out to %.4f bytes. Ask for %d or %d instead",
 			s, exact, n, n+1)
 	}
 	return n, nil

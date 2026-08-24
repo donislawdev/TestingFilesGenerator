@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
@@ -358,9 +359,16 @@ targets:
 
 	// The whole still reads as the list, because the command line prints this
 	// error and a reader there wants every problem rather than the first.
+	//
+	// What is asked for in the command line's words, since 2026-08-25. The
+	// stored sentence leaves a slot where it names its own setting so a window
+	// can say Group name where a recipe says id, and the whole error is what
+	// the command line prints - so the two are only comparable once both are
+	// in the same vocabulary. See core.SettingSlot.
 	for _, p := range bad.Problems {
-		if !strings.Contains(err.Error(), p.What) {
-			t.Errorf("the message of the whole refusal no longer mentions %q", p.What)
+		what := core.InTheWordsOf(p.What, core.LastSettingSegment(p.At))
+		if !strings.Contains(err.Error(), what) {
+			t.Errorf("the message of the whole refusal no longer mentions %q", what)
 		}
 	}
 }

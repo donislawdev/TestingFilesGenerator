@@ -3,6 +3,8 @@ package recipe
 import (
 	"fmt"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // A recipe is refused with every problem it has, not the first one.
@@ -37,7 +39,20 @@ type Problem struct {
 }
 
 func (p Problem) String() string {
-	return fmt.Sprintf("%s - %s.\n  %s.", p.What, p.Why, p.Fix)
+	return p.InTheWordsOf(core.LastSettingSegment(p.At))
+}
+
+// InTheWordsOf is the same refusal with the setting named the way one surface
+// names it - see core.SettingSlot.
+//
+// String is this with the recipe key, so the command line prints what it
+// always printed and a window asks for the label above the box.
+func (p Problem) InTheWordsOf(name string) string {
+	if name == "" {
+		name = core.LastSettingSegment(p.At)
+	}
+	return core.InTheWordsOf(
+		fmt.Sprintf("%s - %s.\n  %s.", p.What, p.Why, p.Fix), name)
 }
 
 // Error makes one problem an error in its own right, so a refused recipe can be

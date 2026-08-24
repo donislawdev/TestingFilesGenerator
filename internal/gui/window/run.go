@@ -199,7 +199,7 @@ func (r *runner) refuse(err error) {
 		// and none of them had to be imported for the question to be asked.
 		var about interface{ AboutSetting() string }
 		if errors.As(one, &about) && about.AboutSetting() != "" &&
-			r.fields.Mark(about.AboutSetting(), one.Error()) {
+			r.fields.Mark(about.AboutSetting(), one) {
 			if first == "" {
 				first = about.AboutSetting()
 			}
@@ -311,7 +311,7 @@ func (r *runner) recheck(setting string) {
 	for _, one := range spread(err) {
 		var about interface{ AboutSetting() string }
 		if errors.As(one, &about) && about.AboutSetting() == setting {
-			r.fields.Mark(setting, one.Error())
+			r.fields.Mark(setting, one)
 			return
 		}
 	}

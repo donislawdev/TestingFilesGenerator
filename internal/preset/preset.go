@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
@@ -249,7 +250,19 @@ type ImpossibleError struct {
 }
 
 func (e *ImpossibleError) Error() string {
-	return fmt.Sprintf("the preset %s cannot build this set - %s. %s", e.Preset, e.Detail, e.Hint)
+	return e.InTheWordsOf(e.Setting)
+}
+
+// InTheWordsOf is this refusal with the parameter named the way one surface
+// names it - see core.SettingSlot. Error is this with the declared name, which
+// is what the command line has always printed.
+func (e *ImpossibleError) InTheWordsOf(name string) string {
+	if name == "" {
+		name = e.Setting
+	}
+	return core.InTheWordsOf(
+		fmt.Sprintf("the preset %s cannot build this set - %s. %s", e.Preset, e.Detail, e.Hint),
+		name)
 }
 
 // AboutSetting lets a window put this message beside the box that caused it,

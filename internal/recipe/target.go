@@ -68,11 +68,11 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 			n, ok := v.number()
 			switch {
 			case !ok:
-				p.add(at.of("count"), fmt.Sprintf("%s has a count that is not a whole number", at),
-					"a count is how many files of this group the container holds",
+				p.add(at.of("count"), fmt.Sprintf("%s has {a} {setting} that is not a whole number", at),
+					"{a} {setting} is how many files of this group the container holds",
 					"use count: 50")
 			case n < 0:
-				p.add(at.of("count"), fmt.Sprintf("%s has a negative count", at),
+				p.add(at.of("count"), fmt.Sprintf("%s has a negative {setting}", at),
 					"a container cannot hold fewer than no files",
 					"use count: 0 for a group that contributes nothing, or drop the entry")
 			// The same ceiling the count of a target gets, and for the same
@@ -86,7 +86,7 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 			case n > core.MaxFilesPerRun:
 				p.add(at.of("count"), fmt.Sprintf("%s asks for %d files", at, n),
 					core.ErrTooManyFiles.Error(),
-					fmt.Sprintf("use a count of %d or less, or split the container across several entries",
+					fmt.Sprintf("use {a} {setting} of %d or less, or split the container across several entries",
 						core.MaxFilesPerRun))
 			default:
 				g.Count = int(n)
@@ -96,13 +96,13 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 		if v, ok := item["size"]; ok {
 			s, ok := v.value()
 			if !ok {
-				p.add(at.of("size"), fmt.Sprintf("%s has a size that is neither text nor a number", at),
-					"a size is written as 2mb or as a plain byte count",
+				p.add(at.of("size"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", at),
+					"{a} {setting} is written as 2mb or as a plain byte count",
 					"use size: 2mb or size: 2097152")
 			} else if n, err := core.ParseSize(s); err != nil {
 				p.add(at.of("size"), fmt.Sprintf("%s: %v", at, err),
 					"units count in 1024s, so 10mb is 10485760 bytes",
-					"use a size such as 2mb, 512kb or a plain byte count")
+					"use {a} {setting} such as 2mb, 512kb or a plain byte count")
 			} else {
 				g.Bytes = n
 			}
@@ -110,8 +110,8 @@ func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
 			// The same rule as AR10 one level down. Without it the size of the
 			// container could not be worked out before writing, which is the
 			// whole reason contains counts as a way of declaring a size.
-			p.add(at.of("size"), fmt.Sprintf("%s has no size", at),
-				"the size of the container follows from the size of what it holds, so every group states one",
+			p.add(at.of("size"), fmt.Sprintf("%s has no {setting}", at),
+				"the {setting} of the container follows from the {setting} of what it holds, so every group states one",
 				"add size: 2mb")
 		}
 
@@ -154,13 +154,13 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	count := DefaultCount
 
 	where := targetSpot(index, "")
-	if id, ok := oneValue(p, where.of("id"), where.String()+" id", "id: invoices", rt.ID); ok && id != "" {
+	if id, ok := oneValue(p, where.of("id"), where.String()+" {setting}", "id: invoices", rt.ID); ok && id != "" {
 		t.ID = id
 		where = targetSpot(index, t.ID)
 	} else {
-		p.add(where.of("id"), fmt.Sprintf("%s has no id", where),
-			"an id anchors the seed of a target, so editing one target never moves the bytes of another",
-			"give it an id, for example id: invoices")
+		p.add(where.of("id"), fmt.Sprintf("%s has no {setting}", where),
+			"{a} {setting} anchors the seed of a target, so editing one target never moves the bytes of another",
+			"give it {a} {setting}, for example id: invoices")
 	}
 
 	format, formatGiven := oneValue(p, where.of("format"), where.String()+" format", "format: txt", rt.Format)
@@ -176,8 +176,8 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		n, ok := rt.Count.number()
 		switch {
 		case !ok:
-			p.add(where.of("count"), fmt.Sprintf("%s has a count of %q, which is not a whole number", where, rt.Count.text),
-				"a count is how many files this target produces, so it is read exactly as written",
+			p.add(where.of("count"), fmt.Sprintf("%s has {a} {setting} of %q, which is not a whole number", where, rt.Count.text),
+				"{a} {setting} is how many files this target produces, so it is read exactly as written",
 				"write a decimal number such as count: 10")
 		case n <= 0:
 			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
@@ -189,7 +189,7 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		case n > core.MaxFilesPerRun:
 			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
 				core.ErrTooManyFiles.Error(),
-				fmt.Sprintf("use a count of %d or less, or split the target across several recipes", core.MaxFilesPerRun))
+				fmt.Sprintf("use {a} {setting} of %d or less, or split the target across several recipes", core.MaxFilesPerRun))
 		default:
 			count = int(n)
 		}
@@ -201,7 +201,7 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	}
 	rt.resolveSize(p, where, count, &t)
 
-	if name, ok := oneValue(p, where.of("name"), where.String()+" name", "name: invoice_{index:04}.pdf", rt.Name); ok {
+	if name, ok := oneValue(p, where.of("name"), where.String()+" {setting}", "name: invoice_{index:04}.pdf", rt.Name); ok {
 		t.Name = name
 	}
 	if rt.Label != nil {
@@ -209,7 +209,7 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	}
 
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
-	if group, ok := oneValue(p, where.of("group"), where.String()+" group", "group: invoices", rt.Group); ok {
+	if group, ok := oneValue(p, where.of("group"), where.String()+" {setting}", "group: invoices", rt.Group); ok {
 		t.Group = group
 	}
 	t.Properties = properties(p, where, rt.Properties)
@@ -240,24 +240,24 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 	// and picking one of them quietly is how a recipe stops meaning what it
 	// says. Every pairing is named rather than resolved.
 	case rt.SizeRange != nil && rt.Size != nil:
-		p.add(where.of("size"), fmt.Sprintf("%s states both a size and a size-range", where),
-			"one names an exact size and the other draws one, so together they say two different things",
-			"keep size for identical files, or keep size-range for a different size each")
+		p.add(where.of("size"), fmt.Sprintf("%s states both {a} {setting} and a size-range", where),
+			"one names an exact {setting} and the other draws one, so together they say two different things",
+			"keep {setting} for identical files, or keep size-range for a different {setting} each")
 
 	case rt.SizeRange != nil && rt.Boundary != nil:
-		p.add(where.of("boundary"), fmt.Sprintf("%s states both a boundary and a size-range", where),
-			"a boundary is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them",
-			"keep boundary to test a limit, or keep size-range for files of varying size")
+		p.add(where.of("boundary"), fmt.Sprintf("%s states both {a} {setting} and a size-range", where),
+			"{a} {setting} is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them",
+			"keep {setting} to test a limit, or keep size-range for files of varying size")
 
 	case rt.Boundary != nil && rt.Size != nil:
-		p.add(where.of("size"), fmt.Sprintf("%s states both a size and a boundary", where),
-			"a boundary already decides the sizes, so a size beside it means two different things at once",
-			"keep boundary for the three sizes around a limit, or keep size for one exact size")
+		p.add(where.of("size"), fmt.Sprintf("%s states both {a} {setting} and a boundary", where),
+			"a boundary already decides the sizes, so {a} {setting} beside it means two different things at once",
+			"keep boundary for the three sizes around a limit, or keep {setting} for one exact {setting}")
 
 	case rt.Boundary != nil && rt.Count != nil:
-		p.add(where.of("count"), fmt.Sprintf("%s states both a count and a boundary", where),
+		p.add(where.of("count"), fmt.Sprintf("%s states both {a} {setting} and a boundary", where),
 			"a boundary set is exactly three files, one below the limit, one at it and one above",
-			"remove count, or use size with count to ask for identical files")
+			"remove {setting}, or use size with {setting} to ask for identical files")
 
 	case rt.Boundary != nil:
 		t.Size = boundaryText(p, where, rt.Boundary)
@@ -274,8 +274,8 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 	case rt.Size != nil:
 		s, ok := rt.Size.value()
 		if !ok {
-			p.add(where.of("size"), fmt.Sprintf("%s has a size that is neither text nor a number", where),
-				"a size is written as 2mb or as a plain byte count",
+			p.add(where.of("size"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", where),
+				"{a} {setting} is written as 2mb or as a plain byte count",
 				"use size: 2mb or size: 2097152")
 			break
 		}
@@ -284,7 +284,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		if err != nil {
 			p.add(where.of("size"), fmt.Sprintf("%s: %v", where, err),
 				"units count in 1024s, so 10mb is 10485760 bytes",
-				"use a size such as 2mb, 512kb or a plain byte count")
+				"use {a} {setting} such as 2mb, 512kb or a plain byte count")
 			break
 		}
 		for i := 0; i < count; i++ {
@@ -298,7 +298,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// per file.
 		text, ok := rt.SizeRange.value()
 		if !ok {
-			p.add(where.of("size-range"), fmt.Sprintf("%s has a size-range that is not text", where),
+			p.add(where.of("size-range"), fmt.Sprintf("%s has {a} {setting} that is not text", where),
 				"a range is two sizes with a hyphen between them",
 				"use size-range: 1kb-8kb")
 			break
@@ -327,8 +327,8 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		}
 
 	default:
-		p.add(where.of("size"), fmt.Sprintf("%s has no size", where),
-			"every target declares its size, which is what lets a dry run report exact numbers before anything reaches the disk",
+		p.add(where.of("size"), fmt.Sprintf("%s has no {setting}", where),
+			"every target declares its {setting}, which is what lets a dry run report exact numbers before anything reaches the disk",
 			"add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes")
 	}
 }
@@ -436,8 +436,8 @@ func KnownOutcome(o string) bool {
 func boundaryText(p *problems, where spot, v *scalar) string {
 	s, ok := v.value()
 	if !ok {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary that is neither text nor a number", where),
-			"a boundary is one size, and the set is built either side of it",
+		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", where),
+			"{a} {setting} is one size, and the set is built either side of it",
 			"use boundary: 10mb or a plain byte count")
 		return ""
 	}
@@ -459,20 +459,20 @@ func boundarySizes(p *problems, where spot, text string) []int64 {
 	if err != nil {
 		p.add(where.of("boundary"), fmt.Sprintf("%s: %v", where, err),
 			"units count in 1024s, so 10mb is 10485760 bytes",
-			"use a boundary such as 10mb, 512kb or a plain byte count")
+			"use {a} {setting} such as 10mb, 512kb or a plain byte count")
 		return nil
 	}
 	if limit < 1 {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary of %d B", where, limit),
+		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
 			"the set needs a size one byte below the limit, and there is nothing below zero",
-			"use a boundary of at least 1 B")
+			"use {a} {setting} of at least 1 B")
 		return nil
 	}
 	sizes, err := core.BoundarySizes(limit)
 	if err != nil {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has a boundary of %d B", where, limit),
+		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
 			err.Error(),
-			"use a boundary at least one byte below the largest number")
+			"use {a} {setting} at least one byte below the largest number")
 		return nil
 	}
 	return sizes

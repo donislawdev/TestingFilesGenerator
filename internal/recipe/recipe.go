@@ -307,9 +307,9 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 		t := rt.validate(p, i, rec.Defaults)
 		if t.ID != "" {
 			if seen[t.ID] {
-				p.add(targetSpot(i, t.ID).of("id"), fmt.Sprintf("target id %q is used twice", t.ID),
-					"an id identifies a target, anchors its seed and links it to the manifest",
-					"give one of them a different id")
+				p.add(targetSpot(i, t.ID).of("id"), fmt.Sprintf("target {setting} %q is used twice", t.ID),
+					"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
+					"give one of them a different {setting}")
 			}
 			seen[t.ID] = true
 		}

@@ -226,7 +226,7 @@ func reachable(plan []step, desc format.Descriptor, limit int64) error {
 				// reader translating: the window labels these fields "limit" and
 				// "spread", and there is no "--limit" anywhere on it. Seen on
 				// screen 2026-08-11, O79.
-				"Raise the limit above %d B, narrow the spread, or choose a format with a smaller minimum. The limit asked for was %d B.",
+				"Raise the {setting} above %d B, narrow the spread, or choose a format with a smaller minimum. The {setting} asked for was %d B.",
 				floor+largest(plan, limit), limit),
 		}
 	}

@@ -353,7 +353,23 @@ type PropertyValueError struct {
 }
 
 func (e *PropertyValueError) Error() string {
-	return fmt.Sprintf("%s: %s cannot be %q - %s", e.Format, e.Key, e.Value, e.Reason)
+	return e.InTheWordsOf(e.Key)
+}
+
+// InTheWordsOf is this refusal with the property named the way one surface
+// names it - the declared key on the command line, the label above the box in
+// a window. See core.SettingSlot.
+//
+// The name is a field here rather than a slot in a sentence, because this
+// refusal is assembled rather than written out: the key already stands on its
+// own in the format string. The reason a property gives can still hold slots,
+// so a declaration that names itself twice needs no special case.
+func (e *PropertyValueError) InTheWordsOf(name string) string {
+	if name == "" {
+		name = e.Key
+	}
+	return fmt.Sprintf("%s: %s cannot be %q - %s",
+		e.Format, name, e.Value, core.InTheWordsOf(e.Reason, name))
 }
 
 // AboutSetting is the property this refusal is about, so a window can put the
@@ -683,7 +699,7 @@ func (e *BelowMinimumError) Error() string {
 // reason engine.RecipeError gives about its own: the keys are the vocabulary
 // both surfaces already share, and a third naming is a third thing to keep in
 // step.
-const SettingSize = "size"
+const SettingSize = core.SettingSize
 
 // AboutSetting lets a window put this message beside the box that caused it.
 //

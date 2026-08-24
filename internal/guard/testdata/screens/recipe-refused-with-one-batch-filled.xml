@@ -154,9 +154,9 @@
 																		<container pos="0,65" size="808x69">
 																			<widget size="808x69" type="*widget.Label">
 																				<widget size="808x69" type="*widget.RichText">
-																					<text color="error" pos="6,6" size="784x19">target 1 has no Group name - an Group name anchors the seed of a target, so editing one target never moves the bytes</text>
-																					<text color="error" pos="6,25" size="72x19">of another.</text>
-																					<text color="error" pos="6,44" size="389x19">  give it an Group name, for example Group name: invoices.</text>
+																					<text color="error" pos="6,6" size="793x19">target 1 has no Group name - a Group name anchors the seed of a target, so editing one target never moves the bytes of</text>
+																					<text color="error" pos="6,25" size="55x19">another.</text>
+																					<text color="error" pos="6,44" size="310x19">  give it a Group name, for example id: invoices.</text>
 																				</widget>
 																			</widget>
 																		</container>
@@ -277,7 +277,7 @@
 																				<widget size="808x69" type="*widget.RichText">
 																					<text color="error" pos="6,6" size="768x19">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
 																					<text color="error" pos="6,25" size="110x19">reaches the disk.</text>
-																					<text color="error" pos="6,44" size="565x19">  add Size: 2mb, Size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
+																					<text color="error" pos="6,44" size="563x19">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
 																				</widget>
 																			</widget>
 																		</container>

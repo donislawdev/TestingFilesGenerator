@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -89,7 +90,7 @@ func TestEveryRegisteredFieldCanBeMarkedAndUnmarked(t *testing.T) {
 	} {
 		for _, f := range s.fields.All() {
 			const refusal = "this is the message"
-			if !s.fields.Mark(f.Setting, refusal) {
+			if !s.fields.Mark(f.Setting, errors.New(refusal)) {
 				t.Errorf("%s: %q is registered under %q and marking it found nothing",
 					s.name, f.Label, f.Setting)
 				continue
