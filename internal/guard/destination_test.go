@@ -122,3 +122,60 @@ func holds(parent fyne.CanvasObject, wanted fyne.CanvasObject) bool {
 	})
 	return found
 }
+
+// Clearing the output directory refuses the run instead of writing beside the
+// window, on EVERY screen.
+//
+// O125. The batch screen composes a recipe and runs it, and the recipe reader
+// answers "." for a recipe with no output.dir - which is right for a file,
+// because leaving the key out is how somebody says "put them here". On a screen
+// it was wrong: the box arrives filled in, so an empty one is somebody clearing
+// it rather than somebody never saying, and the window ran into whatever
+// directory it happened to be started from without a word.
+//
+// Measured 2026-08-24: a recipe with no output section writes its files beside
+// the working directory, and the window took that path. The other two screens
+// hand the engine an empty string and it refuses. This holds all three to the
+// same answer.
+//
+// It presses Generate rather than Preview on purpose. A preview writes nothing
+// whatever the directory says, so it could not tell the two behaviours apart -
+// which is exactly the shape of guard this project has recorded as passing
+// without reaching the code.
+func TestClearingTheOutputDirectoryRefusesTheRunOnEveryScreen(t *testing.T) {
+	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+		t.Run(tab, func(t *testing.T) {
+			host := &fakeHost{}
+			window.Open(host)
+			if host.content == nil {
+				t.Fatal("opening the window put no screen in it")
+			}
+			t.Cleanup(func() { join(host) })
+			content := selectTab(t, host.content, tab)
+
+			// The batch screen opens with nothing answered, so give it the two
+			// settings it cannot run without - otherwise the refusal under test
+			// is lost among others and this would pass for the wrong reason.
+			if tab == text.TabRecipe {
+				fill(t, content, text.FieldTargetID, "files")
+				fill(t, content, text.FieldSize, "1kb")
+			}
+
+			// Asserted rather than assumed: if the box were already empty this
+			// guard would be proving nothing about clearing it.
+			box := entryUnder(t, content, text.FieldOutputDir)
+			if box.Text == "" {
+				t.Fatalf("%s opens with an empty output directory, so there is nothing to clear", tab)
+			}
+			box.SetText("")
+
+			press(t, content, text.ButtonGenerate)
+			join(host)
+
+			if edgeOf(t, content, text.FieldOutputDir).StrokeWidth <= 0 {
+				t.Errorf("%s: the output directory was cleared, Generate was pressed, and the box says nothing - "+
+					"so the run went somewhere nobody named", tab)
+			}
+		})
+	}
+}

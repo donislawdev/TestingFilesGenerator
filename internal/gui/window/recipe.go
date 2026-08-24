@@ -446,17 +446,21 @@ func (r *Recipe) newContent() *content {
 // outputSection is the part every batch shares, registered as it is drawn so the
 // registry and the screen cannot come apart.
 func (r *Recipe) outputSection() fyne.CanvasObject {
-	// Nothing in this section is required, and that is a measurement rather
-	// than an oversight. The output directory IS required on the other two
-	// screens - they hand the engine an empty path and it refuses - and here it
-	// is not: an omitted output.dir is a legal recipe that writes to the
-	// current directory. Measured on 2026-08-24 by running one, and found by
-	// TestAStarIsOnEveryBoxTheRunWillNotDoWithout, which went red against a
-	// star declared here on the assumption that the three screens agreed.
+	// Before the fields below, because Add reads it.
 	//
-	// So no star, because a star here would ask for work the run does not need.
-	// That the same box means two different things on two screens is a
-	// separate question and is written down as one - see O125.
+	// This was briefly NOT required here, and the story is worth the four lines
+	// because it is the guard doing its job twice. The star went on all three
+	// screens on the assumption that they agree about an empty directory. They
+	// did not, TestAStarIsOnEveryBoxTheRunWillNotDoWithout went red, and taking
+	// the star off was the honest thing to do at that moment - the screen would
+	// otherwise have been asking for work the run did not need.
+	//
+	// Then the disagreement itself was fixed rather than described, so the star
+	// is true here now. See statedDirectory and O125.
+	//
+	// The manifest name and the seed both say what they fall back to, so this
+	// section has one box that has to be answered.
+	r.fields.Require(recipe.KeyOutputDir)
 	return parts.Section(text.SectionOutput,
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir, text.HintOutputDir,
 			r.tips.Say(text.DetailOutputDir), chooserFor(r.host, r.outDir)),
@@ -556,12 +560,40 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 		targets = append(targets, engineTarget(t))
 	}
 	return targets, engine.Options{
-		OutDir:       rec.Output.Dir,
+		OutDir:       statedDirectory(r.outDir.Text, rec.Output.Dir),
 		Seed:         rec.Seed,
 		Command:      "tfg-gui",
 		ManifestName: manifestName(rec.Output.Manifest),
 		RecipeHash:   hash,
 	}, nil
+}
+
+// statedDirectory is where this screen would write, with an emptied box left
+// empty rather than turned into the current directory.
+//
+// O125. The recipe reader answers "." for a recipe with no output.dir, and for
+// a recipe FILE that is right - leaving the key out is how somebody says "put
+// them here", and tfg generate has always meant that. On this screen it is
+// wrong, and the difference is which question the emptiness answers: this box
+// arrives filled in, so empty is not "I never said" but "I cleared it". Handing
+// the reader's answer to the engine turned that into a silent run into whatever
+// directory the window happened to be started from - which is the defect O102
+// fixed for the other two screens on 2026-08-05, still open here because the
+// three screens were assumed to agree and nobody had asked.
+//
+// Measured 2026-08-24 before the change: a recipe with no output section writes
+// files_0001.txt and manifest.json beside the working directory, and the window
+// took the same path. The other two screens hand the engine the empty string
+// and it refuses. This makes the third do the same, so the engine judges all
+// three alike rather than this one quietly not asking.
+//
+// The parsed value rather than the box for everything else, so a path that
+// changed on its way through the document is the path that gets used.
+func statedDirectory(typed, parsed string) string {
+	if typed == "" {
+		return ""
+	}
+	return parsed
 }
 
 // manifestName is what the run writes its record to, falling back to the name

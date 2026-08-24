@@ -631,7 +631,12 @@
 																						<text bold pos="6,6" size="117x19">Output directory</text>
 																					</widget>
 																				</widget>
-																				<widget pos="135,0" size="32x32" type="*parts.DetailButton">
+																				<widget pos="129,0" size="19x32" type="*parts.RequiredMark">
+																					<widget size="19x32" type="*widget.RichText">
+																						<text bold color="error" pos="6,6" size="7x19">*</text>
+																					</widget>
+																				</widget>
+																				<widget pos="155,0" size="32x32" type="*parts.DetailButton">
 																					<rectangle radius="5" size="32x32"/>
 																					<rectangle size="32x32"/>
 																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
