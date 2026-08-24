@@ -176,40 +176,33 @@ func (p *Preset) onPresetChosen(id string) {
 	settings := make([]format.Property, 0, len(chosen.Parameters)+len(chosen.Reads))
 	settings = append(settings, chosen.Parameters...)
 	settings = append(settings, chosen.Globals()...)
-	for _, param := range settings {
-		field := parts.FromProperty(param)
-		p.params = append(p.params, field)
-		// Labelled and shaped the way a format's own settings are. A preset
-		// declares its parameters as the same type and they were the third
-		// place drawing them, so they carried limit and spread as labels while
-		// every other name on the screen was written out - and their boxes ran
-		// the width of the panel for a size.
-		//
-		// The key a recipe writes goes behind the button, which is what makes
-		// the label a translation rather than a loss.
-		// Same rule as a format's settings, from the same declaration type: a
-		// parameter the preset calls a size says what that size comes to.
-		if param.Kind == format.PropertySize {
-			p.fields.InBytes(param.Name)
-		}
-		p.paramBox.Add(p.fields.Add(param.Name, text.SettingLabel(param.Name),
-			detailOfParameter(param), p.tips.Say(text.SettingKey(param.Name)),
-			parts.ShapedFor(param, field.Control)))
+	// The same call the other two screens make, since 2026-08-24. A preset
+	// declares its parameters as the same format.Property a format declares its
+	// settings as, and this screen used to draw them with a loop of its own -
+	// so it was the third place drawing one declaration and the one nobody
+	// remembered. It had already fallen behind twice: pairing two narrow
+	// settings onto a row never reached it, and the count of bytes beside a
+	// size had to be written here as well as there on the day it went in.
+	//
+	// Nothing looks different today, because the one preset this build
+	// registers declares a single narrow parameter and there is no pair to
+	// make. What it buys is the next thing, arriving on three screens instead
+	// of two.
+	fields, objects := parts.DeclaredFields(settings, p.fields, p.tips)
+	p.params = fields
+	for _, o := range objects {
+		p.paramBox.Add(o)
 	}
 	p.paramBox.Refresh()
 }
 
-// detailOfParameter is what a parameter takes and what it is for, in that
-// order, composed by the one function both screens use.
-//
-// It held its own copy of that composition until 2026-08-19, which is the shape
-// PropertyDetail exists to prevent - and the copy had already stopped agreeing
-// with the original, because the original learned not to spell a menu's values
-// out in prose and this one had not. Two surfaces describing one setting in two
-// wordings is D1 fraying where nobody compares.
-func detailOfParameter(param format.Property) string {
-	return parts.PropertyDetail(param)
-}
+// detailOfParameter is gone as of 2026-08-24, and its history is why the loop
+// above went with it. It held its own copy of the sentence describing a setting
+// until 2026-08-19 and that copy had already drifted, so it was reduced to
+// calling parts.PropertyDetail - a wrapper around the shared thing, kept
+// because this screen drew its parameters itself. The screen calls
+// parts.DeclaredFields now, which composes that sentence on the way, so there
+// is nothing left for a wrapper to wrap.
 
 // given is what the user typed, by parameter name. A field left empty is left
 // out rather than sent as emptiness, because that is what makes the declared

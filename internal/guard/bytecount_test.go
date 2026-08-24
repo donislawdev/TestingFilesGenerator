@@ -101,3 +101,56 @@ func byteCountIn(o fyne.CanvasObject) *parts.ByteCount {
 	})
 	return found
 }
+
+// A declared setting that holds a size says what it comes to, on every screen
+// that draws declared settings.
+//
+// Three screens draw them, not two. A preset declares its parameters as the
+// same format.Property a format declares its settings as, and until 2026-08-24
+// the preset screen drew them with a loop of its own - so it was the third
+// place and the one nobody remembered. It had already fallen behind twice, and
+// the count of bytes was the second time: it had to be written into that loop
+// as well as into the shared one on the day it was added.
+//
+// Both kinds are asked about here because both exist. zip and targz declare
+// entry_size, and the one preset this build registers declares limit, so a
+// change that reached only formats or only presets fails on the other.
+func TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne(t *testing.T) {
+	t.Run("a format setting", func(t *testing.T) {
+		_, content := screen(t)
+		picker, ok := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+		if !ok {
+			t.Fatal("this screen has no format list, so this guard read the wrong tree")
+		}
+		// A format that declares a size, so "does a size say what it comes to"
+		// is a question this can ask at all.
+		picker.SetSelected("zip")
+
+		label := text.SettingLabel("entry_size")
+		count := byteCountBeside(t, content, label)
+		fill(t, content, label, "4kb")
+		if want := text.ExactBytes(4 * 1024); count.Text != want {
+			t.Errorf("%q holds 4kb and the count beside it reads %q, not %q", label, count.Text, want)
+		}
+	})
+
+	t.Run("a preset parameter", func(t *testing.T) {
+		_, content := presetScreen(t)
+
+		label := text.SettingLabel("limit")
+		count := byteCountBeside(t, content, label)
+		// It arrives empty and has to: a preset parameter nobody stated is what
+		// the manifest records as defaulted, untouchable rule 5. So there is
+		// nothing to count until somebody types, and saying otherwise would be
+		// a number for a value nobody gave.
+		if count.Text != "" {
+			t.Errorf("%q was left alone and the count beside it reads %q, so it is counting a value nobody stated",
+				label, count.Text)
+		}
+
+		fill(t, content, label, "2mb")
+		if want := text.ExactBytes(2 * 1024 * 1024); count.Text != want {
+			t.Errorf("%q holds 2mb and the count beside it reads %q, not %q", label, count.Text, want)
+		}
+	})
+}

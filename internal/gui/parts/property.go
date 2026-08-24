@@ -160,13 +160,46 @@ func leftAlone(p format.Property) string {
 // appeared at the foot of the form with nothing marked. Thirteen formats
 // declare fourteen of these between them.
 func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
-	fields := make([]PropertyField, 0, len(d.Properties))
-	objects := make([]fyne.CanvasObject, 0, len(d.Properties))
+	fields, objects := DeclaredFields(d.Properties, into, tips)
+
+	// A rule binding two settings belongs beside them and nowhere else. Drawn
+	// from Min and Max alone, two number boxes would offer twenty thousand by
+	// twenty thousand and the run would refuse the pair - which is the defect
+	// JointLimit was declared to close.
+	//
+	// Here rather than in DeclaredFields because only a format has them. A
+	// preset declares parameters and no joint limits, so asking it for some
+	// would be a field nothing fills.
+	for _, j := range d.JointLimits {
+		objects = append(objects, Note(j.Describe()))
+	}
+	return fields, objects
+}
+
+// DeclaredFields draws every field a list of declared settings describes, in
+// the order it was declared, each with the sentence saying what it takes.
+//
+// THREE screens draw declared settings, not two, and until 2026-08-24 only two
+// of them came through here. The preset screen had a loop of its own, because a
+// preset declares its parameters as the same format.Property and it grew its
+// own way of drawing them - so everything added here had to be remembered
+// there. It already had not been: pairing two narrow settings onto one row went
+// in on 2026-08-20 and never reached the preset screen, and the count of bytes
+// beside a size had to be written twice on the day it was added, which is what
+// made this obvious.
+//
+// The visible change today is none, and that is worth saying rather than
+// hiding: the one preset this build registers declares a single narrow
+// parameter, so there is no pair to make. What changes is that the fourth thing
+// added to a declared field arrives on all three screens instead of two.
+func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
+	fields := make([]PropertyField, 0, len(declared))
+	objects := make([]fyne.CanvasObject, 0, len(declared))
 
 	pair := PairNarrow(into.Row)
 	flush := func() { objects = append(objects, pair.rest()...) }
 
-	for _, p := range d.Properties {
+	for _, p := range declared {
 		f := FromProperty(p)
 		fields = append(fields, f)
 		// A setting the format itself calls a size gets its count of bytes.
@@ -194,14 +227,6 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 		objects = append(objects, object)
 	}
 	flush()
-
-	// A rule binding two settings belongs beside them and nowhere else. Drawn
-	// from Min and Max alone, two number boxes would offer twenty thousand by
-	// twenty thousand and the run would refuse the pair - which is the defect
-	// JointLimit was declared to close.
-	for _, j := range d.JointLimits {
-		objects = append(objects, Note(j.Describe()))
-	}
 	return fields, objects
 }
 
