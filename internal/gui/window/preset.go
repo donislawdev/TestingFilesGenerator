@@ -55,6 +55,11 @@ type Preset struct {
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
 	p.runner.settle = p.settle
+	// Before the fields, because Add reads it. Only these two: every parameter
+	// a preset declares has a default and leaving it alone is the whole point
+	// of them - it is what the manifest records as defaulted, which is
+	// untouchable rule 5 and the one thing this screen must never take away.
+	p.fields.Require(engine.SettingOutDir, engine.SettingSeed)
 
 	p.paramBox = parts.FieldColumn()
 	p.about = parts.FieldColumn()
@@ -182,6 +187,11 @@ func (p *Preset) onPresetChosen(id string) {
 		//
 		// The key a recipe writes goes behind the button, which is what makes
 		// the label a translation rather than a loss.
+		// Same rule as a format's settings, from the same declaration type: a
+		// parameter the preset calls a size says what that size comes to.
+		if param.Kind == format.PropertySize {
+			p.fields.InBytes(param.Name)
+		}
 		p.paramBox.Add(p.fields.Add(param.Name, text.SettingLabel(param.Name),
 			detailOfParameter(param), p.tips.Say(text.SettingKey(param.Name)),
 			parts.ShapedFor(param, field.Control)))

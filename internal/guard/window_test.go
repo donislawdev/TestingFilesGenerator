@@ -434,7 +434,7 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 		// answer with its own button. Walk visits a field before the row
 		// inside it and the last match wins, so without this every field
 		// carrying an explanation reports the button as its control.
-		if isDetailButton(box.Objects[1]) {
+		if isHeadingExtra(box.Objects[1]) {
 			return
 		}
 		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
@@ -501,6 +501,42 @@ func unringed(o fyne.CanvasObject) fyne.CanvasObject {
 func isDetailButton(o fyne.CanvasObject) bool {
 	_, ok := o.(*parts.DetailButton)
 	return ok
+}
+
+// isHeadingExtra says whether an object is one of the things that share a
+// field's heading line with its name.
+//
+// Two of them since 2026-08-24, when the star marking a field that has to be
+// filled in joined the button holding the longer explanation. Both are asked
+// about together everywhere, because every one of these walks is looking for
+// the same thing - a label with the field's CONTROL after it - and a heading
+// row is exactly what has to be stepped over to find one.
+//
+// One helper rather than the same two type assertions in four files. The
+// alternative is what this project has now been bitten by three times: a walk
+// that recognises a row by what sits at a fixed position in it, and a fourth
+// thing added to that row later.
+func isHeadingExtra(o fyne.CanvasObject) bool {
+	if isDetailButton(o) {
+		return true
+	}
+	_, star := o.(*parts.RequiredMark)
+	return star
+}
+
+// detailButtonIn is the explanation button somewhere in a heading row, or nil.
+//
+// A search rather than row.Objects[1], which is what three separate guards and
+// one probe did until 2026-08-24. They were all correct while a heading held at
+// most two things, and all four broke the moment it could hold three - so the
+// position is not read anywhere any more.
+func detailButtonIn(row *fyne.Container) *parts.DetailButton {
+	for _, o := range row.Objects {
+		if button, ok := o.(*parts.DetailButton); ok {
+			return button
+		}
+	}
+	return nil
 }
 
 func headingOf(o fyne.CanvasObject) *widget.Label {

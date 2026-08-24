@@ -88,10 +88,20 @@
 																						<text bold pos="6,6" size="27x19">Size</text>
 																					</widget>
 																				</widget>
-																				<widget pos="45,0" size="32x32" type="*parts.DetailButton">
+																				<widget pos="39,0" size="19x32" type="*parts.RequiredMark">
+																					<widget size="19x32" type="*widget.RichText">
+																						<text bold color="error" pos="6,6" size="7x19">*</text>
+																					</widget>
+																				</widget>
+																				<widget pos="64,0" size="32x32" type="*parts.DetailButton">
 																					<rectangle radius="5" size="32x32"/>
 																					<rectangle size="32x32"/>
 																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																				</widget>
+																				<widget pos="96,0" size="304x32" type="*parts.ByteCount">
+																					<widget size="304x32" type="*widget.RichText">
+																						<text alignment="trailing" color="disabled" pos="232,6" size="65x16" textSize="12">10485760 B</text>
+																					</widget>
 																				</widget>
 																			</container>
 																			<container pos="0,33" size="401x31">
@@ -117,11 +127,18 @@
 																			</widget>
 																		</container>
 																		<container pos="407,0" size="401x93">
-																			<widget size="401x31" type="*widget.Label">
-																				<widget size="401x31" type="*widget.RichText">
-																					<text bold pos="6,6" size="74x19">How many</text>
+																			<container size="401x31">
+																				<widget size="86x31" type="*widget.Label">
+																					<widget size="86x31" type="*widget.RichText">
+																						<text bold pos="6,6" size="74x19">How many</text>
+																					</widget>
 																				</widget>
-																			</widget>
+																				<widget pos="86,0" size="19x31" type="*parts.RequiredMark">
+																					<widget size="19x31" type="*widget.RichText">
+																						<text bold color="error" pos="6,6" size="7x19">*</text>
+																					</widget>
+																				</widget>
+																			</container>
 																			<container pos="0,32" size="401x31">
 																				<container size="140x31">
 																					<widget size="140x31" type="*widget.Entry">
@@ -150,7 +167,12 @@
 																						<text bold pos="6,6" size="86x19">Group name</text>
 																					</widget>
 																				</widget>
-																				<widget pos="104,0" size="32x32" type="*parts.DetailButton">
+																				<widget pos="98,0" size="19x32" type="*parts.RequiredMark">
+																					<widget size="19x32" type="*widget.RichText">
+																						<text bold color="error" pos="6,6" size="7x19">*</text>
+																					</widget>
+																				</widget>
+																				<widget pos="123,0" size="32x32" type="*parts.DetailButton">
 																					<rectangle radius="5" size="32x32"/>
 																					<rectangle size="32x32"/>
 																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -333,7 +355,12 @@
 																					<text bold pos="6,6" size="117x19">Output directory</text>
 																				</widget>
 																			</widget>
-																			<widget pos="135,0" size="32x32" type="*parts.DetailButton">
+																			<widget pos="129,0" size="19x32" type="*parts.RequiredMark">
+																				<widget size="19x32" type="*widget.RichText">
+																					<text bold color="error" pos="6,6" size="7x19">*</text>
+																				</widget>
+																			</widget>
+																			<widget pos="155,0" size="32x32" type="*parts.DetailButton">
 																				<rectangle radius="5" size="32x32"/>
 																				<rectangle size="32x32"/>
 																				<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -378,7 +405,12 @@
 																						<text bold pos="6,6" size="33x19">Seed</text>
 																					</widget>
 																				</widget>
-																				<widget pos="51,0" size="32x32" type="*parts.DetailButton">
+																				<widget pos="45,0" size="19x32" type="*parts.RequiredMark">
+																					<widget size="19x32" type="*widget.RichText">
+																						<text bold color="error" pos="6,6" size="7x19">*</text>
+																					</widget>
+																				</widget>
+																				<widget pos="70,0" size="32x32" type="*parts.DetailButton">
 																					<rectangle radius="5" size="32x32"/>
 																					<rectangle size="32x32"/>
 																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>

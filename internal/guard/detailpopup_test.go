@@ -180,10 +180,16 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 	var found *parts.DetailButton
 	walk(o, func(obj fyne.CanvasObject) {
 		row, ok := obj.(*fyne.Container)
-		if !ok || len(row.Objects) != 2 || namedOnScreen(row.Objects[0]) != label {
+		if !ok || len(row.Objects) < 2 || namedOnScreen(row.Objects[0]) != label {
 			return
 		}
-		if button, isButton := row.Objects[1].(*parts.DetailButton); isButton {
+		// Searched rather than taken from position one. A heading row grew a
+		// third thing on 2026-08-24 - the star marking a field that has to be
+		// filled in - which sits between the name and this button, so every
+		// required field carrying an explanation would have answered "there is
+		// none". Indexing into this row is what has now had to be corrected
+		// three times.
+		if button := detailButtonIn(row); button != nil {
 			found = button
 		}
 	})

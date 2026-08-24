@@ -90,7 +90,12 @@
 																								<text bold pos="6,6" size="86x19">Group name</text>
 																							</widget>
 																						</widget>
-																						<widget pos="104,0" size="32x32" type="*parts.DetailButton">
+																						<widget pos="98,0" size="19x32" type="*parts.RequiredMark">
+																							<widget size="19x32" type="*widget.RichText">
+																								<text bold color="error" pos="6,6" size="7x19">*</text>
+																							</widget>
+																						</widget>
+																						<widget pos="123,0" size="32x32" type="*parts.DetailButton">
 																							<rectangle radius="5" size="32x32"/>
 																							<rectangle size="32x32"/>
 																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -166,6 +171,11 @@
 																							<rectangle size="32x32"/>
 																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
 																						</widget>
+																						<widget pos="77,0" size="188x32" type="*parts.ByteCount">
+																							<widget size="188x32" type="*widget.RichText">
+																								<text alignment="trailing" color="disabled" pos="182,6" size="0x16" textSize="12"></text>
+																							</widget>
+																						</widget>
 																					</container>
 																					<container pos="0,33" size="265x31">
 																						<widget size="265x31" type="*widget.Entry">
@@ -237,6 +247,11 @@
 																							<rectangle radius="5" size="32x32"/>
 																							<rectangle size="32x32"/>
 																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																						</widget>
+																						<widget pos="150,0" size="115x32" type="*parts.ByteCount">
+																							<widget size="115x32" type="*widget.RichText">
+																								<text alignment="trailing" color="disabled" pos="109,6" size="0x16" textSize="12"></text>
+																							</widget>
 																						</widget>
 																					</container>
 																					<container pos="0,33" size="265x31">
@@ -323,7 +338,7 @@
 																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
 																								<widget size="401x29" type="*widget.entryContent">
 																									<widget size="401x29" type="*widget.RichText">
-																										<text color="placeholder" pos="6,5" size="0x19"></text>
+																										<text color="placeholder" pos="6,5" size="66x19">not stated</text>
 																									</widget>
 																									<widget size="401x29" type="*widget.RichText">
 																										<text pos="6,5" size="0x19"></text>
@@ -621,7 +636,7 @@
 																							<widget pos="0,1" size="140x29" type="*widget.Scroll">
 																								<widget size="140x29" type="*widget.entryContent">
 																									<widget size="140x29" type="*widget.RichText">
-																										<text color="placeholder" pos="6,5" size="0x19"></text>
+																										<text color="placeholder" pos="6,5" size="8x19">0</text>
 																									</widget>
 																									<widget size="140x29" type="*widget.RichText">
 																										<text pos="6,5" size="0x19"></text>
@@ -676,7 +691,8 @@
 												</widget>
 											</widget>
 										</widget>
-										<linearGradient endColor="background" pos="0,1128" size="1088x20"/>
+										<linearGradient endColor="rgba(10,10,10,255)" pos="0,1128" size="1088x20"/>
+										<image fillMode="contain" pos="537,1134" rsc="menuDropDownIcon" size="14x14" themed="foreground"/>
 									</container>
 									<container pos="0,1154" size="1088x95">
 										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1088x95"/>

@@ -15,6 +15,20 @@ import (
 // and a recipe can require a range of tool versions instead.
 const SchemaVersion = 1
 
+// DefaultSeed is the seed a run uses when the recipe does not name one.
+//
+// It is the zero value of the field, and that is exactly why it is written
+// down rather than left implicit. The window shows what happens if the box is
+// left empty, and reading that off a zero value would be a second copy of the
+// number with nothing holding it to the first - the shape that once put one
+// answer in tfg formats and another in the generator.
+//
+// Measured before it was written: a recipe with no seed and a recipe with
+// seed: 0 produce the same bytes.
+//
+// Exported for the same reason DefaultCount is, in target.go.
+const DefaultSeed = 0
+
 // Recipe is a validated recipe. Nothing outside this package builds one, so
 // holding an instance means every check in this file has already passed.
 type Recipe struct {

@@ -14,7 +14,27 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- The window marks the fields you have to fill in with a red star beside their
+  name. Until now the only way to find out that a box could not be left empty
+  was to press Generate and read the refusal - and on the batch screen a
+  setting the run will not do without looked exactly like one nobody need ever
+  touch.
+- A box holding a size says what that size comes to, beside the field's name
+  and updated as you type: `10mb` shows `10485760 B`. This tool counts in
+  1024s, and the count is the only place on the screen that says so without
+  being asked.
+
 ### Changed
+
+- Every box you may leave alone now shows what happens if you do. Two on the
+  batch screen said nothing at all - the class of a batch, and the seed - so
+  they were indistinguishable from boxes that have to be answered.
+- The foot of a form that has more content below it fades into a shadow rather
+  than into the page, and carries a small arrow. The old fade was obvious where
+  the last thing on screen was text and nearly invisible where it was empty
+  space, which is the case where a reader has nothing else to go on.
 
 - The window went through a design review and came out of it looking like one
   program rather than four screens. Nothing it does has changed and no

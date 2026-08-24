@@ -773,14 +773,16 @@ func explanationBeside(t *testing.T, o fyne.CanvasObject, label string) *parts.D
 	var found *parts.DetailButton
 	walk(o, func(obj fyne.CanvasObject) {
 		row, ok := obj.(*fyne.Container)
-		if !ok || len(row.Objects) != 2 || found != nil {
+		if !ok || len(row.Objects) < 2 || found != nil {
 			return
 		}
 		head, isLabel := row.Objects[0].(*widget.Label)
 		if !isLabel || head.Text != label {
 			return
 		}
-		if b, isButton := row.Objects[1].(*parts.DetailButton); isButton {
+		// Searched, not indexed - see detailButtonIn. A field that has to be
+		// filled in carries a star between its name and this button.
+		if b := detailButtonIn(row); b != nil {
 			found = b
 		}
 	})

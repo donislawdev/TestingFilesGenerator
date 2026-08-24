@@ -167,7 +167,7 @@ func fieldBox(o fyne.CanvasObject, label string) *fyne.Container {
 	var found *fyne.Container
 	walk(o, func(obj fyne.CanvasObject) {
 		box, ok := obj.(*fyne.Container)
-		if !ok || len(box.Objects) < 2 || isDetailButton(box.Objects[1]) {
+		if !ok || len(box.Objects) < 2 || isHeadingExtra(box.Objects[1]) {
 			return
 		}
 		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {

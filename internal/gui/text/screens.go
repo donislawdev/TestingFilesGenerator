@@ -2,6 +2,7 @@ package text
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -343,6 +344,37 @@ const (
 // window whose every field arrives carrying a value can never say "I did not
 // state this". Untouchable rule 5.
 const PlaceholderNotStated = "not stated"
+
+// RequiredMark stands beside the name of a field that has to be filled in.
+//
+// Here rather than in the widget that draws it, because everything a person
+// reads is composed in this package - a star is a word in every language that
+// uses this convention, and a language that marks a required field some other
+// way needs one place to change it.
+//
+// A star rather than the word, because it sits on the same line as the field's
+// name and a word there competes with the name. The same reasoning that made
+// the longer explanation an icon.
+const RequiredMark = "*"
+
+// ExactBytes says what a size somebody typed comes to, counted out.
+//
+// It exists because "10mb" is two different numbers depending on who is
+// reading. This tool counts in 1024s - RECIPE.md section 9, settled and not
+// reopened - and everything downstream of the box agrees, but nothing on the
+// screen said so, so a person testing a limit their system declares in
+// millions had no way to see the difference until the files were on disk.
+//
+// It states the number rather than arguing the units. Saying "MiB" would be
+// answering a question nobody asked with a spelling most of the world does not
+// use, and it would still need the count for anyone checking a limit.
+//
+// "B" rather than "bytes" because that is what the command line prints - one
+// vocabulary for one thing across both surfaces - and it sidesteps the plural
+// a number always drags behind it.
+func ExactBytes(n int64) string {
+	return strconv.FormatInt(n, 10) + " B"
+}
 
 // RefusedBeforeWriting is what the foot of the form says when a press was
 // turned down and every reason for it went onto a box.

@@ -169,6 +169,13 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 	for _, p := range d.Properties {
 		f := FromProperty(p)
 		fields = append(fields, f)
+		// A setting the format itself calls a size gets its count of bytes.
+		// Read off the declaration rather than off the name, so a format that
+		// declares a size tomorrow gets this without a line of window code -
+		// the same reason the field is drawn from the declaration at all.
+		if p.Kind == format.PropertySize {
+			into.InBytes(p.Name)
+		}
 		// The label is the window's own wording and the key a recipe writes
 		// is behind the button. Until 2026-08-20 the key WAS the label, so a
 		// screen where every other name is capitalised and spaced carried

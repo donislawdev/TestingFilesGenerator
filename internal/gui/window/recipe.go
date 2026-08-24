@@ -130,6 +130,13 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.manifest = widget.NewEntry()
 	r.manifest.SetPlaceHolder(engine.DefaultManifestName)
 	r.seed = widget.NewEntry()
+	// What happens if it is left alone, in the place a box says that. Counted
+	// on 2026-08-23 off the stored widget trees: six boxes on this screen held
+	// nothing at all, and four of them are settings a run refuses when they are
+	// empty. This one and the class below are the two that are not - so they
+	// were the only boxes on any screen where "you may leave this" and "you
+	// must fill this in" looked the same. See the note on newBatch.
+	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
 	r.label = parts.NewToggle(text.FieldLabel, nil)
 
 	r.batchBox = parts.FieldColumn()
@@ -203,6 +210,13 @@ func (r *Recipe) newBatch() *batch {
 	// with a default and a setting without: a batch with no id is refused
 	// rather than filled in, because an id is what anchors a batch's seed.
 	b.count.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultCount)))
+	// The class is optional metadata, so it says so the same way. It stood
+	// empty and silent beside the id above it, which is REFUSED when empty -
+	// two boxes side by side, one you must fill in and one you need not,
+	// drawn identically. The rule this closes is worth more than the two
+	// fields: a box with a hint may be left alone, a box with nothing in it
+	// may not, and TestABoxYouMayLeaveAloneSaysSo holds it from the registry.
+	b.group.SetPlaceHolder(text.PlaceholderNotStated)
 
 	// Nothing is filled in with a default, on either list. A list carrying a
 	// value cannot say "I did not state this", and an expectation nobody stated
@@ -267,6 +281,22 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	add := func(setting, label, hint string, detail parts.Detail, control fyne.CanvasObject) fyne.CanvasObject {
 		return r.fields.Add(at(setting), label, hint, detail, control)
 	}
+	// Before the fields, because Add reads it, and per batch because an address
+	// carries the batch it belongs to - the id of a second batch is a different
+	// name from the id of the first.
+	//
+	// The id alone. A batch with no id is refused, because an id is what
+	// anchors its seed. The three ways of saying how big are NOT marked and
+	// that is the point of the definition rather than an omission: filling any
+	// one of them satisfies the run, so no single one of them is required, and
+	// three stars would say "fill all three". The line above them carries that
+	// rule instead.
+	r.fields.Require(at(recipe.KeyID))
+	// Two of the three ways of saying how big hold ONE size, so those two say
+	// what it comes to. A size range holds two numbers and a count under it
+	// would be answering about half the box, so it is left out - see
+	// Fields.InBytes.
+	r.fields.InBytes(at(recipe.KeySize), at(recipe.KeyBoundary))
 
 	// The block is titled by the section below, so nothing repeats it here. The
 	// heading was drawn twice until it was looked at: parts.Section takes a title
@@ -416,6 +446,17 @@ func (r *Recipe) newContent() *content {
 // outputSection is the part every batch shares, registered as it is drawn so the
 // registry and the screen cannot come apart.
 func (r *Recipe) outputSection() fyne.CanvasObject {
+	// Nothing in this section is required, and that is a measurement rather
+	// than an oversight. The output directory IS required on the other two
+	// screens - they hand the engine an empty path and it refuses - and here it
+	// is not: an omitted output.dir is a legal recipe that writes to the
+	// current directory. Measured on 2026-08-24 by running one, and found by
+	// TestAStarIsOnEveryBoxTheRunWillNotDoWithout, which went red against a
+	// star declared here on the assumption that the three screens agreed.
+	//
+	// So no star, because a star here would ask for work the run does not need.
+	// That the same box means two different things on two screens is a
+	// separate question and is written down as one - see O125.
 	return parts.Section(text.SectionOutput,
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir, text.HintOutputDir,
 			r.tips.Say(text.DetailOutputDir), chooserFor(r.host, r.outDir)),

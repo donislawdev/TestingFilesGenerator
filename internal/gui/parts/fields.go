@@ -62,6 +62,27 @@ type Fields struct {
 	list []*Field
 	by   map[string]*Field
 
+	// required are the settings this screen will not run without, by the same
+	// key a refusal names them by.
+	//
+	// A set on the registry rather than an argument at the thirty-two places a
+	// field is built. Both would work and only one of them stays true: a flag
+	// typed at a call site is a second opinion about what the engine refuses,
+	// and it is the copy that drifts. Declared in one line per screen and
+	// checked against the engine itself by
+	// TestAStarIsOnEveryBoxTheRunWillNotDoWithout, which blanks each box in
+	// turn and asks whether the run actually refuses it - so the star cannot
+	// quietly come to mean something the run does not do.
+	//
+	// Read by Add, so a screen names these BEFORE it builds its fields. Getting
+	// that order wrong is not silent: the guard renders the screen and counts
+	// the stars that are really there.
+	required map[string]bool
+
+	// inBytes are the settings whose value is one size, so their field shows
+	// what that size counts out to. See InBytes.
+	inBytes map[string]bool
+
 	// tell is called with the setting whose box was typed into.
 	//
 	// It lives here rather than at the call sites because the call sites are
@@ -72,14 +93,84 @@ type Fields struct {
 }
 
 // NewFields starts an empty screen.
-func NewFields() *Fields { return &Fields{by: map[string]*Field{}} }
+func NewFields() *Fields {
+	return &Fields{by: map[string]*Field{}, required: map[string]bool{}, inBytes: map[string]bool{}}
+}
+
+// Require names the settings this screen will not run without, so their fields
+// are drawn with the mark that says so.
+//
+// Called before the fields are built, and repeatedly where a screen rebuilds -
+// the batch screen addresses a setting by the batch it belongs to, so the same
+// setting of a second batch is a different name and has to be named again.
+//
+// What is NOT named here is as deliberate as what is. Where a rule binds
+// several boxes together - one of size, size range or a boundary - no single
+// one of them is required, because filling either of the others satisfies the
+// run. Marking all three would say "fill all three", which is false. The line
+// above them says "Fill in one of these three." and that is the sentence that
+// carries it. The guard uses the same definition: a setting is required when
+// blanking THAT box alone, with everything else answered, makes the run refuse.
+func (s *Fields) Require(settings ...string) {
+	for _, setting := range settings {
+		s.required[setting] = true
+	}
+}
+
+// Required says whether this screen was told it cannot run without a setting,
+// for a guard to compare against what the engine actually does.
+func (s *Fields) Required(setting string) bool { return s.required[setting] }
+
+// InBytes names the settings whose value is one size, so their fields show what
+// that size comes to.
+//
+// Declared rather than guessed, and the guessing version is worth naming
+// because it is the obvious one: trying core.ParseSize on every box and showing
+// a count wherever it succeeds. "How many" holds 1, which parses as one byte,
+// so every count box on every screen would have grown a caption reading "1 B".
+//
+// A size RANGE and a list of sizes are deliberately not named here. Both hold
+// more than one number, so one count underneath would be answering about half
+// of what is in the box.
+func (s *Fields) InBytes(settings ...string) {
+	for _, setting := range settings {
+		s.inBytes[setting] = true
+	}
+}
+
+// counter is the caption showing what the size in a field comes to, or nil for
+// a field that does not hold one.
+//
+// Wired here rather than at a call site for the reason the rest of this type
+// exists: a screen names the size settings once and every field ever added
+// under one of those names gets its count, including the ones a chosen format
+// declares long after the screen was built.
+func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasObject {
+	if !s.inBytes[setting] {
+		return nil
+	}
+	count := newByteCount()
+	for _, b := range boxesIn(control) {
+		b := b
+		already := b.OnChanged
+		b.OnChanged = func(value string) {
+			if already != nil {
+				already(value)
+			}
+			count.show(value)
+		}
+		// And once now, for a box that arrives with a size already in it.
+		count.show(b.Text)
+	}
+	return count
+}
 
 // Add builds a field and hands back the thing to put on the screen.
 //
 // Every field gets an area for its refusal and an edge round its control. There
 // is no variant without them, on purpose: the variant IS the defect.
 func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
-	object, body, area := FieldSaying(label, hint, detail, control)
+	object, body, area := FieldSaying(label, hint, detail, s.required[setting], s.counter(setting, control), control)
 	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	// Last one wins, which is what a rebuilt screen needs: the preset screen

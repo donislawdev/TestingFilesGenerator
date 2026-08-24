@@ -112,6 +112,17 @@ type Generate struct {
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips()}
 	g.runner.settle = g.settle
+	// Before the fields, because Add reads it. These are the boxes settle
+	// refuses when they are empty - a size that will not parse, a count and a
+	// seed that are not whole numbers, and an id the engine will not run
+	// without. Everything else on this screen can be left alone: a name
+	// template has a default, and what a format declares it works out for
+	// itself.
+	g.fields.Require(format.SettingSize, engine.SettingCount, engine.SettingID,
+		engine.SettingSeed, engine.SettingOutDir)
+	// One box on this screen holds a size. What a format declares is named by
+	// the declaration itself, in parts.PropertyFields.
+	g.fields.InBytes(format.SettingSize)
 	g.buildFields()
 
 	// The actions sit outside the scrolling part, so they stay where they are

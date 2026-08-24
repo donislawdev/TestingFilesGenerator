@@ -46,11 +46,11 @@ import (
 // as the sentence is there. Two marks rather than one on purpose - a colour on
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
-func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
+func FieldSaying(label, hint string, detail Detail, required bool, trailing, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
 	marked, ring := WithRing(control)
 	area = NewErrorArea()
 	area.edge = ring
-	body = Column(GapTight, fieldParts(label, hint, detail, marked)...)
+	body = Column(GapTight, fieldParts(label, hint, detail, required, trailing, marked)...)
 	return Column(GapTight, body, area.Object()), body, area
 }
 
@@ -59,8 +59,8 @@ func FieldSaying(label, hint string, detail Detail, control fyne.CanvasObject) (
 // One place rather than two, because the pair above differed by a single line
 // and the pair is where a field's shape would quietly come apart - one of them
 // growing a button and the other not.
-func fieldParts(label, hint string, detail Detail, control fyne.CanvasObject) []fyne.CanvasObject {
-	items := []fyne.CanvasObject{withDetail(Heading(label), detail), control}
+func fieldParts(label, hint string, detail Detail, required bool, trailing, control fyne.CanvasObject) []fyne.CanvasObject {
+	items := []fyne.CanvasObject{headingRow(label, detail, required, trailing), control}
 	if hint != "" {
 		items = append(items, Note(hint))
 	}
