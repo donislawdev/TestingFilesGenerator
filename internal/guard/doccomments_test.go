@@ -50,21 +50,36 @@ func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 			if err != nil || !info.IsDir() {
 				return err
 			}
+			entries, derr := os.ReadDir(path)
+			if derr != nil {
+				return nil // a directory being edited underneath us
+			}
 			fset := token.NewFileSet()
 			// One package at a time, because "a different declaration" is a
 			// question about a package rather than about a file. Test files are
 			// left out: they are where the guards live and they name the things
 			// they are about on purpose.
-			pkgs, perr := parser.ParseDir(fset, path, func(fi os.FileInfo) bool {
-				return !strings.HasSuffix(fi.Name(), "_test.go")
-			}, parser.ParseComments)
-			if perr != nil {
-				return nil // a directory with no Go in it, or one being edited
+			//
+			// File by file rather than parser.ParseDir, which is deprecated for
+			// ignoring build tags. Ignoring them is what this wants: a comment
+			// adrift behind a tag is still adrift, and the file that holds the
+			// window's wiring is behind one.
+			byPackage := map[string][]*ast.File{}
+			for _, e := range entries {
+				name := e.Name()
+				if e.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+					continue
+				}
+				parsed, ferr := parser.ParseFile(fset, filepath.Join(path, name), nil, parser.ParseComments)
+				if ferr != nil {
+					continue // not Go we can read, and not this guard's business
+				}
+				byPackage[parsed.Name.Name] = append(byPackage[parsed.Name.Name], parsed)
 			}
-			for _, pkg := range pkgs {
+			for _, pkgFiles := range byPackage {
 				exported := map[string]bool{}
 				var decls []decl
-				for _, file := range pkg.Files {
+				for _, file := range pkgFiles {
 					for _, d := range file.Decls {
 						names, doc := declaredNames(d)
 						for _, n := range names {

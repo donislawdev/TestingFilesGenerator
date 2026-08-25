@@ -32,6 +32,14 @@ because it turns other people's test suites red.
   the problem and what to do instead, instead of quoting a system error that
   named an internal temporary file.
 
+- A file named exactly `nul` is refused as well, for a worse reason: on Windows
+  that is the null device, so writing to it succeeds and the bytes go nowhere.
+  The run was already stopped, but by a check that then told you to remove a
+  file you cannot remove. `nul.txt` is an ordinary name and still works, and so
+  do `con`, `con.txt`, `prn`, `aux`, `com1` and the rest of the names people
+  expect to be reserved - they were each tried on Windows 11 and on Windows
+  Server 2025, and every one of them is an ordinary file there now.
+
 ### Added
 
 - Keyboard shortcuts: `Ctrl+Enter` generates, `Ctrl+P` previews, `Esc` stops a
