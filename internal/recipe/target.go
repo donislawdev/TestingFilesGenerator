@@ -524,7 +524,7 @@ func askTheFormat(p *problems, where spot, formatID string, stated map[string]st
 		var value *format.PropertyValueError
 		if errors.As(bad, &value) {
 			p.add(at, fmt.Sprintf("%s: %s cannot be %q", where, value.Key, value.Value),
-				core.InTheWordsOf(value.Reason, value.Key), value.Instead)
+				core.InTheWordsOf(value.Reason, value.Key), value.Remedy)
 			continue
 		}
 		var unknown *format.UnknownPropertyError

@@ -249,6 +249,17 @@ type ImpossibleError struct {
 	Setting string
 }
 
+// What happened, why, and what to do instead - the three parts a report keeps
+// apart, on the refusal a preset can produce. Error still assembles the one
+// sentence the command line has always printed.
+func (e *ImpossibleError) What() string {
+	return fmt.Sprintf("the preset %s cannot build this set", e.Preset)
+}
+
+func (e *ImpossibleError) Why() string { return e.Detail }
+
+func (e *ImpossibleError) Instead() string { return e.Hint }
+
 func (e *ImpossibleError) Error() string {
 	return e.InTheWordsOf(e.Setting)
 }

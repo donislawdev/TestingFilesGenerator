@@ -102,7 +102,7 @@ func validate(args []string, out, errOut io.Writer) int {
 	if err != nil {
 		if *asJSON {
 			writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-				Problems: []validateProblem{{What: err.Error(), At: addressOf(err)}}})
+				Problems: []validateProblem{problemOf(err)}})
 			return classify(err)
 		}
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
@@ -167,6 +167,30 @@ type validateProblem struct {
 	// report by field needs this rather than the sentence, which names a target
 	// by its id and cannot be split back apart reliably.
 	At string `json:"at,omitempty"`
+}
+
+// problemOf turns a refusal from below the recipe reader into a report entry.
+//
+// A refusal the reader produced arrives already in three parts, because the
+// reader built it that way. One from underneath - a format refusing a size, a
+// preset refusing a set, the engine refusing a name - arrived as one sentence,
+// so a script reading this had to take the sentence apart to group by reason,
+// and the sentence is the one thing here written for a person.
+//
+// The three parts are asked for by name rather than by type, the same way the
+// address is. Not everything answers, and one that does not still reports as it
+// always did: the whole sentence in what, and nothing in the other two.
+func problemOf(err error) validateProblem {
+	entry := validateProblem{What: err.Error(), At: addressOf(err)}
+	var parted interface {
+		What() string
+		Why() string
+		Instead() string
+	}
+	if errors.As(err, &parted) {
+		entry.What, entry.Why, entry.Fix = parted.What(), parted.Why(), parted.Instead()
+	}
+	return entry
 }
 
 // addressOf is where a refusal from below the recipe reader happened.

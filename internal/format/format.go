@@ -266,6 +266,17 @@ type NotAContainerError struct {
 	Containers []string
 }
 
+// What happened, what can do it instead, and what to do about it.
+func (e *NotAContainerError) What() string {
+	return fmt.Sprintf("%s holds no other files, so it cannot take contains", e.Format)
+}
+
+func (e *NotAContainerError) Why() string {
+	return "the formats that can are " + strings.Join(e.Containers, ", ")
+}
+
+func (e *NotAContainerError) Instead() string { return "Drop contains, or change the format" }
+
 func (e *NotAContainerError) Error() string {
 	return fmt.Sprintf(
 		"%s holds no other files, so it cannot take contains - the formats that can are %s. Drop contains, or change the format",
@@ -380,14 +391,31 @@ type PropertyValueError struct {
 	Key    string
 	Value  string
 	Reason string
-	// Instead is what to do about it, built from the declaration. It is carried
+	// Remedy is what to do about it, built from the declaration. It is carried
 	// here rather than worked out by whoever reports this, because a refusal in
 	// this tool has four parts - what happened, why, what is allowed, what to do
 	// instead (D6) - and the fourth had nowhere to come from until 2026-08-25.
 	// A reader that wants the whole thing in one sentence still gets it from
 	// Error, which leaves this out: it is the part a form puts under the box.
-	Instead string
+	//
+	// Named Remedy rather than Instead because the accessor below has to be
+	// called Instead - that is the name the other refusals in this package use
+	// for the same part, and the reader that asks for all three asks by name.
+	Remedy string
 }
+
+// What happened, why the declaration forbids it, and what to do instead.
+//
+// Instead is the part Error leaves out on purpose - see the field - so this is
+// the only way a report gets all four parts of D6 for the refusal a person hits
+// most often, by typing a number.
+func (e *PropertyValueError) What() string {
+	return fmt.Sprintf("%s: %s cannot be %q", e.Format, e.Key, e.Value)
+}
+
+func (e *PropertyValueError) Why() string { return core.InTheWordsOf(e.Reason, e.Key) }
+
+func (e *PropertyValueError) Instead() string { return e.Remedy }
 
 func (e *PropertyValueError) Error() string {
 	return e.InTheWordsOf(e.Key)
@@ -619,7 +647,7 @@ func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 		if raw := props[k]; raw != "" {
 			if why := p.Allows(raw); why != "" {
 				bad = append(bad, &PropertyValueError{
-					Format: d.ID, Key: k, Value: raw, Reason: why, Instead: p.Instead(),
+					Format: d.ID, Key: k, Value: raw, Reason: why, Remedy: p.Instead(),
 				})
 			}
 		}
@@ -775,6 +803,22 @@ type BelowMinimumError struct {
 	Reason    string
 	Hint      string
 }
+
+// What happened, why the minimum exists, and what to do instead.
+//
+// The same three accessors UnknownPropertyError has carried since the recipe
+// reader started reporting four parts, on the refusal every format can produce.
+// Error stays exactly as it was and is still assembled by hand, because the
+// order it reads best in is not the order the parts join in - the size asked
+// for belongs beside the minimum rather than after the reason. A guard asks
+// that the sentence still carries the why and the fix, so the two cannot drift.
+func (e *BelowMinimumError) What() string {
+	return fmt.Sprintf("%s cannot be smaller than %d B. Requested: %d B", e.Format, e.Minimum, e.Requested)
+}
+
+func (e *BelowMinimumError) Why() string { return e.Reason }
+
+func (e *BelowMinimumError) Instead() string { return e.Hint }
 
 func (e *BelowMinimumError) Error() string {
 	return fmt.Sprintf("%s cannot be smaller than %d B - %s. Requested: %d B. %s",

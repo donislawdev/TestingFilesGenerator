@@ -611,3 +611,80 @@ func TestValidateRefusesWhatGenerateWouldRefuse(t *testing.T) {
 		}
 	}
 }
+
+// A refusal from below the recipe reader arrives in its three parts, and the
+// one sentence form still carries them.
+//
+// The reader has reported what, why and what to do instead since RC7. A
+// refusal from underneath it - a format refusing a size, a format that holds
+// nothing being asked to hold something - arrived as one sentence, so a script
+// grouping a report by reason had to take prose apart to do it, and the prose
+// is the one thing here written for a person rather than for a program.
+//
+// The second half is what keeps the two honest. Each type assembles its own
+// sentence, in the order it reads best, and hands out its parts separately -
+// so the sentence and the parts are two assemblies of the same facts and could
+// drift. Asking that the sentence still contains the why and the fix costs
+// nothing and closes that.
+func TestARefusalFromBelowTheReaderArrivesInItsThreeParts(t *testing.T) {
+	cases := []struct{ name, src string }{
+		{"a size the format cannot deliver", "version: 1\ntargets:\n  - id: a\n    format: pdf\n    size: 10\n"},
+		{"contains asked of a format that holds nothing", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    contains:\n      - format: txt\n        count: 2\n        size: 100\n"},
+		{"a value a format setting will not take", "version: 1\ntargets:\n  - id: a\n    format: bmp\n    size: 1mb\n    properties:\n      width: \"99999\"\n"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := t.TempDir()
+			path := filepath.Join(dir, "recipe.yaml")
+			if err := os.WriteFile(path, []byte(c.src), 0o644); err != nil {
+				t.Fatal(err)
+			}
+
+			var out, errOut bytes.Buffer
+			if code := cli.Run(context.Background(), []string{"validate", path, "--json"}, &out, &errOut); code == cli.ExitOK {
+				t.Fatalf("this recipe was meant to be refused:\n%s", out.String())
+			}
+			var report struct {
+				Problems []struct {
+					What string `json:"what"`
+					Why  string `json:"why"`
+					Fix  string `json:"fix"`
+				} `json:"problems"`
+			}
+			if err := json.Unmarshal(errOut.Bytes(), &report); err != nil {
+				t.Fatalf("the report is not readable as JSON: %v\n%s", err, errOut.String())
+			}
+			if len(report.Problems) != 1 {
+				t.Fatalf("expected one problem and got %d:\n%s", len(report.Problems), errOut.String())
+			}
+			p := report.Problems[0]
+			for _, part := range []struct{ name, value string }{
+				{"what", p.What}, {"why", p.Why}, {"fix", p.Fix},
+			} {
+				if part.value == "" {
+					t.Errorf("the report carries no %q for this refusal.\n"+
+						"Reason: a script grouping by reason has to take the sentence apart to do it,\n"+
+						"and the sentence is the one thing here written for a person.\nIt said: %q",
+						part.name, p.What)
+				}
+			}
+
+			// The same refusal in one sentence, which is what the command line
+			// prints. It has to still hold the parts, or the two renderings have
+			// come apart and only one of them is right.
+			var pOut, pErr bytes.Buffer
+			cli.Run(context.Background(), []string{"validate", path}, &pOut, &pErr)
+			sentence := pOut.String() + pErr.String()
+			for _, part := range []struct{ name, value string }{{"why", p.Why}, {"fix", p.Fix}} {
+				if part.value != "" && !strings.Contains(sentence, strings.TrimSuffix(part.value, ".")) {
+					t.Errorf("the sentence the command line prints does not contain the %q the report gives.\n"+
+						"Reason: each of these types writes its own sentence and hands out its parts\n"+
+						"separately, so the two are assemblies of the same facts and can drift. This is\n"+
+						"what stops that.\nthe %s: %q\nthe sentence: %s",
+						part.name, part.name, part.value, sentence)
+				}
+			}
+		})
+	}
+}
