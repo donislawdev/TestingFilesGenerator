@@ -723,7 +723,8 @@ type Plan struct {
 	// showing a number that looks like all the others.
 	Exact bool
 	// Properties are the declared facts about the file, carried into the
-	// manifest so a test can assert on them.
+	// manifest so a test can assert on them. Keys a reader outside this
+	// program relies on are spelled once, below.
 	Properties map[string]any
 	// Determinism is the level this particular file reached.
 	Determinism Determinism
@@ -733,6 +734,19 @@ type Plan struct {
 	// writing. Nothing outside the generator reads it.
 	Memo any
 }
+
+// PropertyLabelEmbedded is the key a generator sets to say whether the label
+// it was asked for actually reached the file.
+//
+// It is written down once because twenty one places spell it and a typo in any
+// of them is silent: the engine reads it with a type assertion that yields
+// false rather than an error, so a misspelled key means "this file carries no
+// label" in the manifest of a file that carries one.
+//
+// The spelling itself does not move. It reaches the manifest, which makes it a
+// public name under untouchable rule 10 - somebody's test asserts on it - so
+// what is centralised here is where it is written, not what it says.
+const PropertyLabelEmbedded = "label_embedded"
 
 // Generator turns a request into bytes.
 type Generator interface {

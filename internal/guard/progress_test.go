@@ -5,7 +5,9 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
@@ -148,4 +150,70 @@ func TestProgressStaysOffWhenNothingIsWatching(t *testing.T) {
 		t.Errorf("a progress bar reached a log file rather than a terminal, which is "+
 			"thousands of redrawn lines in somebody's CI output: %q", string(body))
 	}
+}
+
+// Every report arrives on one goroutine, which is what the window's rate
+// limiter is built on.
+//
+// throttle in internal/gui/window keeps a time.Time and reads and writes it
+// without a mutex. That is correct today and it is correct for one reason
+// only: Options.OnProgress documents that it is called from the goroutine
+// doing the work, and Run writes its files one after another. An outside
+// review read the window on its own, saw shared state with no lock, and called
+// it a defect - then withdrew it on finding the contract, and pointed out that
+// nothing pins the contract down.
+//
+// So this is the pin. The day somebody parallelises the write loop, the reports
+// arrive from several goroutines at once and this goes red here, in the engine,
+// rather than as an occasional wrong number on somebody's progress bar.
+//
+// The goroutine is identified from its stack because Go does not offer the
+// number any other way. That is a thing to do in a test and nowhere else.
+func TestEveryProgressReportArrivesOnOneGoroutine(t *testing.T) {
+	dir := t.TempDir()
+
+	// Under a lock, because a guard that has to survive the very thing it
+	// looks for cannot share a bare map with it. Without this, a run that did
+	// report from several goroutines would end the test binary with "concurrent
+	// map writes" instead of saying how many there were.
+	var mu sync.Mutex
+	seen := map[string]bool{}
+	opt := engine.Options{
+		OutDir: dir, Seed: 4457, Command: "test",
+		ManifestName: engine.DefaultManifestName,
+		OnProgress: func(engine.Progress) {
+			mu.Lock()
+			seen[goroutineName()] = true
+			mu.Unlock()
+		},
+	}
+	// Several files, and each big enough to report from inside itself, so the
+	// callback is reached both between files and during one.
+	planned, err := engine.Plan([]engine.Target{txtTarget("files", 6, 2<<20)}, opt)
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
+		t.Fatalf("the run failed: %v", err)
+	}
+
+	if len(seen) == 0 {
+		t.Fatal("no progress arrived at all, so this proves nothing about where it arrives from")
+	}
+	if len(seen) != 1 {
+		t.Errorf("progress arrived on %d goroutines and the contract says one.\n"+
+			"Reason: the window's rate limiter reads and writes a timestamp without a lock,\n"+
+			"on the strength of that contract. Two goroutines here is a race there, showing\n"+
+			"up as a bar that stutters or a report that is never drawn - and only sometimes.",
+			len(seen))
+	}
+}
+
+// goroutineName is the identity of the goroutine calling it, taken from the
+// first line of its own stack: "goroutine 17 [running]:". There is no
+// supported way to ask, which is why this is confined to one guard.
+func goroutineName() string {
+	var buf [64]byte
+	n := runtime.Stack(buf[:], false)
+	return strings.Fields(string(buf[:n]))[1]
 }

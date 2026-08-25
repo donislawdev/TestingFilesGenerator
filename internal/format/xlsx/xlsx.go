@@ -129,12 +129,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"rows":           rows,
-			"columns":        columns,
-			"sheets":         1,
-			"parts":          len(built),
-			"label_embedded": label != "",
-			"padding_part":   opc.FillerName,
+			"rows":                       rows,
+			"columns":                    columns,
+			"sheets":                     1,
+			"parts":                      len(built),
+			format.PropertyLabelEmbedded: label != "",
+			"padding_part":               opc.FillerName,
 		},
 		Memo: memo{rows: rows, columns: columns, pkg: pkg},
 	}, nil

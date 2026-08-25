@@ -336,8 +336,8 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 			// Stored rather than deflated, which is what makes the size exact
 			// in one pass. Stated here so a test can assert on it rather than
 			// infer it from how well the file compresses.
-			"compression":    "none",
-			"label_embedded": label != "",
+			"compression":                "none",
+			format.PropertyLabelEmbedded: label != "",
 		},
 	}
 	// The single format shape keeps the keys it always had, so a test asserting

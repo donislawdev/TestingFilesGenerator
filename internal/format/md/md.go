@@ -108,7 +108,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	}
 
-	p.Properties["label_embedded"] = m.labelLine != ""
+	p.Properties[format.PropertyLabelEmbedded] = m.labelLine != ""
 	p.Memo = m
 	return p, nil
 }

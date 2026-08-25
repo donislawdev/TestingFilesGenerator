@@ -179,7 +179,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 				w),
 		})
 	}
-	p.Properties["label_embedded"] = labelled
+	p.Properties[format.PropertyLabelEmbedded] = labelled
 	p.Memo = m
 	return p, nil
 }

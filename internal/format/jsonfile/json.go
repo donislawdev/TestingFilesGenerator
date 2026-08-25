@@ -138,7 +138,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			"depth":      3,
 			// Stated even though it is always false here, so a test can assert
 			// on it without knowing which formats carry a label internally.
-			"label_embedded": false,
+			format.PropertyLabelEmbedded: false,
 		},
 		Memo: memo{seed: r.Seed},
 	}, nil

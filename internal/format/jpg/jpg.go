@@ -258,7 +258,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 				w),
 		})
 	}
-	p.Properties["label_embedded"] = r.Label && imagelabel.Fits(w, len(label))
+	p.Properties[format.PropertyLabelEmbedded] = r.Label && imagelabel.Fits(w, len(label))
 	p.Memo = m
 	return p, nil
 }

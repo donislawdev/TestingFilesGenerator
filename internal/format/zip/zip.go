@@ -329,10 +329,10 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"entries":        len(m.children),
-			"contains":       contentSummary(groups),
-			"method":         "store",
-			"label_embedded": label != "",
+			"entries":                    len(m.children),
+			"contains":                   contentSummary(groups),
+			"method":                     "store",
+			format.PropertyLabelEmbedded: label != "",
 		},
 	}
 	// The single format shape keeps the keys it always had, so a test asserting

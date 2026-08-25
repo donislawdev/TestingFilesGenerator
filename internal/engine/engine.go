@@ -465,13 +465,22 @@ func preflight(files []PlannedFile, opt Options) error {
 	// belong to the user, so destroying their work is the one failure that
 	// cannot be undone by running again.
 	//
-	// The temporary name is checked as well as the final one. It is created
-	// with os.Create, which truncates, so a file already sitting under that
-	// name lost its contents without a word - and the collision check only
-	// ever looked at the name the file ends up with. It is an unlikely name to
-	// meet by accident and an easy one to leave behind: a run killed outright
-	// leaves exactly this, and the next run into the same directory would eat
-	// it silently.
+	// The temporary name is checked as well as the final one. It used to be
+	// created with os.Create, which truncates, so a file already sitting under
+	// that name lost its contents without a word while the collision check
+	// looked only at the name the file ends up with. Asking the filesystem
+	// instead, with O_EXCL at the write, was tried on 2026-08-25 and taken
+	// back out - see writeOne for what it costs on Windows. So this check is
+	// the whole of the protection rather than the friendlier half of it.
+	//
+	// Which run leaves such a file behind is worth being accurate about,
+	// because the comment here used to get it wrong. The name carries the
+	// process id, so a run killed outright leaves one that no later run can
+	// meet: the next run builds a different name and walks past it. Nor is it
+	// lost - verify names it as one of ours rather than as something nobody
+	// asked for, and cleanup leaves it alone because untouchable rule 7 makes
+	// the manifest the whole authority over what may be deleted, and a file
+	// that never finished never reached one.
 	for _, f := range files {
 		if path := filepath.Join(opt.OutDir, f.Name); exists(path) {
 			return &CollisionError{Path: path}
@@ -692,6 +701,28 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	// repeatable - and the file it becomes is settled by the plan, not by this.
 	tmp := tempPathFor(outDir, f.Name)
 
+	// os.Create, and O_EXCL was tried here and taken back out on 2026-08-25.
+	//
+	// The idea was sound: the check in preflight answers "this name is free"
+	// a few hundred lines before the write, and O_EXCL would have the
+	// filesystem answer it at the moment of writing instead. What it costs on
+	// Windows is not sound. Measured with a probe, a file created in a
+	// directory reached through a symbolic link:
+	//
+	//   os.Create                 works
+	//   O_CREATE|O_EXCL|O_WRONLY  fails with "The file exists"
+	//
+	// about a file that does not exist. Go asks for the reparse point rather
+	// than what it points at when O_EXCL is set, so every file of a run whose
+	// output directory is a link fails - and this tool supports exactly that
+	// on purpose, because people keep fixtures on a mounted workspace or a
+	// scratch disk. Two guards said so within a minute of the change.
+	//
+	// The window O_EXCL would have closed is a real one and it is small:
+	// preflight refuses every name that is taken before the run starts, so
+	// what is left is somebody else creating our temporary name, with our
+	// process id in it, during the run. Trading a supported way of pointing
+	// the tool at a directory for that is the wrong way round.
 	fh, err := os.Create(tmp)
 	if err != nil {
 		return "", err
@@ -734,7 +765,7 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		notes = append(notes, manifest.Note{Code: n.Code, Detail: n.Detail})
 	}
 
-	label, _ := f.Plan.Properties["label_embedded"].(bool)
+	label, _ := f.Plan.Properties[format.PropertyLabelEmbedded].(bool)
 
 	e := manifest.File{
 		ID:            f.ID,

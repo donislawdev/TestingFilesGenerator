@@ -114,10 +114,10 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"slides":         slides,
-			"parts":          len(built),
-			"label_embedded": label != "",
-			"padding_part":   opc.FillerName,
+			"slides":                     slides,
+			"parts":                      len(built),
+			format.PropertyLabelEmbedded: label != "",
+			"padding_part":               opc.FillerName,
 		},
 		Memo: memo{slides: slides, pkg: pkg},
 	}, nil

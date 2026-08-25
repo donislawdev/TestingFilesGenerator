@@ -149,13 +149,13 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"pages":           pages,
-			"page_size":       size.name,
-			"pdf_version":     "1.7",
-			"fonts_embedded":  false,
-			"label_embedded":  r.Label,
-			"compressed":      false,
-			"content_streams": pages,
+			"pages":                      pages,
+			"page_size":                  size.name,
+			"pdf_version":                "1.7",
+			"fonts_embedded":             false,
+			format.PropertyLabelEmbedded: r.Label,
+			"compressed":                 false,
+			"content_streams":            pages,
 		},
 	}
 
