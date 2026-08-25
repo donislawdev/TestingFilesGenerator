@@ -39,10 +39,16 @@ const MaxFilesPerRun = 1_000_000
 //
 // It carries the four parts every refusal in this tool carries, so both callers
 // report it in the same words rather than each phrasing it again.
-var ErrTooManyFiles = errors.New(
-	"this build plans at most 1000000 files in one run, because the whole plan is worked out in memory before anything is written - " +
-		"that is what lets a run that cannot succeed be refused before the first byte. " +
-		"Ask for fewer files, or split the work into several runs")
+var ErrTooManyFiles = errors.New(TooManyFilesWhy + ". " + TooManyFilesFix)
+
+// The same refusal in the two parts a report keeps apart. ErrTooManyFiles is
+// built from them rather than beside them, so the sentence and the parts cannot
+// come to disagree - the compiler is the proof.
+const (
+	TooManyFilesWhy = "this build plans at most 1000000 files in one run, because the whole plan is worked out in memory before anything is written - " +
+		"that is what lets a run that cannot succeed be refused before the first byte"
+	TooManyFilesFix = "Ask for fewer files, or split the work into several runs"
+)
 
 // PartialMarker is what a file being written is called before it is finished.
 //

@@ -631,6 +631,11 @@ func TestARefusalFromBelowTheReaderArrivesInItsThreeParts(t *testing.T) {
 		{"a size the format cannot deliver", "version: 1\ntargets:\n  - id: a\n    format: pdf\n    size: 10\n"},
 		{"contains asked of a format that holds nothing", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    contains:\n      - format: txt\n        count: 2\n        size: 100\n"},
 		{"a value a format setting will not take", "version: 1\ntargets:\n  - id: a\n    format: bmp\n    size: 1mb\n    properties:\n      width: \"99999\"\n"},
+		// And the engine's own, which is one type behind seventeen messages -
+		// so these parts come from one join rule rather than a sentence each,
+		// and the join has to leave the sentence reading as it always did.
+		{"a name the host cannot store", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    name: \"a<b.txt\"\n"},
+		{"more files than the run may plan", "version: 1\ntargets:\n  - id: a\n    format: txt\n    count: 1\n    size: 1kb\n  - id: b\n    format: txt\n    count: 1000000\n    size: 1kb\n"},
 	}
 
 	for _, c := range cases {

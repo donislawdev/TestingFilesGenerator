@@ -18,7 +18,15 @@ import (
 // RecipeError is a request that is well formed but asks for something that
 // makes no sense.
 type RecipeError struct {
-	Detail string
+	// Detail is what is wrong. Because is why the rule exists and Remedy is
+	// what to do instead - the other two of the three parts every refusal in
+	// this tool has, kept apart so a report can carry them apart and a script
+	// reading it does not have to take a sentence written for a person back to
+	// pieces. Both may be empty, and then the whole refusal is in Detail and
+	// reads exactly as it did before either field existed.
+	Detail  string
+	Because string
+	Remedy  string
 
 	// Setting is which setting the refusal is about, where it is about one.
 	//
@@ -45,11 +53,44 @@ func (e *RecipeError) Error() string {
 
 // InTheWordsOf is this refusal with the setting named the way one surface names
 // it - see core.SettingSlot. Error is this with the recipe key.
+//
+// One sentence assembled from the parts, joined the way these refusals have
+// always read: what is wrong, a dash, why the rule is there, a full stop, what
+// to do instead. A refusal that has not been cut into parts yet carries all of
+// it in Detail and comes out exactly as it did before, so the two states are
+// not a half finished middle - they are the same sentence written in one piece
+// or in three.
 func (e *RecipeError) InTheWordsOf(name string) string {
 	if name == "" {
 		name = core.LastSettingSegment(e.Setting)
 	}
-	return core.InTheWordsOf(e.Detail, name)
+	message := e.Detail
+	if e.Because != "" {
+		message += " - " + e.Because
+	}
+	if e.Remedy != "" {
+		message += ". " + e.Remedy
+	}
+	return core.InTheWordsOf(message, name)
+}
+
+// The three parts a report keeps apart, answering the same names the format and
+// preset refusals answer so that nothing above has to know this type.
+//
+// The fields are Because and Remedy rather than Why and Fix because a field
+// cannot share a name with a method, and the method names are the ones already
+// spoken here - UnknownPropertyError has answered to them since the recipe
+// reader started reporting four parts.
+func (e *RecipeError) What() string {
+	return core.InTheWordsOf(e.Detail, core.LastSettingSegment(e.Setting))
+}
+
+func (e *RecipeError) Why() string {
+	return core.InTheWordsOf(e.Because, core.LastSettingSegment(e.Setting))
+}
+
+func (e *RecipeError) Instead() string {
+	return core.InTheWordsOf(e.Remedy, core.LastSettingSegment(e.Setting))
 }
 
 // AboutSetting lets a window place this message without knowing this type.

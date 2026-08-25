@@ -152,7 +152,7 @@
 																<container pos="0,65" size="808x31">
 																	<widget size="808x31" type="*widget.Label">
 																		<widget size="808x31" type="*widget.RichText">
-																			<text color="error" pos="6,6" size="310x19">target "files" asks for 0 files: ask for at least one</text>
+																			<text color="error" pos="6,6" size="311x19">target "files" asks for 0 files. Ask for at least one</text>
 																		</widget>
 																	</widget>
 																</container>
