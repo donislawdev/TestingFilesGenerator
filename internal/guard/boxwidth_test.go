@@ -212,6 +212,16 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	}
 
 	checked := 0
+	// What a format declares arrives folded away since 2026-08-25, and a box
+	// that is not on the screen has no laid out width - so without this the
+	// guard measured zero for every format and stayed green against a screen
+	// drawing every box full width. Caught by the mutation runner rather than
+	// by reading it: O127, where a mutation finds its pattern, compiles, and
+	// proves nothing because what it breaks no longer reaches the assertion.
+	//
+	// Opened once and asserted open afterwards, because the fold is remembered
+	// across a change of format - pressing it again would shut it.
+	opened := false
 	for _, d := range format.All() {
 		narrow := false
 		for _, p := range d.Properties {
@@ -223,6 +233,12 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 			continue
 		}
 		picker.SetSelected(d.ID)
+		if opened {
+			assertFoldOpen(t, batches, "", text.SettingsFor(d.ID))
+		} else {
+			openFold(t, batches, "", text.SettingsFor(d.ID))
+			opened = true
+		}
 		layOut()
 		for _, p := range d.Properties {
 			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
@@ -273,6 +289,12 @@ func TestTwoNarrowSettingsShareARowOnEveryScreenThatDrawsThem(t *testing.T) {
 			// A format declaring two narrow settings and nothing else between
 			// them, so "same row" is a question this can ask at all.
 			picker.SetSelected("bmp")
+			// What a format declares arrives folded away since 2026-08-25, and
+			// a box that is not on the screen has no position to measure. This
+			// guard is about how two of them sit beside each other once they
+			// are, so it opens the section rather than asking about a shape
+			// nobody is looking at.
+			openFold(t, screen, "", text.SettingsFor("bmp"))
 
 			width, ok := labelBox(screen, text.SettingLabel("width"))
 			if !ok {

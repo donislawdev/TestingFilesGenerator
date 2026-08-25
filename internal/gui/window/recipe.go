@@ -2,7 +2,6 @@ package window
 
 import (
 	"strconv"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -114,12 +113,25 @@ type batch struct {
 	// batch rather than state inside the panel because the panel is built again
 	// whenever the list of batches changes. A fold that lived in the panel
 	// would spring open every time somebody added a batch.
-	folded   bool
-	fold     *parts.Folding
-	name     *widget.Entry
-	group    *widget.Entry
-	expected *parts.Chooser
-	reason   *parts.Chooser
+	folded bool
+	fold   *parts.Folding
+
+	// The two sections inside a batch, and whether each is put away. Both
+	// arrive folded - see batchBlock - so these start true rather than false,
+	// which is the one place in this struct where the zero value is not what is
+	// wanted and newBatch says so.
+	//
+	// Kept on the batch for the reason above and for one more: the settings
+	// section is rebuilt whenever the format changes, so a fold living in it
+	// would spring open every time somebody looked at another format.
+	settingsFolded bool
+	notesFolded    bool
+	settings       *parts.Folding
+	notes          *parts.Folding
+	name           *widget.Entry
+	group          *widget.Entry
+	expected       *parts.Chooser
+	reason         *parts.Chooser
 
 	// declared is what the chosen format takes, and props are the controls drawn
 	// from it. Both are replaced when the format changes and reused across a
@@ -222,6 +234,11 @@ func (r *Recipe) newBatch() *batch {
 		name:      widget.NewEntry(),
 		group:     widget.NewEntry(),
 		sizeWay:   newSizeWaySwitch(),
+		// Both sections arrive put away. The owner's decision of 2026-08-25,
+		// and the number under it is 248 px of form per screen (O98) for
+		// settings a format works out on its own when nobody states them.
+		settingsFolded: true,
+		notesFolded:    true,
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
 	// What happens if the box is left alone, in the place a box says that.
@@ -359,22 +376,20 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		// takes the state away rather than describing it, and the box it leaves
 		// is a full row wide rather than a third of one.
 		r.sizeWayFor(b, at, add),
-		r.fields.Row(
-			add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
-				r.tips.Say(text.DetailNameTemplate()), b.name),
-			add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
-				r.tips.Say(text.DetailGroup()), b.group),
-		),
-		r.fields.Row(
-			add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
-				r.tips.Say(text.DetailExpected()), b.expected),
-			add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
-				r.tips.Say(text.DetailReason()), b.reason),
-		),
+		add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
+			r.tips.Say(text.DetailNameTemplate()), b.name),
 	)
 
-	rows = append(rows, r.declaredSettings(b, at)...)
-	rows = append(rows, r.contentsBlock(index, b))
+	// A format that declares nothing has no settings section at all, so the
+	// list is filtered rather than padded: a nil in a column is a gap where a
+	// heading would be.
+	for _, section := range []fyne.CanvasObject{
+		r.declaredSettings(b, at), r.manifestNotes(b, add), r.contentsBlock(index, b),
+	} {
+		if section != nil {
+			rows = append(rows, section)
+		}
+	}
 
 	// Folded away, since 2026-08-25, and the number behind that is worth
 	// carrying: one batch is a form 913 px tall in 849 px of room and each
@@ -393,69 +408,8 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		head = append(head, widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
-	// Worked out when it is folded rather than when it is built. The line is
-	// about what somebody typed, and at the moment a panel is built they have
-	// typed nothing - so a summary taken then is the summary of an empty batch
-	// forever. Found by the guard on its first run.
-	b.fold.OnChange = func(open bool) {
-		b.folded = !open
-		if !open {
-			b.fold.Say(b.summary())
-		}
-	}
-	b.fold.Say(b.summary())
-	b.fold.Set(!b.folded)
+	r.wire(b.fold, &b.folded, b.summary)
 	return b.fold.Object()
-}
-
-// summary is what this batch says about itself while it is folded away.
-func (b *batch) summary() string {
-	count := 0
-	if n, err := strconv.Atoi(strings.TrimSpace(b.count.Text)); err == nil {
-		count = n
-	}
-	return text.BatchSummary(b.id.Text, b.formatPick.Selected, count,
-		b.statedSize(b.chosenSizeKey()))
-}
-
-// declaredSettings draws the fields the chosen format declares for one batch.
-//
-// Nothing here knows what a PNG or a WAV takes. What differs from the single
-// batch screen is only the address: two batches of PNG both have a width box, so
-// the batch has to be part of the name or a refusal about the second would mark
-// the first.
-func (r *Recipe) declaredSettings(b *batch, at func(string) string) []fyne.CanvasObject {
-	if len(b.props) == 0 {
-		return nil
-	}
-
-	out := []fyne.CanvasObject{parts.SettingsHeading(text.SettingsFor(b.formatPick.Selected))}
-	// The same pairing the single batch screen uses, through the same code.
-	pair := parts.PairNarrow(r.fields.Row)
-	for i, f := range b.props {
-		// Shaped here as well as on the single batch screen. The two draw the
-		// same declarations through different code, and only one of them was
-		// given the width on the first try - which is how a difference between
-		// two surfaces starts.
-		object := r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
-			parts.PropertyDetail(b.declared[i]), r.tips.Say(text.SettingKey(f.Name)),
-			parts.ShapedFor(b.declared[i], f.Control))
-		if parts.Narrow(b.declared[i]) {
-			pair.Add(object)
-			continue
-		}
-		out = append(out, pair.Rest()...)
-		out = append(out, object)
-	}
-	out = append(out, pair.Rest()...)
-	// A rule binding two settings belongs beside them. Two number boxes drawn
-	// from a range alone would offer a pair the run then refuses.
-	if d, err := format.Get(b.formatPick.Selected); err == nil {
-		for _, j := range d.JointLimits {
-			out = append(out, parts.Note(j.Describe()))
-		}
-	}
-	return out
 }
 
 // contentsBlock is the list of what an archive holds.
@@ -558,29 +512,6 @@ func (r *Recipe) addBatch() {
 // form that is refused the moment they press a button would be a copy that has
 // to be repaired before it can be used. Empty is refused too, and it is refused
 // pointing at a box that is asking to be filled in.
-// openFoldHolding opens the batch an address belongs to.
-//
-// A refusal names the box it is about and the form scrolls to it, and neither
-// of those can show a box that has been folded away. This is what makes folding
-// safe to have on this screen at all: the objection recorded on 2026-08-18
-// against putting batches away was that a batch off the screen has no box to
-// mark, and the answer is that the screen opens it rather than that it is never
-// away.
-//
-// An address it does not recognise leaves everything as it was. Refusals about
-// the output directory or the manifest are not about a batch.
-func (r *Recipe) openFoldHolding(address string) {
-	for index, b := range r.batches {
-		if !strings.HasPrefix(address, recipe.TargetAddress(index+1, "")) {
-			continue
-		}
-		if b.fold != nil {
-			b.fold.Set(true)
-		}
-		return
-	}
-}
-
 func (r *Recipe) duplicateBatch(index int) {
 	if index < 0 || index >= len(r.batches) {
 		return

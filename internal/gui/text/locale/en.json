@@ -235,6 +235,10 @@
     "description": "The line under a field name, saying what the field does.",
     "other": "Names this group of files."
   },
+  "NoteManifestOnly": {
+    "description": "Shown in the window.",
+    "other": "These describe the case. They go into the manifest and change nothing in the files."
+  },
   "NothingProduced": {
     "description": "Shown in the window.",
     "other": "Nothing was produced."
@@ -266,6 +270,10 @@
   "SectionLicence": {
     "description": "The heading over a group of fields.",
     "other": "Licence"
+  },
+  "SectionManifestNotes": {
+    "description": "The heading over a group of fields.",
+    "other": "Notes for the manifest"
   },
   "SectionOutput": {
     "description": "The heading over a group of fields.",

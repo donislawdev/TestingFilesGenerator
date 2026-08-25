@@ -375,20 +375,50 @@ func HintSizeExact() string { return say("HintSizeExact", "One size for every fi
 // Parts that are not stated are left out rather than shown empty. A batch with
 // nothing filled in says nothing, which is honest - it has nothing to say yet.
 func BatchSummary(name, format string, count int, size string) string {
-	var said []string
-	if name != "" {
-		said = append(said, name)
-	}
-	if format != "" {
-		said = append(said, format)
-	}
+	said := []string{name, format}
 	if count > 0 {
 		said = append(said, files(count))
 	}
-	if size != "" {
-		said = append(said, size)
+	return FoldedSummary(append(said, size)...)
+}
+
+// FoldedSummary is what any folded section says about itself, from the values
+// that were actually stated.
+//
+// Empty ones are left out rather than shown blank, and a section where nothing
+// was stated says nothing at all - which is honest, and which hides the line
+// rather than leaving a gap where a sentence would be.
+//
+// It matters most where a section is folded from the start: a stated value
+// inside one would otherwise be off the screen with nothing to say it is
+// there, and a setting somebody typed and then cannot see is worse than one
+// they never had.
+func FoldedSummary(said ...string) string {
+	kept := make([]string, 0, len(said))
+	for _, one := range said {
+		if one != "" {
+			kept = append(kept, one)
+		}
 	}
-	return strings.Join(said, separator)
+	return strings.Join(kept, separator)
+}
+
+// SettingSaid is one stated format setting, as a folded section reports it.
+func SettingSaid(label, value string) string { return label + " " + value }
+
+// SectionManifestNotes heads the settings that describe the case rather than
+// the files.
+//
+// Named for where they go, because that is the whole of what they have in
+// common and it is what makes the section safe to fold away by default: not
+// one of them changes a single byte of what is written. They are read back out
+// of the manifest by whatever test suite the files were made for.
+func SectionManifestNotes() string { return say("SectionManifestNotes", "Notes for the manifest") }
+
+// NoteManifestOnly is the sentence inside that section.
+func NoteManifestOnly() string {
+	return say("NoteManifestOnly",
+		"These describe the case. They go into the manifest and change nothing in the files.")
 }
 
 // Buttons on the recipe screen.

@@ -16,6 +16,22 @@ because it turns other people's test suites red.
 
 ### Added
 
+- The window folds away what a format decides for itself and the notes that
+  describe the case, so the batch screen fits without scrolling for the first
+  time. Both open with a click, and a run refused because of a setting inside
+  one of them opens it and marks the box - you never have to go looking.
+- A folded section says what is in it, so a value you typed is never hidden
+  without a word.
+
+### Changed
+
+- A refusal about a format setting in a recipe now says which target it is
+  about, and says what to do instead: `target "photos": width cannot be
+  "99999"` rather than `bmp: width cannot be "99999"`. With twenty batches of
+  the same format, the old wording did not tell you which one to fix. The
+  machine readable report carries the address too, as
+  `targets[2].properties.width`.
+
 - The window marks the fields you have to fill in with a red star beside their
   name. Until now the only way to find out that a box could not be left empty
   was to press Generate and read the refusal - and on the batch screen a
@@ -28,6 +44,12 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Exit code:** a recipe asking for a format setting the format will not take
+  now ends with `3` (the recipe is wrong) rather than `4` (the format cannot do
+  it). The check moved into the recipe reader so the refusal could name its
+  target, and it now arrives with every other problem that recipe has, in one
+  report. `--set` on the command line is unaffected and still ends with `4`.
+  If your CI compares the exact number, this is the line to read.
 - Every box you may leave alone now shows what happens if you do. Two on the
   batch screen said nothing at all - the class of a batch, and the seed - so
   they were indistinguishable from boxes that have to be answered.

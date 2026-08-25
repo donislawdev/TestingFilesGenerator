@@ -216,91 +216,103 @@
 																</container>
 															</container>
 															<container pos="0,257" size="808x177">
-																<widget size="808x35" type="*widget.Label">
-																	<widget size="808x35" type="*widget.RichText">
-																		<text bold pos="6,6" size="136x23" textSize="17">Settings for png</text>
-																	</widget>
-																</widget>
-																<container pos="0,44" size="808x96">
-																	<container size="808x64">
-																		<container size="401x64">
-																			<container size="401x32">
-																				<widget size="53x32" type="*widget.Label">
-																					<widget size="53x32" type="*widget.RichText">
-																						<text bold pos="6,6" size="41x19">Width</text>
-																					</widget>
-																				</widget>
-																				<widget pos="59,0" size="32x32" type="*parts.DetailButton">
-																					<rectangle radius="5" size="32x32"/>
-																					<rectangle size="32x32"/>
-																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
-																				</widget>
-																			</container>
-																			<container pos="0,33" size="401x31">
-																				<container size="188x31">
-																					<widget size="188x31" type="*widget.Entry">
-																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
-																						<rectangle radius="5" size="186x29" strokeColor="hyperlink" strokeWidth="1"/>
-																						<widget pos="0,1" size="188x29" type="*widget.Scroll">
-																							<widget size="188x29" type="*widget.entryContent">
-																								<widget size="188x29" type="*widget.RichText">
-																									<text pos="6,5" size="40x19">99999</text>
-																								</widget>
-																								<rectangle fillColor="hyperlink" pos="5,5" size="1x19"/>
-																							</widget>
-																						</widget>
-																					</widget>
-																					<rectangle radius="5" size="188x31" strokeColor="error" strokeWidth="2"/>
-																				</container>
-																			</container>
-																		</container>
-																		<container pos="407,0" size="401x64">
-																			<container size="401x32">
-																				<widget size="59x32" type="*widget.Label">
-																					<widget size="59x32" type="*widget.RichText">
-																						<text bold pos="6,6" size="47x19">Height</text>
-																					</widget>
-																				</widget>
-																				<widget pos="65,0" size="32x32" type="*parts.DetailButton">
-																					<rectangle radius="5" size="32x32"/>
-																					<rectangle size="32x32"/>
-																					<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
-																				</widget>
-																			</container>
-																			<container pos="0,33" size="401x31">
-																				<container size="188x31">
-																					<widget size="188x31" type="*widget.Entry">
-																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
-																						<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
-																						<widget pos="0,1" size="188x29" type="*widget.Scroll">
-																							<widget size="188x29" type="*widget.entryContent">
-																								<widget size="188x29" type="*widget.RichText">
-																									<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
-																								</widget>
-																								<widget size="188x29" type="*widget.RichText">
-																									<text pos="6,5" size="0x19"></text>
-																								</widget>
-																							</widget>
-																						</widget>
-																					</widget>
-																					<rectangle radius="5" size="188x31"/>
-																				</container>
-																			</container>
-																		</container>
+																<container size="808x177">
+																	<container size="808x35">
+																		<widget size="148x35" type="*widget.Label">
+																			<widget size="148x35" type="*widget.RichText">
+																				<text bold pos="6,6" size="136x23" textSize="17">Settings for png</text>
+																			</widget>
+																		</widget>
+																		<widget pos="154,0" size="32x35" type="*widget.Button">
+																			<rectangle radius="5" size="32x35"/>
+																			<rectangle size="32x35"/>
+																			<image fillMode="contain" pos="6,7" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
+																		</widget>
+																		<spacer pos="192,0" size="621x35"/>
 																	</container>
-																	<container pos="0,65" size="808x31">
-																		<widget size="808x31" type="*widget.Label">
-																			<widget size="808x31" type="*widget.RichText">
-																				<text color="error" pos="6,6" size="532x19">png: Width cannot be "99999" - it takes a whole number of pixels from 1 to 20000</text>
+																	<container pos="0,44" size="808x133">
+																		<container size="808x96">
+																			<container size="808x64">
+																				<container size="401x64">
+																					<container size="401x32">
+																						<widget size="53x32" type="*widget.Label">
+																							<widget size="53x32" type="*widget.RichText">
+																								<text bold pos="6,6" size="41x19">Width</text>
+																							</widget>
+																						</widget>
+																						<widget pos="59,0" size="32x32" type="*parts.DetailButton">
+																							<rectangle radius="5" size="32x32"/>
+																							<rectangle size="32x32"/>
+																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																						</widget>
+																					</container>
+																					<container pos="0,33" size="401x31">
+																						<container size="188x31">
+																							<widget size="188x31" type="*widget.Entry">
+																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
+																								<rectangle radius="5" size="186x29" strokeColor="hyperlink" strokeWidth="1"/>
+																								<widget pos="0,1" size="188x29" type="*widget.Scroll">
+																									<widget size="188x29" type="*widget.entryContent">
+																										<widget size="188x29" type="*widget.RichText">
+																											<text pos="6,5" size="40x19">99999</text>
+																										</widget>
+																										<rectangle fillColor="hyperlink" pos="5,5" size="1x19"/>
+																									</widget>
+																								</widget>
+																							</widget>
+																							<rectangle radius="5" size="188x31" strokeColor="error" strokeWidth="2"/>
+																						</container>
+																					</container>
+																				</container>
+																				<container pos="407,0" size="401x64">
+																					<container size="401x32">
+																						<widget size="59x32" type="*widget.Label">
+																							<widget size="59x32" type="*widget.RichText">
+																								<text bold pos="6,6" size="47x19">Height</text>
+																							</widget>
+																						</widget>
+																						<widget pos="65,0" size="32x32" type="*parts.DetailButton">
+																							<rectangle radius="5" size="32x32"/>
+																							<rectangle size="32x32"/>
+																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																						</widget>
+																					</container>
+																					<container pos="0,33" size="401x31">
+																						<container size="188x31">
+																							<widget size="188x31" type="*widget.Entry">
+																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="186x29"/>
+																								<rectangle radius="5" size="186x29" strokeColor="inputBorder" strokeWidth="1"/>
+																								<widget pos="0,1" size="188x29" type="*widget.Scroll">
+																									<widget size="188x29" type="*widget.entryContent">
+																										<widget size="188x29" type="*widget.RichText">
+																											<text color="placeholder" pos="6,5" size="164x19">worked out from the size</text>
+																										</widget>
+																										<widget size="188x29" type="*widget.RichText">
+																											<text pos="6,5" size="0x19"></text>
+																										</widget>
+																									</widget>
+																								</widget>
+																							</widget>
+																							<rectangle radius="5" size="188x31"/>
+																						</container>
+																					</container>
+																				</container>
+																			</container>
+																			<container pos="0,65" size="808x31">
+																				<widget size="808x31" type="*widget.Label">
+																					<widget size="808x31" type="*widget.RichText">
+																						<text color="error" pos="6,6" size="532x19">png: Width cannot be "99999" - it takes a whole number of pixels from 1 to 20000</text>
+																					</widget>
+																				</widget>
+																			</container>
+																		</container>
+																		<widget pos="0,105" size="808x28" type="*widget.Label">
+																			<widget size="808x28" type="*widget.RichText">
+																				<text color="disabled" pos="6,6" size="589x16" textSize="12">width times height cannot pass 40 megapixels, because the picture is held in memory while it is encoded</text>
 																			</widget>
 																		</widget>
 																	</container>
 																</container>
-																<widget pos="0,149" size="808x28" type="*widget.Label">
-																	<widget size="808x28" type="*widget.RichText">
-																		<text color="disabled" pos="6,6" size="589x16" textSize="12">width times height cannot pass 40 megapixels, because the picture is held in memory while it is encoded</text>
-																	</widget>
-																</widget>
 															</container>
 														</container>
 													</container>

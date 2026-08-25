@@ -88,6 +88,17 @@ type Generate struct {
 	// the settings of a PNG are not the settings of a WAV.
 	props   []parts.PropertyField
 	propBox *fyne.Container
+	// settings is the fold those fields are put in, and settingsFolded is
+	// whether it is away. The flag lives on the screen rather than in the fold
+	// because the fold is built again on every change of format - one that
+	// remembered nothing would spring open the moment somebody looked at
+	// another format, which is the opposite of what folding it was for.
+	//
+	// It starts folded. The owner's decision of 2026-08-25: what a format
+	// declares is optional, the boxes say so themselves, and the block is
+	// 248 px of a screen that had 832 px of form in 849 px of room (O98).
+	settings       *parts.Folding
+	settingsFolded bool
 	// ready says the screen is far enough built for a change of format to
 	// redraw anything. Setting the first selection fires the callback from
 	// inside buildFields, before the mark below exists and before the fields
@@ -110,8 +121,11 @@ type Generate struct {
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips()}
+	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = g.settle
+	// A box inside a folded section cannot be brought into view by scrolling,
+	// so the section is opened first - see runner.unfold.
+	g.runner.unfold = g.openFoldHolding
 	// Before the fields, because Add reads it. These are the boxes settle
 	// refuses when they are empty - a size that will not parse, a count and a
 	// seed that are not whole numbers, and an id the engine will not run
@@ -305,14 +319,56 @@ func (g *Generate) onFormatChosen(id string) {
 	fields, objects := parts.PropertyFields(d, g.fields, g.tips)
 	g.props = fields
 	if len(objects) == 0 {
+		g.settings = nil
 		g.propBox.Refresh()
 		return
 	}
-	g.propBox.Add(parts.SettingsHeading(text.SettingsFor(d.ID)))
-	for _, o := range objects {
-		g.propBox.Add(o)
+	g.settings = parts.NewInnerFolding(text.SettingsFor(d.ID), objects...)
+	g.settings.OnChange = func(open bool) {
+		g.settingsFolded = !open
+		if !open {
+			g.settings.Say(g.settingsSaid())
+		}
 	}
+	g.settings.Say(g.settingsSaid())
+	g.settings.Set(!g.settingsFolded)
+	g.propBox.Add(g.settings.Object())
 	g.propBox.Refresh()
+}
+
+// settingsSaid is what the folded settings section says about itself.
+//
+// Only what was stated, and it matters here more than anywhere: this section
+// arrives folded, so a value somebody typed and then had swallowed would be a
+// setting they cannot see and did not remove.
+func (g *Generate) settingsSaid() string {
+	said := make([]string, 0, len(g.props))
+	for _, f := range g.props {
+		if v := f.Value(); v != "" {
+			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
+		}
+	}
+	return text.FoldedSummary(said...)
+}
+
+// openFoldHolding opens the settings section when a refusal is about a box
+// inside it.
+//
+// The same rule the batch screen states at length: a refusal that marks a box
+// nobody can see reads as a button that did nothing. Asked of the tree rather
+// than of the addresses, so a setting a format declares tomorrow is covered
+// without a line here - see parts.Folding.Holds.
+func (g *Generate) openFoldHolding(address string) {
+	if g.settings == nil {
+		return
+	}
+	field := g.fields.Lookup(address)
+	if field == nil {
+		return
+	}
+	if g.settings.Holds(field.Control) {
+		g.settings.Set(true)
+	}
 }
 
 // properties is what the user put in the generated fields, under the keys the
