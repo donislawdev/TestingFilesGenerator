@@ -17,6 +17,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -169,8 +170,12 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		if err := ctx.Err(); err != nil {
 			return diffs, err
 		}
-		seen[f.Path] = true
+		seen[comparablePath(f.Path)] = true
 
+		// The raw path, never the compared one. Cleaning resolves a parent step
+		// against the text of the path rather than against the disk, and the
+		// two differ exactly where a link sits in the middle - which is the
+		// case core.Boundary exists for.
 		full, err := resolved(boundary, f)
 		if err != nil {
 			return nil, err
@@ -207,6 +212,10 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 	}
 
 	for _, p := range present {
+		// Not normalised on this side, and that was measured rather than
+		// decided. walk builds these with filepath.Rel, which returns a clean
+		// path, so a comparablePath here is a call that cannot be wrong -
+		// removing it left this guard green. See the comment on comparablePath.
 		if seen[p] || filepath.Base(p) == skip {
 			continue
 		}
@@ -225,6 +234,34 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		return diffs[i].Kind < diffs[j].Kind
 	})
 	return diffs, ctx.Err()
+}
+
+// comparablePath is the spelling two paths are matched under when one comes
+// from a manifest and the other from the disk.
+//
+// Only the manifest side is put through it, and that is a measurement. The disk
+// side arrives from walk already relative and slash separated, so cleaning it
+// again is a call nothing can break - a mutation removing it left the guard
+// green, which is this project's test for a defence worth having.
+//
+// The manifest side arrives as somebody wrote it, and core.ContainmentProblem
+// accepts "./a.txt" and "a/./b.txt" - both name a file inside the directory,
+// which is the only question it asks. Compared as text those matched nothing,
+// and the report said "extra a.txt" about a file the manifest listed. Measured
+// on 2026-08-25: one difference, not the two a mismatch usually shows, so it
+// read as a directory somebody had polluted rather than as a spelling.
+//
+// path rather than path/filepath, because a manifest path is slash separated
+// on every system by definition. filepath.Clean would turn it into backslashes
+// on Windows and stop matching what walk produces.
+//
+// Case is deliberately not folded here, though engine.collisionKey folds it
+// when planning names. On NTFS "straße.txt" and "STRASSE.txt" are two files -
+// measured, see engine/names.go - so folding would report a match between two
+// files that really are different. The two ends of the tool disagree about
+// REPORT.TXT against report.txt and that is the owner's call, 2026-08-25.
+func comparablePath(p string) string {
+	return path.Clean(p)
 }
 
 // walk lists every file under dir as a slash separated path relative to it.

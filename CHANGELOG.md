@@ -62,6 +62,19 @@ because it turns other people's test suites red.
   recipe does not name one. `tfg validate` and `--dry-run` both called such a
   recipe fine, so there was no way to find out before the files were on disk.
   All three now give the same refusal, and it says which target to change.
+- `tfg verify` no longer calls a file extra because the manifest spells its path
+  the long way round. A manifest listing `./report.txt` for a file called
+  `report.txt` used to report `extra report.txt` - one difference rather than
+  the pair a real mismatch shows, so it read as a directory somebody had put a
+  file into rather than as two spellings of one name. Both spellings were
+  already accepted everywhere else in the tool. Nothing about which files are
+  looked at changed, only which spellings count as the same name.
+- The manifest and `tfg recipe fmt -w` now flush their work to the disk before
+  putting it in place. Both are written beside the target and renamed over it,
+  and a rename can reach the disk before the bytes do - so a power cut at the
+  wrong moment could leave an empty file under the name of your manifest, or of
+  the recipe you had just formatted. Generated files are still not flushed, on
+  purpose: that is ten thousand of them against one of these.
 
 ### Added
 

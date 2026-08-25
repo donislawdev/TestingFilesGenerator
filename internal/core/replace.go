@@ -97,6 +97,15 @@ func writeWhole(path string, content []byte, mode os.FileMode) error {
 		f.Close()
 		return err
 	}
+	// Before the close, because ReplaceFile renames this copy over a file
+	// somebody else wrote - a recipe of theirs, in a repository of theirs. A
+	// rename that reaches the disk without the bytes leaves them holding an
+	// empty file where their recipe was. One call per command, and the command
+	// is "recipe fmt -w". Owner's call on 2026-08-25.
+	if err := f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
 	if err := f.Close(); err != nil {
 		return err
 	}

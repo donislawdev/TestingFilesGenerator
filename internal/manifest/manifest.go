@@ -476,6 +476,21 @@ func (m *Manifest) Save(path string) error {
 		os.Remove(tmp)
 		return err
 	}
+	// On the device before the rename, because the rename is what turns this
+	// into the manifest and a rename can reach the disk before the bytes do.
+	// What survives that is an empty file under the name of the only record
+	// able to remove a run's files - the loss this whole function is shaped
+	// against, reached by pulling the plug rather than by killing the process.
+	//
+	// One call per run, so the cost argument that keeps generated files
+	// unsynced does not reach here. That one is written on engine.Run and it is
+	// about ten thousand flushes, not one. docs/CODE-REVIEW-2026-08-23.md
+	// section 3.4, owner's call on 2026-08-25.
+	if err := f.Sync(); err != nil {
+		f.Close()
+		os.Remove(tmp)
+		return err
+	}
 	if err := f.Close(); err != nil {
 		os.Remove(tmp)
 		return err

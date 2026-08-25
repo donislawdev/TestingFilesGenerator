@@ -500,3 +500,97 @@ func firstGenerated(t *testing.T, out string) string {
 	t.Fatal("the run produced no files, so this guard would prove nothing")
 	return ""
 }
+
+// respellManifestPaths rewrites every claimed path through respell, leaving the
+// rest of the manifest as it was.
+func respellManifestPaths(t *testing.T, mf string, respell func(string) string) {
+	t.Helper()
+	raw, err := os.ReadFile(mf)
+	if err != nil {
+		t.Fatalf("reading the manifest: %v", err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatalf("reading the manifest as JSON: %v", err)
+	}
+	files, ok := doc["files"].([]any)
+	if !ok || len(files) == 0 {
+		t.Fatal("the manifest claims no files, so this guard would prove nothing")
+	}
+	for _, entry := range files {
+		row, ok := entry.(map[string]any)
+		if !ok {
+			t.Fatalf("a manifest entry is %T, not an object", entry)
+		}
+		was, ok := row["path"].(string)
+		if !ok {
+			t.Fatalf("a manifest entry has no path to respell: %v", row)
+		}
+		row["path"] = respell(was)
+	}
+	out, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		t.Fatalf("writing the manifest back: %v", err)
+	}
+	if err := os.WriteFile(mf, out, 0o644); err != nil {
+		t.Fatalf("saving the manifest: %v", err)
+	}
+}
+
+// A manifest naming a file the long way round names the same file.
+//
+// Both spellings pass core.ContainmentProblem, which asks only whether the path
+// lands inside the directory - so a manifest written this way is one this tool
+// accepts everywhere else. Compared as text they matched nothing, and verify
+// answered "extra a.txt" about a file its own manifest listed.
+//
+// That wording is why this matters more than a spelling nicety. A mismatch
+// usually shows as a pair, missing and extra, which reads as a name somebody
+// got wrong. One "extra" on its own reads as a directory somebody polluted,
+// and that is what a script watching a restore or a sync would act on.
+//
+// Found by an outside review of the whole tree on 2026-08-23 and measured here
+// before it was believed. docs/CODE-REVIEW-2026-08-23.md section 3.7.
+func TestVerifyMatchesAPathSpelledTheLongWayRound(t *testing.T) {
+	for _, c := range []struct {
+		about   string
+		respell func(string) string
+	}{
+		{"a leading dot", func(p string) string { return "./" + p }},
+		{"a step down and back up", func(p string) string { return "sub/../" + p }},
+	} {
+		t.Run(c.about, func(t *testing.T) {
+			out, mf := generated(t)
+			if err := os.MkdirAll(filepath.Join(out, "sub"), 0o755); err != nil {
+				t.Fatalf("making the subdirectory the spelling steps through: %v", err)
+			}
+			respellManifestPaths(t, mf, c.respell)
+
+			code, stdout, errOut := run(t, "verify", mf)
+			if code != cli.ExitOK {
+				t.Fatalf("verify gave %d for a manifest naming the files it describes:\n%s", code, errOut)
+			}
+			if !strings.Contains(stdout, "3 files checked") {
+				t.Errorf("verify did not say it checked all three:\n%s", stdout)
+			}
+		})
+	}
+
+	// The other half, and without it the guard above is satisfied by a verify
+	// that stopped comparing at all.
+	t.Run("a file nobody claimed is still extra", func(t *testing.T) {
+		out, mf := generated(t)
+		respellManifestPaths(t, mf, func(p string) string { return "./" + p })
+		if err := os.WriteFile(filepath.Join(out, "intruder.txt"), []byte("not ours"), 0o644); err != nil {
+			t.Fatalf("planting a file: %v", err)
+		}
+
+		code, _, errOut := run(t, "verify", mf)
+		if code == cli.ExitOK {
+			t.Fatal("verify called a directory with an unclaimed file in it a match")
+		}
+		if !strings.Contains(errOut, "intruder.txt") {
+			t.Errorf("verify did not name the unclaimed file:\n%s", errOut)
+		}
+	})
+}
