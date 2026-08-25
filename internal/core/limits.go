@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strings"
 )
@@ -44,9 +45,16 @@ var ErrTooManyFiles = errors.New(TooManyFilesWhy + ". " + TooManyFilesFix)
 // The same refusal in the two parts a report keeps apart. ErrTooManyFiles is
 // built from them rather than beside them, so the sentence and the parts cannot
 // come to disagree - the compiler is the proof.
-const (
-	TooManyFilesWhy = "this build plans at most 1000000 files in one run, because the whole plan is worked out in memory before anything is written - " +
-		"that is what lets a run that cannot succeed be refused before the first byte"
+var (
+	// Built from the constant rather than repeating it. The comment on
+	// MaxFilesPerRun says the number is written once on purpose, and until
+	// 2026-08-25 it was written twice - so lowering the ceiling would have left
+	// the sentence saying the old one, which is a refusal that lies about its
+	// own rule. A variable rather than a constant because Sprintf is not a
+	// constant expression, and that is the whole cost.
+	TooManyFilesWhy = fmt.Sprintf(
+		"this build plans at most %d files in one run, because the whole plan is worked out in memory before anything is written - "+
+			"that is what lets a run that cannot succeed be refused before the first byte", MaxFilesPerRun)
 	TooManyFilesFix = "Ask for fewer files, or split the work into several runs"
 )
 

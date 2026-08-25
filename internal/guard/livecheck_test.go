@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -234,5 +235,44 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 	fill(t, content, text.FieldSize(), "10mb")
 	if left := edgeOf(t, content, text.FieldSize()).StrokeWidth; left != 0 {
 		t.Errorf("the size was corrected after a finished run and its box still draws an edge %.1f px wide", left)
+	}
+}
+
+// A field added before the screen asks to be told about typing reports once.
+//
+// Fields.Add wires every control it takes, and the wrapper it leaves reads the
+// callback at the moment somebody types rather than at the moment it was wired.
+// WhenTypedIn also walked the list and wired them a second time, and listen
+// chains rather than assigns - so a field added before that call would have
+// reported every keystroke twice.
+//
+// It never happened. The one caller runs on a fresh Fields, so the list was
+// always empty, which is exactly the thing this type was built so that nobody
+// has to know. Its own documentation promises the call works "before or after
+// the fields exist". Found by an outside review of the whole tree on
+// 2026-08-23, docs/CODE-REVIEW-2026-08-23.md section 2.
+func TestAFieldWiredBeforeTheScreenListensReportsOnce(t *testing.T) {
+	for _, order := range []string{"the field first", "the listener first"} {
+		t.Run(order, func(t *testing.T) {
+			fields := parts.NewFields()
+			told := map[string]int{}
+			listen := func() { fields.WhenTypedIn(func(setting string) { told[setting]++ }) }
+
+			if order == "the listener first" {
+				listen()
+			}
+			box := parts.NewEntry()
+			fields.Add("size", "Size", "", parts.Detail{}, box)
+			if order == "the field first" {
+				listen()
+			}
+
+			box.SetText("10mb")
+			if told["size"] != 1 {
+				t.Errorf("typing into one box told the screen %d time(s), expected 1 - "+
+					"a screen checking what is typed does that work again for every extra call",
+					told["size"])
+			}
+		})
 	}
 }

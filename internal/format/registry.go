@@ -82,6 +82,17 @@ func number(s string) int64 {
 }
 
 // Get returns one format by id.
+// A Descriptor handed out here is READ ONLY, and that is a contract rather
+// than a guarantee. The struct is copied, its Properties, JointLimits and
+// Choices are not - they point at the same arrays the registry holds, and
+// Register already sorts Choices in place. A caller that sorted or overwrote
+// one would change what every other caller sees, and the window builds its
+// menus straight out of them.
+//
+// Not copied on the way out, because nobody does that and a copy per call is a
+// defence no test could redden - this project takes those out rather than
+// keeps them. Written down instead, which is what an outside review of the
+// whole tree asked for on 2026-08-23.
 func Get(id string) (Descriptor, error) {
 	mu.RLock()
 	defer mu.RUnlock()

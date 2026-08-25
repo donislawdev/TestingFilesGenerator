@@ -1,8 +1,3 @@
-// Package format defines the generator interface and the registry each format
-// announces itself in.
-//
-// A format declares where its padding channel sits and how much it holds. How
-// many bytes are missing is worked out by core, not here.
 package format
 
 import (
@@ -205,6 +200,13 @@ type JointLimit struct {
 
 // Allows reports whether a pair of values satisfies the limit, and says what is
 // wrong when it does not.
+//
+// Both values are expected to have passed their own Property first, and this
+// does not check that again. of*by is not guarded against overflow because the
+// declarations that reach it cap each side at twenty thousand, so the product
+// is nine orders of magnitude below the range of the type. A guard here would
+// be a branch nothing could ever reach, and an unreachable branch reads as a
+// protection somebody is relying on.
 func (j JointLimit) Allows(of, by int64) (bad string) {
 	if of*by <= j.Max {
 		return ""

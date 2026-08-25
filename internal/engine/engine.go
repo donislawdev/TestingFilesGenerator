@@ -1,10 +1,7 @@
-// Package engine plans a run, writes the files and backs verify and cleanup.
-//
-// It knows nothing about the command line or the window. That rule erodes one
-// exception at a time, so a test enforces it instead of good intentions.
 package engine
 
 import (
+	"bufio"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -188,6 +185,14 @@ type Result struct {
 }
 
 // PlannedFile is one file worked out before anything is written.
+//
+// Properties inside Plan is the map the target was given, not a copy of it, and
+// it reaches the manifest by the same reference. Nothing copies it because no
+// generator keeps that map or touches it while writing - they read it in Plan
+// and answer with sizes. A copy would defend against a generator that does not
+// exist, and this tree has removed several defences of that shape. A generator
+// that ever does keep it has to copy at that end, where the guard for it can
+// be written.
 type PlannedFile struct {
 	ID     string
 	Target *Target
@@ -735,9 +740,13 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	}
 
 	h := sha256.New()
-	counter := &countingWriter{w: io.MultiWriter(fh, h), report: report}
+	buffered := bufio.NewWriterSize(fh, 64<<10)
+	counter := &countingWriter{w: io.MultiWriter(buffered, h), report: report}
 
 	writeErr := f.Desc.Generator.Write(ctx, counter, f.Plan)
+	if writeErr == nil {
+		writeErr = buffered.Flush()
+	}
 	closeErr := fh.Close()
 
 	if writeErr != nil {

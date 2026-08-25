@@ -216,3 +216,67 @@ func shorten(root, file string) string {
 	}
 	return file
 }
+
+// A package says what it is once.
+//
+// Go joins every package comment in a package into one, so two files each
+// opening with one produce a doc that says the same thing twice, and gopls
+// reports a duplicate. Four packages carried the same paragraph in doc.go and
+// in their implementation file - format, engine, manifest and oracle - while
+// core and recipe had it in doc.go alone. Found by an outside review of the
+// whole tree on 2026-08-23, docs/CODE-REVIEW-2026-08-23.md section 3.2.
+//
+// The rule is not "the comment belongs in doc.go". A package with one file
+// keeps its comment in that file, which is most of the tree. What is asked is
+// that no package has two.
+func TestNoPackageIntroducesItselfTwice(t *testing.T) {
+	root := repoRoot(t)
+
+	var problems []string
+	err := filepath.Walk(filepath.Join(root, "internal"), func(path string, info os.FileInfo, err error) error {
+		if err != nil || !info.IsDir() {
+			return err
+		}
+		entries, derr := os.ReadDir(path)
+		if derr != nil {
+			return nil
+		}
+		introduced := map[string][]string{}
+		fset := token.NewFileSet()
+		for _, e := range entries {
+			name := e.Name()
+			if e.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+				continue
+			}
+			parsed, ferr := parser.ParseFile(fset, filepath.Join(path, name), nil, parser.ParseComments)
+			if ferr != nil || parsed.Doc == nil {
+				continue
+			}
+			pkg := parsed.Name.Name
+			// Only a comment opening the way godoc reads one. Nine files of
+			// package cli open with "Part of package cli. See cli.go." and that
+			// is a file header somebody put there on purpose, not a second
+			// introduction - counting it would be a guard inventing a rule
+			// nobody agreed to.
+			if !strings.HasPrefix(parsed.Doc.Text(), "Package "+pkg) {
+				continue
+			}
+			introduced[pkg] = append(introduced[pkg], shorten(root, filepath.Join(path, name)))
+		}
+		for pkg, files := range introduced {
+			if len(files) > 1 {
+				problems = append(problems, "   package "+pkg+" is introduced in "+strings.Join(files, " and "))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walking internal: %v", err)
+	}
+	if len(problems) > 0 {
+		t.Errorf("%d package(s) say what they are more than once:\n%s\n\n"+
+			"Reason: Go joins them, so \"go doc\" prints the paragraph twice and the two copies\n"+
+			"are free to drift apart. Keep one and move anything the other said into it.",
+			len(problems), strings.Join(problems, "\n"))
+	}
+}

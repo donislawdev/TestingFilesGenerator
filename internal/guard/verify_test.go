@@ -1,6 +1,8 @@
 package guard
 
 import (
+	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -593,4 +595,46 @@ func TestVerifyMatchesAPathSpelledTheLongWayRound(t *testing.T) {
 			t.Errorf("verify did not name the unclaimed file:\n%s", errOut)
 		}
 	})
+}
+
+// A cancelled verify stops in the walk as well as in the loop.
+//
+// Verify has two parts with no upper bound: the loop over what a manifest
+// claims, which is as long as the manifest, and the walk of the directory,
+// which is as long as whatever somebody pointed at. Only the first asked about
+// cancellation, so Ctrl+C during the walk of a large tree did nothing until the
+// walk was over. Found by an outside review of the whole tree, 2026-08-23.
+//
+// Cancelled before the call rather than during it, so the guard says the same
+// thing on a fast disk and on a slow one.
+func TestACancelledVerifyStopsInTheWalkToo(t *testing.T) {
+	_, mf := generated(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	var out, errOut bytes.Buffer
+	code := cli.Run(ctx, []string{"verify", mf}, &out, &errOut)
+	if code != cli.ExitInterrupted {
+		t.Errorf("a cancelled verify ended with %d, expected %d:\n%s", code, cli.ExitInterrupted, errOut.String())
+	}
+	if strings.Contains(out.String(), "matches") {
+		t.Errorf("a cancelled verify reported a match, which is an answer it did not have:\n%s", out.String())
+	}
+
+	// And the walk asks as well, which the verdict above cannot show. Verify
+	// ends on ctx.Err() whatever the walk did, so a cancelled run reports
+	// Interrupted either way - what the check changes is WHEN it stops, and
+	// seeing that in a test means pointing it at a tree big enough for the
+	// difference to be measurable, which turns the guard into a stopwatch.
+	//
+	// So this reads the source, the same choice and for the same reason as in
+	// durability_test.go. The walk is the part of verify with no upper bound:
+	// the loop above is as long as the manifest, this is as long as whatever
+	// directory somebody pointed at.
+	body := functionSource(t, "internal/audit/audit.go", "walk")
+	if !strings.Contains(body, "ctx.Err()") {
+		t.Error("audit.walk never asks whether the run was cancelled, so Ctrl+C during the " +
+			"walk of a large tree does nothing until the walk is over")
+	}
 }

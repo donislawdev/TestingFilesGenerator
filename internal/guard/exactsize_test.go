@@ -7,8 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"math/rand/v2"
+	"os"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 )
@@ -225,4 +228,85 @@ func TestSizeBelowTheMinimumIsRefused(t *testing.T) {
 		checked++
 	}
 	_ = checked
+}
+
+// And the file that reaches the disk is that size as well.
+//
+// The guard above hands the generator a bytes.Buffer, which is the right
+// question for a generator and the wrong one for the engine: it never touches
+// the write path, so nothing between "the generator produced the right bytes"
+// and "verify agrees with the manifest" was asked about the file itself.
+//
+// That gap grew teeth on 2026-08-25, when the write path gained a buffer. The
+// engine counts what went into the writer, not what reached the disk, so a
+// missing flush leaves a short file and the count still agrees. Measured: with
+// the flush taken out this guard fails and the size guard above does not.
+//
+// Why the buffer is there: measured the same day on the worst shape the format
+// declarations allow - a BMP one pixel wide and twenty thousand tall, which is
+// twenty thousand calls to Write - sixty of those files took 3.660 s unbuffered
+// and 0.138 s buffered, ranges apart, drift anchor 0.2 %. An ordinary 1 MB BMP
+// is 1.63x, plain text 1.16x, PNG 1.04x. The bytes are identical in every case,
+// so D11 is untouched. docs/CODE-REVIEW-2026-08-23.md section 3.11.
+func TestTheFileOnTheDiskIsTheSizeThatWasOrdered(t *testing.T) {
+	for _, c := range []struct {
+		about string
+		args  []string
+	}{
+		// A shape whose rows are many and small, which is what a buffer is for
+		// and what a missing flush loses most of.
+		{"a picture of many small rows", []string{
+			"--format", "bmp", "--set", "width=1", "--set", "height=2000", "--size", "8058"}},
+		{"plain text", []string{"--format", "txt", "--size", "40kb"}},
+	} {
+		t.Run(c.about, func(t *testing.T) {
+			dir := t.TempDir()
+			args := append([]string{"generate"}, c.args...)
+			args = append(args, "--seed", "7741", "--out", dir)
+			if code, _, errOut := run(t, args...); code != cli.ExitOK {
+				t.Fatalf("the run gave %d:\n%s", code, errOut)
+			}
+
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				t.Fatalf("reading the directory: %v", err)
+			}
+			checked := 0
+			for _, e := range entries {
+				if e.Name() == "manifest.json" {
+					continue
+				}
+				info, err := e.Info()
+				if err != nil {
+					t.Fatalf("looking at %s: %v", e.Name(), err)
+				}
+				want := wantedSize(t, c.args)
+				if info.Size() != want {
+					t.Errorf("%s is %d B on the disk and %d B was ordered - the count the engine "+
+						"keeps is of what went into the writer, not of what came out of it",
+						e.Name(), info.Size(), want)
+				}
+				checked++
+			}
+			if checked == 0 {
+				t.Fatal("the run produced no file, so this guard would prove nothing")
+			}
+		})
+	}
+}
+
+// wantedSize is the number the --size flag of a case asked for.
+func wantedSize(t *testing.T, args []string) int64 {
+	t.Helper()
+	for i, a := range args {
+		if a == "--size" && i+1 < len(args) {
+			n, err := core.ParseSize(args[i+1])
+			if err != nil {
+				t.Fatalf("the case asks for %q, which is not a size: %v", args[i+1], err)
+			}
+			return n
+		}
+	}
+	t.Fatal("the case names no size, so there is nothing to compare against")
+	return 0
 }

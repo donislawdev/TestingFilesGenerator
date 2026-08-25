@@ -135,3 +135,36 @@ func function0f(t *testing.T, file, function string) (*ast.FuncDecl, *token.File
 		file, function)
 	return nil, nil, ""
 }
+
+// functionSource is the whole body of one function, found by name.
+func functionSource(t *testing.T, file, function string) string {
+	t.Helper()
+	fn, fset, source := function0f(t, file, function)
+	from := fset.Position(fn.Body.Pos()).Offset
+	to := fset.Position(fn.Body.End()).Offset
+	return source[from:to]
+}
+
+// Saving a manifest tells "nothing is there" apart from "I could not look".
+//
+// The switch read every failure of os.Stat as an empty slot and went on to
+// claim the name, so a path it could not examine was answered in words about a
+// manifest that already existed - a sentence about the wrong thing, and the one
+// somebody would act on.
+//
+// Source again, and this time because the branch is nearly unreachable through
+// Save itself: MkdirAll runs first, so a directory that cannot be reached fails
+// before the Stat, and a file needs only its directory to be traversable to be
+// stat-ed. What is left is a name the host rejects outright. Building a case
+// for that on every operating system would be a guard about the host rather
+// than about this rule, so what is asked is the rule.
+//
+// Found by an outside review of the whole tree, docs/CODE-REVIEW-2026-08-23.md
+// section 3.7c.
+func TestSavingAManifestTellsAnEmptySlotFromAnUnreadableOne(t *testing.T) {
+	body := functionSource(t, "internal/manifest/manifest.go", "Save")
+	if !strings.Contains(body, "errors.Is(err, fs.ErrNotExist)") {
+		t.Error("manifest.Save does not tell a missing file from a failure to look at one, " +
+			"so a path it cannot examine is answered in words about a manifest that is already there")
+	}
+}

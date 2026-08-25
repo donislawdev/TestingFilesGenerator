@@ -86,6 +86,14 @@ because it turns other people's test suites red.
   `tfg recipe fmt` would then have formatted the first megabyte of a longer file
   and reported success. The message and the exit code are unchanged, including
   the size it reports. The same applies to reading a manifest.
+- Files whose format writes them in many small pieces are written much faster.
+  The worst shape the settings allow - a BMP one pixel wide and twenty thousand
+  tall - went from 3.660 s to 0.138 s for sixty files. An ordinary 1 MB BMP is
+  about a third faster, plain text and PNG a little. The bytes are identical, so
+  nothing that checks a hash sees a change.
+- `Ctrl+C` during `tfg verify` now stops while it is still listing the
+  directory. On a tree with hundreds of thousands of files it used to finish the
+  listing first, which on a slow disk is a long time to keep pressing it.
 - The refusal for a boundary limit below 1 B now reads the same from the command
   line and from a recipe. Both took it from their own sentence, and the two had
   already drifted apart by a comma. The wording is the four part shape the rest

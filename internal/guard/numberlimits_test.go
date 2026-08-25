@@ -2,10 +2,12 @@ package guard
 
 import (
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Two numbers a person can write that the tool could not honour, and used to
@@ -238,4 +240,22 @@ func TestTheCeilingCountsTheWholeRunNotOneTarget(t *testing.T) {
 		t.Errorf("the refusal does not name the ceiling:\n%s", errOut)
 	}
 	_ = filepath.Join
+}
+
+// The refusal names the ceiling the rule really uses.
+//
+// The number stood in the constant and again in the sentence, which the comment
+// on MaxFilesPerRun said was written once on purpose. Lowering the ceiling would
+// have left the refusal quoting the old one - a message that lies about the rule
+// it is enforcing, in the one place somebody looks to find out what the rule is.
+// Found by an outside review of the whole tree, docs/CODE-REVIEW-2026-08-23.md
+// section 3.4.
+func TestTheRefusalForTooManyFilesNamesTheCeilingItEnforces(t *testing.T) {
+	said := core.ErrTooManyFiles.Error()
+	want := strconv.Itoa(core.MaxFilesPerRun)
+	if !strings.Contains(said, want) {
+		t.Errorf("the ceiling is %s and the refusal says:\n%s\n\n"+
+			"A refusal naming a different number than the rule sends somebody to change "+
+			"a setting to a value that is still refused.", want, said)
+	}
 }

@@ -115,6 +115,12 @@ func validCost(label string, cost int64) bool {
 
 // commentOfCost builds a comment that costs exactly cost and starts with the
 // label.
+//
+// The cost has to have passed validCost, which is the same question asked
+// before the decision to use one - both callers ask it. Repeating it here would
+// be a third copy of one rule, and a copy is where two answers come from. What
+// happens without it is a panic inside strings.Repeat rather than a wrong file,
+// which is the failure this project prefers of the two.
 func commentOfCost(label string, cost int64) string {
 	if cost == 0 {
 		return ""

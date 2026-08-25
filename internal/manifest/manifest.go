@@ -1,12 +1,8 @@
-// Package manifest defines the manifest schema and writes entries while a run
-// is still going.
-//
-// Writing at the end would lose every entry at the moment the disk fills up,
-// which is the most common failure of this particular tool.
 package manifest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -467,12 +463,19 @@ func (m *Manifest) Save(path string) error {
 	// manifest and is never written over - that is the whole point of the
 	// claim, and it is why "it exists" is not enough to go on here.
 	switch info, err := os.Stat(path); {
-	case err != nil:
+	case errors.Is(err, fs.ErrNotExist):
 		// Nothing there. A caller that writes a manifest without claiming
 		// first - the guards do - claims it now.
 		if err := claimName(path); err != nil {
 			return err
 		}
+	case err != nil:
+		// Something is there and it cannot be looked at - a permission, a
+		// path whose parent is a file, a name the host will not take. Read as
+		// "nothing there" until 2026-08-25, which sent the run on to claim a
+		// name it had no answer about, and the claim then failed in words
+		// about the wrong thing.
+		return err
 	case info.Size() != 0:
 		return &os.PathError{Op: "save", Path: path, Err: fs.ErrExist}
 	}

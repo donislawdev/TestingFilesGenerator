@@ -277,10 +277,17 @@ func (s *Fields) holding(object fyne.CanvasObject) *Field {
 // call this per field would be the map filled in by hand all over again, which
 // is the defect this whole type was built to end. See docs/UX.md section 7.0.
 func (s *Fields) WhenTypedIn(tell func(setting string)) {
+	// Only the field, never a second pass over the ones already added. Add
+	// wires every control it takes, and the wrapper it leaves behind reads
+	// s.tell at the moment somebody types rather than at the moment it was
+	// wired - so a field added before this call is already covered.
+	//
+	// It used to walk the list here as well, and listen chains rather than
+	// assigns, so every one of those fields would have reported a keystroke
+	// twice. Nothing saw it because the one caller runs on a fresh Fields, and
+	// this type exists so that nothing depends on what somebody remembered at
+	// the call site. Found by an outside review of the whole tree, 2026-08-23.
 	s.tell = tell
-	for _, f := range s.list {
-		s.listen(f.Setting, f.Control)
-	}
 }
 
 // listen makes every box under one control report what is typed into it.

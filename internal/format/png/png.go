@@ -160,11 +160,10 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		label = core.Label("png", r.Bytes, r.Seed)
 	}
 
-	m, explicit, err := chooseSize(r, label)
+	m, err := chooseSize(r, label)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	_ = explicit
 	w, h := m.width, m.height
 	body := m.body
 
@@ -291,56 +290,54 @@ var sizeLadder = [][2]int{
 // the largest rung down until one fits, which is what lets a request for a
 // few hundred bytes succeed rather than being told the default picture is too
 // big for it.
-func chooseSize(r format.Request, label string) (memo, bool, error) {
-	wRaw, wSet := r.Properties["width"]
-	hRaw, hSet := r.Properties["height"]
+func chooseSize(r format.Request, label string) (memo, error) {
+	_, wSet := r.Properties["width"]
+	_, hSet := r.Properties["height"]
 
 	if wSet || hSet {
 		w, err := dimension(r.Properties, "width", defaultWidth)
 		if err != nil {
-			return memo{}, true, err
+			return memo{}, err
 		}
 		h, err := dimension(r.Properties, "height", defaultHeight)
 		if err != nil {
-			return memo{}, true, err
+			return memo{}, err
 		}
-		_, _ = wRaw, hRaw
 		// Asked of the declaration rather than repeated here, so the refusal,
 		// what "tfg formats png" prints and what a window would draw all come
 		// from one place. The rule used to live only in this function and in a
 		// sentence of prose, and the printed description then offered a pair
 		// this line rejects.
 		if err := checkJointLimits(w, h); err != nil {
-			return memo{}, true, err
+			return memo{}, err
 		}
 		m := memo{width: w, height: h, seed: r.Seed, label: label}
 		body, err := encodedBodySize(m)
 		if err != nil {
-			return memo{}, true, err
+			return memo{}, err
 		}
 		m.body = body
-		return m, true, nil
+		return m, nil
 	}
 
 	var smallest memo
-	for i, rung := range sizeLadder {
+	for _, rung := range sizeLadder {
 		m := memo{width: rung[0], height: rung[1], seed: r.Seed, label: label}
 		body, err := encodedBodySize(m)
 		if err != nil {
-			return memo{}, false, err
+			return memo{}, err
 		}
 		m.body = body
 		smallest = m
 
 		bare := body + iendSize
 		if r.Bytes == bare || r.Bytes >= bare+chunkOverhead {
-			return m, false, nil
+			return m, nil
 		}
-		_ = i
 	}
 	// Nothing fitted, not even one pixel. The caller turns this into the
 	// error that names the minimum.
-	return smallest, false, nil
+	return smallest, nil
 }
 
 func dimension(props map[string]string, key string, fallback int) (int, error) {

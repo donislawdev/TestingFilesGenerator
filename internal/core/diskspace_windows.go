@@ -22,12 +22,10 @@ func AvailableBytes(path string) (int64, error) {
 	}
 
 	var freeForCaller, total, totalFree uint64
-	kernel32 := syscall.NewLazyDLL("kernel32.dll")
-	proc := kernel32.NewProc("GetDiskFreeSpaceExW")
 
 	// A quota can make the space available to this user smaller than the
 	// space free on the volume, so the first value is the one that matters.
-	r, _, e := proc.Call(
+	r, _, e := getDiskFree.Call(
 		uintptr(unsafe.Pointer(p)),
 		uintptr(unsafe.Pointer(&freeForCaller)),
 		uintptr(unsafe.Pointer(&total)),
@@ -38,6 +36,20 @@ func AvailableBytes(path string) (int64, error) {
 	}
 	return int64(freeForCaller), nil
 }
+
+// The handle is looked up once rather than on every call. It was built inside
+// AvailableBytes until 2026-08-25, so every check of free space repeated the
+// lookup - a run asks once, but nothing says it always will.
+//
+// syscall rather than golang.org/x/sys/windows, which offers this call ready
+// made and would take the unsafe.Pointer out of this file. That module is
+// already in the graph as an indirect one, so promoting it would not add a
+// download - but it would put it inside the command line binary, which does not
+// link it today, and that is untouchable rule 11 rather than tidying.
+var (
+	kernel32    = syscall.NewLazyDLL("kernel32.dll")
+	getDiskFree = kernel32.NewProc("GetDiskFreeSpaceExW")
+)
 
 // existingAncestor walks up until it finds a directory that exists, because
 // the output directory is often about to be created.
