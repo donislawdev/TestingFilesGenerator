@@ -313,10 +313,22 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		// alone is one somebody reaches by writing the number out in pieces.
 		totalFiles += len(t.Sizes)
 		if totalFiles > core.MaxFilesPerRun {
-			return nil, &RecipeError{Detail: fmt.Sprintf(
-				"this run asks for %s across %s - %s",
-				core.Count(totalFiles, "file", "files"),
-				core.Count(len(targets), "target", "targets"), core.ErrTooManyFiles)}
+			// Addressed to the target that took the total past the ceiling,
+			// which is the one somebody can shrink. The ceiling is a fact
+			// about the run rather than about one entry, so the sentence says
+			// so - but a refusal a window cannot place is a refusal at the
+			// foot of a form with twenty batches above it and nothing marked.
+			//
+			// Reachable only from here, and measured on 2026-08-25: the recipe
+			// reader bounds each target on its own, so three batches of four
+			// hundred thousand pass it and the total is refused here. Before
+			// this line "validate --json" carried no "at" for it.
+			return nil, &RecipeError{
+				Setting: core.TargetAddress(i+1, SettingCount),
+				Detail: fmt.Sprintf(
+					"this run asks for %s across %s - %s",
+					core.Count(totalFiles, "file", "files"),
+					core.Count(len(targets), "target", "targets"), core.ErrTooManyFiles)}
 		}
 
 		for idx, size := range t.Sizes {
@@ -371,6 +383,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			// machines by design, and one that quietly loses a file on somebody
 			// else's is worse than one refused on both. Producing such a pair on
 			// purpose belongs to the name laboratory and its archive mode, D10.
+			// No address, deliberately, and this is the one refusal here that
+			// keeps it. Two targets produce the pair, so naming one of them
+			// would send somebody to a box that is not wrong on its own - and
+			// which of the two to change is theirs to decide. The sentence
+			// names both ids, which is what a person needs and what a window
+			// cannot place either way.
 			key := collisionKey(name)
 			if owner, clash := names[key]; clash {
 				return nil, &RecipeError{Detail: collisionDetail(owner, t.ID, name) +
@@ -379,8 +397,13 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			names[key] = nameOwner{id: t.ID, name: name}
 
 			if totalBytes, err = core.AddSizes(totalBytes, p.Bytes); err != nil {
-				return nil, &RecipeError{Detail: fmt.Sprintf(
-					"target %q brings the run to a size that is too large to measure: %s", t.ID, err)}
+				// The size of this target, for the same reason as the ceiling
+				// above: the total belongs to the run, the box somebody can
+				// change belongs to a target.
+				return nil, &RecipeError{
+					Setting: core.TargetAddress(i+1, format.SettingSize),
+					Detail: fmt.Sprintf(
+						"target %q brings the run to a size that is too large to measure: %s", t.ID, err)}
 			}
 
 			out = append(out, PlannedFile{

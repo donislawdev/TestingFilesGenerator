@@ -102,7 +102,7 @@ func validate(args []string, out, errOut io.Writer) int {
 	if err != nil {
 		if *asJSON {
 			writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-				Problems: []validateProblem{{What: err.Error()}}})
+				Problems: []validateProblem{{What: err.Error(), At: targetAddressOf(err)}}})
 			return classify(err)
 		}
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
@@ -152,6 +152,33 @@ type validateProblem struct {
 	// report by field needs this rather than the sentence, which names a target
 	// by its id and cannot be split back apart reliably.
 	At string `json:"at,omitempty"`
+}
+
+// targetAddressOf is where a refusal from below the recipe reader happened,
+// when it is complete enough to act on, and empty otherwise.
+//
+// Everything that knows the setting it is about answers the same interface the
+// window asks, so this does not need to know the type. What it does need to
+// know is that not every one of those answers is an address: a refusal from
+// the engine or a format may name the setting - "size" - without the entry of
+// the list it happened in, and a report about a recipe with twenty targets
+// saying "at": "size" points at all of them. Reported only when it names its
+// target, which is strictly more than the nothing this carried before.
+//
+// The rest is real work rather than an oversight, and it is written down:
+// giving every target scoped refusal its position means the two screens that
+// show one target have to translate it back, which they have a hook for and no
+// reason to use yet. See docs/ENGINE-REVIEW-2026-08-22.md.
+func targetAddressOf(err error) string {
+	var about interface{ AboutSetting() string }
+	if !errors.As(err, &about) {
+		return ""
+	}
+	at := about.AboutSetting()
+	if !core.AddressNamesATarget(at) {
+		return ""
+	}
+	return at
 }
 
 // loadRecipeReporting is loadRecipe with the option of a machine readable

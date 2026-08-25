@@ -2,6 +2,7 @@ package guard
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -505,4 +506,46 @@ func waitForNamedManifest(t *testing.T, dir, name string) {
 		time.Sleep(5 * time.Millisecond)
 	}
 	t.Fatalf("the run never wrote a manifest called %q. The directory holds: %v", name, namesIn(t, dir))
+}
+
+// A refusal from the ENGINE marks the batch it is about, the same as one from
+// the recipe reader.
+//
+// The sibling above covers the reader. This one covers the layer under it, and
+// they are not the same question: the reader bounds each batch on its own, so
+// two batches of six hundred thousand files each pass it and the total is
+// refused by the engine. Measured on 2026-08-25, before the address existed:
+// the refusal arrived with a sentence and nothing else, so a screen with twenty
+// batches said the run could not go and marked nothing at all.
+//
+// The count is deliberately spread over two batches with the big one second.
+// The engine tests the running total before planning a batch's files, so this
+// reaches the refusal having planned one file rather than a million.
+func TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt(t *testing.T) {
+	screen := window.NewRecipe(&fakeHost{})
+	body := screen.Object()
+	pressNamed(t, body, text.ButtonAddBatch())
+
+	fields := screen.Fields()
+	for _, b := range []int{1, 2} {
+		setBox(t, fields, recipe.TargetAddress(b, recipe.KeyID), fmt.Sprintf("batch%d", b))
+		setBox(t, fields, recipe.TargetAddress(b, recipe.KeySize), "1kb")
+	}
+	setBox(t, fields, recipe.TargetAddress(1, recipe.KeyCount), "1")
+	setBox(t, fields, recipe.TargetAddress(2, recipe.KeyCount), "1000000")
+
+	pressNamed(t, body, text.ButtonPreview())
+
+	want := recipe.TargetAddress(2, recipe.KeyCount)
+	if saying := saidBy(t, fields, want); saying == "" {
+		t.Errorf("nothing is marked at %q, so the refusal about the ceiling went to the foot\n"+
+			"of the form. The ceiling is a fact about the run, but the box somebody can change\n"+
+			"belongs to a batch - and with twenty batches on screen, an unmarked refusal does\n"+
+			"not say which one.\n%s", want, allSaid(fields))
+	}
+
+	quiet := recipe.TargetAddress(1, recipe.KeyCount)
+	if saying := saidBy(t, fields, quiet); saying != "" {
+		t.Errorf("%q is marked and that batch asks for one file.\nIt says: %s", quiet, saying)
+	}
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Writing a recipe from values somebody typed, rather than reading one.
@@ -307,7 +309,7 @@ func firstControl(value string) (rune, bool) {
 // TestEveryRefusalAboutABatchMarksThatBatchsBox is for, and the two together are
 // what make the pairing safe rather than merely consistent.
 const (
-	KeyTargets  = "targets"
+	KeyTargets  = core.KeyTargets
 	KeyVersion  = "version"
 	KeySeed     = "seed"
 	KeyLocale   = "locale"
@@ -315,7 +317,7 @@ const (
 	KeyEngine   = "engine"
 	KeyExtends  = "extends"
 	KeyWith     = "with"
-	KeyContains = "contains"
+	KeyContains = core.KeyContains
 
 	KeyID             = "id"
 	KeyFormat         = "format"
@@ -337,23 +339,18 @@ const (
 	KeyDefaultsLabel  = "defaults.label"
 )
 
-// TargetAddress is where one setting of one target lives.
+// TargetAddress and ContentAddress are core's, under the name the callers of a
+// recipe screen already reach for.
 //
-// The position counts from one, matching the prose: a refusal about the second
-// target says "target 2", and a screen numbering its blocks from zero would send
-// somebody to the wrong one.
+// The shape of an address moved to internal/core on 2026-08-25, because the
+// engine has to produce one too and this package is above it. These two stay
+// as the name in the vocabulary a recipe caller thinks in, and they are one
+// line each, so there is nothing here that can come to disagree with core -
+// the compiler is the proof rather than a guard.
 func TargetAddress(position int, setting string) string {
-	return targetPrefix(position) + "." + setting
+	return core.TargetAddress(position, setting)
 }
 
-// targetPrefix is one target without a setting named yet, which is what a
-// refusal about the target as a whole is addressed to.
-func targetPrefix(position int) string {
-	return fmt.Sprintf("%s[%d]", KeyTargets, position)
-}
-
-// ContentAddress is where one setting of one contains entry lives. Both
-// positions count from one, for the reason above.
 func ContentAddress(target, entry int, setting string) string {
-	return fmt.Sprintf("%s.%s[%d].%s", targetPrefix(target), KeyContains, entry, setting)
+	return core.ContentAddress(target, entry, setting)
 }

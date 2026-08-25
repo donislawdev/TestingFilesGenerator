@@ -116,6 +116,65 @@ func (e *settingError) InTheWordsOf(name string) string {
 // package already answer.
 func (e *settingError) AboutSetting() string { return e.setting }
 
+// KeyTargets and KeyContains are the two list names a settings address is built
+// from. The rest of the vocabulary lives in internal/recipe, with the reader
+// that produces it - these two are here because the shape of an address is now
+// built in two layers rather than one.
+const (
+	KeyTargets  = "targets"
+	KeyContains = "contains"
+)
+
+// TargetAddress is where one setting of one target lives.
+//
+// The position counts from one, matching the prose: a refusal about the second
+// target says "target 2", and a screen numbering its blocks from zero would
+// send somebody to the wrong one.
+//
+// This lived in internal/recipe until 2026-08-25, next to the key vocabulary,
+// which was right while the recipe reader was the only thing that produced an
+// address. It is not any more. Measured that day: a recipe with three batches
+// of four hundred thousand files passes the reader, because the reader bounds
+// each target on its own, and is refused by the engine on the total - with a
+// sentence and no address, so "validate --json" carried no "at" and a window
+// had nothing to mark. Three more refusals reach a person the same way.
+//
+// So the shape moved down to where both layers already are. The alternative
+// was the engine importing the recipe reader for a function that joins two
+// strings, which would put a YAML parser inside the layer that is meant not to
+// know what a recipe file looks like.
+func TargetAddress(position int, setting string) string {
+	return TargetPrefix(position) + "." + setting
+}
+
+// TargetPrefix is one target without a setting named yet, which is what a
+// refusal about the target as a whole is addressed to.
+func TargetPrefix(position int) string {
+	return fmt.Sprintf("%s[%d]", KeyTargets, position)
+}
+
+// ContentAddress is where one setting of one contains entry lives. Both
+// positions count from one, for the reason above.
+func ContentAddress(target, entry int, setting string) string {
+	return fmt.Sprintf("%s.%s[%d].%s", TargetPrefix(target), KeyContains, entry, setting)
+}
+
+// AddressNamesATarget says whether an address carries the position of the
+// target it is about, rather than a setting name on its own.
+//
+// It exists because the two are not interchangeable in a report. A refusal from
+// below the recipe reader knows its setting - "size" - and not which entry of
+// the list it happened in, and "size" in a report about a recipe with twenty
+// targets points at all of them at once. A reader grouping by field would put
+// them in one bucket and a window would have no box to mark, so an address
+// without its position is worse than none: it looks actionable.
+//
+// Not every address needs one. A setting of the document itself, output.dir or
+// version, is complete as it stands and is not what this asks about.
+func AddressNamesATarget(address string) bool {
+	return strings.HasPrefix(address, KeyTargets+"[")
+}
+
 // LastSettingSegment is the plain name inside a settings address.
 //
 // A refusal about a batch addresses its setting as targets[1].properties.width

@@ -473,3 +473,81 @@ func missingPart(why, fix string) string {
 		return "fix"
 	}
 }
+
+// A refusal from below the recipe reader reaches the machine readable report
+// with its address, and only when that address names the target.
+//
+// Two halves that pull against each other, which is why they are asserted in
+// one place. The first: the ceiling on files is checked by the engine on the
+// total, so a recipe whose targets each pass the reader is refused here - and
+// until 2026-08-25 it arrived with a sentence and no "at" at all, so a script
+// grouping a report by field had nothing and a window had no box to mark.
+//
+// The second: an address that names a setting without its position is not an
+// address. A format refusing a size knows it is about "size" and not which of
+// twenty targets asked, and "at": "size" in that report points at all of them
+// while looking actionable. So it is left out, and leaving it out is a rule
+// rather than an accident - which is what the second half of this asserts.
+func TestTheReportCarriesAnAddressFromBelowTheReaderOnlyWhenItNamesTheTarget(t *testing.T) {
+	read := func(t *testing.T, src string) (what, at string) {
+		t.Helper()
+		dir := t.TempDir()
+		path := filepath.Join(dir, "recipe.yaml")
+		if err := os.WriteFile(path, []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		var out, errOut bytes.Buffer
+		if code := cli.Run(context.Background(), []string{"validate", path, "--json"}, &out, &errOut); code == cli.ExitOK {
+			t.Fatalf("this recipe was meant to be refused and validate was happy with it:\n%s", out.String())
+		}
+		var report struct {
+			Problems []struct {
+				What string `json:"what"`
+				At   string `json:"at"`
+			} `json:"problems"`
+		}
+		if err := json.Unmarshal(errOut.Bytes(), &report); err != nil {
+			t.Fatalf("the report is not readable as JSON: %v\n%s", err, errOut.String())
+		}
+		if len(report.Problems) != 1 {
+			t.Fatalf("expected one problem and got %d:\n%s", len(report.Problems), errOut.String())
+		}
+		return report.Problems[0].What, report.Problems[0].At
+	}
+
+	// The big target second, because the engine tests the running total before
+	// planning a target's files - so this refuses having planned one file
+	// rather than a million.
+	what, at := read(t, `version: 1
+targets:
+  - id: a
+    format: txt
+    count: 1
+    size: 1kb
+  - id: b
+    format: txt
+    count: 1000000
+    size: 1kb
+`)
+	if want := core.TargetAddress(2, recipe.KeyCount); at != want {
+		t.Errorf("the ceiling was reported at %q and the target that crossed it is %q.\n"+
+			"Reason: the ceiling belongs to the run, but the box somebody can change belongs to\n"+
+			"a target - a report that cannot say which one leaves a script and a window with the\n"+
+			"sentence and nothing else.\nWhat it said: %s", at, want, what)
+	}
+
+	// And the other way. A size the format cannot deliver is refused below the
+	// reader too, and that refusal knows only the setting.
+	what, at = read(t, `version: 1
+targets:
+  - id: a
+    format: pdf
+    size: 10
+`)
+	if at != "" {
+		t.Errorf("a refusal that knows its setting but not its target was reported at %q.\n"+
+			"Reason: %q names a setting every target has. In a recipe with twenty of them it points\n"+
+			"at all of them at once while looking like something to act on, which is worse than\n"+
+			"saying nothing. Give it its position or leave it out.\nWhat it said: %s", at, at, what)
+	}
+}
