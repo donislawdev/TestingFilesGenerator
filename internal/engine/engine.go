@@ -878,6 +878,30 @@ func checkFileName(where, name string) error {
 			"%s produces the name %q, which holds a colon. Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere - take the colon out, or ask for the file inside an archive where the name survives",
 			where, name)}
 
+	// Characters Windows will not put in a file name, refused on every system
+	// for the same reason as the separator and the colon above.
+	//
+	// Measured on 2026-08-25, on each of <>"|?* and on a name holding a tab.
+	// All seven planned cleanly, --dry-run answered "1 file in 1 target" and
+	// exit 0, and the run then failed that one file with the system's own
+	// words: "open a<b.txt.tfg-partial-53628: The filename, directory name, or
+	// volume label syntax is incorrect". Three things wrong in one line. The
+	// dry run answered for a run that could not happen, which is the fault
+	// preflight exists to stop. The sentence is not ours and carries none of
+	// the four parts a refusal owes a reader, while carrying the temporary
+	// name, which is ours and nobody else's business. And the same recipe
+	// writes the file on Linux, where all of these are legal - the reason the
+	// separator has been refused everywhere since 2026-08-03.
+	//
+	// Producing such a name on purpose is a real test case and it belongs to
+	// the name laboratory, which writes it into an archive rather than onto
+	// the host filesystem. See D10.
+	case firstForbidden(name) != 0:
+		bad := firstForbidden(name)
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+			"%s produces the name %q, which holds %s. Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere - take the character out, or ask for the file inside an archive where the name survives",
+			where, name, describeForbidden(bad))}
+
 	case name == "." || name == "..":
 		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which names a directory rather than a file", where, name)}
@@ -912,6 +936,42 @@ func checkFileName(where, name string) error {
 			where, name)}
 	}
 	return nil
+}
+
+// forbiddenChars are the printable characters Windows refuses in a file name.
+//
+// The separator and the colon are not here. They are refused above with their
+// own sentences, because what goes wrong with them is not "the file is not
+// written" but something worse and worth its own explanation - a name that
+// leaves the output directory, and a name Windows reads as a drive or as a
+// stream inside another file.
+const forbiddenChars = `<>"|?*`
+
+// firstForbidden is the first character of a name that Windows will not store,
+// or zero when there is none.
+//
+// The first rather than all of them, because a refusal naming one character a
+// reader can find beats a list they have to compare against their own name.
+func firstForbidden(name string) rune {
+	for _, r := range name {
+		// Below the space, which is every control character. Windows refuses
+		// the whole range, and a name holding one is unreadable on any system
+		// - a tab in a file name is a name nobody can type back.
+		if r < 0x20 || strings.ContainsRune(forbiddenChars, r) {
+			return r
+		}
+	}
+	return 0
+}
+
+// describeForbidden names a character in a way somebody can act on. A control
+// character has nothing to show, so it is given as its number instead of being
+// printed into the middle of a sentence where it would do what it says.
+func describeForbidden(r rune) string {
+	if r < 0x20 {
+		return fmt.Sprintf("a control character, U+%04X", r)
+	}
+	return fmt.Sprintf("the character %q", string(r))
 }
 
 func runID(seed int64) string {

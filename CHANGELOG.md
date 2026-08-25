@@ -14,6 +14,24 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- A file name holding `<`, `>`, `"`, `|`, `?`, `*` or a control character is now
+  refused while the run is being planned, on every system. Windows will not
+  store such a name, so on Windows the file was never written anyway - it was
+  reported as one file that could not be produced, at the end, in the operating
+  system's words. On Linux and macOS the same recipe wrote the file, which is
+  the part that changes: a recipe is meant to mean one thing everywhere, and a
+  path separator has been refused on every system for that reason since the
+  start. If you want such a name on purpose, that is a test case rather than an
+  accident and it belongs inside an archive, where the name survives whatever
+  the host filesystem thinks of it.
+
+  Two things get better on Windows as well. `--dry-run` used to report success
+  for a run that would then fail, and the refusal now says which character is
+  the problem and what to do instead, instead of quoting a system error that
+  named an internal temporary file.
+
 ### Added
 
 - Keyboard shortcuts: `Ctrl+Enter` generates, `Ctrl+P` previews, `Esc` stops a
