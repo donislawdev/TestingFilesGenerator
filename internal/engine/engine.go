@@ -509,11 +509,30 @@ type nameOwner struct {
 // collisionKey is the spelling two names are compared under. Two names sharing
 // a key are one file on some filesystem somebody runs this on.
 //
-// Folding case covers NTFS, APFS and exFAT, which keep the case that was typed
+// Lowercasing covers NTFS, APFS and exFAT, which keep the case that was typed
 // and match without it. Normalising covers APFS again, which folds the two
 // spellings of an accented letter into one name. Neither step covers the other:
-// case folding leaves the two spellings apart, and normalising leaves
-// REPORT.TXT apart from report.txt.
+// lowercasing leaves the two spellings apart, and normalising leaves REPORT.TXT
+// apart from report.txt.
+//
+// Lowercasing rather than Unicode case folding, and that is a measurement
+// rather than an oversight. This said "folding case" until 2026-08-25, when an
+// outside review pointed out that the words and the code disagreed and offered
+// cases.Fold as the fix, on the grounds that Windows reads ß and SS as one
+// name. Measured here on NTFS, writing files of different lengths under both
+// spellings:
+//
+//	straße.txt and STRASSE.txt   two files
+//	k.txt and U+212A.txt         two files
+//	report.txt and REPORT.TXT    one file
+//
+// So folding would refuse a pair this filesystem keeps apart, which is a false
+// refusal of a recipe that would have worked. Lowercasing is per character and
+// one to one, which is what NTFS does with its own table.
+//
+// What is NOT measured is APFS, and that is where the review's claim would have
+// to be true for it to be worth anything. A Mac can answer it, and only that
+// answer is a reason to open this again.
 func collisionKey(name string) string {
 	return strings.ToLower(norm.NFC.String(name))
 }
@@ -932,6 +951,31 @@ func checkFileName(where, name string) error {
 		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"%s produces the name %q, which holds %s. Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere - take the character out, or ask for the file inside an archive where the name survives",
 			where, name, describeForbidden(bad))}
+
+	// One reserved device name, and one only.
+	//
+	// The folklore list has twenty two - CON, PRN, AUX, COM1 to COM9, LPT1 to
+	// LPT9 - and every one of them was measured on 2026-08-25 rather than
+	// remembered, on two editions: Windows 11 Pro 26200 and Windows Server
+	// 2025 build 26100. con, con.txt, prn, aux, com1, com1.bin, lpt1 and
+	// conin$ each came back an ordinary file that verify then passed, on both.
+	// Refusing that list would refuse con.pdf, a name both systems store
+	// perfectly well, which is a rule written from memory doing damage.
+	//
+	// NUL is the exception on both, and it is the one worth catching, because
+	// it does not fail. The write succeeds and the bytes go nowhere, which is
+	// the silence rule broken as completely as it can be - a manifest
+	// describing a file that was never on the disk. The run is refused a step
+	// later today, by the collision check finding something at the path, and
+	// that is safe but tells the reader to remove a file nobody can remove.
+	//
+	// The bare name only. An extension saves it - nul.txt is an ordinary file
+	// on both editions - so this is not the "any extension" rule the folklore
+	// describes either.
+	case strings.EqualFold(name, "nul"):
+		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+			"%s produces the name %q, which names the null device on Windows rather than a file. Writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere - give it an extension, nul.txt is an ordinary name, or choose another one",
+			where, name)}
 
 	case name == "." || name == "..":
 		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
