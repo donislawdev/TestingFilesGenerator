@@ -69,10 +69,23 @@ func SectionLicence() string       { return say("SectionLicence", "Licence") }
 // describing label" named the mechanism instead of saying what happens. The
 // recipe keys, the flags and the manifest fields are all untouched: this is
 // what the window shows, and those are a contract.
+//
+// Two more were read again on 2026-08-25, once the line under each field had
+// moved behind its button and the label became the only word left standing.
+//
+// "How many" is now "How many files". How many of what was answerable from the
+// two fields beside it and from nothing on the field itself, and the line that
+// used to answer it is behind a button somebody has to press.
+//
+// "Group name" is now "Batch name", which is the word already on the screen:
+// the tab says Single batch and each block on the other screen is headed
+// Batch 1. Group named nothing a person could point at, and it was chosen in
+// the first place to avoid colliding with the setting below - see FieldGroup,
+// where that collision is now gone.
 func FieldFormat() string       { return say("FieldFormat", "Format") }
 func FieldSize() string         { return say("FieldSize", "Size") }
-func FieldCount() string        { return say("FieldCount", "How many") }
-func FieldTargetID() string     { return say("FieldTargetID", "Group name") }
+func FieldCount() string        { return say("FieldCount", "How many files") }
+func FieldTargetID() string     { return say("FieldTargetID", "Batch name") }
 func FieldNameTemplate() string { return say("FieldNameTemplate", "File names") }
 func FieldOutputDir() string    { return say("FieldOutputDir", "Output directory") }
 func FieldSeed() string         { return say("FieldSeed", "Seed") }
@@ -263,16 +276,22 @@ func ContentsHeading() string { return say("ContentsHeading", "Files inside each
 // Field labels used only on the recipe screen. The rest are shared with the
 // single batch screen, because the same setting keeps the same word.
 //
-// FieldGroup is "Class" rather than "Group", and the reason is a collision
-// already in the window: the single batch screen labels a target's id "Group
-// name", because that is what an id does for the person looking at it. Two
-// fields called group on one screen would be worse than a word chosen for the
-// idea, and a class of case is what this actually is.
+// FieldGroup was "Class" until 2026-08-25, and "Class" was itself a way around
+// a collision: a target's id was labelled "Group name", so two fields on one
+// screen would have been called group. That collision went when the id became
+// "Batch name", and what was left was a single word naming nothing a person
+// could point at. It says what it does now.
+//
+// FieldReason was "Why", which reads as an invitation to write a sentence. It
+// takes one value from a closed list and the list is of rules - a file a byte
+// under a size limit is expected to be accepted, and the rule in play is still
+// the size limit. The label says that now, so the menu under it is no longer a
+// surprise.
 func FieldSizeRange() string { return say("FieldSizeRange", "Size range") }
 func FieldBoundary() string  { return say("FieldBoundary", "Around a limit") }
-func FieldGroup() string     { return say("FieldGroup", "Class") }
+func FieldGroup() string     { return say("FieldGroup", "Kind of case") }
 func FieldExpected() string  { return say("FieldExpected", "Expected outcome") }
-func FieldReason() string    { return say("FieldReason", "Why") }
+func FieldReason() string    { return say("FieldReason", "Rule being tested") }
 func FieldManifest() string  { return say("FieldManifest", "Manifest file name") }
 
 // The line under each of the recipe screen's own fields.

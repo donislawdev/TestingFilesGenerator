@@ -89,17 +89,17 @@
 																		<container size="808x64">
 																			<container size="401x64">
 																				<container size="401x32">
-																					<widget size="98x32" type="*widget.Label">
-																						<widget size="98x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="86x19">Group name</text>
+																					<widget size="95x32" type="*widget.Label">
+																						<widget size="95x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="83x19">Batch name</text>
 																						</widget>
 																					</widget>
-																					<widget pos="98,0" size="19x32" type="*parts.RequiredMark">
+																					<widget pos="95,0" size="19x32" type="*parts.RequiredMark">
 																						<widget size="19x32" type="*widget.RichText">
 																							<text bold color="error" pos="6,6" size="7x19">*</text>
 																						</widget>
 																					</widget>
-																					<widget pos="123,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="121,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -126,7 +126,7 @@
 																			<container pos="407,0" size="401x64">
 																				<widget size="401x31" type="*widget.Label">
 																					<widget size="401x31" type="*widget.RichText">
-																						<text bold pos="6,6" size="74x19">How many</text>
+																						<text bold pos="6,6" size="106x19">How many files</text>
 																					</widget>
 																				</widget>
 																				<container pos="0,32" size="401x31">
@@ -298,12 +298,12 @@
 																			</container>
 																			<container pos="407,0" size="401x64">
 																				<container size="401x32">
-																					<widget size="47x32" type="*widget.Label">
-																						<widget size="47x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="35x19">Class</text>
+																					<widget size="95x32" type="*widget.Label">
+																						<widget size="95x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="83x19">Kind of case</text>
 																						</widget>
 																					</widget>
-																					<widget pos="53,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="101,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -360,12 +360,12 @@
 																			</container>
 																			<container pos="407,0" size="401x58">
 																				<container size="401x32">
-																					<widget size="42x32" type="*widget.Label">
-																						<widget size="42x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="30x19">Why</text>
+																					<widget size="134x32" type="*widget.Label">
+																						<widget size="134x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="122x19">Rule being tested</text>
 																						</widget>
 																					</widget>
-																					<widget pos="48,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="140,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -524,17 +524,17 @@
 																		<container size="808x64">
 																			<container size="401x64">
 																				<container size="401x32">
-																					<widget size="98x32" type="*widget.Label">
-																						<widget size="98x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="86x19">Group name</text>
+																					<widget size="95x32" type="*widget.Label">
+																						<widget size="95x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="83x19">Batch name</text>
 																						</widget>
 																					</widget>
-																					<widget pos="98,0" size="19x32" type="*parts.RequiredMark">
+																					<widget pos="95,0" size="19x32" type="*parts.RequiredMark">
 																						<widget size="19x32" type="*widget.RichText">
 																							<text bold color="error" pos="6,6" size="7x19">*</text>
 																						</widget>
 																					</widget>
-																					<widget pos="123,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="121,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -561,7 +561,7 @@
 																			<container pos="407,0" size="401x64">
 																				<widget size="401x31" type="*widget.Label">
 																					<widget size="401x31" type="*widget.RichText">
-																						<text bold pos="6,6" size="74x19">How many</text>
+																						<text bold pos="6,6" size="106x19">How many files</text>
 																					</widget>
 																				</widget>
 																				<container pos="0,32" size="401x31">
@@ -733,12 +733,12 @@
 																			</container>
 																			<container pos="407,0" size="401x64">
 																				<container size="401x32">
-																					<widget size="47x32" type="*widget.Label">
-																						<widget size="47x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="35x19">Class</text>
+																					<widget size="95x32" type="*widget.Label">
+																						<widget size="95x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="83x19">Kind of case</text>
 																						</widget>
 																					</widget>
-																					<widget pos="53,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="101,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
@@ -795,12 +795,12 @@
 																			</container>
 																			<container pos="407,0" size="401x58">
 																				<container size="401x32">
-																					<widget size="42x32" type="*widget.Label">
-																						<widget size="42x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="30x19">Why</text>
+																					<widget size="134x32" type="*widget.Label">
+																						<widget size="134x32" type="*widget.RichText">
+																							<text bold pos="6,6" size="122x19">Rule being tested</text>
 																						</widget>
 																					</widget>
-																					<widget pos="48,0" size="32x32" type="*parts.DetailButton">
+																					<widget pos="140,0" size="32x32" type="*parts.DetailButton">
 																						<rectangle radius="5" size="32x32"/>
 																						<rectangle size="32x32"/>
 																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>

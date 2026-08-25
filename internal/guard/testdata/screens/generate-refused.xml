@@ -118,12 +118,12 @@
 																	</container>
 																	<container pos="407,0" size="401x64">
 																		<container size="401x31">
-																			<widget size="86x31" type="*widget.Label">
-																				<widget size="86x31" type="*widget.RichText">
-																					<text bold pos="6,6" size="74x19">How many</text>
+																			<widget size="118x31" type="*widget.Label">
+																				<widget size="118x31" type="*widget.RichText">
+																					<text bold pos="6,6" size="106x19">How many files</text>
 																				</widget>
 																			</widget>
-																			<widget pos="86,0" size="19x31" type="*parts.RequiredMark">
+																			<widget pos="118,0" size="19x31" type="*parts.RequiredMark">
 																				<widget size="19x31" type="*widget.RichText">
 																					<text bold color="error" pos="6,6" size="7x19">*</text>
 																				</widget>
@@ -160,17 +160,17 @@
 																<container size="808x64">
 																	<container size="401x64">
 																		<container size="401x32">
-																			<widget size="98x32" type="*widget.Label">
-																				<widget size="98x32" type="*widget.RichText">
-																					<text bold pos="6,6" size="86x19">Group name</text>
+																			<widget size="95x32" type="*widget.Label">
+																				<widget size="95x32" type="*widget.RichText">
+																					<text bold pos="6,6" size="83x19">Batch name</text>
 																				</widget>
 																			</widget>
-																			<widget pos="98,0" size="19x32" type="*parts.RequiredMark">
+																			<widget pos="95,0" size="19x32" type="*parts.RequiredMark">
 																				<widget size="19x32" type="*widget.RichText">
 																					<text bold color="error" pos="6,6" size="7x19">*</text>
 																				</widget>
 																			</widget>
-																			<widget pos="123,0" size="32x32" type="*parts.DetailButton">
+																			<widget pos="121,0" size="32x32" type="*parts.DetailButton">
 																				<rectangle radius="5" size="32x32"/>
 																				<rectangle size="32x32"/>
 																				<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>

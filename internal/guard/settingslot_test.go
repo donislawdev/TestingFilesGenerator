@@ -186,11 +186,11 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"paragraphs": "a", "rows": "a", "columns": "a", "slides": "a",
 		"depth": "a", "colours": "a", "records": "a", "lines": "a",
 		// Labels, which is what a window shows.
-		"Group name": "a", "How many": "a", "File names": "a", "Size": "a",
-		"Format": "a", "Seed": "a", "Output directory": "an", "Class": "a",
+		"Batch name": "a", "How many files": "a", "File names": "a", "Size": "a",
+		"Format": "a", "Seed": "a", "Output directory": "an", "Kind of case": "a",
 		"Around a limit": "an", "Size range": "a", "Expected outcome": "an",
-		"Why": "a", "Manifest file name": "a", "Preset": "a", "Limit": "a",
-		"Spread": "a", "Width": "a", "Height": "a",
+		"Rule being tested": "a", "Manifest file name": "a", "Preset": "a",
+		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a",
 		"Write a label inside each file": "a",
 	}
 

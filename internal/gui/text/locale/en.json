@@ -109,7 +109,7 @@
   },
   "FieldCount": {
     "description": "The name above a box somebody fills in.",
-    "other": "How many"
+    "other": "How many files"
   },
   "FieldExpected": {
     "description": "The name above a box somebody fills in.",
@@ -121,7 +121,7 @@
   },
   "FieldGroup": {
     "description": "The name above a box somebody fills in.",
-    "other": "Class"
+    "other": "Kind of case"
   },
   "FieldLabel": {
     "description": "The name above a box somebody fills in.",
@@ -145,7 +145,7 @@
   },
   "FieldReason": {
     "description": "The name above a box somebody fills in.",
-    "other": "Why"
+    "other": "Rule being tested"
   },
   "FieldSeed": {
     "description": "The name above a box somebody fills in.",
@@ -161,7 +161,7 @@
   },
   "FieldTargetID": {
     "description": "The name above a box somebody fills in.",
-    "other": "Group name"
+    "other": "Batch name"
   },
   "HeadingGenerate": {
     "description": "The heading at the top of a screen.",
