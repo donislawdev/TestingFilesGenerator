@@ -261,6 +261,18 @@ targets:
 				}
 				got = append(got, p.At)
 				assertAddressResolves(t, known, p.At, p.What)
+				// And it carries the parts a refusal in this tool is made of -
+				// what happened, why, what to do instead (D6). Asked of every
+				// case here rather than of one recipe, because a path that
+				// leaves one of them empty prints a bare dash where the reason
+				// should be, and that is exactly what the first version of the
+				// property check did on 2026-08-25.
+				if p.Why == "" || p.Fix == "" {
+					t.Errorf("the refusal %q at %s has no %s.\n"+
+						"A refusal here says what happened, why, and what to do instead - a missing\n"+
+						"part prints as a bare dash rather than as nothing.",
+						p.What, p.At, missingPart(p.Why, p.Fix))
+				}
 			}
 
 			if strings.Join(got, ", ") != strings.Join(c.want, ", ") {
@@ -447,4 +459,17 @@ func assertAddressResolves(t *testing.T, known map[string]bool, at, what string)
 		"recipe.Keys() derives from the structures that read a recipe. An address\n"+
 		"nothing can resolve is worse than none: a surface would look for a box\n"+
 		"under that name, find nothing, and say nothing about it.", at, what, key)
+}
+
+// missingPart names which half of a refusal is absent, so the failure says it
+// rather than leaving somebody to compare two empty strings.
+func missingPart(why, fix string) string {
+	switch {
+	case why == "" && fix == "":
+		return "why and no fix"
+	case why == "":
+		return "why"
+	default:
+		return "fix"
+	}
 }

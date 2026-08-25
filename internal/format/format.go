@@ -335,12 +335,36 @@ type UnknownPropertyError struct {
 // about a declared setting that still landed at the foot of the form.
 func (e *UnknownPropertyError) AboutSetting() string { return e.Key }
 
-func (e *UnknownPropertyError) Error() string {
+// Why this is refused, for a report that keeps the four parts of D6 apart.
+func (e *UnknownPropertyError) Why() string {
+	return "a format takes only the settings it declares, and one it does not know would be dropped on the way"
+}
+
+// Instead is what to do about it, named from the declaration.
+func (e *UnknownPropertyError) Instead() string {
+	if len(e.Known) == 0 {
+		return "remove the line"
+	}
+	return "use one of: " + strings.Join(e.Known, ", ")
+}
+
+// What happened, without the list of names. Kept apart from Error so a report
+// with four parts does not print the names twice - once in the sentence and
+// again in what to do instead.
+func (e *UnknownPropertyError) What() string {
 	if len(e.Known) == 0 {
 		return fmt.Sprintf("%s takes no properties, so %q is not one of them", e.Format, e.Key)
 	}
-	return fmt.Sprintf("%s does not have a property called %q. It takes: %s",
-		e.Format, e.Key, strings.Join(e.Known, ", "))
+	return fmt.Sprintf("%s does not have a property called %q", e.Format, e.Key)
+}
+
+// Error is the whole thing in one sentence, unchanged to the character - it is
+// what the one-target path from the command line flags prints.
+func (e *UnknownPropertyError) Error() string {
+	if len(e.Known) == 0 {
+		return e.What()
+	}
+	return e.What() + ". It takes: " + strings.Join(e.Known, ", ")
 }
 
 // PropertyValueError is a declared key given a value the declaration forbids.

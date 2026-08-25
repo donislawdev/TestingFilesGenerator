@@ -527,7 +527,15 @@ func askTheFormat(p *problems, where spot, formatID string, stated map[string]st
 				core.InTheWordsOf(value.Reason, value.Key), value.Instead)
 			continue
 		}
-		p.add(at, fmt.Sprintf("%s: %s", where, bad.Error()), "",
-			"use one of the properties the format declares")
+		var unknown *format.UnknownPropertyError
+		if errors.As(bad, &unknown) {
+			p.add(at, fmt.Sprintf("%s: %s", where, unknown.What()),
+				unknown.Why(), unknown.Instead())
+			continue
+		}
+		// A kind of problem this does not know the shape of. It still names its
+		// box, and the sentence still arrives whole - an empty why would print
+		// as a bare dash, which is what the first version of this did.
+		p.add(at, fmt.Sprintf("%s: %s", where, bad.Error()), "", "")
 	}
 }
