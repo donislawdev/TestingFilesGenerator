@@ -434,7 +434,20 @@ jobs:
         # in the tree as it stands. The guard that keeps concurrency confined to
         # two files lives in internal/guard, so this and that one answer
         # different halves of the same worry.
-        run: go test ./... -count=1 -race
+        #
+        # The timeout is stated rather than left to Go, since 2026-08-25. Go
+        # allows ten minutes PER PACKAGE by default, the job above allows thirty
+        # for all of it, and internal/guard went past the first of those without
+        # coming near the second - so the run died on a limit nobody had chosen,
+        # in a test that happened to be running when the alarm went off, with a
+        # stack trace instead of a failure. The number in the comment above this
+        # job says it was 10m31s on 2026-08-20, which is how close to the line it
+        # already was.
+        #
+        # Race instrumentation costs five to twenty times the wall clock, and
+        # this package renders twenty five screens and builds two binaries. The
+        # job's own thirty minutes is the ceiling that means something.
+        run: go test ./... -count=1 -race -timeout 25m
 
   coverage:
     name: coverage gate
