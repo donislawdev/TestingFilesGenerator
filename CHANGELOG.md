@@ -77,6 +77,12 @@ because it turns other people's test suites red.
   1024s, and the count is the only place on the screen that says so without
   being asked.
 
+- A run refused for asking too many files, or for a total too large to measure,
+  now says which batch took it over the line. Both limits are about the whole
+  run, so the message always was - but the box you can change belongs to one
+  batch, and on a form with twenty of them "this run asks for 1000001 files"
+  with nothing marked left you to work out which. The window marks it and
+  `validate --json` carries `"at": "targets[2].count"`.
 - **Exit code:** a recipe asking for a format setting the format will not take
   now ends with `3` (the recipe is wrong) rather than `4` (the format cannot do
   it). The check moved into the recipe reader so the refusal could name its
