@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 )
@@ -165,5 +166,80 @@ func TestADryRunSeesAFullDiskAndStillWritesNothing(t *testing.T) {
 	}
 	if len(entries) != 0 {
 		t.Errorf("the dry run left %d entries behind and it must write nothing at all", len(entries))
+	}
+}
+
+// A target cannot be given the name the manifest is about to need.
+//
+// The same loss as the test above, reached from the other side and by a route
+// nothing stopped. Measured on 2026-08-25 before the fix: the run wrote every
+// file, renamed the last of them over the empty file the manifest had claimed,
+// and then refused to save the manifest because that name was no longer empty.
+// Exit 5, every file on the disk, no record of any of them - and cleanup works
+// from the record. Three files with a recipe asking for three, ten thousand
+// with a recipe asking for ten thousand.
+//
+// Planning is where this belongs, because validate and --dry-run both call it
+// and both were calling such a run fine. The refusal has to arrive before the
+// first byte or two of the three surfaces go on lying.
+func TestNoTargetCanTakeTheNameTheManifestNeeds(t *testing.T) {
+	for _, c := range []struct {
+		about    string
+		manifest string
+		taken    string
+	}{
+		// Nobody has to name a manifest for the run to have one, so the
+		// unnamed case is the one a person reaches without trying.
+		{"the manifest nobody named", "", engine.DefaultManifestName},
+		{"a manifest the recipe named", "records.json", "records.json"},
+	} {
+		t.Run(c.about, func(t *testing.T) {
+			dir := t.TempDir()
+			opt := engine.Options{OutDir: dir, Seed: 7741, Command: "test", ManifestName: c.manifest}
+			target := txtTarget("files", 1, 4096)
+			target.NameTmpl = c.taken
+
+			planned, err := engine.Plan([]engine.Target{target}, opt)
+			if err == nil {
+				// Carried through so the failure says what it costs rather
+				// than only that a check is missing. This is the wreckage the
+				// refusal exists to prevent, printed from the wreckage itself.
+				res, runErr := engine.Run(context.Background(), planned, opt)
+				left, _ := os.ReadDir(dir)
+				saveErr := error(nil)
+				if runErr == nil {
+					saveErr = res.Manifest.Save(filepath.Join(dir, engine.DefaultManifestName))
+				}
+				t.Fatalf("planning allowed a target to take %q, the name the manifest needs. "+
+					"The run then left %d entries in the directory and saving the manifest said %v",
+					c.taken, len(left), saveErr)
+			}
+
+			var refusal *engine.RecipeError
+			if !errors.As(err, &refusal) {
+				t.Fatalf("planning refused with %T, expected a RecipeError a surface can place", err)
+			}
+			// The name template is the box to point at. A run that never named
+			// a manifest still has one, so output.manifest can be a box nobody
+			// filled in - and a refusal pointing at an empty box is the defect
+			// this window spent 2026-08-05 removing.
+			if want := core.TargetAddress(1, engine.SettingName); refusal.AboutSetting() != want {
+				t.Errorf("the refusal is addressed to %q, expected %q - "+
+					"a screen places it by that address and nothing else",
+					refusal.AboutSetting(), want)
+			}
+			if refusal.Why() == "" || refusal.Instead() == "" {
+				t.Errorf("the refusal carries what=%q why=%q fix=%q and every one of the three has to be there",
+					refusal.What(), refusal.Why(), refusal.Instead())
+			}
+
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				t.Fatalf("reading the directory: %v", err)
+			}
+			if len(entries) != 0 {
+				t.Errorf("the refused run left %d entries behind", len(entries))
+			}
+		})
 	}
 }

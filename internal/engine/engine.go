@@ -17,8 +17,6 @@ import (
 	"runtime"
 	"strings"
 
-	"golang.org/x/text/unicode/norm"
-
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -302,6 +300,20 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			return nil, err
 		}
 	}
+	// The manifest holds its name before any target can take it, because a file
+	// landing on that name is the worst ending this tool has. Measured on
+	// 2026-08-25: the run wrote every file, renamed the last one over the
+	// manifest's claim, and then refused to save the manifest because the name
+	// was no longer empty - exit 5, files on the disk, and nothing that could
+	// remove them. validate and --dry-run both called it fine, which is the
+	// same shape preflight was written to end.
+	//
+	// Seeded from manifestNameOf rather than opt.ManifestName, because a run
+	// that never names one still writes manifest.json and a target can be
+	// pointed straight at it.
+	names[collisionKey(manifestNameOf(opt))] = nameOwner{
+		name: manifestNameOf(opt), manifest: true}
+
 	if opt.OutDir == "" {
 		return nil, &RecipeError{Setting: SettingOutDir,
 			Detail: "the output directory is empty",
@@ -401,13 +413,9 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 			// which of the two to change is theirs to decide. The sentence
 			// names both ids, which is what a person needs and what a window
 			// cannot place either way.
-			key := collisionKey(name)
-			if owner, clash := names[key]; clash {
-				return nil, &RecipeError{
-					Detail: collisionDetail(owner, t.ID, name),
-					Remedy: "Give one of them a name template containing " + indexToken}
+			if err := claimFileName(names, i+1, t.ID, name); err != nil {
+				return nil, err
 			}
-			names[key] = nameOwner{id: t.ID, name: name}
 
 			if totalBytes, err = core.AddSizes(totalBytes, p.Bytes); err != nil {
 				// The size of this target, for the same reason as the ceiling
@@ -533,63 +541,6 @@ func preflight(files []PlannedFile, opt Options) error {
 // the two cannot disagree about what is being protected.
 func tempPathFor(outDir, name string) string {
 	return fmt.Sprintf("%s%s%d", filepath.Join(outDir, name), core.PartialMarker, os.Getpid())
-}
-
-// nameOwner remembers who took a name and how it was spelled, so a refusal can
-// show both names as they were written rather than as they were compared.
-type nameOwner struct {
-	id   string
-	name string
-}
-
-// collisionKey is the spelling two names are compared under. Two names sharing
-// a key are one file on some filesystem somebody runs this on.
-//
-// Lowercasing covers NTFS, APFS and exFAT, which keep the case that was typed
-// and match without it. Normalising covers APFS again, which folds the two
-// spellings of an accented letter into one name. Neither step covers the other:
-// lowercasing leaves the two spellings apart, and normalising leaves REPORT.TXT
-// apart from report.txt.
-//
-// Lowercasing rather than Unicode case folding, and that is a measurement
-// rather than an oversight. This said "folding case" until 2026-08-25, when an
-// outside review pointed out that the words and the code disagreed and offered
-// cases.Fold as the fix, on the grounds that Windows reads ß and SS as one
-// name. Measured here on NTFS, writing files of different lengths under both
-// spellings:
-//
-//	straße.txt and STRASSE.txt   two files
-//	k.txt and U+212A.txt         two files
-//	report.txt and REPORT.TXT    one file
-//
-// So folding would refuse a pair this filesystem keeps apart, which is a false
-// refusal of a recipe that would have worked. Lowercasing is per character and
-// one to one, which is what NTFS does with its own table.
-//
-// What is NOT measured is APFS, and that is where the review's claim would have
-// to be true for it to be worth anything. A Mac can answer it, and only that
-// answer is a reason to open this again.
-func collisionKey(name string) string {
-	return strings.ToLower(norm.NFC.String(name))
-}
-
-// collisionDetail says what the two names have in common. Two names that
-// collide can print identically on screen, so a refusal that only shows them is
-// one the reader cannot act on. A refusal has to say what is wrong, what is
-// allowed and what to do instead.
-func collisionDetail(owner nameOwner, id, name string) string {
-	switch {
-	case owner.name == name:
-		return fmt.Sprintf("targets %q and %q both produce a file named %s", owner.id, id, name)
-	case strings.EqualFold(owner.name, name):
-		return fmt.Sprintf(
-			"targets %q and %q produce the names %s and %s, which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both",
-			owner.id, id, owner.name, name)
-	default:
-		return fmt.Sprintf(
-			"targets %q and %q produce the names %s and %s. Those print the same because they are one name spelled two ways, an accented letter against the plain letter with its accent as a separate character. macOS stores both under one name, so one file would be written over the other and the manifest would describe both",
-			owner.id, id, owner.name, name)
-	}
 }
 
 func exists(path string) bool {

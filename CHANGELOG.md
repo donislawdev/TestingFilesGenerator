@@ -53,6 +53,15 @@ because it turns other people's test suites red.
   recipe valid that `tfg generate` refuses a second later. If you run validate
   in a pre-commit hook, that is one fewer way for a broken recipe to get past
   it.
+- A run whose files would take the name of its own manifest is now refused
+  before anything is written. It used to write every file, put one of them where
+  the manifest was going, and then stop with "file already exists" - leaving the
+  files on disk with no manifest, which means `tfg cleanup` could never remove
+  them again. It happened whenever a target produced a file named exactly what
+  the manifest is called, including the `manifest.json` a run uses when the
+  recipe does not name one. `tfg validate` and `--dry-run` both called such a
+  recipe fine, so there was no way to find out before the files were on disk.
+  All three now give the same refusal, and it says which target to change.
 
 ### Added
 
