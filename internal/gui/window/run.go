@@ -156,6 +156,10 @@ type runner struct {
 	// gave is the address to mark.
 	readdress func(string) string
 
+	// unfold opens whatever the screen has put a box away inside, so a refusal
+	// about it can be seen. Nil on a screen that folds nothing.
+	unfold func(string)
+
 	// destination is where this screen would write, asked for rather than
 	// stored, because the box it comes from is edited after this is wired.
 	// Nil on a screen that has no such box, and the status line simply stays
@@ -240,6 +244,18 @@ func (r *runner) refuse(err error) {
 	// button is, and the form moved to the first box that needs attention.
 	if len(loose) == 0 {
 		r.say(text.RefusedBeforeWriting())
+	}
+	// Anything folded away that a refusal is about is opened before the form is
+	// moved, because a box inside a fold cannot be shown by scrolling to it -
+	// and a screen that refuses to run while marking nothing anybody can see
+	// reads as a button that did nothing. This is what keeps the objection of
+	// 2026-08-18 answered rather than dodged: refusals about a batch that is
+	// not on the screen were the reason a list with one batch open at a time
+	// was rejected.
+	if r.unfold != nil {
+		for _, marked := range r.fields.Marked() {
+			r.unfold(marked)
+		}
 	}
 	if field := r.fields.Lookup(first); field != nil {
 		parts.Reveal(r.scroll, field.Control)

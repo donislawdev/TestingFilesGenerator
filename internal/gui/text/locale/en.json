@@ -23,6 +23,10 @@
     "description": "The words on a button.",
     "other": "Donate"
   },
+  "ButtonDuplicateBatch": {
+    "description": "The words on a button.",
+    "other": "Duplicate"
+  },
   "ButtonGenerate": {
     "description": "The words on a button.",
     "other": "Generate"

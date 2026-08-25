@@ -421,6 +421,22 @@ func (s *Fields) All() []*Field { return s.list }
 // setting the screen it landed on does not have.
 func (s *Fields) Lookup(setting string) *Field { return s.by[setting] }
 
+// Marked is every setting whose box is currently saying something.
+//
+// It exists for a screen that puts boxes away: scrolling cannot show a box
+// inside something folded shut, so the screen has to be told which ones to open
+// before the form is moved. Asked for by setting rather than by field, because
+// what a screen folds is named the same way everything else here is.
+func (s *Fields) Marked() []string {
+	var out []string
+	for _, f := range s.list {
+		if f.Saying() != "" {
+			out = append(out, f.Setting)
+		}
+	}
+	return out
+}
+
 // Freeze takes every control out of use while a run is going, and gives them
 // back afterwards.
 //

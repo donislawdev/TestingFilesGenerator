@@ -2,10 +2,10 @@ package window
 
 import (
 	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
@@ -109,10 +109,17 @@ type batch struct {
 	// engine refuses unreachable rather than merely discouraged.
 	sizeWay   *widget.RadioGroup
 	sizeBoxes map[string]fyne.CanvasObject
-	name      *widget.Entry
-	group     *widget.Entry
-	expected  *parts.Chooser
-	reason    *parts.Chooser
+
+	// folded is whether this batch is put away, and it is a plain bool on the
+	// batch rather than state inside the panel because the panel is built again
+	// whenever the list of batches changes. A fold that lived in the panel
+	// would spring open every time somebody added a batch.
+	folded   bool
+	fold     *parts.Folding
+	name     *widget.Entry
+	group    *widget.Entry
+	expected *parts.Chooser
+	reason   *parts.Chooser
 
 	// declared is what the chosen format takes, and props are the controls drawn
 	// from it. Both are replaced when the format changes and reused across a
@@ -140,6 +147,9 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.runner.settle = r.settle
 	// A refusal about a size belongs on the box the switch is showing.
 	r.runner.readdress = r.readdressSizeWay
+	// A box inside a folded batch cannot be brought into view by scrolling, so
+	// the fold is opened first - see runner.unfold.
+	r.runner.unfold = r.openFoldHolding
 
 	r.outDir = widget.NewEntry()
 	r.outDir.SetText(startingDirectory())
@@ -211,6 +221,7 @@ func (r *Recipe) newBatch() *batch {
 		boundary:  widget.NewEntry(),
 		name:      widget.NewEntry(),
 		group:     widget.NewEntry(),
+		sizeWay:   newSizeWaySwitch(),
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
 	// What happens if the box is left alone, in the place a box says that.
@@ -325,16 +336,12 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// Removing is offered from the second batch onwards. A screen with one batch
 	// and a Remove button invites somebody to press it and be left with a form
 	// that can produce nothing.
+	// Removing moved into the head of the fold on 2026-08-25, beside copying,
+	// so a batch that is put away is still a batch somebody can act on. It was
+	// at the right edge of the first row before that, which is where O93 put
+	// the buttons that start a run - left aligned under the title it read as a
+	// field label rather than as something to press.
 	var rows []fyne.CanvasObject
-	if len(r.batches) > 1 {
-		// At the right edge, which is where O93 put the buttons that start a
-		// run. Left aligned under the title it read as a field label rather than
-		// as something to press, which is what looking at it showed.
-		rows = append(rows, container.NewHBox(
-			layout.NewSpacer(),
-			widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }),
-		))
-	}
 
 	rows = append(rows,
 		add(recipe.KeyFormat, text.FieldFormat(), text.HintFormat(),
@@ -369,7 +376,46 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	rows = append(rows, r.declaredSettings(b, at)...)
 	rows = append(rows, r.contentsBlock(index, b))
 
-	return parts.Section(text.BatchHeading(index+1), rows...)
+	// Folded away, since 2026-08-25, and the number behind that is worth
+	// carrying: one batch is a form 913 px tall in 849 px of room and each
+	// further one adds 659 px, so ten batches is 6884 px - eight screens of
+	// scrolling for something this screen exists to make easy.
+	//
+	// The two buttons stay in the head. A folded batch that could not be copied
+	// or removed would be a batch somebody has to open to do the two things
+	// they are most likely to want from a list of them - and copying is what
+	// makes several batches quick to write in the first place, since batches
+	// usually differ from each other in one setting.
+	head := []fyne.CanvasObject{
+		widget.NewButton(text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
+	}
+	if len(r.batches) > 1 {
+		head = append(head, widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
+	}
+	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
+	// Worked out when it is folded rather than when it is built. The line is
+	// about what somebody typed, and at the moment a panel is built they have
+	// typed nothing - so a summary taken then is the summary of an empty batch
+	// forever. Found by the guard on its first run.
+	b.fold.OnChange = func(open bool) {
+		b.folded = !open
+		if !open {
+			b.fold.Say(b.summary())
+		}
+	}
+	b.fold.Say(b.summary())
+	b.fold.Set(!b.folded)
+	return b.fold.Object()
+}
+
+// summary is what this batch says about itself while it is folded away.
+func (b *batch) summary() string {
+	count := 0
+	if n, err := strconv.Atoi(strings.TrimSpace(b.count.Text)); err == nil {
+		count = n
+	}
+	return text.BatchSummary(b.id.Text, b.formatPick.Selected, count,
+		b.statedSize(b.chosenSizeKey()))
 }
 
 // declaredSettings draws the fields the chosen format declares for one batch.
@@ -500,6 +546,66 @@ func (r *Recipe) addBatch() {
 // removeBatch drops one batch. The last cannot go: a screen with no batches can
 // produce nothing, and would answer a press with a refusal about a document
 // rather than about anything anybody did.
+// duplicateBatch copies one batch and puts the copy under it.
+//
+// Batches usually differ from each other in one setting - a size, a format, a
+// count - so writing the second one from an empty form is typing the first one
+// again. The copy is a new batch with the same values rather than a shared one,
+// so changing it changes nothing else.
+//
+// The name is left empty on the copy, on purpose. Two targets with one id is a
+// refusal the recipe reader already words and addresses, and handing somebody a
+// form that is refused the moment they press a button would be a copy that has
+// to be repaired before it can be used. Empty is refused too, and it is refused
+// pointing at a box that is asking to be filled in.
+// openFoldHolding opens the batch an address belongs to.
+//
+// A refusal names the box it is about and the form scrolls to it, and neither
+// of those can show a box that has been folded away. This is what makes folding
+// safe to have on this screen at all: the objection recorded on 2026-08-18
+// against putting batches away was that a batch off the screen has no box to
+// mark, and the answer is that the screen opens it rather than that it is never
+// away.
+//
+// An address it does not recognise leaves everything as it was. Refusals about
+// the output directory or the manifest are not about a batch.
+func (r *Recipe) openFoldHolding(address string) {
+	for index, b := range r.batches {
+		if !strings.HasPrefix(address, recipe.TargetAddress(index+1, "")) {
+			continue
+		}
+		if b.fold != nil {
+			b.fold.Set(true)
+		}
+		return
+	}
+}
+
+func (r *Recipe) duplicateBatch(index int) {
+	if index < 0 || index >= len(r.batches) {
+		return
+	}
+	from := r.batches[index]
+	to := r.newBatch()
+
+	to.formatPick.SetSelected(from.formatPick.Selected)
+	to.count.SetText(from.count.Text)
+	to.size.SetText(from.size.Text)
+	to.sizeRange.SetText(from.sizeRange.Text)
+	to.boundary.SetText(from.boundary.Text)
+	to.name.SetText(from.name.Text)
+	to.group.SetText(from.group.Text)
+	to.expected.SetSelected(from.expected.Selected)
+	to.reason.SetSelected(from.reason.Selected)
+	if from.sizeWay != nil && to.sizeWay != nil {
+		to.sizeWay.SetSelected(from.sizeWay.Selected)
+	}
+
+	rest := append([]*batch{to}, r.batches[index+1:]...)
+	r.batches = append(r.batches[:index+1], rest...)
+	r.rebuild()
+}
+
 func (r *Recipe) removeBatch(index int) {
 	if len(r.batches) <= 1 || index < 0 || index >= len(r.batches) {
 		return

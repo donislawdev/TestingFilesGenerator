@@ -365,9 +365,36 @@ func HintSizeExact() string { return say("HintSizeExact", "One size for every fi
 // "only the chosen way reaches the run", which is the property rather than the
 // wording of it - see the guards named after it.
 
+// BatchSummary is the one line a folded batch shows about itself.
+//
+// A fold with nothing to say is a column of titles somebody opens one by one to
+// find the one they meant, which is a worse screen than a long one. What goes
+// in it is what tells two batches apart at a glance: the name, the kind of
+// file, how many and how big.
+//
+// Parts that are not stated are left out rather than shown empty. A batch with
+// nothing filled in says nothing, which is honest - it has nothing to say yet.
+func BatchSummary(name, format string, count int, size string) string {
+	var said []string
+	if name != "" {
+		said = append(said, name)
+	}
+	if format != "" {
+		said = append(said, format)
+	}
+	if count > 0 {
+		said = append(said, files(count))
+	}
+	if size != "" {
+		said = append(said, size)
+	}
+	return strings.Join(said, separator)
+}
+
 // Buttons on the recipe screen.
 func ButtonAddBatch() string       { return say("ButtonAddBatch", "Add a batch") }
 func ButtonRemoveBatch() string    { return say("ButtonRemoveBatch", "Remove") }
+func ButtonDuplicateBatch() string { return say("ButtonDuplicateBatch", "Duplicate") }
 func ButtonAddContents() string    { return say("ButtonAddContents", "Add files inside") }
 func ButtonRemoveContents() string { return say("ButtonRemoveContents", "Remove") }
 
