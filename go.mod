@@ -17,7 +17,18 @@ go 1.26.5
 // command line binary was clean. The byte stability guards were run under the
 // new toolchain before this line moved and none of them shifted, so D11 holds
 // and no major version is owed.
-toolchain go1.26.6
+//
+// Raised again to 1.26.7 on 2026-08-25, and the reason is different. That
+// release is not a security one - it went out on 2026-08-19 with fixes to
+// net/http, which only the window binary links and only through the toolkit.
+// What was actually wrong is that the machine this is written on had already
+// moved to 1.26.7, while this line and the workflow both said 1.26.6: a
+// toolchain line is a floor, so the local build quietly used a compiler no CI
+// job ever ran. For a project whose bytes are part of its contract, "green
+// here" and "green there" have to mean the same compiler. The byte stability
+// guards were run under 1.26.7 before this line moved and none of them
+// shifted, so D11 holds and no major version is owed.
+toolchain go1.26.7
 
 require github.com/goccy/go-yaml v1.19.2
 

@@ -51,7 +51,6 @@ because it turns other people's test suites red.
 - A finished run offers **Open folder**, which opens the directory the files
   actually went into. It appears when there is something to open and goes away
   when the next run starts.
-
 - The window folds away what a format decides for itself and the notes that
   describe the case, so the batch screen fits without scrolling for the first
   time. Both open with a click, and a run refused because of a setting inside
@@ -77,8 +76,6 @@ because it turns other people's test suites red.
   and updated as you type: `10mb` shows `10485760 B`. This tool counts in
   1024s, and the count is the only place on the screen that says so without
   being asked.
-
-### Changed
 
 - **Exit code:** a recipe asking for a format setting the format will not take
   now ends with `3` (the recipe is wrong) rather than `4` (the format cannot do
