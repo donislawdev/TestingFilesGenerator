@@ -113,11 +113,9 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 		if len(diffs) > 0 {
 			// A failed run puts nothing on stdout, so the machine readable
 			// report of a mismatch goes to stderr with the rest of the news.
-			writeJSON(errOut, report)
-			return ExitVerify
+			return writeJSON(errOut, errOut, report, ExitVerify)
 		}
-		writeJSON(out, report)
-		return ExitOK
+		return writeJSON(out, errOut, report, ExitOK)
 	}
 
 	if len(diffs) > 0 {

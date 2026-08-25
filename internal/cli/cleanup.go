@@ -85,8 +85,7 @@ Flags:
 
 	if len(cands) == 0 {
 		if *asJSON {
-			writeJSON(out, cleanupReport{Manifest: path, Directory: dir, Applied: *yes, Files: []cleanupEntry{}})
-			return ExitOK
+			return writeJSON(out, errOut, cleanupReport{Manifest: path, Directory: dir, Applied: *yes, Files: []cleanupEntry{}}, ExitOK)
 		}
 		fmt.Fprintf(errOut, "%s lists no files, so there was nothing to remove.\n", path)
 		return ExitOK
@@ -115,8 +114,7 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 			report.Files = append(report.Files, e)
 			report.WouldRemove += boolToInt(c.Removable(force))
 		}
-		writeJSON(out, report)
-		return ExitOK
+		return writeJSON(out, errOut, report, ExitOK)
 	}
 
 	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), dir)
@@ -178,11 +176,9 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		// nothing on stdout - so its report goes to stderr with the rest of the
 		// news, the same as verify.
 		if blocked > 0 {
-			writeJSON(errOut, report)
-			return ExitIO
+			return writeJSON(errOut, errOut, report, ExitIO)
 		}
-		writeJSON(out, report)
-		return ExitOK
+		return writeJSON(out, errOut, report, ExitOK)
 	}
 
 	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), dir)

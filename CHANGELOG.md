@@ -75,6 +75,17 @@ because it turns other people's test suites red.
   wrong moment could leave an empty file under the name of your manifest, or of
   the recipe you had just formatted. Generated files are still not flushed, on
   purpose: that is ten thousand of them against one of these.
+- A machine readable report that could not be written whole no longer ends with
+  a zero exit code. `tfg verify --json | head` on a large report used to hand
+  you half a document and say the run was fine, so a script parsing it failed on
+  the syntax and blamed itself. A run that had already failed keeps the code it
+  failed with - a broken pipe is not why your recipe was wrong.
+- A recipe is now refused for being too large however that size is discovered.
+  The check used to ask the directory entry before reading, which is a look
+  rather than a limit: a file can grow between the look and the read, and
+  `tfg recipe fmt` would then have formatted the first megabyte of a longer file
+  and reported success. The message and the exit code are unchanged, including
+  the size it reports. The same applies to reading a manifest.
 
 ### Added
 

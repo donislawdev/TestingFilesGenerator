@@ -324,9 +324,20 @@ func Load(path string) (*Manifest, error) {
 	if info, statErr := os.Stat(path); statErr == nil && info.Size() > MaxBytes {
 		return nil, &TooLargeError{Path: path, Bytes: info.Size()}
 	}
-	raw, err := os.ReadFile(path)
+	// And again on the bytes, because the entry is a look and not a limit. The
+	// file can grow between the two, and a named pipe or a device reports a
+	// size of zero and then hands over as much as it likes - a manifest is
+	// described as arriving from outside, with somebody else's fixture set, so
+	// that belongs to the model rather than to the imagination.
+	//
+	// One byte over the ceiling is read on purpose. Reading exactly MaxBytes
+	// cannot tell a file of that size from a longer one cut off at it.
+	raw, err := readAtMost(path, MaxBytes+1)
 	if err != nil {
 		return nil, err
+	}
+	if int64(len(raw)) > MaxBytes {
+		return nil, &TooLargeError{Path: path, Bytes: int64(len(raw))}
 	}
 	var m Manifest
 	if err := json.Unmarshal(raw, &m); err != nil {
@@ -544,4 +555,19 @@ func claimName(path string) error {
 		return err
 	}
 	return f.Close()
+}
+
+// readAtMost reads a file and stops at limit bytes.
+//
+// os.ReadFile has no ceiling: it asks the entry how big the file is, uses that
+// as a starting size and then keeps reading until the end, whatever the entry
+// said. For anything that is not an ordinary file, or an ordinary file somebody
+// is still writing, that is unbounded.
+func readAtMost(path string, limit int64) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return io.ReadAll(io.LimitReader(f, limit))
 }

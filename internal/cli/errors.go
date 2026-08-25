@@ -116,6 +116,17 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &syntax) {
 		return ExitRecipe, true
 	}
+	// A recipe too large to read is a recipe problem, the same as one that does
+	// not parse. The command checks the size on the directory entry and answers
+	// this itself, so the path here is the narrow one: the file grew between
+	// that look and the read, and recipe.Parse asks again on the bytes it got.
+	// Without this the answer was RUNTIME, which tells CI to file a report
+	// against this tool for a file somebody handed it - the same mistake the
+	// manifest twin of this error already had a comment about.
+	var recipeTooLarge *recipe.TooLargeError
+	if errors.As(err, &recipeTooLarge) {
+		return ExitRecipe, true
+	}
 	// Two parts of one recipe saying different things about the same archive
 	// is a recipe problem, like a boundary stated beside a size.
 	var conflict *format.ContentsConflictError

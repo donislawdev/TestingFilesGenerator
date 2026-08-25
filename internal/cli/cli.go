@@ -213,10 +213,29 @@ func describingFlagsGiven(given map[string]bool) []string {
 	return bad
 }
 
-func writeJSON(w io.Writer, v any) {
+// writeJSON renders a machine readable report and says what the command should
+// end with.
+//
+// The exit code comes in and goes out again, because a report that could not be
+// written whole is only news when there was no other news. A command that
+// already failed has a better answer than "the pipe broke", and replacing it
+// would take away the reason it failed.
+//
+// The error was dropped here until 2026-08-25, so "tfg verify --json | head"
+// ended with code 0 and half a document. Every machine report of this tool goes
+// through this function, which is why it was worth one place rather than
+// thirteen - and formats.go had been checking it all along, so the two ways out
+// of the same tool behaved differently.
+func writeJSON(w, errOut io.Writer, v any, code int) int {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
-	enc.Encode(v)
+	if err := enc.Encode(v); err != nil {
+		fmt.Fprintf(errOut, "tfg: the report could not be written whole: %s\n", describeError(err))
+		if code == ExitOK {
+			return ExitIO
+		}
+	}
+	return code
 }
 
 type propertyFlag map[string]string

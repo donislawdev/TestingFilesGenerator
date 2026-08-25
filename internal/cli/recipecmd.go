@@ -14,31 +14,12 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
-// tooLargeToRead reports a recipe past the limit, checked on the directory
-// entry rather than after loading.
-//
-// "Read it all, then say it was too big" is not a limit - the cost was already
-// paid by then. One helper for all three commands that take a recipe, so none
-// of them can be the one that forgets.
-func tooLargeToRead(path string) error {
-	info, err := os.Stat(path)
-	if err != nil || info.Size() <= recipe.MaxBytes {
-		// A path that cannot be examined is not refused here. The read below
-		// gives the better message for it.
-		return nil
-	}
-	return &recipe.TooLargeError{Name: path, Bytes: info.Size()}
-}
-
 func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
-	if err := tooLargeToRead(path); err != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", err)
-		return nil, "", ExitRecipe
-	}
-	src, err := os.ReadFile(path)
+	src, err := readRecipe(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))
-		return nil, "", ExitIO
+		said, code := recipeReadFailure(path, err)
+		fmt.Fprintf(errOut, "tfg: %s\n", said)
+		return nil, "", code
 	}
 	rec, err := recipe.Parse(src, path)
 	if err != nil {
@@ -101,22 +82,20 @@ func validate(args []string, out, errOut io.Writer) int {
 	planned, err := engine.Plan(targets, planningOptions(rec))
 	if err != nil {
 		if *asJSON {
-			writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-				Problems: []validateProblem{problemOf(err)}})
-			return classify(err)
+			return writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
+				Problems: []validateProblem{problemOf(err)}}, classify(err))
 		}
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
 	}
 
 	if *asJSON {
-		writeJSON(out, validateReport{
+		return writeJSON(out, errOut, validateReport{
 			Recipe: path, Valid: true, RecipeHash: hash,
 			Targets: len(rec.Targets), Files: len(planned),
 			TotalBytes: engine.TotalBytes(planned),
 			Problems:   []validateProblem{},
-		})
-		return ExitOK
+		}, ExitOK)
 	}
 
 	fmt.Fprintf(out, "%s is valid: %s, %s, %d B total\n%s\n",
@@ -221,16 +200,11 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 	if !asJSON {
 		return loadRecipe(path, errOut)
 	}
-	if err := tooLargeToRead(path); err != nil {
-		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-			Problems: []validateProblem{{What: err.Error()}}})
-		return nil, "", ExitRecipe
-	}
-	src, err := os.ReadFile(path)
+	src, err := readRecipe(path)
 	if err != nil {
-		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-			Problems: []validateProblem{{What: fmt.Sprintf("cannot read the recipe: %v", err)}}})
-		return nil, "", ExitIO
+		said, code := recipeReadFailure(path, err)
+		return nil, "", writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{{What: said}}}, code)
 	}
 	rec, err := recipe.Parse(src, path)
 	if err != nil {
@@ -243,14 +217,12 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 		} else {
 			report.Problems = append(report.Problems, validateProblem{What: err.Error()})
 		}
-		writeJSON(errOut, report)
-		return nil, "", classify(err)
+		return nil, "", writeJSON(errOut, errOut, report, classify(err))
 	}
 	hash, err := recipe.Hash(src)
 	if err != nil {
-		writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-			Problems: []validateProblem{{What: err.Error()}}})
-		return nil, "", classify(err)
+		return nil, "", writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{{What: err.Error()}}}, classify(err))
 	}
 	return rec, hash, ExitOK
 }
@@ -303,14 +275,11 @@ Flags:
 		return ExitUsage
 	}
 
-	if err := tooLargeToRead(path); err != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", err)
-		return ExitRecipe
-	}
-	src, err := os.ReadFile(path)
+	src, err := readRecipe(path)
 	if err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot read the recipe %s: %s\n", path, describeError(err))
-		return ExitIO
+		said, code := recipeReadFailure(path, err)
+		fmt.Fprintf(errOut, "tfg: %s\n", said)
+		return code
 	}
 
 	canon, err := recipe.Canonical(src, path)
@@ -349,4 +318,64 @@ Flags:
 	// that already refuses to write over anything.
 	out.Write(canon)
 	return ExitOK
+}
+
+// readRecipe reads a recipe file and refuses one that is over the ceiling.
+//
+// One rule in one place, and it used to be two. A helper asked the directory
+// entry before the read and this asked nothing, which is the pattern this
+// project keeps finding: an entry is a look, not a limit. The file can grow
+// between the look and the read, and a named pipe reports a size of zero and
+// then hands over as much as it likes. os.ReadFile has no ceiling of its own -
+// it takes the entry as a starting size and reads to the end whatever that
+// entry said.
+//
+// Reading a megabyte before refusing is the price, and it is the reason the
+// look existed. It buys a rule nothing can get past and a refusal every one of
+// the three readers gets for free - including recipe.Canonical, which asks
+// about the shape of a document and says so in its own comment, so it would
+// have formatted the first megabyte of a longer file and reported success.
+//
+// The size in the refusal is still the real one: it is asked of the open file
+// after the read rather than of the path before it.
+//
+// One byte past the ceiling is read on purpose: reading exactly MaxBytes cannot
+// tell a recipe of that size from a longer one cut off at it.
+func readRecipe(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	src, err := io.ReadAll(io.LimitReader(f, recipe.MaxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(src)) <= recipe.MaxBytes {
+		return src, nil
+	}
+	// Asked again, and of the open file rather than the path, so a file that
+	// grew is reported at the size it grew to. A pipe answers zero and the
+	// count of what was read stands in - one past the ceiling, which is all
+	// anybody can say about something that has no size to ask for.
+	bytes := int64(len(src))
+	if info, statErr := f.Stat(); statErr == nil && info.Size() > bytes {
+		bytes = info.Size()
+	}
+	return nil, &recipe.TooLargeError{Name: path, Bytes: bytes}
+}
+
+// recipeReadFailure says what to print and what to end with when a recipe
+// cannot be taken.
+//
+// A refusal of ours is already a sentence and already has a code in the table,
+// so it is passed through classify rather than answered here twice. A disk
+// error is not a sentence and has to say which file it was about.
+func recipeReadFailure(path string, err error) (string, int) {
+	var refusal *recipe.TooLargeError
+	if errors.As(err, &refusal) {
+		return err.Error(), classify(err)
+	}
+	return fmt.Sprintf("cannot read the recipe %s: %s", path, describeError(err)), ExitIO
 }
