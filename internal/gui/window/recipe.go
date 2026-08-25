@@ -137,7 +137,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// were the only boxes on any screen where "you may leave this" and "you
 	// must fill this in" looked the same. See the note on newBatch.
 	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
-	r.label = parts.NewToggle(text.FieldLabel, nil)
+	r.label = parts.NewToggle(text.FieldLabel(), nil)
 
 	r.batchBox = parts.FieldColumn()
 	r.outBox = parts.FieldColumn()
@@ -147,7 +147,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// screen what it is does not depend on scrolling to reach - see rebuild.
 	// It is disabled with the rest of the form while a run is going, because
 	// adding a batch mid run would rebuild the form under the run.
-	r.addBtn = widget.NewButton(text.ButtonAddBatch, r.addBatch)
+	r.addBtn = widget.NewButton(text.ButtonAddBatch(), r.addBatch)
 	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
 
 	r.body = r.tips.Over(container.NewBorder(
@@ -155,7 +155,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
 			r.actions(), r.progress(), r.problem.Object()),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe, r.batchBox, r.outBox)))),
+		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -216,16 +216,16 @@ func (r *Recipe) newBatch() *batch {
 	// drawn identically. The rule this closes is worth more than the two
 	// fields: a box with a hint may be left alone, a box with nothing in it
 	// may not, and TestABoxYouMayLeaveAloneSaysSo holds it from the registry.
-	b.group.SetPlaceHolder(text.PlaceholderNotStated)
+	b.group.SetPlaceHolder(text.PlaceholderNotStated())
 
 	// Nothing is filled in with a default, on either list. A list carrying a
 	// value cannot say "I did not state this", and an expectation nobody stated
 	// has to stay unstated - manifest rule MF5, because an invented expectation
 	// produces false failures in somebody else's test run.
 	b.expected = parts.NewChooser(recipe.Outcomes(), nil)
-	b.expected.PlaceHolder = text.PlaceholderNotStated
+	b.expected.PlaceHolder = text.PlaceholderNotStated()
 	b.reason = parts.NewChooser(recipe.Reasons(), nil)
-	b.reason.PlaceHolder = text.PlaceholderNotStated
+	b.reason.PlaceHolder = text.PlaceholderNotStated()
 
 	b.formatPick = parts.NewChooser(format.IDs(), func(id string) {
 		b.formatPick.KindOf = parts.KindOfFile
@@ -312,17 +312,17 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		// as something to press, which is what looking at it showed.
 		rows = append(rows, container.NewHBox(
 			layout.NewSpacer(),
-			widget.NewButton(text.ButtonRemoveBatch, func() { r.removeBatch(index) }),
+			widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }),
 		))
 	}
 
 	rows = append(rows,
-		add(recipe.KeyFormat, text.FieldFormat, text.HintFormat,
-			r.tips.Say(text.DetailFormat), b.formatPick),
+		add(recipe.KeyFormat, text.FieldFormat(), text.HintFormat(),
+			r.tips.Say(text.DetailFormat()), b.formatPick),
 		r.fields.Row(
-			add(recipe.KeyID, text.FieldTargetID, text.HintTargetID,
-				r.tips.Say(text.DetailTargetID), b.id),
-			add(recipe.KeyCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(b.count)),
+			add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
+				r.tips.Say(text.DetailTargetID()), b.id),
+			add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
 		),
 		// Three ways of saying how big, on one row and the same width, because
 		// they answer one question and somebody fills in exactly one. Stating two
@@ -331,26 +331,26 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		//
 		// One of the three was a narrow box until this was looked at, which made
 		// three alternatives read as three unrelated fields.
-		parts.Note(text.OneSizeSettingOnly),
+		parts.Note(text.OneSizeSettingOnly()),
 		r.fields.Row(
-			add(recipe.KeySize, text.FieldSize, text.HintSizeExact,
-				r.tips.Say(text.DetailSize), b.size),
-			add(recipe.KeySizeRange, text.FieldSizeRange, text.HintSizeRange,
-				r.tips.Say(text.DetailSizeRange), b.sizeRange),
-			add(recipe.KeyBoundary, text.FieldBoundary, text.HintBoundary,
-				r.tips.Say(text.DetailBoundary), b.boundary),
+			add(recipe.KeySize, text.FieldSize(), text.HintSizeExact(),
+				r.tips.Say(text.DetailSize()), b.size),
+			add(recipe.KeySizeRange, text.FieldSizeRange(), text.HintSizeRange(),
+				r.tips.Say(text.DetailSizeRange()), b.sizeRange),
+			add(recipe.KeyBoundary, text.FieldBoundary(), text.HintBoundary(),
+				r.tips.Say(text.DetailBoundary()), b.boundary),
 		),
 		r.fields.Row(
-			add(recipe.KeyName, text.FieldNameTemplate, text.HintNameTemplate,
-				r.tips.Say(text.DetailNameTemplate), b.name),
-			add(recipe.KeyGroup, text.FieldGroup, text.HintGroup,
-				r.tips.Say(text.DetailGroup), b.group),
+			add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
+				r.tips.Say(text.DetailNameTemplate()), b.name),
+			add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
+				r.tips.Say(text.DetailGroup()), b.group),
 		),
 		r.fields.Row(
-			add(recipe.KeyExpected, text.FieldExpected, text.HintExpected,
-				r.tips.Say(text.DetailExpected), b.expected),
-			add(recipe.KeyExpectedReason, text.FieldReason, text.HintReason,
-				r.tips.Say(text.DetailReason), b.reason),
+			add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
+				r.tips.Say(text.DetailExpected()), b.expected),
+			add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
+				r.tips.Say(text.DetailReason()), b.reason),
 		),
 	)
 
@@ -410,7 +410,7 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) []fyne.Canva
 // leads to a refusal - which is why a button is all that shows until somebody
 // presses it.
 func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
-	addContents := widget.NewButton(text.ButtonAddContents, func() {
+	addContents := widget.NewButton(text.ButtonAddContents(), func() {
 		b.contents = append(b.contents, r.newContent())
 		r.rebuild()
 	})
@@ -418,17 +418,17 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		return addContents
 	}
 
-	rows := []fyne.CanvasObject{parts.Heading(text.ContentsHeading)}
+	rows := []fyne.CanvasObject{parts.Heading(text.ContentsHeading())}
 	for j, c := range b.contents {
 		at := func(setting string) string {
 			return recipe.ContentAddress(index+1, j+1, setting)
 		}
 		entry := j
 		rows = append(rows, r.fields.Row(
-			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat, "", parts.NoDetail, c.formatPick),
-			r.fields.Add(at(recipe.KeyCount), text.FieldCount, "", parts.NoDetail, parts.Numeric(c.count)),
-			r.fields.Add(at(recipe.KeySize), text.FieldSize, "", parts.NoDetail, parts.Numeric(c.size)),
-			widget.NewButton(text.ButtonRemoveContents, func() { r.removeContent(b, entry) }),
+			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
+			r.fields.Add(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
+			r.fields.Add(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
+			widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) }),
 		))
 	}
 	rows = append(rows, addContents)
@@ -461,17 +461,17 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	// The manifest name and the seed both say what they fall back to, so this
 	// section has one box that has to be answered.
 	r.fields.Require(recipe.KeyOutputDir)
-	return parts.Section(text.SectionOutput,
-		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir, text.HintOutputDir,
-			r.tips.Say(text.DetailOutputDir), chooserFor(r.host, r.outDir)),
+	return parts.Section(text.SectionOutput(),
+		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
+			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir)),
 		r.fields.Row(
-			r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest, text.HintManifest,
-				r.tips.Say(text.DetailManifest), r.manifest),
-			r.fields.Add(recipe.KeySeed, text.FieldSeed, text.HintSeed,
-				r.tips.Say(text.DetailSeed), parts.Numeric(r.seed)),
+			r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
+				r.tips.Say(text.DetailManifest()), r.manifest),
+			r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
+				r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
 		),
-		r.fields.AddToggle(recipe.KeyDefaultsLabel, text.FieldLabel, "",
-			r.tips.Say(text.DetailLabel), r.label),
+		r.fields.AddToggle(recipe.KeyDefaultsLabel, text.FieldLabel(), "",
+			r.tips.Say(text.DetailLabel()), r.label),
 	)
 }
 
@@ -546,7 +546,7 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	if err != nil {
 		return nil, none, err
 	}
-	rec, err := recipe.Parse(src, text.HeadingRecipe)
+	rec, err := recipe.Parse(src, text.HeadingRecipe())
 	if err != nil {
 		return nil, none, err
 	}

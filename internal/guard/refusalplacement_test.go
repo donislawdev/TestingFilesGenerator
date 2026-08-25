@@ -27,8 +27,8 @@ import (
 // The alternative was matching the wording in the window, which is a second
 // copy of rules the engine owns - and the copy that drifts.
 func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget)
-	fill(t, content, text.FieldCount, "0")
+	content, w := screenInAWindow(t, text.TabOneTarget())
+	fill(t, content, text.FieldCount(), "0")
 	press(t, content, "Preview")
 	settle(content, w)
 
@@ -37,7 +37,7 @@ func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
 	// Everything outside the block the field sits in must be silent about it.
 	// Written as "the rest of the screen" rather than as "the area at the
 	// bottom", because a second copy anywhere is the same defect.
-	sawItOnce(t, content, text.FieldCount, refusal)
+	sawItOnce(t, content, text.FieldCount(), refusal)
 }
 
 // The refusal every format can produce lands under the box that caused it.
@@ -55,8 +55,8 @@ func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
 // the box, while the message about the count next to it appeared under the
 // count.
 func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget)
-	fill(t, content, text.FieldSize, "1")
+	content, w := screenInAWindow(t, text.TabOneTarget())
+	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
 	settle(content, w)
 
@@ -64,7 +64,7 @@ func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
 	// for the part that says what happened rather than for the sentence.
 	const refusal = "cannot be smaller than"
 
-	sawItOnce(t, content, text.FieldSize, refusal)
+	sawItOnce(t, content, text.FieldSize(), refusal)
 }
 
 // The same holds on the preset screen, where the fields are the preset's own.
@@ -76,7 +76,7 @@ func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
 // about the other - and the preset screen was the half left undone when the
 // generate screen's refusals were moved on 2026-08-11.
 func TestARefusalAboutAPresetSettingAppearsUnderIt(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabPresets)
+	content, w := screenInAWindow(t, text.TabPresets())
 
 	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")

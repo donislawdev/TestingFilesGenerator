@@ -64,12 +64,12 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 func TestThePresetCardIsNamedForWhatItAsks(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	presets := tabContent(t, content, text.TabPresets)
+	presets := tabContent(t, content, text.TabPresets())
 
-	if _, ok := labelBox(presets, text.SectionPreset); !ok {
-		t.Errorf("the preset screen has no section called %q", text.SectionPreset)
+	if _, ok := labelBox(presets, text.SectionPreset()); !ok {
+		t.Errorf("the preset screen has no section called %q", text.SectionPreset())
 	}
-	if text.SectionPreset == text.FieldPreset {
-		t.Errorf("the section and the field are both called %q again", text.SectionPreset)
+	if text.SectionPreset() == text.FieldPreset() {
+		t.Errorf("the section and the field are both called %q again", text.SectionPreset())
 	}
 }

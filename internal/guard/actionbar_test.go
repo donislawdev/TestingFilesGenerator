@@ -30,9 +30,9 @@ import (
 func TestTheButtonsThatRunSomethingSitInTheMiddle(t *testing.T) {
 	_, content := screenOnACanvas(t)
 
-	run := buttonNamed(content, text.ButtonGenerate)
+	run := buttonNamed(content, text.ButtonGenerate())
 	if run == nil {
-		t.Fatalf("there is no %q button, so this guard read the wrong tree", text.ButtonGenerate)
+		t.Fatalf("there is no %q button, so this guard read the wrong tree", text.ButtonGenerate())
 	}
 	row := rowHolding(content, run)
 	if row == nil {
@@ -43,9 +43,9 @@ func TestTheButtonsThatRunSomethingSitInTheMiddle(t *testing.T) {
 	// layout's arithmetic rather than a statement about where the button is.
 	const slack = 8
 
-	first := buttonNamed(content, text.ButtonPreview)
+	first := buttonNamed(content, text.ButtonPreview())
 	if first == nil {
-		t.Fatalf("there is no %q button, so this guard read the wrong tree", text.ButtonPreview)
+		t.Fatalf("there is no %q button, so this guard read the wrong tree", text.ButtonPreview())
 	}
 
 	// The group is measured rather than one button, because being centred is a

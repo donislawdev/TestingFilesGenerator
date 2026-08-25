@@ -301,29 +301,29 @@ type screenScene struct {
 
 func screenScenes() []screenScene {
 	return []screenScene{
-		{name: "about", tab: text.TabAbout},
-		{name: "generate", tab: text.TabOneTarget},
-		{name: "generate-empty", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			fillField(t, s.tab, text.FieldCount, "0")
-			pressNamed(t, s.tab, text.ButtonPreview)
+		{name: "about", tab: text.TabAbout()},
+		{name: "generate", tab: text.TabOneTarget()},
+		{name: "generate-empty", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldCount(), "0")
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
-		{name: "generate-refused", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			fillField(t, s.tab, text.FieldSize, "1")
-			pressNamed(t, s.tab, text.ButtonPreview)
+		{name: "generate-refused", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldSize(), "1")
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
-		{name: "generate-refused-setting", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+		{name: "generate-refused-setting", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
 			chooseFormat(t, s.tab, "png")
 			fillField(t, s.tab, text.SettingLabel("width"), "99999")
-			pressNamed(t, s.tab, text.ButtonPreview)
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
-		{name: "generate-chosen", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+		{name: "generate-chosen", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
 			chooseWithThePointer(t, s.canvas, s.tab, "png")
 		}},
 		// The same menu reached the other way. Since 2026-08-18 the two look
 		// different on purpose - the pointer moves the keyboard without saying
 		// so and the keyboard says so - and a picture of only one of them would
 		// leave the rule half looked at.
-		{name: "generate-chosen-by-key", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
+		{name: "generate-chosen-by-key", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
 			chooseFormat(t, s.tab, "png")
 			s.canvas.Focus(chooserFor(t, s.tab))
 		}},
@@ -332,30 +332,30 @@ func screenScenes() []screenScene {
 		// - it is still here, and this is the state it is still here in. What
 		// changed is that a press no longer produces it, which is what
 		// generate-unchecked shows.
-		{name: "generate-switch-by-key", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			box := checkNamed(s.tab, text.FieldLabel)
+		{name: "generate-switch-by-key", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			box := checkNamed(s.tab, text.FieldLabel())
 			if box == nil {
-				t.Fatalf("there is no switch labelled %q on this screen", text.FieldLabel)
+				t.Fatalf("there is no switch labelled %q on this screen", text.FieldLabel())
 			}
 			s.canvas.Focus(box)
 		}},
 		// A refusal nobody asked for. Typing a value the run cannot use marks
 		// the box straight away since 2026-08-18, with no button pressed - the
 		// state this window had no picture of because it had no such state.
-		{name: "generate-typed", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			fillField(t, s.tab, text.FieldSize, "abc")
+		{name: "generate-typed", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldSize(), "abc")
 		}},
 		// Two bad boxes and two marks. It marked one however many were wrong
 		// until 2026-08-18, so this picture is the whole of what was reported.
-		{name: "generate-refused-both", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			fillField(t, s.tab, text.FieldSize, "abc")
-			fillField(t, s.tab, text.FieldCount, "many")
-			pressNamed(t, s.tab, text.ButtonPreview)
+		{name: "generate-refused-both", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.FieldSize(), "abc")
+			fillField(t, s.tab, text.FieldCount(), "many")
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
-		{name: "generate-focused", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			s.canvas.Focus(entryUnder(t, s.tab, text.FieldSize))
+		{name: "generate-focused", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			s.canvas.Focus(entryUnder(t, s.tab, text.FieldSize()))
 		}},
-		{name: "generate-menu", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
+		{name: "generate-menu", tab: text.TabOneTarget(), after: func(t *testing.T, s scene) {
 			chooserFor(t, s.tab).Tapped(&fyne.PointEvent{})
 		}},
 		// The two states the list gained on 2026-08-18 when it stopped being
@@ -363,7 +363,7 @@ func screenScenes() []screenScene {
 		// are drawn differently on purpose - the keyboard wins, so that a
 		// pointer resting somewhere while the arrows are elsewhere does not
 		// show two rows as the current one - and neither had a picture.
-		{name: "generate-menu-hovered", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
+		{name: "generate-menu-hovered", tab: text.TabOneTarget(), after: func(t *testing.T, s scene) {
 			chooserFor(t, s.tab).Tapped(&fyne.PointEvent{})
 			s.canvas.Capture()
 			list := chooserFor(t, s.tab).Opened()
@@ -392,7 +392,7 @@ func screenScenes() []screenScene {
 			}
 			row.MouseIn(&desktop.MouseEvent{})
 		}},
-		{name: "generate-menu-keyed", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
+		{name: "generate-menu-keyed", tab: text.TabOneTarget(), after: func(t *testing.T, s scene) {
 			picker := chooserFor(t, s.tab)
 			picker.Tapped(&fyne.PointEvent{})
 			list := picker.Opened()
@@ -402,16 +402,16 @@ func screenScenes() []screenScene {
 			list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
 			list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
 		}},
-		{name: "generate-hovered", tab: text.TabOneTarget, after: func(t *testing.T, s scene) {
-			explanationBeside(t, s.tab, text.FieldSize).MouseIn(&desktop.MouseEvent{})
+		{name: "generate-hovered", tab: text.TabOneTarget(), after: func(t *testing.T, s scene) {
+			explanationBeside(t, s.tab, text.FieldSize()).MouseIn(&desktop.MouseEvent{})
 		}},
-		{name: "generate-unchecked", tab: text.TabOneTarget, set: func(t *testing.T, s scene) {
-			flipSwitch(t, s.canvas, s.tab, text.FieldLabel)
+		{name: "generate-unchecked", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			flipSwitch(t, s.canvas, s.tab, text.FieldLabel())
 		}},
-		{name: "preset", tab: text.TabPresets},
-		{name: "preset-refused", tab: text.TabPresets, set: func(t *testing.T, s scene) {
+		{name: "preset", tab: text.TabPresets()},
+		{name: "preset-refused", tab: text.TabPresets(), set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, text.SettingLabel("limit"), "512")
-			pressNamed(t, s.tab, text.ButtonPreview)
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
 		// Both lists on this screen, neither of which had ever been opened by
 		// anything in this project. The probe asked every screen for the field
@@ -420,13 +420,13 @@ func screenScenes() []screenScene {
 		// screen does not have. It has two. docs/UX.md section 7.0 gate 1
 		// counts a state nothing can reach as a finding rather than as an
 		// absence, and this is what that rule was written for.
-		{name: "preset-menu", tab: text.TabPresets, after: func(t *testing.T, s scene) {
-			menuUnder(t, s.tab, text.FieldPreset).Tapped(&fyne.PointEvent{})
+		{name: "preset-menu", tab: text.TabPresets(), after: func(t *testing.T, s scene) {
+			menuUnder(t, s.tab, text.FieldPreset()).Tapped(&fyne.PointEvent{})
 		}},
 		// The list a preset DECLARES, drawn by the same machinery from the same
 		// kind of declaration as a format's own settings, and landing somewhere
 		// else on the form.
-		{name: "preset-menu-setting", tab: text.TabPresets, after: func(t *testing.T, s scene) {
+		{name: "preset-menu-setting", tab: text.TabPresets(), after: func(t *testing.T, s scene) {
 			menuUnder(t, s.tab, text.SettingLabel("format")).Tapped(&fyne.PointEvent{})
 		}},
 
@@ -434,20 +434,20 @@ func screenScenes() []screenScene {
 		// of the others can be put into, and every one of them is here because a
 		// state with no picture is a state nobody has looked at - docs/UX.md
 		// section 7.0 gate 1.
-		{name: "recipe", tab: text.TabRecipe},
+		{name: "recipe", tab: text.TabRecipe()},
 		// A second batch. This is the state the whole screen exists for, and it
 		// is also the one that proves the form does not fall apart when the
 		// blocks repeat - two batches means two fields called Size, two called
 		// Format, and a heading over each block saying which is which.
-		{name: "recipe-two-batches", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
-			pressNamed(t, s.tab, text.ButtonAddBatch)
+		{name: "recipe-two-batches", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddBatch())
 		}},
 		// Everything wrong at once on an untouched screen: no group name and no
 		// size. Both marks belong to the first batch and both have to appear,
 		// which is the rule reported on 2026-08-18 - every bad box, not the
 		// first one.
-		{name: "recipe-refused", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
-			pressNamed(t, s.tab, text.ButtonPreview)
+		{name: "recipe-refused", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
 		// One batch filled in and one not, so the marks are in one block and the
 		// other is clean. That is the addressing work arriving on screen: the
@@ -460,16 +460,16 @@ func screenScenes() []screenScene {
 		// block is which. Marking the RIGHT batch is asserted by
 		// TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch, which addresses
 		// fields by position instead of by label.
-		{name: "recipe-refused-with-one-batch-filled", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
-			pressNamed(t, s.tab, text.ButtonAddBatch)
-			fillField(t, s.tab, text.FieldTargetID, "second")
-			fillField(t, s.tab, text.FieldSize, "1kb")
-			pressNamed(t, s.tab, text.ButtonPreview)
+		{name: "recipe-refused-with-one-batch-filled", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddBatch())
+			fillField(t, s.tab, text.FieldTargetID(), "second")
+			fillField(t, s.tab, text.FieldSize(), "1kb")
+			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
 		// What an archive holds, which is the one nested repeating thing in this
 		// window and had no picture anywhere before this screen.
-		{name: "recipe-contents", tab: text.TabRecipe, set: func(t *testing.T, s scene) {
-			pressNamed(t, s.tab, text.ButtonAddContents)
+		{name: "recipe-contents", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddContents())
 		}},
 	}
 }
@@ -651,7 +651,7 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 // Screens without such a field are left alone, which is how the about screen
 // passes through here.
 func pinOutputDirectory(tab fyne.CanvasObject) {
-	control := controlUnder(tab, text.FieldOutputDir)
+	control := controlUnder(tab, text.FieldOutputDir())
 	if control == nil {
 		return
 	}
@@ -720,7 +720,7 @@ func flipSwitch(t *testing.T, c fyne.Canvas, o fyne.CanvasObject, label string) 
 
 func chooserFor(t *testing.T, o fyne.CanvasObject) *parts.Chooser {
 	t.Helper()
-	chooser, ok := controlUnder(o, text.FieldFormat).(*parts.Chooser)
+	chooser, ok := controlUnder(o, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
 		t.Fatal("there is no format menu on this screen")
 	}

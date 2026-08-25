@@ -220,7 +220,7 @@ func (r *runner) refuse(err error) {
 	// the screen. Both halves of the answer are here: a sentence where the
 	// button is, and the form moved to the first box that needs attention.
 	if len(loose) == 0 {
-		r.say(text.RefusedBeforeWriting)
+		r.say(text.RefusedBeforeWriting())
 	}
 	if field := r.fields.Lookup(first); field != nil {
 		parts.Reveal(r.scroll, field.Control)
@@ -456,8 +456,8 @@ func newRunner() *runner {
 	r.status.Hide()
 	r.problem = parts.NewErrorArea()
 
-	r.previewBtn = widget.NewButton(text.ButtonPreview, r.onPreview)
-	r.generateBtn = widget.NewButton(text.ButtonGenerate, r.onGenerate)
+	r.previewBtn = widget.NewButton(text.ButtonPreview(), r.onPreview)
+	r.generateBtn = widget.NewButton(text.ButtonGenerate(), r.onGenerate)
 	r.generateBtn.Importance = widget.HighImportance
 	// Three ranks, so the eye lands on the one that does the work: Generate
 	// filled, Preview plain beside it, Cancel receding until there is something
@@ -474,7 +474,7 @@ func newRunner() *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	r.cancelBtn = widget.NewButton(text.ButtonCancel, r.onCancel)
+	r.cancelBtn = widget.NewButton(text.ButtonCancel(), r.onCancel)
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 	return r
@@ -561,7 +561,7 @@ func (r *runner) onPreview() {
 	// Occupied, but with nothing to cancel and nothing to put on the bar. See
 	// setBusy - both of those are properties of a dry run that were measured.
 	r.setBusy(true, false)
-	r.say(text.WorkingOutTheCost)
+	r.say(text.WorkingOutTheCost())
 
 	done := make(chan struct{})
 
@@ -768,7 +768,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 
 func outcomeText(res *engine.Result, runErr error) string {
 	if res == nil || res.Manifest == nil {
-		return text.NothingProduced
+		return text.NothingProduced()
 	}
 	written := len(res.Manifest.Files) - res.Failures
 	switch {

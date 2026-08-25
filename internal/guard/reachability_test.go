@@ -58,7 +58,7 @@ func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 // looking at three of the four. Passing by not looking is worse than failing.
 // TestEveryTabInTheWindowIsOnTheListGuardsWalk keeps it honest.
 func allTabs() []string {
-	return []string{text.TabOneTarget, text.TabPresets, text.TabRecipe, text.TabAbout}
+	return []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabAbout()}
 }
 
 // What this defends. A button a person can see is a button a person can press.
@@ -240,7 +240,7 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			// fine" would have turned this assertion off, and the thing it
 			// catches - focus wandering into the OTHER tabs, which are in the
 			// canvas and laid out - is exactly what it was written for.
-			chrome := map[string]bool{text.ButtonDonate: true}
+			chrome := map[string]bool{text.ButtonDonate(): true}
 			for _, f := range order {
 				if onScreen[f] {
 					continue
@@ -263,7 +263,7 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			}
 			if !reachedChrome {
 				t.Errorf("the %q button cannot be reached with Tab from the %q screen (UX9)",
-					text.ButtonDonate, tab)
+					text.ButtonDonate(), tab)
 			}
 		})
 	}
@@ -346,10 +346,10 @@ func TestTheDonateButtonOpensTheSupportPage(t *testing.T) {
 	host := &fakeHost{}
 	window.Open(host)
 
-	donate := buttonNamed(host.content, text.ButtonDonate)
+	donate := buttonNamed(host.content, text.ButtonDonate())
 	if donate == nil {
 		t.Fatalf("there is no %q button in the window. It carries: %v",
-			text.ButtonDonate, buttonNames(host.content))
+			text.ButtonDonate(), buttonNames(host.content))
 	}
 	if donate.Disabled() {
 		t.Fatal("the Donate button is disabled, so nobody can give anything")

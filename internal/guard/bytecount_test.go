@@ -27,7 +27,7 @@ import (
 func TestABoxHoldingASizeSaysWhatItComesTo(t *testing.T) {
 	_, content := screen(t)
 
-	count := byteCountBeside(t, content, text.FieldSize)
+	count := byteCountBeside(t, content, text.FieldSize())
 	if count.Text == "" {
 		t.Fatal("the size box opens with 10mb in it and nothing says what that comes to")
 	}
@@ -42,14 +42,14 @@ func TestABoxHoldingASizeSaysWhatItComesTo(t *testing.T) {
 	// It follows the box rather than being set once. A count that stopped at
 	// the opening value would be worse than none: it would be a wrong number
 	// beside a right one.
-	fill(t, content, text.FieldSize, "1kb")
+	fill(t, content, text.FieldSize(), "1kb")
 	if want := text.ExactBytes(1024); count.Text != want {
 		t.Errorf("1kb was typed and the count beside the box reads %q, not %q", count.Text, want)
 	}
 
 	// And says nothing at all about something that is not a size, which is
 	// every box somebody is halfway through typing.
-	fill(t, content, text.FieldSize, "abc")
+	fill(t, content, text.FieldSize(), "abc")
 	if count.Text != "" {
 		t.Errorf("the size box holds something that is not a size and the count reads %q, "+
 			"so it is showing a number for a value the run will refuse", count.Text)
@@ -68,15 +68,15 @@ func TestABoxHoldingASizeSaysWhatItComesTo(t *testing.T) {
 func TestOnlyABoxHoldingASizeCarriesACount(t *testing.T) {
 	_, content := screen(t)
 
-	for _, label := range []string{text.FieldCount, text.FieldSeed, text.FieldTargetID, text.FieldNameTemplate} {
+	for _, label := range []string{text.FieldCount(), text.FieldSeed(), text.FieldTargetID(), text.FieldNameTemplate()} {
 		if count := byteCountIn(fieldBox(content, label)); count != nil {
 			t.Errorf("%q does not hold a size and carries a count reading %q", label, count.Text)
 		}
 	}
 	// And the one that does still has it, so this cannot pass by there being no
 	// counts anywhere.
-	if byteCountIn(fieldBox(content, text.FieldSize)) == nil {
-		t.Errorf("%q holds a size and carries no count, so the check above proved nothing", text.FieldSize)
+	if byteCountIn(fieldBox(content, text.FieldSize())) == nil {
+		t.Errorf("%q holds a size and carries no count, so the check above proved nothing", text.FieldSize())
 	}
 }
 
@@ -118,7 +118,7 @@ func byteCountIn(o fyne.CanvasObject) *parts.ByteCount {
 func TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne(t *testing.T) {
 	t.Run("a format setting", func(t *testing.T) {
 		_, content := screen(t)
-		picker, ok := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+		picker, ok := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 		if !ok {
 			t.Fatal("this screen has no format list, so this guard read the wrong tree")
 		}

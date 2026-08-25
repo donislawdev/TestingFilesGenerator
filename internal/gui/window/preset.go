@@ -78,18 +78,18 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 			p.actions(), p.progress(), p.problem.Object()),
 		nil, nil,
 		(p.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingPreset,
-			parts.Section(text.SectionPreset,
-				p.fields.Add(settingPreset, text.FieldPreset, text.HintPreset,
-					p.tips.Say(text.DetailPreset), p.pick),
+			text.HeadingPreset(),
+			parts.Section(text.SectionPreset(),
+				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
+					p.tips.Say(text.DetailPreset()), p.pick),
 				p.about,
 			),
-			parts.Section(text.SectionSettings, p.paramBox),
-			parts.Section(text.SectionOutput,
-				p.fields.Add(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir,
-					p.tips.Say(text.DetailOutputDir), chooserFor(p.host, p.outDir)),
-				p.fields.Add(engine.SettingSeed, text.FieldSeed, text.HintSeed,
-					p.tips.Say(text.DetailSeed), parts.Numeric(p.seed)),
+			parts.Section(text.SectionSettings(), p.paramBox),
+			parts.Section(text.SectionOutput(),
+				p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
+					p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir)),
+				p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
+					p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 			),
 		)))),
 	))
@@ -159,7 +159,7 @@ func (p *Preset) onPresetChosen(id string) {
 	// text and wrapped with it, and each item carried a full label's spacing -
 	// which left more room between the items than around the whole list.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Heading(text.PresetCatchesHeading))
+		p.about.Add(parts.Heading(text.PresetCatchesHeading()))
 		p.about.Add(parts.Bullets(chosen.Catches))
 	}
 	p.about.Refresh()
@@ -236,7 +236,7 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	// the cause.
 	var bad []error
 
-	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, p.seed.Text)
+	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed(), p.seed.Text)
 	if err != nil {
 		bad = append(bad, err)
 	}

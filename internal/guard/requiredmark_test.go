@@ -47,7 +47,7 @@ func TestAStarIsOnEveryBoxTheRunWillNotDoWithout(t *testing.T) {
 			}
 
 			entryUnder(t, content, b.label).SetText("")
-			press(t, content, text.ButtonPreview)
+			press(t, content, text.ButtonPreview())
 			// A refusal never starts a worker and an accepted plan does, so the
 			// second case leaves one to wait for. O124: under the test driver
 			// fyne.Do runs on the calling goroutine, so a preview still in
@@ -192,38 +192,38 @@ func screensWithBoxes(t *testing.T) []screenUnderTest {
 	return []screenUnderTest{
 		{
 			name: "the generate screen",
-			boxes: []boxUnderTest{box(text.FieldSize), box(text.FieldCount),
-				box(text.FieldTargetID), box(text.FieldNameTemplate), box(text.FieldSeed),
-				box(text.FieldOutputDir)},
-			open:     onTab(text.TabOneTarget),
-			baseline: func(t *testing.T, c fyne.CanvasObject) { fill(t, c, text.FieldOutputDir, out) },
+			boxes: []boxUnderTest{box(text.FieldSize()), box(text.FieldCount()),
+				box(text.FieldTargetID()), box(text.FieldNameTemplate()), box(text.FieldSeed()),
+				box(text.FieldOutputDir())},
+			open:     onTab(text.TabOneTarget()),
+			baseline: func(t *testing.T, c fyne.CanvasObject) { fill(t, c, text.FieldOutputDir(), out) },
 		},
 		{
 			name:     "the preset screen",
-			boxes:    []boxUnderTest{box(text.FieldSeed), box(text.FieldOutputDir)},
-			open:     onTab(text.TabPresets),
-			baseline: func(t *testing.T, c fyne.CanvasObject) { fill(t, c, text.FieldOutputDir, out) },
+			boxes:    []boxUnderTest{box(text.FieldSeed()), box(text.FieldOutputDir())},
+			open:     onTab(text.TabPresets()),
+			baseline: func(t *testing.T, c fyne.CanvasObject) { fill(t, c, text.FieldOutputDir(), out) },
 		},
 		{
 			name: "the batch screen",
 			boxes: []boxUnderTest{
-				box(text.FieldTargetID), box(text.FieldCount),
+				box(text.FieldTargetID()), box(text.FieldCount()),
 				// The three ways of saying how big are one question, so
 				// emptying any of them is only fair once another has answered
 				// it. Only the size needs saying here, because the baseline
 				// below answers the question with the size box - so emptying
 				// either of the other two already leaves the question answered.
-				{label: text.FieldSize, answeredInstead: func(t *testing.T, c fyne.CanvasObject) {
-					fill(t, c, text.FieldSizeRange, "1kb-2kb")
+				{label: text.FieldSize(), answeredInstead: func(t *testing.T, c fyne.CanvasObject) {
+					fill(t, c, text.FieldSizeRange(), "1kb-2kb")
 				}},
-				box(text.FieldSizeRange), box(text.FieldBoundary),
-				box(text.FieldNameTemplate), box(text.FieldGroup),
-				box(text.FieldManifest), box(text.FieldSeed), box(text.FieldOutputDir)},
-			open: onTab(text.TabRecipe),
+				box(text.FieldSizeRange()), box(text.FieldBoundary()),
+				box(text.FieldNameTemplate()), box(text.FieldGroup()),
+				box(text.FieldManifest()), box(text.FieldSeed()), box(text.FieldOutputDir())},
+			open: onTab(text.TabRecipe()),
 			baseline: func(t *testing.T, c fyne.CanvasObject) {
-				fill(t, c, text.FieldOutputDir, out)
-				fill(t, c, text.FieldTargetID, "files")
-				fill(t, c, text.FieldSize, "1kb")
+				fill(t, c, text.FieldOutputDir(), out)
+				fill(t, c, text.FieldTargetID(), "files")
+				fill(t, c, text.FieldSize(), "1kb")
 			},
 		},
 	}

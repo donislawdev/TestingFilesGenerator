@@ -49,14 +49,14 @@ func presetScreen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	// Same reason as screen(): nothing this window started may outlive the test
 	// that started it.
 	t.Cleanup(func() { join(host) })
-	return host, selectTab(t, host.content, text.TabPresets)
+	return host, selectTab(t, host.content, text.TabPresets())
 }
 
 // The window offers every preset this build registered.
 func TestTheWindowOffersEveryPresetThereIs(t *testing.T) {
 	_, content := presetScreen(t)
 
-	control := controlUnder(content, text.FieldPreset)
+	control := controlUnder(content, text.FieldPreset())
 	picker, ok := control.(*parts.Chooser)
 	if !ok {
 		t.Fatalf("the preset field is %T rather than a list to choose from", control)
@@ -75,7 +75,7 @@ func TestTheWindowOffersEveryPresetThereIs(t *testing.T) {
 // type, one set of controls, one wording for a refusal.
 func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 	_, content := presetScreen(t)
-	picker := controlUnder(content, text.FieldPreset).(*parts.Chooser)
+	picker := controlUnder(content, text.FieldPreset()).(*parts.Chooser)
 
 	checked := 0
 	for _, p := range preset.All() {
@@ -128,7 +128,7 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 	}
 
 	host, content := presetScreen(t)
-	fill(t, content, text.FieldOutputDir, fromWindow)
+	fill(t, content, text.FieldOutputDir(), fromWindow)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	press(t, content, "Generate")
 	waitForManifest(t, fromWindow)
@@ -215,7 +215,7 @@ func TestThePresetScreenSaysWhichNumbersWereOurs(t *testing.T) {
 	dir := t.TempDir()
 	host, content := presetScreen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldOutputDir(), dir)
 	// limit left at its declared default, spread stated by hand.
 	fill(t, content, text.SettingLabel("spread"), "1kb")
 	press(t, content, "Generate")
@@ -296,13 +296,13 @@ func hashLine(recorded string) string {
 // unchanged, what changed is that it can be read.
 func TestBothScreensSayWhereTheFilesWillGo(t *testing.T) {
 	host, generate := screen(t)
-	selectTab(t, host.content, text.TabPresets)
+	selectTab(t, host.content, text.TabPresets())
 
 	for name, content := range map[string]fyne.CanvasObject{
 		"the generate screen": generate,
 		"the preset screen":   host.content,
 	} {
-		shown := entryUnder(t, content, text.FieldOutputDir).Text
+		shown := entryUnder(t, content, text.FieldOutputDir()).Text
 		if shown == "." || shown == "" {
 			t.Errorf("%s offers %q as the output directory, which says nothing about where the files go",
 				name, shown)
@@ -357,7 +357,7 @@ func TestNoTextSettingDescribesItselfAsText(t *testing.T) {
 // as many items as there are. Only visible by looking at the screen.
 func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 	_, content := presetScreen(t)
-	picker := controlUnder(content, text.FieldPreset).(*parts.Chooser)
+	picker := controlUnder(content, text.FieldPreset()).(*parts.Chooser)
 
 	for _, p := range preset.All() {
 		if len(p.Catches) < 2 {
@@ -407,7 +407,7 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 
 	for _, screenName := range []string{"generate", "preset"} {
 		if screenName == "preset" {
-			selectTab(t, host.content, text.TabPresets)
+			selectTab(t, host.content, text.TabPresets())
 		}
 		content := host.content
 
@@ -416,14 +416,14 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 		// 2026-08-11 the two screens carry one output directory between them,
 		// so arriving here the box already holds what the other screen held -
 		// and comparing against that measured the carrying, not the button.
-		fill(t, content, text.FieldOutputDir, "C:\\neither\\of\\them")
-		before := entryUnder(t, content, text.FieldOutputDir).Text
+		fill(t, content, text.FieldOutputDir(), "C:\\neither\\of\\them")
+		before := entryUnder(t, content, text.FieldOutputDir()).Text
 		press(t, content, "Choose...")
 
 		if host.asked == 0 {
 			t.Fatalf("the %s screen has a browse button that asks nobody", screenName)
 		}
-		after := entryUnder(t, content, text.FieldOutputDir).Text
+		after := entryUnder(t, content, text.FieldOutputDir()).Text
 		if after == before {
 			t.Errorf("the %s screen dropped the directory that was chosen, so the button does nothing",
 				screenName)
@@ -442,10 +442,10 @@ func TestCancellingTheDirectoryPickerLeavesTheFieldAlone(t *testing.T) {
 	host := &fakeHost{} // picked is empty, so nothing is chosen
 	window.Open(host)
 
-	before := entryUnder(t, host.content, text.FieldOutputDir).Text
+	before := entryUnder(t, host.content, text.FieldOutputDir()).Text
 	press(t, host.content, "Choose...")
 
-	if after := entryUnder(t, host.content, text.FieldOutputDir).Text; after != before {
+	if after := entryUnder(t, host.content, text.FieldOutputDir()).Text; after != before {
 		t.Errorf("cancelling the picker changed the field from %q to %q", before, after)
 	}
 }

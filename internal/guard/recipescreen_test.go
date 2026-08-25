@@ -52,13 +52,13 @@ func TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			screen := window.NewRecipe(&fakeHost{})
 			body := screen.Object()
-			pressNamed(t, body, text.ButtonAddBatch)
+			pressNamed(t, body, text.ButtonAddBatch())
 
 			fields := screen.Fields()
 			setBox(t, fields, recipe.TargetAddress(c.fill, recipe.KeyID), "filled")
 			setBox(t, fields, recipe.TargetAddress(c.fill, recipe.KeySize), "1kb")
 
-			pressNamed(t, body, text.ButtonPreview)
+			pressNamed(t, body, text.ButtonPreview())
 
 			// The two settings the empty batch cannot do without. Both have to
 			// be marked, because marking one of several bad boxes is its own
@@ -134,15 +134,15 @@ func TestAddingAndRemovingBatchesKeepsWhatWasTypedAndRenumbersTheRest(t *testing
 	body := screen.Object()
 	fields := screen.Fields()
 
-	pressNamed(t, body, text.ButtonAddBatch)
-	pressNamed(t, body, text.ButtonAddBatch)
+	pressNamed(t, body, text.ButtonAddBatch())
+	pressNamed(t, body, text.ButtonAddBatch())
 
 	for i, name := range []string{"first", "second", "third"} {
 		setBox(t, fields, recipe.TargetAddress(i+1, recipe.KeyID), name)
 	}
 
 	// Remove the middle one. Its Remove button is the second of the three.
-	buttons := buttonsNamed(body, text.ButtonRemoveBatch)
+	buttons := buttonsNamed(body, text.ButtonRemoveBatch())
 	if len(buttons) != 3 {
 		t.Fatalf("expected a Remove button per batch and found %d", len(buttons))
 	}
@@ -173,13 +173,13 @@ func TestTheLastBatchCannotBeRemoved(t *testing.T) {
 	screen := window.NewRecipe(&fakeHost{})
 	body := screen.Object()
 
-	if buttons := buttonsNamed(body, text.ButtonRemoveBatch); len(buttons) != 0 {
+	if buttons := buttonsNamed(body, text.ButtonRemoveBatch()); len(buttons) != 0 {
 		t.Fatalf("a screen with one batch offers %d ways to remove it, and pressing one\n"+
 			"would leave a form that can produce nothing", len(buttons))
 	}
 
-	pressNamed(t, body, text.ButtonAddBatch)
-	buttons := buttonsNamed(body, text.ButtonRemoveBatch)
+	pressNamed(t, body, text.ButtonAddBatch())
+	buttons := buttonsNamed(body, text.ButtonRemoveBatch())
 	if len(buttons) != 2 {
 		t.Fatalf("two batches offer %d Remove buttons", len(buttons))
 	}
@@ -195,7 +195,7 @@ func TestTheLastBatchCannotBeRemoved(t *testing.T) {
 	buttons[0].OnTapped()
 	buttons[0].OnTapped()
 
-	if buttons := buttonsNamed(body, text.ButtonRemoveBatch); len(buttons) != 0 {
+	if buttons := buttonsNamed(body, text.ButtonRemoveBatch()); len(buttons) != 0 {
 		t.Errorf("back to one batch and there are still %d Remove buttons", len(buttons))
 	}
 	if findField(screen.Fields(), recipe.TargetAddress(1, recipe.KeyID)) == nil {
@@ -321,9 +321,9 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	// Four batches, because the point of this screen is more than one and
 	// because the four ways of stating a size need somewhere to live.
 	for i := 0; i < 3; i++ {
-		pressNamed(t, body, text.ButtonAddBatch)
+		pressNamed(t, body, text.ButtonAddBatch())
 	}
-	pressNamed(t, body, text.ButtonAddContents)
+	pressNamed(t, body, text.ButtonAddContents())
 
 	fields := screen.Fields()
 	set := func(position int, setting, value string) {

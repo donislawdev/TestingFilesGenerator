@@ -32,14 +32,14 @@ import (
 func TestTheRuleAboutSizesIsWhereAllThreeBoxesCanBeSeenWithIt(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	batches := tabContent(t, content, text.TabRecipe)
+	batches := tabContent(t, content, text.TabRecipe())
 
-	rule, ok := labelBox(batches, text.OneSizeSettingOnly)
+	rule, ok := labelBox(batches, text.OneSizeSettingOnly())
 	if !ok {
-		t.Fatalf("the batch screen never says %q", text.OneSizeSettingOnly)
+		t.Fatalf("the batch screen never says %q", text.OneSizeSettingOnly())
 	}
 
-	for _, field := range []string{text.FieldSize, text.FieldSizeRange, text.FieldBoundary} {
+	for _, field := range []string{text.FieldSize(), text.FieldSizeRange(), text.FieldBoundary()} {
 		name, ok := labelBox(batches, field)
 		if !ok {
 			t.Fatalf("the batch screen has no field called %q", field)

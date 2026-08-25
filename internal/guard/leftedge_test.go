@@ -62,24 +62,24 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// behind the button beside the field's name on 2026-08-24, so what is
 		// left standing on this edge is the heading a format's settings get.
 		// Four ranks either way, which is what this is about.
-		{text.TabOneTarget, []string{
-			text.HeadingGenerate,
-			text.SectionConfiguration,
-			text.FieldFormat,
+		{text.TabOneTarget(), []string{
+			text.HeadingGenerate(),
+			text.SectionConfiguration(),
+			text.FieldFormat(),
 			text.SettingsFor("bmp"),
 		}},
 		// The preset screen names its section and its first field with the
 		// same word, so only one of the two can be found by its text. Asked
 		// about the section, which is the rank the heading above it has to
 		// line up with.
-		{text.TabPresets, []string{
-			text.HeadingPreset,
-			text.SectionPreset,
-			text.PresetCatchesHeading,
+		{text.TabPresets(), []string{
+			text.HeadingPreset(),
+			text.SectionPreset(),
+			text.PresetCatchesHeading(),
 		}},
-		{text.TabRecipe, []string{
-			text.HeadingRecipe,
-			text.FieldFormat,
+		{text.TabRecipe(), []string{
+			text.HeadingRecipe(),
+			text.FieldFormat(),
 		}},
 	}
 
@@ -118,9 +118,9 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	generate := tabContent(t, content, text.TabOneTarget)
+	generate := tabContent(t, content, text.TabOneTarget())
 
-	field, ok := labelBox(generate, text.FieldFormat)
+	field, ok := labelBox(generate, text.FieldFormat())
 	if !ok {
 		t.Fatal("the generate screen has no Format field")
 	}
@@ -139,7 +139,7 @@ func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
 // that holds it rather than worked out again here.
 func destinationShownAtRest(t *testing.T, screen fyne.CanvasObject) string {
 	t.Helper()
-	box := entryUnder(t, screen, text.FieldOutputDir)
+	box := entryUnder(t, screen, text.FieldOutputDir())
 	if box == nil {
 		t.Fatal("the screen has no output directory box")
 	}

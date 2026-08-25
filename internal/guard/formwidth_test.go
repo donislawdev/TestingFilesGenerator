@@ -32,7 +32,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 		host := &fakeHost{}
 		window.Open(host)
 		if screenName == "preset" {
-			selectTab(t, host.content, text.TabPresets)
+			selectTab(t, host.content, text.TabPresets())
 		}
 		content := host.content
 
@@ -88,18 +88,18 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 		// Through the tab rather than across the window. Both work screens
 		// carry a field called seed, and a lookup over the whole window
 		// answers with the last one it walked past without saying so.
-		content := tabNamed(t, host.content, text.TabOneTarget)
+		content := tabNamed(t, host.content, text.TabOneTarget())
 		if screenName == "preset" {
-			content = selectTab(t, host.content, text.TabPresets)
+			content = selectTab(t, host.content, text.TabPresets())
 		}
 
 		w := test.NewWindow(content)
 		w.Resize(fyne.NewSize(1000, 760))
 		content.Refresh()
 
-		numeric := []string{text.FieldSeed}
+		numeric := []string{text.FieldSeed()}
 		if screenName == "generate" {
-			numeric = []string{text.FieldSize, text.FieldCount, text.FieldSeed}
+			numeric = []string{text.FieldSize(), text.FieldCount(), text.FieldSeed()}
 		}
 		for _, label := range numeric {
 			box := entryUnder(t, content, label)
@@ -127,7 +127,7 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	host := &fakeHost{}
 	window.Open(host)
-	content := tabNamed(t, host.content, text.TabOneTarget)
+	content := tabNamed(t, host.content, text.TabOneTarget())
 
 	w := test.NewWindow(content)
 	// Wide, because the defect is stretching and a narrow window hides it.
@@ -144,8 +144,8 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	//
 	// The preview line is the longest thing the bar ever holds: how many, what
 	// kind, how big, and how much room is left, with a path on the end of it.
-	entryUnder(t, content, text.FieldSize).SetText("1mb")
-	entryUnder(t, content, text.FieldOutputDir).SetText(t.TempDir())
+	entryUnder(t, content, text.FieldSize()).SetText("1mb")
+	entryUnder(t, content, text.FieldOutputDir()).SetText(t.TempDir())
 	preview := buttonNamed(content, "Preview")
 	if preview == nil {
 		t.Fatal("the generate screen has no Preview button, so this guard read the wrong tree")
@@ -220,9 +220,9 @@ func TestASwitchCarriesItsOwnName(t *testing.T) {
 func TestTheWordsOfASwitchStandClearOfItsSquare(t *testing.T) {
 	_, content := screenOnACanvas(t)
 
-	box := checkNamed(content, text.FieldLabel)
+	box := checkNamed(content, text.FieldLabel())
 	if box == nil {
-		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel)
+		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel())
 	}
 
 	// Asked of the RENDERER rather than of a tree walk. What a switch draws

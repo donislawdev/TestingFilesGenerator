@@ -37,11 +37,9 @@ import (
 
 // Buttons on the run controls, in the order G6 puts them: preview before the
 // thing it previews.
-const (
-	ButtonPreview  = "Preview"
-	ButtonGenerate = "Generate"
-	ButtonCancel   = "Cancel"
-)
+func ButtonPreview() string  { return say("ButtonPreview", "Preview") }
+func ButtonGenerate() string { return say("ButtonGenerate", "Generate") }
+func ButtonCancel() string   { return say("ButtonCancel", "Cancel") }
 
 // files is a count with its noun, in the right number.
 //
@@ -116,7 +114,9 @@ func WritingFiles(count int) string {
 // the names are taken - and on a slow or a networked directory that is not
 // instant. It says so rather than leaving the screen looking idle while both
 // buttons are greyed out with no explanation.
-const WorkingOutTheCost = "Working out what this would cost..."
+func WorkingOutTheCost() string {
+	return say("WorkingOutTheCost", "Working out what this would cost...")
+}
 
 // Progress is the line under the bar during a run. Bytes as well as files,
 // because one large file is a run where the file count says nothing for
@@ -153,6 +153,22 @@ const NoWindowInThisBuild = "tfg-gui: this build has no window in it. It was com
 	"from the command line, which needs neither - run \"tfg --help\". " +
 	"To get a window, use a tfg-gui built for your system rather than this one."
 
+// CatalogueNotLoaded is what the window binary says when the translations it
+// carries could not be read.
+//
+// English rather than translated, and that is not an oversight: this is the one
+// message that cannot ask the catalogue for its own words, because the
+// catalogue is what failed. It also goes to a terminal rather than to a window,
+// which is where D9 puts English anyway.
+//
+// The window opens regardless. Every message states its English beside itself
+// and answers with it when nothing is loaded, so this costs a language and not
+// a program.
+func CatalogueNotLoaded(err error) string {
+	return "tfg-gui: the translations built into this program could not be read, " +
+		"so the window is in English: " + err.Error()
+}
+
 // NotAWholeNumber refuses a box that should hold digits and does not.
 //
 // The field is named by its label rather than by its key, because this is read
@@ -171,7 +187,7 @@ func ManifestNotSaved(path string) string {
 }
 
 // NothingProduced is the outcome when a run ended with no manifest at all.
-const NothingProduced = "Nothing was produced."
+func NothingProduced() string { return say("NothingProduced", "Nothing was produced.") }
 
 // StoppedAfter is the outcome of a run that was cancelled or failed part way.
 func StoppedAfter(written int) string {

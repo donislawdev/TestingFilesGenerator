@@ -24,11 +24,11 @@ import (
 // make somebody stop using the tool.
 func TestARefusalAboutTwoBoxesMarksBothOfThem(t *testing.T) {
 	_, content := screen(t)
-	fill(t, content, text.FieldSize, "abc")
-	fill(t, content, text.FieldCount, "many")
+	fill(t, content, text.FieldSize(), "abc")
+	fill(t, content, text.FieldCount(), "many")
 	press(t, content, "Preview")
 
-	for _, label := range []string{text.FieldSize, text.FieldCount} {
+	for _, label := range []string{text.FieldSize(), text.FieldCount()} {
 		if edgeOf(t, content, label).StrokeWidth <= 0 {
 			t.Errorf("%q holds a value the run cannot use and its box draws no edge", label)
 		}
@@ -36,7 +36,7 @@ func TestARefusalAboutTwoBoxesMarksBothOfThem(t *testing.T) {
 
 	// A box nobody spoiled has to look untouched, or this passes for a window
 	// that marks the whole form whenever anything is wrong.
-	if quiet := edgeOf(t, content, text.FieldSeed).StrokeWidth; quiet != 0 {
+	if quiet := edgeOf(t, content, text.FieldSeed()).StrokeWidth; quiet != 0 {
 		t.Errorf("the seed was not refused and its box draws an edge %.1f px wide", quiet)
 	}
 }
@@ -54,19 +54,19 @@ func TestARefusalAboutTwoBoxesMarksBothOfThem(t *testing.T) {
 // refused here for the same reason and in the same words.
 func TestABadValueMarksItsBoxWithNothingPressed(t *testing.T) {
 	_, content := screen(t)
-	fill(t, content, text.FieldSize, "abc")
+	fill(t, content, text.FieldSize(), "abc")
 
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Error("a size that is not a size was typed and the box says nothing until a button is pressed")
 	}
-	if said := sayingUnder(t, content, text.FieldSize); said == "" {
+	if said := sayingUnder(t, content, text.FieldSize()); said == "" {
 		t.Error("the box was marked and given no reason, so the colour is the whole of the message")
 	}
 
 	// And it goes when the value is fixed, which is the half that looks like
 	// nothing while it is missing.
-	fill(t, content, text.FieldSize, "10mb")
-	if left := edgeOf(t, content, text.FieldSize).StrokeWidth; left != 0 {
+	fill(t, content, text.FieldSize(), "10mb")
+	if left := edgeOf(t, content, text.FieldSize()).StrokeWidth; left != 0 {
 		t.Errorf("the size was corrected and its box still draws an edge %.1f px wide", left)
 	}
 }
@@ -87,19 +87,19 @@ func TestABadValueMarksItsBoxWithNothingPressed(t *testing.T) {
 // nothing here is able to work out again.
 func TestTypingInOneBoxLeavesAnotherBoxesRefusalAlone(t *testing.T) {
 	_, content := screen(t)
-	fill(t, content, text.FieldSize, "1")
+	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Fatal("the refused size was never marked, so this guard cannot tell whether the mark survives")
 	}
 
-	fill(t, content, text.FieldTargetID, "other")
+	fill(t, content, text.FieldTargetID(), "other")
 
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Error("something was typed in another box and the size stopped being marked, " +
 			"though the size is still the one the format refused")
 	}
-	if said := sayingUnder(t, content, text.FieldSize); said == "" {
+	if said := sayingUnder(t, content, text.FieldSize()); said == "" {
 		t.Error("the reason under the size went away when a different box was typed in")
 	}
 }
@@ -116,15 +116,15 @@ func TestTypingInOneBoxLeavesAnotherBoxesRefusalAlone(t *testing.T) {
 // person has said they are done.
 func TestAnEmptyBoxIsNotCalledWrongUntilSomethingIsPressed(t *testing.T) {
 	_, content := screen(t)
-	fill(t, content, text.FieldSize, "")
+	fill(t, content, text.FieldSize(), "")
 
-	if marked := edgeOf(t, content, text.FieldSize).StrokeWidth; marked > 0 {
+	if marked := edgeOf(t, content, text.FieldSize()).StrokeWidth; marked > 0 {
 		t.Errorf("the size box was emptied and immediately marked %.1f px wide, "+
 			"so clearing a value to retype it looks like a mistake", marked)
 	}
 
 	press(t, content, "Preview")
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Error("a run was asked for with an empty size and the box was not marked")
 	}
 }
@@ -201,9 +201,9 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "2kb")
-	fill(t, content, text.FieldCount, "2")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "2kb")
+	fill(t, content, text.FieldCount(), "2")
 	press(t, content, "Generate")
 	waitForManifest(t, dir)
 	join(host)
@@ -211,7 +211,7 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 	// Asserted rather than assumed. A guard that reaches this line with the run
 	// still going would be testing the frozen form and passing for the wrong
 	// reason - O118, which has already happened twice in this package.
-	box := entryUnder(t, content, text.FieldSize)
+	box := entryUnder(t, content, text.FieldSize())
 	if box == nil {
 		t.Fatal("there is no size box, so this guard read the wrong tree")
 	}
@@ -219,20 +219,20 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 		t.Fatal("the form is still frozen, so this guard never reached the state it is about: a run that has ENDED")
 	}
 
-	fill(t, content, text.FieldSize, "abc")
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	fill(t, content, text.FieldSize(), "abc")
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Error("a size that is not a size was typed after a run had finished and the box says nothing.\n" +
 			"The screen has stopped checking what is typed into it, and looks no different doing so.")
 	}
-	if said := sayingUnder(t, content, text.FieldSize); said == "" {
+	if said := sayingUnder(t, content, text.FieldSize()); said == "" {
 		t.Error("the box was marked after a finished run and given no reason, so the colour is the whole of the message")
 	}
 
 	// And the other half: it still comes back off. A screen that can mark but
 	// not unmark leaves a corrected field looking wrong for the rest of the
 	// session.
-	fill(t, content, text.FieldSize, "10mb")
-	if left := edgeOf(t, content, text.FieldSize).StrokeWidth; left != 0 {
+	fill(t, content, text.FieldSize(), "10mb")
+	if left := edgeOf(t, content, text.FieldSize()).StrokeWidth; left != 0 {
 		t.Errorf("the size was corrected after a finished run and its box still draws an edge %.1f px wide", left)
 	}
 }

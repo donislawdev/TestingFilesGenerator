@@ -49,7 +49,7 @@ func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	// not a theory: it panicked inside the font shaper, in a guard that had
 	// nothing to do with previews.
 	t.Cleanup(func() { join(host) })
-	return host, tabNamed(t, host.content, text.TabOneTarget)
+	return host, tabNamed(t, host.content, text.TabOneTarget())
 }
 
 // press finds a button by its label and presses it.
@@ -81,7 +81,7 @@ func fill(t *testing.T, o fyne.CanvasObject, label, value string) {
 func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 	_, content := screen(t)
 
-	control := controlUnder(content, text.FieldFormat)
+	control := controlUnder(content, text.FieldFormat())
 	picker, ok := control.(*parts.Chooser)
 	if !ok {
 		t.Fatalf("the format field is %T rather than a list to choose from", control)
@@ -109,7 +109,7 @@ func TestTheWindowOffersEveryFormatTheRegistryHas(t *testing.T) {
 // one "tfg formats" prints rather than a second description of one format.
 func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 	_, content := screen(t)
-	picker := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	picker := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -232,7 +232,7 @@ func TestTheWindowAsksTheEngineWhetherASizeIsGood(t *testing.T) {
 	_, content := screen(t)
 
 	for _, bad := range []string{"10 potatoes", "1e5", "-4", "1.5", ""} {
-		fill(t, content, text.FieldSize, bad)
+		fill(t, content, text.FieldSize(), bad)
 		press(t, content, "Generate")
 
 		_, want := core.ParseSize(bad)
@@ -268,8 +268,8 @@ func TestTheWindowShowsTheWholeRefusal(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "1")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Generate")
 
 	shown := errorShown(t, content)
@@ -341,9 +341,9 @@ func TestPreviewSaysTheCostAndWritesNothing(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "4kb")
-	fill(t, content, text.FieldCount, "3")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "4kb")
+	fill(t, content, text.FieldCount(), "3")
 	press(t, content, "Preview")
 	// A preview crosses to a worker now, so its answer arrives after the press
 	// returns. Joined rather than polled: polling reads widgets from this
@@ -378,9 +378,9 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "2kb")
-	fill(t, content, text.FieldCount, "4")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "2kb")
+	fill(t, content, text.FieldCount(), "4")
 	press(t, content, "Generate")
 
 	waitForManifest(t, dir)
@@ -413,9 +413,9 @@ func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "64kb")
-	fill(t, content, text.FieldCount, "400")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "64kb")
+	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
 
 	if host.intercept == nil {
@@ -457,15 +457,15 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	picker := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	picker := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 	picker.SetSelected("png")
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "64kb")
-	fill(t, content, text.FieldCount, "2")
-	fill(t, content, text.FieldTargetID, "shot")
-	fill(t, content, text.FieldNameTemplate, "shot_{index:04}.png")
-	fill(t, content, text.FieldSeed, "4242")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "64kb")
+	fill(t, content, text.FieldCount(), "2")
+	fill(t, content, text.FieldTargetID(), "shot")
+	fill(t, content, text.FieldNameTemplate(), "shot_{index:04}.png")
+	fill(t, content, text.FieldSeed(), "4242")
 	fill(t, content, text.SettingLabel("width"), "64")
 	fill(t, content, text.SettingLabel("height"), "64")
 
@@ -474,7 +474,7 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	// Found by the words on the switch rather than by a heading above it. A
 	// switch carries its own name since 2026-08-11 - given a heading it arrived
 	// as a bare square with nothing to read on the part you click, which is O72.
-	label := checkNamed(content, text.FieldLabel)
+	label := checkNamed(content, text.FieldLabel())
 	if label == nil {
 		t.Fatal("there is no self describing label switch on the screen")
 	}
@@ -537,9 +537,9 @@ func TestCancelStopsTheRun(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "64kb")
-	fill(t, content, text.FieldCount, "400")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "64kb")
+	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
 
 	cancel := buttonNamed(content, "Cancel")

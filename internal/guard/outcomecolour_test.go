@@ -30,10 +30,10 @@ func TestAFinishedRunIsColouredLikeAFinishedRun(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "2kb")
-	fill(t, content, text.FieldCount, "3")
-	press(t, content, text.ButtonGenerate)
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "2kb")
+	fill(t, content, text.FieldCount(), "3")
+	press(t, content, text.ButtonGenerate())
 	waitForManifest(t, dir)
 	join(host)
 
@@ -68,10 +68,10 @@ func TestTheColourOfAnOutcomeDoesNotOutliveIt(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "2kb")
-	fill(t, content, text.FieldCount, "2")
-	press(t, content, text.ButtonGenerate)
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "2kb")
+	fill(t, content, text.FieldCount(), "2")
+	press(t, content, text.ButtonGenerate())
 	waitForManifest(t, dir)
 	join(host)
 
@@ -82,8 +82,8 @@ func TestTheColourOfAnOutcomeDoesNotOutliveIt(t *testing.T) {
 
 	// A size no format can make. The run is refused before a byte is written
 	// and the foot of the form says so.
-	fill(t, content, text.FieldSize, "1")
-	press(t, content, text.ButtonGenerate)
+	fill(t, content, text.FieldSize(), "1")
+	press(t, content, text.ButtonGenerate())
 
 	if status.Text == text.Written(2) {
 		t.Fatalf("the line still reads %q, so the refusal never reached it and this guard is asking nothing", status.Text)

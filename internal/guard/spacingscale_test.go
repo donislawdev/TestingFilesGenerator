@@ -38,10 +38,10 @@ import (
 func TestAFieldHoldsTogetherMoreTightlyThanTwoFieldsDo(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	generate := tabContent(t, content, text.TabOneTarget)
+	generate := tabContent(t, content, text.TabOneTarget())
 
-	inside := gapBelowLabel(t, generate, text.FieldFormat)
-	between := gapBelowField(t, generate, text.FieldFormat, text.FieldSize)
+	inside := gapBelowLabel(t, generate, text.FieldFormat())
+	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
 
 	if inside <= 0 || between <= 0 {
 		t.Fatalf("measured %.1f px inside a field and %.1f px between two, and neither can be zero", inside, between)
@@ -114,13 +114,13 @@ func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
 func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	generate := tabContent(t, content, text.TabOneTarget)
+	generate := tabContent(t, content, text.TabOneTarget())
 
 	gaps := sectionGaps(t, generate)
 	if len(gaps) == 0 {
 		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
 	}
-	between := gapBelowField(t, generate, text.FieldFormat, text.FieldSize)
+	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
 	for _, gap := range gaps {
 		if gap <= between {
 			t.Errorf("two sections are %.1f px apart and two fields inside one are %.1f px apart."+

@@ -23,12 +23,12 @@ import (
 // screen showing one string three times.
 func TestTheRuleAboutTheThreeSizeBoxesIsStatedOnce(t *testing.T) {
 	content, _ := laidOutWindow(t)
-	batches := tabContent(t, content, text.TabRecipe)
+	batches := tabContent(t, content, text.TabRecipe())
 
 	shown := allText(batches)
-	if seen := strings.Count(shown, text.OneSizeSettingOnly); seen != 1 {
+	if seen := strings.Count(shown, text.OneSizeSettingOnly()); seen != 1 {
 		t.Errorf("%q is on the batch screen %d time(s). A rule said once is a rule and said three times is noise",
-			text.OneSizeSettingOnly, seen)
+			text.OneSizeSettingOnly(), seen)
 	}
 }
 
@@ -40,10 +40,10 @@ func TestTheRuleAboutTheThreeSizeBoxesIsStatedOnce(t *testing.T) {
 // other, so a person could fill in two and find out at the press of a button.
 func TestTheRuleAboutTheThreeSizeBoxesIsStillOnTheScreen(t *testing.T) {
 	content, _ := laidOutWindow(t)
-	batches := tabContent(t, content, text.TabRecipe)
+	batches := tabContent(t, content, text.TabRecipe())
 
-	if !strings.Contains(allText(batches), text.OneSizeSettingOnly) {
+	if !strings.Contains(allText(batches), text.OneSizeSettingOnly()) {
 		t.Errorf("the batch screen never says %q, so three boxes that exclude each other say nothing about it",
-			text.OneSizeSettingOnly)
+			text.OneSizeSettingOnly())
 	}
 }

@@ -8,10 +8,8 @@ import (
 
 // Headings, one per screen. They name what the screen is for rather than what
 // it contains, which is why the preset one is a question.
-const (
-	HeadingGenerate = "Generate files"
-	HeadingPreset   = "Build a set for a question"
-)
+func HeadingGenerate() string { return say("HeadingGenerate", "Generate files") }
+func HeadingPreset() string   { return say("HeadingPreset", "Build a set for a question") }
 
 // HeadingAbout carries the version, so the screen somebody is told to look at
 // when reporting a problem says which build they are on.
@@ -21,7 +19,9 @@ func HeadingAbout(version string) string {
 
 // AboutTagline is the one sentence saying what this tool is. It is the product
 // thesis in a line: files, and what should happen to them.
-const AboutTagline = "Generate test files, and know how the system under test should react to them."
+func AboutTagline() string {
+	return say("AboutTagline", "Generate test files, and know how the system under test should react to them.")
+}
 
 // The tabs across the top, which are where moving between screens lives.
 //
@@ -34,33 +34,29 @@ const AboutTagline = "Generate test files, and know how the system under test sh
 // anywhere else - so the first word somebody met on opening this tool was ours.
 // The key keeps the old name because a key names the place rather than the
 // wording.
-const (
-	TabOneTarget = "Single batch"
-	TabPresets   = "Presets"
-	TabAbout     = "About"
-)
+func TabOneTarget() string { return say("TabOneTarget", "Single batch") }
+func TabPresets() string   { return say("TabPresets", "Presets") }
+func TabAbout() string     { return say("TabAbout", "About") }
 
 // Buttons that do something on the screen they are on.
-const ButtonChoose = "Choose..."
+func ButtonChoose() string { return say("ButtonChoose", "Choose...") }
 
 // The sections a screen is grouped into. A form of eight settings in one column
 // reads as eight unrelated things, and these are the questions they answer.
-const (
-	// SectionFormat is gone as of 2026-08-12. It headed a section holding one
-	// field, which groups nothing and cost a title, a surface and two gaps on
-	// a screen that did not have the room. The format moved into the section
-	// below it, where the rest of "what should this file be" already lived.
-	SectionConfiguration = "File configuration"
-	SectionOutput        = "Output"
-	// Not "Preset". The card was called that and so was the first field
-	// inside it, so the same word stood twice within 40 px in two different
-	// ranks of type - which reads as unfinished naming rather than as a
-	// grouping. It names what the card is for instead, which is the one thing
-	// the field label cannot say.
-	SectionPreset   = "The question"
-	SectionSettings = "Settings"
-	SectionLicence  = "Licence"
-)
+// SectionFormat is gone as of 2026-08-12. It headed a section holding one
+// field, which groups nothing and cost a title, a surface and two gaps on
+// a screen that did not have the room. The format moved into the section
+// below it, where the rest of "what should this file be" already lived.
+// Not "Preset". The card was called that and so was the first field
+// inside it, so the same word stood twice within 40 px in two different
+// ranks of type - which reads as unfinished naming rather than as a
+// grouping. It names what the card is for instead, which is the one thing
+// the field label cannot say.
+func SectionConfiguration() string { return say("SectionConfiguration", "File configuration") }
+func SectionOutput() string        { return say("SectionOutput", "Output") }
+func SectionPreset() string        { return say("SectionPreset", "The question") }
+func SectionSettings() string      { return say("SectionSettings", "Settings") }
+func SectionLicence() string       { return say("SectionLicence", "Licence") }
 
 // Field labels on the generate screen, in the order somebody fills them in.
 //
@@ -73,17 +69,15 @@ const (
 // describing label" named the mechanism instead of saying what happens. The
 // recipe keys, the flags and the manifest fields are all untouched: this is
 // what the window shows, and those are a contract.
-const (
-	FieldFormat       = "Format"
-	FieldSize         = "Size"
-	FieldCount        = "How many"
-	FieldTargetID     = "Group name"
-	FieldNameTemplate = "File names"
-	FieldOutputDir    = "Output directory"
-	FieldSeed         = "Seed"
-	FieldLabel        = "Write a label inside each file"
-	FieldPreset       = "Preset"
-)
+func FieldFormat() string       { return say("FieldFormat", "Format") }
+func FieldSize() string         { return say("FieldSize", "Size") }
+func FieldCount() string        { return say("FieldCount", "How many") }
+func FieldTargetID() string     { return say("FieldTargetID", "Group name") }
+func FieldNameTemplate() string { return say("FieldNameTemplate", "File names") }
+func FieldOutputDir() string    { return say("FieldOutputDir", "Output directory") }
+func FieldSeed() string         { return say("FieldSeed", "Seed") }
+func FieldLabel() string        { return say("FieldLabel", "Write a label inside each file") }
+func FieldPreset() string       { return say("FieldPreset", "Preset") }
 
 // The line under each field: what it does, in one line, and nothing else.
 //
@@ -96,15 +90,13 @@ const (
 // HintCount is gone rather than shortened. It said "How many files to produce"
 // under a field labelled "How many", which is the label again in a quieter
 // colour.
-const (
-	HintFormat       = "What kind of file to produce."
-	HintSize         = "Exact size of every file."
-	HintTargetID     = "Names this group of files."
-	HintNameTemplate = "What the files are called."
-	HintOutputDir    = "Where the files and the manifest go."
-	HintSeed         = "The same seed gives the same bytes."
-	HintPreset       = "What you are testing."
-)
+func HintFormat() string       { return say("HintFormat", "What kind of file to produce.") }
+func HintSize() string         { return say("HintSize", "Exact size of every file.") }
+func HintTargetID() string     { return say("HintTargetID", "Names this group of files.") }
+func HintNameTemplate() string { return say("HintNameTemplate", "What the files are called.") }
+func HintOutputDir() string    { return say("HintOutputDir", "Where the files and the manifest go.") }
+func HintSeed() string         { return say("HintSeed", "The same seed gives the same bytes.") }
+func HintPreset() string       { return say("HintPreset", "What you are testing.") }
 
 // The longer explanation behind the button beside a field name.
 //
@@ -115,16 +107,26 @@ const (
 //
 // DetailLabel holds the whole explanation because the switch says what it does
 // on its own face, so there is no short line left to put under it.
-const (
-	DetailFormat       = "Run out of the list and the tool has no other."
-	DetailSize         = "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes."
-	DetailTargetID     = "The seeds are derived from it, so changing it changes the bytes."
-	DetailNameTemplate = "{index:04} becomes 0001, 0002 and so on."
-	DetailOutputDir    = "It is created if it is not there."
-	DetailSeed         = "On any machine and in any build of this tool."
-	DetailLabel        = "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content."
-	DetailPreset       = "The set is worked out from the answer."
-)
+func DetailFormat() string {
+	return say("DetailFormat", "Run out of the list and the tool has no other.")
+}
+func DetailSize() string {
+	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes.")
+}
+func DetailTargetID() string {
+	return say("DetailTargetID", "The seeds are derived from it, so changing it changes the bytes.")
+}
+func DetailNameTemplate() string {
+	return say("DetailNameTemplate", "{index:04} becomes 0001, 0002 and so on.")
+}
+func DetailOutputDir() string { return say("DetailOutputDir", "It is created if it is not there.") }
+func DetailSeed() string {
+	return say("DetailSeed", "On any machine and in any build of this tool.")
+}
+func DetailLabel() string {
+	return say("DetailLabel", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.")
+}
+func DetailPreset() string { return say("DetailPreset", "The set is worked out from the answer.") }
 
 // PlaceholderNameTemplate stands in the empty name box. It shows the answer
 // rather than describing it, because a name template is easier recognised than
@@ -136,7 +138,7 @@ const (
 const PlaceholderNameTemplate = "files_0001"
 
 // PresetCatchesHeading introduces what a preset typically finds.
-const PresetCatchesHeading = "Typically finds:"
+func PresetCatchesHeading() string { return say("PresetCatchesHeading", "Typically finds:") }
 
 // PresetCatchesItem is gone as of 2026-08-12. It put the list marker into the
 // string - "   - " in front of the words - so the marker sat on the text
@@ -147,7 +149,7 @@ const PresetCatchesHeading = "Typically finds:"
 // PlaceholderWorkedOut stands in a format setting the format decides for
 // itself when nobody states it. A declaration with no default means the answer
 // comes from the size that was asked for.
-const PlaceholderWorkedOut = "worked out from the size"
+func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked out from the size") }
 
 // PlaceholderLeftEmpty stands in a format setting that has a declared default,
 // showing what happens if the field is not touched.
@@ -182,7 +184,7 @@ func PlaceholderLeftEmpty(declared string) string {
 // nothing is what lets the manifest record the value as defaulted rather than
 // chosen - which is a promise this window makes (O104).
 func ChoiceLeftAlone(declared string) string {
-	return PlaceholderNotStated + " - " + declared
+	return PlaceholderNotStated() + " - " + declared
 }
 
 // SettingsFor heads the block of fields a chosen format declares.
@@ -237,17 +239,13 @@ func TooManyFiles(count int64, reason error) string {
 // Everything the engine can be asked for that the single batch screen has no
 // room for lives here - a second batch, a size range, a boundary, a class, a
 // declared expectation, the files inside an archive.
-const (
-	HeadingRecipe = "Run several batches together"
-
-	// TabRecipe stands beside "Single batch", and the pair is deliberate: the
-	// difference between the two screens is how many batches, not how advanced
-	// the person is. "Advanced" would have said the other screen is for
-	// beginners, which is not true of anybody generating one batch of files.
-	TabRecipe = "Several batches"
-
-	SectionBatches = "Batches"
-)
+// TabRecipe stands beside "Single batch", and the pair is deliberate: the
+// difference between the two screens is how many batches, not how advanced
+// the person is. "Advanced" would have said the other screen is for
+// beginners, which is not true of anybody generating one batch of files.
+func HeadingRecipe() string  { return say("HeadingRecipe", "Run several batches together") }
+func TabRecipe() string      { return say("TabRecipe", "Several batches") }
+func SectionBatches() string { return say("SectionBatches", "Batches") }
 
 // BatchHeading names one batch in the list, counted the way the refusals count.
 //
@@ -260,7 +258,7 @@ func BatchHeading(n int) string {
 }
 
 // ContentsHeading introduces the files an archive is told to hold.
-const ContentsHeading = "Files inside each archive"
+func ContentsHeading() string { return say("ContentsHeading", "Files inside each archive") }
 
 // Field labels used only on the recipe screen. The rest are shared with the
 // single batch screen, because the same setting keeps the same word.
@@ -270,34 +268,44 @@ const ContentsHeading = "Files inside each archive"
 // name", because that is what an id does for the person looking at it. Two
 // fields called group on one screen would be worse than a word chosen for the
 // idea, and a class of case is what this actually is.
-const (
-	FieldSizeRange = "Size range"
-	FieldBoundary  = "Around a limit"
-	FieldGroup     = "Class"
-	FieldExpected  = "Expected outcome"
-	FieldReason    = "Why"
-	FieldManifest  = "Manifest file name"
-)
+func FieldSizeRange() string { return say("FieldSizeRange", "Size range") }
+func FieldBoundary() string  { return say("FieldBoundary", "Around a limit") }
+func FieldGroup() string     { return say("FieldGroup", "Class") }
+func FieldExpected() string  { return say("FieldExpected", "Expected outcome") }
+func FieldReason() string    { return say("FieldReason", "Why") }
+func FieldManifest() string  { return say("FieldManifest", "Manifest file name") }
 
 // The line under each of the recipe screen's own fields.
-const (
-	HintSizeRange = "A different size for every file."
-	HintBoundary  = "Three files: one byte under the limit, one on it, one over."
-	HintGroup     = "Marks several batches as one kind of case."
-	HintExpected  = "What the system under test should do with these files."
-	HintReason    = "Which rule this is about."
-	HintManifest  = "The record of what this run produced."
-)
+func HintSizeRange() string { return say("HintSizeRange", "A different size for every file.") }
+func HintBoundary() string {
+	return say("HintBoundary", "Three files: one byte under the limit, one on it, one over.")
+}
+func HintGroup() string { return say("HintGroup", "Marks several batches as one kind of case.") }
+func HintExpected() string {
+	return say("HintExpected", "What the system under test should do with these files.")
+}
+func HintReason() string   { return say("HintReason", "Which rule this is about.") }
+func HintManifest() string { return say("HintManifest", "The record of what this run produced.") }
 
 // The longer explanation behind the button beside each of them.
-const (
-	DetailSizeRange = "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
-	DetailBoundary  = "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
-	DetailGroup     = "It reaches the manifest, so a test can assert about a whole class of case at once."
-	DetailExpected  = "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
-	DetailReason    = "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it."
-	DetailManifest  = "It goes in the output directory beside the files."
-)
+func DetailSizeRange() string {
+	return say("DetailSizeRange", "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats.")
+}
+func DetailBoundary() string {
+	return say("DetailBoundary", "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used.")
+}
+func DetailGroup() string {
+	return say("DetailGroup", "It reaches the manifest, so a test can assert about a whole class of case at once.")
+}
+func DetailExpected() string {
+	return say("DetailExpected", "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy.")
+}
+func DetailReason() string {
+	return say("DetailReason", "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it.")
+}
+func DetailManifest() string {
+	return say("DetailManifest", "It goes in the output directory beside the files.")
+}
 
 // The three ways of saying how big, offered side by side.
 //
@@ -305,7 +313,7 @@ const (
 // makes that safe: stating two of them is a refusal it already words and
 // addresses, so filling in two marks the box rather than being quietly resolved.
 // A mode would have been a fourth rule for the window to keep in step.
-const HintSizeExact = "One size for every file."
+func HintSizeExact() string { return say("HintSizeExact", "One size for every file.") }
 
 // OneSizeSettingOnly goes under EVERY one of the three ways of stating a size,
 // not just the first.
@@ -327,15 +335,13 @@ const HintSizeExact = "One size for every file."
 // times in one line of the screen - which is the rule turned into noise, and
 // two lines of height on a form that does not fit. What stays under each box is
 // what THAT box does, which is the only part of the three that differs.
-const OneSizeSettingOnly = "Fill in one of these three."
+func OneSizeSettingOnly() string { return say("OneSizeSettingOnly", "Fill in one of these three.") }
 
 // Buttons on the recipe screen.
-const (
-	ButtonAddBatch       = "Add a batch"
-	ButtonRemoveBatch    = "Remove"
-	ButtonAddContents    = "Add files inside"
-	ButtonRemoveContents = "Remove"
-)
+func ButtonAddBatch() string       { return say("ButtonAddBatch", "Add a batch") }
+func ButtonRemoveBatch() string    { return say("ButtonRemoveBatch", "Remove") }
+func ButtonAddContents() string    { return say("ButtonAddContents", "Add files inside") }
+func ButtonRemoveContents() string { return say("ButtonRemoveContents", "Remove") }
 
 // PlaceholderNotStated stands in a list nobody has chosen from.
 //
@@ -343,7 +349,7 @@ const (
 // setting was left alone - and leaving it alone has to stay possible, because a
 // window whose every field arrives carrying a value can never say "I did not
 // state this". Untouchable rule 5.
-const PlaceholderNotStated = "not stated"
+func PlaceholderNotStated() string { return say("PlaceholderNotStated", "not stated") }
 
 // RequiredMark stands beside the name of a field that has to be filled in.
 //
@@ -404,7 +410,9 @@ func ExactBytes(n int64) string {
 // marked, the marks may be well off the bottom of a form that does not fit its
 // window, and nothing where the button is changed. It carries no count, because
 // the boxes themselves say which ones and how many.
-const RefusedBeforeWriting = "Nothing was written. Check the settings marked above."
+func RefusedBeforeWriting() string {
+	return say("RefusedBeforeWriting", "Nothing was written. Check the settings marked above.")
+}
 
 // ButtonDonate asks for money towards the work, and it is a word somebody reads
 // so it is translated like every other.
@@ -412,11 +420,13 @@ const RefusedBeforeWriting = "Nothing was written. Check the settings marked abo
 // "Donate" rather than "Support" or "Sponsor": it says what pressing it leads
 // to. Support reads like a help desk, which is the one thing this button is
 // not, and a person looking for help would press it and be asked for money.
-const ButtonDonate = "Donate"
+func ButtonDonate() string { return say("ButtonDonate", "Donate") }
 
 // DetailDonate is what the button leads to, for somebody who wants to know
 // before pressing rather than after.
-const DetailDonate = "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it."
+func DetailDonate() string {
+	return say("DetailDonate", "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it.")
+}
 
 // SupportURL is where the button goes.
 //

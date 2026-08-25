@@ -37,7 +37,7 @@ import (
 func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 	c, content := screenOnACanvas(t)
 
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 	if menu.Marked() {
 		t.Error("the format menu was pressed with the pointer and drew the keyboard mark, " +
@@ -56,9 +56,9 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 	// changes its own value inside Tapped - so calling anything else would
 	// reach a state a person cannot reach. It is also the only way to find out
 	// that the press landed at all.
-	toggle := checkNamed(content, text.FieldLabel)
+	toggle := checkNamed(content, text.FieldLabel())
 	if toggle == nil {
-		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel)
+		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel())
 	}
 	before := toggle.Checked
 	at := fyne.CurrentApp().Driver().AbsolutePositionForObject(toggle)
@@ -81,15 +81,15 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 func TestTheKeyboardDrawsItsMarkWhenTheKeyboardIsWhatArrived(t *testing.T) {
 	c, content := screenOnACanvas(t)
 
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	c.Focus(menu)
 	if !menu.Marked() {
 		t.Error("the keyboard was moved into the format menu and nothing on it says so")
 	}
 
-	toggle := checkNamed(content, text.FieldLabel)
+	toggle := checkNamed(content, text.FieldLabel())
 	if toggle == nil {
-		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel)
+		t.Fatalf("there is no switch labelled %q, so this guard read the wrong tree", text.FieldLabel())
 	}
 	c.Focus(toggle)
 	if !toggle.Marked() {
@@ -105,7 +105,7 @@ func TestTheKeyboardDrawsItsMarkWhenTheKeyboardIsWhatArrived(t *testing.T) {
 func TestReachingForTheKeyboardTurnsTheMarkOn(t *testing.T) {
 	c, content := screenOnACanvas(t)
 
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 	if menu.Marked() {
 		t.Fatal("the press already drew the mark, so this guard cannot tell what the key did")
@@ -201,7 +201,7 @@ func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
-	content := selectTab(t, host.content, text.TabOneTarget)
+	content := selectTab(t, host.content, text.TabOneTarget())
 
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)

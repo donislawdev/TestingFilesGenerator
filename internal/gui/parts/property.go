@@ -142,7 +142,7 @@ func textField(p format.Property) PropertyField {
 // default means the format works the value out from the size it was asked for.
 func leftAlone(p format.Property) string {
 	if p.Default == "" {
-		return text.PlaceholderWorkedOut
+		return text.PlaceholderWorkedOut()
 	}
 	return text.PlaceholderLeftEmpty(p.Default)
 }

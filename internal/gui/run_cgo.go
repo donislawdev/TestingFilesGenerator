@@ -3,6 +3,7 @@
 package gui
 
 import (
+	"fmt"
 	"io"
 	"net/url"
 
@@ -117,6 +118,16 @@ func run(errOut io.Writer) int {
 	// process rather than for one window, and Windows reads it when it builds
 	// the menus. See darkmenus_windows.go for what it is and what it costs.
 	PreferDarkMenus()
+
+	// The catalogue, before the first word is asked for. A failure here is not
+	// a reason to refuse to start: every message states its English on the spot
+	// and answers with it when no catalogue is loaded, so the window opens in
+	// English rather than not at all. It is said out loud rather than swallowed,
+	// because a language silently not arriving is the shape of defect somebody
+	// reports as "it ignores my system settings" a year later.
+	if err := text.LoadBuiltIn(); err != nil {
+		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
+	}
 
 	a := app.NewWithID(appID)
 	// The picture the desktop shows for this program, in the taskbar, in the

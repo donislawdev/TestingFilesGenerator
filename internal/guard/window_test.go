@@ -185,12 +185,12 @@ func TestTheLicenceIsStillReachableFromTheOpeningScreen(t *testing.T) {
 	// the foot of the form, so reaching the licence meant scrolling past every
 	// field, and the way back was another button somebody could delete without
 	// noticing. A tab is its own way out, so that door is structural now.
-	shown := textIn(selectTab(t, host.content, text.TabAbout))
+	shown := textIn(selectTab(t, host.content, text.TabAbout()))
 	if !strings.Contains(shown, "generate are yours") {
 		t.Errorf("the About tab does not lead to the licence. What it shows:\n%s", shown)
 	}
 
-	if generate := selectTab(t, host.content, text.TabOneTarget); buttonNamed(generate, "Generate") == nil {
+	if generate := selectTab(t, host.content, text.TabOneTarget()); buttonNamed(generate, "Generate") == nil {
 		t.Error("there is no way from the licence back to the work")
 	}
 }
@@ -210,7 +210,7 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	if tabs.Selected() == nil || tabs.Selected().Text != text.TabOneTarget {
+	if tabs.Selected() == nil || tabs.Selected().Text != text.TabOneTarget() {
 		t.Errorf("the window does not open on the work. Its tabs are %v", tabNames(host.content))
 	} else if buttonNamed(tabs.Selected().Content, "Generate") == nil {
 		t.Error("the tab the window opens on has no Generate button")

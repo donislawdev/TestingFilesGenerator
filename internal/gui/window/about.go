@@ -80,11 +80,11 @@ var OpenSize = fyne.NewSize(1000, 1000)
 func About(h Host) fyne.CanvasObject {
 	page := parts.Screen(
 		text.HeadingAbout(version.Version),
-		parts.Prose(text.AboutTagline),
+		parts.Prose(text.AboutTagline()),
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
-		parts.Section(text.SectionLicence, parts.Prose(version.LicenceNotice)),
+		parts.Section(text.SectionLicence(), parts.Prose(version.LicenceNotice)),
 	)
 
 	// The same bar the work screens carry, holding only the Donate button.

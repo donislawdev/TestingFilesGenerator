@@ -26,12 +26,12 @@ func TestTheFormCannotBeEditedWhileARunIsGoing(t *testing.T) {
 	dir := t.TempDir()
 	_, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "64kb")
-	fill(t, content, text.FieldCount, "400")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "64kb")
+	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
 
-	box := entryUnder(t, content, text.FieldSize)
+	box := entryUnder(t, content, text.FieldSize())
 	if box == nil {
 		t.Fatal("there is no size box, so this guard read the wrong tree")
 	}
@@ -66,7 +66,7 @@ func TestTheFormCannotBeEditedWhileARunIsGoing(t *testing.T) {
 // one matters on its own - it is the only part visible without looking away
 // from the button that was just pressed.
 func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget)
+	content, w := screenInAWindow(t, text.TabOneTarget())
 
 	scroll := scrollIn(content)
 	if scroll == nil {
@@ -96,7 +96,7 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 
 	// The seed sits in the last section, which is the part off the bottom of
 	// this window - the whole case this is about.
-	seed := entryUnder(t, content, text.FieldSeed)
+	seed := entryUnder(t, content, text.FieldSeed())
 	if seed == nil {
 		t.Fatal("there is no seed box, so this guard read the wrong tree")
 	}
@@ -112,9 +112,9 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 	if focused := w.Canvas().Focused(); focused != seed {
 		t.Errorf("the keyboard went to %T rather than to the box the refusal is about", focused)
 	}
-	if shown := textIn(content); !strings.Contains(shown, text.RefusedBeforeWriting) {
+	if shown := textIn(content); !strings.Contains(shown, text.RefusedBeforeWriting()) {
 		t.Errorf("the foot of the form does not say %q, so a press that was refused looks like a "+
-			"press that did nothing.", text.RefusedBeforeWriting)
+			"press that did nothing.", text.RefusedBeforeWriting())
 	}
 }
 
@@ -181,13 +181,13 @@ func TestAPreviewGivesTheScreenBackWhenItIsDone(t *testing.T) {
 	dir := t.TempDir()
 	host, content := screen(t)
 
-	fill(t, content, text.FieldOutputDir, dir)
-	fill(t, content, text.FieldSize, "4kb")
-	fill(t, content, text.FieldCount, "3")
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "4kb")
+	fill(t, content, text.FieldCount(), "3")
 	press(t, content, "Preview")
 	join(host)
 
-	box := entryUnder(t, content, text.FieldSize)
+	box := entryUnder(t, content, text.FieldSize())
 	if box == nil {
 		t.Fatal("there is no size box, so this guard read the wrong tree")
 	}
@@ -222,22 +222,22 @@ func TestAPreviewGivesTheScreenBackWhenItIsDone(t *testing.T) {
 func TestARefusedPreviewLeavesTheScreenUsable(t *testing.T) {
 	for _, c := range []struct{ name, field, value string }{
 		// Refused while settling, which is where a bad value is caught.
-		{"a size that is not a size", text.FieldSize, "abc"},
+		{"a size that is not a size", text.FieldSize(), "abc"},
 		// Refused deeper, by the engine, for a size no format can make.
-		{"a size below every minimum", text.FieldSize, "1"},
+		{"a size below every minimum", text.FieldSize(), "1"},
 		// Legal and degenerate: nothing to do at all.
-		{"nothing to produce", text.FieldCount, "0"},
+		{"nothing to produce", text.FieldCount(), "0"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			_, content := screen(t)
-			fill(t, content, text.FieldOutputDir, t.TempDir())
+			fill(t, content, text.FieldOutputDir(), t.TempDir())
 			fill(t, content, c.field, c.value)
-			press(t, content, text.ButtonPreview)
+			press(t, content, text.ButtonPreview())
 
 			// No worker was started, so there is nothing to join - and that is
 			// exactly why this can freeze: the thing that gives the screen back
 			// never runs.
-			box := entryUnder(t, content, text.FieldSize)
+			box := entryUnder(t, content, text.FieldSize())
 			if box == nil {
 				t.Fatal("there is no size box, so this guard read the wrong tree")
 			}
@@ -246,7 +246,7 @@ func TestARefusedPreviewLeavesTheScreenUsable(t *testing.T) {
 					"Reason: the screen is marked busy before the refusal is known, and only a worker hands it back - so a refused press leaves the form dead for the rest of the session.\n" +
 					"What to do: settle and plan before marking the screen busy.")
 			}
-			for _, name := range []string{text.ButtonPreview, text.ButtonGenerate} {
+			for _, name := range []string{text.ButtonPreview(), text.ButtonGenerate()} {
 				if b := buttonNamed(content, name); b == nil || b.Disabled() {
 					t.Errorf("%q is disabled after a refused preview, so nothing can be tried again", name)
 				}

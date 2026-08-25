@@ -23,12 +23,12 @@ import (
 // It is also checked to go out of use during a run, because pressing it then
 // rebuilds the form underneath a run that is writing files.
 func TestAddingABatchIsReachableWithoutScrolling(t *testing.T) {
-	content, _ := screenInAWindow(t, text.TabRecipe)
+	content, _ := screenInAWindow(t, text.TabRecipe())
 
-	add := buttonNamed(content, text.ButtonAddBatch)
+	add := buttonNamed(content, text.ButtonAddBatch())
 	if add == nil {
 		t.Fatalf("the batch screen has no %q button. It has: %v",
-			text.ButtonAddBatch, buttonNames(content))
+			text.ButtonAddBatch(), buttonNames(content))
 	}
 
 	scroll := scrollIn(content)
@@ -38,7 +38,7 @@ func TestAddingABatchIsReachableWithoutScrolling(t *testing.T) {
 	if holds(scroll.Content, add) {
 		t.Errorf("%q is inside the scrolling part of the batch screen, so it is only reachable "+
 			"after scrolling past a batch taller than the window - and it is the one control "+
-			"this screen exists for.", text.ButtonAddBatch)
+			"this screen exists for.", text.ButtonAddBatch())
 	}
 }
 
@@ -55,10 +55,10 @@ func TestAddingABatchIsOutOfUseWhileARunIsGoing(t *testing.T) {
 	body := screen.Object()
 	fields := screen.Fields()
 
-	add := buttonNamed(body, text.ButtonAddBatch)
+	add := buttonNamed(body, text.ButtonAddBatch())
 	if add == nil {
 		t.Fatalf("the batch screen has no %q button. It has: %v",
-			text.ButtonAddBatch, buttonNames(body))
+			text.ButtonAddBatch(), buttonNames(body))
 	}
 	if add.Disabled() {
 		t.Fatal("the add button starts disabled, so this guard cannot tell a run from a fresh screen")

@@ -1,0 +1,302 @@
+{
+  "AboutTagline": {
+    "description": "Shown on the About screen.",
+    "other": "Generate test files, and know how the system under test should react to them."
+  },
+  "ButtonAddBatch": {
+    "description": "The words on a button.",
+    "other": "Add a batch"
+  },
+  "ButtonAddContents": {
+    "description": "The words on a button.",
+    "other": "Add files inside"
+  },
+  "ButtonCancel": {
+    "description": "The words on a button.",
+    "other": "Cancel"
+  },
+  "ButtonChoose": {
+    "description": "The words on a button.",
+    "other": "Choose..."
+  },
+  "ButtonDonate": {
+    "description": "The words on a button.",
+    "other": "Donate"
+  },
+  "ButtonGenerate": {
+    "description": "The words on a button.",
+    "other": "Generate"
+  },
+  "ButtonPreview": {
+    "description": "The words on a button.",
+    "other": "Preview"
+  },
+  "ButtonRemoveBatch": {
+    "description": "The words on a button.",
+    "other": "Remove"
+  },
+  "ButtonRemoveContents": {
+    "description": "The words on a button.",
+    "other": "Remove"
+  },
+  "ContentsHeading": {
+    "description": "Shown where an archive says what it holds.",
+    "other": "Files inside each archive"
+  },
+  "DetailBoundary": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
+  },
+  "DetailDonate": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it."
+  },
+  "DetailExpected": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
+  },
+  "DetailFormat": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Run out of the list and the tool has no other."
+  },
+  "DetailGroup": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "It reaches the manifest, so a test can assert about a whole class of case at once."
+  },
+  "DetailLabel": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content."
+  },
+  "DetailManifest": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "It goes in the output directory beside the files."
+  },
+  "DetailNameTemplate": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "{index:04} becomes 0001, 0002 and so on."
+  },
+  "DetailOutputDir": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "It is created if it is not there."
+  },
+  "DetailPreset": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "The set is worked out from the answer."
+  },
+  "DetailReason": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it."
+  },
+  "DetailSeed": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "On any machine and in any build of this tool."
+  },
+  "DetailSize": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes."
+  },
+  "DetailSizeRange": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
+  },
+  "DetailTargetID": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "The seeds are derived from it, so changing it changes the bytes."
+  },
+  "FieldBoundary": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Around a limit"
+  },
+  "FieldCount": {
+    "description": "The name above a box somebody fills in.",
+    "other": "How many"
+  },
+  "FieldExpected": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Expected outcome"
+  },
+  "FieldFormat": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Format"
+  },
+  "FieldGroup": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Class"
+  },
+  "FieldLabel": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Write a label inside each file"
+  },
+  "FieldManifest": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Manifest file name"
+  },
+  "FieldNameTemplate": {
+    "description": "The name above a box somebody fills in.",
+    "other": "File names"
+  },
+  "FieldOutputDir": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Output directory"
+  },
+  "FieldPreset": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Preset"
+  },
+  "FieldReason": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Why"
+  },
+  "FieldSeed": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Seed"
+  },
+  "FieldSize": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Size"
+  },
+  "FieldSizeRange": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Size range"
+  },
+  "FieldTargetID": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Group name"
+  },
+  "HeadingGenerate": {
+    "description": "The heading at the top of a screen.",
+    "other": "Generate files"
+  },
+  "HeadingPreset": {
+    "description": "The heading at the top of a screen.",
+    "other": "Build a set for a question"
+  },
+  "HeadingRecipe": {
+    "description": "The heading at the top of a screen.",
+    "other": "Run several batches together"
+  },
+  "HintBoundary": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Three files: one byte under the limit, one on it, one over."
+  },
+  "HintExpected": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What the system under test should do with these files."
+  },
+  "HintFormat": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What kind of file to produce."
+  },
+  "HintGroup": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Marks several batches as one kind of case."
+  },
+  "HintManifest": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "The record of what this run produced."
+  },
+  "HintNameTemplate": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What the files are called."
+  },
+  "HintOutputDir": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Where the files and the manifest go."
+  },
+  "HintPreset": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What you are testing."
+  },
+  "HintReason": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Which rule this is about."
+  },
+  "HintSeed": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "The same seed gives the same bytes."
+  },
+  "HintSize": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Exact size of every file."
+  },
+  "HintSizeExact": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "One size for every file."
+  },
+  "HintSizeRange": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "A different size for every file."
+  },
+  "HintTargetID": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Names this group of files."
+  },
+  "NothingProduced": {
+    "description": "Shown in the window.",
+    "other": "Nothing was produced."
+  },
+  "OneSizeSettingOnly": {
+    "description": "Shown in the window.",
+    "other": "Fill in one of these three."
+  },
+  "PlaceholderNotStated": {
+    "description": "Stands in an empty box, in a quieter colour than a value.",
+    "other": "not stated"
+  },
+  "PlaceholderWorkedOut": {
+    "description": "Stands in an empty box, in a quieter colour than a value.",
+    "other": "worked out from the size"
+  },
+  "PresetCatchesHeading": {
+    "description": "Shown on the preset screen.",
+    "other": "Typically finds:"
+  },
+  "RefusedBeforeWriting": {
+    "description": "Shown in the window.",
+    "other": "Nothing was written. Check the settings marked above."
+  },
+  "SectionBatches": {
+    "description": "The heading over a group of fields.",
+    "other": "Batches"
+  },
+  "SectionConfiguration": {
+    "description": "The heading over a group of fields.",
+    "other": "File configuration"
+  },
+  "SectionLicence": {
+    "description": "The heading over a group of fields.",
+    "other": "Licence"
+  },
+  "SectionOutput": {
+    "description": "The heading over a group of fields.",
+    "other": "Output"
+  },
+  "SectionPreset": {
+    "description": "The heading over a group of fields.",
+    "other": "The question"
+  },
+  "SectionSettings": {
+    "description": "The heading over a group of fields.",
+    "other": "Settings"
+  },
+  "TabAbout": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "About"
+  },
+  "TabOneTarget": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "Single batch"
+  },
+  "TabPresets": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "Presets"
+  },
+  "TabRecipe": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "Several batches"
+  },
+  "WorkingOutTheCost": {
+    "description": "Shown in the window.",
+    "other": "Working out what this would cost..."
+  }
+}

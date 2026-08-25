@@ -81,16 +81,16 @@ func TestTheOpenListMarksTheValueThatIsChosen(t *testing.T) {
 
 	host := &fakeHost{}
 	window.Open(host)
-	content := tabNamed(t, host.content, text.TabOneTarget)
+	content := tabNamed(t, host.content, text.TabOneTarget())
 
 	w := test.NewWindow(host.content)
 	defer w.Close()
 	w.Resize(window.OpenSize)
 	host.content.Refresh()
 
-	picker, ok := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	picker, ok := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
-		t.Fatalf("the format field is %T rather than a menu", controlUnder(content, text.FieldFormat))
+		t.Fatalf("the format field is %T rather than a menu", controlUnder(content, text.FieldFormat()))
 	}
 	const chosen = "png"
 	picker.SetSelected(chosen)

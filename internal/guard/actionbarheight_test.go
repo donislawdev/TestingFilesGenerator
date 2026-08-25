@@ -71,7 +71,7 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 		},
 	}
 
-	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
 		for _, state := range restingStates {
 			t.Run(tab+"/"+state.name, func(t *testing.T) {
 				content, w := screenInAWindow(t, tab)
@@ -86,7 +86,7 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 				}
 
 				if state.clearTheBox {
-					box := entryUnder(t, content, text.FieldOutputDir)
+					box := entryUnder(t, content, text.FieldOutputDir())
 					if box == nil {
 						t.Fatalf("the %s screen has no output directory box, so this guard read the wrong tree", tab)
 					}
@@ -166,11 +166,11 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 // Asked through Preview because it goes down the same path and writes nothing,
 // so this stays a guard about words rather than a guard that generates files.
 func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
-	content, w, host := screenInAWindowWithHost(t, text.TabPresets)
+	content, w, host := screenInAWindowWithHost(t, text.TabPresets())
 
 	// Nothing is filled in. A note is what the run says about a value nobody
 	// gave it, so leaving the settings alone is what produces one at all.
-	press(t, content, text.ButtonPreview)
+	press(t, content, text.ButtonPreview())
 	// This preview is ACCEPTED, so it answers from a worker. Joined before the
 	// status line is read - see join.
 	join(host)

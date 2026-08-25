@@ -24,19 +24,19 @@ import (
 // the row rather than against a number of pixels: what has to hold is that a
 // message is not confined to the column its field is in.
 func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget)
+	content, w := screenInAWindow(t, text.TabOneTarget())
 
 	// A size no format can produce, so the refusal lands on the size box - and
 	// the size box shares its row with how many.
-	fill(t, content, text.FieldSize, "1")
-	press(t, content, text.ButtonGenerate)
+	fill(t, content, text.FieldSize(), "1")
+	press(t, content, text.ButtonGenerate())
 	settle(content, w)
 
 	said := refusalLabelSaying(content, "BMP")
 	if said == nil {
 		t.Fatalf("nothing on the screen is complaining about the size. It says:\n%s", textIn(content))
 	}
-	box := controlUnder(content, text.FieldSize)
+	box := controlUnder(content, text.FieldSize())
 	if box == nil {
 		t.Fatal("the screen has no size box, so this guard read the wrong tree")
 	}
@@ -71,7 +71,7 @@ func TestARefusalNamesTheBoxTheWayTheScreenNamesIt(t *testing.T) {
 		t.Fatal("bmp declares width and the screen has no box for it")
 	}
 	box.SetText("99999")
-	press(t, generate, text.ButtonGenerate)
+	press(t, generate, text.ButtonGenerate())
 
 	shown := textIn(generate)
 	label := text.SettingLabel("width")

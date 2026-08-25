@@ -26,11 +26,11 @@ import (
 // difference is deliberate: in a terminal you typed your way there and you know
 // which one it is. This guard is about the window only.
 func TestTheWindowOffersAFolderOfItsOwnToWriteInto(t *testing.T) {
-	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
 		t.Run(tab, func(t *testing.T) {
 			content, _ := screenInAWindow(t, tab)
 
-			box := entryUnder(t, content, text.FieldOutputDir)
+			box := entryUnder(t, content, text.FieldOutputDir())
 			if box == nil {
 				t.Fatalf("the %s screen has no output directory box, so this guard read the wrong tree", tab)
 			}
@@ -71,11 +71,11 @@ func TestTheWindowOffersAFolderOfItsOwnToWriteInto(t *testing.T) {
 // exists. A label saying the right thing in a part of the screen you have to
 // scroll to reach is the defect, not the fix.
 func TestWhereTheFilesGoIsSaidOutsideTheScrollingPart(t *testing.T) {
-	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
 		t.Run(tab, func(t *testing.T) {
 			content, _ := screenInAWindow(t, tab)
 
-			box := entryUnder(t, content, text.FieldOutputDir)
+			box := entryUnder(t, content, text.FieldOutputDir())
 			if box == nil {
 				t.Fatalf("the %s screen has no output directory box, so this guard read the wrong tree", tab)
 			}
@@ -143,7 +143,7 @@ func holds(parent fyne.CanvasObject, wanted fyne.CanvasObject) bool {
 // which is exactly the shape of guard this project has recorded as passing
 // without reaching the code.
 func TestClearingTheOutputDirectoryRefusesTheRunOnEveryScreen(t *testing.T) {
-	for _, tab := range []string{text.TabOneTarget, text.TabPresets, text.TabRecipe} {
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
 		t.Run(tab, func(t *testing.T) {
 			host := &fakeHost{}
 			window.Open(host)
@@ -156,23 +156,23 @@ func TestClearingTheOutputDirectoryRefusesTheRunOnEveryScreen(t *testing.T) {
 			// The batch screen opens with nothing answered, so give it the two
 			// settings it cannot run without - otherwise the refusal under test
 			// is lost among others and this would pass for the wrong reason.
-			if tab == text.TabRecipe {
-				fill(t, content, text.FieldTargetID, "files")
-				fill(t, content, text.FieldSize, "1kb")
+			if tab == text.TabRecipe() {
+				fill(t, content, text.FieldTargetID(), "files")
+				fill(t, content, text.FieldSize(), "1kb")
 			}
 
 			// Asserted rather than assumed: if the box were already empty this
 			// guard would be proving nothing about clearing it.
-			box := entryUnder(t, content, text.FieldOutputDir)
+			box := entryUnder(t, content, text.FieldOutputDir())
 			if box.Text == "" {
 				t.Fatalf("%s opens with an empty output directory, so there is nothing to clear", tab)
 			}
 			box.SetText("")
 
-			press(t, content, text.ButtonGenerate)
+			press(t, content, text.ButtonGenerate())
 			join(host)
 
-			if edgeOf(t, content, text.FieldOutputDir).StrokeWidth <= 0 {
+			if edgeOf(t, content, text.FieldOutputDir()).StrokeWidth <= 0 {
 				t.Errorf("%s: the output directory was cleared, Generate was pressed, and the box says nothing - "+
 					"so the run went somewhere nobody named", tab)
 			}

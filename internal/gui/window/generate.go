@@ -142,7 +142,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 			g.actions(), g.progress(), g.problem.Object()),
 		nil, nil,
 		(g.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingGenerate,
+			text.HeadingGenerate(),
 			g.settingsSection()...,
 		)))),
 	))
@@ -240,37 +240,37 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 	// in recipe keys, and it is what a refusal is matched against.
 	add := g.fields.Add
 	return []fyne.CanvasObject{
-		parts.Section(text.SectionConfiguration,
+		parts.Section(text.SectionConfiguration(),
 			// The format used to be a section of its own holding one field.
 			// A grouping of one groups nothing, and it cost a title, a surface
 			// and two gaps - measured at about 60 px on a screen that was 119
 			// px too tall. It belongs here anyway: what kind of file, how big,
 			// how many and what they are called are one set of questions.
-			add(engine.SettingFormat, text.FieldFormat, text.HintFormat,
-				g.tips.Say(text.DetailFormat), g.formatPick),
+			add(engine.SettingFormat, text.FieldFormat(), text.HintFormat(),
+				g.tips.Say(text.DetailFormat()), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			g.fields.Row(
-				add(format.SettingSize, text.FieldSize, text.HintSize, g.tips.Say(text.DetailSize),
+				add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 					parts.Numeric(g.size)),
-				add(engine.SettingCount, text.FieldCount, "", parts.NoDetail, parts.Numeric(g.count)),
+				add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
 			),
 			g.fields.Row(
-				add(engine.SettingID, text.FieldTargetID, text.HintTargetID, g.tips.Say(text.DetailTargetID), g.id),
-				add(engine.SettingName, text.FieldNameTemplate, text.HintNameTemplate,
-					g.tips.Say(text.DetailNameTemplate), g.name),
+				add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), g.id),
+				add(engine.SettingName, text.FieldNameTemplate(), text.HintNameTemplate(),
+					g.tips.Say(text.DetailNameTemplate()), g.name),
 			),
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
 		),
-		parts.Section(text.SectionOutput,
-			add(engine.SettingOutDir, text.FieldOutputDir, text.HintOutputDir, g.tips.Say(text.DetailOutputDir),
+		parts.Section(text.SectionOutput(),
+			add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
 				chooserFor(g.host, g.outDir)),
 			g.fields.Row(
-				add(engine.SettingSeed, text.FieldSeed, text.HintSeed, g.tips.Say(text.DetailSeed),
+				add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
 					parts.Numeric(g.seed)),
-				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel, "", g.tips.Say(text.DetailLabel), g.label),
+				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
 			),
 		),
 	}
@@ -352,7 +352,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	if err != nil {
 		bad = append(bad, saying(format.SettingSize, err))
 	}
-	count, err := wholeNumber(engine.SettingCount, text.FieldCount, g.count.Text)
+	count, err := wholeNumber(engine.SettingCount, text.FieldCount(), g.count.Text)
 	// files is what the engine is handed, and it is only ever set on the branch
 	// that has already been past the ceiling. Written this way rather than
 	// converting further down, so the bound and the narrowing sit in one
@@ -378,7 +378,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	default:
 		files = int(count)
 	}
-	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed, g.seed.Text)
+	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed(), g.seed.Text)
 	if err != nil {
 		bad = append(bad, err)
 	}

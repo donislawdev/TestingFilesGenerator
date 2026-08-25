@@ -24,7 +24,7 @@ import (
 // among the things a dropdown has to support.
 func TestALetterTypedAtTheShutListMovesToThatValue(t *testing.T) {
 	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 
 	// csv is where a fresh screen starts, so p has to reach pdf and png rather
 	// than the first value in the list.
@@ -56,7 +56,7 @@ func TestALetterTypedAtTheShutListMovesToThatValue(t *testing.T) {
 // what stops a held key from committing a value nobody looked at.
 func TestALetterTypedAtTheOpenListMovesTheKeyboard(t *testing.T) {
 	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 
 	list := menu.Opened()
@@ -85,7 +85,7 @@ func TestALetterTypedAtTheOpenListMovesTheKeyboard(t *testing.T) {
 // here to somebody who has just used a mouse.
 func TestOpeningAListWithAPressDrawsNoKeyboardBar(t *testing.T) {
 	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 
 	list := menu.Opened()
@@ -118,7 +118,7 @@ func TestOpeningAListWithAPressDrawsNoKeyboardBar(t *testing.T) {
 // follow the text size and the rule does not.
 func TestTheOpenListStopsAtEightRowsHoweverManyValuesThereAre(t *testing.T) {
 	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 
 	values := len(format.IDs())
 	if values <= 8 {
@@ -153,7 +153,7 @@ func TestTheOpenListStopsAtEightRowsHoweverManyValuesThereAre(t *testing.T) {
 // starts from somewhere nobody can see.
 func TestEscapeClosesTheListAndGivesTheKeyboardBack(t *testing.T) {
 	c, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat)
+	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 
 	list := menu.Opened()

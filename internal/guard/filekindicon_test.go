@@ -86,9 +86,9 @@ func TestTwoKindsOfFileAreNotDrawnWithOnePicture(t *testing.T) {
 // table - this asks the list that opens under the menu what it put in front of
 // its words.
 func TestTheFormatMenuDrawsThePictureOfEachKind(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget)
+	content, w := screenInAWindow(t, text.TabOneTarget())
 
-	menu, ok := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	menu, ok := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
 		t.Fatal("the format field is not a list to choose from, so this guard read the wrong tree")
 	}

@@ -35,7 +35,7 @@ func TestThePresetScreenCanBuildTheSetInAnyFormat(t *testing.T) {
 	dir := t.TempDir()
 
 	host, content := presetScreen(t)
-	fill(t, content, text.FieldOutputDir, dir)
+	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
@@ -88,7 +88,7 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 	}
 
 	host, content := presetScreen(t)
-	fill(t, content, text.FieldOutputDir, fromWindow)
+	fill(t, content, text.FieldOutputDir(), fromWindow)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
@@ -144,8 +144,8 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 // the thing somebody presses instead of finding out by writing gigabytes.
 func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 	generateHost, generate := screen(t)
-	choose(t, generate, text.FieldFormat, "png")
-	fill(t, generate, text.FieldOutputDir, t.TempDir())
+	choose(t, generate, text.FieldFormat(), "png")
+	fill(t, generate, text.FieldOutputDir(), t.TempDir())
 	press(t, generate, "Preview")
 	join(generateHost)
 	if shown := allText(generate); !strings.Contains(shown, "png") {
@@ -153,7 +153,7 @@ func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 	}
 
 	presetHost, presets := presetScreen(t)
-	fill(t, presets, text.FieldOutputDir, t.TempDir())
+	fill(t, presets, text.FieldOutputDir(), t.TempDir())
 	choose(t, presets, text.SettingLabel("format"), "wav")
 	press(t, presets, "Preview")
 	join(presetHost)

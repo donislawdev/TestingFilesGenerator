@@ -47,9 +47,9 @@ func TestTheLicenceNoticePointsSomewhereThatAlwaysExists(t *testing.T) {
 // The box has to stay EMPTY and say the default some other way. Filling it in
 // would be the fix that breaks the thing the emptiness is for.
 func TestTheBatchScreenSaysWhatAnEmptyBoxWillDo(t *testing.T) {
-	content, _ := screenInAWindow(t, text.TabRecipe)
+	content, _ := screenInAWindow(t, text.TabRecipe())
 
-	box := entryUnder(t, content, text.FieldCount)
+	box := entryUnder(t, content, text.FieldCount())
 	if box == nil {
 		t.Fatal("the batch screen has no count box, so this guard read the wrong tree")
 	}
@@ -81,9 +81,9 @@ func TestTheBatchScreenSaysWhatAnEmptyBoxWillDo(t *testing.T) {
 // swallowing the presses before they arrive. Listed as unproven by mutation for
 // that reason.
 func TestThreeClicksInABoxSelectWhatIsInIt(t *testing.T) {
-	content, _ := screenInAWindow(t, text.TabOneTarget)
+	content, _ := screenInAWindow(t, text.TabOneTarget())
 
-	box := entryUnder(t, content, text.FieldSize)
+	box := entryUnder(t, content, text.FieldSize())
 	if box == nil {
 		t.Fatal("there is no size box, so this guard read the wrong tree")
 	}

@@ -100,7 +100,7 @@ func TestAClosedSetOfNumbersIsInNumericOrder(t *testing.T) {
 // the failure this catches is a menu built from a list somebody typed.
 func TestAMenuOffersItsChoicesInTheDeclaredOrder(t *testing.T) {
 	_, content := screen(t)
-	picker := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	picker := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -143,12 +143,12 @@ func TestAMenuOffersItsChoicesInTheDeclaredOrder(t *testing.T) {
 // neither says out loud that a screen depends on it.
 func TestTheFormatAndPresetMenusAreInOrder(t *testing.T) {
 	_, generate := screen(t)
-	if got := controlUnder(generate, text.FieldFormat).(*parts.Chooser).Options; !sorted(got) {
+	if got := controlUnder(generate, text.FieldFormat()).(*parts.Chooser).Options; !sorted(got) {
 		t.Errorf("the format menu offers %v", got)
 	}
 
 	_, presets := presetScreen(t)
-	if got := controlUnder(presets, text.FieldPreset).(*parts.Chooser).Options; !sorted(got) {
+	if got := controlUnder(presets, text.FieldPreset()).(*parts.Chooser).Options; !sorted(got) {
 		t.Errorf("the preset menu offers %v", got)
 	}
 }

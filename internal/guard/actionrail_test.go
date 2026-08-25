@@ -31,15 +31,15 @@ import (
 // that is on all four - see TestTheDonateButtonIsOnEveryScreen.
 func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 	for _, tab := range []string{
-		text.TabOneTarget, text.TabPresets, text.TabRecipe, text.TabAbout,
+		text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabAbout(),
 	} {
 		t.Run(tab, func(t *testing.T) {
 			content, w := screenInAWindow(t, tab)
 
-			donate := buttonNamed(content, text.ButtonDonate)
+			donate := buttonNamed(content, text.ButtonDonate())
 			if donate == nil {
 				t.Fatalf("this screen has no %q button, so this guard read the wrong tree",
-					text.ButtonDonate)
+					text.ButtonDonate())
 			}
 
 			atOpening := fyne.CurrentApp().Driver().AbsolutePositionForObject(donate).X
@@ -57,7 +57,7 @@ func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 					"standing at the edge of the bar.\n"+
 					"What to do: it belongs in the rail argument of parts.ActionBar, which is laid "+
 					"outside the form's column. Put back inside that column it moves with it.",
-					text.ButtonDonate, atOpening, window.OpenSize.Width, whenWider, wider.Width)
+					text.ButtonDonate(), atOpening, window.OpenSize.Width, whenWider, wider.Width)
 			}
 
 			// The bar's own padding is the only thing that should stand between
@@ -66,7 +66,7 @@ func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 			if room := float32(parts.ColumnWidth) / 2; atOpening > room {
 				t.Errorf("%q starts %.0f px from the left edge, which is further in than half a "+
 					"form column (%.0f px) - it does not read as standing at the edge.",
-					text.ButtonDonate, atOpening, room)
+					text.ButtonDonate(), atOpening, room)
 			}
 		})
 	}

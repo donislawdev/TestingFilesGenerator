@@ -31,11 +31,11 @@ func TestBothScreensAgreeWhereTheFilesGo(t *testing.T) {
 	// and controlUnder answers with the LAST one it walks past rather than the
 	// first - so asking the window filled the preset screen's box while reading
 	// as though it had filled this one.
-	generate := tabNamed(t, host.content, text.TabOneTarget)
-	fill(t, generate, text.FieldOutputDir, chosen)
+	generate := tabNamed(t, host.content, text.TabOneTarget())
+	fill(t, generate, text.FieldOutputDir(), chosen)
 
-	preset := selectTab(t, host.content, text.TabPresets)
-	if got := entryUnder(t, preset, text.FieldOutputDir).Text; got != chosen {
+	preset := selectTab(t, host.content, text.TabPresets())
+	if got := entryUnder(t, preset, text.FieldOutputDir()).Text; got != chosen {
 		t.Errorf("the generate screen was pointed at %q and the preset screen says %q.\n"+
 			"Two boxes that start the same and drift apart is worse than one that is wrong, "+
 			"because both look filled in.", chosen, got)
@@ -44,9 +44,9 @@ func TestBothScreensAgreeWhereTheFilesGo(t *testing.T) {
 	// And back, because a fix that carries the value one way leaves the other
 	// direction exactly as confusing as before.
 	const second = "C:\\third\\place"
-	fill(t, preset, text.FieldOutputDir, second)
-	generate = selectTab(t, host.content, text.TabOneTarget)
-	if got := entryUnder(t, generate, text.FieldOutputDir).Text; got != second {
+	fill(t, preset, text.FieldOutputDir(), second)
+	generate = selectTab(t, host.content, text.TabOneTarget())
+	if got := entryUnder(t, generate, text.FieldOutputDir()).Text; got != second {
 		t.Errorf("the preset screen was pointed at %q and the generate screen says %q", second, got)
 	}
 }

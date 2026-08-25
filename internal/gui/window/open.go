@@ -42,10 +42,10 @@ func Open(h Host) {
 	// Every screen goes back to the ordinary theme, because the strip they hang
 	// under is drawn quieter and a theme reaches everything below it.
 	tabs := container.NewAppTabs(
-		container.NewTabItem(text.TabOneTarget, parts.AtFullStrength(gen.Object())),
-		container.NewTabItem(text.TabPresets, parts.AtFullStrength(pre.Object())),
-		container.NewTabItem(text.TabRecipe, parts.AtFullStrength(rec.Object())),
-		container.NewTabItem(text.TabAbout, parts.AtFullStrength(About(h))),
+		container.NewTabItem(text.TabOneTarget(), parts.AtFullStrength(gen.Object())),
+		container.NewTabItem(text.TabPresets(), parts.AtFullStrength(pre.Object())),
+		container.NewTabItem(text.TabRecipe(), parts.AtFullStrength(rec.Object())),
+		container.NewTabItem(text.TabAbout(), parts.AtFullStrength(About(h))),
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -66,11 +66,11 @@ func Open(h Host) {
 		OutDir() string
 		SetOutDir(string)
 	}{
-		text.TabOneTarget: gen,
-		text.TabPresets:   pre,
-		text.TabRecipe:    rec,
+		text.TabOneTarget(): gen,
+		text.TabPresets():   pre,
+		text.TabRecipe():    rec,
 	}
-	showing := text.TabOneTarget
+	showing := text.TabOneTarget()
 
 	tabs.OnSelected = func(item *container.TabItem) {
 		from, leaving := working[showing]
@@ -135,7 +135,7 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // program fetches nothing and sends nothing, which is what keeps untouchable
 // rule 8 intact - see the carve out written into it on 2026-08-18.
 func donateButton(h Host) fyne.CanvasObject {
-	return widget.NewButton(text.ButtonDonate, func() { h.OpenLink(text.SupportURL) })
+	return widget.NewButton(text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
 }
 
 // chooserFor is the output directory box with a way to browse to one.
@@ -148,7 +148,7 @@ func donateButton(h Host) fyne.CanvasObject {
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
 func chooserFor(host Host, box *widget.Entry) fyne.CanvasObject {
-	choose := widget.NewButton(text.ButtonChoose, func() {
+	choose := widget.NewButton(text.ButtonChoose(), func() {
 		host.ChooseDirectory(func(dir string) {
 			if dir != "" {
 				box.SetText(dir)

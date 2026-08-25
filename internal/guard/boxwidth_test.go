@@ -101,7 +101,7 @@ func TestABoxIsWideEnoughForItsOwnPlaceholder(t *testing.T) {
 // drift apart in what they mean.
 func placeholderShownFor(p format.Property) string {
 	if p.Default == "" {
-		return text.PlaceholderWorkedOut
+		return text.PlaceholderWorkedOut()
 	}
 	return text.PlaceholderLeftEmpty(p.Default)
 }
@@ -126,8 +126,8 @@ func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser) {
 	t.Cleanup(w.Close)
 	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
 
-	generate := tabNamed(t, host.content, text.TabOneTarget)
-	picker, ok := controlUnder(generate, text.FieldFormat).(*parts.Chooser)
+	generate := tabNamed(t, host.content, text.TabOneTarget())
+	picker, ok := controlUnder(generate, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
 		t.Fatal("the format field is not a list to choose from, so this guard read the wrong tree")
 	}
@@ -193,12 +193,12 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
-	batches := selectTab(t, host.content, text.TabRecipe)
+	batches := selectTab(t, host.content, text.TabRecipe())
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)
 	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
 
-	picker, ok := controlUnder(batches, text.FieldFormat).(*parts.Chooser)
+	picker, ok := controlUnder(batches, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
 		t.Fatal("the first batch has no format list, so this guard read the wrong tree")
 	}
@@ -262,11 +262,11 @@ func TestTwoNarrowSettingsShareARowOnEveryScreenThatDrawsThem(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 
-	for _, tab := range []string{text.TabOneTarget, text.TabRecipe} {
+	for _, tab := range []string{text.TabOneTarget(), text.TabRecipe()} {
 		t.Run(tab, func(t *testing.T) {
 			screen := tabContent(t, content, tab)
 
-			picker, ok := controlUnder(screen, text.FieldFormat).(*parts.Chooser)
+			picker, ok := controlUnder(screen, text.FieldFormat()).(*parts.Chooser)
 			if !ok {
 				t.Fatal("this screen has no format list, so this guard read the wrong tree")
 			}

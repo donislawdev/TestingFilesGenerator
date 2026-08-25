@@ -27,16 +27,16 @@ import (
 // whatever gap they use is what "these belong together" looks like on this
 // screen. Anything claiming to separate has to be wider than that.
 func TestDonateAndAddABatchAreNotDrawnAsAPair(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabRecipe)
+	content, w := screenInAWindow(t, text.TabRecipe())
 	settle(content, w)
 
-	donate := buttonNamed(content, text.ButtonDonate)
-	add := buttonNamed(content, text.ButtonAddBatch)
-	preview := buttonNamed(content, text.ButtonPreview)
-	generate := buttonNamed(content, text.ButtonGenerate)
+	donate := buttonNamed(content, text.ButtonDonate())
+	add := buttonNamed(content, text.ButtonAddBatch())
+	preview := buttonNamed(content, text.ButtonPreview())
+	generate := buttonNamed(content, text.ButtonGenerate())
 	for name, b := range map[string]fyne.CanvasObject{
-		text.ButtonDonate: donate, text.ButtonAddBatch: add,
-		text.ButtonPreview: preview, text.ButtonGenerate: generate,
+		text.ButtonDonate(): donate, text.ButtonAddBatch(): add,
+		text.ButtonPreview(): preview, text.ButtonGenerate(): generate,
 	} {
 		if b == nil {
 			t.Fatalf("the batch screen has no %q button, so this guard read the wrong tree", name)
@@ -49,7 +49,7 @@ func TestDonateAndAddABatchAreNotDrawnAsAPair(t *testing.T) {
 	if apart <= together {
 		t.Errorf("Donate and %q are %.1f px apart and two buttons that do belong together are %.1f px apart."+
 			" Two unrelated controls drawn at the spacing of a pair read as a pair",
-			text.ButtonAddBatch, apart, together)
+			text.ButtonAddBatch(), apart, together)
 	}
 }
 

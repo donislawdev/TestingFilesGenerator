@@ -33,10 +33,10 @@ import (
 // thing behind it is a colour nobody sees.
 func TestTheBoxARefusalIsAboutIsMarked(t *testing.T) {
 	_, content := screen(t)
-	fill(t, content, text.FieldSize, "1")
+	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
 
-	marked := edgeOf(t, content, text.FieldSize)
+	marked := edgeOf(t, content, text.FieldSize())
 	if marked.StrokeWidth <= 0 {
 		t.Error("the size was refused and its box draws no edge, so the only sign is a paragraph further down")
 	}
@@ -47,7 +47,7 @@ func TestTheBoxARefusalIsAboutIsMarked(t *testing.T) {
 	// The field beside it was not refused and must look untouched. Without this
 	// the guard passes for a window that marks everything, which is a window
 	// that marks nothing.
-	if quiet := edgeOf(t, content, text.FieldCount); quiet.StrokeWidth != 0 {
+	if quiet := edgeOf(t, content, text.FieldCount()); quiet.StrokeWidth != 0 {
 		t.Errorf("the count was not refused and its box draws an edge %.1f px wide", quiet.StrokeWidth)
 	}
 }
@@ -60,20 +60,20 @@ func TestTheBoxARefusalIsAboutIsMarked(t *testing.T) {
 // screen that was already showing a refusal.
 func TestTheMarkGoesWhenTheValueIsFixed(t *testing.T) {
 	host, content := screen(t)
-	fill(t, content, text.FieldSize, "1")
+	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
-	if edgeOf(t, content, text.FieldSize).StrokeWidth <= 0 {
+	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Fatal("the refused box was never marked, so this guard cannot tell whether the mark goes")
 	}
 
-	fill(t, content, text.FieldSize, "1mb")
+	fill(t, content, text.FieldSize(), "1mb")
 	press(t, content, "Preview")
 	// This press is the one that is ACCEPTED, so unlike the one above it starts
 	// a worker. Joined before the tree is read - otherwise this goroutine and
 	// that one are both in the font shaper, and the panic lands in whichever
 	// test happens to be running when it goes off.
 	join(host)
-	if got := edgeOf(t, content, text.FieldSize).StrokeWidth; got != 0 {
+	if got := edgeOf(t, content, text.FieldSize()).StrokeWidth; got != 0 {
 		t.Errorf("the size is acceptable now and its box still draws a %.1f px edge", got)
 	}
 }
@@ -115,18 +115,18 @@ func TestTheBoxARefusalIsAboutIsMarkedOnThePresetScreenToo(t *testing.T) {
 // wash nobody can read through is where this started.
 func TestTheMenuTheKeyboardIsInDrawsALine(t *testing.T) {
 	_, content := screen(t)
-	picker, ok := controlUnder(content, text.FieldFormat).(*parts.Chooser)
+	picker, ok := controlUnder(content, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
-		t.Fatalf("the format field is %T rather than a menu", controlUnder(content, text.FieldFormat))
+		t.Fatalf("the format field is %T rather than a menu", controlUnder(content, text.FieldFormat()))
 	}
 
-	quiet := edgeOf(t, content, text.FieldFormat)
+	quiet := edgeOf(t, content, text.FieldFormat())
 	if quiet.StrokeWidth != 0 {
 		t.Errorf("a menu nobody is using draws a %.1f px edge", quiet.StrokeWidth)
 	}
 
 	picker.FocusGained()
-	lit := edgeOf(t, content, text.FieldFormat)
+	lit := edgeOf(t, content, text.FieldFormat())
 	if lit.StrokeWidth <= 0 {
 		t.Error("the keyboard is in the format menu and nothing on the screen says so")
 	}
@@ -135,7 +135,7 @@ func TestTheMenuTheKeyboardIsInDrawsALine(t *testing.T) {
 	}
 
 	picker.FocusLost()
-	if got := edgeOf(t, content, text.FieldFormat).StrokeWidth; got != 0 {
+	if got := edgeOf(t, content, text.FieldFormat()).StrokeWidth; got != 0 {
 		t.Errorf("the keyboard has left the format menu and it still draws a %.1f px edge", got)
 	}
 }

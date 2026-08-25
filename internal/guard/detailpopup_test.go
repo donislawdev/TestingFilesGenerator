@@ -39,7 +39,7 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 
 	host := &fakeHost{}
 	window.Open(host)
-	content := tabNamed(t, host.content, text.TabOneTarget)
+	content := tabNamed(t, host.content, text.TabOneTarget())
 
 	// A real canvas, because the button asks the toolkit which canvas it is on
 	// and opens the explanation there. Built without one it does nothing at
@@ -53,13 +53,13 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 	// nobody can see until they press something, so an unwired button is
 	// invisible in exactly the way the permanent text was not.
 	for _, field := range []struct{ label, detail string }{
-		{text.FieldFormat, text.DetailFormat},
-		{text.FieldSize, text.DetailSize},
-		{text.FieldTargetID, text.DetailTargetID},
-		{text.FieldNameTemplate, text.DetailNameTemplate},
-		{text.FieldOutputDir, text.DetailOutputDir},
-		{text.FieldSeed, text.DetailSeed},
-		{text.FieldLabel, text.DetailLabel},
+		{text.FieldFormat(), text.DetailFormat()},
+		{text.FieldSize(), text.DetailSize()},
+		{text.FieldTargetID(), text.DetailTargetID()},
+		{text.FieldNameTemplate(), text.DetailNameTemplate()},
+		{text.FieldOutputDir(), text.DetailOutputDir()},
+		{text.FieldSeed(), text.DetailSeed()},
+		{text.FieldLabel(), text.DetailLabel()},
 	} {
 		button := detailButtonBeside(content, field.label)
 		if button == nil {
@@ -136,14 +136,14 @@ func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 
 	host := &fakeHost{}
 	window.Open(host)
-	content := tabNamed(t, host.content, text.TabOneTarget)
+	content := tabNamed(t, host.content, text.TabOneTarget())
 
 	w := test.NewWindow(host.content)
 	defer w.Close()
 	w.Resize(window.OpenSize)
 	host.content.Refresh()
 
-	button := detailButtonBeside(content, text.FieldSize)
+	button := detailButtonBeside(content, text.FieldSize())
 	if button == nil {
 		t.Fatal("there is no explanation button beside the size field, so this guard read the wrong tree")
 	}
@@ -153,7 +153,7 @@ func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 	// It has to be up before its absence anywhere else means anything. A guard
 	// that checked for an empty overlay without opening the explanation would
 	// pass on a button that does nothing.
-	if shown := allText(content); !strings.Contains(shown, text.DetailSize) {
+	if shown := allText(content); !strings.Contains(shown, text.DetailSize()) {
 		t.Fatal("hovering showed nothing, so this guard is measuring a button that does not work")
 	}
 
