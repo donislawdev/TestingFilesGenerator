@@ -97,6 +97,12 @@ because it turns other people's test suites red.
   batch, and on a form with twenty of them "this run asks for 1000001 files"
   with nothing marked left you to work out which. The window marks it and
   `validate --json` carries `"at": "targets[2].count"`.
+- `tfg validate --json` now splits a refusal that came from a format or a preset
+  into `what`, `why` and `fix`, the way it already did for refusals the recipe
+  reader produced. Before this, those arrived as one sentence and a script
+  grouping by reason had to take prose apart to do it. Nothing you read on the
+  terminal changed - the sentence is still assembled the same way and printed
+  the same way.
 - **Exit code:** a recipe asking for a format setting the format will not take
   now ends with `3` (the recipe is wrong) rather than `4` (the format cannot do
   it). The check moved into the recipe reader so the refusal could name its
