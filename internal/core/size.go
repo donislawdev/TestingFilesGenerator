@@ -196,11 +196,6 @@ func ParseSizeRange(text string) (low, high int64, err error) {
 	return ends[0], ends[1], nil
 }
 
-// BoundarySizes turns a limit into the three sizes a boundary set means: one
-// byte under it, the limit itself, and one byte over.
-//
-// Here for the same reason as ParseSizeRange - the recipe key and the flag have
-// to mean the same thing, and one implementation is how that stays true.
 // ParseBoundary reads the limit of a boundary set.
 //
 // It counts in 1024s, the same as every other size this tool reads, and that is
@@ -236,7 +231,11 @@ var ErrBoundaryTooLarge = errors.New(
 	"a boundary set needs one size above the limit, and there is no number above this one. " +
 		"Use a limit at least one byte below the largest, or check that the number is the one you meant")
 
-// BoundarySizes turns a limit into the three sizes a boundary set means.
+// BoundarySizes turns a limit into the three sizes a boundary set means: one
+// byte under it, the limit itself, and one byte over.
+//
+// Here for the same reason as ParseSizeRange - the recipe key and the flag have
+// to mean the same thing, and one implementation is how that stays true.
 func BoundarySizes(limit int64) ([]int64, error) {
 	// Equality rather than "at or above", because nothing of this type sits
 	// above the largest value it can hold. The wider comparison read as the

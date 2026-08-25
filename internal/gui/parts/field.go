@@ -85,8 +85,8 @@ func fieldParts(label, hint string, detail Detail, required bool, trailing, cont
 	return items
 }
 
-// Toggle is a switch that carries its own name, with the explanation behind the
-// button beside it.
+// ToggleSaying lays out a switch that carries its own name, with the
+// explanation behind the button beside it.
 //
 // A switch is the one control that does not take a heading above it. Given one
 // it arrives as a bare square with the words somewhere else: the name above,

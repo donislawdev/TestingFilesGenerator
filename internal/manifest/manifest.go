@@ -278,12 +278,6 @@ func (e *SchemaError) Error() string {
 	return fmt.Sprintf("%s cannot be read as a manifest: %s", e.Path, e.Detail)
 }
 
-// Load reads a manifest written by an earlier run.
-//
-// The major of manifest_version is checked before anything is believed. A
-// manifest from a future major describes fields this build does not know, and
-// acting on the half of it we recognise is how "verify" ends up calling a
-// directory sound on the strength of the part it could read.
 // MaxBytes is the largest manifest this build will read.
 //
 // A manifest arrives from outside the same way a recipe does - it travels with
@@ -314,6 +308,16 @@ func (e *TooLargeError) Error() string {
 		e.Path, e.Bytes, MaxBytes)
 }
 
+// Load reads a manifest written by an earlier run.
+//
+// The major of manifest_version is checked before anything is believed. A
+// manifest from a future major describes fields this build does not know, and
+// acting on the half of it we recognise is how "verify" ends up calling a
+// directory sound on the strength of the part it could read.
+//
+// One larger than MaxBytes is refused before a byte of it is read, because a
+// manifest is held in memory to be compared against a directory and the file
+// being read is not necessarily one of ours.
 func Load(path string) (*Manifest, error) {
 	// Asked on the directory entry rather than after reading. "Read it all,
 	// then say it was too big" is not a limit - the cost was already paid.

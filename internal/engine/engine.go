@@ -200,11 +200,6 @@ type PlannedFile struct {
 	Plan   format.Plan
 }
 
-// Plan works out every file of every target without touching the disk.
-//
-// Everything is planned before anything is written. A size a format cannot
-// deliver is refused here, which is what makes the promise of "zero files on
-// disk" true rather than nearly true.
 // settleTarget checks everything that has to be true about one target before
 // any of its files are planned, and settles the sizes of a range.
 //
@@ -260,6 +255,25 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 	return desc, nil
 }
 
+// Plan works out every file of every target without touching the disk.
+//
+// Everything is planned before anything is written. A size a format cannot
+// deliver is refused here, which is what makes the promise of "zero files on
+// disk" true rather than nearly true.
+//
+// It changes the targets it was given, which the signature does not show. A
+// range target arrives carrying only a count and leaves carrying a size per
+// file, because the draw needs the seed the run will actually use and this is
+// the first place that knows it. Every planned file also keeps a pointer into
+// the caller's slice rather than a copy of the target.
+//
+// Both of those are depended on rather than merely tolerated, so a later
+// tidying that copies the slice has to change the caller in the same breath:
+// echoBoundaries finds the files of a boundary set by comparing that pointer
+// against the address of its own target, and a copy would leave it matching
+// nothing and printing a heading with no files under it. The guard on that
+// output asks only about the heading, deliberately, so the suite would stay
+// green while the three lines that name the limit disappeared.
 func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	var out []PlannedFile
 	seen := map[string]bool{}
@@ -393,16 +407,6 @@ func TotalBytes(files []PlannedFile) int64 {
 	return n
 }
 
-// Run writes a planned set of files.
-//
-// Each file is written under a temporary name and only then renamed, so the
-// output directory never holds an incomplete file. That invariant covers the
-// process ending - Ctrl+C, kill, a CI timeout. It does not cover power loss,
-// because that would need a flush per file and ten thousand of those is a
-// real cost.
-//
-// A manifest is returned even when the run is cut short, otherwise cleanup
-// has nothing to work with.
 // Progress is how far a run has got. Both counts are known from the plan, so
 // the fractions are exact rather than estimated.
 type Progress struct {
@@ -538,6 +542,16 @@ func manifestNameOf(opt Options) string {
 	return opt.ManifestName
 }
 
+// Run writes a planned set of files.
+//
+// Each file is written under a temporary name and only then renamed, so the
+// output directory never holds an incomplete file. That invariant covers the
+// process ending - Ctrl+C, kill, a CI timeout. It does not cover power loss,
+// because that would need a flush per file and ten thousand of those is a
+// real cost.
+//
+// A manifest is returned even when the run is cut short, otherwise cleanup
+// has nothing to work with.
 func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {
 	m := manifest.New(
 		"testing-files-generator", version.Version,
