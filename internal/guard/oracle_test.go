@@ -126,11 +126,26 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 // structural check and every test stays green - the loop above simply skips it.
 // A guard that can be switched off in silence is the failure this project keeps
 // finding, so the list is stated and compared rather than trusted.
+// Every registered format is named here, and the two that answer false are the
+// point of that rule rather than an exception to it.
+//
+// It held only the trues until 2026-08-25, and an outside review found what
+// that let through: a format added to neither this list nor oracle.StrictKnows
+// answers false on both sides, agrees with itself, and is never checked
+// structurally - in silence. The drift between the two lists was guarded, the
+// absence from both was not.
+//
+// Five Tier 1 formats are still to come and all five are binary, which is where
+// the structural check earns most: at JPG it caught bytes after EOI that Pillow
+// read without complaint.
 var structurallyChecked = map[string]bool{
 	"png": true, "wav": true, "pdf": true, "zip": true, "targz": true,
 	"log": true, "csv": true, "json": true, "xml": true, "svg": true, "html": true,
 	"bmp": true, "gif": true, "ico": true, "jpg": true,
 	"docx": true, "xlsx": true, "pptx": true,
+	// Nothing to check against beyond "these are the bytes we meant", so they
+	// have one layer and it is honest to say so out loud.
+	"txt": false, "md": false,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {
@@ -139,7 +154,12 @@ func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {
 		t.Fatal("no format is registered - this guard would pass without checking anything")
 	}
 	for _, d := range descriptors {
-		want := structurallyChecked[d.ID]
+		want, stated := structurallyChecked[d.ID]
+		if !stated {
+			t.Errorf("%s is registered and this list says nothing about it - decide whether it has a "+
+				"structural check and write the answer here. Left out it is never checked and nothing says so", d.ID)
+			continue
+		}
 		got := oracle.StrictKnows(d.ID)
 		switch {
 		case want && !got:

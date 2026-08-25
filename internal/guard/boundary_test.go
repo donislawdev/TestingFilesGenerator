@@ -2,6 +2,8 @@ package guard
 
 import (
 	"context"
+	"errors"
+	"math"
 	"os"
 	"strings"
 	"testing"
@@ -120,5 +122,51 @@ func TestAnOrdinaryGroupIsStillNumbered(t *testing.T) {
 
 	if _, err := os.Stat(dir + string(os.PathSeparator) + "files_0001.txt"); err != nil {
 		t.Error("an ordinary group stopped being numbered")
+	}
+}
+
+// Both ends of a boundary limit are refused by the function that builds one.
+//
+// The upper end always was. The lower end was not, and BoundarySizes(0) handed
+// back a file of minus one byte - which never reached anybody only because both
+// callers checked it themselves, in two places, in two sentences that had
+// already drifted apart by a comma. A third caller would have got the minus
+// one, and the window is a third caller in everything but this: it draws a
+// boundary box and reaches this through one of the two.
+//
+// Asked of core rather than through a command, because the point of the change
+// is where the rule lives. Found by an outside review,
+// docs/CODE-REVIEW-2026-08-23.md section 3.2.
+func TestABoundaryLimitIsRefusedAtBothEnds(t *testing.T) {
+	for _, c := range []struct {
+		about string
+		limit int64
+		want  error
+	}{
+		{"nothing below zero", 0, core.ErrBoundaryTooSmall},
+		{"nothing below a negative limit either", -1, core.ErrBoundaryTooSmall},
+		{"no number above the largest", math.MaxInt64, core.ErrBoundaryTooLarge},
+	} {
+		t.Run(c.about, func(t *testing.T) {
+			sizes, err := core.BoundarySizes(c.limit)
+			if !errors.Is(err, c.want) {
+				t.Fatalf("BoundarySizes(%d) gave %v, expected %v - and it handed back %v",
+					c.limit, err, c.want, sizes)
+			}
+			if sizes != nil {
+				t.Errorf("a refused limit still produced %v", sizes)
+			}
+		})
+	}
+
+	// The smallest limit that works, so the guard above cannot be satisfied by
+	// refusing everything. One byte under it is a file of nothing, which is a
+	// size this tool produces on purpose.
+	sizes, err := core.BoundarySizes(1)
+	if err != nil {
+		t.Fatalf("a limit of 1 B was refused: %v", err)
+	}
+	if len(sizes) != 3 || sizes[0] != 0 || sizes[1] != 1 || sizes[2] != 2 {
+		t.Errorf("a limit of 1 B gave %v, expected 0, 1 and 2", sizes)
 	}
 }

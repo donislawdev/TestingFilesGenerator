@@ -363,13 +363,12 @@ func boundarySizes(p *problems, where spot, text string) []int64 {
 			"use {a} {setting} such as 10mb, 512kb or a plain byte count")
 		return nil
 	}
-	if limit < 1 {
+	sizes, err := core.BoundarySizes(limit)
+	if errors.Is(err, core.ErrBoundaryTooSmall) {
 		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
-			"the set needs a size one byte below the limit, and there is nothing below zero",
-			"use {a} {setting} of at least 1 B")
+			core.BoundaryTooSmallWhy, core.BoundaryTooSmallFix)
 		return nil
 	}
-	sizes, err := core.BoundarySizes(limit)
 	if err != nil {
 		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
 			err.Error(),

@@ -86,6 +86,10 @@ because it turns other people's test suites red.
   `tfg recipe fmt` would then have formatted the first megabyte of a longer file
   and reported success. The message and the exit code are unchanged, including
   the size it reports. The same applies to reading a manifest.
+- The refusal for a boundary limit below 1 B now reads the same from the command
+  line and from a recipe. Both took it from their own sentence, and the two had
+  already drifted apart by a comma. The wording is the four part shape the rest
+  of the tool uses: what is wrong, why, and what to do instead.
 
 ### Added
 

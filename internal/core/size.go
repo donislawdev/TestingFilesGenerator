@@ -231,6 +231,26 @@ var ErrBoundaryTooLarge = errors.New(
 	"a boundary set needs one size above the limit, and there is no number above this one. " +
 		"Use a limit at least one byte below the largest, or check that the number is the one you meant")
 
+// The other end, in the two parts a report keeps apart. Built from them rather
+// than beside them, the same way ErrTooManyFiles is, so the sentence and the
+// parts cannot come to disagree.
+const (
+	BoundaryTooSmallWhy = "the set needs a size one byte below the limit, and there is nothing below zero"
+	BoundaryTooSmallFix = "Use a limit of at least 1 B"
+)
+
+// ErrBoundaryTooSmall is a limit with no room below it for the first file.
+//
+// The rule is here rather than in the callers, and that is the whole point of
+// this error existing. Until 2026-08-25 BoundarySizes(0) returned {-1, 0, 1} -
+// a file of minus one byte - and nothing went wrong only because both callers
+// happened to check the low end themselves, in two places, in two sentences
+// that had already drifted apart by a comma. An outside review named it, and
+// this file already argued the same thing about ParseSizeRange and
+// ParseBoundary: two implementations of one rule are a place for them to
+// disagree.
+var ErrBoundaryTooSmall = errors.New(BoundaryTooSmallWhy + ". " + BoundaryTooSmallFix)
+
 // BoundarySizes turns a limit into the three sizes a boundary set means: one
 // byte under it, the limit itself, and one byte over.
 //
@@ -240,6 +260,9 @@ func BoundarySizes(limit int64) ([]int64, error) {
 	// Equality rather than "at or above", because nothing of this type sits
 	// above the largest value it can hold. The wider comparison read as the
 	// more careful one and its upper half was unreachable.
+	if limit < 1 {
+		return nil, ErrBoundaryTooSmall
+	}
 	if limit == math.MaxInt64 {
 		return nil, ErrBoundaryTooLarge
 	}

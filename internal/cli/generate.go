@@ -4,6 +4,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -347,12 +348,13 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 			fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 			return nil, 0, 0, 0, ExitUsage
 		}
-		if limit < 1 {
-			fmt.Fprintf(errOut,
-				"tfg: --boundary %d B is too small. The set needs a size one byte below the limit and there is nothing below zero. Use a limit of at least 1 B.\n", limit)
+		sizes, err := core.BoundarySizes(limit)
+		if errors.Is(err, core.ErrBoundaryTooSmall) {
+			// A number somebody typed, so this is USAGE rather than a problem
+			// with a document. The end above it keeps the code it had.
+			fmt.Fprintf(errOut, "tfg: --boundary %d B is too small - %s\n", limit, err)
 			return nil, 0, 0, 0, ExitUsage
 		}
-		sizes, err := core.BoundarySizes(limit)
 		if err != nil {
 			fmt.Fprintf(errOut, "tfg: --boundary %d B is too large - %s\n", limit, err)
 			return nil, 0, 0, 0, ExitRecipe
