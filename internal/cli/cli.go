@@ -150,10 +150,6 @@ Run "tfg <command> --help" for the flags of one command.
 // bottom layer, because the window shows the same text and the two surfaces
 // cannot import each other. See version.LicenceNotice.
 
-// generateOpts is every flag of the generate command in one place.
-//
-// A dozen separate pointers is what made this command the longest function in
-// the tree, because every piece of it had to be handed all of them.
 // defaultManifestName mirrors the engine, which has to know the name to keep
 // a run from writing over an earlier one's record.
 const defaultManifestName = engine.DefaultManifestName
@@ -217,17 +213,12 @@ func describingFlagsGiven(given map[string]bool) []string {
 	return bad
 }
 
-// contentsOf maps the recipe's view of a container's contents onto the format
-// layer's. Two types rather than one so the recipe package stays a description
-// of a recipe, and this is the one line that costs.
 func writeJSON(w io.Writer, v any) {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	enc.Encode(v)
 }
 
-// recipeCmd groups the operations that work on a recipe file itself rather
-// than on the files it describes.
 type propertyFlag map[string]string
 
 func (p propertyFlag) String() string { return "" }

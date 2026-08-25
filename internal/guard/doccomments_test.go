@@ -35,6 +35,13 @@ import (
 // the thing that actually went wrong: a comment whose first word is the name of
 // a DIFFERENT declaration of the same package is a paragraph that has come
 // adrift from it.
+//
+// Widened on 2026-08-25 from exported names to every name a package declares,
+// after the narrow version let one through: a function inserted between a
+// comment and the unexported declaration it belonged to. The wider rule found
+// five more of the same shape and no noise at all, and four of the five were
+// left behind when cli.go was split into seven files - the paragraphs stayed
+// and the functions went.
 func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 	root := repoRoot(t)
 
@@ -77,15 +84,13 @@ func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 				byPackage[parsed.Name.Name] = append(byPackage[parsed.Name.Name], parsed)
 			}
 			for _, pkgFiles := range byPackage {
-				exported := map[string]bool{}
+				declared := map[string]bool{}
 				var decls []decl
 				for _, file := range pkgFiles {
 					for _, d := range file.Decls {
 						names, doc := declaredNames(d)
 						for _, n := range names {
-							if ast.IsExported(n) {
-								exported[n] = true
-							}
+							declared[n] = true
 						}
 						if len(names) == 0 || doc == nil {
 							continue
@@ -99,7 +104,7 @@ func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 					}
 				}
 				for _, d := range decls {
-					if d.first == "" || !exported[d.first] {
+					if d.first == "" || !declared[d.first] {
 						continue
 					}
 					if contains(d.names, d.first) {

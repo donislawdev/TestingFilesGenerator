@@ -255,8 +255,8 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 	return rec, hash, ExitOK
 }
 
-// verify compares a directory against a manifest an earlier run wrote.
-
+// recipeCmd groups the operations that work on a recipe file itself rather
+// than on the files it describes.
 func recipeCmd(args []string, out, errOut io.Writer) int {
 	if len(args) == 0 || args[0] != "fmt" {
 		fmt.Fprintln(errOut, "tfg: recipe takes one operation. Example: tfg recipe fmt recipe.yaml")

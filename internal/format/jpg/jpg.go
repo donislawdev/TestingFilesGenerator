@@ -428,6 +428,19 @@ func encodedSize(m memo) (int64, error) {
 	return c.n, nil
 }
 
+// declaredMinimumBytes is minimumBytes computed once. Plan needs it on every
+// refusal and it costs 256 encodes, which is fine at startup and not fine
+// per request.
+//
+// A plain package variable rather than a once guard, because package
+// variables are initialised before init runs and that is all this needed.
+// The first version reached for sync.OnceValue and the concurrency guard
+// stopped it, correctly: adding concurrency somewhere new is a decision,
+// and there was no concurrency to manage here.
+var declaredMinimumBytes = minimumBytes()
+
+func declaredMinimum() int64 { return declaredMinimumBytes }
+
 // minimumBytes is the smallest size this generator accepts, and it is ONE
 // NUMBER FOR EVERY SEED. That is the whole reason it is computed rather than
 // measured once.
@@ -455,19 +468,6 @@ func encodedSize(m memo) (int64, error) {
 // Quality is the default rather than the lowest, because the minimum has to be
 // the floor of an ORDINARY run - a number reachable only by also passing
 // quality=1 would be a promise the tool does not keep.
-// declaredMinimum is minimumBytes computed once. Plan needs it on every
-// refusal and it costs 256 encodes, which is fine at startup and not fine
-// per request.
-//
-// A plain package variable rather than a once guard, because package
-// variables are initialised before init runs and that is all this needed.
-// The first version reached for sync.OnceValue and the concurrency guard
-// stopped it, correctly: adding concurrency somewhere new is a decision,
-// and there was no concurrency to manage here.
-var declaredMinimumBytes = minimumBytes()
-
-func declaredMinimum() int64 { return declaredMinimumBytes }
-
 func minimumBytes() int64 {
 	var worst int64
 	for off := uint64(0); off < 256; off++ {

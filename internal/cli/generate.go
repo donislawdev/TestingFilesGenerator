@@ -17,6 +17,10 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
+// generateOpts is every flag of the generate command in one place.
+//
+// A dozen separate pointers is what made this command the longest function in
+// the tree, because every piece of it had to be handed all of them.
 type generateOpts struct {
 	presetID       string
 	formatID       string
@@ -514,6 +518,9 @@ func engineTarget(t recipe.Target, label bool) engine.Target {
 	}
 }
 
+// contentsOf maps the recipe's view of a container's contents onto the format
+// layer's. Two types rather than one so the recipe package stays a description
+// of a recipe, and this is the one line that costs.
 func contentsOf(t recipe.Target) []format.Content {
 	if t.Contains == nil {
 		return nil

@@ -15,6 +15,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
+// verify compares a directory against a manifest an earlier run wrote.
 func verify(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("verify", flag.ContinueOnError)
 	fs.SetOutput(errOut)

@@ -19,8 +19,6 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
-// run opens a real window. The only file in this tree that reaches the app
-// package, and therefore the only one that needs a C compiler.
 // appID names this application to the desktop it runs on.
 //
 // Reverse domain form because that is what every desktop expects. Without an
@@ -194,6 +192,8 @@ func (d desktop) OpenFolder(path string) {
 	_ = fyne.CurrentApp().OpenURL(address)
 }
 
+// run opens a real window. The only file in this tree that reaches the app
+// package, and therefore the only one that needs a C compiler.
 func run(errOut io.Writer) int {
 	// Said out loud rather than left to be inferred: everything that touches a
 	// widget from the worker goes through fyne.Do, and a static guard checks
