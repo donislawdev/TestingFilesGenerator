@@ -46,7 +46,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 		var worst fyne.CanvasObject
 		walk(content, func(obj fyne.CanvasObject) {
 			switch obj.(type) {
-			case *widget.Entry, *parts.Chooser, *parts.Toggle:
+			case *parts.Entry, *parts.Chooser, *parts.Toggle:
 			default:
 				return
 			}

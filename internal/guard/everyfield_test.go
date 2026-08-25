@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -177,7 +176,7 @@ func inputsIn(o fyne.CanvasObject) []fyne.CanvasObject {
 	var out []fyne.CanvasObject
 	walk(o, func(obj fyne.CanvasObject) {
 		switch obj.(type) {
-		case *widget.Entry, *parts.Chooser, *parts.Toggle:
+		case *parts.Entry, *parts.Chooser, *parts.Toggle:
 			out = append(out, obj)
 		}
 	})
@@ -186,7 +185,7 @@ func inputsIn(o fyne.CanvasObject) []fyne.CanvasObject {
 
 func controlName(o fyne.CanvasObject) string {
 	switch v := o.(type) {
-	case *widget.Entry:
+	case *parts.Entry:
 		return fmt.Sprintf("the box holding %q", v.Text)
 	case *parts.Chooser:
 		return fmt.Sprintf("the menu showing %q", v.Selected)

@@ -6,6 +6,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -72,6 +73,34 @@ func Open(h Host) {
 	}
 	showing := text.TabOneTarget()
 
+	// The keyboard, wired once for the window rather than per screen. Which
+	// screen an action lands on is asked at the moment it is pressed, because a
+	// shortcut belongs to the window and the answer is whichever screen is
+	// being looked at.
+	keyed := map[string]keyboardScreen{
+		text.TabOneTarget(): gen,
+		text.TabPresets():   pre,
+		text.TabRecipe():    rec,
+	}
+
+	// The keyboard starts on the first field of the screen somebody is looking
+	// at, and moves with them. Owner's decision of 2026-08-25.
+	//
+	// The mark that says "the keyboard is here" is NOT drawn by this, and that
+	// is deliberate rather than a gap: this window draws that mark only for
+	// somebody using the keyboard (O90), so a focus placed by the program is
+	// silent until a key is pressed. Placing it quietly is what makes the first
+	// Tab land on the second field rather than the first.
+	focusFirst := func(name string) {
+		screen, ok := keyed[name]
+		if !ok {
+			return
+		}
+		if first := screen.FirstField(); first != nil {
+			parts.FocusQuietly(h.Canvas(), first)
+		}
+	}
+
 	tabs.OnSelected = func(item *container.TabItem) {
 		from, leaving := working[showing]
 		to, arriving := working[item.Text]
@@ -84,6 +113,10 @@ func Open(h Host) {
 		if arriving {
 			showing = item.Text
 		}
+		// The keyboard follows the person to the screen they moved to. Without
+		// this it stays on a control of the screen they left, which is a Tab
+		// that starts somewhere nobody can see.
+		focusFirst(item.Text)
 	}
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The
@@ -103,6 +136,15 @@ func Open(h Host) {
 		h.Close()
 	})
 
+	// One table for the window, handed to the boxes of every screen. Wired here
+	// rather than in each constructor because the table belongs to the window
+	// and the screens are built before it exists.
+	shortcuts := parts.NewShortcuts()
+	for _, screen := range []interface{ Fields() *parts.Fields }{gen, pre, rec} {
+		screen.Fields().PassShortcutsTo(shortcuts.Deliver)
+	}
+	wireKeyboard(h, keyed, &showing, shortcuts)
+
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
@@ -110,6 +152,70 @@ func Open(h Host) {
 	// accent colour and the others are quiet. Until 2026-08-20 it was the other
 	// way round by contrast - the chosen one was the dimmest label there.
 	h.SetContent(parts.QuietUnlessChosen(tabs))
+	// Last, once there is something on the canvas to focus.
+	focusFirst(showing)
+}
+
+// wireKeyboard puts this window's three shortcuts on the canvas.
+//
+// Split out of Open on 2026-08-25, when that function went past three quarters
+// of the ceiling. The ceiling is a ratchet, so the answer is a split and never
+// a higher number.
+//
+// showing is a pointer because the answer changes as somebody moves between
+// screens, and a shortcut is about the screen being looked at WHEN IT IS
+// PRESSED rather than when it was registered.
+func wireKeyboard(h Host, keyed map[string]keyboardScreen, showing *string, table *parts.Shortcuts) {
+	on := func(act func(keyboardScreen)) func(fyne.Shortcut) {
+		return func(fyne.Shortcut) {
+			if screen, ok := keyed[*showing]; ok {
+				act(screen)
+			}
+		}
+	}
+	// Ctrl+Enter and Ctrl+P, which is what a form with two buttons at the foot
+	// is expected to answer to. They press the BUTTON rather than call what it
+	// does, so a run cannot be started twice and a preview cannot be started
+	// during one - see pressIfLive.
+	// Into our own table AND onto the canvas: the table is what a box delivers
+	// into when the keyboard is in one, the canvas is what the toolkit reaches
+	// when nothing has the keyboard at all. Same entries either way, so there is
+	// one answer to what a key means.
+	wire := func(shortcut fyne.Shortcut, act func(keyboardScreen)) {
+		table.On(shortcut, func() { on(act)(shortcut) })
+		h.Canvas().AddShortcut(shortcut, on(act))
+	}
+	wire(&desktop.CustomShortcut{KeyName: fyne.KeyReturn, Modifier: fyne.KeyModifierControl},
+		keyboardScreen.PressGenerate)
+	wire(&desktop.CustomShortcut{KeyName: fyne.KeyEnter, Modifier: fyne.KeyModifierControl},
+		keyboardScreen.PressGenerate)
+	wire(&desktop.CustomShortcut{KeyName: fyne.KeyP, Modifier: fyne.KeyModifierControl},
+		keyboardScreen.PressPreview)
+	// Escape stops a run, and does nothing when there is none - PressCancel
+	// presses a button that is hidden and disabled until one starts.
+	//
+	// It arrives here by a different road from the two above and that is worth
+	// knowing: the toolkit turns a key into a shortcut only when a modifier is
+	// held, so Escape reaches a box as an ordinary key and parts.Entry sends it
+	// on as this. One table either way - see parts.Entry.TypedKey.
+	//
+	// It does NOT collide with the open format list, which takes Escape while it
+	// is open and never lets it out: the list has the keyboard then, so nothing
+	// here is reached.
+	wire(&desktop.CustomShortcut{KeyName: fyne.KeyEscape}, keyboardScreen.PressCancel)
+
+}
+
+// keyboardScreen is what a screen has to offer for the keyboard to reach it.
+//
+// An interface rather than a switch over the three screens, so that a fourth
+// one is a compile error at the map above rather than a shortcut that quietly
+// does nothing on it.
+type keyboardScreen interface {
+	PressGenerate()
+	PressPreview()
+	PressCancel()
+	FirstField() fyne.Focusable
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put
@@ -147,7 +253,7 @@ func donateButton(h Host) fyne.CanvasObject {
 //
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
-func chooserFor(host Host, box *widget.Entry) fyne.CanvasObject {
+func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
 	choose := widget.NewButton(text.ButtonChoose(), func() {
 		host.ChooseDirectory(func(dir string) {
 			if dir != "" {

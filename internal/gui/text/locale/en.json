@@ -31,6 +31,10 @@
     "description": "The words on a button.",
     "other": "Generate"
   },
+  "ButtonOpenFolder": {
+    "description": "The words on a button.",
+    "other": "Open folder"
+  },
   "ButtonPreview": {
     "description": "The words on a button.",
     "other": "Preview"

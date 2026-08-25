@@ -12,7 +12,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -83,6 +82,21 @@ type runner struct {
 	previewBtn  *widget.Button
 	generateBtn *widget.Button
 	cancelBtn   *widget.Button
+	// openBtn shows the directory a finished run wrote into.
+	//
+	// It appears when there is something to open and goes away the moment the
+	// next run starts, which is the owner's decision of 2026-08-25. A button
+	// leading to a directory that does not exist yet is a button that does
+	// nothing, and this window has been getting rid of those.
+	//
+	// In the row of actions rather than beside the output box, so the bar keeps
+	// its height and the form does not move - the property
+	// TestTheFormDoesNotMoveWhenARunStarts holds.
+	openBtn *widget.Button
+	// wroteInto is the directory of the run that just finished, kept because
+	// the box on the screen can be edited afterwards and the button has to open
+	// where the files ACTUALLY went.
+	wroteInto string
 
 	bar     *parts.Progress
 	status  *widget.Label
@@ -115,6 +129,11 @@ type runner struct {
 	// So it says nothing about whether a run is going. It used to be asked
 	// that, and the answer was wrong from the second run onwards - see running.
 	stop func()
+
+	// openFolder is how this screen asks the desktop to show a directory. Held
+	// as a function rather than reaching for the host, because the runner is
+	// shared by three screens and none of them owns the window.
+	openFolder func(string)
 
 	// running is whether a run owns the screen, and it exists because stop
 	// cannot answer that. Asking stop was a real defect and a quiet one: it is
@@ -521,44 +540,14 @@ func newRunner() *runner {
 	r.cancelBtn = widget.NewButton(text.ButtonCancel(), r.onCancel)
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
-	return r
-}
 
-// actions puts Preview before Generate, and that order is G6.
-//
-// It is the one thing a window does better than a command line rather than
-// merely as well: --dry-run has to be known about and remembered, and this is
-// on the way to the button beside it. With presets running to several gigabytes
-// and disks that are not always emptier than that, it is not decoration.
-// actions is the bar at the foot of the form. The buttons that run something go
-// at the RIGHT edge of the column, and anything else stays at the left.
-//
-// Measured from the stored tree on 2026-08-18 before this changed: the bar is
-// 820 px wide and the two buttons stood at x=0 and x=73. Nobody had chosen that
-// - it was where an HBox puts things - and the owner asked why they sat over
-// there. Decided on 2026-08-18: the end of the reading path, which is where a
-// form with a fixed action bar puts the thing it wants pressed last. Cancel is
-// hidden until a run starts, so at rest the rightmost button is Generate.
-//
-// The spacer is what does it. An HBox gives every child its minimum width and
-// leaves the rest empty at the end, so without something greedy in front the
-// buttons cannot move.
-func (r *runner) actions() fyne.CanvasObject {
-	// Centred, on the owner's decision of 2026-08-19, which reverses the one of
-	// 2026-08-18 that put them at the right edge. Both were reports from
-	// looking at the built window, and the reasoning for the first is kept
-	// above rather than deleted because it was not wrong - it was a choice, and
-	// this is a different one.
-	//
-	// A spacer at each end rather than one, because a single greedy spacer only
-	// pushes: it can put the group at one end or the other and never in the
-	// middle.
-	//
-	// Everything that is not one of these buttons went to the bar's rail on
-	// 2026-08-19 - see parts.ActionBar. It used to be laid over this row, which
-	// kept it inside the form's column and so a margin away from the edge.
-	return container.NewHBox(
-		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn, layout.NewSpacer())
+	r.openBtn = widget.NewButton(text.ButtonOpenFolder(), func() {
+		if r.wroteInto != "" && r.openFolder != nil {
+			r.openFolder(r.wroteInto)
+		}
+	})
+	r.openBtn.Hide()
+	return r
 }
 
 // rail is what stands at the left edge of the action bar: the buttons that are
@@ -697,6 +686,12 @@ func (r *runner) onGenerate() {
 		r.refuse(err)
 		return
 	}
+	// Remembered here rather than read back afterwards, because the box on the
+	// screen can be edited while a run is going and the button has to open
+	// where the files ACTUALLY went. Hidden first, so a run that produces
+	// nothing does not leave the offer from the run before it standing.
+	r.hideTheFolder()
+	r.wroteInto = opt.OutDir
 	r.startRun(planned, opt)
 }
 
@@ -808,27 +803,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 	// entries in a window.
 	r.say(append([]string{outcomeText(res, runErr)}, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
-}
-
-func outcomeText(res *engine.Result, runErr error) string {
-	if res == nil || res.Manifest == nil {
-		return text.NothingProduced()
-	}
-	written := len(res.Manifest.Files) - res.Failures
-	switch {
-	case runErr != nil:
-		return text.StoppedAfter(written)
-	case res.Failures > 0:
-		return text.WrittenWithFailures(written, res.Failures)
-	}
-	return text.Written(written)
-}
-
-func notesOf(res *engine.Result) []string {
-	if res == nil || res.Manifest == nil {
-		return nil
-	}
-	return res.Manifest.Notes()
+	r.offerTheFolder(res)
 }
 
 // setRunning is the screen in one state or the other. Two buttons that both

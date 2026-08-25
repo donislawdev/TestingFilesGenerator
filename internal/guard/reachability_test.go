@@ -299,7 +299,7 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 // its type when it carries no words of its own.
 func describeFocusable(f fyne.Focusable) string {
 	switch control := f.(type) {
-	case *widget.Entry:
+	case *parts.Entry:
 		if control.PlaceHolder != "" {
 			return fmt.Sprintf("a box hinting %q", control.PlaceHolder)
 		}

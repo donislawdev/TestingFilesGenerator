@@ -16,6 +16,16 @@ because it turns other people's test suites red.
 
 ### Added
 
+- Keyboard shortcuts: `Ctrl+Enter` generates, `Ctrl+P` previews, `Esc` stops a
+  run that is going. They work while you are typing in a box, which is when you
+  are most likely to want them, and they do nothing when the button they press
+  is out of use - so `Ctrl+Enter` cannot start a second run during the first.
+- The keyboard starts on the first field of whichever screen you are on, and
+  moves with you between screens. No reaching for the mouse to begin.
+- A finished run offers **Open folder**, which opens the directory the files
+  actually went into. It appears when there is something to open and goes away
+  when the next run starts.
+
 - The window folds away what a format decides for itself and the notes that
   describe the case, so the batch screen fits without scrolling for the first
   time. Both open with a click, and a run refused because of a setting inside

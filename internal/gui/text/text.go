@@ -39,7 +39,11 @@ import (
 // thing it previews.
 func ButtonPreview() string  { return say("ButtonPreview", "Preview") }
 func ButtonGenerate() string { return say("ButtonGenerate", "Generate") }
-func ButtonCancel() string   { return say("ButtonCancel", "Cancel") }
+
+// ButtonOpenFolder shows the directory a finished run wrote into. It is on the
+// bar only while there is something to open.
+func ButtonOpenFolder() string { return say("ButtonOpenFolder", "Open folder") }
+func ButtonCancel() string     { return say("ButtonCancel", "Cancel") }
 
 // files is a count with its noun, in the right number.
 //

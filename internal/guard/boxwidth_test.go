@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -162,7 +161,7 @@ func typedInWidth(control fyne.CanvasObject) float32 {
 	var step func(o fyne.CanvasObject)
 	step = func(o fyne.CanvasObject) {
 		switch v := o.(type) {
-		case *widget.Entry:
+		case *parts.Entry:
 			if v.Size().Width > widest {
 				widest = v.Size().Width
 			}

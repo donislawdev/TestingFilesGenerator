@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -129,7 +128,7 @@ func boolField(p format.Property) PropertyField {
 // a box somebody types into and the difference between them is what the engine
 // accepts rather than what the box does.
 func textField(p format.Property) PropertyField {
-	entry := widget.NewEntry()
+	entry := NewEntry()
 	entry.SetPlaceHolder(leftAlone(p))
 	return PropertyField{
 		Name:    p.Name,

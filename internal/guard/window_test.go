@@ -61,11 +61,24 @@ type fakeHost struct {
 
 	opened      string
 	openedCount int
+
+	canvas      fyne.Canvas
+	folder      string
+	folderCount int
 }
 
-func (h *fakeHost) SetContent(o fyne.CanvasObject) { h.content = o }
-func (h *fakeHost) SetCloseIntercept(fn func())    { h.intercept = fn }
-func (h *fakeHost) Close()                         { h.closed++ }
+func (h *fakeHost) SetContent(o fyne.CanvasObject) {
+	h.content = o
+	// Onto the canvas as well, when a guard gave us one. The real host puts the
+	// tree in the window, and anything asked about the canvas afterwards - what
+	// has the keyboard, which shortcut is registered - is answered against a
+	// canvas with nothing on it otherwise.
+	if h.canvas != nil {
+		h.canvas.SetContent(o)
+	}
+}
+func (h *fakeHost) SetCloseIntercept(fn func()) { h.intercept = fn }
+func (h *fakeHost) Close()                      { h.closed++ }
 
 // picked is what the stand in answers when a screen asks where the files
 // should go, and asked counts how often it was asked. A real picker needs a
@@ -78,6 +91,27 @@ func (h *fakeHost) Close()                         { h.closed++ }
 func (h *fakeHost) OpenLink(address string) {
 	h.opened = address
 	h.openedCount++
+}
+
+// Canvas is where a shortcut gets registered and where the keyboard starts.
+//
+// A guard that wants to PRESS a shortcut sets this to the canvas of the window
+// it built, before Open, so the registration lands where the press will be
+// delivered. Left unset it makes a windowless one, which is enough for every
+// guard that only wants the screen tree.
+func (h *fakeHost) Canvas() fyne.Canvas {
+	if h.canvas == nil {
+		h.canvas = test.NewCanvas()
+	}
+	return h.canvas
+}
+
+// OpenFolder records the directory a screen asked to have shown. Recorded
+// rather than opened, for the same reason as OpenLink: a stand in that really
+// opened one would put a file manager on somebody's screen for every guard.
+func (h *fakeHost) OpenFolder(path string) {
+	h.folder = path
+	h.folderCount++
 }
 
 func (h *fakeHost) ChooseDirectory(chosen func(string)) {
@@ -367,7 +401,7 @@ func textIn(o fyne.CanvasObject) string {
 		case *widget.Button:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
-		case *widget.Entry:
+		case *parts.Entry:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
 		case *parts.Chooser:
@@ -575,15 +609,15 @@ func headingOf(o fyne.CanvasObject) *widget.Label {
 // can be a box with something beside it - the output directory is a box and a
 // button to browse with - and a guard should not have to know which fields are
 // which shape.
-func entryUnder(t *testing.T, o fyne.CanvasObject, label string) *widget.Entry {
+func entryUnder(t *testing.T, o fyne.CanvasObject, label string) *parts.Entry {
 	t.Helper()
 	control := controlUnder(o, label)
-	if entry, ok := control.(*widget.Entry); ok {
+	if entry, ok := control.(*parts.Entry); ok {
 		return entry
 	}
-	var found *widget.Entry
+	var found *parts.Entry
 	walk(control, func(obj fyne.CanvasObject) {
-		if entry, ok := obj.(*widget.Entry); ok && found == nil {
+		if entry, ok := obj.(*parts.Entry); ok && found == nil {
 			found = entry
 		}
 	})

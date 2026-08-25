@@ -231,7 +231,7 @@ func boxText(t *testing.T, fields *parts.Fields, at string) string {
 // A walk rather than a cast, for the reason parts.boxesIn gives: a field's
 // control is often a container, because a number is held to a width by one and
 // the output directory carries a button beside it.
-func entryIn(t *testing.T, fields *parts.Fields, at string) *widget.Entry {
+func entryIn(t *testing.T, fields *parts.Fields, at string) *parts.Entry {
 	t.Helper()
 	f := findField(fields, at)
 	if f == nil {
@@ -244,9 +244,9 @@ func entryIn(t *testing.T, fields *parts.Fields, at string) *widget.Entry {
 	return nil
 }
 
-func firstEntryIn(o fyne.CanvasObject) *widget.Entry {
+func firstEntryIn(o fyne.CanvasObject) *parts.Entry {
 	switch it := o.(type) {
-	case *widget.Entry:
+	case *parts.Entry:
 		return it
 	case *fyne.Container:
 		for _, child := range it.Objects {

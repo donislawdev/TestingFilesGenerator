@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
@@ -50,6 +49,29 @@ type Host interface {
 	// which is what lets a guard press the button on a machine with no screen.
 	ChooseDirectory(func(string))
 
+	// Canvas is what the screens need for the keyboard: a shortcut is registered
+	// on it, and so is where the keyboard starts.
+	//
+	// It widens this interface, which was deliberately narrow, so the reason is
+	// worth stating. Everything else here is a thing only a real window can DO,
+	// and a stand in answers it by recording. The keyboard is different: a
+	// shortcut has to be registered somewhere the toolkit will look, and the
+	// toolkit looks at the canvas. A stand in can hold one - the test driver
+	// ships a windowless canvas that carries a shortcut handler - so this stays
+	// answerable without a screen, which is the property that mattered.
+	Canvas() fyne.Canvas
+
+	// OpenFolder asks the desktop to show a directory.
+	//
+	// Separate from OpenLink although both end at the same call, because a
+	// screen has a PATH and the system takes an address - and turning one into
+	// the other is not string concatenation. Measured on 2026-08-25 with
+	// tools/probes/fileuri: the toolkit's own storage.NewFileURI escapes
+	// nothing, so a directory called "a#b&c" arrives truncated at the hash and
+	// a directory with a space arrives with the space in it. Building that
+	// address belongs to the one place that knows what system this is.
+	OpenFolder(path string)
+
 	// OpenLink hands an address to whatever the desktop uses for the web.
 	//
 	// The program does not fetch it. It asks the system to, on a press somebody
@@ -75,12 +97,12 @@ type Generate struct {
 	host Host
 
 	formatPick *parts.Chooser
-	size       *widget.Entry
-	count      *widget.Entry
-	id         *widget.Entry
-	name       *widget.Entry
-	outDir     *widget.Entry
-	seed       *widget.Entry
+	size       *parts.Entry
+	count      *parts.Entry
+	id         *parts.Entry
+	name       *parts.Entry
+	outDir     *parts.Entry
+	seed       *parts.Entry
 	label      *parts.Toggle
 
 	// props are the fields drawn from whatever the chosen format declares, and
@@ -123,6 +145,7 @@ type Generate struct {
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = g.settle
+	g.runner.openFolder = host.OpenFolder
 	// A box inside a folded section cannot be brought into view by scrolling,
 	// so the section is opened first - see runner.unfold.
 	g.runner.unfold = g.openFoldHolding
@@ -178,6 +201,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 // Object is the screen, to put in a window.
 func (g *Generate) Object() fyne.CanvasObject { return g.body }
 
+// FirstField is where the keyboard starts on this screen: the format, because
+// everything else on the form follows from it.
+func (g *Generate) FirstField() fyne.Focusable { return g.formatPick }
+
 // OutDir and SetOutDir are how the screens keep one answer to "where do the
 // files go" between them. The window carries it across on the way from one to
 // the other - see Open.
@@ -225,8 +252,8 @@ func (g *Generate) buildFields() {
 	g.label.SetChecked(true)
 }
 
-func entry(text, placeholder string) *widget.Entry {
-	e := widget.NewEntry()
+func entry(text, placeholder string) *parts.Entry {
+	e := parts.NewEntry()
 	e.SetText(text)
 	e.SetPlaceHolder(placeholder)
 	return e

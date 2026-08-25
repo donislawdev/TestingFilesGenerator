@@ -346,6 +346,10 @@ func (c *Chooser) giveBack(surface fyne.Canvas, byKeyboard bool) {
 	c.from.Quietly(func() { surface.Focus(c) })
 }
 
+// Quietly runs a focus change without drawing the mark that says the keyboard
+// is here. See PointerFocus and FocusQuietly.
+func (c *Chooser) Quietly(focus func()) { c.from.Quietly(focus) }
+
 // TypedKey opens the same list from the keyboard.
 //
 // Without this the two ways in show two different lists: the toolkit's own

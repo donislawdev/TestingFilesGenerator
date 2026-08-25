@@ -71,9 +71,9 @@ type Recipe struct {
 	// form scrolls and one batch is taller than the window (O112).
 	addBtn *widget.Button
 
-	outDir   *widget.Entry
-	manifest *widget.Entry
-	seed     *widget.Entry
+	outDir   *parts.Entry
+	manifest *parts.Entry
+	seed     *parts.Entry
 	label    *parts.Toggle
 
 	tips *parts.Tips
@@ -89,11 +89,11 @@ type Recipe struct {
 // widgets would empty the form without saying so.
 type batch struct {
 	formatPick *parts.Chooser
-	id         *widget.Entry
-	count      *widget.Entry
-	size       *widget.Entry
-	sizeRange  *widget.Entry
-	boundary   *widget.Entry
+	id         *parts.Entry
+	count      *parts.Entry
+	size       *parts.Entry
+	sizeRange  *parts.Entry
+	boundary   *parts.Entry
 
 	// sizeWay is which of the three ways of saying how big this batch uses, and
 	// the two boxes it does not use are hidden rather than absent.
@@ -128,8 +128,8 @@ type batch struct {
 	notesFolded    bool
 	settings       *parts.Folding
 	notes          *parts.Folding
-	name           *widget.Entry
-	group          *widget.Entry
+	name           *parts.Entry
+	group          *parts.Entry
 	expected       *parts.Chooser
 	reason         *parts.Chooser
 
@@ -145,8 +145,8 @@ type batch struct {
 // content is one entry of a contains list: what an archive holds.
 type content struct {
 	formatPick *parts.Chooser
-	count      *widget.Entry
-	size       *widget.Entry
+	count      *parts.Entry
+	size       *parts.Entry
 }
 
 // NewRecipe builds the screen with one empty batch on it.
@@ -157,17 +157,18 @@ type content struct {
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r := &Recipe{runner: newRunner(), host: host, tips: parts.NewTips()}
 	r.runner.settle = r.settle
+	r.runner.openFolder = host.OpenFolder
 	// A refusal about a size belongs on the box the switch is showing.
 	r.runner.readdress = r.readdressSizeWay
 	// A box inside a folded batch cannot be brought into view by scrolling, so
 	// the fold is opened first - see runner.unfold.
 	r.runner.unfold = r.openFoldHolding
 
-	r.outDir = widget.NewEntry()
+	r.outDir = parts.NewEntry()
 	r.outDir.SetText(startingDirectory())
-	r.manifest = widget.NewEntry()
+	r.manifest = parts.NewEntry()
 	r.manifest.SetPlaceHolder(engine.DefaultManifestName)
-	r.seed = widget.NewEntry()
+	r.seed = parts.NewEntry()
 	// What happens if it is left alone, in the place a box says that. Counted
 	// on 2026-08-23 off the stored widget trees: six boxes on this screen held
 	// nothing at all, and four of them are settings a run refuses when they are
@@ -211,6 +212,10 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
 
+// FirstField is where the keyboard starts: the format of the first batch. There
+// is always a first batch - the last one cannot be removed.
+func (r *Recipe) FirstField() fyne.Focusable { return r.batches[0].formatPick }
+
 // OutDir is where this screen would write, for the screen somebody moves to.
 func (r *Recipe) OutDir() string { return r.outDir.Text }
 
@@ -226,13 +231,13 @@ func (r *Recipe) SetOutDir(dir string) {
 // newBatch builds the controls of one batch, without placing them.
 func (r *Recipe) newBatch() *batch {
 	b := &batch{
-		id:        widget.NewEntry(),
-		count:     widget.NewEntry(),
-		size:      widget.NewEntry(),
-		sizeRange: widget.NewEntry(),
-		boundary:  widget.NewEntry(),
-		name:      widget.NewEntry(),
-		group:     widget.NewEntry(),
+		id:        parts.NewEntry(),
+		count:     parts.NewEntry(),
+		size:      parts.NewEntry(),
+		sizeRange: parts.NewEntry(),
+		boundary:  parts.NewEntry(),
+		name:      parts.NewEntry(),
+		group:     parts.NewEntry(),
 		sizeWay:   newSizeWaySwitch(),
 		// Both sections arrive put away. The owner's decision of 2026-08-25,
 		// and the number under it is 248 px of form per screen (O98) for
@@ -450,8 +455,8 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 func (r *Recipe) newContent() *content {
 	return &content{
 		formatPick: parts.NewChooser(format.IDs(), nil),
-		count:      widget.NewEntry(),
-		size:       widget.NewEntry(),
+		count:      parts.NewEntry(),
+		size:       parts.NewEntry(),
 	}
 }
 

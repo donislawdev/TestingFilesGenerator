@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -95,6 +96,32 @@ func (d desktop) OpenLink(address string) {
 		return
 	}
 	_ = fyne.CurrentApp().OpenURL(parsed)
+}
+
+// OpenFolder asks the desktop to show a directory.
+//
+// The address is BUILT as a URL rather than glued together, and that is a
+// measurement rather than caution. tools/probes/fileuri on 2026-08-25: the
+// toolkit's own storage.NewFileURI puts "file://" in front of a slashed path
+// and escapes nothing, so "C:\a#b&c" comes out as file://C:/a#b&c - where
+// everything after the hash is a URL fragment and the directory the person
+// asked for is not the one that opens. A space is left raw too. Setting Path on
+// a url.URL and letting String do the escaping is the difference between
+// %23 and a silently truncated name.
+//
+// Absolute first, because a relative path has no meaning to another process and
+// the box on the screen is allowed to hold one.
+//
+// A refusal is swallowed for the same reason OpenLink swallows one: there is
+// nothing useful to say to somebody whose desktop has no file manager, and the
+// path is on the screen for anybody who wants to copy it.
+func (d desktop) OpenFolder(path string) {
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return
+	}
+	address := &url.URL{Scheme: "file", Path: filepath.ToSlash(absolute)}
+	_ = fyne.CurrentApp().OpenURL(address)
 }
 
 func run(errOut io.Writer) int {

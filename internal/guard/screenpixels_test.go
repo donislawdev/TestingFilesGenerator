@@ -656,7 +656,7 @@ func pinOutputDirectory(tab fyne.CanvasObject) {
 		return
 	}
 	walk(control, func(o fyne.CanvasObject) {
-		if entry, ok := o.(*widget.Entry); ok && entry.Text != pinnedOutputDirectory {
+		if entry, ok := o.(*parts.Entry); ok && entry.Text != pinnedOutputDirectory {
 			entry.SetText(pinnedOutputDirectory)
 		}
 	})

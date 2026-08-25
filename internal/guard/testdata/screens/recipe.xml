@@ -112,7 +112,7 @@
 																						</widget>
 																					</container>
 																					<container pos="0,33" size="401x31">
-																						<widget size="401x31" type="*widget.Entry">
+																						<widget size="401x31" type="*parts.Entry">
 																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																							<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
@@ -137,7 +137,7 @@
 																					</widget>
 																					<container pos="0,32" size="401x31">
 																						<container size="140x31">
-																							<widget size="140x31" type="*widget.Entry">
+																							<widget size="140x31" type="*parts.Entry">
 																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="138x29"/>
 																								<rectangle radius="5" size="138x29" strokeColor="inputBorder" strokeWidth="1"/>
 																								<widget pos="0,1" size="140x29" type="*widget.Scroll">
@@ -204,7 +204,7 @@
 																							</widget>
 																						</container>
 																						<container pos="0,33" size="401x31">
-																							<widget size="401x31" type="*widget.Entry">
+																							<widget size="401x31" type="*parts.Entry">
 																								<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																								<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																								<widget pos="0,1" size="401x29" type="*widget.Scroll">
@@ -240,7 +240,7 @@
 																					</widget>
 																				</container>
 																				<container pos="0,33" size="808x31">
-																					<widget size="808x31" type="*widget.Entry">
+																					<widget size="808x31" type="*parts.Entry">
 																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="806x29"/>
 																						<rectangle radius="5" size="806x29" strokeColor="inputBorder" strokeWidth="1"/>
 																						<widget pos="0,1" size="808x29" type="*widget.Scroll">
@@ -332,7 +332,7 @@
 																		</container>
 																		<container pos="0,33" size="808x32">
 																			<container size="808x32">
-																				<widget size="727x32" type="*widget.Entry">
+																				<widget size="727x32" type="*parts.Entry">
 																					<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="725x30"/>
 																					<rectangle radius="5" size="725x30" strokeColor="inputBorder" strokeWidth="1"/>
 																					<widget pos="0,1" size="727x30" type="*widget.Scroll">
@@ -371,7 +371,7 @@
 																				</widget>
 																			</container>
 																			<container pos="0,33" size="401x31">
-																				<widget size="401x31" type="*widget.Entry">
+																				<widget size="401x31" type="*parts.Entry">
 																					<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
 																					<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
 																					<widget pos="0,1" size="401x29" type="*widget.Scroll">
@@ -403,7 +403,7 @@
 																			</container>
 																			<container pos="0,33" size="401x31">
 																				<container size="140x31">
-																					<widget size="140x31" type="*widget.Entry">
+																					<widget size="140x31" type="*parts.Entry">
 																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="138x29"/>
 																						<rectangle radius="5" size="138x29" strokeColor="inputBorder" strokeWidth="1"/>
 																						<widget pos="0,1" size="140x29" type="*widget.Scroll">

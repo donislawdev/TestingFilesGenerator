@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -33,8 +32,8 @@ type Preset struct {
 	host Host
 
 	pick   *parts.Chooser
-	outDir *widget.Entry
-	seed   *widget.Entry
+	outDir *parts.Entry
+	seed   *parts.Entry
 
 	// params are the fields of the chosen preset, and paramBox is where they
 	// go. Rebuilt whenever the preset changes.
@@ -54,6 +53,7 @@ type Preset struct {
 // NewPreset builds the screen. links are the buttons to the other screens.
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
+	p.runner.openFolder = host.OpenFolder
 	p.runner.settle = p.settle
 	// Before the fields, because Add reads it. Only these two: every parameter
 	// a preset declares has a default and leaving it alone is the whole point
@@ -118,6 +118,10 @@ const settingPreset = "preset"
 
 // Object is the screen, to put in a window.
 func (p *Preset) Object() fyne.CanvasObject { return p.body }
+
+// FirstField is where the keyboard starts: which preset, because every
+// parameter under it is drawn from that answer.
+func (p *Preset) FirstField() fyne.Focusable { return p.pick }
 
 // OutDir and SetOutDir keep one answer to "where do the files go" across both
 // screens. The window carries it over on the way between them - see Open.

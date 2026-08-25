@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 )
 
 // Field is one labelled control that can say it was the one refused.
@@ -91,6 +90,36 @@ type Fields struct {
 	// field ever added is wired with it, including the ones a chosen format or
 	// a chosen preset declares long after the screen was built.
 	tell func(setting string)
+
+	// shortcuts is where a box sends a shortcut it has no use for.
+	//
+	// Here rather than at the call sites for the same reason tell is: the call
+	// sites are what this type exists to stop trusting. A screen wires it once
+	// and every box ever added is wired with it, including the ones a chosen
+	// format declares long after the screen was built - and a box that missed
+	// the wiring would be one where Ctrl+Enter does nothing, which is a defect
+	// nobody would find by looking.
+	shortcuts func(fyne.Shortcut)
+}
+
+// PassShortcutsTo says where the boxes of this screen should send a shortcut
+// they have no use for. Called once, before the fields are built.
+func (s *Fields) PassShortcutsTo(deliver func(fyne.Shortcut)) {
+	s.shortcuts = deliver
+	// The boxes that already exist, for a screen that wires this late.
+	for _, f := range s.list {
+		s.wireShortcuts(f.Control)
+	}
+}
+
+// wireShortcuts hands every box inside a control the way out.
+func (s *Fields) wireShortcuts(control fyne.CanvasObject) {
+	if s.shortcuts == nil {
+		return
+	}
+	for _, box := range boxesIn(control) {
+		box.PassShortcutsTo(s.shortcuts)
+	}
 }
 
 // NewFields starts an empty screen.
@@ -183,6 +212,7 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// left over would point at a box that is no longer on the screen.
 	s.by[setting] = f
 	s.listen(setting, control)
+	s.wireShortcuts(control)
 	return object
 }
 
@@ -304,12 +334,12 @@ func (s *Fields) Blank(setting string) bool {
 // A walk rather than a cast, because a field's control is rarely the box
 // itself: a number is held to a fixed width by a container round it, and the
 // output directory carries a button beside it.
-func boxesIn(o fyne.CanvasObject) []*widget.Entry {
+func boxesIn(o fyne.CanvasObject) []*Entry {
 	switch it := o.(type) {
-	case *widget.Entry:
-		return []*widget.Entry{it}
+	case *Entry:
+		return []*Entry{it}
 	case *fyne.Container:
-		var out []*widget.Entry
+		var out []*Entry
 		for _, child := range it.Objects {
 			out = append(out, boxesIn(child)...)
 		}

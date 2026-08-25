@@ -41,6 +41,32 @@ func (p *PointerFocus) Quietly(focus func()) {
 // Quiet reports whether the focus arriving right now came from the pointer.
 func (p *PointerFocus) Quiet() bool { return p.silent }
 
+// FocusQuietly puts the keyboard on a control without drawing the mark that
+// says it is there.
+//
+// For a focus the PROGRAM places - when a window opens, or when somebody moves
+// to another screen. The mark means "the keyboard is here and you are using
+// it", and nobody has pressed a key yet, so drawing it would be the window
+// answering a question that was not asked. The first keystroke draws it.
+//
+// This is the opposite decision to Reveal, which draws the mark on purpose -
+// there the form has MOVED the keyboard away from where somebody was working
+// and saying where it went is the whole point.
+//
+// A control that does not know how to be quiet is focused plainly. Nothing in
+// this window is in that case today, and a new one would draw its mark early
+// rather than not be reachable.
+func FocusQuietly(canvas fyne.Canvas, control fyne.Focusable) {
+	if canvas == nil || control == nil {
+		return
+	}
+	if quiet, ok := control.(interface{ Quietly(func()) }); ok {
+		quiet.Quietly(func() { canvas.Focus(control) })
+		return
+	}
+	canvas.Focus(control)
+}
+
 // Toggle is a switch that shows the keyboard mark only when the keyboard put it
 // there.
 //
@@ -134,6 +160,9 @@ func (t *Toggle) FocusLost() {
 	t.marked = false
 	t.Check.FocusLost()
 }
+
+// Quietly runs a focus change without drawing the mark. See FocusQuietly.
+func (t *Toggle) Quietly(focus func()) { t.from.Quietly(focus) }
 
 // TypedKey turns the mark on, because somebody has now used the keyboard. Space
 // flips the switch and the toolkit does that part.

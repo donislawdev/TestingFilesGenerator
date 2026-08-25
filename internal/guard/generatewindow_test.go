@@ -197,7 +197,7 @@ func wrongKindOfControl(p format.Property, control fyne.CanvasObject) string {
 			return fmt.Sprintf("a %T rather than a switch", control)
 		}
 	default:
-		if _, ok := control.(*widget.Entry); !ok {
+		if _, ok := control.(*parts.Entry); !ok {
 			return fmt.Sprintf("a %T rather than a box to type in", control)
 		}
 	}
