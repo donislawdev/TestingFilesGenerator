@@ -138,6 +138,24 @@ type runner struct {
 	// that built it knows which scroll holds its form.
 	scroll *container.Scroll
 
+	// readdress moves a refusal onto the box that is on the screen, for a
+	// screen that draws one of several boxes for one question.
+	//
+	// The batch screen chooses between three ways of stating a size and shows
+	// one of them. The recipe reader words a batch with none of the three as
+	// "target 1 has no size" whichever way was meant, because the size is the
+	// key it looks for first - so with the switch on a range, that refusal is
+	// addressed to a box nobody can see, and the screen says nothing is wrong
+	// while refusing to run. Measured on 2026-08-25 by the star guard, which
+	// asked whether an empty box that the run refuses is marked and found it
+	// was not.
+	//
+	// A hook rather than knowledge inside Fields, because it is the screen with
+	// the switch that knows what the switch is on, and Fields is drawn by three
+	// screens that mostly do not have one. nil means the address the engine
+	// gave is the address to mark.
+	readdress func(string) string
+
 	// destination is where this screen would write, asked for rather than
 	// stored, because the box it comes from is edited after this is wired.
 	// Nil on a screen that has no such box, and the status line simply stays
@@ -198,12 +216,13 @@ func (r *runner) refuse(err error) {
 		// engine, the format registry and the preset package all answer this
 		// and none of them had to be imported for the question to be asked.
 		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && about.AboutSetting() != "" &&
-			r.fields.Mark(about.AboutSetting(), one) {
-			if first == "" {
-				first = about.AboutSetting()
+		if errors.As(one, &about) && about.AboutSetting() != "" {
+			if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
+				if first == "" {
+					first = where
+				}
+				continue
 			}
-			continue
 		}
 		// About the run rather than about one box, or about a setting this
 		// screen does not draw. The foot of the form is where those belong.
@@ -283,6 +302,15 @@ func spread(err error) []error {
 // complaint about the run rather than about a box is not something to shout
 // while somebody is mid-word. And it says nothing about an empty box - see
 // Fields.Blank.
+// placeOf is where a refusal about one setting belongs on this screen, which is
+// the setting itself unless the screen said otherwise - see readdress.
+func (r *runner) placeOf(setting string) string {
+	if r.readdress == nil {
+		return setting
+	}
+	return r.readdress(setting)
+}
+
 func (r *runner) recheck(setting string) {
 	// Nothing to check against yet, during the screen being built.
 	if r.settle == nil {
@@ -310,7 +338,7 @@ func (r *runner) recheck(setting string) {
 	_, _, err := r.settle()
 	for _, one := range spread(err) {
 		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && about.AboutSetting() == setting {
+		if errors.As(one, &about) && r.placeOf(about.AboutSetting()) == setting {
 			r.fields.Mark(setting, one)
 			return
 		}

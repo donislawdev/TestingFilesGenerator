@@ -160,15 +160,41 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			// would make this guard report a defect every time a screen
 			// greys something out.
 			onScreen := map[fyne.Focusable]bool{}
+			// Not shown includes everything under something not shown, which
+			// Visible() does not answer - see underSomethingHidden. The batch
+			// screen keeps two of its three ways of stating a size in the tree
+			// and off the screen, and a control nobody can see is a control Tab
+			// is right to skip.
+			buried := underSomethingHidden(screen)
 			walk(screen, func(o fyne.CanvasObject) {
 				f, ok := o.(fyne.Focusable)
-				if !ok || !o.Visible() {
+				if !ok || !o.Visible() || buried[o] {
 					return
 				}
 				if off, ok := o.(fyne.Disableable); ok && off.Disabled() {
 					return
 				}
 				onScreen[f] = true
+			})
+			// A switch keeps its options in its renderer rather than in the
+			// tree, so walk cannot see them and the focus manager can - it uses
+			// the toolkit's own visible tree, which goes through renderers.
+			// Without this the batch screen reported three controls that Tab
+			// reaches and the screen does not have, which is a guard describing
+			// its own blind spot as a defect. Measured 2026-08-25, when the
+			// three ways of stating a size became a switch.
+			walk(screen, func(o fyne.CanvasObject) {
+				group, ok := o.(*widget.RadioGroup)
+				if !ok || !group.Visible() || buried[o] {
+					return
+				}
+				for _, part := range test.WidgetRenderer(group).Objects() {
+					walk(part, func(inner fyne.CanvasObject) {
+						if f, ok := inner.(fyne.Focusable); ok {
+							onScreen[f] = true
+						}
+					})
+				}
 			})
 
 			// The chain, walked until it repeats. The ceiling exists because a

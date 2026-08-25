@@ -105,7 +105,7 @@
   },
   "FieldBoundary": {
     "description": "The name above a box somebody fills in.",
-    "other": "Around a limit"
+    "other": "Limit to test"
   },
   "FieldCount": {
     "description": "The name above a box somebody fills in.",
@@ -235,10 +235,6 @@
     "description": "Shown in the window.",
     "other": "Nothing was produced."
   },
-  "OneSizeSettingOnly": {
-    "description": "Shown in the window.",
-    "other": "Fill in one of these three."
-  },
   "PlaceholderNotStated": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
     "other": "not stated"
@@ -278,6 +274,18 @@
   "SectionSettings": {
     "description": "The heading over a group of fields.",
     "other": "Settings"
+  },
+  "SizeWayBoundary": {
+    "description": "Shown in the window.",
+    "other": "Around a limit"
+  },
+  "SizeWayExact": {
+    "description": "Shown in the window.",
+    "other": "One size"
+  },
+  "SizeWayRange": {
+    "description": "Shown in the window.",
+    "other": "A range"
   },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",

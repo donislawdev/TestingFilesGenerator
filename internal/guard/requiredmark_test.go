@@ -208,15 +208,22 @@ func screensWithBoxes(t *testing.T) []screenUnderTest {
 			name: "the batch screen",
 			boxes: []boxUnderTest{
 				box(text.FieldTargetID()), box(text.FieldCount()),
-				// The three ways of saying how big are one question, so
-				// emptying any of them is only fair once another has answered
-				// it. Only the size needs saying here, because the baseline
-				// below answers the question with the size box - so emptying
-				// either of the other two already leaves the question answered.
+				// The three ways of saying how big are one question with one
+				// box on the screen at a time, so each of them is asked about
+				// with the switch on it. Before 2026-08-25 they stood side by
+				// side and the awkward one was the size, which had to be
+				// answered another way first - now the awkward thing is that
+				// two of the three are not on the screen at all, and a box
+				// nobody can see is not a box a star can speak for.
 				{label: text.FieldSize(), answeredInstead: func(t *testing.T, c fyne.CanvasObject) {
-					fill(t, c, text.FieldSizeRange(), "1kb-2kb")
+					chooseSizeWay(t, c, text.SizeWayExact())
 				}},
-				box(text.FieldSizeRange()), box(text.FieldBoundary()),
+				{label: text.FieldSizeRange(), answeredInstead: func(t *testing.T, c fyne.CanvasObject) {
+					chooseSizeWay(t, c, text.SizeWayRange())
+				}},
+				{label: text.FieldBoundary(), answeredInstead: func(t *testing.T, c fyne.CanvasObject) {
+					chooseSizeWay(t, c, text.SizeWayBoundary())
+				}},
 				box(text.FieldNameTemplate()), box(text.FieldGroup()),
 				box(text.FieldManifest()), box(text.FieldSeed()), box(text.FieldOutputDir())},
 			open: onTab(text.TabRecipe()),

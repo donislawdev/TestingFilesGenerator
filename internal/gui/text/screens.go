@@ -288,11 +288,25 @@ func ContentsHeading() string { return say("ContentsHeading", "Files inside each
 // the size limit. The label says that now, so the menu under it is no longer a
 // surprise.
 func FieldSizeRange() string { return say("FieldSizeRange", "Size range") }
-func FieldBoundary() string  { return say("FieldBoundary", "Around a limit") }
-func FieldGroup() string     { return say("FieldGroup", "Kind of case") }
-func FieldExpected() string  { return say("FieldExpected", "Expected outcome") }
-func FieldReason() string    { return say("FieldReason", "Rule being tested") }
-func FieldManifest() string  { return say("FieldManifest", "Manifest file name") }
+func FieldBoundary() string  { return say("FieldBoundary", "Limit to test") }
+
+// The three ways of saying how big, as one control that allows one of them.
+//
+// They were three boxes side by side until 2026-08-25, with a sentence above
+// them saying that only one may be filled in - which is O114, and it was a
+// sentence because the screen let somebody fill in two and find out at the
+// press of a button. A switch removes the state instead of describing it.
+//
+// The words differ from the labels below them on purpose. A switch reading
+// "Size" above a box reading "Size" is the same word twice in 40 px, and these
+// say HOW the size is stated where the label says WHAT the box holds.
+func SizeWayExact() string    { return say("SizeWayExact", "One size") }
+func SizeWayRange() string    { return say("SizeWayRange", "A range") }
+func SizeWayBoundary() string { return say("SizeWayBoundary", "Around a limit") }
+func FieldGroup() string      { return say("FieldGroup", "Kind of case") }
+func FieldExpected() string   { return say("FieldExpected", "Expected outcome") }
+func FieldReason() string     { return say("FieldReason", "Rule being tested") }
+func FieldManifest() string   { return say("FieldManifest", "Manifest file name") }
 
 // The line under each of the recipe screen's own fields.
 func HintSizeRange() string { return say("HintSizeRange", "A different size for every file.") }
@@ -328,33 +342,28 @@ func DetailManifest() string {
 
 // The three ways of saying how big, offered side by side.
 //
-// One box each rather than a mode to choose first, and the recipe reader is what
-// makes that safe: stating two of them is a refusal it already words and
-// addresses, so filling in two marks the box rather than being quietly resolved.
-// A mode would have been a fourth rule for the window to keep in step.
+// A mode chosen first, since 2026-08-25, which this comment used to argue
+// against: one box each was called safe because the recipe reader refuses two,
+// and a mode would be "a fourth rule for the window to keep in step". Both
+// halves were true and neither was the point - a refusal somebody has to press
+// a button to receive is a state the screen let them reach. The mode keeps in
+// step by construction, because the box that is not shown is not sent.
 func HintSizeExact() string { return say("HintSizeExact", "One size for every file.") }
 
-// OneSizeSettingOnly goes under EVERY one of the three ways of stating a size,
-// not just the first.
+// OneSizeSettingOnly is gone as of 2026-08-25, and this note is here rather
+// than nothing because the sentence it held was a FIX and not clutter.
 //
-// The three sit side by side as equals and only one of them may be filled in,
-// which the engine refuses if you try. That rule was written under the first
-// box alone, so somebody reading the third had nothing to learn it from - the
-// two beside it simply described themselves and said nothing about excluding
-// each other (O114).
+// It said "Fill in one of these three." over the three ways of stating a size.
+// O114: the three sat side by side as equals, only one of them could be filled
+// in, and nothing on the screen said so - somebody filled in two and found out
+// at the press of a button.
 //
-// A sentence over the three rather than a control that shows one box at a time.
-// The control would be the better answer and it is a change to the shape of
-// this screen, which has a recorded decision and a rejected variant behind it -
-// so it is not something to do on the way past. Written down in the
-// observation rather than left as a preference.
-//
-// Said once rather than three times, from 2026-08-20. It was the tail of each
-// of the three hints, so the row carried "Fill in one of these three." three
-// times in one line of the screen - which is the rule turned into noise, and
-// two lines of height on a form that does not fit. What stays under each box is
-// what THAT box does, which is the only part of the three that differs.
-func OneSizeSettingOnly() string { return say("OneSizeSettingOnly", "Fill in one of these three.") }
+// The three boxes became one switch and one box, so the state that sentence
+// warned about cannot be reached. A rule nobody can break is a rule with
+// nothing to say. The protection did not go with it: it moved from
+// "the warning is on the screen, once, near all three" to
+// "only the chosen way reaches the run", which is the property rather than the
+// wording of it - see the guards named after it.
 
 // Buttons on the recipe screen.
 func ButtonAddBatch() string       { return say("ButtonAddBatch", "Add a batch") }

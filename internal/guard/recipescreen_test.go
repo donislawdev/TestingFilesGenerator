@@ -341,14 +341,19 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	set(1, recipe.KeyGroup, "smoke")
 	choose(1, recipe.KeyExpected, "accept")
 
-	// A boundary set: three files, one byte either side of a limit.
+	// A boundary set: three files, one byte either side of a limit. The way of
+	// stating a size is chosen first, since 2026-08-25 - the three ways are a
+	// switch with one box under it, and a value typed into a box that is not
+	// showing is not sent.
 	set(2, recipe.KeyID, "edge")
 	choose(2, recipe.KeyFormat, "txt")
+	chooseSizeWayIn(t, body, 2, text.SizeWayBoundary())
 	set(2, recipe.KeyBoundary, "4kb")
 
 	// A range, so the two files come out different sizes.
 	set(3, recipe.KeyID, "vary")
 	choose(3, recipe.KeyFormat, "txt")
+	chooseSizeWayIn(t, body, 3, text.SizeWayRange())
 	set(3, recipe.KeySizeRange, "1kb-4kb")
 	set(3, recipe.KeyCount, "2")
 

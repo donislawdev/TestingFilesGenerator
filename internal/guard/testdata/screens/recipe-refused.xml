@@ -35,12 +35,12 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,53" size="820x736">
-													<container size="820x736">
-														<container size="820x736">
-															<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x736"/>
-															<container size="820x736">
-																<container pos="6,6" size="808x724">
+												<container pos="0,53" size="820x744">
+													<container size="820x744">
+														<container size="820x744">
+															<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x744"/>
+															<container size="820x744">
+																<container pos="6,6" size="808x732">
 																	<widget size="808x35" type="*widget.Label">
 																		<widget size="808x35" type="*widget.RichText">
 																			<text bold pos="6,6" size="63x23" textSize="17">Batch 1</text>
@@ -151,128 +151,84 @@
 																			</widget>
 																		</container>
 																	</container>
-																	<widget pos="0,254" size="808x28" type="*widget.Label">
-																		<widget size="808x28" type="*widget.RichText">
-																			<text color="disabled" pos="6,6" size="138x16" textSize="12">Fill in one of these three.</text>
-																		</widget>
-																	</widget>
-																	<container pos="0,291" size="808x134">
-																		<container size="808x64">
-																			<container size="265x64">
-																				<container size="265x32">
-																					<widget size="39x32" type="*widget.Label">
-																						<widget size="39x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="27x19">Size</text>
-																						</widget>
-																					</widget>
-																					<widget pos="45,0" size="32x32" type="*parts.DetailButton">
-																						<rectangle radius="5" size="32x32"/>
-																						<rectangle size="32x32"/>
-																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
-																					</widget>
-																					<widget pos="77,0" size="188x32" type="*parts.ByteCount">
-																						<widget size="188x32" type="*widget.RichText">
-																							<text alignment="trailing" color="disabled" pos="182,6" size="0x16" textSize="12"></text>
-																						</widget>
-																					</widget>
-																				</container>
-																				<container pos="0,33" size="265x31">
-																					<widget size="265x31" type="*widget.Entry">
-																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
-																						<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
-																						<widget pos="0,1" size="265x29" type="*widget.Scroll">
-																							<widget size="265x29" type="*widget.entryContent">
-																								<widget size="265x29" type="*widget.RichText">
-																									<text color="placeholder" pos="6,5" size="0x19"></text>
-																								</widget>
-																								<widget size="265x29" type="*widget.RichText">
-																									<text pos="6,5" size="0x19"></text>
-																								</widget>
-																							</widget>
-																						</widget>
-																					</widget>
-																					<rectangle radius="5" size="265x31" strokeColor="error" strokeWidth="2"/>
-																				</container>
-																			</container>
-																			<container pos="271,0" size="265x64">
-																				<container size="265x32">
-																					<widget size="83x32" type="*widget.Label">
-																						<widget size="83x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="71x19">Size range</text>
-																						</widget>
-																					</widget>
-																					<widget pos="89,0" size="32x32" type="*parts.DetailButton">
-																						<rectangle radius="5" size="32x32"/>
-																						<rectangle size="32x32"/>
-																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
-																					</widget>
-																				</container>
-																				<container pos="0,33" size="265x31">
-																					<widget size="265x31" type="*widget.Entry">
-																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
-																						<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
-																						<widget pos="0,1" size="265x29" type="*widget.Scroll">
-																							<widget size="265x29" type="*widget.entryContent">
-																								<widget size="265x29" type="*widget.RichText">
-																									<text color="placeholder" pos="6,5" size="0x19"></text>
-																								</widget>
-																								<widget size="265x29" type="*widget.RichText">
-																									<text pos="6,5" size="0x19"></text>
-																								</widget>
-																							</widget>
-																						</widget>
-																					</widget>
-																					<rectangle radius="5" size="265x31"/>
-																				</container>
-																			</container>
-																			<container pos="542,0" size="265x64">
-																				<container size="265x32">
-																					<widget size="112x32" type="*widget.Label">
-																						<widget size="112x32" type="*widget.RichText">
-																							<text bold pos="6,6" size="100x19">Around a limit</text>
-																						</widget>
-																					</widget>
-																					<widget pos="118,0" size="32x32" type="*parts.DetailButton">
-																						<rectangle radius="5" size="32x32"/>
-																						<rectangle size="32x32"/>
-																						<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
-																					</widget>
-																					<widget pos="150,0" size="115x32" type="*parts.ByteCount">
-																						<widget size="115x32" type="*widget.RichText">
-																							<text alignment="trailing" color="disabled" pos="109,6" size="0x16" textSize="12"></text>
-																						</widget>
-																					</widget>
-																				</container>
-																				<container pos="0,33" size="265x31">
-																					<widget size="265x31" type="*widget.Entry">
-																						<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="263x29"/>
-																						<rectangle radius="5" size="263x29" strokeColor="inputBorder" strokeWidth="1"/>
-																						<widget pos="0,1" size="265x29" type="*widget.Scroll">
-																							<widget size="265x29" type="*widget.entryContent">
-																								<widget size="265x29" type="*widget.RichText">
-																									<text color="placeholder" pos="6,5" size="0x19"></text>
-																								</widget>
-																								<widget size="265x29" type="*widget.RichText">
-																									<text pos="6,5" size="0x19"></text>
-																								</widget>
-																							</widget>
-																						</widget>
-																					</widget>
-																					<rectangle radius="5" size="265x31"/>
-																				</container>
-																			</container>
-																		</container>
-																		<container pos="0,65" size="808x69">
-																			<widget size="808x69" type="*widget.Label">
-																				<widget size="808x69" type="*widget.RichText">
-																					<text color="error" pos="6,6" size="768x19">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
-																					<text color="error" pos="6,25" size="110x19">reaches the disk.</text>
-																					<text color="error" pos="6,44" size="563x19">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
-																				</widget>
+																	<container pos="0,254" size="808x179">
+																		<widget size="808x31" type="*widget.RadioGroup">
+																			<widget size="130x31" type="*widget.radioItem">
+																				<circle pos="1,2" size="26x26"/>
+																				<image pos="4,5" rsc="radioButtonFillIcon" size="iconInlineSize" themed="primary"/>
+																				<image pos="4,5" rsc="radioButtonIcon" size="iconInlineSize" themed="foreground"/>
+																				<text pos="32,0" size="130x31">One size</text>
 																			</widget>
+																			<widget pos="130,0" size="130x31" type="*widget.radioItem">
+																				<circle pos="1,2" size="26x26"/>
+																				<image pos="4,5" rsc="radioButtonFillIcon" size="iconInlineSize" themed="inputBackground"/>
+																				<image pos="4,5" rsc="radioButtonIcon" size="iconInlineSize" themed="inputBorder"/>
+																				<text pos="32,0" size="130x31">A range</text>
+																			</widget>
+																			<widget pos="261,0" size="130x31" type="*widget.radioItem">
+																				<circle pos="1,2" size="26x26"/>
+																				<image pos="4,5" rsc="radioButtonFillIcon" size="iconInlineSize" themed="inputBackground"/>
+																				<image pos="4,5" rsc="radioButtonIcon" size="iconInlineSize" themed="inputBorder"/>
+																				<text pos="32,0" size="130x31">Around a limit</text>
+																			</widget>
+																		</widget>
+																		<container pos="0,45" size="808x134">
+																			<container size="808x64">
+																				<container size="401x64">
+																					<container size="401x32">
+																						<widget size="39x32" type="*widget.Label">
+																							<widget size="39x32" type="*widget.RichText">
+																								<text bold pos="6,6" size="27x19">Size</text>
+																							</widget>
+																						</widget>
+																						<widget pos="39,0" size="19x32" type="*parts.RequiredMark">
+																							<widget size="19x32" type="*widget.RichText">
+																								<text bold color="error" pos="6,6" size="7x19">*</text>
+																							</widget>
+																						</widget>
+																						<widget pos="64,0" size="32x32" type="*parts.DetailButton">
+																							<rectangle radius="5" size="32x32"/>
+																							<rectangle size="32x32"/>
+																							<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																						</widget>
+																						<widget pos="96,0" size="304x32" type="*parts.ByteCount">
+																							<widget size="304x32" type="*widget.RichText">
+																								<text alignment="trailing" color="disabled" pos="298,6" size="0x16" textSize="12"></text>
+																							</widget>
+																						</widget>
+																					</container>
+																					<container pos="0,33" size="401x31">
+																						<widget size="401x31" type="*widget.Entry">
+																							<rectangle fillColor="inputBackground" pos="1,1" radius="5" size="399x29"/>
+																							<rectangle radius="5" size="399x29" strokeColor="inputBorder" strokeWidth="1"/>
+																							<widget pos="0,1" size="401x29" type="*widget.Scroll">
+																								<widget size="401x29" type="*widget.entryContent">
+																									<widget size="401x29" type="*widget.RichText">
+																										<text color="placeholder" pos="6,5" size="0x19"></text>
+																									</widget>
+																									<widget size="401x29" type="*widget.RichText">
+																										<text pos="6,5" size="0x19"></text>
+																									</widget>
+																								</widget>
+																							</widget>
+																						</widget>
+																						<rectangle radius="5" size="401x31" strokeColor="error" strokeWidth="2"/>
+																					</container>
+																				</container>
+																				<spacer pos="407,0" size="401x64"/>
+																			</container>
+																			<container pos="0,65" size="808x69">
+																				<widget size="808x69" type="*widget.Label">
+																					<widget size="808x69" type="*widget.RichText">
+																						<text color="error" pos="6,6" size="768x19">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
+																						<text color="error" pos="6,25" size="110x19">reaches the disk.</text>
+																						<text color="error" pos="6,44" size="563x19">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
+																					</widget>
+																				</widget>
+																			</container>
 																		</container>
 																	</container>
-																	<container pos="0,435" size="808x64">
+																	<container pos="0,442" size="808x64">
 																		<container size="808x64">
 																			<container size="401x64">
 																				<container size="401x32">
@@ -338,7 +294,7 @@
 																			</container>
 																		</container>
 																	</container>
-																	<container pos="0,508" size="808x58">
+																	<container pos="0,516" size="808x58">
 																		<container size="808x58">
 																			<container size="401x58">
 																				<container size="401x32">
@@ -396,12 +352,12 @@
 																			</container>
 																		</container>
 																	</container>
-																	<widget pos="0,575" size="808x35" type="*widget.Label">
+																	<widget pos="0,583" size="808x35" type="*widget.Label">
 																		<widget size="808x35" type="*widget.RichText">
 																			<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
 																		</widget>
 																	</widget>
-																	<container pos="0,619" size="808x64">
+																	<container pos="0,627" size="808x64">
 																		<container size="808x64">
 																			<container size="401x64">
 																				<container size="401x32">
@@ -471,7 +427,7 @@
 																			</container>
 																		</container>
 																	</container>
-																	<widget pos="0,692" size="808x32" type="*widget.Button">
+																	<widget pos="0,700" size="808x32" type="*widget.Button">
 																		<rectangle fillColor="button" radius="5" size="808x32"/>
 																		<rectangle size="808x32"/>
 																		<widget pos="351,6" size="105x19" type="*widget.RichText">
@@ -483,7 +439,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,803" size="820x242">
+												<container pos="0,811" size="820x242">
 													<container size="820x242">
 														<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x242"/>
 														<container size="820x242">

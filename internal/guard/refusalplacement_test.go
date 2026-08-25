@@ -177,6 +177,35 @@ func fieldBox(o fyne.CanvasObject, label string) *fyne.Container {
 	return found
 }
 
+// underSomethingHidden is every object inside something that is not shown.
+//
+// A hidden box is still a box in the tree, and Visible() answers for one object
+// rather than for its ancestry - so a child of a hidden container reports that
+// it is visible, truthfully and uselessly. Measured on 2026-08-25, when the
+// three ways of stating a size became one switch and two hidden boxes: the text
+// collector reported all three, and the keyboard guard reported four controls
+// nobody could reach with Tab, correctly and about controls nobody can see.
+//
+// Built out of walk rather than beside it, twice over: everything that is
+// hidden, then everything under each of those. A second walker would be a
+// second thing that has to know about ThemeOverride, about a Card being a
+// widget rather than a container, and about the reflect fallback for a type
+// nobody listed - and this project has four recorded cases of a walk meeting an
+// unknown type and silently reporting an empty tree.
+func underSomethingHidden(root fyne.CanvasObject) map[fyne.CanvasObject]bool {
+	var hidden []fyne.CanvasObject
+	walk(root, func(o fyne.CanvasObject) {
+		if o != nil && !o.Visible() {
+			hidden = append(hidden, o)
+		}
+	})
+	buried := map[fyne.CanvasObject]bool{}
+	for _, one := range hidden {
+		walk(one, func(o fyne.CanvasObject) { buried[o] = true })
+	}
+	return buried
+}
+
 func allText(o fyne.CanvasObject) string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {

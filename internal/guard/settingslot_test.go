@@ -189,6 +189,7 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"Batch name": "a", "How many files": "a", "File names": "a", "Size": "a",
 		"Format": "a", "Seed": "a", "Output directory": "an", "Kind of case": "a",
 		"Around a limit": "an", "Size range": "a", "Expected outcome": "an",
+		"Limit to test": "a", "One size": "a", "A range": "a",
 		"Rule being tested": "a", "Manifest file name": "a", "Preset": "a",
 		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a",
 		"Write a label inside each file": "a",

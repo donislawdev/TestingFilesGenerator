@@ -95,10 +95,24 @@ type batch struct {
 	size       *widget.Entry
 	sizeRange  *widget.Entry
 	boundary   *widget.Entry
-	name       *widget.Entry
-	group      *widget.Entry
-	expected   *parts.Chooser
-	reason     *parts.Chooser
+
+	// sizeWay is which of the three ways of saying how big this batch uses, and
+	// the two boxes it does not use are hidden rather than absent.
+	//
+	// Hidden rather than absent because everything a refusal needs is set up
+	// when a field is registered: the address it is marked by, the star, the
+	// count of bytes under it. Building only the chosen one would mean building
+	// it again on every change of mind, and a rebuilt box is a box that has
+	// forgotten what was typed into it.
+	//
+	// Only the chosen one is sent - see draft. That is what makes the state the
+	// engine refuses unreachable rather than merely discouraged.
+	sizeWay   *widget.RadioGroup
+	sizeBoxes map[string]fyne.CanvasObject
+	name      *widget.Entry
+	group     *widget.Entry
+	expected  *parts.Chooser
+	reason    *parts.Chooser
 
 	// declared is what the chosen format takes, and props are the controls drawn
 	// from it. Both are replaced when the format changes and reused across a
@@ -124,6 +138,8 @@ type content struct {
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r := &Recipe{runner: newRunner(), host: host, tips: parts.NewTips()}
 	r.runner.settle = r.settle
+	// A refusal about a size belongs on the box the switch is showing.
+	r.runner.readdress = r.readdressSizeWay
 
 	r.outDir = widget.NewEntry()
 	r.outDir.SetText(startingDirectory())
@@ -285,13 +301,17 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// carries the batch it belongs to - the id of a second batch is a different
 	// name from the id of the first.
 	//
-	// The id alone. A batch with no id is refused, because an id is what
-	// anchors its seed. The three ways of saying how big are NOT marked and
-	// that is the point of the definition rather than an omission: filling any
-	// one of them satisfies the run, so no single one of them is required, and
-	// three stars would say "fill all three". The line above them carries that
-	// rule instead.
-	r.fields.Require(at(recipe.KeyID))
+	// The id, and the way of saying how big that the switch is on.
+	//
+	// All three ways are marked and only one of them is ever on the screen, so
+	// what a person sees is one star on the box in front of them. Until
+	// 2026-08-25 none of the three carried one, and that was right at the time:
+	// they stood side by side, filling any one satisfied the run, and three
+	// stars would have read as "fill all three". The switch makes the one that
+	// is shown the one the run will not do without, which is exactly what a
+	// star says.
+	r.fields.Require(at(recipe.KeyID),
+		at(recipe.KeySize), at(recipe.KeySizeRange), at(recipe.KeyBoundary))
 	// Two of the three ways of saying how big hold ONE size, so those two say
 	// what it comes to. A size range holds two numbers and a count under it
 	// would be answering about half the box, so it is left out - see
@@ -324,22 +344,14 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 				r.tips.Say(text.DetailTargetID()), b.id),
 			add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
 		),
-		// Three ways of saying how big, on one row and the same width, because
-		// they answer one question and somebody fills in exactly one. Stating two
-		// is a refusal the recipe reader already words and addresses, so this
-		// screen needs no mode of its own to keep in step with that rule.
+		// One way of saying how big, chosen from three, since 2026-08-25.
 		//
-		// One of the three was a narrow box until this was looked at, which made
-		// three alternatives read as three unrelated fields.
-		parts.Note(text.OneSizeSettingOnly()),
-		r.fields.Row(
-			add(recipe.KeySize, text.FieldSize(), text.HintSizeExact(),
-				r.tips.Say(text.DetailSize()), b.size),
-			add(recipe.KeySizeRange, text.FieldSizeRange(), text.HintSizeRange(),
-				r.tips.Say(text.DetailSizeRange()), b.sizeRange),
-			add(recipe.KeyBoundary, text.FieldBoundary(), text.HintBoundary(),
-				r.tips.Say(text.DetailBoundary()), b.boundary),
-		),
+		// They were three boxes side by side with a sentence above them saying
+		// that only one might be filled in - O114, and a sentence because the
+		// screen let somebody fill in two and learn it from a refusal. A switch
+		// takes the state away rather than describing it, and the box it leaves
+		// is a full row wide rather than a third of one.
+		r.sizeWayFor(b, at, add),
 		r.fields.Row(
 			add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
 				r.tips.Say(text.DetailNameTemplate()), b.name),
@@ -632,9 +644,9 @@ func (b *batch) draft() recipe.TargetDraft {
 		ID:             b.id.Text,
 		Format:         b.formatPick.Selected,
 		Count:          b.count.Text,
-		Size:           b.size.Text,
-		SizeRange:      b.sizeRange.Text,
-		Boundary:       b.boundary.Text,
+		Size:           b.statedSize(recipe.KeySize),
+		SizeRange:      b.statedSize(recipe.KeySizeRange),
+		Boundary:       b.statedSize(recipe.KeyBoundary),
 		Name:           b.name.Text,
 		Group:          b.group.Text,
 		Expected:       b.expected.Selected,
