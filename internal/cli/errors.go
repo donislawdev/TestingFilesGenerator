@@ -19,6 +19,19 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
+// describeError renders an error for a person, in English, whatever language
+// the operating system speaks.
+//
+// Every message this tool prints is English. A wrapped operating system error
+// breaks that with nothing noticing, because the system formats its messages in
+// the language of the machine - "Incorrect function." reaches somebody on a
+// Polish install as a Polish sentence. The guard that scans this binary for non
+// English text cannot see it, since that text is not in the binary at all. It
+// arrives at run time.
+//
+// So the system's sentence is swapped for ours and every layer of our own
+// context above it is kept. The number it carried stays, because a number means
+// the same thing in every language and it is what somebody puts into a search.
 func describeError(err error) string {
 	if err == nil {
 		return ""
@@ -71,6 +84,12 @@ func mustBeFile(path, kind, command string) error {
 		path, command, command, filepath.Join(path, kind))
 }
 
+// classify turns an error into an exit code.
+//
+// The mapping lives here and nowhere else, and it works on error types rather
+// than on message text. Anything unrecognised becomes a runtime error, which
+// is the honest answer for a failure the tool did not anticipate.
+//
 // Split into three by what the error is about rather than left as one chain.
 // The chain reached the ceiling on function length, and cutting it where the
 // subject changes is the cut that costs nothing to read: a caller still asks
@@ -226,5 +245,3 @@ func classifyReading(err error) (int, bool) {
 	}
 	return 0, false
 }
-
-// propertyFlag collects repeated --set key=value pairs.

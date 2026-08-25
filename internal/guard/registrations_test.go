@@ -3,8 +3,12 @@ package guard
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 )
 
 // Both binaries carry the format registrations, asked of the compiler.
@@ -89,4 +93,67 @@ func linkedWithCGO(t *testing.T, target string) []string {
 			len(pkgs), target)
 	}
 	return pkgs
+}
+
+// The archive works its minimum out from another format, so that format has to
+// be registered first - and what makes it first is the order of import paths.
+//
+// Go initialises packages in the order of their import paths, so the txt
+// package runs before the zip package by rule. Two comments in the tree called
+// that an accident until 2026-08-25, and an outside review of the whole tree
+// built the opposite argument on it - that the language guarantees nothing
+// here and this is a panic waiting for a toolchain change. Neither was right,
+// and the fix the review offered would have been refused by the layer guard:
+// internal/format/zip is allowed to import internal/format and the label
+// drawer, and nothing else.
+//
+// What is really fragile is narrower, and it is a name rather than a
+// toolchain: rename or move either package so that the entry format no longer
+// sorts first, and zip panics at start with the window not yet on screen.
+// Formats in this tree have been renamed before - csvfile, jsonfile, htmlfile,
+// logfile, svgfile and xmlfile all carry a suffix to stay clear of the standard
+// library - so this is a rename away rather than a theory.
+//
+// Asked of the constant rather than of a run, because at test time every
+// package is initialised and any order would look right from in here.
+func TestTheArchiveEntryFormatSortsBeforeTheArchive(t *testing.T) {
+	const module = "github.com/donislawdev/TestingFilesGenerator/internal/format/"
+
+	entry := entryFormatOfZip(t)
+	archive := module + "zip"
+	if entryPath := module + entry; entryPath >= archive {
+		t.Errorf("%q does not sort before %q, so the archive can be initialised first and "+
+			"panic while working out its own minimum. Go initialises packages in the order of "+
+			"their import paths - see the specification, Program initialization",
+			entryPath, archive)
+	}
+
+	// The entry format is really registered under that id, or the constant
+	// names something nobody would find and the comparison above is about a
+	// package that does not exist.
+	if _, err := format.Get(entry); err != nil {
+		t.Errorf("the archive says its entries are %q and no such format is registered: %v", entry, err)
+	}
+}
+
+// entryFormatOfZip reads the id the archive builds its minimum from.
+//
+// From the source because the constant is unexported and this guard lives
+// outside its package. Naming it here as well would be the second copy of a
+// value, which is the shape this project spends its time removing.
+func entryFormatOfZip(t *testing.T) string {
+	t.Helper()
+	source := readFile(t, filepath.Join(repoRoot(t), "internal", "format", "zip", "zip.go"))
+	const marker = "defaultEntryFmt = "
+	at := strings.Index(source, marker)
+	if at < 0 {
+		t.Fatalf("internal/format/zip/zip.go no longer declares %s, so this guard reads nothing", marker)
+	}
+	rest := source[at+len(marker):]
+	open := strings.Index(rest, `"`)
+	shut := strings.Index(rest[open+1:], `"`)
+	if open < 0 || shut < 0 {
+		t.Fatal("the default entry format is not a plain string constant any more")
+	}
+	return rest[open+1 : open+1+shut]
 }

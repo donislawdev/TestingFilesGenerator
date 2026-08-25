@@ -547,8 +547,3 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 	fmt.Fprintf(errOut, "manifest: %s\n", path)
 	return ExitOK
 }
-
-// formatEntry is what "tfg formats --json" returns. It carries the three
-// things a user cannot guess and that decide whether their request makes
-// sense at all - how faithful the file will be, whether it repeats to the
-// byte, and how small it can go.

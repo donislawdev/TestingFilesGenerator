@@ -238,6 +238,7 @@ func writeJSON(w, errOut io.Writer, v any, code int) int {
 	return code
 }
 
+// propertyFlag collects repeated --set key=value pairs.
 type propertyFlag map[string]string
 
 func (p propertyFlag) String() string { return "" }

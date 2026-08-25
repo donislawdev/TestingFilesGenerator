@@ -36,6 +36,15 @@ import (
 // a DIFFERENT declaration of the same package is a paragraph that has come
 // adrift from it.
 //
+// Widened again the same evening, and by a blind spot rather than by a hunch.
+// An outside review of the whole tree listed eleven of these. Ten were the shape
+// above and had been fixed that morning, and the eleventh went on passing: the
+// end of internal/cli/errors.go was a paragraph about propertyFlag with nothing
+// at all under it, while propertyFlag itself sat undocumented in cli.go. A
+// comment attached to no declaration is not a comment about a different
+// declaration, so the question above never reached it. So a comment standing
+// below the last declaration of its file is asked the same thing.
+//
 // Widened on 2026-08-25 from exported names to every name a package declares,
 // after the narrow version let one through: a function inserted between a
 // comment and the unexported declaration it belonged to. The wider rule found
@@ -86,7 +95,25 @@ func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 			for _, pkgFiles := range byPackage {
 				declared := map[string]bool{}
 				var decls []decl
+				// Comments standing below the last declaration of their file.
+				// Nothing follows them, so they are not the doc of anything and
+				// the check above never sees them - it asks about comments
+				// attached to a declaration.
+				var orphans []decl
 				for _, file := range pkgFiles {
+					if len(file.Decls) > 0 {
+						below := file.Decls[len(file.Decls)-1].End()
+						for _, group := range file.Comments {
+							if group.Pos() <= below {
+								continue
+							}
+							at := fset.Position(group.Pos())
+							orphans = append(orphans, decl{
+								first: firstWordOf(group.Text()),
+								pos:   fmt.Sprintf("%s:%d", shorten(root, at.Filename), at.Line),
+							})
+						}
+					}
 					for _, d := range file.Decls {
 						names, doc := declaredNames(d)
 						for _, n := range names {
@@ -113,6 +140,14 @@ func TestNoDocCommentOpensByNamingADifferentDeclaration(t *testing.T) {
 					problems = append(problems, "   "+d.pos+
 						"  declares "+strings.Join(d.names, ", ")+
 						"  but its comment opens by naming "+d.first)
+				}
+				for _, o := range orphans {
+					if o.first == "" || !declared[o.first] {
+						continue
+					}
+					problems = append(problems, "   "+o.pos+
+						"  stands below the last declaration of its file, so it documents nothing"+
+						"  and it opens by naming "+o.first)
 				}
 			}
 			return nil

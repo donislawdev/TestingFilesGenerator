@@ -418,11 +418,12 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 // rather than a number that describes an unreachable skeleton.
 //
 // It asks no other format anything, and that is on purpose. ZIP works its
-// minimum out from a default TXT entry, which only works while txt happens to
-// be registered first - its own comment calls that true by accident. The
-// import list of format/all is sorted, and targz sorts before txt, so the same
-// approach here would panic at startup. Not worked around by ordering imports,
-// because gofmt sorts them back.
+// minimum out from a default TXT entry, and that works because Go initialises
+// packages in the order of their import paths, which puts txt before zip. It is
+// a rule rather than luck - both comments said "by accident" until 2026-08-25 -
+// but it is a rule about names, and targz comes before txt in that same order.
+// So the same approach here would panic at startup. Not worked around by
+// ordering imports, because gofmt sorts them back.
 func minimumBytes() int64 {
 	return archiveSize(memo{})
 }

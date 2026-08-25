@@ -37,8 +37,13 @@ var notProvenByMutation = map[string]bool{
 	// because it is genuinely unproven: it drives the box directly, so it would
 	// catch that box being replaced by something that is not a text box, and it
 	// would NOT catch a wrapper put in front of one and stealing the presses.
-	"TestThreeClicksInABoxSelectWhatIsInIt":                           true,
-	"TestAFreshRunIntoAnEmptyDirectoryStillWorks":                     true,
+	"TestThreeClicksInABoxSelectWhatIsInIt":       true,
+	"TestAFreshRunIntoAnEmptyDirectoryStillWorks": true,
+	// The property is a package NAME, and no substitution in the tree can
+	// move a package without breaking the build. Every mutation that reaches
+	// the constant it reads also reddens the size guards, which the runner
+	// says out loud - so naming one here would be a proof of nothing.
+	"TestTheArchiveEntryFormatSortsBeforeTheArchive":                  true,
 	"TestCleanupNeverReachesOutsideTheDirectory":                      true,
 	"TestVerifyNeverReachesOutsideTheDirectory":                       true,
 	"TestAKeyThisBuildCannotHonourSaysSoRatherThanBeingIgnored":       true,

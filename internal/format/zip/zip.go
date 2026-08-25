@@ -591,9 +591,18 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 // broken in the way this project keeps finding.
 //
 // The condition is a programming mistake rather than a runtime one. It needs
-// the default entry format to be unregistered when this runs, which today
-// depends on "txt" sorting before "zip" in the import list of format/all -
-// true, and true by accident. format.Register already panics on the same class
+// the default entry format to be unregistered when this runs, and the language
+// says when that can happen: packages are initialised in the order of their
+// import paths, so the txt package is registered before this one by rule rather
+// than by luck. This paragraph said "true by accident" until 2026-08-25, when
+// an outside review built an argument on the opposite claim - that the
+// specification guarantees nothing here. Both were wrong, and the comment being
+// wrong about its own mechanism is the worse of the two.
+//
+// What the rule does not cover is a rename that moves the entry format after
+// this package in that order, or a second entry point linking this package
+// without that one. The first is what a guard asks, since a format has been
+// renamed in this tree before. format.Register already panics on the same class
 // of mistake, so this matches it: a build that cannot state its own minimum
 // fails at start rather than at every use.
 func minimumBytes() int64 {

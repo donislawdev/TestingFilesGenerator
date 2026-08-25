@@ -10,6 +10,10 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
+// formatEntry is what "tfg formats --json" returns. It carries the three
+// things a user cannot guess and that decide whether their request makes
+// sense at all - how faithful the file will be, whether it repeats to the
+// byte, and how small it can go.
 type formatEntry struct {
 	ID          string `json:"id"`
 	Extension   string `json:"extension"`
@@ -213,22 +217,3 @@ func renderJSON(v any, out, errOut io.Writer) int {
 	}
 	return ExitOK
 }
-
-// classify turns an error into an exit code.
-//
-// The mapping lives here and nowhere else, and it works on error types rather
-// than on message text. Anything unrecognised becomes a runtime error, which
-// is the honest answer for a failure the tool did not anticipate.
-// describeError renders an error for a person, in English, whatever language
-// the operating system speaks.
-//
-// Every message this tool prints is English. A wrapped operating system error
-// breaks that with nothing noticing, because the system formats its messages in
-// the language of the machine - "Incorrect function." reaches somebody on a
-// Polish install as a Polish sentence. The guard that scans this binary for non
-// English text cannot see it, since that text is not in the binary at all. It
-// arrives at run time.
-//
-// So the system's sentence is swapped for ours and every layer of our own
-// context above it is kept. The number it carried stays, because a number means
-// the same thing in every language and it is what somebody puts into a search.
