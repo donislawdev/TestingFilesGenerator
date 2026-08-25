@@ -40,6 +40,26 @@ type Ring struct {
 
 	refused bool
 	focused bool
+	// resting is the line this control draws when there is nothing to say about
+	// it, and for nearly every control it is nothing at all. See Resting.
+	resting color.Color
+}
+
+// Resting gives a control an edge it keeps whatever state it is in.
+//
+// One rectangle carrying three states rather than two rectangles carrying one
+// each, and a guard is the reason it is this way round. The first attempt at
+// the menu border on 2026-08-25 was a second rectangle stacked over the control,
+// and TestTheMenuTheKeyboardIsInDrawsALine refused it in one line: "the field
+// Format has 2 edges, and a box with two marks has one that never clears". It
+// was right. Two edges is two things that can disagree, and the day one of them
+// stops being cleared there is a box wearing a mark nobody can take off.
+//
+// Nothing else asks for one. A box to type in gets its resting border from the
+// toolkit, so giving it one here would draw a second line over the first.
+func (r *Ring) Resting(edge color.Color) {
+	r.resting = edge
+	r.draw()
 }
 
 // ringWidth is how thick the line is.
@@ -122,6 +142,13 @@ func (r *Ring) draw() {
 	case r.focused:
 		r.rect.StrokeColor = PaletteColour(theme.ColorNamePrimary, theme.VariantDark)
 		r.rect.StrokeWidth = ringWidth
+	case r.resting != nil:
+		// A menu keeps a line when nobody is using it, because without one it
+		// was the same shape as a box to type in - see Menu for the measurement.
+		// Thinner than the two states above, so a control at rest cannot be
+		// mistaken for one the run refused.
+		r.rect.StrokeColor = r.resting
+		r.rect.StrokeWidth = 1
 	default:
 		// No line at all rather than one in the background colour. A stroke
 		// that is meant to be invisible is a thing that shows up the day the
@@ -170,7 +197,71 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 	return c
 }
 
-func (c *Chooser) useRing(r *Ring) { c.ring = r }
+// Menu gives a chooser the width of what it holds instead of the width of the
+// column it stands in.
+//
+// Measured off the stored tree on 2026-08-25, which is what this is for. The
+// format menu was 808x25 filled with inputBackground at #38383D, and the box to
+// type a size into was filled with inputBackground at #38383D - the same colour
+// to the byte, the same corner radius, and on the preset screen the two sat one
+// above the other at the same 808 px. The only thing saying one of them opens a
+// list was a 20 px arrow at x=782, which is 746 px away from the value it
+// belongs to. A control you press was drawn as a control you type in.
+//
+// The fix is shape rather than shade, and that is arithmetic rather than
+// preference: the surfaces are page 11.3, panel 17.2, field 23.7 and open list
+// 30.8 L*, four levels inside 19.6, and the button colour sits 1.84 L* from the
+// panel - under the 10 this project holds itself to. There is nowhere to put a
+// fifth surface, which was measured on 2026-08-24 and is why nothing here
+// reaches for a new colour.
+//
+// So a menu is now as wide as its longest value plus its arrow, which is the
+// sentence ShapedFor has carried since 2026-08-20 without anything doing it.
+func Menu(c *Chooser) fyne.CanvasObject { return Sized(menuWidth(c), c) }
+
+// menuWidth is the room a chooser needs to show any of its values.
+//
+// The toolkit cannot answer this. selectRenderer.MinSize measures the PLACEHOLDER
+// and nothing else - fyne v2.8.0 widget/select.go line 400 - so a menu asked for
+// its own minimum reports a width that clips every option it has, and one with
+// no placeholder reports the padding and the arrow. Checked in the pinned module
+// rather than assumed, because "ask the widget" is the answer that looks right.
+//
+// The arithmetic below is that same function with the widest value substituted
+// for the placeholder, so a menu keeps the proportions the toolkit gives it.
+func menuWidth(c *Chooser) float32 {
+	th, size := Theme(), theme.TextSize()
+	widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width
+	for _, option := range c.Options {
+		if w := fyne.MeasureText(option, size, fyne.TextStyle{}).Width; w > widest {
+			widest = w
+		}
+	}
+	// This one number decides two things, because the list opens at the width of
+	// the box - so the box also has to fit a ROW, which carries a tick column
+	// and, on a list of things of different kinds, a picture in front of the
+	// word. A term for that was written on 2026-08-25 and taken back out the
+	// same hour: measured across all six menus in the window, the closed box is
+	// already the wider of the two every time. The margin a row has left over is
+	// 22 px on the format menus and 6 px on the rest, and it does not shrink as
+	// values get longer, because both sides grow with the word.
+	//
+	// So there is nothing here defending it, and something better instead:
+	// TestEveryValueInAMenuFitsInTheListItOpens opens every menu in the window
+	// and measures the room each row gave its words. The day a row grows another
+	// thing in front of the word, that goes red and this gets a term with a
+	// number behind it.
+	pad := th.Size(theme.SizeNameInnerPadding)
+	return widest + pad*4 + th.Size(theme.SizeNameInlineIcon)
+}
+
+// useRing takes the ring and asks it for a line at rest as well as the two it
+// already draws. The border a menu wears is the ring at its quietest, so there
+// is exactly one edge round this control in every state.
+func (c *Chooser) useRing(r *Ring) {
+	c.ring = r
+	r.Resting(PaletteColour(theme.ColorNameInputBorder, theme.VariantDark))
+}
 
 // FocusGained draws the mark only when the keyboard is what put the focus here.
 //

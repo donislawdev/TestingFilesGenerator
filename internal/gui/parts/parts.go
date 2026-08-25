@@ -398,6 +398,12 @@ func (f fixedWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	if len(objects) == 0 {
 		return
 	}
+	// The width asked for, whatever room the parent offers. Clamping it to the
+	// room was tried on 2026-08-25 and taken straight back out: MinSize above
+	// already reports this width, so a parent that lays out properly never
+	// offers less - and the parents that offer nought are the ones part way
+	// through being built, where clamping collapsed every declared setting to a
+	// box of nought or minus three pixels. A guard said so within the minute.
 	objects[0].Resize(fyne.NewSize(f.width, size.Height))
 	objects[0].Move(fyne.NewPos(0, 0))
 }

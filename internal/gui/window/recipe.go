@@ -277,9 +277,15 @@ func (r *Recipe) newBatch() *batch {
 	b.reason.PlaceHolder = text.PlaceholderNotStated()
 
 	b.formatPick = parts.NewChooser(format.IDs(), func(id string) {
-		b.formatPick.KindOf = parts.KindOfFile
 		r.onFormatChosen(b, id)
 	})
+	// Outside the callback, where the other screen has always had it. Inside it
+	// the pictures arrived only after somebody changed the format, so the list
+	// a person saw first was the one without them - and from 2026-08-25 it also
+	// decided how wide the menu is, because a row with a picture in front of the
+	// word needs more room than one without. Found by asking what menuWidth
+	// would be told at the moment the field is built.
+	b.formatPick.KindOf = parts.KindOfFile
 	return b
 }
 

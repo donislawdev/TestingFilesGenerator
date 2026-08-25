@@ -47,11 +47,29 @@ import (
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
 func FieldSaying(label, hint string, detail Detail, required bool, trailing, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
-	marked, ring := WithRing(control)
+	marked, ring := WithRing(shapedForItsValues(control))
 	area = NewErrorArea()
 	area.edge = ring
 	body = Column(GapTight, fieldParts(label, hint, detail, required, trailing, marked)...)
 	return Column(GapTight, body, area.Object()), body, area
+}
+
+// shapedForItsValues holds a menu to the width of what it can show.
+//
+// Here rather than at the call sites, and that is the same reason the plain
+// Field function was taken away above: a shape a caller has to remember to ask
+// for is a shape some fields will not have. There are six menus across three
+// screens and a seventh appears whenever a format declares a closed set of
+// values, so "the one somebody forgot" is not hypothetical.
+//
+// Anything that is not a menu is handed back untouched. A box to type in has no
+// length to promise - see ShapedFor, which does the same job for the settings a
+// format declares and says why numbers are the other case that can be sized.
+func shapedForItsValues(control fyne.CanvasObject) fyne.CanvasObject {
+	if menu, is := control.(*Chooser); is {
+		return Menu(menu)
+	}
+	return control
 }
 
 // fieldParts is the run of pieces every field is made of, in order.

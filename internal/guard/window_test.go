@@ -501,7 +501,22 @@ func unringed(o fyne.CanvasObject) fyne.CanvasObject {
 		return unringed(over.Content)
 	}
 	box, ok := o.(*fyne.Container)
-	if !ok || len(box.Objects) != 2 {
+	if !ok {
+		return o
+	}
+	// A width wrapper next, and it is one named shape rather than "a container
+	// holding one thing": parts.Sized holds a control to what its value needs,
+	// and WithRing puts the edge INSIDE that wrapper so the line goes round the
+	// box and not round the empty half of the column. A menu got one of these on
+	// 2026-08-25 and every lookup that reads a control by type stopped finding
+	// it - the render probe said there was no Format menu to open, which was
+	// untrue and read exactly like a defect.
+	if len(box.Objects) == 1 {
+		if nested, is := box.Objects[0].(*fyne.Container); is {
+			box = nested
+		}
+	}
+	if len(box.Objects) != 2 {
 		return o
 	}
 	if _, isEdge := box.Objects[1].(*canvas.Rectangle); !isEdge {

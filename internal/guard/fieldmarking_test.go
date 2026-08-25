@@ -120,23 +120,38 @@ func TestTheMenuTheKeyboardIsInDrawsALine(t *testing.T) {
 		t.Fatalf("the format field is %T rather than a menu", controlUnder(content, text.FieldFormat()))
 	}
 
-	quiet := edgeOf(t, content, text.FieldFormat())
-	if quiet.StrokeWidth != 0 {
-		t.Errorf("a menu nobody is using draws a %.1f px edge", quiet.StrokeWidth)
+	// Both halves of both states, which is more than this asked before
+	// 2026-08-25 and not less. Until that day a menu at rest drew nothing, so
+	// "the keyboard is here" could be read off the presence of a line alone.
+	// A menu now keeps a border whatever state it is in - it was the same shape
+	// as a box to type in without one, see parts.Menu - so the mark is a CHANGE
+	// of line rather than a line, and both the colour and the thickness have to
+	// move for it to be legible.
+	rest := parts.PaletteColour(theme.ColorNameInputBorder, theme.VariantDark)
+	// Read out rather than held on to. edgeOf answers with the rectangle
+	// itself, so a variable kept across a press is the LATER state under an
+	// earlier name - which read as the resting edge being 2 px and had nothing
+	// to do with the window.
+	quiet := *edgeOf(t, content, text.FieldFormat())
+	if !sameColour(quiet.StrokeColor, rest) || quiet.StrokeWidth != 1 {
+		t.Errorf("a menu nobody is using draws a %.1f px edge in %v, rather than 1 px in %v",
+			quiet.StrokeWidth, quiet.StrokeColor, rest)
 	}
 
 	picker.FocusGained()
 	lit := edgeOf(t, content, text.FieldFormat())
-	if lit.StrokeWidth <= 0 {
-		t.Error("the keyboard is in the format menu and nothing on the screen says so")
+	if lit.StrokeWidth <= quiet.StrokeWidth {
+		t.Errorf("the keyboard is in the format menu and its edge is still %.1f px", lit.StrokeWidth)
 	}
 	if want := parts.PaletteColour(theme.ColorNamePrimary, theme.VariantDark); !sameColour(lit.StrokeColor, want) {
 		t.Errorf("the line round the focused menu is %v rather than the primary colour %v", lit.StrokeColor, want)
 	}
 
 	picker.FocusLost()
-	if got := edgeOf(t, content, text.FieldFormat()).StrokeWidth; got != 0 {
-		t.Errorf("the keyboard has left the format menu and it still draws a %.1f px edge", got)
+	back := edgeOf(t, content, text.FieldFormat())
+	if !sameColour(back.StrokeColor, rest) || back.StrokeWidth != quiet.StrokeWidth {
+		t.Errorf("the keyboard has left the format menu and its edge is %.1f px in %v rather than back to %.1f px in %v",
+			back.StrokeWidth, back.StrokeColor, quiet.StrokeWidth, rest)
 	}
 }
 

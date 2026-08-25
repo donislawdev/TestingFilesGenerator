@@ -59,17 +59,19 @@
 																		</widget>
 																	</container>
 																	<container pos="0,33" size="808x25">
-																		<widget size="808x25" type="*parts.Chooser">
-																			<rectangle fillColor="focus" radius="5" size="808x25"/>
-																			<rectangle size="0x0"/>
-																			<widget pos="6,3" size="776x19" type="*widget.RichText">
-																				<text size="25x19">png</text>
+																		<container size="119x25">
+																			<widget size="119x25" type="*parts.Chooser">
+																				<rectangle fillColor="focus" radius="5" size="119x25"/>
+																				<rectangle size="0x0"/>
+																				<widget pos="6,3" size="87x19" type="*widget.RichText">
+																					<text size="25x19">png</text>
+																				</widget>
+																				<widget pos="93,2" size="20x20" type="*widget.Icon">
+																					<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
+																				</widget>
 																			</widget>
-																			<widget pos="782,2" size="20x20" type="*widget.Icon">
-																				<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
-																			</widget>
-																		</widget>
-																		<rectangle radius="5" size="808x25" strokeColor="hyperlink" strokeWidth="2"/>
+																			<rectangle radius="5" size="119x25" strokeColor="hyperlink" strokeWidth="2"/>
+																		</container>
 																	</container>
 																</container>
 															</container>

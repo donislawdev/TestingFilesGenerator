@@ -59,17 +59,19 @@
 																		</widget>
 																	</container>
 																	<container pos="0,33" size="808x25">
-																		<widget size="808x25" type="*parts.Chooser">
-																			<rectangle fillColor="inputBackground" radius="5" size="808x25"/>
-																			<rectangle size="0x0"/>
-																			<widget pos="6,3" size="776x19" type="*widget.RichText">
-																				<text size="104x19">size-boundaries</text>
+																		<container size="148x25">
+																			<widget size="148x25" type="*parts.Chooser">
+																				<rectangle fillColor="inputBackground" radius="5" size="148x25"/>
+																				<rectangle size="0x0"/>
+																				<widget pos="6,3" size="116x19" type="*widget.RichText">
+																					<text size="104x19">size-boundaries</text>
+																				</widget>
+																				<widget pos="122,2" size="20x20" type="*widget.Icon">
+																					<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
+																				</widget>
 																			</widget>
-																			<widget pos="782,2" size="20x20" type="*widget.Icon">
-																				<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
-																			</widget>
-																		</widget>
-																		<rectangle radius="5" size="808x25"/>
+																			<rectangle radius="5" size="148x25" strokeColor="inputBorder" strokeWidth="1"/>
+																		</container>
 																	</container>
 																</container>
 															</container>
@@ -231,17 +233,19 @@
 																			</widget>
 																		</container>
 																		<container pos="0,33" size="808x25">
-																			<widget size="808x25" type="*parts.Chooser">
-																				<rectangle fillColor="inputBackground" radius="5" size="808x25"/>
-																				<rectangle size="0x0"/>
-																				<widget pos="6,3" size="776x19" type="*widget.RichText">
-																					<text size="100x19">not stated - pdf</text>
+																			<container size="144x25">
+																				<widget size="144x25" type="*parts.Chooser">
+																					<rectangle fillColor="inputBackground" radius="5" size="144x25"/>
+																					<rectangle size="0x0"/>
+																					<widget pos="6,3" size="112x19" type="*widget.RichText">
+																						<text size="100x19">not stated - pdf</text>
+																					</widget>
+																					<widget pos="118,2" size="20x20" type="*widget.Icon">
+																						<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
+																					</widget>
 																				</widget>
-																				<widget pos="782,2" size="20x20" type="*widget.Icon">
-																					<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
-																				</widget>
-																			</widget>
-																			<rectangle radius="5" size="808x25"/>
+																				<rectangle radius="5" size="144x25" strokeColor="inputBorder" strokeWidth="1"/>
+																			</container>
 																		</container>
 																	</container>
 																</container>
