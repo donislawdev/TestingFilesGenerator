@@ -61,6 +61,15 @@ type Host interface {
 	// answerable without a screen, which is the property that mattered.
 	Canvas() fyne.Canvas
 
+	// Remembered is the handful of things this window keeps between runs.
+	//
+	// Here for the same reason as Canvas: only a real window can store anything,
+	// because the store belongs to the application the desktop knows about - and
+	// a stand in answers it from a map, which is what lets a guard say what was
+	// remembered without writing to anybody's disk. See remembered.go for what
+	// is kept, what is deliberately not, and what it costs.
+	Remembered() Remembered
+
 	// OpenFolder asks the desktop to show a directory.
 	//
 	// Separate from OpenLink although both end at the same call, because a

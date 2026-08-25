@@ -25,20 +25,32 @@ import (
 //
 // Reverse domain form because that is what every desktop expects. Without an
 // id the toolkit prints a complaint on every start and its preferences API
-// refuses to work - and while nothing here stores preferences yet, a warning
-// nobody can act on is noise that teaches people to ignore the log.
+// refuses to work, which since 2026-08-25 is the API the window size and the
+// output directory come back from - and even before that, a warning nobody can
+// act on is noise that teaches people to ignore the log.
 //
-// What it costs, measured on 2026-08-05 rather than assumed: starting the
-// application creates an empty directory under the user's application data,
-// and it does so with or without an id - app.New() makes one too. No file is
-// written into it, because nothing here stores a preference. An id only
-// decides whether that directory has our name on it or a derived one.
+// What it costs, measured on 2026-08-05: starting the application creates a
+// directory under the user's application data, and it does so with or without
+// an id - app.New() makes one too. An id only decides whether that directory
+// has our name on it or a derived one.
 //
-// So this is not the decision docs/GUI.md section 4.1 is waiting for. Whether
-// the window ever KEEPS state between runs is still open and belongs to the
-// owner: a configuration file would be a new artefact on somebody's disk, and
-// would come under D16 and untouchable rule 7 - nothing goes out, nothing
-// deletes itself.
+// The sentence that stood here until 2026-08-25 said no file was ever
+// written into that directory, because nothing stored a preference. It had been
+// untrue since 2026-08-05, the same day it was written. Measured rather than
+// re-read: the directory holds preferences.json, 73 bytes, and in it
+// fyne:fileDialogLastFolder and fyne:fileDialogViewLayout. The toolkit's folder
+// picker writes them, so the Choose button put a state file on somebody's disk
+// the day it arrived, and the note beside it said the opposite for twenty days.
+// Left here rather than quietly corrected, because the interesting part is that
+// a dependency can cross a line this project guards while a comment says it has
+// not.
+//
+// So the decision docs/GUI.md section 4.1 was waiting for was in one sense
+// already taken by something else. It has been taken properly since 2026-08-25:
+// the owner asked for the output directory and the window size to be kept, and
+// they are kept in that same file rather than in one of ours. See
+// window.Remembered for what that is and is not, and for why nothing here ever
+// deletes it - untouchable rule 7.
 const appID = "dev.donislaw.tfg"
 
 // desktop is a real window, told how to answer the one thing the screens
@@ -59,6 +71,64 @@ const appID = "dev.donislaw.tfg"
 // changed is that it is now downloaded, checksummed and compiled in.
 type desktop struct {
 	fyne.Window
+}
+
+// Remembered is the window size and output directory, kept by the toolkit in
+// the file its folder picker already writes.
+//
+// A store of ours was the alternative and it was turned down for one measured
+// reason: preferences.json exists on this machine and has since 2026-08-05 -
+// see the note beside appID - so writing our own file would put a SECOND state
+// file on somebody's disk to hold two values. Fyne writes it with os.Create,
+// which truncates in place rather than replacing atomically, so a machine that
+// dies mid write leaves a short file. That is survivable here and the toolkit
+// already decides it: a file that will not parse is logged and the defaults are
+// used, which for these two values means the window opens where it always did.
+func (d desktop) Remembered() window.Remembered { return stored{fyne.CurrentApp().Preferences()} }
+
+// stored puts names on the two things kept, so that no screen and no guard ever
+// handles a preference key. The keys are here and nowhere else.
+type stored struct{ prefs fyne.Preferences }
+
+const (
+	keyDirectory = "outputDirectory"
+	keyWidth     = "windowWidth"
+	keyHeight    = "windowHeight"
+)
+
+func (s stored) Directory() string          { return s.prefs.String(keyDirectory) }
+func (s stored) RememberDirectory(d string) { s.prefs.SetString(keyDirectory, d) }
+
+// Size is two numbers rather than one, because the toolkit's store holds
+// scalars. Read back as a size so that everything above this line handles a
+// size and not a pair.
+func (s stored) Size() fyne.Size {
+	return fyne.NewSize(float32(s.prefs.Float(keyWidth)), float32(s.prefs.Float(keyHeight)))
+}
+
+func (s stored) RememberSize(size fyne.Size) {
+	s.prefs.SetFloat(keyWidth, float64(size.Width))
+	s.prefs.SetFloat(keyHeight, float64(size.Height))
+}
+
+// rememberThisSize writes down how big the window is now.
+//
+// It reads the CANVAS, which is the content area, and that is the same thing
+// Resize is given - so what is written down and what is asked for next time are
+// the same measurement. Measured on 2026-08-25 and worth knowing: the canvas
+// reports the size that was ASKED for, which is not always the size the system
+// gave. That only pulls apart when the program asks for something impossible,
+// and a window a person dragged to a size is a window the system agreed to.
+//
+// A size with a nought in it is not written, so a window closed while minimised
+// does not come back as nothing - see window.HowToOpen, which refuses the same
+// shape on the way back in.
+func (d desktop) rememberThisSize() {
+	size := d.Canvas().Size()
+	if !window.WorthRemembering(size) {
+		return
+	}
+	d.Remembered().RememberSize(size)
 }
 
 func (d desktop) ChooseDirectory(chosen func(string)) {
@@ -169,9 +239,23 @@ func run(errOut io.Writer) int {
 	// answers dark whatever the desktop is set to, by the owner's decision.
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
-	window.Open(desktop{w})
-	w.Resize(window.OpenSize)
-	w.CenterOnScreen()
+	host := desktop{w}
+	window.Open(host)
+
+	// The size it was closed at, and whether to put it in the middle. The two
+	// answers come together because they are one decision - a window bigger than
+	// the screen it comes back on has its title bar off the top when it is
+	// centred, and cannot then be moved or resized at all. Measured, both ways,
+	// in window.HowToOpen.
+	size, centre := window.HowToOpen(host.Remembered().Size())
+	w.Resize(size)
+	if centre {
+		w.CenterOnScreen()
+	}
+	// Written down as the window goes rather than as it is resized. SetOnClosed
+	// runs after the close intercept, which is where the directory is kept, so
+	// the two land together whichever way the window was shut.
+	w.SetOnClosed(func() { host.rememberThisSize() })
 	w.ShowAndRun()
 	return 0
 }

@@ -73,6 +73,8 @@ func Open(h Host) {
 	}
 	showing := text.TabOneTarget()
 
+	offerWhereItLastWrote(h, working)
+
 	// The keyboard, wired once for the window rather than per screen. Which
 	// screen an action lands on is asked at the moment it is pressed, because a
 	// shortcut belongs to the window and the answer is whichever screen is
@@ -124,17 +126,7 @@ func Open(h Host) {
 	// on the signal handler in cmd/tfg, and closing a window is not a signal -
 	// so without this the run would carry on with nobody watching it, or die in
 	// the middle of a file.
-	//
-	// It asks every screen rather than the one on show, and that is the part
-	// worth writing down: a run keeps going while somebody moves to another
-	// screen, so the busy one is not necessarily the visible one. Stop does
-	// nothing on a screen that is idle.
-	h.SetCloseIntercept(func() {
-		gen.Stop()
-		pre.Stop()
-		rec.Stop()
-		h.Close()
-	})
+	closeCleanly(h, []interface{ Stop() }{gen, pre, rec}, working, &showing)
 
 	// One table for the window, handed to the boxes of every screen. Wired here
 	// rather than in each constructor because the table belongs to the window
@@ -154,6 +146,71 @@ func Open(h Host) {
 	h.SetContent(parts.QuietUnlessChosen(tabs))
 	// Last, once there is something on the canvas to focus.
 	focusFirst(showing)
+}
+
+// closeCleanly stops whatever is running, writes down where the files were
+// going, and then lets the window go.
+//
+// It asks every screen to stop rather than the one on show, and that is the part
+// worth writing down: a run keeps going while somebody moves to another screen,
+// so the busy one is not necessarily the visible one. Stop does nothing on a
+// screen that is idle.
+//
+// The directory is taken from the screen somebody was last on rather than from a
+// fixed one - the three carry it between themselves, so the screen being looked
+// at is the one holding the answer. showing is a pointer for that reason: it
+// changes as somebody moves, and what matters is where they were when they shut
+// the window.
+//
+// One moment rather than "whenever it changes", so what comes back is
+// describable in a sentence: the window opens where you left it. Writing on
+// every keystroke would also put a half typed path on somebody's disk.
+//
+// Split out of Open on 2026-08-25, when that function went past three quarters
+// of the ceiling. The ceiling is a ratchet, so the answer is a split and never a
+// higher number.
+func closeCleanly(h Host, running []interface{ Stop() }, working map[string]interface {
+	OutDir() string
+	SetOutDir(string)
+}, showing *string) {
+	h.SetCloseIntercept(func() {
+		for _, screen := range running {
+			screen.Stop()
+		}
+		if screen, ok := working[*showing]; ok {
+			h.Remembered().RememberDirectory(screen.OutDir())
+		}
+		h.Close()
+	})
+}
+
+// offerWhereItLastWrote puts the directory of the last run on every screen.
+//
+// Every screen rather than the one that opens first: the three carry the
+// directory between themselves as somebody moves, so setting it on one and not
+// the others would leave the old value on any screen reached without passing
+// through that one.
+//
+// Not the same question as startingDirectory, which the three constructors
+// call. That one answers what to OFFER when nobody has said anything, and this
+// is somebody having said. Keeping them apart is what leaves a first start
+// showing the measured folder - see OutputFolderName - rather than an empty box
+// every screen would refuse.
+//
+// Split out of Open on 2026-08-25, when that function went past three quarters
+// of the ceiling for the second time in a day. The ceiling is a ratchet, so the
+// answer is a split and never a higher number.
+func offerWhereItLastWrote(h Host, working map[string]interface {
+	OutDir() string
+	SetOutDir(string)
+}) {
+	last := h.Remembered().Directory()
+	if last == "" {
+		return
+	}
+	for _, screen := range working {
+		screen.SetOutDir(last)
+	}
 }
 
 // wireKeyboard puts this window's three shortcuts on the canvas.

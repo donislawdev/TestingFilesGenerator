@@ -583,14 +583,41 @@ func TestCancelStopsTheRun(t *testing.T) {
 // so the thing to wait for is a manifest with something in it.
 func waitForManifest(t *testing.T, dir string) {
 	t.Helper()
-	deadline := time.Now().Add(10 * time.Second)
+	const budget = 10 * time.Second
+	started := time.Now()
+	deadline := started.Add(budget)
 	for time.Now().Before(deadline) {
 		if info, err := os.Stat(filepath.Join(dir, "manifest.json")); err == nil && info.Size() > 0 {
 			return
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
-	t.Fatal("the run never wrote a manifest")
+	// What was waited for and what was there instead, because the sentence on
+	// its own is not a measurement. O126: this budget has run out three times on
+	// 2026-08-25, in three different guards, and only ever inside a full run of
+	// the package - each of the three passes on its own in under a third of a
+	// second. Nobody knows why, and the first thing anybody will want is the
+	// number and the state of the directory rather than another repetition.
+	t.Fatalf("the run never wrote a manifest. Waited %s of a %s budget, and %s holds %v",
+		time.Since(started).Round(time.Millisecond), budget, dir, whatIsIn(dir))
+}
+
+// whatIsIn lists a directory for a failure message, saying why it cannot rather
+// than hiding the reason.
+func whatIsIn(dir string) []string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return []string{"unreadable: " + err.Error()}
+	}
+	names := make([]string, 0, len(entries))
+	for _, e := range entries {
+		if info, err := e.Info(); err == nil {
+			names = append(names, fmt.Sprintf("%s (%d B)", e.Name(), info.Size()))
+			continue
+		}
+		names = append(names, e.Name())
+	}
+	return names
 }
 
 // join brings the worker to an end before anything reads a widget, through the

@@ -61,6 +61,10 @@ var notWords = map[string]string{
 	`"tfg-gui"`:      "recorded in the manifest as the command that ran, a contract value",
 	`"chickpea.png"`: "the name the toolkit files the icon resource under, never shown",
 	`"preset"`:       "the key the preset field is registered under, not a label",
+	`"outputDirectory"`: "the name the window files the last output directory under, never shown. " +
+		"Translating a storage key would lose what was kept the day somebody changed language",
+	`"windowWidth"`:  "the name the window files its width under, never shown",
+	`"windowHeight"`: "the name the window files its height under, never shown",
 	`"file"`:         "the scheme of a local address, which is a protocol name rather than prose",
 	`"."`:            "the working directory, when the system will not say which one it is",
 	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +

@@ -65,6 +65,8 @@ type fakeHost struct {
 	canvas      fyne.Canvas
 	folder      string
 	folderCount int
+
+	kept *keptInMemory
 }
 
 func (h *fakeHost) SetContent(o fyne.CanvasObject) {
@@ -113,6 +115,31 @@ func (h *fakeHost) OpenFolder(path string) {
 	h.folder = path
 	h.folderCount++
 }
+
+// Remembered is a store in memory, which is the whole reason the screens take
+// one through the Host rather than reaching the toolkit's global preferences.
+// A guard can say what the window kept without a single byte reaching a disk,
+// and there is no file left behind on the machine that ran the suite.
+func (h *fakeHost) Remembered() window.Remembered {
+	if h.kept == nil {
+		h.kept = &keptInMemory{}
+	}
+	return h.kept
+}
+
+type keptInMemory struct {
+	dir      string
+	size     fyne.Size
+	dirWrite int
+}
+
+func (k *keptInMemory) Directory() string { return k.dir }
+func (k *keptInMemory) RememberDirectory(d string) {
+	k.dir = d
+	k.dirWrite++
+}
+func (k *keptInMemory) Size() fyne.Size          { return k.size }
+func (k *keptInMemory) RememberSize(s fyne.Size) { k.size = s }
 
 func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 	h.asked++
