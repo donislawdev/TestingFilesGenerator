@@ -329,6 +329,12 @@ type UnknownPropertyError struct {
 	Known  []string
 }
 
+// AboutSetting is the property this refusal is about, so a form can put the
+// message under the box it came from. Its sibling below has carried this since
+// 2026-08-12 and this one did not, which made a mistyped key the one refusal
+// about a declared setting that still landed at the foot of the form.
+func (e *UnknownPropertyError) AboutSetting() string { return e.Key }
+
 func (e *UnknownPropertyError) Error() string {
 	if len(e.Known) == 0 {
 		return fmt.Sprintf("%s takes no properties, so %q is not one of them", e.Format, e.Key)
@@ -350,6 +356,13 @@ type PropertyValueError struct {
 	Key    string
 	Value  string
 	Reason string
+	// Instead is what to do about it, built from the declaration. It is carried
+	// here rather than worked out by whoever reports this, because a refusal in
+	// this tool has four parts - what happened, why, what is allowed, what to do
+	// instead (D6) - and the fourth had nowhere to come from until 2026-08-25.
+	// A reader that wants the whole thing in one sentence still gets it from
+	// Error, which leaves this out: it is the part a form puts under the box.
+	Instead string
 }
 
 func (e *PropertyValueError) Error() string {
@@ -548,9 +561,16 @@ func (d Descriptor) PropertyNames() []string {
 	return out
 }
 
-// CheckProperties refuses any key the format does not declare, and any value
-// the declaration does not allow.
-func (d Descriptor) CheckProperties(props map[string]string) error {
+// CheckEachProperty is every problem with what was stated, in a stable order.
+//
+// All of them rather than the first, because a recipe is refused with every
+// problem it has - RC7, on the grounds that fixing a file one error per run is
+// the cheapest way to make somebody stop using the tool. The recipe reader asks
+// this one so it can put each refusal on the box it belongs to. The engine asks
+// CheckProperties below, which stops at the first, because by then the recipe
+// has already been past this and what is left is the one-target path from the
+// command line flags.
+func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 	known := make(map[string]Property, len(d.Properties))
 	for _, p := range d.Properties {
 		known[p.Name] = p
@@ -561,19 +581,49 @@ func (d Descriptor) CheckProperties(props map[string]string) error {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+
+	var bad []error
 	for _, k := range keys {
 		p, ok := known[k]
 		if !ok {
-			return &UnknownPropertyError{Format: d.ID, Key: k, Known: d.PropertyNames()}
+			bad = append(bad, &UnknownPropertyError{Format: d.ID, Key: k, Known: d.PropertyNames()})
+			continue
 		}
 		// An empty value means "not stated", the same as leaving the key out,
 		// because that is what an unset flag and an empty recipe entry both
 		// look like by the time they arrive here.
 		if raw := props[k]; raw != "" {
-			if bad := p.Allows(raw); bad != "" {
-				return &PropertyValueError{Format: d.ID, Key: k, Value: raw, Reason: bad}
+			if why := p.Allows(raw); why != "" {
+				bad = append(bad, &PropertyValueError{
+					Format: d.ID, Key: k, Value: raw, Reason: why, Instead: p.Instead(),
+				})
 			}
 		}
+	}
+	return bad
+}
+
+// Instead is what to do about a value this property will not take, built from
+// the declaration rather than written per format.
+//
+// A declared default is a fact and is offered as one. Where there is none, the
+// format works the value out for itself - which is what the window says in the
+// same case, and what every one of the ten properties with no default does
+// today. The wording stops at "works it out" rather than naming the size,
+// because a property added tomorrow may work it out from something else and
+// the sentence has to stay true without anybody checking it.
+func (p Property) Instead() string {
+	if p.Default != "" {
+		return fmt.Sprintf("write a value it takes, such as %s, or leave the line out", p.Default)
+	}
+	return "write a value it takes, or leave the line out and the format works it out"
+}
+
+// CheckProperties refuses any key the format does not declare, and any value
+// the declaration does not allow, stopping at the first.
+func (d Descriptor) CheckProperties(props map[string]string) error {
+	if bad := d.CheckEachProperty(props); len(bad) > 0 {
+		return bad[0]
 	}
 	return nil
 }

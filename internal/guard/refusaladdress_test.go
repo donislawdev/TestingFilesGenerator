@@ -142,6 +142,43 @@ targets:
 			want: []string{"targets[1].expected"},
 		},
 		{
+			// A value the declaration forbids, addressed to the box that holds
+			// it. Until 2026-08-25 this one came back as "bmp: width cannot be
+			// ..." with no address at all, because the check lived a layer up
+			// where a target is an entry in a list rather than targets[2] - so
+			// at twenty BMP batches nothing said which one meant it, and a form
+			// had nothing to mark. Two targets on purpose: with one, an address
+			// that lost the position would still look right.
+			name: "a property value the format forbids",
+			src: `version: 1
+targets:
+  - id: a
+    format: bmp
+    size: 40kb
+  - id: b
+    format: bmp
+    size: 40kb
+    properties:
+      width: not a number
+`,
+			want: []string{"targets[2].properties.width"},
+		},
+		{
+			// A key no format declares, addressed the same way. Its refusal had
+			// the subject and no way to say it - the sibling type had carried
+			// AboutSetting since 2026-08-12 and this one had not.
+			name: "a property the format does not have",
+			src: `version: 1
+targets:
+  - id: a
+    format: bmp
+    size: 40kb
+    properties:
+      widht: 640
+`,
+			want: []string{"targets[1].properties.widht"},
+		},
+		{
 			// The property name is part of the address, because a format
 			// declares a field per property and every one of them is drawn.
 			name: "a property that is a block",

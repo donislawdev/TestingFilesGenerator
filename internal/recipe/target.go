@@ -1,11 +1,13 @@
 package recipe
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // Reading one target, kept apart from reading the recipe around it.
@@ -18,107 +20,6 @@ import (
 // The line drawn here is what a part does, not how long it is: recipe.go reads
 // the document and its settings, this file reads one entry of the targets list
 // and everything only that needs.
-
-// contentGroups reads the contains list.
-//
-// Every problem is collected rather than returned on the first one, because a
-// contains list written by hand usually has more than one thing wrong with it
-// and fixing a recipe one error per run is how people stop using a tool.
-func contentGroups(p *problems, where spot, raw []map[string]scalar) []Content {
-	if len(raw) == 0 {
-		// An empty list is not the same as no list. It says "an archive
-		// holding nothing", which is a legitimate thing to test, and the size
-		// then comes from the container overhead alone.
-		return []Content{}
-	}
-
-	out := make([]Content, 0, len(raw))
-	for i, item := range raw {
-		at := where.entry("contains", i)
-		g := Content{Count: 1}
-
-		// Sorted, because Go randomises map order and these keys become
-		// problems in the report. Unsorted, the same broken recipe would print
-		// its problems in a different order on two runs.
-		for _, key := range sortedKeys(item) {
-			switch key {
-			case "format", "count", "size":
-			default:
-				p.add(at.key, fmt.Sprintf("%s has the key %q", at, key),
-					"a contains entry describes files with a format, a count and a size, and anything else would be dropped on the way",
-					"remove the key, or move it to the target itself")
-			}
-		}
-
-		if v, ok := item["format"]; ok {
-			if s, ok := v.value(); ok && s != "" {
-				g.Format = s
-			} else {
-				p.add(at.of("format"), fmt.Sprintf("%s has a format that is not a name", at),
-					"a format is the id of a format this build supports",
-					"use format: pdf, or run tfg formats to see the list")
-			}
-		} else {
-			p.add(at.of("format"), fmt.Sprintf("%s has no format", at),
-				"a container holds real files, so each group says which format its files are",
-				"add format: pdf")
-		}
-
-		if v, ok := item["count"]; ok {
-			n, ok := v.number()
-			switch {
-			case !ok:
-				p.add(at.of("count"), fmt.Sprintf("%s has {a} {setting} that is not a whole number", at),
-					"{a} {setting} is how many files of this group the container holds",
-					"use count: 50")
-			case n < 0:
-				p.add(at.of("count"), fmt.Sprintf("%s has a negative {setting}", at),
-					"a container cannot hold fewer than no files",
-					"use count: 0 for a group that contributes nothing, or drop the entry")
-			// The same ceiling the count of a target gets, and for the same
-			// reason - judged before the list is built, because building it is
-			// the failure. It was missing here until 2026-08-20, when CodeQL
-			// pointed at the conversion below and the measurement behind it
-			// turned out to be real rather than theoretical: one entry asking
-			// for 2^63-1 files took this process to 12.9 GB and had to be
-			// killed. The target path had been refusing that number since
-			// 2026-08-03 and this path never learned it.
-			case n > core.MaxFilesPerRun:
-				p.add(at.of("count"), fmt.Sprintf("%s asks for %d files", at, n),
-					core.ErrTooManyFiles.Error(),
-					fmt.Sprintf("use {a} {setting} of %d or less, or split the container across several entries",
-						core.MaxFilesPerRun))
-			default:
-				g.Count = int(n)
-			}
-		}
-
-		if v, ok := item["size"]; ok {
-			s, ok := v.value()
-			if !ok {
-				p.add(at.of("size"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", at),
-					"{a} {setting} is written as 2mb or as a plain byte count",
-					"use size: 2mb or size: 2097152")
-			} else if n, err := core.ParseSize(s); err != nil {
-				p.add(at.of("size"), fmt.Sprintf("%s: %v", at, err),
-					"units count in 1024s, so 10mb is 10485760 bytes",
-					"use {a} {setting} such as 2mb, 512kb or a plain byte count")
-			} else {
-				g.Bytes = n
-			}
-		} else {
-			// The same rule as AR10 one level down. Without it the size of the
-			// container could not be worked out before writing, which is the
-			// whole reason contains counts as a way of declaring a size.
-			p.add(at.of("size"), fmt.Sprintf("%s has no {setting}", at),
-				"the {setting} of the container follows from the {setting} of what it holds, so every group states one",
-				"add size: 2mb")
-		}
-
-		out = append(out, g)
-	}
-	return out
-}
 
 type rawTarget struct {
 	ID     *scalar `yaml:"id"`
@@ -212,7 +113,7 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 	if group, ok := oneValue(p, where.of("group"), where.String()+" {setting}", "group: invoices", rt.Group); ok {
 		t.Group = group
 	}
-	t.Properties = properties(p, where, rt.Properties)
+	t.Properties = properties(p, where, t.Format, rt.Properties)
 	return t
 }
 
@@ -555,7 +456,7 @@ func expectation(p *problems, where spot, v any) (string, string) {
 // properties are handed to the format as text, exactly as --set does, so both
 // surfaces speak one vocabulary. Whether a key exists at all is the format's
 // answer, not ours.
-func properties(p *problems, where spot, in map[string]scalar) map[string]string {
+func properties(p *problems, where spot, formatID string, in map[string]scalar) map[string]string {
 	if len(in) == 0 {
 		return nil
 	}
@@ -577,5 +478,56 @@ func properties(p *problems, where spot, in map[string]scalar) map[string]string
 		}
 		out[k] = s
 	}
+	askTheFormat(p, where, formatID, out)
 	return out
+}
+
+// askTheFormat puts the declaration's own verdict on the boxes it is about.
+//
+// The rule itself is not repeated here and must not be: what a property takes
+// lives in the declaration, and Allows words the refusal, so every format
+// refuses in the same sentence and a new one gets it by declaring. What this
+// adds is the ADDRESS. The engine has always asked the same question, one layer
+// up, where a target is an entry in a list and not "targets[2]" - so a mistyped
+// width came back as "bmp: width cannot be ..." with no way to tell which of
+// twenty BMP batches meant it, no "at" in validate --json, and nothing for a
+// form to mark. Measured on 2026-08-25 against a refusal about a size, which
+// carries targets[2].size and all four parts of D6.
+//
+// The engine still asks. This does not replace that check and could not: the
+// one-target path from the command line flags never comes through a recipe, and
+// a layer that trusts the layer above it to have checked is a layer with a hole
+// in it.
+//
+// An unknown format is left alone rather than reported here. The format is
+// refused by name where formats are settled, and a second refusal about the
+// properties of a format that does not exist would be noise on top of the
+// answer.
+func askTheFormat(p *problems, where spot, formatID string, stated map[string]string) {
+	if len(stated) == 0 {
+		return
+	}
+	d, err := format.Get(formatID)
+	if err != nil {
+		return
+	}
+	for _, bad := range d.CheckEachProperty(stated) {
+		var about interface{ AboutSetting() string }
+		if !errors.As(bad, &about) {
+			// Every problem this can return names its key. Kept as a branch
+			// rather than assumed, because a third kind added without one would
+			// otherwise vanish instead of arriving unaddressed.
+			p.add(where.of(KeyProperties), bad.Error(), "", "")
+			continue
+		}
+		at := where.of(KeyProperties + "." + about.AboutSetting())
+		var value *format.PropertyValueError
+		if errors.As(bad, &value) {
+			p.add(at, fmt.Sprintf("%s: %s cannot be %q", where, value.Key, value.Value),
+				core.InTheWordsOf(value.Reason, value.Key), value.Instead)
+			continue
+		}
+		p.add(at, fmt.Sprintf("%s: %s", where, bad.Error()), "",
+			"use one of the properties the format declares")
+	}
 }
