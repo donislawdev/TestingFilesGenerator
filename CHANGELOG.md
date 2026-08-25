@@ -40,6 +40,20 @@ because it turns other people's test suites red.
   expect to be reserved - they were each tried on Windows 11 and on Windows
   Server 2025, and every one of them is an ordinary file there now.
 
+### Fixed
+
+- On the batch screen, a refusal about one batch now marks that batch's box. A
+  batch asking for a size its format cannot deliver, or a name your system will
+  not store, used to stop the run and mark nothing at all - with twenty batches
+  on screen there was nothing to say which one to change. Those are the two
+  refusals you meet most.
+- A bad name for the manifest marks the manifest box rather than nothing. It
+  was reported as though it were the name of a file.
+- `tfg validate` now checks the name of the manifest, so it stops calling a
+  recipe valid that `tfg generate` refuses a second later. If you run validate
+  in a pre-commit hook, that is one fewer way for a broken recipe to get past
+  it.
+
 ### Added
 
 - Keyboard shortcuts: `Ctrl+Enter` generates, `Ctrl+P` previews, `Esc` stops a
