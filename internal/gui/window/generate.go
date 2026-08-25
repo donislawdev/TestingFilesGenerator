@@ -155,6 +155,9 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = g.settle
 	g.runner.openFolder = host.OpenFolder
+	// This screen is one target and draws its boxes under the bare key, so a
+	// refusal that arrives carrying a position belongs to the box of that name.
+	g.runner.readdress = withoutTheTarget
 	// A box inside a folded section cannot be brought into view by scrolling,
 	// so the section is opened first - see runner.unfold.
 	g.runner.unfold = g.openFoldHolding

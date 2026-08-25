@@ -474,22 +474,29 @@ func missingPart(why, fix string) string {
 	}
 }
 
-// A refusal from below the recipe reader reaches the machine readable report
-// with its address, and only when that address names the target.
+// Every address the machine readable report carries says where it is, and the
+// ones from below the recipe reader arrive at all.
 //
-// Two halves that pull against each other, which is why they are asserted in
-// one place. The first: the ceiling on files is checked by the engine on the
-// total, so a recipe whose targets each pass the reader is refused here - and
-// until 2026-08-25 it arrived with a sentence and no "at" at all, so a script
-// grouping a report by field had nothing and a window had no box to mark.
+// Two things, and the second is what keeps the first honest.
 //
-// The second: an address that names a setting without its position is not an
-// address. A format refusing a size knows it is about "size" and not which of
-// twenty targets asked, and "at": "size" in that report points at all of them
-// while looking actionable. So it is left out, and leaving it out is a rule
-// rather than an accident - which is what the second half of this asserts.
-func TestTheReportCarriesAnAddressFromBelowTheReaderOnlyWhenItNamesTheTarget(t *testing.T) {
-	read := func(t *testing.T, src string) (what, at string) {
+// A refusal the reader never sees is refused by the engine or by a format: the
+// ceiling on files is checked on the total, so a recipe whose targets each pass
+// the reader is refused underneath it. Until 2026-08-25 those arrived with a
+// sentence and no address, so a script grouping a report by field had nothing
+// to group by.
+//
+// And an address is only worth carrying if it says where. A refusal that names
+// "size" and not which of twenty targets asked points at all of them while
+// looking like something to act on. There was a filter here dropping those,
+// and it went the day the engine started giving every refusal about a target
+// the position of that target - so this asks the property directly instead,
+// over every refusal that reaches the report. A half address getting through
+// turns it red wherever it comes from, which the filter could not do.
+func TestEveryAddressTheReportCarriesSaysWhereItIs(t *testing.T) {
+	report := func(t *testing.T, src string) []struct {
+		What string `json:"what"`
+		At   string `json:"at"`
+	} {
 		t.Helper()
 		dir := t.TempDir()
 		path := filepath.Join(dir, "recipe.yaml")
@@ -500,25 +507,25 @@ func TestTheReportCarriesAnAddressFromBelowTheReaderOnlyWhenItNamesTheTarget(t *
 		if code := cli.Run(context.Background(), []string{"validate", path, "--json"}, &out, &errOut); code == cli.ExitOK {
 			t.Fatalf("this recipe was meant to be refused and validate was happy with it:\n%s", out.String())
 		}
-		var report struct {
+		var parsed struct {
 			Problems []struct {
 				What string `json:"what"`
 				At   string `json:"at"`
 			} `json:"problems"`
 		}
-		if err := json.Unmarshal(errOut.Bytes(), &report); err != nil {
+		if err := json.Unmarshal(errOut.Bytes(), &parsed); err != nil {
 			t.Fatalf("the report is not readable as JSON: %v\n%s", err, errOut.String())
 		}
-		if len(report.Problems) != 1 {
-			t.Fatalf("expected one problem and got %d:\n%s", len(report.Problems), errOut.String())
+		if len(parsed.Problems) == 0 {
+			t.Fatalf("the report carries no problems at all:\n%s", errOut.String())
 		}
-		return report.Problems[0].What, report.Problems[0].At
+		return parsed.Problems
 	}
 
 	// The big target second, because the engine tests the running total before
 	// planning a target's files - so this refuses having planned one file
 	// rather than a million.
-	what, at := read(t, `version: 1
+	const ceiling = `version: 1
 targets:
   - id: a
     format: txt
@@ -528,26 +535,79 @@ targets:
     format: txt
     count: 1000000
     size: 1kb
-`)
-	if want := core.TargetAddress(2, recipe.KeyCount); at != want {
+`
+	if got := report(t, ceiling)[0].At; got != core.TargetAddress(2, recipe.KeyCount) {
 		t.Errorf("the ceiling was reported at %q and the target that crossed it is %q.\n"+
 			"Reason: the ceiling belongs to the run, but the box somebody can change belongs to\n"+
-			"a target - a report that cannot say which one leaves a script and a window with the\n"+
-			"sentence and nothing else.\nWhat it said: %s", at, want, what)
+			"a target - a report that cannot say which one leaves a script with the sentence and\n"+
+			"nothing else.", got, core.TargetAddress(2, recipe.KeyCount))
 	}
 
-	// And the other way. A size the format cannot deliver is refused below the
-	// reader too, and that refusal knows only the setting.
-	what, at = read(t, `version: 1
-targets:
-  - id: a
-    format: pdf
-    size: 10
-`)
-	if at != "" {
-		t.Errorf("a refusal that knows its setting but not its target was reported at %q.\n"+
-			"Reason: %q names a setting every target has. In a recipe with twenty of them it points\n"+
-			"at all of them at once while looking like something to act on, which is worse than\n"+
-			"saying nothing. Give it its position or leave it out.\nWhat it said: %s", at, at, what)
+	// One refusal per layer that can produce one below the reader: a format
+	// refusing a size, the engine refusing a name, the engine refusing the name
+	// of the manifest. The last of those is the one that says a document
+	// setting counts as placed too - "output.manifest" names no target and is a
+	// perfectly good address.
+	placed := []struct{ name, src string }{
+		{"a size the format cannot deliver", "version: 1\ntargets:\n  - id: a\n    format: pdf\n    size: 10\n"},
+		{"a name the host cannot store", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    name: \"a<b.txt\"\n"},
+		{"a name template with no such placeholder", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    name: \"f_{n}.txt\"\n"},
+		{"the name of the manifest", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\noutput:\n  manifest: \"report|1.json\"\n"},
+	}
+	for _, c := range placed {
+		t.Run(c.name, func(t *testing.T) {
+			for _, p := range report(t, c.src) {
+				if p.At == "" {
+					t.Errorf("this refusal reaches the report with no address at all.\n"+
+						"Reason: a script grouping by field has the sentence and nothing else, and the\n"+
+						"sentence names a target by its id, which is exactly what a target refused for\n"+
+						"having no id does not have.\nWhat it said: %s", p.What)
+					continue
+				}
+				// Placed means it says where: a position in the list of
+				// targets, or a section of the document. A bare word does
+				// neither - "size" is a setting every target has.
+				if !core.AddressNamesATarget(p.At) && !strings.Contains(p.At, ".") {
+					t.Errorf("this refusal is reported at %q, which names a setting and not a place.\n"+
+						"Reason: every target has one of those, so in a recipe with twenty of them it\n"+
+						"points at all at once while looking like something to act on. That is worse\n"+
+						"than saying nothing.\nWhat it said: %s", p.At, p.What)
+				}
+			}
+		})
+	}
+}
+
+// What validate accepts, generate accepts.
+//
+// Measured on 2026-08-25 and it was not true: a recipe whose output.manifest
+// held a character the host will not store was called valid, and generate
+// refused it with code 3 a second later. validate did not pass the manifest
+// name to the planner at all, so the one check that reads it never ran. This
+// command exists to sit in a pre commit hook, where a missed alarm lets through
+// exactly the recipe somebody will run next.
+func TestValidateRefusesWhatGenerateWouldRefuse(t *testing.T) {
+	for _, src := range []string{
+		"version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\noutput:\n  manifest: \"report|1.json\"\n",
+		"version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\noutput:\n  manifest: \"nul\"\n",
+	} {
+		dir := t.TempDir()
+		path := filepath.Join(dir, "recipe.yaml")
+		if err := os.WriteFile(path, []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+
+		var vOut, vErr bytes.Buffer
+		valid := cli.Run(context.Background(), []string{"validate", path}, &vOut, &vErr)
+
+		var gOut, gErr bytes.Buffer
+		gen := cli.Run(context.Background(), []string{"generate", path, "--out", t.TempDir(), "--dry-run"}, &gOut, &gErr)
+
+		if valid != gen {
+			t.Errorf("validate ended with %d and generate with %d on the same recipe.\n"+
+				"Reason: this command is what a pre commit hook runs, so a recipe it calls valid is\n"+
+				"one somebody will run - and finding out at generate time is finding out too late.\n"+
+				"validate said: %s\ngenerate said: %s", valid, gen, vOut.String()+vErr.String(), gOut.String()+gErr.String())
+		}
 	}
 }

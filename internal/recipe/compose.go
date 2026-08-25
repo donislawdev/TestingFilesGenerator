@@ -330,7 +330,7 @@ const (
 	KeyLabel          = "label"
 	KeyFill           = "fill"
 	KeyMutations      = "mutations"
-	KeyProperties     = "properties"
+	KeyProperties     = core.KeyProperties
 	KeyExpected       = "expected"
 	KeyExpectedReason = "expected.reason"
 

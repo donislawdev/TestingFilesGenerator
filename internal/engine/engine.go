@@ -292,7 +292,7 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	// here would leave a manifest outside the directory the run was pointed
 	// at, describing files that are not next to it.
 	if opt.ManifestName != "" {
-		if err := checkFileName("the manifest", opt.ManifestName); err != nil {
+		if err := checkFileName(SettingOutputManifest, "the manifest", opt.ManifestName); err != nil {
 			return nil, err
 		}
 	}
@@ -303,9 +303,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	for i := range targets {
 		t := &targets[i]
 
+		// Everything refused from here down is refused about one target, so it
+		// carries which one. See atTarget for what that is worth and what it
+		// deliberately leaves alone.
 		desc, err := settleTarget(t, opt, seen)
 		if err != nil {
-			return nil, err
+			return nil, atTarget(i+1, err)
 		}
 		targetSeed := core.TargetSeed(opt.Seed, t.ID)
 
@@ -343,12 +346,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 				Properties:       t.Properties,
 			})
 			if err != nil {
-				return nil, err
+				return nil, atTarget(i+1, err)
 			}
 
 			name, err := renderName(t, desc, idx)
 			if err != nil {
-				return nil, err
+				return nil, atTarget(i+1, err)
 			}
 			// Two files heading for one name means one of them would be
 			// destroyed by the other, and the manifest would still describe
@@ -900,12 +903,12 @@ func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 	// somebody ends up with a file called invoice_{index}.pdf rather than the
 	// numbering they asked for.
 	if strings.Contains(name, "{") {
-		return "", &RecipeError{Detail: fmt.Sprintf(
+		return "", &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
 			"target %q has a name template this build does not understand: %q. The only placeholder is %s, so a name looks like invoice_%s.pdf",
 			t.ID, tmpl, indexToken, indexToken)}
 	}
 
-	if err := checkFileName(fmt.Sprintf("target %q", t.ID), name); err != nil {
+	if err := checkFileName(SettingName, fmt.Sprintf("target %q", t.ID), name); err != nil {
 		return "", err
 	}
 	return name, nil
@@ -922,13 +925,13 @@ func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 // Both separators are refused on every system, not just the local one. A name
 // holding a backslash is legal on Linux and cannot exist on Windows, and a
 // recipe that only works on the machine it was written on is not portable.
-func checkFileName(where, name string) error {
+func checkFileName(setting, where, name string) error {
 	switch {
 	case name == "":
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf("%s produces a file with no name", where)}
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf("%s produces a file with no name", where)}
 
 	case strings.ContainsAny(name, `/\`):
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which is a path rather than a file name. Names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere. Choose the directory with the output setting instead",
 			where, name)}
 
@@ -947,7 +950,7 @@ func checkFileName(where, name string) error {
 	// travels between machines by design, and one that quietly leaves debris on
 	// somebody else's is worse than one refused on all of them.
 	case strings.Contains(name, ":"):
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which holds a colon. Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere - take the colon out, or ask for the file inside an archive where the name survives",
 			where, name)}
 
@@ -971,7 +974,7 @@ func checkFileName(where, name string) error {
 	// the host filesystem. See D10.
 	case firstForbidden(name) != 0:
 		bad := firstForbidden(name)
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which holds %s. Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere - take the character out, or ask for the file inside an archive where the name survives",
 			where, name, describeForbidden(bad))}
 
@@ -996,12 +999,12 @@ func checkFileName(where, name string) error {
 	// on both editions - so this is not the "any extension" rule the folklore
 	// describes either.
 	case strings.EqualFold(name, "nul"):
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which names the null device on Windows rather than a file. Writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere - give it an extension, nul.txt is an ordinary name, or choose another one",
 			where, name)}
 
 	case name == "." || name == "..":
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which names a directory rather than a file", where, name)}
 
 	// A name Windows stores under a different name than the one it was given.
@@ -1018,7 +1021,7 @@ func checkFileName(where, name string) error {
 	// the name laboratory, which writes it into an archive rather than onto the
 	// host filesystem for exactly this reason. See D10.
 	case strings.HasSuffix(name, ".") || strings.HasSuffix(name, " "):
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the name %q, which ends in a dot or a space. Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both. Take the last character off, or ask for the file inside an archive where the name survives",
 			where, name)}
 
@@ -1029,7 +1032,7 @@ func checkFileName(where, name string) error {
 	// machine failed on the next. That is the failure this rule exists to
 	// prevent, arriving through the rule itself.
 	case filepath.IsAbs(name) || core.HasVolumeName(name):
-		return &RecipeError{Setting: SettingName, Detail: fmt.Sprintf(
+		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
 			"%s produces the absolute path %q. A recipe carries no absolute paths, because then it only works on the machine it was written on. Choose the directory with the output setting instead",
 			where, name)}
 	}

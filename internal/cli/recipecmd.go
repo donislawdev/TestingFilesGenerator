@@ -98,11 +98,11 @@ func validate(args []string, out, errOut io.Writer) int {
 	for _, t := range rec.Targets {
 		targets = append(targets, engineTarget(t, t.Label))
 	}
-	planned, err := engine.Plan(targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
+	planned, err := engine.Plan(targets, planningOptions(rec))
 	if err != nil {
 		if *asJSON {
 			writeJSON(errOut, validateReport{Recipe: path, Valid: false,
-				Problems: []validateProblem{{What: err.Error(), At: targetAddressOf(err)}}})
+				Problems: []validateProblem{{What: err.Error(), At: addressOf(err)}}})
 			return classify(err)
 		}
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
@@ -122,6 +122,21 @@ func validate(args []string, out, errOut io.Writer) int {
 	fmt.Fprintf(out, "%s is valid: %s, %s, %d B total\n%s\n",
 		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"), engine.TotalBytes(planned), hash)
 	return ExitOK
+}
+
+// planningOptions is what this command hands the planner.
+//
+// The manifest name is in it, and leaving it out was a hole this command exists
+// to not have. Measured on 2026-08-25 with output.manifest set to a name
+// holding a bar: validate called the recipe valid and generate refused it with
+// code 3 a second later. A pre commit hook running this passed a recipe that
+// could not run.
+func planningOptions(rec *recipe.Recipe) engine.Options {
+	return engine.Options{
+		OutDir:       rec.Output.Dir,
+		Seed:         rec.Seed,
+		ManifestName: rec.Output.Manifest,
+	}
 }
 
 // validateReport is what --json puts out. Every problem arrives separately
@@ -154,31 +169,25 @@ type validateProblem struct {
 	At string `json:"at,omitempty"`
 }
 
-// targetAddressOf is where a refusal from below the recipe reader happened,
-// when it is complete enough to act on, and empty otherwise.
+// addressOf is where a refusal from below the recipe reader happened.
 //
 // Everything that knows the setting it is about answers the same interface the
-// window asks, so this does not need to know the type. What it does need to
-// know is that not every one of those answers is an address: a refusal from
-// the engine or a format may name the setting - "size" - without the entry of
-// the list it happened in, and a report about a recipe with twenty targets
-// saying "at": "size" points at all of them. Reported only when it names its
-// target, which is strictly more than the nothing this carried before.
+// window asks, so this does not need to know the type.
 //
-// The rest is real work rather than an oversight, and it is written down:
-// giving every target scoped refusal its position means the two screens that
-// show one target have to translate it back, which they have a hook for and no
-// reason to use yet. See docs/ENGINE-REVIEW-2026-08-22.md.
-func targetAddressOf(err error) string {
+// It used to drop an address that did not name a target, because a refusal
+// from the engine or a format named the setting - "size" - without the entry
+// of the list it happened in, and "at": "size" in a report about a recipe with
+// twenty targets points at all of them while looking like something to act on.
+// That filter went on 2026-08-25, in the same breath as the reason for it: the
+// engine gives every refusal about a target the position of that target now,
+// so nothing arriving here is half an address. A guard asks that of every
+// address this reports rather than leaving it to be true by accident.
+func addressOf(err error) string {
 	var about interface{ AboutSetting() string }
 	if !errors.As(err, &about) {
 		return ""
 	}
-	at := about.AboutSetting()
-	if !core.AddressNamesATarget(at) {
-		return ""
-	}
-	return at
+	return about.AboutSetting()
 }
 
 // loadRecipeReporting is loadRecipe with the option of a machine readable

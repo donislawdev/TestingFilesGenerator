@@ -346,6 +346,25 @@ func (r *runner) placeOf(setting string) string {
 	return r.readdress(setting)
 }
 
+// withoutTheTarget is the readdress a screen showing exactly one target uses.
+//
+// The engine addresses a refusal about a target by its position, because a
+// screen with twenty batches cannot place one otherwise. A screen with one
+// batch draws its boxes under the bare key - measured 2026-08-25, the single
+// batch screen registers size, name and width where the batch screen registers
+// targets[1].size, targets[1].name and targets[1].properties.width. So the
+// position is the part to drop, and the last segment is what is left.
+//
+// Settings of the run itself are handed back untouched. output.dir names no
+// target, and taking its last segment would leave "dir", which is a box
+// nothing draws.
+func withoutTheTarget(address string) string {
+	if !core.AddressNamesATarget(address) {
+		return address
+	}
+	return core.LastSettingSegment(address)
+}
+
 func (r *runner) recheck(setting string) {
 	// Nothing to check against yet, during the screen being built.
 	if r.settle == nil {

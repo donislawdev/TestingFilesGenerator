@@ -123,6 +123,11 @@ func (e *settingError) AboutSetting() string { return e.setting }
 const (
 	KeyTargets  = "targets"
 	KeyContains = "contains"
+	// KeyProperties is the section a format's own settings sit in. A refusal
+	// about one is addressed under it - targets[2].properties.width - because
+	// that is where the box is, and a bare width would collide with a recipe
+	// key of the same name the day one arrives.
+	KeyProperties = "properties"
 )
 
 // TargetAddress is where one setting of one target lives.
