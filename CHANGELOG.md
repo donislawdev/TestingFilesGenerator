@@ -32,6 +32,25 @@ because it turns other people's test suites red.
   the problem and what to do instead, instead of quoting a system error that
   named an internal temporary file.
 
+- Two file names that a Mac stores as one file are now refused while the run is
+  being planned, even where the letters are different ones. A name written with
+  the German sharp s and the same name written with a double s used to be
+  accepted, because Windows and Linux really do keep them apart. macOS does not:
+  on a default APFS volume they are one file, so the same recipe wrote two files
+  on one machine and one on another, and the manifest described two either way.
+  The long s against a plain s, and a typographic ligature against the letters
+  inside it, behave the same way there.
+
+  This is the rule that already refuses a path separator and the characters
+  Windows will not store, applied to the last case where a recipe still meant
+  different things on different machines. The refusal says which two targets are
+  involved and what the names have in common, and nothing is written.
+
+  One pair stops being refused, which is the same change facing the other way: a
+  dotted capital I and a plain lower case i were treated as one letter and are
+  two on every filesystem we measured. If you were working around that, you no
+  longer have to.
+
 - A file named exactly `nul` is refused as well, for a worse reason: on Windows
   that is the null device, so writing to it succeeds and the bytes go nowhere.
   The run was already stopped, but by a check that then told you to remove a

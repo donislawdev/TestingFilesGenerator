@@ -260,10 +260,27 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 // on Windows and stop matching what walk produces.
 //
 // Case is deliberately not folded here, though engine.collisionKey folds it
-// when planning names. On NTFS "straße.txt" and "STRASSE.txt" are two files -
-// measured, see engine/names.go - so folding would report a match between two
-// files that really are different. The two ends of the tool disagree about
-// REPORT.TXT against report.txt and that is the owner's call, 2026-08-25.
+// when planning names, and the gap between the two ends is WIDER since
+// 2026-08-26 rather than narrower.
+//
+// The reason written here until that day was that folding would report a match
+// between two files that really are different, because on NTFS the two
+// spellings of a German sharp s are two files. That is still true of NTFS and it
+// is no longer the whole answer: on a default APFS volume they are one file -
+// measured on a Mac, see engine/names.go and tools/probes/apfs-case.py - which
+// is why planning now folds fully.
+//
+// Verify still compares literally, and that is deliberate rather than
+// overlooked. Planning asks "could these two names become one file on somebody
+// else's machine", which has to be answered for every machine at once. Verify
+// asks "is the file the manifest describes the file that is here", on THIS
+// machine, where the filesystem has already given its answer by storing the name
+// it stored. Folding there would make a run agree with a manifest that names a
+// file the host did not write.
+//
+// So the two ends still disagree about REPORT.TXT against report.txt, the
+// disagreement is now three classes wide rather than one, and it is the owner's
+// call - open since 2026-08-25.
 func comparablePath(p string) string {
 	return path.Clean(p)
 }
