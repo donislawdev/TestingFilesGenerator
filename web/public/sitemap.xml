@@ -25,6 +25,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/create-file-exact-size/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/faq/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/"/>
@@ -53,6 +59,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/faq/</loc>

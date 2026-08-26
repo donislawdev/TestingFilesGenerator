@@ -1,0 +1,146 @@
+<h1>Jak stworzyć plik o określonym rozmiarze</h1>
+<p class="lead">
+  Każdy system ma na to własne polecenie i wszystkie trzy są niżej. Dają plik o dokładnie takiej
+  liczbie bajtów, o jaką prosisz - i do wielu testów to wystarcza. <strong>Każde polecenie na tej
+  stronie zostało uruchomione przed publikacją</strong>, na systemie, do którego należy.
+</p>
+
+<div class="note">
+  <p class="note-title">Krótka odpowiedź</p>
+  <p>
+    Windows: <code>fsutil file createnew nazwa 10485760</code>. Linux:
+    <code>dd if=/dev/zero of=nazwa bs=1M count=10</code>. macOS: <code>mkfile 10m nazwa</code>.
+    Rozmiar podaje się w bajtach, a 10 MB liczone tak, jak liczy je menedżer plików, to 10485760
+    bajtów.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil oraz wersja w PowerShellu, która nie potrzebuje niczego dodatkowego</h2>
+  <p>
+    <code>fsutil</code> jest częścią Windows. Przyjmuje rozmiar <strong>w bajtach</strong>, więc liczbę
+    trzeba wyliczyć wcześniej - 10 MB to 10485760, 100 MB to 104857600, a 1 GB to 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Zmierzone na Windows 11: działa ze zwykłego wiersza poleceń, bez podniesionych uprawnień, a plik
+    wychodzi na dokładnie 10485760 bajtów.
+  </p>
+  <p>PowerShell zrobi to samo bez wołania innego programu i rozumie jednostki:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> w PowerShellu znaczy 10485760 bajtów, czyli to samo liczenie po 1024, którego
+    używa Eksplorator - oba polecenia dają więc ten sam rozmiar.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate i fallocate, oraz różnica, na której ludzie się przejeżdżają</h2>
+  <p><code>dd</code> zna każdy. Naprawdę zapisuje bajty:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> jest natychmiastowy i właśnie w tym rzecz. Zmierzone na Alpine Linux: plik
+    melduje 10485760 bajtów i zajmuje <strong>zero bloków</strong> - to <strong>plik rzadki</strong>.
+    Cokolwiek go czyta, dostaje dziesięć megabajtów zer, ale dysk nigdy nie oddał tego miejsca:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Do testu limitu uploadu to bez znaczenia, do testu limitu miejsca na dysku - mylące.
+    <code>fallocate</code> jest tym, po co sięgnąć, gdy miejsce ma być prawdziwe:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>A gdy zawartość ma się nie kompresować, żeby archiwizator nie zmniejszył jej z powrotem:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, który nie jest rzadki, i dwa znane skądinąd</h2>
+  <p>
+    macOS ma <code>mkfile</code>. Zmierzone na macOS 26.6.2: 10485760 bajtów i 20480 bloków, czyli
+    miejsce jest naprawdę przydzielone, a nie tylko obiecane:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> i <code>truncate</code> też tam są i zachowują się tak jak na Linuksie:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Gdzie to przestaje wystarczać</p>
+  <h2>Plik właściwego rozmiaru to nie to samo co plik właściwego rodzaju</h2>
+  <p>
+    Wszystkie polecenia wyżej dają blok zer. To wystarcza, dopóki testowana rzecz patrzy wyłącznie na
+    rozmiar - limit uploadu, limit miejsca, transfer. Przestaje wystarczać w chwili, w której cokolwiek
+    ten plik <strong>otwiera</strong>.
+  </p>
+  <p>
+    Zmierzone, i warto to zrobić samemu: zrób plik 2 MB przez <code>fsutil</code>, nazwij go
+    <code>photo.png</code> i podaj bibliotece graficznej. Pillow odpowiada
+    <code>cannot identify image file</code>. To nie jest PNG. Nigdy nim nie był - tak mówiła tylko
+    nazwa.
+  </p>
+  <p>
+    To znaczy więcej, niż brzmi, bo chodzi o <strong>to, w którą stronę test wtedy pada</strong>. Twój
+    endpoint odrzuca plik, test świeci na zielono, a Ty stwierdzasz, że limit rozmiaru działa. Nie
+    odrzucił go za rozmiar. Odrzucił, bo bajty nie były obrazem - a reguła, którą chciałeś sprawdzić,
+    nigdy nie została osiągnięta.
+  </p>
+  <ul class="ticks">
+    <li>parser odrzuca plik, zanim ktokolwiek spojrzy na regułę rozmiaru</li>
+    <li>pada generowanie miniatury, a błąd, który czytasz, jest o miniaturze</li>
+    <li>antywirus albo kontrola treści odrzucają go z trzeciego powodu</li>
+    <li>przeglądarka nie pokazuje nic i nikt nie wie, czy to jest ta usterka</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Druga droga</p>
+  <h2>Prawdziwy plik tego formatu, o dokładnie zamówionym rozmiarze</h2>
+  <p>
+    To robi Testing Files Generator. Plik jest prawdziwym plikiem swojego formatu - otwiera się
+    w programie, do którego należy - i ma dokładnie tyle bajtów, o ile poprosiłeś, co do jednego:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Poproś o rozmiar nieosiągalny dla formatu, a dostaniesz błąd nazywający minimum i jego powód,
+    nigdy plik o innym rozmiarze. <a href="/pl/formaty/">Strona formatów</a> wypisuje każdy format
+    razem z najmniejszym plikiem, jaki potrafi zrobić.
+  </p>
+  <p>A limit to trzy przypadki testowe, nie jeden, więc narzędzie buduje wszystkie trzy:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Dostajesz 10485759, 10485760 i 10485761 bajtów oraz manifest mówiący, który z nich system ma
+    przyjąć, a który odrzucić. <a href="/pl/zastosowania/">Strona zastosowań</a> przechodzi przez to
+    i przez cztery inne zadania, pod które to powstało.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Czego więc użyć?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Polecenia systemowego</p>
+      <p class="muted">
+        Gdy nic tego pliku nie otwiera. Test limitu rozmiaru na endpoincie, który sprawdza rozmiar
+        najpierw, transfer, limit miejsca, zapełniony dysk. To jedna linijka i jest już zainstalowana.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Prawdziwego generatora</p>
+      <p class="muted">
+        Gdy cokolwiek plik parsuje, renderuje, importuje albo rozpakowuje - i gdy te same dane testowe
+        mają być jutro, na innej maszynie, co do bajta takie same.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Obie drogi są na tej stronie, bo obie bywają właściwe. Błędem wartym uniknięcia jest użycie
+    pierwszej tam, gdzie potrzebna jest druga, i odczytanie zielonego testu jako dowodu.
+  </p>
+</section>

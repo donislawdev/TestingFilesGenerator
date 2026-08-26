@@ -32,6 +32,13 @@
       "description": "Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents."
     },
     {
+      "key": "exact-size",
+      "slug": "create-file-exact-size",
+      "nav": "Exact size",
+      "title": "Create a File of a Specific Size - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate and mkfile, each measured on the system it belongs to - and why a file made that way is not a PDF or a PNG when a test needs one."
+    },
+    {
       "key": "faq",
       "slug": "faq",
       "nav": "FAQ",

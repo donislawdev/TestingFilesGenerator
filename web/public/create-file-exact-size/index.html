@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create a File of a Specific Size - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate and mkfile, each measured on the system it belongs to - and why a file made that way is not a PDF or a PNG when a test needs one.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Create a File of a Specific Size - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate and mkfile, each measured on the system it belongs to - and why a file made that way is not a PDF or a PNG when a test needs one.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1160">
+<meta property="og:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Create a File of a Specific Size - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate and mkfile, each measured on the system it belongs to - and why a file made that way is not a PDF or a PNG when a test needs one.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Exact size",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/create-file-exact-size\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/" aria-current="page">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>How to create a file of an exact size</h1>
+<p class="lead">
+  Every system has a command for it, and all three are below. They give you a file of exactly the
+  right number of bytes - and for a lot of testing that is all you need. <strong>Every command on this
+  page was run before it was published</strong>, on the system it belongs to.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux:
+    <code>dd if=/dev/zero of=name bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>.
+    Sizes are in bytes, and 10 MB counted the way your file manager counts is 10485760 of them.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, and a PowerShell version that needs nothing extra</h2>
+  <p>
+    <code>fsutil</code> ships with Windows. It takes the size <strong>in bytes</strong>, so work the
+    number out first - 10 MB is 10485760, 100 MB is 104857600, 1 GB is 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Measured on Windows 11: it works from an ordinary prompt and does not need an elevated one, and
+    the file comes out at exactly 10485760 bytes.
+  </p>
+  <p>PowerShell can do the same without calling out to another program, and it understands units:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> in PowerShell means 10485760 bytes, the same 1024 based counting Explorer uses,
+    so the two commands above produce the same size.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate and fallocate, and the difference that catches people</h2>
+  <p><code>dd</code> is the one everybody knows. It really writes the bytes:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> is instant, and that is the catch. Measured on Alpine Linux, the file reports
+    10485760 bytes and occupies <strong>zero blocks</strong> - it is a <strong>sparse file</strong>.
+    Anything that reads it gets ten megabytes of zeros, but the disk never gave up the space:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    That is fine for testing an upload limit and misleading for testing a disk quota.
+    <code>fallocate</code> is the one to reach for when the space has to be real:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>And when the content has to be incompressible, so an archiver cannot squeeze it back down:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, which is not sparse, and the two you already know</h2>
+  <p>
+    macOS ships <code>mkfile</code>. Measured on macOS 26.6.2: 10485760 bytes and 20480 blocks, so the
+    space is really allocated rather than promised:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> and <code>truncate</code> are both there too and behave as they do on Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Where this stops working</p>
+  <h2>A file of the right size is not a file of the right kind</h2>
+  <p>
+    All of the above give you a block of zeros. That is enough when the thing under test only looks at
+    the size - an upload limit, a quota, a transfer. It stops being enough the moment anything
+    <strong>opens</strong> the file.
+  </p>
+  <p>
+    Measured, and it is worth doing yourself: make a 2 MB file with <code>fsutil</code>, call it
+    <code>photo.png</code>, and hand it to an image library. Pillow answers
+    <code>cannot identify image file</code>. It is not a PNG. It never was - only the name said so.
+  </p>
+  <p>
+    That matters more than it sounds, because of <strong>which way the test then fails</strong>. Your
+    upload endpoint rejects the file, your test goes green, and you conclude the size limit works.
+    It did not reject it for the size. It rejected it because the bytes were not an image, and the
+    rule you meant to test was never reached.
+  </p>
+  <ul class="ticks">
+    <li>a parser rejects it before any size rule is looked at</li>
+    <li>a thumbnail step fails and the error you read is about the thumbnail</li>
+    <li>an antivirus or content check refuses it for a third reason</li>
+    <li>a viewer shows nothing, and nobody can tell whether that is the bug</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">The other way</p>
+  <h2>A real file of that format, at exactly the size you asked for</h2>
+  <p>
+    This is what Testing Files Generator does. The file is a genuine one of its format - it opens in
+    the software that owns it - and it is the exact number of bytes you asked for, to the byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Ask for a size a format cannot reach and you get an error naming the floor and the reason for it,
+    never a file of the wrong size. The <a href="/formats/">formats page</a> lists every format with
+    the smallest file it can produce.
+  </p>
+  <p>And a limit is three test cases rather than one, so the tool builds all three:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    That gives you 10485759, 10485760 and 10485761 bytes, and a manifest saying which of them your
+    system should accept and which it should reject. The <a href="/use-cases/">use cases page</a> goes
+    through that and four other jobs it is built for.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>So which should you use?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Use the system command</p>
+      <p class="muted">
+        When nothing opens the file. Testing a size limit on an endpoint that checks the size first, a
+        transfer, a quota, a disk full condition. It is one line and it is already installed.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Use a real generator</p>
+      <p class="muted">
+        When anything parses, renders, imports or extracts the file - and when you need the same
+        fixtures again tomorrow, on another machine, byte for byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Both are on this page because both are right some of the time. The mistake worth avoiding is
+    using the first where the second is needed and reading the green test as proof.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -32,6 +32,13 @@
       "description": "Testowanie limitu rozmiaru pliku, powtarzalne dane testowe w CI, dziesięć tysięcy plików jednym poleceniem i archiwa z prawdziwą zawartością."
     },
     {
+      "key": "exact-size",
+      "slug": "plik-o-zadanym-rozmiarze",
+      "nav": "Rozmiar pliku",
+      "title": "Jak stworzyć plik o określonym rozmiarze",
+      "description": "fsutil, dd, truncate i mkfile - polecenia zmierzone na trzech systemach, i dlaczego tak zrobiony plik nie jest PDF-em ani PNG-iem, gdy test tego potrzebuje."
+    },
+    {
       "key": "faq",
       "slug": "faq",
       "nav": "FAQ",
