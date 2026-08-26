@@ -149,25 +149,27 @@ start that it has no window in it and that everything is on the command line.
 **1. Make a file.** One PNG, exactly two megabytes:
 
 ```
-tfg generate --format png --size 2mb --out ./fixtures
+tfg generate --format png --size 2mb --out ./out
 ```
 
 **2. Make a lot of files.** Ten thousand log files, each between one and eight
-kilobytes, with the sizes drawn from the seed so tomorrow gives the same set:
+kilobytes, with the sizes drawn from the seed so tomorrow gives the same set.
+**Give each run its own directory** - the manifest is the only record of what a
+run wrote, so the tool refuses to write a second one over it:
 
 ```
-tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures
+tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs
 ```
 
 **3. Check them, then remove them.**
 
 ```
-tfg verify ./fixtures/manifest.json
-tfg cleanup ./fixtures/manifest.json --yes
+tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes
 ```
 
 ```
-fixtures matches ./fixtures/manifest.json: 10000 files checked
+logs matches ./logs/manifest.json: 10000 files checked
 ```
 
 **Sizes count in 1024s**, the way your file manager does, so `2mb` means
@@ -484,7 +486,7 @@ you do not have to design the set yourself:
 ```
 tfg preset list
 tfg preset show size-boundaries
-tfg generate --preset size-boundaries --limit 1mb --out ./edges
+tfg generate --preset size-boundaries --limit 10mb --out ./limits
 ```
 
 `show` tells you what the set would cost before you build it, and says outright

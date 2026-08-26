@@ -21,9 +21,12 @@ tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</c
 
 <section class="section" id="one-file">
   <h2>Jak wygenerować jeden plik o dokładnym rozmiarze?</h2>
-  <p>Podaj format, rozmiar i katalog. Rozmiary liczą się po 1024, więc <code>2mb</code> to 2097152 bajty, a zwykła liczba bajtów też zadziała.</p>
-  <pre><code>tfg generate --format png --size 2mb --out ./fixtures
-tfg generate --format pdf --size 10485761 --out ./fixtures</code></pre>
+  <p>
+    Podaj format, rozmiar i katalog. Rozmiary liczą się po 1024, więc <code>2mb</code> to 2097152
+    bajty. Zwykła liczba bajtów też zadziała, więc <code>--size 10485761</code> prosi dokładnie
+    o tyle.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
   <p>Przydatne flagi komendy <code>generate</code>:</p>
   <div class="tablewrap">
     <table class="data">
@@ -179,7 +182,7 @@ tfg generate fixtures.yaml</code></pre>
   {{ template "presetsList" . }}
   <pre><code>tfg preset list
 tfg preset show size-boundaries
-tfg generate --preset size-boundaries --limit 1mb --out ./edges
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
 tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     <code>show</code> mówi, ile zestaw będzie kosztował, zanim go zbudujesz, i wprost zaznacza, kiedy

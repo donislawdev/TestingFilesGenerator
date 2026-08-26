@@ -16,13 +16,39 @@
 <meta property="og:description" content="Testowanie limitu rozmiaru pliku, powtarzalne dane testowe w CI, dziesięć tysięcy plików jednym poleceniem i archiwa z prawdziwą zawartością.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1160">
+<meta property="og:image:alt" content="Okno programu Testing Files Generator przygotowane do zapisania wsadu plików testowych">
+<meta property="og:locale:alternate" content="en">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Zastosowania - limity uploadu, dane do CI, testy masowe">
 <meta name="twitter:description" content="Testowanie limitu rozmiaru pliku, powtarzalne dane testowe w CI, dziesięć tysięcy plików jednym poleceniem i archiwa z prawdziwą zawartością.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:image:alt" content="Okno programu Testing Files Generator przygotowane do zapisania wsadu plików testowych">
 <meta name="theme-color" content="#131417">
 <link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Zastosowania",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pl\/zastosowania\/"
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Przejdź do treści</a>
@@ -68,7 +94,7 @@
     liczbę i uruchamiasz ponownie.
   </p>
   <p>To samo działa bez presetu, gdy chcesz pojedynczy zestaw graniczny od ręki:</p>
-  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
 </section>
 
 <section class="section" id="ci-fixtures">
@@ -145,8 +171,8 @@
     jest rozpakowywane. To znaczy, że plik odrzucony przez Twój parser jest znaleziskiem o Twoim
     parserze, a nie o generatorze.
   </p>
-  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
-tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
   <p>
     <a href="/pl/formaty/">Strona formatów</a> wypisuje ustawienia przyjmowane przez każdy z nich
     i najmniejszy plik, jaki każdy potrafi zrobić.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Test File Generator for QA - Exact Size, 20 Real Formats</title>
-<meta name="description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<meta name="description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
 <link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/">
@@ -13,15 +13,21 @@
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="en">
 <meta property="og:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
-<meta property="og:description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<meta property="og:description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1160">
+<meta property="og:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
+<meta property="og:locale:alternate" content="pl">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
-<meta name="twitter:description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<meta name="twitter:description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
 <meta name="theme-color" content="#131417">
 <link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/assets/site.css">
 <script type="application/ld+json">
 {
@@ -78,12 +84,12 @@
 <main id="main" class="wrap">
 <section class="hero">
   <div class="hero-text">
-  <h1>Test files at an exact size, and a manifest that says how your system should react</h1>
+  <h1>Generate real test files at any exact size</h1>
   <p class="lead">
-    Testing Files Generator makes <strong>real test files</strong> in 20 formats -
-    PDF, PNG, DOCX, ZIP and the rest - at <strong>any exact size you ask for</strong>. Then it writes
-    down what your application is supposed to do with each one. Command line and desktop window,
-    free and open source, working entirely on your machine.
+    PDF, PNG, DOCX, ZIP - <strong>20 formats in all</strong>, and every one is a
+    real file that opens in the software that owns it, at <strong>exactly the size you asked
+    for</strong>. Each run also writes down what your application is supposed to do with each file.
+    Command line and desktop window, free and open source, working entirely on your machine.
   </p>
 
   <div class="cta">
@@ -191,14 +197,19 @@ for entry in manifest["files"]:
     </li>
     <li>
       <h3>Make a lot of files</h3>
-      <p>Ten thousand log files, each between one and eight kilobytes, with the sizes drawn from the seed so tomorrow gives the same set:</p>
-      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+      <p>
+        Ten thousand log files, each between one and eight kilobytes, with the sizes drawn from the
+        seed so tomorrow gives the same set. <strong>Give each run its own directory</strong> - the
+        manifest is the only record of what a run wrote, so the tool refuses to write a second one
+        over it:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
     </li>
     <li>
       <h3>Check them, then remove them</h3>
       <p><code>verify</code> tells you nothing moved. <code>cleanup</code> removes exactly what was written and nothing else:</p>
-      <pre><code>tfg verify ./fixtures/manifest.json
-tfg cleanup ./fixtures/manifest.json --yes</code></pre>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
     </li>
   </ol>
   <p>

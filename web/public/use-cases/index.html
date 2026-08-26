@@ -16,13 +16,39 @@
 <meta property="og:description" content="Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/use-cases/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1160">
+<meta property="og:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
+<meta property="og:locale:alternate" content="pl">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Use Cases - Upload Limits, CI Fixtures, Bulk File Testing">
 <meta name="twitter:description" content="Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
 <meta name="theme-color" content="#131417">
 <link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Use cases",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/use-cases\/"
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -71,7 +97,7 @@
   <p>
     The same works without a preset when you want a single boundary set inline:
   </p>
-  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
 </section>
 
 <section class="section" id="ci-fixtures">
@@ -146,8 +172,8 @@
     its pixels compared, a DOCX is read back by separate libraries, an archive is extracted. That
     means a file that your parser rejects is a finding about your parser, not about the generator.
   </p>
-  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
-tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
   <p>
     The <a href="/formats/">formats page</a> lists the settings each one accepts and the smallest file
     each can be.

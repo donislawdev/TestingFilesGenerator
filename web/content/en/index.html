@@ -1,11 +1,11 @@
 <section class="hero">
   <div class="hero-text">
-  <h1>Test files at an exact size, and a manifest that says how your system should react</h1>
+  <h1>Generate real test files at any exact size</h1>
   <p class="lead">
-    Testing Files Generator makes <strong>real test files</strong> in {{ .Facts.FormatCount }} formats -
-    PDF, PNG, DOCX, ZIP and the rest - at <strong>any exact size you ask for</strong>. Then it writes
-    down what your application is supposed to do with each one. Command line and desktop window,
-    free and open source, working entirely on your machine.
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} formats in all</strong>, and every one is a
+    real file that opens in the software that owns it, at <strong>exactly the size you asked
+    for</strong>. Each run also writes down what your application is supposed to do with each file.
+    Command line and desktop window, free and open source, working entirely on your machine.
   </p>
 
   {{ template "downloadCta" . }}
@@ -109,14 +109,19 @@ for entry in manifest["files"]:
     </li>
     <li>
       <h3>Make a lot of files</h3>
-      <p>Ten thousand log files, each between one and eight kilobytes, with the sizes drawn from the seed so tomorrow gives the same set:</p>
-      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+      <p>
+        Ten thousand log files, each between one and eight kilobytes, with the sizes drawn from the
+        seed so tomorrow gives the same set. <strong>Give each run its own directory</strong> - the
+        manifest is the only record of what a run wrote, so the tool refuses to write a second one
+        over it:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
     </li>
     <li>
       <h3>Check them, then remove them</h3>
       <p><code>verify</code> tells you nothing moved. <code>cleanup</code> removes exactly what was written and nothing else:</p>
-      <pre><code>tfg verify ./fixtures/manifest.json
-tfg cleanup ./fixtures/manifest.json --yes</code></pre>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
     </li>
   </ol>
   <p>

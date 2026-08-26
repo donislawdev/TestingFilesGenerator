@@ -7,15 +7,15 @@
       "key": "index",
       "slug": "",
       "nav": "Start",
-      "title": "Generator plików testowych dla QA - dokładny rozmiar, {{ .Facts.FormatCount }} formatów",
-      "description": "Darmowy generator plików testowych o zadanym rozmiarze. PDF, DOCX, PNG, ZIP i pozostałe - {{ .Facts.FormatCount }} formatów co do bajta, z manifestem mówiącym, jak system ma zareagować. Windows, macOS, Linux, w pełni offline."
+      "title": "Generator plików testowych o zadanym rozmiarze - {{ .Facts.FormatCount }} formatów",
+      "description": "Darmowy generator plików testowych dla QA. Prawdziwe pliki PDF, DOCX, PNG i ZIP o dokładnym rozmiarze, z manifestem mówiącym, jak system ma zareagować."
     },
     {
       "key": "formats",
       "slug": "formaty",
       "nav": "Formaty",
-      "title": "{{ .Facts.FormatCount }} obsługiwanych formatów plików - PDF, DOCX, PNG, ZIP i więcej",
-      "description": "Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w programie, do którego należy."
+      "title": "{{ .Facts.FormatCount }} formatów plików testowych - PDF, DOCX, PNG, ZIP",
+      "description": "Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w swoim programie."
     },
     {
       "key": "docs",
@@ -42,6 +42,8 @@
   "words": {
     "skip": "Przejdź do treści",
     "navLabel": "Główna",
+    "breadcrumbHome": "Start",
+    "imageAlt": "Okno programu Testing Files Generator przygotowane do zapisania wsadu plików testowych",
     "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w dwudziestu formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",
 
     "ctaDownload": "Pobierz",

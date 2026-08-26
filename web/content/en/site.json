@@ -8,7 +8,7 @@
       "slug": "",
       "nav": "Home",
       "title": "Test File Generator for QA - Exact Size, {{ .Facts.FormatCount }} Real Formats",
-      "description": "Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in {{ .Facts.FormatCount }} formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline."
+      "description": "Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react."
     },
     {
       "key": "formats",
@@ -42,6 +42,8 @@
   "words": {
     "skip": "Skip to content",
     "navLabel": "Main",
+    "breadcrumbHome": "Home",
+    "imageAlt": "The desktop window of Testing Files Generator, set up to write a batch of test files",
     "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
 
     "ctaDownload": "Download",

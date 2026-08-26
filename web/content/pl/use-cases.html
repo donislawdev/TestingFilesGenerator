@@ -19,7 +19,7 @@
     liczbę i uruchamiasz ponownie.
   </p>
   <p>To samo działa bez presetu, gdy chcesz pojedynczy zestaw graniczny od ręki:</p>
-  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
 </section>
 
 <section class="section" id="ci-fixtures">
@@ -96,8 +96,8 @@
     jest rozpakowywane. To znaczy, że plik odrzucony przez Twój parser jest znaleziskiem o Twoim
     parserze, a nie o generatorze.
   </p>
-  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
-tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
   <p>
     <a href="/pl/formaty/">Strona formatów</a> wypisuje ustawienia przyjmowane przez każdy z nich
     i najmniejszy plik, jaki każdy potrafi zrobić.

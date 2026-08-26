@@ -30,6 +30,29 @@
 </script>
 {{- end -}}
 
+{{- define "breadcrumbSchema" -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "{{ .Word "breadcrumbHome" }}",
+      "item": "{{ .Facts.Origin }}{{ if .Lang.Dir }}/{{ .Lang.Dir }}/{{ else }}/{{ end }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ .Page.Nav }}",
+      "item": "{{ .Canonical }}"
+    }
+  ]
+}
+</script>
+{{- end -}}
+
 {{- define "faqSchema" -}}
 <script type="application/ld+json">
 {

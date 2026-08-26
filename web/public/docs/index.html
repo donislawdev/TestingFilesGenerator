@@ -16,13 +16,39 @@
 <meta property="og:description" content="How to generate test files from the command line or a YAML recipe, what the manifest contains, and what every exit code means when the tool runs in CI.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1160">
+<meta property="og:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
+<meta property="og:locale:alternate" content="pl">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Documentation - Commands, Recipes, Manifest, Exit Codes">
 <meta name="twitter:description" content="How to generate test files from the command line or a YAML recipe, what the manifest contains, and what every exit code means when the tool runs in CI.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:image:alt" content="The desktop window of Testing Files Generator, set up to write a batch of test files">
 <meta name="theme-color" content="#131417">
 <link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -70,9 +96,12 @@ tfg license     print the licence and what it means for generated files</code></
 
 <section class="section" id="one-file">
   <h2>How do I generate a single file of an exact size?</h2>
-  <p>Name the format, the size and where it goes. Sizes count in 1024s, so <code>2mb</code> is 2097152 bytes, and a plain byte count works too.</p>
-  <pre><code>tfg generate --format png --size 2mb --out ./fixtures
-tfg generate --format pdf --size 10485761 --out ./fixtures</code></pre>
+  <p>
+    Name the format, the size and where it goes. Sizes count in 1024s, so <code>2mb</code> is
+    2097152 bytes. A plain byte count works too, so <code>--size 10485761</code> asks for exactly
+    that many.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
   <p>The useful flags on <code>generate</code>:</p>
   <div class="tablewrap">
     <table class="data">
@@ -233,7 +262,7 @@ tfg generate fixtures.yaml</code></pre>
 </ul>
   <pre><code>tfg preset list
 tfg preset show size-boundaries
-tfg generate --preset size-boundaries --limit 1mb --out ./edges
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
 tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     <code>show</code> tells you what the set would cost before you build it, and says outright when a

@@ -22,7 +22,7 @@
   <p>
     The same works without a preset when you want a single boundary set inline:
   </p>
-  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
 </section>
 
 <section class="section" id="ci-fixtures">
@@ -97,8 +97,8 @@
     its pixels compared, a DOCX is read back by separate libraries, an archive is extracted. That
     means a file that your parser rejects is a finding about your parser, not about the generator.
   </p>
-  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
-tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
   <p>
     The <a href="/formats/">formats page</a> lists the settings each one accepts and the smallest file
     each can be.

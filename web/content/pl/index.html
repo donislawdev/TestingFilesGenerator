@@ -1,11 +1,11 @@
 <section class="hero">
   <div class="hero-text">
-  <h1>Pliki testowe o dokładnym rozmiarze i manifest mówiący, jak system ma zareagować</h1>
+  <h1>Generuj pliki testowe o zadanym rozmiarze</h1>
   <p class="lead">
-    Testing Files Generator tworzy <strong>prawdziwe pliki testowe</strong> w {{ .Facts.FormatCount }} formatach -
-    PDF, PNG, DOCX, ZIP i pozostałych - o <strong>dokładnie takim rozmiarze, o jaki poprosisz</strong>.
-    Do tego zapisuje, co Twoja aplikacja ma z każdym z nich zrobić. Wiersz poleceń i okno, darmowe
-    i otwarte, działające wyłącznie na Twojej maszynie.
+    PDF, PNG, DOCX, ZIP - <strong>razem {{ .Facts.FormatCount }} formatów</strong>, a każdy to
+    prawdziwy plik, który otwiera się w programie, do którego należy, i ma <strong>dokładnie taki
+    rozmiar, o jaki poprosisz</strong>. Każdy przebieg zapisuje też, co Twoja aplikacja ma z każdym
+    plikiem zrobić. Wiersz poleceń i okno, darmowe i otwarte, działające wyłącznie na Twojej maszynie.
   </p>
 
   {{ template "downloadCta" . }}
@@ -109,14 +109,19 @@ for entry in manifest["files"]:
     </li>
     <li>
       <h3>Zrób dużo plików</h3>
-      <p>Dziesięć tysięcy plików logów, każdy od jednego do ośmiu kilobajtów, z rozmiarami losowanymi z ziarna, więc jutro dostaniesz ten sam zestaw:</p>
-      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+      <p>
+        Dziesięć tysięcy plików logów, każdy od jednego do ośmiu kilobajtów, z rozmiarami losowanymi
+        z ziarna, więc jutro dostaniesz ten sam zestaw. <strong>Każdy przebieg dostaje własny
+        katalog</strong> - manifest jest jedynym zapisem tego, co przebieg zapisał, więc narzędzie
+        odmawia nadpisania go drugim:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
     </li>
     <li>
       <h3>Sprawdź je, a potem usuń</h3>
       <p><code>verify</code> mówi, że nic się nie ruszyło. <code>cleanup</code> usuwa dokładnie to, co zostało zapisane, i nic poza tym:</p>
-      <pre><code>tfg verify ./fixtures/manifest.json
-tfg cleanup ./fixtures/manifest.json --yes</code></pre>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
     </li>
   </ol>
   <p>
