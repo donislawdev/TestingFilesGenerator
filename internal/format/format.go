@@ -859,6 +859,43 @@ const SettingSize = core.SettingSize
 // type, which is what made this a method rather than a case.
 func (e *BelowMinimumError) AboutSetting() string { return SettingSize }
 
+// AboveMaximumError is refusing a size a format is too small to describe.
+//
+// The mirror of BelowMinimumError, and it exists because three formats were
+// using that one for this. A BMP asked for 4294967296 B was told "BMP cannot
+// be smaller than 4294967295 B", which is not merely unhelpful - it is the
+// opposite of what happened, and the number it offers as a way out is the
+// ceiling the request had just passed. ICO and PNG said the same shape of
+// thing. Found on 2026-08-26 by asking every registered format what it does
+// with a size that does not fit in a thirty two bit field.
+//
+// It carries the same four parts as every other refusal here - what happened,
+// why the ceiling exists, and what to do instead - and answers AboutSetting
+// with the same key, so a window marks the same box for either end of the
+// range and neither surface had to learn a new type.
+type AboveMaximumError struct {
+	Format    string
+	Requested int64
+	Maximum   int64
+	Reason    string
+	Hint      string
+}
+
+func (e *AboveMaximumError) What() string {
+	return fmt.Sprintf("%s cannot be larger than %d B. Requested: %d B", e.Format, e.Maximum, e.Requested)
+}
+
+func (e *AboveMaximumError) Why() string { return e.Reason }
+
+func (e *AboveMaximumError) Instead() string { return e.Hint }
+
+func (e *AboveMaximumError) Error() string {
+	return fmt.Sprintf("%s cannot be larger than %d B - %s. Requested: %d B. %s",
+		e.Format, e.Maximum, e.Reason, e.Requested, e.Hint)
+}
+
+func (e *AboveMaximumError) AboutSetting() string { return SettingSize }
+
 // UnknownFormatError is a request for a format nobody registered.
 type UnknownFormatError struct {
 	ID    string

@@ -215,12 +215,17 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		m.withPad = true
 		m.padData = r.Bytes - bare - chunkOverhead
 		if m.padData > maxChunkData {
-			return format.Plan{}, &format.BelowMinimumError{
+			return format.Plan{}, &format.AboveMaximumError{
 				Format:    "PNG",
 				Requested: r.Bytes,
-				Minimum:   bare,
-				Reason:    "the padding needed is larger than one chunk can carry, and this generator writes only one",
-				Hint:      "Ask for a smaller size, or set larger dimensions so the picture itself carries more of it.",
+				// The ceiling is what this generator can reach at these
+				// dimensions, not a property of PNG: a larger picture carries
+				// more of the size itself and lifts it. Stating it as the
+				// reachable total rather than as the chunk limit is what makes
+				// the hint below something a person can act on.
+				Maximum: bare + chunkOverhead + maxChunkData,
+				Reason:  "the padding needed is larger than one chunk can carry, and this generator writes only one",
+				Hint:    "Ask for a smaller size, or set larger dimensions so the picture itself carries more of it.",
 			}
 		}
 	}

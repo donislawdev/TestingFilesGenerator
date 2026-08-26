@@ -195,9 +195,24 @@ func groupsFor(r format.Request) ([]format.Content, error) {
 		if len(stated) > 0 {
 			return nil, &format.ContentsConflictError{Format: "targz", Keys: stated}
 		}
+		asked := 0
 		for _, g := range r.Contains {
 			if g.Format == "targz" {
 				return nil, &format.NestingUnsupportedError{Format: "targz"}
+			}
+			asked += g.Count
+		}
+		// The ceiling the entries property has, applied to the other way of
+		// asking for the same thing. See the note beside the same check in
+		// the zip package - both doors were measured saying different things
+		// about fifty thousand entries on 2026-08-26.
+		if asked > maxEntries {
+			return nil, &format.PropertyValueError{
+				Format: "targz",
+				Key:    "contains",
+				Value:  strconv.Itoa(asked),
+				Reason: fmt.Sprintf("it takes a whole number from 0 to %d", maxEntries),
+				Remedy: fmt.Sprintf("Ask for %d entries or fewer.", maxEntries),
 			}
 		}
 		return r.Contains, nil

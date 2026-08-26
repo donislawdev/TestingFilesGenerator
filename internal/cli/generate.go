@@ -387,6 +387,7 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		engine.TotalBytes(planned))
 
 	echoBoundaries(targets, planned, errOut)
+	echoManifestReach(planned, errOut)
 
 	if g.dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
@@ -469,6 +470,7 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 // the spelling is no longer refused - and why these lines carry more weight
 // than they did. They are the only place the rare reader sees the number this
 // run actually used, in time to change it.
+
 func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOut io.Writer) {
 	for i := range targets {
 		t := &targets[i]
@@ -483,6 +485,37 @@ func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOu
 		}
 
 	}
+}
+
+// echoManifestReach says so when a run will write a manifest this build cannot
+// read back.
+//
+// Measured on 2026-08-26: a run of 25 000 files wrote a manifest of 25 220 640
+// B against a read ceiling of 16 777 216 B, and from that point "tfg verify"
+// and "tfg cleanup" both exited 5 on it. The files stayed on the disk and
+// nothing in this toolset could remove them, because the manifest is the only
+// authority over what may be deleted.
+//
+// A note rather than a refusal, by the owner's decision on the same day: the
+// run itself works, and refusing it would take away something this tool does
+// today. What was missing was that nobody was told. It is printed before the
+// first byte and on a dry run, which is the step this project tells people to
+// take before anything large.
+func echoManifestReach(planned []engine.PlannedFile, errOut io.Writer) {
+	noted := 0
+	for _, f := range planned {
+		if len(f.Plan.Notes) > 0 {
+			noted++
+		}
+	}
+	size, over := manifest.TooLargeToReadBack(len(planned), noted)
+	if !over {
+		return
+	}
+	fmt.Fprintf(errOut,
+		"note: this run will write a manifest of roughly %s and this build reads at most %s, "+
+			"so tfg verify and tfg cleanup will not be able to read it. Split the run to keep each manifest readable.\n",
+		core.HumanBytes(size), core.HumanBytes(manifest.MaxBytes))
 }
 
 // engineTarget turns one recipe target into one engine target.

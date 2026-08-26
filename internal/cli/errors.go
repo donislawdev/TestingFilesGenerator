@@ -178,6 +178,13 @@ func classifyFormat(err error) (int, bool) {
 	if errors.As(err, &belowMin) {
 		return ExitFormat, true
 	}
+	// The other end of the same range. A size the format is too small to
+	// describe is the same class as one it is too large to reach: the request
+	// is well formed and no format here can deliver it.
+	var aboveMax *format.AboveMaximumError
+	if errors.As(err, &aboveMax) {
+		return ExitFormat, true
+	}
 	var unknown *format.UnknownFormatError
 	if errors.As(err, &unknown) {
 		return ExitFormat, true

@@ -149,6 +149,16 @@ type Options struct {
 	// the guard is broken. Nil means ask the operating system.
 	AvailableBytes func(path string) (int64, error)
 
+	// MaxPlanBytes is the ceiling on what the plan may cost in memory. Zero
+	// means core.MaxPlanBytes, which is what every real caller passes.
+	//
+	// Injected for the same reason AvailableBytes above it is: a test of this
+	// guard would otherwise have to allocate two gigabytes to reach it, which
+	// is slower than the whole suite and would sit inside the mutation
+	// runner's own memory cap. With a small ceiling the mechanism is exercised
+	// on a handful of files, and the real number is asked about separately.
+	MaxPlanBytes int64
+
 	// OnProgress is called as the run advances. Nil means silence, which is
 	// what every caller that has nobody to show it to should pass.
 	//
@@ -297,6 +307,11 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	var totalBytes int64
 	var totalFiles int
 
+	// Watches what the plan costs while it is being built. Started here rather
+	// than at the first file so that the baseline is taken before any of it
+	// exists.
+	budget := newPlanMemory(opt.MaxPlanBytes)
+
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed
 	// at, describing files that are not next to it.
@@ -346,6 +361,9 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 
 		// Counted across every target, not per target. A ceiling on one target
 		// alone is one somebody reaches by writing the number out in pieces.
+		// The budget is told the size of the target before its files are
+		// planned, so its baseline is taken before any of them exist.
+		budget.expect(len(t.Sizes))
 		totalFiles += len(t.Sizes)
 		if totalFiles > core.MaxFilesPerRun {
 			// Addressed to the target that took the total past the ceiling,
@@ -448,6 +466,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 				Desc:   desc,
 				Plan:   p,
 			})
+
+			// What the plan costs, rather than how many files are in it. See
+			// planmemory.go for why the count alone could not see this.
+			if err := budget.account(i+1, len(out)); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return out, nil

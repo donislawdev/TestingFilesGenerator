@@ -168,9 +168,30 @@ func groupsFor(r format.Request) ([]format.Content, error) {
 		if len(stated) > 0 {
 			return nil, &format.ContentsConflictError{Format: "zip", Keys: stated}
 		}
+		asked := 0
 		for _, g := range r.Contains {
 			if g.Format == "zip" {
 				return nil, &format.NestingUnsupportedError{Format: "zip"}
+			}
+			asked += g.Count
+		}
+		// The same ceiling the entries property has, on the other way of
+		// saying the same thing. Until 2026-08-26 this path had none: a
+		// recipe asking for fifty thousand entries through contains validated
+		// clean and dry ran clean, while entries=50000 was refused with "must
+		// be between 0 and 10000". One quantity, two doors, two answers - and
+		// the door with no ceiling planned a format.Plan for every child.
+		if asked > maxEntries {
+			// Spelled as the refusal the entries property already produces,
+			// down to the exit code: a plain error here would have landed on
+			// 1 while the same request through entries lands on 4, which is
+			// the same disagreement one level further down.
+			return nil, &format.PropertyValueError{
+				Format: "zip",
+				Key:    "contains",
+				Value:  strconv.Itoa(asked),
+				Reason: fmt.Sprintf("it takes a whole number from 0 to %d", maxEntries),
+				Remedy: fmt.Sprintf("Ask for %d entries or fewer.", maxEntries),
 			}
 		}
 		return r.Contains, nil
@@ -551,34 +572,6 @@ func archiveSize(m memo) (int64, error) {
 type counter struct{ n int64 }
 
 func (c *counter) Write(p []byte) (int, error) { c.n += int64(len(p)); return len(p), nil }
-
-// sizeProperty reads a byte count written the way --size accepts it.
-func sizeProperty(props map[string]string, key string, fallback int64) (int64, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := core.ParseSize(raw)
-	if err != nil {
-		return 0, fmt.Errorf("zip: %s: %w", key, err)
-	}
-	return n, nil
-}
-
-func intProperty(props map[string]string, key string, fallback, min, max int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("zip: %s must be a whole number, got %q", key, raw)
-	}
-	if n < min || n > max {
-		return 0, fmt.Errorf("zip: %s must be between %d and %d, got %d", key, min, max, n)
-	}
-	return n, nil
-}
 
 // minimumBytes is the smallest archive this generator can produce: one empty
 // entry, no label, no padding.

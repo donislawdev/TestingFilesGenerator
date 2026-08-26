@@ -56,7 +56,35 @@ var (
 		"this build plans at most %d files in one run, because the whole plan is worked out in memory before anything is written - "+
 			"that is what lets a run that cannot succeed be refused before the first byte", MaxFilesPerRun)
 	TooManyFilesFix = "Ask for fewer files, or split the work into several runs"
+
+	// The same refusal for the quantity that actually runs out.
+	//
+	// MaxFilesPerRun counts files and was justified by a measurement taken on
+	// txt. Re-measured on 2026-08-26 across formats, a planned file costs 850 B
+	// for txt, 6153 B for zip, 7527 B for pdf and 5244230 B for a pdf of a
+	// thousand pages - so the file ceiling lets a run ask for about 52 GB of
+	// plan while every number in it is legal. The sentence says memory rather
+	// than files because that is what the person has to change.
+	PlanTooLargeWhy = fmt.Sprintf(
+		"the whole plan is held in memory before anything is written, and this build works to a ceiling of %s for it - "+
+			"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
+		HumanBytes(MaxPlanBytes))
+	PlanTooLargeFix = "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs"
 )
+
+// MaxPlanBytes is the most memory this build will let a plan take.
+//
+// Two gigabytes, which is the figure the file ceiling beside it was always
+// meant to imply: its comment works out "a million files is therefore roughly
+// 2.4 GB" and treats that as the real constraint. This makes the real
+// constraint the one that is checked, so the two cannot disagree again.
+//
+// It is deliberately generous. Every run this tool was designed around is
+// orders of magnitude under it - the largest preset asks for 10 040 files,
+// which is about 9 MB of plan for txt and 76 MB for pdf - and the shapes it
+// refuses are the ones that would otherwise end as an out of memory kill with
+// no message at all.
+const MaxPlanBytes = 2 << 30
 
 // PartialMarker is what a file being written is called before it is finished.
 //

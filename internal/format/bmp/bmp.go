@@ -146,10 +146,10 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	}
 	if r.Bytes > maxFileBytes {
-		return format.Plan{}, &format.BelowMinimumError{
+		return format.Plan{}, &format.AboveMaximumError{
 			Format:    "BMP",
 			Requested: r.Bytes,
-			Minimum:   maxFileBytes,
+			Maximum:   maxFileBytes,
 			Reason:    "a BMP states its own size in a four byte field, so the format cannot describe a file this large",
 			Hint:      "Ask for 4 GiB or less, or pick a format with no size field of its own such as gif.",
 		}

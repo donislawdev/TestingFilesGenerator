@@ -186,10 +186,10 @@ func reachable(want, bare int64, w, h int, embed string, picture int) error {
 		}
 	}
 	if want > maxFileBytes {
-		return &format.BelowMinimumError{
+		return &format.AboveMaximumError{
 			Format:    "ICO",
 			Requested: want,
-			Minimum:   maxFileBytes,
+			Maximum:   maxFileBytes,
 			Reason:    "an icon states where its picture starts in a four byte field, so the format cannot describe a file this large",
 			Hint:      "Ask for 4 GiB or less, or pick a format with no offset field of its own such as gif.",
 		}

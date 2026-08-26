@@ -31,6 +31,27 @@ const (
 	// chunkHeader is the length and identifier every RIFF chunk carries.
 	chunkHeader = 8
 
+	// maxFileBytes is the largest file this format can describe honestly.
+	//
+	// Three lengths go into a WAV as four byte fields - the RIFF size, the
+	// data chunk and the JUNK chunk - and until 2026-08-26 nothing checked
+	// them. A request for 8 GiB produced a file of exactly 8 GiB whose header
+	// announced 4 GiB, and every part of this tool agreed it was fine: the
+	// size guard compares the writer's count against the plan and both said
+	// 8 GiB, the hash went into the manifest, and verify called it a match.
+	// A corrupt file that the tool actively certifies is worse than a loud
+	// failure, which is why this is a refusal rather than a note.
+	//
+	// The number is not 1<<32-1 as it is in BMP and ICO, and the difference
+	// is measured rather than tidy. The RIFF field counts everything AFTER
+	// itself, so it holds total-8: a file of exactly 4 GiB writes 4294967288
+	// and comes back correct. Rounding this down to the BMP number would
+	// refuse eight sizes this format delivers perfectly well, and the rule
+	// that the number a tool announces is the number it accepts cuts both
+	// ways. The data and JUNK lengths are each smaller than the RIFF one, so
+	// this single bound covers all three.
+	maxFileBytes = math.MaxUint32 + 8
+
 	writeChunk = 32 * 1024
 
 	defaultRate     = 44100
@@ -222,6 +243,16 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Minimum:   fixed,
 			Reason:    "a WAV needs its RIFF header, its format chunk and a data chunk header before a single sample",
 			Hint:      fmt.Sprintf("Ask for %d B or more%s.", fixed, labelHint(r.Label)),
+		}
+	}
+
+	if r.Bytes > maxFileBytes {
+		return format.Plan{}, &format.AboveMaximumError{
+			Format:    "WAV",
+			Requested: r.Bytes,
+			Maximum:   maxFileBytes,
+			Reason:    "a RIFF file states its own length in a four byte field, so the format cannot describe a file this large",
+			Hint:      "Ask for 4 GiB or less, or pick a format with no length field of its own such as txt.",
 		}
 	}
 

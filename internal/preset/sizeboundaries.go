@@ -188,6 +188,22 @@ func expandSizeBoundaries(args Args) ([]byte, error) {
 		return nil, err
 	}
 
+	// The top of the range before the bottom of it, because the wrap happens
+	// on the way up and the refusal that followed was about the way down.
+	//
+	// Measured on 2026-08-26: "--preset size-boundaries --limit
+	// 9223372036854775807b" said "over_1b would be -9223372036854775808 B, and
+	// a file cannot be smaller than nothing. Raise the limit above 1051991 B" -
+	// an answer about the bottom of the range to a question about the top, with
+	// advice pointing the wrong way. That is the same defect core already fixed
+	// for --boundary on 2026-08-03, so this reaches for the same sentence
+	// rather than writing a second one that could drift from it.
+	for _, o := range spread {
+		if limit+o.bytes < limit {
+			return nil, core.ErrBoundaryTooLarge
+		}
+	}
+
 	plan := steps(limit, spread)
 	if err := reachable(plan, desc, limit); err != nil {
 		return nil, err

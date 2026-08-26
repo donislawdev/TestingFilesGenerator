@@ -292,6 +292,47 @@ func (e *SchemaError) Error() string {
 // against a manifest that fits and is still expensive.
 const MaxBytes = 16 << 20
 
+// What an entry really costs, and what a run of a given size will come to.
+//
+// The comment above says "an entry costs about 700 B, so this holds a run of
+// roughly twenty thousand files". Re-measured on 2026-08-26 against real runs:
+// 786 B an entry for files carrying no notes, and 1009 B where every file
+// carries one. So the ceiling is reached at about 21 300 files, or about 16 600
+// when every file has something to say about itself.
+//
+// The number matters because nothing compared it with the other ceiling.
+// core.MaxFilesPerRun is a million. Measured the same day: a run of 25 000
+// files wrote a manifest of 25 220 640 B, and from that moment neither "tfg
+// verify" nor "tfg cleanup" would read it - both exit 5 - so the files sat on
+// the disk with nothing in this toolset able to remove them. Two ceilings were
+// chosen independently and never held against each other.
+//
+// This is what lets a run say so before it starts rather than after. It is
+// deliberately an estimate and named as one: the exact size depends on how long
+// the names are and what the notes say, and a run that guessed slightly low
+// would still be better off than one that said nothing.
+const (
+	// BytesPerEntry is a file with nothing to report.
+	BytesPerEntry = 786
+	// BytesPerNotedEntry is the surcharge for a file that carries a note.
+	BytesPerNotedEntry = 223
+)
+
+// EstimatedBytes is roughly what the manifest of a run this shape will weigh.
+func EstimatedBytes(entries, withNotes int) int64 {
+	return int64(entries)*BytesPerEntry + int64(withNotes)*BytesPerNotedEntry
+}
+
+// TooLargeToReadBack says whether this build would refuse its own manifest for
+// a run of this shape.
+//
+// Asked here rather than worked out by each surface, so the command line and
+// the window cannot come to different conclusions about the same run.
+func TooLargeToReadBack(entries, withNotes int) (int64, bool) {
+	n := EstimatedBytes(entries, withNotes)
+	return n, n > MaxBytes
+}
+
 // TooLargeError is returned for a manifest past MaxBytes.
 type TooLargeError struct {
 	Path  string

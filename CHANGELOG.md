@@ -61,6 +61,46 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- A WAV asked for more than about four gigabytes is now refused instead of being
+  written with a length field that does not match the file. A RIFF file states
+  its own length in a four byte field, and nothing checked it, so a request for
+  eight gigabytes produced a file of exactly that size whose header announced
+  four - and every part of this tool agreed the file was fine. The size was
+  right, so the run succeeded, the hash went into the manifest, and `tfg verify`
+  called it a match. A file that is broken and certified as sound is worse than
+  one that fails loudly, which is why this is a refusal.
+
+  The ceiling is 4294967303 B rather than four gigabytes exactly, and the
+  difference is deliberate: the length field counts everything after itself, so
+  a file eight bytes over four gigabytes still describes itself correctly.
+
+- A refusal about a size that is too large now says so. BMP, ICO and PNG already
+  refused sizes they cannot describe, but all three said "cannot be smaller than
+  N B" about a request that was larger - a sentence that contradicts itself and
+  offers, as the way out, the very ceiling the request had just passed.
+
+- An archive asked through `contains` to hold more files than the format allows
+  is now refused, with the same sentence and the same exit code as asking for
+  the same number through the `entries` setting. The two ways of saying it
+  disagreed: `entries: 50000` was refused as being outside 0 to 10000, while a
+  `contains` list asking for fifty thousand files validated cleanly, passed
+  `--dry-run`, and then built a plan for every one of them.
+
+- A run whose plan would not fit in memory is now refused while the plan is
+  being built, rather than ending as an out of memory kill with no message.
+  There was a ceiling on the number of files, but how much a file costs to plan
+  depends on its format - a PDF of a thousand pages costs about six thousand
+  times what a text file costs - so `--format pdf --set pages=1000 --count
+  10000` passed every check and then asked for around fifty gigabytes before
+  writing a byte. The ceiling is now on the memory, which is the thing that runs
+  out.
+
+- The `size-boundaries` preset now answers a limit with no room above it the way
+  `--boundary` already did. A limit at the largest number there is used to be
+  refused with a sentence about a file that "cannot be smaller than nothing",
+  and advice to raise the limit - an answer about the bottom of the range to a
+  question about the top.
+
 - On the batch screen, a refusal about one batch now marks that batch's box. A
   batch asking for a size its format cannot deliver, or a name your system will
   not store, used to stop the run and mark nothing at all - with twenty batches
@@ -119,6 +159,15 @@ because it turns other people's test suites red.
   of the tool uses: what is wrong, why, and what to do instead.
 
 ### Added
+
+- A run large enough that this build could not read its own manifest back now
+  says so before it writes anything, and on `--dry-run` too. A manifest is read
+  into memory to be compared against a directory, so there is a ceiling on how
+  big one may be - and above roughly twenty thousand files a run wrote a
+  manifest past it. From that point neither `tfg verify` nor `tfg cleanup` would
+  read it, and since the manifest is the only thing that says which files may be
+  removed, those files had nothing able to remove them. The run still happens:
+  what was missing was being told.
 
 - Keyboard shortcuts: `Ctrl+Enter` generates, `Ctrl+P` previews, `Esc` stops a
   run that is going. They work while you are typing in a box, which is when you

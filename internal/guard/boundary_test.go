@@ -11,6 +11,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 )
 
 // A boundary set exists so three files can be told apart, and until 2026-08-03
@@ -168,5 +169,35 @@ func TestABoundaryLimitIsRefusedAtBothEnds(t *testing.T) {
 	}
 	if len(sizes) != 3 || sizes[0] != 0 || sizes[1] != 1 || sizes[2] != 2 {
 		t.Errorf("a limit of 1 B gave %v, expected 0, 1 and 2", sizes)
+	}
+}
+
+// The preset that builds the same set answers the same way.
+//
+// The rule above lives in core and --boundary asks it. The size-boundaries
+// preset lays its set out itself and did not, so the same limit got a different
+// answer through the other door. Measured on 2026-08-26:
+//
+//	--boundary 9223372036854775807      "there is no number above this one"
+//	--preset ... --limit 9223372036854775807b
+//	                                    "over_1b would be -9223372036854775808 B,
+//	                                     and a file cannot be smaller than nothing.
+//	                                     Raise the limit above 1051991 B"
+//
+// The second is an answer about the bottom of the range to a question about the
+// top, and the advice points the wrong way - raising a limit that is already
+// the largest number there is. Found by an outside review as N4.
+func TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes(t *testing.T) {
+	_, err := preset.Expand("size-boundaries", preset.Args{
+		"limit": "9223372036854775807b",
+	})
+	if !errors.Is(err, core.ErrBoundaryTooLarge) {
+		t.Fatalf("the preset gave %v, expected the same refusal --boundary gives", err)
+	}
+
+	// And a limit it can build still builds, so this cannot be satisfied by
+	// refusing every limit.
+	if _, err := preset.Expand("size-boundaries", preset.Args{"limit": "10mb"}); err != nil {
+		t.Fatalf("a limit of 10mb was refused: %v", err)
 	}
 }
