@@ -21,7 +21,7 @@ import (
 // get this wrong and looks right in a screenshot of an idle window.
 func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 	dir := t.TempDir()
-	host, content := screen(t)
+	host, content, hold := heldScreen(t)
 
 	cancel := buttonNamed(content, "Cancel")
 	if cancel == nil {
@@ -36,20 +36,26 @@ func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 	fill(t, content, text.FieldCount(), "200")
 	press(t, content, "Generate")
 
-	// What is NOT asked here, and why, because the gap is deliberate.
+	// On the screen WHILE the run goes, which is the state this button exists
+	// for and the one a screenshot of an idle window cannot show.
 	//
-	// This used to read cancel.Visible() right here, to say that Cancel is on
-	// the screen WHILE a run goes. That read is a data race and always was: the
+	// Read inside look rather than straight after the press, and that is the
+	// whole of O144. A plain read here is a data race and always was: the
 	// worker hides this button when the run ends, and between the press and the
-	// join there is no ordering between the two goroutines - so the detector is
-	// right whatever the wall clock says. It went unnoticed until 2026-08-26,
-	// when planning moved off the interface thread and there was enough
-	// goroutine traffic for the detector to catch it.
+	// join nothing orders the two goroutines - so the detector is right
+	// whatever the wall clock says. It went unnoticed until 2026-08-26, when
+	// planning moved off the interface thread and there was finally enough
+	// traffic for the detector to see it, and the assertion was dropped.
 	//
-	// The two states below are readable because they ARE ordered: before the
-	// press nothing else is running, and after the join the worker is done.
-	// Asserting the middle would need the window to hand out its state through
-	// something with a happens-before edge, and it has none.
+	// The hold puts the ordering back instead of avoiding the question. The
+	// worker stops just before it reports, this runs while it is stopped, and
+	// then it goes on - so there is no concurrent access left to report.
+	hold.look(func() {
+		if !cancel.Visible() {
+			t.Error("Cancel is not on the screen while a run is going, so there is no way to stop it")
+		}
+	})
+
 	join(host)
 	waitForManifest(t, dir)
 

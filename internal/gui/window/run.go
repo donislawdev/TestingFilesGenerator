@@ -112,6 +112,11 @@ type runner struct {
 	// they added it. Fields.Add is the only way to build a field now.
 	fields *parts.Fields
 
+	// hold, when a guard supplies one, is run on the worker just before the
+	// screen is told the work has ended. Nil in the shipped program - see
+	// HoldBeforeFinishing for what it is for and why nothing else can do it.
+	hold func()
+
 	// stop ends the run in progress and waits for it, and is only ever touched
 	// on the interface thread.
 	//
@@ -644,11 +649,13 @@ func (r *runner) onPreview() {
 		if planErr != nil {
 			// Do rather than DoAndWait, for the same reason startRun gives: the
 			// interface thread must never be left waiting on a worker.
+			r.holdBeforeFinishing()
 			fyne.Do(func() { r.previewFinished(nil, opt, planErr) })
 			close(done)
 			return
 		}
 		_, runErr := engine.Run(ctx, planned, opt)
+		r.holdBeforeFinishing()
 		fyne.Do(func() { r.previewFinished(planned, opt, runErr) })
 		close(done)
 	}()
@@ -767,6 +774,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 			// A refusal from planning leaves nothing started and nothing on the
 			// disk, so it goes back as a refusal rather than as the end of a
 			// run - runFinished would talk about files that never existed.
+			r.holdBeforeFinishing()
 			fyne.Do(func() {
 				r.setRunning(false)
 				r.refuse(planErr)
@@ -791,6 +799,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// Do rather than DoAndWait. The interface thread may already be inside
 		// stop, waiting on the channel closed below, and a worker waiting for
 		// that thread to run something would be both of them waiting.
+		r.holdBeforeFinishing()
 		fyne.Do(func() { r.runFinished(res, runErr, saveErr) })
 		close(done)
 	}()
@@ -901,6 +910,40 @@ func (r *runner) onCancel() { r.Stop() }
 func (r *runner) Stop() {
 	if r.stop != nil {
 		r.stop()
+	}
+}
+
+// HoldBeforeFinishing sets a hold the worker passes through on its way to
+// reporting, so that a guard can read the screen WHILE a run is going.
+//
+// A seam for the guards, named as one, and the shipped program never sets it -
+// the same kind of thing as Settled below and as Options.AvailableBytes in the
+// engine.
+//
+// It exists because of O144, and the shape of that is worth stating because it
+// is not a timing problem and cannot be fixed by waiting longer. A guard that
+// reads a widget between pressing Generate and joining the worker is reading
+// something the worker writes when the run ends, and NOTHING orders the two -
+// so the race detector is right whatever the wall clock does, and three
+// assertions about the middle of a run had to go or be skipped on 2026-08-26.
+// In a real window there is no race at all: shortcuts and the end of a run are
+// both delivered on the interface thread. Under the test driver fyne.Do runs on
+// the CALLING goroutine, which is the worker (O124).
+//
+// The hold supplies the ordering that was missing, rather than papering over
+// its absence. The worker calls it before it touches anything, so a guard can
+// hand over a function that signals and then waits: the signal orders the
+// worker's earlier writes before the guard's read, and the guard's release
+// orders that read before the worker's later writes. There is then no
+// concurrent access left to report, which is why this restores the assertions
+// instead of hiding them.
+func (r *runner) HoldBeforeFinishing(fn func()) { r.hold = fn }
+
+// holdBeforeFinishing runs the hold, if a guard supplied one. Called on the
+// worker, before anything on the screen is touched.
+func (r *runner) holdBeforeFinishing() {
+	if r.hold != nil {
+		r.hold()
 	}
 }
 

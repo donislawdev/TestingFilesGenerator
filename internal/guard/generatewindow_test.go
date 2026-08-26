@@ -52,6 +52,30 @@ func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	return host, tabNamed(t, host.content, text.TabOneTarget())
 }
 
+// heldScreen is the same screen with a hold on it, for a guard that has to read
+// the middle of a run.
+//
+// Separate from screen rather than always on, because a hold parks the worker
+// and every guard that does not look would then have to know to let it go. The
+// two that need it say so by asking for this one. See holdDuringRun and O144.
+func heldScreen(t *testing.T) (*fakeHost, fyne.CanvasObject, *holdDuringRun) {
+	t.Helper()
+	hold := newHold()
+	host := &fakeHost{hold: hold}
+	window.Open(host)
+	if host.content == nil {
+		t.Fatal("opening the window put no screen in it")
+	}
+	// Freed before joining, and in that order. A guard that failed before it
+	// looked would otherwise leave the worker parked, and the join below would
+	// hang the package instead of failing the one test.
+	t.Cleanup(func() {
+		hold.free()
+		join(host)
+	})
+	return host, tabNamed(t, host.content, text.TabOneTarget()), hold
+}
+
 // press finds a button by its label and presses it.
 func press(t *testing.T, o fyne.CanvasObject, name string) {
 	t.Helper()

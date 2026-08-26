@@ -11,6 +11,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // Working out what a run would cost can be stopped.
@@ -55,19 +56,44 @@ func TestWorkingOutTheCostCanBeStopped(t *testing.T) {
 	}
 }
 
-// What is NOT guarded here, said out loud rather than left as a gap.
+// The window offers the way out of a preview, rather than hiding it.
 //
-// A preview marks the screen stoppable as well as busy, so Cancel is offered
-// while it goes. Reading that from a guard means catching a state that lasts
-// as long as the work does, and under the test driver fyne.Do runs on the
-// worker - so the worker hides that very button while the guard reads it. The
-// race detector on CI said so, and raising the run from twenty thousand files
-// to two hundred thousand did not help: the read still lost.
+// setBusy takes "stoppable" separately from "busy" because a preview used to be
+// the one occupied state with nothing to cancel. A permanently dead control is a
+// question the screen keeps asking and answering itself, so it was hidden -
+// correctly, then. Now there is something to cancel, and an offer that is not
+// made is work that can be stopped by nobody.
 //
-// Rather than leave a guard that passes when the machine is slow enough, it is
-// gone. What it was really about - that the work can be stopped at all - is
-// what the test above proves, without a window and without a race. The button
-// being offered is a cosmetic consequence of the same call.
+// Removed on 2026-08-26 and back on 2026-08-27, which is the part worth writing
+// down. It went because reading the button mid preview raced the worker hiding
+// it, and raising the run from twenty thousand files to two hundred thousand did
+// not help - the read still lost, because the problem was never the clock. The
+// note left in its place said the assertion was cosmetic. It is not: the test
+// above proves the WORK can be stopped, and this proves somebody is offered the
+// way to stop it, which is the half a person meets.
+//
+// The hold is what brings it back. The worker stops just before it reports, this
+// reads while it is stopped, and then it goes on - so there is no concurrent
+// access to report rather than a race that happens to be missed. See
+// holdDuringRun and O144.
+func TestAPreviewOffersTheWayOut(t *testing.T) {
+	host, content, hold := heldScreen(t)
+	fill(t, content, text.FieldOutputDir(), t.TempDir())
+	fill(t, content, text.FieldCount(), "20000")
+	press(t, content, text.ButtonPreview())
+
+	hold.look(func() {
+		cancel := buttonNamed(content, text.ButtonCancel())
+		if cancel == nil {
+			t.Errorf("there is no Cancel button while a preview is going. The screen has: %v", buttonNames(content))
+			return
+		}
+		if cancel.Hidden {
+			t.Error("Cancel is hidden during a preview, so work that can be stopped looks like work that cannot")
+		}
+	})
+	join(host)
+}
 
 // Both counts of a cleanup report add up to the entries it lists.
 //

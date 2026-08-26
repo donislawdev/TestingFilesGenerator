@@ -50,6 +50,29 @@ func keyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, fyne.Canvas) {
 	return host, host.content, w.Canvas()
 }
 
+// heldKeyedWindow is keyedWindow with a hold on it, for the one guard that has
+// to press a key WHILE a run is going. See holdDuringRun and O144.
+func heldKeyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, *holdDuringRun) {
+	t.Helper()
+	w := test.NewWindow(nil)
+	t.Cleanup(w.Close)
+
+	hold := newHold()
+	host := &fakeHost{canvas: w.Canvas(), hold: hold}
+	window.Open(host)
+	if host.content == nil {
+		t.Fatal("opening the window put no screen in it")
+	}
+	w.Resize(window.OpenSize)
+	// Freed before joining, and in that order - a guard that failed before it
+	// looked would otherwise leave the worker parked and hang the package.
+	t.Cleanup(func() {
+		hold.free()
+		join(host)
+	})
+	return host, host.content, hold
+}
+
 // pressInABox sends a shortcut the way one arrives when somebody has just been
 // typing: to the box that has the keyboard.
 func pressInABox(t *testing.T, box *parts.Entry, key fyne.KeyName, mod fyne.KeyModifier) {
@@ -291,14 +314,12 @@ func TestAShortcutCannotStartASecondRunDuringTheFirst(t *testing.T) {
 	// fyne.Do runs on the CALLING goroutine, which is the worker. That is O124,
 	// and it is a property of the driver.
 	//
-	// Skipped rather than weakened, because the question is worth keeping: the
-	// ordinary build asks it on every push, and this build asks everything else.
-	if underTheRaceDetector {
-		t.Skip("delivers a shortcut while a run is going, which the test driver cannot order against the worker - see the note above")
-	}
-
+	// No longer skipped, and the hold is why. The press is delivered while the
+	// worker is stopped just before it reports, so the shortcut and the end of
+	// the run are ordered against each other instead of merely happening to
+	// miss. That is O144 answered rather than avoided - see holdDuringRun.
 	dir := t.TempDir()
-	host, content, _ := keyedWindow(t)
+	host, content, hold := heldKeyedWindow(t)
 	screen := selectTab(t, content, text.TabRecipe())
 
 	// Enough files that the run is still going when the second press lands.
@@ -310,7 +331,9 @@ func TestAShortcutCannotStartASecondRunDuringTheFirst(t *testing.T) {
 
 	press(t, screen, text.ButtonGenerate())
 	// While it is going, the button is off. A shortcut has to respect that.
-	pressInABox(t, entryUnder(t, screen, text.FieldSize()), fyne.KeyReturn, fyne.KeyModifierControl)
+	hold.look(func() {
+		pressInABox(t, entryUnder(t, screen, text.FieldSize()), fyne.KeyReturn, fyne.KeyModifierControl)
+	})
 	join(host)
 
 	// A second run into the same directory is refused by the engine, so the

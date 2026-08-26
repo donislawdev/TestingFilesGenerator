@@ -4,6 +4,7 @@ import (
 	"image"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -75,6 +76,10 @@ type fakeHost struct {
 	folderCount int
 
 	kept *keptInMemory
+
+	// hold parks the worker just before it reports, so that a guard can read
+	// the screen while a run is going. Nil unless a guard asked for one.
+	hold *holdDuringRun
 }
 
 func (h *fakeHost) SetContent(o fyne.CanvasObject) {
@@ -93,6 +98,77 @@ func (h *fakeHost) SetCloseIntercept(fn func()) { h.intercept = fn }
 // requires - a real window has no use for it and does not implement it.
 func (h *fakeHost) SetWaitForWork(fn func()) { h.waitForWork = fn }
 func (h *fakeHost) Close()                   { h.closed++ }
+
+// HoldDuringRun is the other optional interface, and the other direction: the
+// window asks the host for this one rather than handing it over.
+//
+// It is what makes the middle of a run readable. A guard that reads a widget
+// between pressing Generate and joining is racing the worker's own write at the
+// end of the run, with nothing ordering the two - so the race detector is right
+// however the timing falls, and three assertions were dropped or skipped on
+// 2026-08-26 for want of an ordering. That is O144.
+//
+// Returns nil unless a guard asked for one through holdingHost, so every other
+// guard runs exactly as before.
+func (h *fakeHost) HoldDuringRun() func() {
+	if h.hold == nil {
+		return nil
+	}
+	return h.hold.enter
+}
+
+// holdDuringRun parks the worker just before it reports, and lets a guard look
+// at the screen while it is parked.
+//
+// Two channels rather than a mutex, because what is wanted is not exclusion but
+// ordering. The worker sends on reached, so everything it did before that is
+// visible to whoever receives. The guard reads the screen, then sends on
+// release, so those reads are ordered before anything the worker does next.
+// Nothing is ever touched by both at once, which is why this restores the
+// assertions rather than hiding them from the detector.
+type holdDuringRun struct {
+	// reached is buffered so that the worker never blocks announcing itself,
+	// only waiting to be let go. Unbuffered, a guard that ended without looking
+	// would leave the worker stuck on the send with nothing able to drain it,
+	// and the join in cleanup would hang the whole package rather than fail one
+	// test. A buffered send still orders what came before it against the
+	// receive, which is the property this is here for.
+	reached chan struct{}
+	release chan struct{}
+	// parked keeps a screen that reports twice - a refused plan, then nothing -
+	// from stopping a second time with nobody left to let it go.
+	parked sync.Once
+	// freed makes releasing idempotent, so a guard that looks and a cleanup
+	// that abandons cannot both close the channel.
+	freed sync.Once
+}
+
+func newHold() *holdDuringRun {
+	return &holdDuringRun{reached: make(chan struct{}, 1), release: make(chan struct{})}
+}
+
+// enter is what the worker calls. It blocks until the guard has looked.
+func (p *holdDuringRun) enter() {
+	p.parked.Do(func() {
+		p.reached <- struct{}{}
+		<-p.release
+	})
+}
+
+// look runs fn at the moment the worker is parked, and then lets it go.
+//
+// A guard calls this instead of reading the screen straight after pressing.
+// Everything inside fn is ordered against the worker on both sides.
+func (p *holdDuringRun) look(fn func()) {
+	<-p.reached
+	fn()
+	p.free()
+}
+
+// free lets a parked worker go. Called by look, and by cleanup for a guard that
+// never looked - a refusal answered before the worker ever reached the hold, or
+// a test that failed earlier.
+func (p *holdDuringRun) free() { p.freed.Do(func() { close(p.release) }) }
 
 // picked is what the stand in answers when a screen asks where the files
 // should go, and asked counts how often it was asked. A real picker needs a

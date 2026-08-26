@@ -128,6 +128,7 @@ func Open(h Host) {
 	// the middle of a file.
 	closeCleanly(h, []interface{ Stop() }{gen, pre, rec}, working, &showing)
 	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
+	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
 	// One table for the window, handed to the boxes of every screen. Wired here
 	// rather than in each constructor because the table belongs to the window
@@ -389,4 +390,33 @@ func offerSettling(h Host, screens []interface{ Settled() }) {
 			screen.Settled()
 		}
 	})
+}
+
+// offerHolding takes a hold from a host that has one and gives it to every
+// screen, so that a guard can read a screen while a run is going.
+//
+// The other direction from offerSettling above: there the window hands the host
+// something, here it asks the host for something. Same shape otherwise - an
+// optional interface, checked rather than required, and nothing in the shipped
+// program implements it.
+//
+// It is here for O144. A guard that reads a widget between pressing Generate
+// and joining the worker is racing the worker's own write at the end of the
+// run, with nothing ordering the two, so the race detector is right however the
+// timing falls. Three assertions about the middle of a run were dropped or
+// skipped on 2026-08-26 for want of this. A hold gives the worker somewhere to
+// stand still while the guard looks, which is an ordering rather than a delay -
+// see runner.HoldBeforeFinishing.
+func offerHolding(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
+	p, ok := h.(interface{ HoldDuringRun() func() })
+	if !ok {
+		return
+	}
+	hold := p.HoldDuringRun()
+	if hold == nil {
+		return
+	}
+	for _, screen := range screens {
+		screen.HoldBeforeFinishing(hold)
+	}
 }
