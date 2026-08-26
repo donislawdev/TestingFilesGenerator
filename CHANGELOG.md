@@ -119,6 +119,21 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- Two refusals are worded differently. Nothing about what is accepted has
+  changed - only the sentences.
+
+  The refusal for an empty output directory used to end "or leave it out to use
+  the current one". That is true when you write a recipe file, and it is advice
+  you cannot take in the window, where leaving the box empty is exactly what was
+  just refused. It now says "Name a directory, for example ./fixtures" and stops
+  there.
+
+  A size setting given something that is not a size used to be answered with
+  different words from the ones shown under the empty field - "a size written
+  the way any size is, such as 2mb or a plain byte count" against "a size such
+  as 2mb, or a plain byte count". Both now say the second. Every other kind of
+  setting already said the same thing in both places.
+
 - A refusal about a format setting in a recipe now says which target it is
   about, and says what to do instead: `target "photos": width cannot be
   "99999"` rather than `bmp: width cannot be "99999"`. With twenty batches of

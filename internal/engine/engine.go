@@ -322,7 +322,14 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	if opt.OutDir == "" {
 		return nil, &RecipeError{Setting: SettingOutDir,
 			Detail: "the output directory is empty",
-			Remedy: "Name a directory, for example ./fixtures, or leave it out to use the current one"}
+			// "or leave it out to use the current one" used to close this
+			// sentence and it was removed on 2026-08-26. It is true of a
+			// recipe file and of the command line, and it is a thing a person
+			// CANNOT do in the window: there, leaving it out is exactly what
+			// they just did, and all three screens refuse it. One refusal
+			// cannot carry two surfaces' advice, and the half that survives is
+			// the half that is true on both. O125.
+			Remedy: "Name a directory, for example ./fixtures"}
 	}
 
 	for i := range targets {

@@ -485,11 +485,24 @@ func (p Property) Allows(raw string) (bad string) {
 		}
 	case PropertySize:
 		if _, err := core.ParseSize(raw); err != nil {
-			return "it takes a size written the way any size is, such as 2mb or a plain byte count"
+			return "it takes " + sizePhrase
 		}
 	}
 	return ""
 }
+
+// sizePhrase is what a size setting takes, written once.
+//
+// Allows and Allowed both have to say this, and until 2026-08-26 they said it
+// differently - "a size written the way any size is, such as 2mb or a plain
+// byte count" against "a size such as 2mb, or a plain byte count". The other
+// four kinds agree word for word, so size was the one place where the sentence
+// a person reads depended on whether they had already typed something. O64.
+//
+// The shorter half won: "written the way any size is" is a sentence about
+// sizes rather than about this setting, and somebody who has just been refused
+// needs the shape, not the provenance.
+const sizePhrase = "a size such as 2mb, or a plain byte count"
 
 func (p Property) unitSuffix() string {
 	if p.Unit == "" {
@@ -526,7 +539,7 @@ func (p Property) Allowed() string {
 	case PropertyBool:
 		what = "true or false"
 	case PropertySize:
-		what = "a size such as 2mb, or a plain byte count"
+		what = sizePhrase
 	default:
 		// A text setting describes itself with Shape or not at all. Saying
 		// "text" under a field is a word where a description should be.
