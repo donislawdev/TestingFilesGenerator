@@ -61,6 +61,28 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- A run whose manifest could not be written no longer leaves an empty
+  `manifest.json` beside the files it wrote.
+
+  The name is taken before the first file, as an empty file, so that two runs
+  into one directory cannot both claim it. When the manifest then failed to be
+  written - a full disk, a permission, something already sitting under the
+  temporary name - that empty claim stayed. `tfg cleanup` and `tfg verify` both
+  refused it with "unexpected end of JSON input", so the files it should have
+  described could not be removed by the one thing allowed to remove them. Worse,
+  the next run into that directory was refused with a sentence saying the file
+  "is the only record of what an earlier run wrote" - true every other time it
+  is printed, and here about a file that recorded nothing.
+
+  The claim is now given back when the write fails, so the next run is refused
+  about a file that really is in the way, and names it. A manifest with anything
+  in it is never removed.
+
+- A run that could not save its manifest now says what that leaves behind. The
+  message about the manifest was about the manifest, and the problem is the
+  files: they are on the disk, nothing records them, and cleanup works from a
+  manifest. That is now said in the run rather than discovered later.
+
 - Working out what a run would cost no longer freezes the window, and can now be
   stopped. Pressing Preview or Generate used to work the whole plan out on the
   thread that draws, on the reasoning that planning is fast. It is fast for text:
@@ -187,6 +209,15 @@ because it turns other people's test suites red.
   of the tool uses: what is wrong, why, and what to do instead.
 
 ### Added
+
+- The manifest records which Go toolchain built the binary that wrote it, as
+  `tool.go`. Alongside `tool.version` and `tool.generators`, this is what makes
+  a hash mismatch diagnosable: without it, a hash that moved because somebody
+  rebuilt with a newer Go looks exactly like a hash that moved because the
+  recipe changed.
+
+  `manifest_version` stays at `1.0`. The schema grows by adding fields, and a
+  reader is expected to ignore fields it does not recognise.
 
 - A run large enough that this build could not read its own manifest back now
   says so before it writes anything, and on `--dry-run` too. A manifest is read
