@@ -50,7 +50,7 @@
     "skip": "Skip to content",
     "navLabel": "Main",
     "breadcrumbHome": "Home",
-    "imageAlt": "The desktop window of Testing Files Generator, set up to write a batch of test files",
+    "imageAlt": "Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one",
     "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
 
     "ctaDownload": "Download",

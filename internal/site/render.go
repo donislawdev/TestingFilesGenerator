@@ -70,29 +70,8 @@ func (s Site) Render() (map[string][]byte, error) {
 		return nil, fmt.Errorf("reading the shared pieces: %w", err)
 	}
 
-	for _, lang := range s.Languages {
-		for _, page := range lang.Pages {
-			v, err := s.viewFor(lang, page)
-			if err != nil {
-				return nil, err
-			}
-
-			fragment, err := os.ReadFile(filepath.Join(s.ContentDir, lang.Code, page.Key+".html"))
-			if err != nil {
-				return nil, fmt.Errorf("reading the %s text of the %s page: %w", lang.Code, page.Key, err)
-			}
-			body, err := run("body:"+lang.Code+":"+page.Key, string(partials)+string(fragment), v)
-			if err != nil {
-				return nil, err
-			}
-			v.Body = template.HTML(body) //nolint:gosec // our own content files, rendered by us
-
-			whole, err := run("page:"+lang.Code+":"+page.Key, string(partials)+string(shell), v)
-			if err != nil {
-				return nil, err
-			}
-			out[pageFile(lang, page)] = []byte(whole)
-		}
+	if err := s.renderPages(out, string(partials), string(shell)); err != nil {
+		return nil, err
 	}
 
 	notFound, err := s.notFound(string(partials), string(shell))
@@ -100,6 +79,12 @@ func (s Site) Render() (map[string][]byte, error) {
 		return nil, err
 	}
 	out["404.html"] = notFound
+
+	social, err := s.socialCard()
+	if err != nil {
+		return nil, err
+	}
+	out["social.html"] = social
 
 	out["sitemap.xml"] = s.sitemap()
 	out["robots.txt"] = s.robots()
@@ -218,6 +203,72 @@ func (s Site) notFound(partials, shell string) ([]byte, error) {
 	}
 	v.Body = template.HTML(rendered) //nolint:gosec // built from the word list above
 	whole, err := run("page:404", partials+shell, v)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(whole), nil
+}
+
+// renderPages writes every page of every language.
+//
+// Its own function because Render keeps drifting towards the size ceiling as
+// the site grows, and the guard that notices asks for a split rather than a
+// bigger number. The body of a page is rendered first and then poured into the
+// shell, so a content file can call the same shared pieces the shell can.
+func (s Site) renderPages(out map[string][]byte, partials, shell string) error {
+	for _, lang := range s.Languages {
+		for _, page := range lang.Pages {
+			v, err := s.viewFor(lang, page)
+			if err != nil {
+				return err
+			}
+			fragment, err := os.ReadFile(filepath.Join(s.ContentDir, lang.Code, page.Key+".html"))
+			if err != nil {
+				return fmt.Errorf("reading the %s text of the %s page: %w", lang.Code, page.Key, err)
+			}
+			body, err := run("body:"+lang.Code+":"+page.Key, partials+string(fragment), v)
+			if err != nil {
+				return err
+			}
+			v.Body = template.HTML(body) //nolint:gosec // our own content files, rendered by us
+
+			whole, err := run("page:"+lang.Code+":"+page.Key, partials+shell, v)
+			if err != nil {
+				return err
+			}
+			out[pageFile(lang, page)] = []byte(whole)
+		}
+	}
+	return nil
+}
+
+// socialCard renders the picture other sites show when this project is shared.
+//
+// It is a page rather than a drawing on purpose. The number of formats on the
+// card comes from the registry the same way the tables do, so a card that
+// disagrees with the tool is a red guard rather than an image nobody thought
+// to redo. What it is not is part of the site: it carries noindex, it is in no
+// sitemap and nothing links to it. It exists to be photographed at 1280 by
+// 640, which is what GitHub asks for.
+//
+// English only, and that is a limitation rather than a decision waiting to be
+// made: one repository has one social card, and the audience of a shared link
+// is whoever the sharer is talking to.
+func (s Site) socialCard() ([]byte, error) {
+	root, ok := s.rootLanguage()
+	if !ok {
+		return nil, fmt.Errorf("no language is served at the root, so the social card has no words")
+	}
+	body, err := os.ReadFile(filepath.Join(s.TemplateDir, "social.html"))
+	if err != nil {
+		return nil, fmt.Errorf("reading the social card: %w", err)
+	}
+	whole, err := run("page:social", string(body), view{
+		Facts: s.Facts,
+		Lang:  root,
+		W:     root.Words,
+		Path:  "/social.html",
+	})
 	if err != nil {
 		return nil, err
 	}

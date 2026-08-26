@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Testing Files Generator - social preview</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+ 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1280px;
+  height: 640px;
+  overflow: hidden;
+}
+
+body {
+  background: #131417;
+  background-image:
+    radial-gradient(900px 420px at 88% 12%, rgba(111, 183, 240, 0.10), transparent 62%),
+    radial-gradient(700px 380px at 6% 96%, rgba(111, 207, 127, 0.07), transparent 60%);
+  color: #E8EAED;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  display: grid;
+  grid-template-columns: 600px 680px;
+  align-items: center;
+}
+
+.left { padding: 0 0 0 62px; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.brand img { width: 50px; height: 50px; border-radius: 10px; }
+
+.brand span {
+  font-size: 27px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: #E8EAED;
+}
+
+.rule {
+  width: 92px;
+  height: 4px;
+  border-radius: 2px;
+  background: #6FCF7F;
+  margin: 18px 0 26px;
+}
+
+h1 {
+  font-size: 62px;
+  line-height: 1.06;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+}
+
+h1 .accent { color: #6FB7F0; }
+
+.lead {
+  margin-top: 22px;
+  font-size: 22px;
+  line-height: 1.45;
+  color: #B9C0CA;
+  max-width: 505px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+  list-style: none;
+}
+
+ 
+.pills li {
+  border: 1px solid #2E3238;
+  background: #1B1D21;
+  border-radius: 999px;
+  padding: 9px 15px;
+  font-size: 16.5px;
+  color: #D7DDE5;
+  white-space: nowrap;
+}
+
+.foot {
+  margin-top: 30px;
+  font-size: 17px;
+  color: #949CA8;
+}
+
+.foot b { color: #B9C0CA; font-weight: 600; }
+
+ 
+
+ 
+.right { position: relative; height: 640px; }
+
+.shot {
+  position: absolute;
+  right: 38px;
+  top: 128px;
+  width: 332px;
+  display: block;
+  border: 1px solid #3A404A;
+  border-radius: 13px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.62);
+}
+
+.stack {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 148px;
+  width: 434px;
+}
+
+ 
+.command {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13.5px;
+  color: #9DA3A8;
+  background: #16181C;
+  border-bottom: 1px solid #2E3238;
+  padding: 13px 20px;
+  white-space: nowrap;
+}
+
+.command b { color: #6FCF7F; font-weight: 600; }
+
+.card {
+  background: #1B1D21;
+  border: 1px solid #343943;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.62);
+}
+
+.card-head {
+  background: #22252A;
+  border-bottom: 1px solid #2E3238;
+  padding: 13px 20px;
+  font-size: 15px;
+  color: #949CA8;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-head span:last-child { color: #6FB7F0; }
+
+table { width: 100%; border-collapse: collapse; }
+
+td {
+  padding: 21px 20px;
+  border-bottom: 1px solid #24272C;
+  font-size: 16.5px;
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: 0; }
+
+.name {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color: #DCE6F2;
+}
+
+.bytes {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  text-align: right;
+  color: #B9C0CA;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.verdict { text-align: right; white-space: nowrap; }
+
+.tag {
+  display: inline-block;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.accept { background: rgba(111, 207, 127, 0.16); color: #6FCF7F; }
+.reject { background: rgba(241, 112, 122, 0.16); color: #F1707A; }
+
+.why {
+  border-top: 1px solid #2E3238;
+  background: #16181C;
+  padding: 13px 20px;
+  font-size: 15px;
+  color: #949CA8;
+  text-align: right;
+}
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="brand">
+      <img src="/assets/icon.png" alt="">
+      <span>Testing Files Generator</span>
+    </div>
+    <div class="rule"></div>
+    <h1>Real test files.<br><span class="accent">At any exact size.</span></h1>
+    <p class="lead">
+      20 formats that open in the software that owns them, plus a manifest
+      saying how your system should react to each file.
+    </p>
+    <ul class="pills">
+      <li>exact to the byte</li>
+      <li>20 real formats</li>
+      <li>same bytes every run</li>
+      <li>GUI + CLI</li>
+      <li>built for CI</li>
+      <li>no network, ever</li>
+    </ul>
+    <p class="foot">
+      <b>Windows &middot; macOS &middot; Linux</b> &nbsp;&middot;&nbsp; free and open source, GPL-3.0
+    </p>
+  </div>
+
+  <div class="right">
+    <img class="shot" src="/assets/window.png" alt="">
+    <div class="stack">
+    <div class="card">
+      <p class="command"><b>$</b> tfg generate --preset size-boundaries --limit 1mb</p>
+      <div class="card-head"><span>manifest.json</span><span>your system should</span></div>
+      <table>
+        <tr>
+          <td class="name">1mb_under_1b.pdf</td>
+          <td class="bytes">1 048 575 B</td>
+          <td class="verdict"><span class="tag accept">accept</span></td>
+        </tr>
+        <tr>
+          <td class="name">1mb_at_limit.pdf</td>
+          <td class="bytes">1 048 576 B</td>
+          <td class="verdict"><span class="tag accept">accept</span></td>
+        </tr>
+        <tr>
+          <td class="name">1mb_over_1b.pdf</td>
+          <td class="bytes">1 048 577 B</td>
+          <td class="verdict"><span class="tag reject">reject</span></td>
+        </tr>
+      </table>
+      <p class="why">rejected for <span style="color:#F1707A">size_limit</span>, and the manifest says so</p>
+    </div>
+    </div>
+  </div>
+</body>
+</html>

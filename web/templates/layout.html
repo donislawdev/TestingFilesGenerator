@@ -15,9 +15,9 @@
 <meta property="og:title" content="{{ .Page.Title }}">
 <meta property="og:description" content="{{ .Page.Description }}">
 <meta property="og:url" content="{{ .Canonical }}">
-<meta property="og:image" content="{{ .Facts.Origin }}/assets/window.png">
-<meta property="og:image:width" content="1000">
-<meta property="og:image:height" content="1160">
+<meta property="og:image" content="{{ .Facts.Origin }}/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="{{ .Word "imageAlt" }}">
 {{- range .Switches }}
 <meta property="og:locale:alternate" content="{{ .Code }}">
@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ .Page.Title }}">
 <meta name="twitter:description" content="{{ .Page.Description }}">
-<meta name="twitter:image" content="{{ .Facts.Origin }}/assets/window.png">
+<meta name="twitter:image" content="{{ .Facts.Origin }}/assets/social-preview.png">
 <meta name="twitter:image:alt" content="{{ .Word "imageAlt" }}">
 <meta name="theme-color" content="#131417">
 {{- if eq .Page.Key "notfound" }}

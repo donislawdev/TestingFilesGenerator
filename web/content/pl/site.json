@@ -50,7 +50,7 @@
     "skip": "Przejdź do treści",
     "navLabel": "Główna",
     "breadcrumbHome": "Start",
-    "imageAlt": "Okno programu Testing Files Generator przygotowane do zapisania wsadu plików testowych",
+    "imageAlt": "Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować",
     "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w dwudziestu formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",
 
     "ctaDownload": "Pobierz",
