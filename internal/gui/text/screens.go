@@ -1,7 +1,6 @@
 package text
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -206,7 +205,7 @@ func ChoiceLeftAlone(declared string) string {
 // agree on where a name goes in a phrase, and this is the seam that lets one
 // move it without finding every caller.
 func SettingsFor(formatID string) string {
-	return "Settings for " + formatID
+	return sayf("SettingsFor", "Settings for {{.Format}}", map[string]any{"Format": formatID})
 }
 
 // SettingLabel is what the name above a declared setting reads.
@@ -236,14 +235,15 @@ func SettingLabel(key string) string {
 // engine, so a person who finds a setting on the screen has to be able to
 // write it down - and the key is the only spelling that works there.
 func SettingKey(key string) string {
-	return "Written as " + key + " in a recipe."
+	return sayf("SettingKey", "Written as {{.Key}} in a recipe.", map[string]any{"Key": key})
 }
 
 // TooManyFiles refuses a run before the list is built, because building it is
 // the failure. The reason comes from core, so the window and the command line
 // do not hold two opinions about how many files is too many.
 func TooManyFiles(count int64, reason error) string {
-	return fmt.Sprintf("this run asks for %d files - %s", count, reason)
+	return sayf("TooManyFiles", "this run asks for {{.Count}} files - {{.Reason}}",
+		map[string]any{"Count": count, "Reason": reason})
 }
 
 // The recipe screen: several batches in one run.
@@ -267,7 +267,7 @@ func SectionBatches() string { return say("SectionBatches", "Batches") }
 // wrong block. A function because a number in the middle of a phrase does not
 // sit in the same place in every language.
 func BatchHeading(n int) string {
-	return fmt.Sprintf("Batch %d", n)
+	return sayf("BatchHeading", "Batch {{.Number}}", map[string]any{"Number": n})
 }
 
 // ContentsHeading introduces the files an archive is told to hold.

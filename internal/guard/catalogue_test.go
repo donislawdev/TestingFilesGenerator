@@ -34,9 +34,12 @@ type entryInCatalogue struct {
 // stale. This is the same choice two of the boundary guards made on 2026-08-20
 // and for the same reason: where there is nothing to assert against, reading
 // what was written is better than asserting nothing.
-func englishInTheCode(t *testing.T) map[string]string {
+func englishInTheCode(t *testing.T) (map[string]string, map[string]string) {
 	t.Helper()
 	out := map[string]string{}
+	// The singular of every plural message, kept apart because only some
+	// messages have one.
+	singular := map[string]string{}
 	for _, name := range []string{"screens.go", "text.go"} {
 		path := filepath.Join("../gui/text", name)
 		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
@@ -49,11 +52,36 @@ func englishInTheCode(t *testing.T) map[string]string {
 				return true
 			}
 			fn, ok := call.Fun.(*ast.Ident)
-			if !ok || fn.Name != "say" || len(call.Args) != 2 {
+			if !ok {
 				return true
 			}
-			id, okID := literal(call.Args[0])
-			english, okText := literal(call.Args[1])
+			// Three ways of stating a message, and all three have to be read
+			// here. Reading only say(, which is what this did until 2026-08-26,
+			// makes every sentence carrying a value invisible to the guard -
+			// and the guard would then report the catalogue's own entries as
+			// orphans, which is how this was noticed.
+			var id, english string
+			var okID, okText bool
+			switch {
+			case fn.Name == "say" && len(call.Args) == 2:
+				id, okID = literal(call.Args[0])
+				english, okText = literal(call.Args[1])
+			case fn.Name == "sayf" && len(call.Args) == 3:
+				id, okID = literal(call.Args[0])
+				english, okText = literal(call.Args[1])
+			case fn.Name == "sayN" && len(call.Args) == 5:
+				// The plural form is what the catalogue calls "other", and it
+				// is the one this compares. The singular is checked beside it
+				// below, because a catalogue holding one of the two is worse
+				// than one holding neither: it looks complete.
+				id, okID = literal(call.Args[0])
+				english, okText = literal(call.Args[2])
+				if one, ok := literal(call.Args[1]); ok && okID {
+					singular[id] = one
+				}
+			default:
+				return true
+			}
 			if !okID || !okText {
 				t.Errorf("%s: a message is stated with something other than plain text", path)
 				return true
@@ -68,7 +96,10 @@ func englishInTheCode(t *testing.T) map[string]string {
 	if len(out) == 0 {
 		t.Fatal("no message was found in the text package, so this guard is asserting about nothing")
 	}
-	return out
+	if len(singular) == 0 {
+		t.Fatal("no message with a plural was found, so the half of this guard that reads them proves nothing")
+	}
+	return out, singular
 }
 
 func literal(e ast.Expr) (string, bool) {
@@ -94,7 +125,7 @@ func literal(e ast.Expr) (string, bool) {
 // would then be handed a file missing that sentence, translate everything in
 // it, and ship a window with one English line nobody can find the source of.
 func TestTheEnglishCatalogueSaysWhatTheCodeSays(t *testing.T) {
-	code := englishInTheCode(t)
+	code, singular := englishInTheCode(t)
 
 	raw, err := os.ReadFile(filepath.Join(localeDir, "en.json"))
 	if err != nil {
@@ -120,6 +151,12 @@ func TestTheEnglishCatalogueSaysWhatTheCodeSays(t *testing.T) {
 		// tell a field label from a column heading.
 		if strings.TrimSpace(entry.Description) == "" {
 			t.Errorf("%s has no sentence saying where it appears", id)
+		}
+		// A plural message carries two English forms and the catalogue has to
+		// hold both. One of the two looks complete and is not.
+		if one, plural := singular[id]; plural && entry.One != one {
+			t.Errorf("%s says %q in the singular in the code and %q in the English catalogue.\n"+
+				"Run: python tools/gen-locale.py", id, one, entry.One)
 		}
 	}
 	for id := range have {

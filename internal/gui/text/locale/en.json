@@ -3,6 +3,10 @@
     "description": "Shown on the About screen.",
     "other": "Generate test files, and know how the system under test should react to them."
   },
+  "BatchHeading": {
+    "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "other": "Batch {{.Number}}"
+  },
   "ButtonAddBatch": {
     "description": "The words on a button.",
     "other": "Add a batch"
@@ -171,6 +175,11 @@
     "description": "The name above a box somebody fills in.",
     "other": "Batch name"
   },
+  "Files": {
+    "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
+    "one": "1 file",
+    "other": "{{.Count}} files"
+  },
   "HeadingGenerate": {
     "description": "The heading at the top of a screen.",
     "other": "Generate files"
@@ -239,6 +248,14 @@
     "description": "The line under a field name, saying what the field does.",
     "other": "Names this group of files."
   },
+  "ManifestNotSaved": {
+    "description": "Shown in the window. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",
+    "other": "the files were written and the manifest could not be saved to {{.Path}}"
+  },
+  "NotAWholeNumber": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Field}}, {{.Value}}.",
+    "other": "{{.Field}} is {{.Value}}, which is not a whole number. Write the digits out, such as 1 or 500"
+  },
   "NoteManifestOnly": {
     "description": "Shown in the window.",
     "other": "These describe the case. They go into the manifest and change nothing in the files."
@@ -258,6 +275,18 @@
   "PresetCatchesHeading": {
     "description": "Shown on the preset screen.",
     "other": "Typically finds:"
+  },
+  "PreviewFreeSpace": {
+    "description": "Shown after a preview and before anything is written. Carries these values, each of which has to stay spelled exactly that way: {{.Free}}, {{.Directory}}.",
+    "other": "{{.Free}} free in {{.Directory}}"
+  },
+  "PreviewNothingWritten": {
+    "description": "Shown after a preview and before anything is written.",
+    "other": "nothing written yet"
+  },
+  "Progress": {
+    "description": "Shown while a run is going. Carries these values, each of which has to stay spelled exactly that way: {{.Done}}, {{.Total}}, {{.BytesDone}}, {{.BytesTotal}}, {{.Percent}}.",
+    "other": "{{.Done}}/{{.Total}} files  {{.BytesDone}} of {{.BytesTotal}}  {{.Percent}}%"
   },
   "RefusedBeforeWriting": {
     "description": "Shown in the window.",
@@ -291,6 +320,14 @@
     "description": "The heading over a group of fields.",
     "other": "Settings"
   },
+  "SettingKey": {
+    "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
+    "other": "Written as {{.Key}} in a recipe."
+  },
+  "SettingsFor": {
+    "description": "Shown in the window. Carries one value, {{.Format}}, which has to stay spelled exactly that way.",
+    "other": "Settings for {{.Format}}"
+  },
   "SizeWayBoundary": {
     "description": "Shown in the window.",
     "other": "Around a limit"
@@ -302,6 +339,10 @@
   "SizeWayRange": {
     "description": "Shown in the window.",
     "other": "A range"
+  },
+  "StoppedAfter": {
+    "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
+    "other": "Stopped after {{.Files}}. The manifest describes exactly those."
   },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",
@@ -319,8 +360,32 @@
     "description": "The name of a tab along the top of the window.",
     "other": "Several batches"
   },
+  "TimeLeft": {
+    "description": "Shown in the window. Carries one value, {{.Roughly}}, which has to stay spelled exactly that way.",
+    "other": "{{.Roughly}} left"
+  },
+  "TooManyFiles": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
+    "other": "this run asks for {{.Count}} files - {{.Reason}}"
+  },
   "WorkingOutTheCost": {
     "description": "Shown in the window.",
     "other": "Working out what this would cost..."
+  },
+  "WritingFiles": {
+    "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
+    "other": "Writing {{.Files}}..."
+  },
+  "WritingTo": {
+    "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",
+    "other": "Files will go to {{.Directory}}"
+  },
+  "Written": {
+    "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
+    "other": "{{.Files}} written."
+  },
+  "WrittenWithFailures": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Files}}, {{.Failed}}.",
+    "other": "{{.Files}} written, {{.Failed}} could not be produced."
   }
 }

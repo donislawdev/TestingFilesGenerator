@@ -6,11 +6,18 @@
 // enforced that: until 2026-08-10 every label and message was a literal spread
 // across five files, and nobody could say how many there were.
 //
-// What this is NOT. It is not i18n. There is no catalogue, no locale and no
-// lookup, and adding them is still the separate decision docs/GUI.md section 6
-// calls it. What this buys is an inventory and one seam - when a catalogue
-// arrives it goes underneath these functions, and no place that calls them has
-// to change.
+// What this was NOT, until it was. This paragraph said "it is not i18n, there
+// is no catalogue, no locale and no lookup" and promised that when one arrived
+// it would go underneath these functions without a single caller changing. The
+// catalogue arrived on 2026-08-25 and the promise held: not one call site moved.
+// The paragraph is rewritten rather than deleted, because the shape it argued
+// for is the reason the change cost nothing.
+//
+// So what is here now is the inventory AND the lookup. Every entry states its
+// English on the spot, beside the reason it is worded that way, and hands it to
+// the catalogue as the default - see say, sayf and sayN in catalogue.go. A
+// sentence that states its words itself instead reaches no translator at all,
+// and since 2026-08-26 a guard says so by name.
 //
 // Two rules decide the shape here, and both come from measuring what would
 // otherwise be painful later.
@@ -31,7 +38,7 @@
 package text
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -50,14 +57,14 @@ func ButtonCancel() string     { return say("ButtonCancel", "Cancel") }
 // The doc above this package has described "file(s)" as a dodge since the day
 // it was written, and said a function is where the decision belongs. Every
 // message here still wrote the brackets until 2026-08-12, so the seam existed
-// and nothing had ever gone through it. This is that function. When a
-// catalogue arrives, Polish picks one of three forms from the number and it
-// picks it here.
+// and nothing had ever gone through it. This is that function.
+//
+// The catalogue arrived underneath it on 2026-08-26, and the sentence above
+// came true: BOTH English forms go over rather than one sentence with a number
+// in it, so a translation file may carry as many forms as its language has and
+// the library picks between them. Polish gets its three. See sayN.
 func files(n int) string {
-	if n == 1 {
-		return "1 file"
-	}
-	return fmt.Sprintf("%d files", n)
+	return sayN("Files", "1 file", "{{.Count}} files", n, nil)
 }
 
 // separator divides the facts on a status line.
@@ -85,14 +92,16 @@ func PreviewCost(count int, formats []string, total string) string {
 	if len(formats) > 0 {
 		line += separator + strings.Join(formats, ", ")
 	}
-	return line + separator + total + separator + "nothing written yet"
+	return line + separator + total + separator +
+		say("PreviewNothingWritten", "nothing written yet")
 }
 
 // PreviewFreeSpace follows PreviewCost when the disk could be measured. It is
 // a separate fact because a disk we cannot read has to say nothing at all
 // rather than invent a number.
 func PreviewFreeSpace(dir, free string) string {
-	return separator + free + " free in " + dir
+	return separator + sayf("PreviewFreeSpace", "{{.Free}} free in {{.Directory}}",
+		map[string]any{"Free": free, "Directory": dir})
 }
 
 // WritingTo is what the status line says when a run has not said anything yet.
@@ -103,13 +112,13 @@ func PreviewFreeSpace(dir, free string) string {
 // whether or not there is one, so saying this costs no room at all - and a
 // preview replaces it with a sentence that names the same directory.
 func WritingTo(dir string) string {
-	return "Files will go to " + dir
+	return sayf("WritingTo", "Files will go to {{.Directory}}", map[string]any{"Directory": dir})
 }
 
 // WritingFiles is the line under the bar at the moment a run starts, before
 // the first progress report arrives.
 func WritingFiles(count int) string {
-	return "Writing " + files(count) + "..."
+	return sayf("WritingFiles", "Writing {{.Files}}...", map[string]any{"Files": files(count)})
 }
 
 // WorkingOutTheCost is what a preview says while it is going.
@@ -126,13 +135,14 @@ func WorkingOutTheCost() string {
 // because one large file is a run where the file count says nothing for
 // minutes.
 func Progress(filesDone, filesTotal int, bytesDone, bytesTotal string, percent int) string {
-	return fmt.Sprintf("%d/%d files  %s of %s  %d%%",
-		filesDone, filesTotal, bytesDone, bytesTotal, percent)
+	return sayf("Progress", "{{.Done}}/{{.Total}} files  {{.BytesDone}} of {{.BytesTotal}}  {{.Percent}}%",
+		map[string]any{"Done": filesDone, "Total": filesTotal,
+			"BytesDone": bytesDone, "BytesTotal": bytesTotal, "Percent": percent})
 }
 
 // TimeLeft is appended to Progress once the estimate is worth showing.
 func TimeLeft(roughly string) string {
-	return "  " + roughly + " left"
+	return "  " + sayf("TimeLeft", "{{.Roughly}} left", map[string]any{"Roughly": roughly})
 }
 
 // WindowTitle is what the desktop shows in the title bar and in the task
@@ -180,14 +190,17 @@ func CatalogueNotLoaded(err error) string {
 // literal at the call site, which is where "how many" and "seed" were until
 // 2026-08-13.
 func NotAWholeNumber(field, value string) string {
-	return fmt.Sprintf("%s is %q, which is not a whole number. Write the digits out, such as 1 or 500",
-		field, value)
+	return sayf("NotAWholeNumber",
+		"{{.Field}} is {{.Value}}, which is not a whole number. Write the digits out, such as 1 or 500",
+		map[string]any{"Field": field, "Value": strconv.Quote(value)})
 }
 
 // ManifestNotSaved is the error when the files exist and their record does
 // not. The caller wraps the underlying reason onto the end.
 func ManifestNotSaved(path string) string {
-	return fmt.Sprintf("the files were written and the manifest could not be saved to %s", path)
+	return sayf("ManifestNotSaved",
+		"the files were written and the manifest could not be saved to {{.Path}}",
+		map[string]any{"Path": path})
 }
 
 // NothingProduced is the outcome when a run ended with no manifest at all.
@@ -195,7 +208,8 @@ func NothingProduced() string { return say("NothingProduced", "Nothing was produ
 
 // StoppedAfter is the outcome of a run that was cancelled or failed part way.
 func StoppedAfter(written int) string {
-	return fmt.Sprintf("Stopped after %s. The manifest describes exactly those.", files(written))
+	return sayf("StoppedAfter", "Stopped after {{.Files}}. The manifest describes exactly those.",
+		map[string]any{"Files": files(written)})
 }
 
 // WrittenWithFailures is the outcome when some files could not be produced.
@@ -203,10 +217,11 @@ func StoppedAfter(written int) string {
 // manifest, because "the manifest says which ones" is an answer in a terminal
 // and an instruction to open a ten thousand entry file in a window.
 func WrittenWithFailures(written, failed int) string {
-	return fmt.Sprintf("%s written, %d could not be produced.", files(written), failed)
+	return sayf("WrittenWithFailures", "{{.Files}} written, {{.Failed}} could not be produced.",
+		map[string]any{"Files": files(written), "Failed": failed})
 }
 
 // Written is the outcome of a run where everything asked for was produced.
 func Written(written int) string {
-	return files(written) + " written."
+	return sayf("Written", "{{.Files}} written.", map[string]any{"Files": files(written)})
 }

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"io/fs"
 	"path"
+	"strings"
+	"text/template"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -47,6 +49,92 @@ var builtIn embed.FS
 // the toolkit and that is a question about byte stability rather than about
 // translations. See docs/STACK.md.
 var localiser *i18n.Localizer
+
+// sayf is say for a sentence that has values in it.
+//
+// Named fields rather than the printf verbs the rest of this tool writes, and
+// the reason is rule 6 rather than taste. A catalogue is DATA: it arrives as a
+// file, nothing compiles it, and no test of ours stands between it and the
+// window. A translator who writes %s where the code hands a number puts
+// "%!d(string=...)" on somebody's screen at run time and nothing says a word. A
+// named field cannot be the wrong type, and one that is missing renders as
+// "<no value>" - wrong, but visible.
+//
+// Decided with the owner on 2026-08-26. The printf spelling was the cheaper of
+// the two and was turned down: the generator already reads it, the call sites
+// stay one line, and the failure it allows is silent and lands on a user.
+//
+// The fallback renders the English with the same template engine rather than
+// returning it raw, because a sentence with {{.Directory}} still in it is not a
+// fallback, it is a different defect.
+func sayf(id, english string, data map[string]any) string {
+	if localiser == nil {
+		return fill(english, data)
+	}
+	out, err := localiser.Localize(&i18n.LocalizeConfig{
+		MessageID:      id,
+		DefaultMessage: &i18n.Message{ID: id, Other: english},
+		TemplateData:   data,
+	})
+	if err != nil {
+		return fill(english, data)
+	}
+	return out
+}
+
+// sayN is sayf where a count chooses the form of the sentence.
+//
+// English has two forms and Polish has three, and the library knows which rule
+// belongs to which language - so this hands over both English forms and the
+// number, and a translator's file may carry as many forms as their language
+// needs. Writing "1 file" and "%d files" as two flat entries would have put a
+// thing into the catalogue that is broken for Polish before anybody starts,
+// with no way to fix it from a translation file.
+//
+// The count is always available to the sentence as Count, because a plural form
+// that cannot say the number is not much use.
+func sayN(id, one, other string, count int, data map[string]any) string {
+	values := map[string]any{"Count": count}
+	for k, v := range data {
+		values[k] = v
+	}
+	if localiser == nil {
+		if count == 1 {
+			return fill(one, values)
+		}
+		return fill(other, values)
+	}
+	out, err := localiser.Localize(&i18n.LocalizeConfig{
+		MessageID:      id,
+		DefaultMessage: &i18n.Message{ID: id, One: one, Other: other},
+		PluralCount:    count,
+		TemplateData:   values,
+	})
+	if err != nil {
+		if count == 1 {
+			return fill(one, values)
+		}
+		return fill(other, values)
+	}
+	return out
+}
+
+// fill puts the values into a sentence without the catalogue.
+//
+// Both failures return the layout untouched rather than an empty string: a
+// sentence with its placeholders showing is readable and says something is
+// wrong, and nothing at all says the window is broken.
+func fill(layout string, data map[string]any) string {
+	t, err := template.New("").Parse(layout)
+	if err != nil {
+		return layout
+	}
+	var out strings.Builder
+	if err := t.Execute(&out, data); err != nil {
+		return layout
+	}
+	return out.String()
+}
 
 // say is what every entry in this package asks, and what makes the English
 // beside it a default rather than the answer.
