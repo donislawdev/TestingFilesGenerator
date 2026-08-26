@@ -140,9 +140,14 @@ func NewBoundary(dir string) Boundary {
 	}
 	r, err := resolveAsFarAsItExists(dir)
 	if err != nil {
-		// Nothing could be resolved, so nothing can be judged. Saying "it
-		// escapes" would refuse an ordinary run on a path we simply could not
-		// examine, and the caller checks the text separately.
+		// Nothing could be resolved, so nothing can be judged - and Escapes
+		// says so by refusing rather than by allowing. See the paragraph on
+		// b.known there for why that way round.
+		//
+		// This is narrower than it looks. resolveAsFarAsItExists returns an
+		// error only when filepath.Abs does, and that needs the working
+		// directory to be gone, so a run reaching here is already broken in a
+		// way that has nothing to do with containment.
 		return b
 	}
 	b.resolved, b.known = r, true
@@ -174,13 +179,28 @@ func (b Boundary) Dir() string { return b.named }
 // the link, lands inside, and says so. Refusing it here because a link was
 // seen would turn a contained directory into a hard refusal, which is a change
 // to what this tool accepts rather than a change to how fast it answers.
+// Both ways of not knowing answer "it escapes", and that direction is the
+// whole of this paragraph. A boundary that could not be resolved and a path
+// that could not be made absolute are the same situation: this cannot tell
+// where the path lands. Answering "it stays inside" there is an answer to a
+// question nobody asked and it is the unsafe one - it lets a link out of the
+// directory past the only check that looks at links, since the other layer
+// reads the text and a name that leaves through a link holds no climb to read.
+//
+// It used to answer "it stays inside" on both, reasoning that refusing would
+// stop an ordinary run over a path we simply could not examine. That reasoning
+// had no case behind it: a zero value Boundary is the only way to reach the
+// first branch without the working directory being gone, and a run whose
+// working directory is gone is not an ordinary run. Turned round on 2026-08-27
+// with the review's N5, and the comment on NewBoundary was turned round with
+// it rather than left saying the opposite of the code beneath it.
 func (b Boundary) Escapes(full string) bool {
 	if !b.known {
-		return false
+		return true
 	}
 	target, err := filepath.Abs(full)
 	if err != nil {
-		return false
+		return true
 	}
 	// Written inside the directory we were given, and nothing below that
 	// directory redirects anywhere. Then the path as written is the real path,

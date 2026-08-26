@@ -477,7 +477,7 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 	// files could never be cleaned up by this tool again. It happened on a
 	// successful run as readily as on a refused one, and on the successful one
 	// it happened in silence.
-	if path := filepath.Join(opt.OutDir, manifestNameOf(opt)); exists(path) {
+	if path := ManifestPath(opt); exists(path) {
 		return &CollisionError{Path: path, Manifest: true}
 	}
 
@@ -543,6 +543,21 @@ func manifestNameOf(opt Options) string {
 	return opt.ManifestName
 }
 
+// ManifestPath is the file this run's record lands in, for the callers that
+// save it. The engine claims that name before the first file and refuses the
+// run if it is taken, so a saver joining the path its own way is answering a
+// question this package has already answered.
+//
+// Exported on 2026-08-27 because both savers did join it their own way. The
+// window's did not handle an empty name at all, so a caller that left it blank
+// would have asked the manifest to be written to the output directory itself -
+// a rename of a file onto a directory. Nothing reached that, because all three
+// screens fill the field in, and "nothing reaches it today" is the description
+// of a fault waiting for a fourth screen rather than of a safe piece of code.
+func ManifestPath(opt Options) string {
+	return filepath.Join(opt.OutDir, manifestNameOf(opt))
+}
+
 // Run writes a planned set of files.
 //
 // Each file is written under a temporary name and only then renamed, so the
@@ -596,7 +611,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// on 2026-08-03: two runs started together under different ids ended 0 and
 	// 5, with sixteen files on the disk and eight of them in nobody's manifest.
 	// Taking the name here turns that into a refusal before anything is written.
-	manifestPath := filepath.Join(opt.OutDir, manifestNameOf(opt))
+	manifestPath := ManifestPath(opt)
 	if err := manifest.Claim(manifestPath); err != nil {
 		// Only a name that is genuinely taken is a collision. Reporting every
 		// failure that way said "manifest.json already exists ... it is the

@@ -413,12 +413,24 @@ func encodedBodySize(m memo) (int64, error) {
 
 // minimumBytes is the smallest file this generator can produce: a one pixel
 // picture with no label and no padding chunk.
+// It panics rather than returning a number nobody measured.
+//
+// This used to answer 1<<62 on any failure, on the reasoning that refusing
+// every size is safer than declaring a wrong minimum. It is not safer, it is
+// quieter: PNG would refuse every request ever made with a message about a
+// minimum of 4611686018427387904 B, and nothing would say why. The same
+// reasoning is written out at length on zip.minimumBytes, which named this
+// exact shape as the defect it had stopped being - while two formats still
+// carried it.
+//
+// The condition is a programming mistake rather than a runtime one: encoding
+// one pixel cannot fail for any reason a person could bring about. So this
+// matches format.Register, which panics on the same class, and a build that
+// cannot state its own minimum fails at start rather than at every use.
 func minimumBytes() int64 {
 	body, err := encodedBodySize(memo{width: 1, height: 1})
 	if err != nil {
-		// Encoding a single pixel cannot fail. If it somehow does, refusing
-		// every size is safer than declaring a minimum we did not measure.
-		return 1 << 62
+		panic(fmt.Sprintf("png: the smallest picture cannot be encoded, so the minimum size of a file cannot be worked out: %v", err))
 	}
 	return body + iendSize
 }

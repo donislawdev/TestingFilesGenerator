@@ -473,10 +473,20 @@ func minimumBytes() int64 {
 	for off := uint64(0); off < 256; off++ {
 		n, err := encodedSize(memo{width: 1, height: 1, quality: defaultQuality, seed: off})
 		if err != nil {
-			// Encoding a single pixel cannot fail. If it somehow does,
-			// refusing every size is safer than declaring a minimum we did
-			// not measure.
-			return 1 << 62
+			// Panics rather than returning a number nobody measured.
+			//
+			// This used to answer 1<<62, on the reasoning that refusing every
+			// size is safer than declaring a wrong minimum. It is not safer,
+			// it is quieter: JPG would refuse every request ever made with a
+			// message about a minimum of 4611686018427387904 B, and nothing
+			// would say why. zip.minimumBytes writes that argument out in
+			// full, having named this exact shape as the defect it stopped
+			// carrying - while this format and png still carried it.
+			//
+			// The condition is a programming mistake rather than a runtime
+			// one: encoding one pixel cannot fail for any reason a person
+			// could bring about.
+			panic(fmt.Sprintf("jpg: the smallest picture cannot be encoded at seed %d, so the minimum size of a file cannot be worked out: %v", off, err))
 		}
 		if n > worst {
 			worst = n

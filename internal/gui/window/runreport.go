@@ -2,7 +2,6 @@ package window
 
 import (
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -58,7 +57,13 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 	if opt.DryRun || res == nil || !res.Started {
 		return nil
 	}
-	path := filepath.Join(opt.OutDir, opt.ManifestName)
+	// Asked of the engine rather than joined here. This used to be
+	// filepath.Join(opt.OutDir, opt.ManifestName), which is the same answer
+	// only while the name is filled in - and with it blank it named the output
+	// directory itself, so saving would have tried to rename a file onto a
+	// directory. All three screens do fill it in, which is why nothing ever
+	// reached it.
+	path := engine.ManifestPath(opt)
 	if err := res.Manifest.Save(path); err != nil {
 		return fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
 	}
