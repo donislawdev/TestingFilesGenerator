@@ -97,6 +97,13 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestEveryGuardCitedInTheSummaryIsJustifiedInRegression": "broken by hand on 2026-08-26, in all three directions it can fail, and put back byte for byte through the checked restore in tools/mutate/runner.py. " +
+		"Taking keyboard_test.go off notYetJustified made it red, because CLAUDE.md cites that guard and REGRESSION.md still says nothing about it. " +
+		"Adding verify_test.go to the list made it red the other way, which is the direction that matters most: a list nobody prunes is where this drift would hide next. " +
+		"Naming a guard that does not exist made it red as well. Green again after each, and the run before them all was green, so none of the three was red for a reason that was already there. " +
+		"A probe rather than a mutation entry because there is no product code underneath: it reads CLAUDE.md and docs/REGRESSION.md, neither of which is in the repository, " +
+		"so a substitution in a .go file never reaches it.",
+
 	"TestARunIsStoppableFromTheMomentItStarts": "checked 2026-08-23 with tools/probes/run-stop-order.py, which reproduces the original defect faithfully: it moves the assignment of r.stop " +
 		"to after the goroutine that writes the files, builds, and runs the guard. Reported CAUGHT, and the file was restored. " +
 		"A probe rather than a mutation entry for two reasons, and the first one is the interesting one. The obvious substitution - deleting the handle - does NOT compile, because cancel is then unused, " +
