@@ -293,10 +293,36 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 // nothing and printing a heading with no files under it. The guard on that
 // output asks only about the heading, deliberately, so the suite would stay
 // green while the three lines that name the limit disappeared.
+// Plan works out every file of a run without writing anything.
+//
+// The version without a context, for callers that have none. It is the one the
+// guards use and the one a caller reaches for first, and it cannot disagree
+// with PlanContext because it is PlanContext.
+//
+// Two names for one thing rather than one name with a context argument,
+// because the argument would have to be threaded through thirty four call
+// sites to say "no context" thirty of those times. The standard library takes
+// the same shape wherever it grew a context late - exec.Command beside
+// exec.CommandContext, sql.Query beside QueryContext.
 func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
-	var out []PlannedFile
+	return PlanContext(context.Background(), targets, opt)
+}
+
+// PlanContext is Plan, stoppable.
+//
+// Planning was assumed to be fast, and the comment in the window that said so
+// carried a measurement: "15.7 ms for ten thousand files". That number was
+// taken on txt. Measured on 2026-08-26 across formats, two thousand files by
+// --dry-run: txt 380-416 ms, pdf 474-581 ms, docx 835-1052 ms, gif about 5.3 s,
+// jpg 9.9-14.6 s and png 16.5-22.8 s - because png, jpg and gif ENCODE the
+// picture while planning, and walk a ladder of sizes doing it when no size is
+// given. Ten thousand PNGs is a minute and a half before a byte is written.
+//
+// So planning is work somebody may want to stop, which is the whole reason
+// this exists.
+func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedFile, error) {
 	seen := map[string]bool{}
-	names := map[string]nameOwner{}
+	pl := &planning{names: map[string]nameOwner{}}
 
 	// The running total of the whole run, kept here rather than worked out
 	// afterwards. Both of these used to be settled too late to help: the file
@@ -304,13 +330,12 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	// the byte total was summed after planning by a function that could not
 	// report a wrap - so a total that had left the range was handed to the free
 	// space check as a negative requirement and satisfied it.
-	var totalBytes int64
 	var totalFiles int
 
 	// Watches what the plan costs while it is being built. Started here rather
 	// than at the first file so that the baseline is taken before any of it
 	// exists.
-	budget := newPlanMemory(opt.MaxPlanBytes)
+	pl.budget = newPlanMemory(opt.MaxPlanBytes)
 
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed
@@ -331,7 +356,7 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 	// Seeded from manifestNameOf rather than opt.ManifestName, because a run
 	// that never names one still writes manifest.json and a target can be
 	// pointed straight at it.
-	names[collisionKey(manifestNameOf(opt))] = nameOwner{
+	pl.names[collisionKey(manifestNameOf(opt))] = nameOwner{
 		name: manifestNameOf(opt), manifest: true}
 
 	if opt.OutDir == "" {
@@ -363,7 +388,7 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 		// alone is one somebody reaches by writing the number out in pieces.
 		// The budget is told the size of the target before its files are
 		// planned, so its baseline is taken before any of them exist.
-		budget.expect(len(t.Sizes))
+		pl.budget.expect(len(t.Sizes))
 		totalFiles += len(t.Sizes)
 		if totalFiles > core.MaxFilesPerRun {
 			// Addressed to the target that took the total past the ceiling,
@@ -385,96 +410,11 @@ func Plan(targets []Target, opt Options) ([]PlannedFile, error) {
 				Remedy:  core.TooManyFilesFix}
 		}
 
-		for idx, size := range t.Sizes {
-			fileSeed := core.FileSeed(targetSeed, idx)
-
-			p, err := desc.Generator.Plan(format.Request{
-				Bytes:            size,
-				SizeFromContents: t.SizeFromContents,
-				Contains:         t.Contains,
-				Seed:             fileSeed,
-				Label:            t.Label,
-				Properties:       t.Properties,
-			})
-			if err != nil {
-				return nil, atTarget(i+1, err)
-			}
-
-			name, err := renderName(t, desc, idx)
-			if err != nil {
-				return nil, atTarget(i+1, err)
-			}
-			// Two files heading for one name means one of them would be
-			// destroyed by the other, and the manifest would still describe
-			// both. A manifest that quietly lost a file looks complete and
-			// reaches the test suite as a false truth.
-			//
-			// "One name" is not "the same string", and reading it that way cost
-			// exactly what this check exists to prevent. Most filesystems people
-			// run this on keep the case somebody typed and match without it -
-			// NTFS, APFS and exFAT do, ext4 does not - so "report.txt" and
-			// "REPORT.TXT" are two files on one machine and one file on the
-			// next. Measured on Windows, 2026-08-03: exit 0, two entries in the
-			// manifest, one file on the disk, and "tfg verify" failing on the
-			// tool's own output a second later.
-			//
-			// Case is not the only way to spell one name twice. An accented
-			// letter is one code point, U+00E9, and it is also the plain letter
-			// followed by a combining accent, U+0301. Both are valid UTF-8 and
-			// they print identically. APFS normalises what it is given, so on
-			// macOS the two spellings are one file, while NTFS and ext4 keep
-			// them apart. Measured there 2026-08-04: exit 0, two entries in the
-			// manifest, one file on the disk, and "tfg verify" failing on the
-			// tool's own output a second later - the same defect the case rule
-			// exists to stop, reached by spelling a letter the other way.
-			//
-			// So the key folds case and normalises, and neither alone is
-			// enough: case folding does not bring the two spellings together
-			// and normalising does not bring REPORT.TXT to report.txt.
-			//
-			// Refused everywhere rather than only where it bites, the same as a
-			// path separator and for the same reason: a recipe travels between
-			// machines by design, and one that quietly loses a file on somebody
-			// else's is worse than one refused on both. Producing such a pair on
-			// purpose belongs to the name laboratory and its archive mode, D10.
-			// No address, deliberately, and this is the one refusal here that
-			// keeps it. Two targets produce the pair, so naming one of them
-			// would send somebody to a box that is not wrong on its own - and
-			// which of the two to change is theirs to decide. The sentence
-			// names both ids, which is what a person needs and what a window
-			// cannot place either way.
-			if err := claimFileName(names, i+1, t.ID, name); err != nil {
-				return nil, err
-			}
-
-			if totalBytes, err = core.AddSizes(totalBytes, p.Bytes); err != nil {
-				// The size of this target, for the same reason as the ceiling
-				// above: the total belongs to the run, the box somebody can
-				// change belongs to a target.
-				return nil, &RecipeError{
-					Setting: core.TargetAddress(i+1, format.SettingSize),
-					Detail:  fmt.Sprintf("target %q brings the run to a size that is too large to measure", t.ID),
-					Because: err.Error()}
-			}
-
-			out = append(out, PlannedFile{
-				ID:     fmt.Sprintf("f_%04d", len(out)+1),
-				Target: t,
-				Index:  idx,
-				Name:   name,
-				Seed:   fileSeed,
-				Desc:   desc,
-				Plan:   p,
-			})
-
-			// What the plan costs, rather than how many files are in it. See
-			// planmemory.go for why the count alone could not see this.
-			if err := budget.account(i+1, len(out)); err != nil {
-				return nil, err
-			}
+		if err := pl.files(ctx, t, desc, targetSeed, i+1); err != nil {
+			return nil, err
 		}
 	}
-	return out, nil
+	return pl.out, nil
 }
 
 // TotalBytes is what a plan will occupy on disk. Known before the first byte
@@ -507,7 +447,7 @@ const DefaultManifestName = "manifest.json"
 //
 // Both checks used to sit after the dry run had already returned, so
 // --dry-run reported success for runs that would refuse to start.
-func preflight(files []PlannedFile, opt Options) error {
+func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 	// Free space first. Finding out at file five thousand of ten thousand
 	// leaves a half written set and a full disk on a machine somebody works on.
 	needed := TotalBytes(files)
@@ -562,6 +502,16 @@ func preflight(files []PlannedFile, opt Options) error {
 	// the manifest the whole authority over what may be deleted, and a file
 	// that never finished never reached one.
 	for _, f := range files {
+		// Two questions of the filesystem per planned file, so a large run on a
+		// slow share spends real time in here. Until 2026-08-26 that time could
+		// not be interrupted: preflight took no context, so a preview had
+		// nothing to cancel, the window offered no button for it, and closing
+		// the window waited for the whole loop on the interface thread. The
+		// same reasoning that put a context into the directory walk in
+		// internal/audit on 2026-08-25.
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if path := filepath.Join(opt.OutDir, f.Name); exists(path) {
 			return &CollisionError{Path: path}
 		}
@@ -618,7 +568,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// and before a dry run returns. A dry run exists to count and show before
 	// the disk is touched, so reporting success for a run that refuses to
 	// start on the very next line answers the wrong question.
-	if err := preflight(files, opt); err != nil {
+	if err := preflight(ctx, files, opt); err != nil {
 		return res, err
 	}
 

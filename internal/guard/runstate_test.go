@@ -210,11 +210,15 @@ func TestAPreviewGivesTheScreenBackWhenItIsDone(t *testing.T) {
 // usable as it found it.
 //
 // This is the edge the busy state introduced. A preview marks the screen
-// occupied and hands the disk work to a worker, and the worker is the only
-// thing that hands the screen back - so a refusal that reached the busy state
-// without starting a worker would freeze the form for the rest of the session.
-// Today the refusal returns first and nothing is frozen, and that ordering is
-// the whole of the correctness here.
+// occupied and hands the work to a worker, and the worker is the only thing
+// that hands the screen back - so a refusal that reached the busy state and
+// then started no worker would freeze the form for the rest of the session.
+//
+// The ordering used to be the whole of the correctness here: the refusal came
+// back before the screen was marked busy at all. That changed on 2026-08-26,
+// when planning moved off the interface thread, and what protects this now is
+// that every path out of the worker hands the screen back - including the one
+// that refuses.
 //
 // Nothing else was watching it. The guards for refusals check that the right
 // box is marked and the right sentence appears, and every one of them would
@@ -229,14 +233,25 @@ func TestARefusedPreviewLeavesTheScreenUsable(t *testing.T) {
 		{"nothing to produce", text.FieldCount(), "0"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
-			_, content := screen(t)
+			host, content := screen(t)
 			fill(t, content, text.FieldOutputDir(), t.TempDir())
 			fill(t, content, c.field, c.value)
 			press(t, content, text.ButtonPreview())
 
-			// No worker was started, so there is nothing to join - and that is
-			// exactly why this can freeze: the thing that gives the screen back
-			// never runs.
+			// Joined, and the note here used to say the opposite: that no
+			// worker was started, so there was nothing to join. That was true
+			// while planning happened on the interface thread - an engine
+			// refusal came back before anything crossed over. Planning moved
+			// off that thread on 2026-08-26, so the refusals below now travel
+			// through a worker like an answer does.
+			//
+			// This does not weaken the guard, which is the thing worth being
+			// sure of. The channel it waits on is closed by the worker whatever
+			// the worker did, so a build that marked the screen busy and never
+			// handed it back still reaches the assertion below - and still
+			// fails it.
+			join(host)
+
 			box := entryUnder(t, content, text.FieldSize())
 			if box == nil {
 				t.Fatal("there is no size box, so this guard read the wrong tree")

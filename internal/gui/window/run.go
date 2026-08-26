@@ -3,8 +3,6 @@ package window
 import (
 	"context"
 	"errors"
-	"fmt"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -129,6 +127,11 @@ type runner struct {
 	// So it says nothing about whether a run is going. It used to be asked
 	// that, and the answer was wrong from the second run onwards - see running.
 	stop func()
+	// settled is closed when the work in flight has finished, and is what
+	// Settled waits on. Separate from stop because stop CANCELS first, which is
+	// right for closing the window and for Esc and wrong for anybody who wants
+	// to read the answer.
+	settled chan struct{}
 
 	// openFolder is how this screen asks the desktop to show a directory. Held
 	// as a function rather than reaching for the host, because the runner is
@@ -604,36 +607,48 @@ func (r *runner) onPreview() {
 	}
 	opt.DryRun = true
 
-	planned, err := engine.Plan(targets, opt)
-	if err != nil {
-		r.refuse(err)
-		return
-	}
-
-	// Occupied, but with nothing to cancel and nothing to put on the bar. See
-	// setBusy - both of those are properties of a dry run that were measured.
-	r.setBusy(true, false)
+	// Occupied, and stoppable. Both of those changed on 2026-08-26.
+	//
+	// Planning used to happen here, on the interface thread, before the screen
+	// had said it was busy. That was justified by a measurement - "15.7 ms for
+	// ten thousand files" - taken on txt. Measured across formats that day, two
+	// thousand files: txt 380-416 ms and png 16.5-22.8 s, because png, jpg and
+	// gif encode the picture while planning. Ten thousand pictures is a minute
+	// and a half of a window that does not draw.
+	//
+	// And it can be stopped now. preflight took no context, so there was
+	// nothing to cancel and the button was deliberately not offered - which
+	// also meant closing the window waited for the whole of it on the interface
+	// thread. Both halves are gone: preflight checks its context per file, and
+	// planning does too.
+	r.setBusy(true, true)
 	r.say(text.WorkingOutTheCost())
 
+	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
+	r.settled = done
 
 	// Waited for on the way out, even though a preview writes nothing and there
 	// would be no half written file to protect. What it does do is touch
 	// widgets when it comes back, so a preview still in flight after the window
 	// has gone is a worker drawing into a screen that is being torn down.
 	//
-	// Waiting is all this can do. preflight takes no context, so there is
-	// nothing to cancel - and that is why the button is not offered either.
-	// Before this change the same wait happened on every preview and blocked
-	// the whole window rather than only the closing of it.
-	//
 	// Set before the goroutine starts, for the reason startRun spells out.
-	r.stop = func() { <-done }
+	r.stop = func() {
+		cancel()
+		<-done
+	}
 
 	go func() {
-		_, runErr := engine.Run(context.Background(), planned, opt)
-		// Do rather than DoAndWait, for the same reason startRun gives: the
-		// interface thread must never be left waiting on a worker.
+		planned, planErr := engine.PlanContext(ctx, targets, opt)
+		if planErr != nil {
+			// Do rather than DoAndWait, for the same reason startRun gives: the
+			// interface thread must never be left waiting on a worker.
+			fyne.Do(func() { r.previewFinished(nil, opt, planErr) })
+			close(done)
+			return
+		}
+		_, runErr := engine.Run(ctx, planned, opt)
 		fyne.Do(func() { r.previewFinished(planned, opt, runErr) })
 		close(done)
 	}()
@@ -647,20 +662,6 @@ func (r *runner) previewFinished(planned []engine.PlannedFile, opt engine.Option
 		return
 	}
 	r.say(previewText(planned, opt.OutDir))
-}
-
-// previewText is the cost, before anything exists. G6: how many files, what
-// kind, how many bytes, and how much room there is for them.
-func previewText(planned []engine.PlannedFile, outDir string) string {
-	total := engine.TotalBytes(planned)
-	line := text.PreviewCost(len(planned), formatsOf(planned), core.HumanBytes(total))
-
-	// A disk we cannot measure is not the same as a disk that is full, so a
-	// failure to read it says nothing rather than inventing a number.
-	if free, err := core.AvailableBytes(outDir); err == nil {
-		line += text.PreviewFreeSpace(outDir, core.HumanBytes(free))
-	}
-	return line
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -688,19 +689,21 @@ func formatsOf(planned []engine.PlannedFile) []string {
 	return out
 }
 
-// onGenerate plans on the interface thread and writes off it.
+// onGenerate settles the form on the interface thread and does the rest off it.
 //
-// Planning is fast enough to do here - measured at 15.7 ms for ten thousand
-// files - and doing it here is what lets a refusal appear with nothing started
-// and no buttons to put back.
+// Planning used to happen here, and the comment saying that was fine carried a
+// measurement: "15.7 ms for ten thousand files". That number is a txt number.
+// Measured on 2026-08-26 with --dry-run at two thousand files: txt 380-416 ms
+// against png 16.5-22.8 s, because png, jpg and gif encode the picture while
+// planning and walk a ladder of sizes doing it when none is given. Ten thousand
+// pictures is eighty to a hundred and ten seconds of a window that does not
+// redraw, with no bar, no way out, and both buttons still looking pressable.
+//
+// What is left here is reading the form, which is the one thing that HAS to be
+// here - the widgets belong to this thread.
 func (r *runner) onGenerate() {
 	r.clearProblems()
 	targets, opt, err := r.settle()
-	if err != nil {
-		r.refuse(err)
-		return
-	}
-	planned, err := engine.Plan(targets, opt)
 	if err != nil {
 		r.refuse(err)
 		return
@@ -711,18 +714,21 @@ func (r *runner) onGenerate() {
 	// nothing does not leave the offer from the run before it standing.
 	r.hideTheFolder()
 	r.wroteInto = opt.OutDir
-	r.startRun(planned, opt)
+	r.startRun(targets, opt)
 }
 
-func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
+func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
+	r.settled = done
 	started := time.Now()
 	limit := &throttle{}
 
 	r.setRunning(true)
 	r.bar.SetValue(0)
-	r.say(text.WritingFiles(len(planned)))
+	// The plan comes first now, so the first thing said is about working the
+	// cost out rather than about writing files that are not being written yet.
+	r.say(text.WorkingOutTheCost())
 
 	// Called by the engine from the goroutine below, once per write inside a
 	// file. Thinned out here, before anything crosses over, so the interface is
@@ -756,6 +762,20 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 	}
 
 	go func() {
+		planned, planErr := engine.PlanContext(ctx, targets, opt)
+		if planErr != nil {
+			// A refusal from planning leaves nothing started and nothing on the
+			// disk, so it goes back as a refusal rather than as the end of a
+			// run - runFinished would talk about files that never existed.
+			fyne.Do(func() {
+				r.setRunning(false)
+				r.refuse(planErr)
+			})
+			close(done)
+			return
+		}
+		fyne.Do(func() { r.say(text.WritingFiles(len(planned))) })
+
 		res, runErr := engine.Run(ctx, planned, opt)
 		// The manifest is written here rather than after crossing back, because
 		// it is disk work and the interface thread is the one thing that must
@@ -767,39 +787,6 @@ func (r *runner) startRun(planned []engine.PlannedFile, opt engine.Options) {
 		fyne.Do(func() { r.runFinished(res, runErr, saveErr) })
 		close(done)
 	}()
-}
-
-// progressText is the line under the bar. Bytes rather than files, because one
-// large file is a run where the file count says nothing for minutes.
-func progressText(p engine.Progress, elapsed time.Duration) string {
-	line := text.Progress(p.FilesDone, p.FilesTotal,
-		core.HumanBytes(p.BytesDone), core.HumanBytes(p.BytesTotal),
-		core.Percent(p.BytesDone, p.BytesTotal))
-
-	// The estimate stays quiet until it has enough to go on. A number that
-	// swings wildly for the first second is worse than no number.
-	if elapsed < time.Second || p.BytesDone <= 0 || p.BytesDone >= p.BytesTotal {
-		return line
-	}
-	left := time.Duration(float64(elapsed) *
-		float64(p.BytesTotal-p.BytesDone) / float64(p.BytesDone))
-	return line + text.TimeLeft(core.Roughly(left))
-}
-
-// saveManifest writes the record of what the run did.
-//
-// A run refused before it wrote anything gets none. Writing one would replace
-// the record of whatever was already in that directory, and that record is the
-// only thing cleanup can work from.
-func saveManifest(res *engine.Result, opt engine.Options) error {
-	if opt.DryRun || res == nil || !res.Started {
-		return nil
-	}
-	path := filepath.Join(opt.OutDir, opt.ManifestName)
-	if err := res.Manifest.Save(path); err != nil {
-		return fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
-	}
-	return nil
 }
 
 // runFinished is the end of a run, back on the interface thread.
@@ -907,6 +894,24 @@ func (r *runner) onCancel() { r.Stop() }
 func (r *runner) Stop() {
 	if r.stop != nil {
 		r.stop()
+	}
+}
+
+// Settled waits for work in flight to finish, without stopping it.
+//
+// A seam for the guards, and named as one rather than dressed up - the same
+// kind of thing as Options.AvailableBytes and Options.MaxPlanBytes in the
+// engine, which exist so a test can describe a small disk or a small ceiling
+// without owning one.
+//
+// It is here because of what changed on 2026-08-26. Until then a preview could
+// not be cancelled - preflight took no context - so Stop only waited, and the
+// guards used "close the window" as their way of waiting for an answer. Now
+// closing really does cancel, which is the point of the change, and a guard
+// that closed the window to read the preview would be cancelling the preview.
+func (r *runner) Settled() {
+	if r.settled != nil {
+		<-r.settled
 	}
 }
 

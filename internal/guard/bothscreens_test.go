@@ -73,6 +73,7 @@ func TestOneRefusalMarksItsBoxOnBothScreens(t *testing.T) {
 			setBox(t, fields, c.setting, c.value)
 
 			pressNamed(t, body, text.ButtonPreview())
+			screen.Settled()
 
 			if saying := saidBy(t, fields, c.setting); saying == "" {
 				t.Errorf("nothing is marked at %q on the screen that draws one batch.\n"+
@@ -95,6 +96,7 @@ func TestOneRefusalMarksItsBoxOnBothScreens(t *testing.T) {
 			setBox(t, fields, c.onBatchScreen, c.value)
 
 			pressNamed(t, body, text.ButtonPreview())
+			screen.Settled()
 
 			if saying := saidBy(t, fields, c.onBatchScreen); saying == "" {
 				t.Errorf("nothing is marked at %q on the screen that draws several batches.\n"+
@@ -123,6 +125,7 @@ func TestARefusalAboutTheManifestNameMarksTheManifestBox(t *testing.T) {
 	setBox(t, fields, recipe.KeyOutputManifest, "report|1.json")
 
 	pressNamed(t, body, text.ButtonPreview())
+	screen.Settled()
 
 	if saying := saidBy(t, fields, recipe.KeyOutputManifest); saying == "" {
 		t.Errorf("nothing is marked at %q.\nReason: the manifest name is checked by the same\n"+
@@ -155,6 +158,7 @@ func TestARefusalAboutTheRunItselfKeepsItsWholeAddress(t *testing.T) {
 	setBox(t, fields, "output.dir", "")
 
 	pressNamed(t, body, text.ButtonPreview())
+	screen.Settled()
 
 	if saying := saidBy(t, fields, "output.dir"); saying == "" {
 		t.Errorf("nothing is marked at %q.\nReason: this screen takes the position off an address\n"+

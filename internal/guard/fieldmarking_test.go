@@ -32,9 +32,12 @@ import (
 // something and reads it cannot see a loop, and a colour measured without the
 // thing behind it is a colour nobody sees.
 func TestTheBoxARefusalIsAboutIsMarked(t *testing.T) {
-	_, content := screen(t)
+	host, content := screen(t)
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
+	// The answer comes back from a worker since 2026-08-26, so it has to be
+	// waited for before the screen is read.
+	join(host)
 
 	marked := edgeOf(t, content, text.FieldSize())
 	if marked.StrokeWidth <= 0 {
@@ -62,16 +65,22 @@ func TestTheMarkGoesWhenTheValueIsFixed(t *testing.T) {
 	host, content := screen(t)
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
+	// Joined before the tree is read - otherwise this goroutine and the worker
+	// are both in the font shaper, and the panic lands in whichever test
+	// happens to be running when it goes off.
+	//
+	// Both presses need this since 2026-08-26. The note here used to say that
+	// only the accepted press starts a worker, and that was true while
+	// planning happened on the interface thread: a refusal came back before
+	// anything crossed over. Planning is off that thread now, so a refusal
+	// travels the same way an answer does.
+	join(host)
 	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Fatal("the refused box was never marked, so this guard cannot tell whether the mark goes")
 	}
 
 	fill(t, content, text.FieldSize(), "1mb")
 	press(t, content, "Preview")
-	// This press is the one that is ACCEPTED, so unlike the one above it starts
-	// a worker. Joined before the tree is read - otherwise this goroutine and
-	// that one are both in the font shaper, and the panic lands in whichever
-	// test happens to be running when it goes off.
 	join(host)
 	if got := edgeOf(t, content, text.FieldSize()).StrokeWidth; got != 0 {
 		t.Errorf("the size is acceptable now and its box still draws a %.1f px edge", got)

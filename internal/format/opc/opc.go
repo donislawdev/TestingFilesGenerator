@@ -160,8 +160,43 @@ func (e *Unreachable) Error() string {
 	return fmt.Sprintf("no package can be %d B to %d B", e.Below, e.Above)
 }
 
+// Zip32Ceiling is where ZIP stops describing itself in thirty two bits and
+// archive/zip starts writing the zip64 records instead.
+const Zip32Ceiling = 1<<32 - 1
+
+// TooLarge is a package that would cross into zip64.
+//
+// Not because zip64 is wrong - archive/zip writes it correctly - but because
+// Size cannot see it coming. It measures the package with the padding left out
+// and adds the padding back afterwards, so while it is measuring, the entry
+// that carries the bulk is nought bytes long, and nought bytes never triggers
+// zip64. Measured on 2026-08-26 with tools/probes/zip64, the plan against what
+// really came out of the writer for a docx:
+//
+//	64 MiB          agree
+//	4 GiB - 1 MiB   agree
+//	4 GiB + 1 MiB   the writer wrote 104 B more than the plan
+//	5 GiB           the writer wrote 104 B more than the plan
+//
+// Nothing that works is taken away by refusing here, and that is measured
+// rather than assumed: the engine compares what the writer produced against
+// the plan and deletes any file that misses, so a package past this line could
+// not succeed before either. What changes is that the person is told before
+// four gigabytes are written and removed.
+type TooLarge struct {
+	Want    int64
+	Ceiling int64
+}
+
+func (e *TooLarge) Error() string {
+	return fmt.Sprintf("no package can be %d B, which is past the %d B a zip32 archive describes", e.Want, e.Ceiling)
+}
+
 // Settle decides how a package of this shape reaches an exact size.
 func Settle(parts []Part, shape Shape, want int64) (Package, error) {
+	if want > Zip32Ceiling {
+		return Package{}, &TooLarge{Want: want, Ceiling: Zip32Ceiling}
+	}
 	p := Package{Parts: parts, Filler: NoFiller}
 	delta := want - shape.Bare
 	switch {

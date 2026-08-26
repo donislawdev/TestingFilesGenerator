@@ -245,8 +245,70 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
+	if err := withinZip32(target); err != nil {
+		return format.Plan{}, err
+	}
+
 	p.Memo = m
 	return p, nil
+}
+
+// zip32Ceiling is where ZIP stops being able to describe itself in thirty two
+// bits and archive/zip starts writing the zip64 records instead.
+const zip32Ceiling = 1<<32 - 1
+
+// withinZip32 refuses an archive that would cross into zip64.
+//
+// Not because zip64 is wrong - archive/zip writes it correctly - but because
+// archiveSize cannot see it coming. That measurement builds the whole structure
+// with the contents left out and then adds the planned sizes back, so every
+// entry is nought bytes long while it is being measured, and nought bytes never
+// triggers zip64. Measured on 2026-08-26 with tools/probes/zip64, the plan
+// against what really came out of the writer:
+//
+//	64 MiB          agree
+//	4 GiB - 1 MiB   agree
+//	4 GiB + 1 MiB   the writer wrote 112 B more than the plan
+//	5 GiB           the writer wrote 112 B more than the plan
+//
+// Those 112 B are a wider data descriptor, a zip64 extra field in the central
+// directory, and the zip64 end of central directory record with its locator.
+//
+// Nothing that works is being taken away, and that is measured rather than
+// assumed: the engine compares what the writer produced against the plan and
+// deletes any file that misses, so an archive past this line could not succeed
+// before either. What changes is when the person finds out - here, before the
+// first byte, instead of after four gigabytes have been written and removed,
+// with a message about the generator disagreeing with its own plan that reads
+// like a defect in the tool.
+//
+// The line is drawn at the format's own boundary rather than at the exact byte
+// where the writer changes shape. That byte is real - measured, an archive of
+// exactly 4294967296 B still agrees, because what crosses uint32 is the ENTRY
+// and an entry is smaller than the archive holding it - but it moves with the
+// number of entries and the length of their names. Predicting it here would be
+// a second copy of a rule that lives in the standard library, which is the kind
+// of copy this package refuses elsewhere. So the trailer's own few hundred
+// bytes are given away, and the sentence says the limit belongs to this build.
+// The total is the only thing asked about, and that is a correction rather
+// than a simplification. The first version also checked each contained file
+// and the padding entry, which reads like thoroughness and is unreachable: an
+// archive holds its entries, so an entry past the line puts the archive past
+// it first. Both branches were shown to be dead by mutation - removing either
+// left the guard green - and this project deletes a defence nothing can turn
+// red rather than keeping it for the look of it.
+func withinZip32(total int64) error {
+	if total <= zip32Ceiling {
+		return nil
+	}
+	return &format.AboveMaximumError{
+		Format:    "ZIP",
+		Requested: total,
+		Maximum:   zip32Ceiling,
+		Reason: "an archive this large would need the zip64 records, and this build works out an " +
+			"archive's size before it writes it in a way that cannot account for them",
+		Hint: "Ask for less than 4 GiB, or split the contents across several archives.",
+	}
 }
 
 // planChildren plans every file the archive will hold.

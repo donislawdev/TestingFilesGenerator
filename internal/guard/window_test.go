@@ -55,9 +55,17 @@ import (
 type fakeHost struct {
 	content   fyne.CanvasObject
 	intercept func()
-	closed    int
-	picked    string
-	asked     int
+	// waitForWork waits for a preview or a run to finish, without stopping it.
+	//
+	// Separate from intercept, which is the CLOSE intercept and now cancels.
+	// Until 2026-08-26 a preview could not be cancelled, so closing the window
+	// was how these guards waited for an answer. Now closing really does
+	// cancel, and a guard that closed the window to read a preview would be
+	// cancelling the preview it wanted to read.
+	waitForWork func()
+	closed      int
+	picked      string
+	asked       int
 
 	opened      string
 	openedCount int
@@ -80,7 +88,11 @@ func (h *fakeHost) SetContent(o fyne.CanvasObject) {
 	}
 }
 func (h *fakeHost) SetCloseIntercept(fn func()) { h.intercept = fn }
-func (h *fakeHost) Close()                      { h.closed++ }
+
+// SetWaitForWork is the optional interface the window offers rather than
+// requires - a real window has no use for it and does not implement it.
+func (h *fakeHost) SetWaitForWork(fn func()) { h.waitForWork = fn }
+func (h *fakeHost) Close()                   { h.closed++ }
 
 // picked is what the stand in answers when a screen asks where the files
 // should go, and asked counts how often it was asked. A real picker needs a

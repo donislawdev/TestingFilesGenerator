@@ -266,11 +266,13 @@ func TestTheWindowAsksTheEngineWhetherASizeIsGood(t *testing.T) {
 // it is checked on what is on screen rather than on what was passed in.
 func TestTheWindowShowsTheWholeRefusal(t *testing.T) {
 	dir := t.TempDir()
-	_, content := screen(t)
+	host, content := screen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Generate")
+	// The answer comes back from a worker since 2026-08-26, so it is waited for.
+	join(host)
 
 	shown := errorShown(t, content)
 	// The four parts of a refusal below a format's minimum: what cannot be
@@ -417,6 +419,7 @@ func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
+	waitUntilTheRunHasStarted(t, dir)
 
 	if host.intercept == nil {
 		t.Fatal("the window has no close intercept, so closing it does not reach the run at all")
@@ -541,6 +544,7 @@ func TestCancelStopsTheRun(t *testing.T) {
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
+	waitUntilTheRunHasStarted(t, dir)
 
 	cancel := buttonNamed(content, "Cancel")
 	if cancel == nil {
@@ -623,9 +627,18 @@ func whatIsIn(dir string) []string {
 // join brings the worker to an end before anything reads a widget, through the
 // same close path a person uses. After it returns the goroutine has finished,
 // so what it wrote is visible here and is not being written any more.
+// join waits for whatever the window has in flight.
+//
+// It used to CLOSE the window, because until 2026-08-26 that was the only
+// handle there was and closing could not cancel anything. Now it can, and a
+// guard that closed the window to read a preview would be cancelling the
+// preview - measured that day, three guards went red for exactly that.
+//
+// The two guards that are really about closing call host.intercept directly,
+// which is what they always meant.
 func join(host *fakeHost) {
-	if host.intercept != nil {
-		host.intercept()
+	if host.waitForWork != nil {
+		host.waitForWork()
 	}
 }
 
@@ -683,4 +696,27 @@ func TestARunIsStoppableFromTheMomentItStarts(t *testing.T) {
 			"Reason: between those two statements files are being written and Stop has nothing to call, so closing the window there ends the process inside a file with no manifest.\n" +
 			"What to do: assign r.stop first. ctx, cancel and done all exist by then, so nothing is gained by waiting.")
 	}
+}
+
+// waitUntilTheRunHasStarted blocks until the run has put something on the disk.
+//
+// A guard about interrupting a run has to interrupt a run, and since 2026-08-26
+// pressing Generate no longer means one is going: planning moved off the
+// interface thread, so for a moment after the press the worker is still working
+// out what to write. Cancelling in that moment is answered correctly and
+// uselessly - nothing has been written, so there is nothing to record and no
+// manifest, which is the rule Result.Started states.
+//
+// The manifest claims its name before the first file, so anything at all
+// appearing here means the writing has begun.
+func waitUntilTheRunHasStarted(t *testing.T, dir string) {
+	t.Helper()
+	deadline := time.Now().Add(20 * time.Second)
+	for time.Now().Before(deadline) {
+		if entries, err := os.ReadDir(dir); err == nil && len(entries) > 0 {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatal("nothing was written within twenty seconds, so there was never a run to interrupt")
 }

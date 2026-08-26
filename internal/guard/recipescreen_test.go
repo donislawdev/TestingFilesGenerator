@@ -535,6 +535,8 @@ func TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt(t *testi
 	setBox(t, fields, recipe.TargetAddress(2, recipe.KeyCount), "1000000")
 
 	pressNamed(t, body, text.ButtonPreview())
+	// The answer comes back from a worker since 2026-08-26, so it is waited for.
+	screen.Settled()
 
 	want := recipe.TargetAddress(2, recipe.KeyCount)
 	if saying := saidBy(t, fields, want); saying == "" {

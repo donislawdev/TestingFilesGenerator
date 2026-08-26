@@ -24,12 +24,15 @@ import (
 // the row rather than against a number of pixels: what has to hold is that a
 // message is not confined to the column its field is in.
 func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget())
+	content, w, host := screenInAWindowWithHost(t, text.TabOneTarget())
 
 	// A size no format can produce, so the refusal lands on the size box - and
 	// the size box shares its row with how many.
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, text.ButtonGenerate())
+	// The refusal comes back from a worker since 2026-08-26, so it is waited
+	// for before the tree is laid out and read.
+	join(host)
 	settle(content, w)
 
 	said := refusalLabelSaying(content, "BMP")

@@ -628,6 +628,14 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 	if sc.set != nil {
 		sc.set(t, s)
 	}
+	// Several of these states press Preview, and since 2026-08-26 the answer to
+	// that comes back from a worker rather than on this thread. Two things go
+	// wrong without waiting, and the quieter one is the worse: the picture is
+	// taken before the refusal is drawn, so a reference named "refused" holds a
+	// screen with nothing refused on it - and it would be stored that way and
+	// compared against happily ever after. The other is a worker still shaping
+	// text while the next test runs, which panics somewhere unrelated.
+	join(host)
 	pinOutputDirectory(tab)
 
 	// Laid out twice on purpose. A wrapping label reports its height for the

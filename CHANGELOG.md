@@ -61,6 +61,34 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- Working out what a run would cost no longer freezes the window, and can now be
+  stopped. Pressing Preview or Generate used to work the whole plan out on the
+  thread that draws, on the reasoning that planning is fast. It is fast for text:
+  measured across formats at two thousand files, a text run plans in about 0.4 s
+  and a PNG run in 16 to 23 s, because a picture is encoded while it is planned.
+  Ten thousand pictures was a minute and a half of a window that did not redraw,
+  with both buttons still looking pressable. It now happens off that thread, with
+  Cancel offered while it goes.
+
+- Closing the window during a preview no longer waits for the whole preview. The
+  check that a preview runs asks the filesystem about every planned file, twice
+  each, and could not be interrupted - so on a large set or a directory on a
+  network share, closing the window sat there until it finished.
+
+- An archive or an Office file asked for four gigabytes or more is now refused
+  while it is planned. Above that line a ZIP needs extra records to describe
+  itself, and the arithmetic this tool uses to work out an archive's size before
+  writing it cannot account for them - so the file came out 112 bytes longer than
+  planned, which the tool then caught and reported as a fault in itself, after
+  writing four gigabytes and removing them. TAR.GZ is unaffected and keeps
+  working at those sizes.
+
+- `tfg cleanup --json` now reports counts that add up. A run of four files with
+  one already deleted reported three removed, none kept, and four files - because
+  the kept count only counted files that were still there and blocked, while the
+  list called every file it did not remove "kept". Adding the two numbers lost an
+  entry with no way to tell which.
+
 - A WAV asked for more than about four gigabytes is now refused instead of being
   written with a length field that does not match the file. A RIFF file states
   its own length in a four byte field, and nothing checked it, so a request for

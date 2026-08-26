@@ -122,6 +122,11 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// Said last, once the box it reads exists.
 	p.runner.destination = p.OutDir
 	p.runner.sayDestination()
+	// A host that wants to wait for work in flight is told how, here as well
+	// as in Open. A screen built on its own - which is how most of the
+	// guards build one - never goes through Open, and would otherwise have
+	// no way to wait for an answer that now comes back from a worker.
+	offerSettling(host, []interface{ Settled() }{p})
 	return p
 }
 

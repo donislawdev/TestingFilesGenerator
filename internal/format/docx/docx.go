@@ -122,6 +122,18 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // refusal turns the packager's arithmetic into the four part message D6 asks
 // for, in this format's own words.
 func refusal(err error, want int64, shape opc.Shape, paragraphs int) error {
+	// The ceiling before the floor, because a package past it is refused by
+	// the packager for a reason that has nothing to do with being too small.
+	if big, ok := err.(*opc.TooLarge); ok {
+		return &format.AboveMaximumError{
+			Format:    "DOCX",
+			Requested: big.Want,
+			Maximum:   big.Ceiling,
+			Reason: "an Office file is a ZIP archive, and this build works out its size before it writes it " +
+				"in a way that cannot account for the zip64 records a larger one needs",
+			Hint: "Ask for less than 4 GiB, or split the content across several files.",
+		}
+	}
 	var gap *opc.Unreachable
 	if ok := asUnreachable(err, &gap); ok {
 		return &format.BelowMinimumError{

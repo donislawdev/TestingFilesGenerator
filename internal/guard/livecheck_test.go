@@ -87,9 +87,11 @@ func TestABadValueMarksItsBoxWithNothingPressed(t *testing.T) {
 // are the engine's answers - so wiping them on a keystroke removes an answer
 // nothing here is able to work out again.
 func TestTypingInOneBoxLeavesAnotherBoxesRefusalAlone(t *testing.T) {
-	_, content := screen(t)
+	host, content := screen(t)
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
+	// The answer comes back from a worker since 2026-08-26, so it is waited for.
+	join(host)
 	if edgeOf(t, content, text.FieldSize()).StrokeWidth <= 0 {
 		t.Fatal("the refused size was never marked, so this guard cannot tell whether the mark survives")
 	}

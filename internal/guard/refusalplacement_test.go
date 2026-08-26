@@ -27,9 +27,12 @@ import (
 // The alternative was matching the wording in the window, which is a second
 // copy of rules the engine owns - and the copy that drifts.
 func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget())
+	content, w, host := screenInAWindowWithHost(t, text.TabOneTarget())
 	fill(t, content, text.FieldCount(), "0")
 	press(t, content, "Preview")
+	// The answer comes back from a worker since 2026-08-26, so it is waited for
+	// before the tree is laid out and read.
+	join(host)
 	settle(content, w)
 
 	const refusal = "asks for 0 files"
@@ -55,9 +58,12 @@ func TestARefusalAboutOneSettingAppearsUnderIt(t *testing.T) {
 // the box, while the message about the count next to it appeared under the
 // count.
 func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
-	content, w := screenInAWindow(t, text.TabOneTarget())
+	content, w, host := screenInAWindowWithHost(t, text.TabOneTarget())
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, "Preview")
+	// The answer comes back from a worker since 2026-08-26, so it is waited for
+	// before the tree is laid out and read.
+	join(host)
 	settle(content, w)
 
 	// The wording is the format's and this guard does not own it, so it asks

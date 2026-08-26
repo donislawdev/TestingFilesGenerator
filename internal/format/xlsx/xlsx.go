@@ -158,6 +158,18 @@ func checkJointLimits(rows, columns int) error {
 }
 
 func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
+	// The ceiling before the floor, because a package past it is refused by
+	// the packager for a reason that has nothing to do with being too small.
+	if big, ok := err.(*opc.TooLarge); ok {
+		return &format.AboveMaximumError{
+			Format:    "XLSX",
+			Requested: big.Want,
+			Maximum:   big.Ceiling,
+			Reason: "an Office file is a ZIP archive, and this build works out its size before it writes it " +
+				"in a way that cannot account for the zip64 records a larger one needs",
+			Hint: "Ask for less than 4 GiB, or split the content across several files.",
+		}
+	}
 	var gap *opc.Unreachable
 	if e, ok := err.(*opc.Unreachable); ok {
 		gap = e

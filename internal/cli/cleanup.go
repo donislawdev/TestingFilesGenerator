@@ -137,6 +137,10 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 	// make the second run of cleanup fail, and the second run is the one a
 	// script makes.
 	report := cleanupReport{Manifest: path, Directory: dir, Applied: true}
+	// Two counts rather than one, because they answer different questions and
+	// conflating them is what this fixed. blocked is what a file still being
+	// there MEANS - it decides the exit code and whether the manifest may go.
+	// A file already gone blocks nothing. The report's own count is below.
 	removed, blocked := 0, 0
 	for _, o := range outcomes {
 		if o.Removed {
@@ -152,7 +156,16 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 			fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
 		}
 	}
-	report.Removed, report.Kept = removed, blocked
+	// Kept counts every entry that is not removed, which is what the entries
+	// themselves say: each one carries "removed" or "kept" and nothing else.
+	//
+	// It used to be the number BLOCKED, which is a smaller set - a file already
+	// gone is kept and is not blocked. Measured on 2026-08-26 on a run of four
+	// files with one deleted by hand: removed 3, kept 0, four entries. A script
+	// adding the two got three and had no way to know which entry it had lost.
+	// The blocked count has no reader of its own, so it is gone rather than
+	// moved to a third field somebody would have to be told about.
+	report.Removed, report.Kept = removed, len(outcomes)-removed
 
 	// There is no undo, so an interrupted run has to say exactly how far it
 	// got. "Some of them" is not an answer somebody can act on.
@@ -212,7 +225,13 @@ func skipNote(c audit.Candidate, force bool) string {
 	case audit.Unreachable:
 		return "it could not be read, so there is no telling whether it is ours"
 	}
-	return string(c.Disposition)
+	// Unreachable today, and it stays a sentence rather than the bare state for
+	// the day it is not. Removable covers Ready and covers Changed with
+	// --force, so the only states arriving here are the three above - which is
+	// why the bare word this used to return could never be seen. A state added
+	// later would otherwise put a single word into a field that is a sentence
+	// everywhere else, and scripts read this field.
+	return "it was kept, and this build has no sentence for that state - which is a defect in the tool rather than in the file"
 }
 
 // cleanupReport is what --json puts out. Applied says whether anything was

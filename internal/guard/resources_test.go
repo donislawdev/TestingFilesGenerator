@@ -173,7 +173,7 @@ func TestPlanningTenThousandFilesStaysCheap(t *testing.T) {
 func TestPlanningAContainerDoesNotGenerateWhatItHolds(t *testing.T) {
 	const (
 		ceiling  = 20 * time.Second
-		declared = 100 * (100 << 20) // 100 files of 100 MB
+		declared = 30 * (100 << 20) // 30 files of 100 MB, see the note below
 	)
 
 	started := time.Now()
@@ -186,7 +186,15 @@ func TestPlanningAContainerDoesNotGenerateWhatItHolds(t *testing.T) {
 			// holds and nothing is padded.
 			SizeFromContents: true,
 			Contains: []format.Content{
-				{Format: "txt", Count: 100, Bytes: 100 << 20},
+				// Three gigabytes rather than the ten this asked for until
+				// 2026-08-26. ZIP now refuses an archive past four, because
+				// the arithmetic that works out its size cannot see the zip64
+				// records - measured, the writer produced 112 B more than the
+				// plan above that line. Three still makes the point of this
+				// guard as plainly as ten did: a build that generated what the
+				// archive holds would be writing three gigabytes here, and the
+				// clock below would say so.
+				{Format: "txt", Count: 30, Bytes: 100 << 20},
 			},
 			Label: true,
 		}},

@@ -127,6 +127,7 @@ func Open(h Host) {
 	// so without this the run would carry on with nobody watching it, or die in
 	// the middle of a file.
 	closeCleanly(h, []interface{ Stop() }{gen, pre, rec}, working, &showing)
+	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
 
 	// One table for the window, handed to the boxes of every screen. Wired here
 	// rather than in each constructor because the table belongs to the window
@@ -366,3 +367,26 @@ func startingDirectory() string {
 // in a terminal you typed your way to that directory and you know which one it
 // is (O103).
 const OutputFolderName = "tfg-out"
+
+// offerSettling hands a host a way to wait for work in flight, if it wants one.
+//
+// An optional interface, checked rather than required, so the Host a real
+// window implements does not grow a method for something only the guards ask
+// for. Nothing in the shipped program calls it.
+//
+// It exists because of what changed on 2026-08-26. Before then a preview could
+// not be cancelled - preflight took no context - so Stop only waited, and the
+// guards used the close intercept as their way of waiting for an answer. Now
+// closing cancels, which is the point of the change, so a guard that closed the
+// window to read a preview would be cancelling the preview it wanted to read.
+func offerSettling(h Host, screens []interface{ Settled() }) {
+	w, ok := h.(interface{ SetWaitForWork(func()) })
+	if !ok {
+		return
+	}
+	w.SetWaitForWork(func() {
+		for _, screen := range screens {
+			screen.Settled()
+		}
+	})
+}

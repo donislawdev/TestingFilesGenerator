@@ -188,3 +188,94 @@ func TestARefusalAboutTooLargeSaysLargerNotSmaller(t *testing.T) {
 		t.Fatal("no format refused a request for 1 TiB, so this proved nothing")
 	}
 }
+
+// A container that would need the zip64 records refuses instead of planning a
+// size it will not write.
+//
+// The arithmetic that works out an archive's size builds the whole structure
+// with the contents left out and adds the planned sizes back, so while it is
+// measuring, every entry is nought bytes long - and nought bytes never triggers
+// zip64. Measured on 2026-08-26 with tools/probes/zip64, the plan against what
+// really came out of the writer: zip drifts by 112 B past four gigabytes and an
+// Office package by 104 B. TAR.GZ does not drift, which is why it carries no
+// ceiling here - the report that raised this said it did.
+//
+// The failure this replaces was loud rather than silent: the engine compares
+// the writer's count against the plan and deletes any file that misses. So
+// nothing that worked is being taken away. What changes is that the person is
+// told before four gigabytes are written and removed, instead of afterwards
+// with a message about the generator disagreeing with its own plan.
+func TestAContainerRefusesASizeItsArithmeticCannotSee(t *testing.T) {
+	containers := 0
+	for _, d := range format.All() {
+		if !isZipArchive(d.ID) {
+			continue
+		}
+		containers++
+
+		req := format.Request{Bytes: 5 << 30, Seed: 7, Label: true}
+		if d.Container {
+			req.Properties = map[string]string{"entries": "1"}
+		}
+		_, err := d.Generator.Plan(req)
+		if err == nil {
+			t.Errorf("%s: a request for 5 GiB was planned, and the writer would not match it", d.ID)
+			continue
+		}
+		var above *format.AboveMaximumError
+		if !errors.As(err, &above) {
+			t.Errorf("%s: refused 5 GiB with %T rather than a refusal about a ceiling: %v", d.ID, err, err)
+			continue
+		}
+		if above.Maximum >= 5<<30 {
+			t.Errorf("%s: names a ceiling of %d B, which is not below the 5 GiB asked for", d.ID, above.Maximum)
+		}
+	}
+	if containers == 0 {
+		t.Fatal("no ZIP based format was found, so this proved nothing")
+	}
+
+	// An archive that crosses the line without any single part crossing it.
+	//
+	// The case above is carried by one enormous entry, and a mutation showed
+	// that it proves less than it looks: with the whole size in the padding
+	// entry, the check on the padding catches it and the check on the total
+	// never runs. Six hundred files of eight megabytes cross four gigabytes
+	// together while no one of them is anywhere near it.
+	spread := format.Request{
+		Bytes: 5 << 30, Seed: 7, Label: true,
+		Contains: []format.Content{{Format: "txt", Count: 600, Bytes: 8 << 20}},
+	}
+	zip, err := format.Get("zip")
+	if err != nil {
+		t.Fatalf("zip is not registered: %v", err)
+	}
+	if _, err := zip.Generator.Plan(spread); err == nil {
+		t.Error("an archive of six hundred files past four gigabytes was planned")
+	} else {
+		var above *format.AboveMaximumError
+		if !errors.As(err, &above) {
+			t.Errorf("refused with %T rather than a refusal about a ceiling: %v", err, err)
+		}
+	}
+}
+
+// isZipArchive names the formats built on a ZIP archive, which is what decides
+// whether the zip64 line applies at all.
+//
+// A list rather than a flag on the descriptor, because it is not a question a
+// consumer of the registry ever asks - Container says whether a format holds
+// other generated files, which is a different question: TAR.GZ is a container
+// and is not a ZIP, and an Office package is a ZIP and is not a container.
+//
+// TAR.GZ being absent is measured rather than assumed. tools/probes/zip64 at
+// 4 GiB + 1 MiB and at 5 GiB: zip drifts by 112 B, docx by 104 B, and targz by
+// nothing at all. The review that raised this said TAR.GZ had the same defect,
+// and it does not.
+func isZipArchive(id string) bool {
+	switch id {
+	case "zip", "docx", "xlsx", "pptx":
+		return true
+	}
+	return false
+}
