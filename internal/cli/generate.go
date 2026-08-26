@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -568,13 +567,24 @@ func contentsOf(t recipe.Target) []format.Content {
 }
 
 func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int {
-	name := opt.ManifestName
-	if name == "" {
-		name = defaultManifestName
-	}
-	path := filepath.Join(opt.OutDir, name)
+	// Asked of the engine rather than joined here. The engine claimed this
+	// exact name before the first file was written, so working it out a second
+	// way is a chance for the saver and the claim to mean different files.
+	path := engine.ManifestPath(opt)
 	if err := res.Manifest.Save(path); err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", path, describeError(err))
+		// What that leaves behind, because the line above is about the manifest
+		// and the person's problem is the files. Rule 6: a run that wrote files
+		// nothing can remove says so rather than leaving it to be discovered by
+		// running cleanup and being told the manifest will not parse.
+		//
+		// Nothing that agrees with the number, on purpose - see core.Count. "3
+		// files written" reads the same at one as at three.
+		if n := len(res.Manifest.Files); n > 0 {
+			fmt.Fprintf(errOut,
+				"tfg: %s written and nothing to record what this run left. Cleanup works from a manifest, so clearing %s is a job by hand.\n",
+				core.Count(n, "file", "files"), opt.OutDir)
+		}
 		return ExitIO
 	}
 	fmt.Fprintf(errOut, "manifest: %s\n", path)

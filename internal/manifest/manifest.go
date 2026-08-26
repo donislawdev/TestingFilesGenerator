@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -41,8 +42,27 @@ type Manifest struct {
 // Tool records what produced these bytes. Without it a hash mismatch after an
 // upgrade cannot be diagnosed.
 type Tool struct {
-	Name       string            `json:"name"`
-	Version    string            `json:"version"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	// Go is the toolchain that built the binary which wrote this, as
+	// runtime.Version reports it - "go1.26.7".
+	//
+	// It is here for the reason the whole of Tool is here. D11 promises the
+	// same bytes for the same recipe within a major version, and the compiler
+	// is one of the things that promise rests on: this project pins a
+	// toolchain in go.mod and in both CI workflows precisely because the
+	// standard library's flate, gzip, zip and png outputs are part of the
+	// contract. Without this field a hash that moved after somebody rebuilt
+	// with a newer Go looks identical to a hash that moved because the recipe
+	// changed, and the manifest - the one artefact that outlives the run -
+	// cannot tell the two apart.
+	//
+	// Added on 2026-08-27, review item S1, with the owner's yes. It does NOT
+	// move manifest_version, and that is the contract rather than a shortcut:
+	// docs/MANIFEST.md section 10 says the schema grows by ADDING fields and
+	// that a consumer has to ignore the ones it does not recognise. A reader
+	// written against 1.0 is unaffected by a key it never looks at.
+	Go         string            `json:"go"`
 	Generators map[string]string `json:"generators"`
 }
 
@@ -203,8 +223,15 @@ func New(toolName, toolVersion, runID, command string, seed int64, os, arch stri
 		ManifestVersion: Version,
 		GeneratedAt:     time.Now().UTC().Format(time.RFC3339),
 		Tool: Tool{
-			Name:       toolName,
-			Version:    toolVersion,
+			Name:    toolName,
+			Version: toolVersion,
+			// Read here rather than passed in, unlike the operating system and
+			// the architecture below it. Those are injected so a guard can
+			// describe a machine it is not running on. This one has exactly
+			// one right answer at run time - the toolchain that built the
+			// binary executing this line - and a caller able to pass a
+			// different one could only ever pass a wrong one.
+			Go:         runtime.Version(),
 			Generators: map[string]string{},
 		},
 		Run: Run{
@@ -505,6 +532,44 @@ func (m *Manifest) Save(path string) error {
 		return &os.PathError{Op: "save", Path: path, Err: fs.ErrExist}
 	}
 
+	// Past here the name is ours: either nothing was there and the claim above
+	// took it, or what was there is the empty claim this run made before its
+	// first file. So a failure from here on has to give the name back.
+	//
+	// Measured on 2026-08-27, review item S2, by putting a directory under the
+	// temporary name and running an ordinary generate: three files were written
+	// and exit was 5, which is right - and a nought byte manifest.json was left
+	// sitting beside them, which is not. What that costs was measured too, and
+	// it is three things rather than the one the review named:
+	//
+	//	cleanup   exit 5, "unexpected end of JSON input" - the files cannot be
+	//	          removed by the only thing allowed to remove them
+	//	verify    exit 5, the same
+	//	generate  refused, and the refusal SAYS the file "is the only record of
+	//	          what an earlier run wrote" about a file that records nothing
+	//
+	// The last of those is the worst, because it is a true sentence in every
+	// other case and a false one here, and it sends somebody looking for a run
+	// whose files it cannot name. Giving the name back turns all three into the
+	// honest situation: files nobody recorded, in a directory that says so by
+	// naming a FILE the next run collides with rather than a phantom manifest.
+	if err := m.writeOver(path); err != nil {
+		// Only ever removes a nought byte file - see Release. So a manifest
+		// somebody else wrote cannot be taken away by a failure of ours, which
+		// is the property that makes this safe to do on every error below.
+		_ = Release(path)
+		return err
+	}
+	return nil
+}
+
+// writeOver puts the manifest under a name this run already owns.
+//
+// Split out of Save so that every way of failing gives the name back, rather
+// than the four early returns below each having to remember to. The rule is
+// "the claim goes when the write does", and a rule spelled once cannot be
+// half applied.
+func (m *Manifest) writeOver(path string) error {
 	tmp := path + ".tfg-writing"
 	f, err := os.Create(tmp)
 	if err != nil {

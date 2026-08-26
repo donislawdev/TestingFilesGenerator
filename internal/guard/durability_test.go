@@ -39,8 +39,15 @@ func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
 		order []string
 	}{
 		{
-			file:     "internal/manifest/manifest.go",
-			function: "Save",
+			file: "internal/manifest/manifest.go",
+			// writeOver rather than Save since 2026-08-27. Save used to hold
+			// this sequence itself and now wraps it, so that every way of
+			// failing gives the claimed name back in one place - review item
+			// S2. The sequence moved with the code and this guard moved with
+			// the sequence, which is the honest repair: the property being
+			// asked about is "the thing that renames flushes first", and the
+			// thing that renames is now called writeOver.
+			function: "writeOver",
 			order:    []string{"m.Encode(f)", "f.Sync()", "f.Close()", "os.Rename(tmp, path)"},
 		},
 		{
