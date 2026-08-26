@@ -84,6 +84,10 @@ func TestTheColourOfAnOutcomeDoesNotOutliveIt(t *testing.T) {
 	// and the foot of the form says so.
 	fill(t, content, text.FieldSize(), "1")
 	press(t, content, text.ButtonGenerate())
+	// The refusal comes back from a worker since 2026-08-26. Without waiting,
+	// this reads the line while the worker is writing it - which the race
+	// detector caught on CI rather than here.
+	join(host)
 
 	if status.Text == text.Written(2) {
 		t.Fatalf("the line still reads %q, so the refusal never reached it and this guard is asking nothing", status.Text)

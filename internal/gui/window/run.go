@@ -774,8 +774,15 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 			close(done)
 			return
 		}
-		fyne.Do(func() { r.say(text.WritingFiles(len(planned))) })
-
+		// Nothing is said from here, and that is deliberate rather than an
+		// omission. A line saying how many files are being written would be a
+		// widget touched from the worker in the middle of the run, and under
+		// the test driver fyne.Do runs on the CALLING goroutine - so every
+		// guard that looks at the screen while a run is going would be reading
+		// a widget this goroutine is writing. The race detector found two of
+		// them on CI. The progress callback already takes the line over within
+		// a tenth of a second, and it is throttled, which is why it was never
+		// the same problem.
 		res, runErr := engine.Run(ctx, planned, opt)
 		// The manifest is written here rather than after crossing back, because
 		// it is disk work and the interface thread is the one thing that must

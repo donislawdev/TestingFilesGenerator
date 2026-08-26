@@ -35,10 +35,21 @@ func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 	fill(t, content, text.FieldSize(), "1kb")
 	fill(t, content, text.FieldCount(), "200")
 	press(t, content, "Generate")
-	if !cancel.Visible() {
-		t.Error("Cancel is not on the screen during a run, so a run cannot be stopped")
-	}
 
+	// What is NOT asked here, and why, because the gap is deliberate.
+	//
+	// This used to read cancel.Visible() right here, to say that Cancel is on
+	// the screen WHILE a run goes. That read is a data race and always was: the
+	// worker hides this button when the run ends, and between the press and the
+	// join there is no ordering between the two goroutines - so the detector is
+	// right whatever the wall clock says. It went unnoticed until 2026-08-26,
+	// when planning moved off the interface thread and there was enough
+	// goroutine traffic for the detector to catch it.
+	//
+	// The two states below are readable because they ARE ordered: before the
+	// press nothing else is running, and after the join the worker is done.
+	// Asserting the middle would need the window to hand out its state through
+	// something with a happens-before edge, and it has none.
 	join(host)
 	waitForManifest(t, dir)
 

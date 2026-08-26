@@ -279,6 +279,24 @@ func shownButton(o fyne.CanvasObject, name string) *widget.Button {
 // the mutation runner on 2026-08-25, which is the second time this project has
 // caught itself defending something that could not be broken.
 func TestAShortcutCannotStartASecondRunDuringTheFirst(t *testing.T) {
+	// Skipped under the race detector, and the reason is about the test driver
+	// rather than about this program.
+	//
+	// This guard delivers a shortcut WHILE a run is going, which is the only
+	// moment its question exists. Delivering it reads whether the button is
+	// disabled, and the worker writes that when the run ends - with no ordering
+	// between the two, so the detector reports a race whatever the wall clock
+	// says. In a real window there is no race at all: shortcuts and the end of
+	// a run are both delivered on the interface thread. Under the test driver
+	// fyne.Do runs on the CALLING goroutine, which is the worker. That is O124,
+	// and it is a property of the driver.
+	//
+	// Skipped rather than weakened, because the question is worth keeping: the
+	// ordinary build asks it on every push, and this build asks everything else.
+	if underTheRaceDetector {
+		t.Skip("delivers a shortcut while a run is going, which the test driver cannot order against the worker - see the note above")
+	}
+
 	dir := t.TempDir()
 	host, content, _ := keyedWindow(t)
 	screen := selectTab(t, content, text.TabRecipe())
