@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ - pytania o generowanie plików testowych</title>
+<meta name="description" content="Czym to się różni od dd i fsutil, czy pliki można commitować, czy przebieg powtarza się co do bajta i co się dzieje, gdy rozmiar jest nieosiągalny.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pl">
+<meta property="og:title" content="FAQ - pytania o generowanie plików testowych">
+<meta property="og:description" content="Czym to się różni od dd i fsutil, czy pliki można commitować, czy przebieg powtarza się co do bajta i co się dzieje, gdy rozmiar jest nieosiągalny.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - pytania o generowanie plików testowych">
+<meta name="twitter:description" content="Czym to się różni od dd i fsutil, czy pliki można commitować, czy przebieg powtarza się co do bajta i co się dzieje, gdy rozmiar jest nieosiągalny.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Przejdź do treści</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Główna">
+      <a href="/pl/">Start</a>
+      <a href="/pl/formaty/">Formaty</a>
+      <a href="/pl/dokumentacja/">Dokumentacja</a>
+      <a href="/pl/zastosowania/">Zastosowania</a>
+      <a href="/pl/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Najczęstsze pytania</h1>
+<p class="lead">
+  Licencja, prywatność, powtarzalność i rzeczy, które ludzie sprawdzają, zanim wstawią generator do
+  potoku budowania. Jeśli Twojego pytania tu nie ma,
+  <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">zgłoszenia</a> są otwarte.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Czym to się różni od dd, fsutil albo truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Tamte dają plik właściwego rozmiaru wypełniony niczym. Plik 2 MB nazwany photo.png zrobiony w ten sposób nie jest PNG, więc cokolwiek naprawdę go parsuje, odrzuci go z niewłaściwego powodu - a wtedy Twój test przechodzi też z niewłaściwego powodu. Tutaj powstaje prawdziwy PNG o rozmiarze dokładnie 2 MB, który otwiera się w przeglądarce obrazów, i przychodzi z informacją, jak system ma go potraktować.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy to jest darmowe i czy mogę tego używać w pracy?</h2></summary>
+    <div class="qa-body">
+      <p>Tak na oba pytania. Narzędzie jest wydane na GPL-3.0 i nic nie kosztuje. Nie ma konta, klucza licencyjnego ani wersji płatnej.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy mogę użyć wygenerowanych plików w zamkniętym produkcie?</h2></summary>
+    <div class="qa-body">
+      <p>Tak. Licencja obejmuje kod narzędzia, a nie to, co narzędzie tworzy. Wygenerowane pliki, przepisy i manifesty są wynikiem pracy programu, a nie dziełem zależnym, więc można je commitować i dostarczać bez żadnych zobowiązań.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy wygenerowane pliki zawierają prawdziwe dane osobowe?</h2></summary>
+    <div class="qa-body">
+      <p>Nie. Wszystko w środku jest wytworzone z ziarna. Żaden zbiór danych nie jest czytany, żadna usługa nie jest odpytywana i żadna cudza treść nie jest osadzana. Wygenerowany adres e-mail traktuj jako nienadający się do użycia, a nie jako nieużywany - każdy losowy ciąg znaków może przypadkiem zderzyć się z prawdziwym.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy na innej maszynie dostanę dokładnie te same pliki?</h2></summary>
+    <div class="qa-body">
+      <p>Tak, co do bajta, przy tym samym przepisie i tym samym ziarnie. Projekt sprawdza to przy każdej zmianie, a złamanie tego wymaga podniesienia wersji głównej. Właśnie dlatego zamiast dużych plików binarnych można commitować mały przepis.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy narzędzie potrzebuje internetu?</h2></summary>
+    <div class="qa-body">
+      <p>Nigdy. Nie ma telemetrii, sprawdzania aktualizacji ani klienta chmurowego, a binarka wiersza poleceń nie ma w ogóle wkompilowanej obsługi sieci. Działa na maszynie bez sieci i w zamkniętym środowisku firmowym.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Co się stanie, gdy poproszę o rozmiar, którego format nie osiągnie?</h2></summary>
+    <div class="qa-body">
+      <p>Dostaniesz błąd nazywający format, najmniejszy możliwy rozmiar, powód tego ograniczenia i podpowiedź, co zrobić zamiast tego, a żaden plik nie powstanie. Narzędzie nigdy nie zaokrągla rozmiaru po cichu. Wszystkie minima są wypisane na stronie formatów.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy mogę wygenerować plik celowo uszkodzony?</h2></summary>
+    <div class="qa-body">
+      <p>Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Jakie formaty są następne w kolejce?</h2></summary>
+    <div class="qa-body">
+      <p>7z, tiff, webp, mp3 i mp4. Formatów działających dziś od początku do końca jest 20.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Na jakich systemach to działa?</h2></summary>
+    <div class="qa-body">
+      <p>Wiersz poleceń działa na Windows i Linux, zarówno na Intelu, jak i na ARM, oraz na Makach z procesorem Apple. Okno jest budowane dla Windows na Intelu, Linuksa na Intelu i Maków z procesorem Apple. Maki z procesorem Intel nie są wspierane i nic dla nich nie powstaje.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Czy muszę cokolwiek instalować?</h2></summary>
+    <div class="qa-body">
+      <p>Nie. Pobierz archiwum dla swojego systemu, rozpakuj i uruchom. Nie ma instalatora, nie trzeba dokładać środowiska uruchomieniowego ani rozwiązywać zależności. Jeśli masz Go, wystarczy jedno polecenie go install.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Dlaczego przebieg po tysiącach plików jest wolniejszy na Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Bo Windows liczy sobie więcej za każdą ścieżkę, na którą patrzy, a polecenie chodzące po tysiącach plików patrzy na tysiące ścieżek. Zmierzone na jednej maszynie przy 3000 plików po 1 kB: verify trwa około 0,9 sekundy na Windows i około 0,2 sekundy na Linuksie w kontenerze. Krótsza ścieżka katalogu wyjściowego zmniejsza wynik na Windows, bo każdy katalog nad plikami też jest częścią tego, na co system patrzy.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Czym to się różni od dd, fsutil albo truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tamte dają plik właściwego rozmiaru wypełniony niczym. Plik 2 MB nazwany photo.png zrobiony w ten sposób nie jest PNG, więc cokolwiek naprawdę go parsuje, odrzuci go z niewłaściwego powodu - a wtedy Twój test przechodzi też z niewłaściwego powodu. Tutaj powstaje prawdziwy PNG o rozmiarze dokładnie 2 MB, który otwiera się w przeglądarce obrazów, i przychodzi z informacją, jak system ma go potraktować." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy to jest darmowe i czy mogę tego używać w pracy?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tak na oba pytania. Narzędzie jest wydane na GPL-3.0 i nic nie kosztuje. Nie ma konta, klucza licencyjnego ani wersji płatnej." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy mogę użyć wygenerowanych plików w zamkniętym produkcie?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tak. Licencja obejmuje kod narzędzia, a nie to, co narzędzie tworzy. Wygenerowane pliki, przepisy i manifesty są wynikiem pracy programu, a nie dziełem zależnym, więc można je commitować i dostarczać bez żadnych zobowiązań." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy wygenerowane pliki zawierają prawdziwe dane osobowe?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nie. Wszystko w środku jest wytworzone z ziarna. Żaden zbiór danych nie jest czytany, żadna usługa nie jest odpytywana i żadna cudza treść nie jest osadzana. Wygenerowany adres e-mail traktuj jako nienadający się do użycia, a nie jako nieużywany - każdy losowy ciąg znaków może przypadkiem zderzyć się z prawdziwym." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy na innej maszynie dostanę dokładnie te same pliki?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tak, co do bajta, przy tym samym przepisie i tym samym ziarnie. Projekt sprawdza to przy każdej zmianie, a złamanie tego wymaga podniesienia wersji głównej. Właśnie dlatego zamiast dużych plików binarnych można commitować mały przepis." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy narzędzie potrzebuje internetu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nigdy. Nie ma telemetrii, sprawdzania aktualizacji ani klienta chmurowego, a binarka wiersza poleceń nie ma w ogóle wkompilowanej obsługi sieci. Działa na maszynie bez sieci i w zamkniętym środowisku firmowym." }
+    },
+    {
+      "@type": "Question",
+      "name": "Co się stanie, gdy poproszę o rozmiar, którego format nie osiągnie?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Dostaniesz błąd nazywający format, najmniejszy możliwy rozmiar, powód tego ograniczenia i podpowiedź, co zrobić zamiast tego, a żaden plik nie powstanie. Narzędzie nigdy nie zaokrągla rozmiaru po cichu. Wszystkie minima są wypisane na stronie formatów." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy mogę wygenerować plik celowo uszkodzony?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu." }
+    },
+    {
+      "@type": "Question",
+      "name": "Jakie formaty są następne w kolejce?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, tiff, webp, mp3 i mp4. Formatów działających dziś od początku do końca jest 20." }
+    },
+    {
+      "@type": "Question",
+      "name": "Na jakich systemach to działa?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Wiersz poleceń działa na Windows i Linux, zarówno na Intelu, jak i na ARM, oraz na Makach z procesorem Apple. Okno jest budowane dla Windows na Intelu, Linuksa na Intelu i Maków z procesorem Apple. Maki z procesorem Intel nie są wspierane i nic dla nich nie powstaje." }
+    },
+    {
+      "@type": "Question",
+      "name": "Czy muszę cokolwiek instalować?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nie. Pobierz archiwum dla swojego systemu, rozpakuj i uruchom. Nie ma instalatora, nie trzeba dokładać środowiska uruchomieniowego ani rozwiązywać zależności. Jeśli masz Go, wystarczy jedno polecenie go install." }
+    },
+    {
+      "@type": "Question",
+      "name": "Dlaczego przebieg po tysiącach plików jest wolniejszy na Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Bo Windows liczy sobie więcej za każdą ścieżkę, na którą patrzy, a polecenie chodzące po tysiącach plików patrzy na tysiące ścieżek. Zmierzone na jednej maszynie przy 3000 plików po 1 kB: verify trwa około 0,9 sekundy na Windows i około 0,2 sekundy na Linuksie w kontenerze. Krótsza ścieżka katalogu wyjściowego zmniejsza wynik na Windows, bo każdy katalog nad plikami też jest częścią tego, na co system patrzy." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Wciąż się zastanawiasz?</h2>
+  <p>
+    <a href="/pl/zastosowania/">Strona zastosowań</a> pokazuje zadania, pod które to powstało, a
+    <a href="/pl/formaty/">strona formatów</a> wypisuje każdy format razem z najmniejszym plikiem,
+    jaki potrafi zrobić. <a href="https://github.com/donislawdev/TestingFilesGenerator">README w repozytorium</a> jest pełną dokumentacją.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Pobierz 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Zobacz kod źródłowy</a>
+</div>
+<p class="cta-note">Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Binarki nie są jeszcze podpisane, więc system ostrzeże przy pierwszym uruchomieniu - nota wydania mówi dokładnie, czego się spodziewać.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kod na GitHubie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Pobieranie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Zgłoś problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Wesprzyj projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Strony</p>
+      <ul class="plain">
+        <li><a href="/pl/">Start</a></li>
+        <li><a href="/pl/formaty/">Formaty</a></li>
+        <li><a href="/pl/dokumentacja/">Dokumentacja</a></li>
+        <li><a href="/pl/zastosowania/">Zastosowania</a></li>
+        <li><a href="/pl/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.</p>
+    <p class="muted">Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,66 @@
+name: Site
+
+# The project website, published from web/public.
+#
+# This runs after CI rather than beside it, and that is the whole design. The
+# pages under web/public are generated from the program - the format table, the
+# smallest file of each format, the exit codes, the version, the download
+# matrix - and TestTheSiteSaysWhatTheToolSays in CI compares them against what
+# the program renders right now. Publishing on push would race that check and
+# could put a stale page up while CI was still going red about it.
+#
+# So the site goes out only after CI has passed on main, for the exact commit
+# CI passed on. A red suite means the site does not move.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and a newer commit wins. Cancelling a running
+# deployment mid-flight would be worse than letting it finish, so in-progress
+# is left alone.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # A dispatch is a person asking on purpose. Everything else has to be CI
+    # saying the tree is good.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The commit CI passed on, not whatever main happens to be now. On a
+          # dispatch there is no such commit and the default ref is right.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - name: refuse to publish an empty site
+        # A misplaced path here would deploy nothing and take the site down
+        # without failing, which is the quiet kind of breakage. The pages are
+        # committed, so their absence is a mistake rather than a state.
+        run: |
+          test -f web/public/index.html
+          test -f web/public/sitemap.xml
+          test -f web/public/CNAME
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/public
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

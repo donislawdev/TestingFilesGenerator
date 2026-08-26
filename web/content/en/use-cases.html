@@ -1,0 +1,116 @@
+<h1>What people use it for</h1>
+<p class="lead">
+  Five jobs that come up in almost every project that accepts files from people, and the command that
+  does each one. Every example below runs as written.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Upload limits</p>
+  <h2>Testing whether a file size limit is enforced where it says it is</h2>
+  <p>
+    A limit is three test cases, not one: just under, exactly on, and just over. Getting those by hand
+    means computing byte counts and hoping you did not fencepost the arithmetic. Ask for the set
+    instead:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    You get three real PDFs at 1048575, 1048576 and 1048577 bytes, and a manifest saying the first two
+    should be accepted and the third rejected for <code>size_limit</code>. Your test reads the
+    expectation instead of you writing three assertions by hand - and when the limit changes, you
+    change one number and rerun.
+  </p>
+  <p>
+    The same works without a preset when you want a single boundary set inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Continuous integration</p>
+  <h2>Keeping fixtures out of the repository without losing them</h2>
+  <p>
+    Large binary fixtures make a repository slow to clone and awkward to review, and nobody can tell
+    what changed when one is replaced. A recipe is a few hundred characters of YAML that rebuilds the
+    identical files - <strong>byte for byte, on any machine</strong> - because every file is derived
+    from the run seed.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Every ending has its own exit code, so a pipeline can tell a bad recipe from a full disk from a
+    verification mismatch. A failed run prints nothing on standard output, which keeps a log parser
+    from reading an error as data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Scale</p>
+  <h2>Finding out what happens when the folder is big</h2>
+  <p>
+    Import routines, nightly jobs and directory listings behave differently at ten thousand files than
+    at ten. Sizes drawn from a range make the set look like real traffic rather than ten thousand
+    identical files, and the draw comes from the seed, so the set is the same tomorrow.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Check what a run would cost before it writes anything, which matters when the total is measured in
+    gigabytes:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    A run larger than the free space on the disk is refused before the first byte is written, rather
+    than filling the disk and failing halfway.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archives</p>
+  <h2>Testing an unpacker with an archive that really holds files</h2>
+  <p>
+    An empty archive with the right extension proves nothing about code that opens it and walks what is
+    inside. Declare the contents and the archive genuinely holds them:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Nesting depth, entry counts and the size of what is inside are all things an import routine has
+    opinions about, and this is how you find out what those opinions are.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsers and viewers</p>
+  <h2>Checking that your own code reads a format the way real software does</h2>
+  <p>
+    Every format here is checked against an independent reader before it ships - a PNG is opened and
+    its pixels compared, a DOCX is read back by separate libraries, an archive is extracted. That
+    means a file that your parser rejects is a finding about your parser, not about the generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <p>
+    The <a href="/formats/">formats page</a> lists the settings each one accepts and the smallest file
+    each can be.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Who this is for</h2>
+  <p>
+    QA engineers, test automation, and anyone whose code has an upload form, an import routine, a
+    parser or a storage quota behind it. It runs on a machine with no network at all, which matters in
+    a closed corporate environment where a browser based generator is not an option.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

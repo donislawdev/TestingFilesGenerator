@@ -1,0 +1,90 @@
+<h1>{{ .Facts.FormatCount }} file formats, every one generated at an exact size</h1>
+<p class="lead">
+  Each of these is a <strong>real file of that format</strong>. It opens in the software that owns it,
+  and it is exactly the number of bytes you asked for. None of them is padded zeros with an extension
+  bolted on.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>What the columns mean</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Smallest file</p>
+      <p class="muted">
+        The fewest bytes this tool will accept for that format, including the label it writes inside
+        the file. Ask for less and you get an error naming the floor and the reason for it, never a
+        file of the wrong size.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Fidelity</p>
+      <p class="muted">
+        How complete the file is. <code>full</code> means a reader that really parses the format
+        accepts it, not merely that the extension matches.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Checked against</p>
+      <p class="muted">
+        The independent reader that opens every generated file before the format ships - a separate
+        implementation, not our own code marking its own homework.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Every format also repeats to the byte: the same recipe and seed produce identical files on any
+    machine, which is what makes a recipe safe to commit in place of the fixtures themselves.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Settings each format accepts</h2>
+  <p>
+    Most formats take settings of their own - image dimensions, JPEG quality, PDF page count, rows and
+    columns in a spreadsheet, how many entries go inside an archive. Set them with
+    <code>--set key=value</code> on the command line, or under <code>properties:</code> in a recipe.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    A value outside what a setting accepts is refused with a message naming the setting, the allowed
+    range and what to use instead. An unknown setting is an error too, never a silent default -
+    a typo accepted in silence gives a file with the wrong settings and an hour spent wondering why
+    the test passes when it should not.
+  </p>
+  <p>
+    Run <code>tfg formats &lt;id&gt;</code> to see exactly what one format accepts on the build you have.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Archives hold real files</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} and {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    can be filled with entries rather than left as an empty shell. A generated archive genuinely
+    contains the documents it claims to contain, so anything that unpacks it during a test finds real
+    files inside.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+
+<section class="section" id="next">
+  <h2>Formats that are not here yet</h2>
+  <p>
+    <code>7z</code>, <code>tiff</code>, <code>webp</code>, <code>mp3</code> and <code>mp4</code> are
+    planned and not built. They are absent from the list above rather than present and half working,
+    and asking for one is an error saying the format is unknown.
+  </p>
+  <p>
+    If you need one of them, or a format that is not on either list, the
+    <a href="{{ .Facts.Issues }}">issue tracker</a> is where that gets decided.
+  </p>
+</section>

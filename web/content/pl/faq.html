@@ -1,0 +1,19 @@
+<h1>Najczęstsze pytania</h1>
+<p class="lead">
+  Licencja, prywatność, powtarzalność i rzeczy, które ludzie sprawdzają, zanim wstawią generator do
+  potoku budowania. Jeśli Twojego pytania tu nie ma,
+  <a href="{{ .Facts.Issues }}">zgłoszenia</a> są otwarte.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Wciąż się zastanawiasz?</h2>
+  <p>
+    <a href="/pl/zastosowania/">Strona zastosowań</a> pokazuje zadania, pod które to powstało, a
+    <a href="/pl/formaty/">strona formatów</a> wypisuje każdy format razem z najmniejszym plikiem,
+    jaki potrafi zrobić. <a href="{{ .Facts.Repo }}">README w repozytorium</a> jest pełną dokumentacją.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

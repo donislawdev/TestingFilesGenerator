@@ -1,0 +1,91 @@
+<h1>{{ .Facts.FormatCount }} formatów plików, każdy generowany o dokładnym rozmiarze</h1>
+<p class="lead">
+  Każdy z nich to <strong>prawdziwy plik tego formatu</strong>. Otwiera się w programie, do którego
+  należy, i ma dokładnie tyle bajtów, ile zamówiłeś. Żaden nie jest zerami z doklejonym rozszerzeniem.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Co znaczą kolumny</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Najmniejszy plik</p>
+      <p class="muted">
+        Najmniejsza liczba bajtów, jaką narzędzie przyjmie dla tego formatu, razem z etykietą, którą
+        zapisuje w środku pliku. Poproś o mniej, a dostaniesz błąd nazywający to ograniczenie i jego
+        powód, nigdy plik o innym rozmiarze.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Wierność</p>
+      <p class="muted">
+        Jak kompletny jest plik. <code>full</code> znaczy, że czytnik naprawdę parsujący ten format
+        przyjmuje plik, a nie tylko że zgadza się rozszerzenie.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Sprawdzany przez</p>
+      <p class="muted">
+        Niezależny czytnik, który otwiera każdy wygenerowany plik, zanim format trafi do wydania - inna
+        implementacja, a nie nasz własny kod oceniający własną pracę.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Każdy format powtarza się też co do bajta: ten sam przepis i ziarno dają identyczne pliki na
+    dowolnej maszynie, i właśnie dlatego przepis można bezpiecznie commitować zamiast samych danych
+    testowych.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Ustawienia, które przyjmuje każdy format</h2>
+  <p>
+    Większość formatów ma własne ustawienia - wymiary obrazu, jakość JPEG, liczbę stron PDF, wiersze
+    i kolumny arkusza, liczbę wpisów w archiwum. Podajesz je przez <code>--set klucz=wartość</code>
+    w wierszu poleceń albo pod <code>properties:</code> w przepisie.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Wartość spoza tego, co ustawienie przyjmuje, jest odrzucana komunikatem nazywającym ustawienie,
+    dozwolony zakres i to, czego użyć zamiast tego. Nieznane ustawienie też jest błędem, nigdy cichym
+    pominięciem - literówka przyjęta w milczeniu daje plik z niewłaściwymi ustawieniami i godzinę
+    zastanawiania się, czemu test przechodzi, choć nie powinien.
+  </p>
+  <p>
+    Uruchom <code>tfg formats &lt;id&gt;</code>, żeby zobaczyć, co dokładnie przyjmuje jeden format
+    w wersji, którą masz.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Archiwa zawierają prawdziwe pliki</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} oraz {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    można wypełnić wpisami, zamiast zostawiać jako pustą skorupę. Wygenerowane archiwum naprawdę
+    zawiera dokumenty, o których mówi, więc cokolwiek rozpakowuje je w trakcie testu, znajduje
+    w środku prawdziwe pliki.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+
+<section class="section" id="next">
+  <h2>Formaty, których jeszcze nie ma</h2>
+  <p>
+    <code>7z</code>, <code>tiff</code>, <code>webp</code>, <code>mp3</code> i <code>mp4</code> są
+    zaplanowane i niezbudowane. Nie ma ich na liście wyżej, zamiast być obecne i działać połowicznie,
+    a poproszenie o któryś kończy się błędem mówiącym, że format jest nieznany.
+  </p>
+  <p>
+    Jeśli potrzebujesz któregoś z nich albo formatu, którego nie ma na żadnej z tych list,
+    <a href="{{ .Facts.Issues }}">zgłoszenia</a> są miejscem, gdzie się o tym decyduje.
+  </p>
+</section>

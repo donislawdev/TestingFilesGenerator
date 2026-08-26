@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ - Questions About Generating Test Files</title>
+<meta name="description" content="How this differs from dd and fsutil, whether the files are safe to commit, whether runs repeat byte for byte, and what happens when a size cannot be reached.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="FAQ - Questions About Generating Test Files">
+<meta property="og:description" content="How this differs from dd and fsutil, whether the files are safe to commit, whether runs repeat byte for byte, and what happens when a size cannot be reached.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - Questions About Generating Test Files">
+<meta name="twitter:description" content="How this differs from dd and fsutil, whether the files are safe to commit, whether runs repeat byte for byte, and what happens when a size cannot be reached.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Frequently asked questions</h1>
+<p class="lead">
+  Licence, privacy, reproducibility and the things people check before putting a generator into a build
+  pipeline. If your question is not here, the <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">issue tracker</a> is open.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>How is this different from dd, fsutil or truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Those give you a file of the right size full of nothing. A 2 MB file named photo.png made that way is not a PNG, so anything that really parses it rejects it for the wrong reason, and your test then passes for the wrong reason too. This produces a real PNG of exactly 2 MB that opens in an image viewer, and it arrives with a statement about how your system should treat it.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Is it free, and can I use it at work?</h2></summary>
+    <div class="qa-body">
+      <p>Yes to both. It is released under GPL-3.0 and costs nothing. There is no account, no licence key and no paid tier.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Can I use the generated files in a closed source product?</h2></summary>
+    <div class="qa-body">
+      <p>Yes. The licence covers the code of the tool, not what the tool produces. Generated files, recipes and manifests are output rather than derived works, so you can commit them and ship them with no obligation.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Do the generated files contain real personal data?</h2></summary>
+    <div class="qa-body">
+      <p>No. Everything inside is synthesised from a seed. No dataset is read, no service is contacted and no third party content is embedded. Treat a generated e-mail address as unusable rather than unused, because any random string can collide with a real one by chance.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Will I get exactly the same files on another machine?</h2></summary>
+    <div class="qa-body">
+      <p>Yes, byte for byte, given the same recipe and the same seed. The project tests that on every change, and breaking it requires a major version bump. That is what lets you commit a small recipe instead of large binary fixtures.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Does it need an internet connection?</h2></summary>
+    <div class="qa-body">
+      <p>Never. There is no telemetry, no update check and no cloud client, and the command line binary does not have a network stack compiled into it at all. It works on a machine with no network and inside a closed corporate environment.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>What happens if I ask for a size a format cannot reach?</h2></summary>
+    <div class="qa-body">
+      <p>You get an error naming the format, the smallest it can be, the reason for that floor and what to do instead, and no file is written. The tool never rounds a size silently. Every floor is listed on the formats page.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Can I generate a file that is deliberately broken?</h2></summary>
+    <div class="qa-body">
+      <p>Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Which formats are coming next?</h2></summary>
+    <div class="qa-body">
+      <p>7z, tiff, webp, mp3 and mp4. 20 formats work end to end today.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Which systems can I run it on?</h2></summary>
+    <div class="qa-body">
+      <p>The command line runs on Windows and Linux on both Intel and ARM, and on Apple silicon Macs. The desktop window ships for Windows on Intel, Linux on Intel and Apple silicon Macs. Intel Macs are not supported and nothing is built for them.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Do I have to install anything?</h2></summary>
+    <div class="qa-body">
+      <p>No. Download the archive for your system, unpack it and run the binary. There is no installer, no runtime to add and no dependency to resolve. If you have Go, a single go install command works as well.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Why is a run over thousands of files slower on Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Because Windows charges more for every path it looks at, and a command that goes over thousands of files looks at thousands of paths. Measured on one machine with 3000 files of 1 kB, verify takes about 0.9 seconds on Windows and about 0.2 seconds on Linux in a container. A shorter output path makes the Windows figure smaller, because every folder above the files is part of what gets looked at.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How is this different from dd, fsutil or truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Those give you a file of the right size full of nothing. A 2 MB file named photo.png made that way is not a PNG, so anything that really parses it rejects it for the wrong reason, and your test then passes for the wrong reason too. This produces a real PNG of exactly 2 MB that opens in an image viewer, and it arrives with a statement about how your system should treat it." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it free, and can I use it at work?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes to both. It is released under GPL-3.0 and costs nothing. There is no account, no licence key and no paid tier." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use the generated files in a closed source product?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The licence covers the code of the tool, not what the tool produces. Generated files, recipes and manifests are output rather than derived works, so you can commit them and ship them with no obligation." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do the generated files contain real personal data?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Everything inside is synthesised from a seed. No dataset is read, no service is contacted and no third party content is embedded. Treat a generated e-mail address as unusable rather than unused, because any random string can collide with a real one by chance." }
+    },
+    {
+      "@type": "Question",
+      "name": "Will I get exactly the same files on another machine?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, byte for byte, given the same recipe and the same seed. The project tests that on every change, and breaking it requires a major version bump. That is what lets you commit a small recipe instead of large binary fixtures." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it need an internet connection?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Never. There is no telemetry, no update check and no cloud client, and the command line binary does not have a network stack compiled into it at all. It works on a machine with no network and inside a closed corporate environment." }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if I ask for a size a format cannot reach?",
+      "acceptedAnswer": { "@type": "Answer", "text": "You get an error naming the format, the smallest it can be, the reason for that floor and what to do instead, and no file is written. The tool never rounds a size silently. Every floor is listed on the formats page." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I generate a file that is deliberately broken?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which formats are coming next?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, tiff, webp, mp3 and mp4. 20 formats work end to end today." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which systems can I run it on?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The command line runs on Windows and Linux on both Intel and ARM, and on Apple silicon Macs. The desktop window ships for Windows on Intel, Linux on Intel and Apple silicon Macs. Intel Macs are not supported and nothing is built for them." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I have to install anything?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Download the archive for your system, unpack it and run the binary. There is no installer, no runtime to add and no dependency to resolve. If you have Go, a single go install command works as well." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is a run over thousands of files slower on Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Because Windows charges more for every path it looks at, and a command that goes over thousands of files looks at thousands of paths. Measured on one machine with 3000 files of 1 kB, verify takes about 0.9 seconds on Windows and about 0.2 seconds on Linux in a container. A shorter output path makes the Windows figure smaller, because every folder above the files is part of what gets looked at." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Still deciding?</h2>
+  <p>
+    The <a href="/use-cases/">use cases page</a> shows the jobs it is built for, and the
+    <a href="/formats/">formats page</a> lists every format with the smallest file it can produce. The
+    <a href="https://github.com/donislawdev/TestingFilesGenerator">README in the repository</a> is the full reference.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

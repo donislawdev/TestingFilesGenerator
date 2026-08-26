@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use Cases - Upload Limits, CI Fixtures, Bulk File Testing</title>
+<meta name="description" content="Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Use Cases - Upload Limits, CI Fixtures, Bulk File Testing">
+<meta property="og:description" content="Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Use Cases - Upload Limits, CI Fixtures, Bulk File Testing">
+<meta name="twitter:description" content="Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/" aria-current="page">Use cases</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>What people use it for</h1>
+<p class="lead">
+  Five jobs that come up in almost every project that accepts files from people, and the command that
+  does each one. Every example below runs as written.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Upload limits</p>
+  <h2>Testing whether a file size limit is enforced where it says it is</h2>
+  <p>
+    A limit is three test cases, not one: just under, exactly on, and just over. Getting those by hand
+    means computing byte counts and hoping you did not fencepost the arithmetic. Ask for the set
+    instead:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    You get three real PDFs at 1048575, 1048576 and 1048577 bytes, and a manifest saying the first two
+    should be accepted and the third rejected for <code>size_limit</code>. Your test reads the
+    expectation instead of you writing three assertions by hand - and when the limit changes, you
+    change one number and rerun.
+  </p>
+  <p>
+    The same works without a preset when you want a single boundary set inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Continuous integration</p>
+  <h2>Keeping fixtures out of the repository without losing them</h2>
+  <p>
+    Large binary fixtures make a repository slow to clone and awkward to review, and nobody can tell
+    what changed when one is replaced. A recipe is a few hundred characters of YAML that rebuilds the
+    identical files - <strong>byte for byte, on any machine</strong> - because every file is derived
+    from the run seed.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Every ending has its own exit code, so a pipeline can tell a bad recipe from a full disk from a
+    verification mismatch. A failed run prints nothing on standard output, which keeps a log parser
+    from reading an error as data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Scale</p>
+  <h2>Finding out what happens when the folder is big</h2>
+  <p>
+    Import routines, nightly jobs and directory listings behave differently at ten thousand files than
+    at ten. Sizes drawn from a range make the set look like real traffic rather than ten thousand
+    identical files, and the draw comes from the seed, so the set is the same tomorrow.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Check what a run would cost before it writes anything, which matters when the total is measured in
+    gigabytes:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    A run larger than the free space on the disk is refused before the first byte is written, rather
+    than filling the disk and failing halfway.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archives</p>
+  <h2>Testing an unpacker with an archive that really holds files</h2>
+  <p>
+    An empty archive with the right extension proves nothing about code that opens it and walks what is
+    inside. Declare the contents and the archive genuinely holds them:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Nesting depth, entry counts and the size of what is inside are all things an import routine has
+    opinions about, and this is how you find out what those opinions are.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsers and viewers</p>
+  <h2>Checking that your own code reads a format the way real software does</h2>
+  <p>
+    Every format here is checked against an independent reader before it ships - a PNG is opened and
+    its pixels compared, a DOCX is read back by separate libraries, an archive is extracted. That
+    means a file that your parser rejects is a finding about your parser, not about the generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <p>
+    The <a href="/formats/">formats page</a> lists the settings each one accepts and the smallest file
+    each can be.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Who this is for</h2>
+  <p>
+    QA engineers, test automation, and anyone whose code has an upload form, an import routine, a
+    parser or a storage quota behind it. It runs on a machine with no network at all, which matters in
+    a closed corporate environment where a browser based generator is not an option.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

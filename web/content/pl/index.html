@@ -1,0 +1,202 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Pliki testowe o dokładnym rozmiarze i manifest mówiący, jak system ma zareagować</h1>
+  <p class="lead">
+    Testing Files Generator tworzy <strong>prawdziwe pliki testowe</strong> w {{ .Facts.FormatCount }} formatach -
+    PDF, PNG, DOCX, ZIP i pozostałych - o <strong>dokładnie takim rozmiarze, o jaki poprosisz</strong>.
+    Do tego zapisuje, co Twoja aplikacja ma z każdym z nich zrobić. Wiersz poleceń i okno, darmowe
+    i otwarte, działające wyłącznie na Twojej maszynie.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="1160" fetchpriority="high"
+         alt="Okno programu Testing Files Generator przygotowane do zapisania wsadu plików testowych">
+    <figcaption>Okno programu przygotowane do zapisania wsadu plików. Za wierszem poleceń stoi ten sam silnik.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">prawdziwych formatów, każdy otwiera się w programie, do którego należy</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 bajt</span>
+      <p class="fact-label">dokładność każdego zamówionego rozmiaru, nigdy zaokrąglona po cichu</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">połączeń z siecią - bez konta, bez telemetrii, bez sprawdzania aktualizacji</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Problem</p>
+  <h2>Zrobić jeden plik testowy jest łatwo. Zrobić właściwy tysiąc to już robota</h2>
+  <p>Testujesz oprogramowanie, które przyjmuje pliki od ludzi. Prędzej czy później potrzebujesz:</p>
+  <ul class="ticks">
+    <li>PDF-a o rozmiarze <strong>dokładnie</strong> 10 MB, żeby sprawdzić, czy limit uploadu naprawdę działa</li>
+    <li>trzech plików po obu stronach tego limitu, żeby złapać błąd o jeden</li>
+    <li>10 000 plików logów, żeby zobaczyć, co nocne zadanie zrobi z dużym katalogiem</li>
+    <li>ZIP-a, który naprawdę zawiera 200 dokumentów, a nie zaślepki z właściwym rozszerzeniem</li>
+    <li>pliku 4 GB, bez trzymania pliku 4 GB w repozytorium</li>
+    <li><strong>tych samych</strong> danych testowych na laptopie i na serwerze budującym, co do bajta</li>
+  </ul>
+  <p>
+    To właśnie zastępuje. Powstało dla inżynierów QA, automatyzacji testów i każdego, kogo kod ma za
+    sobą formularz uploadu, import danych, parser albo limit miejsca.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Czym to się wyróżnia</p>
+  <h2>Inne generatory kończą na bajtach. Ten odpowiada na pytanie, które naprawdę zadaje test</h2>
+  <p>
+    Katalog plików zostawia Cię z decyzją, co każdy z nich ma właściwie udowodnić. Tutaj każdy przebieg
+    zapisuje obok plików <code>manifest.json</code> - zwykłą listę wszystkiego, co powstało, a przy
+    każdej pozycji <strong>zadeklarowane oczekiwanie</strong>.
+  </p>
+  <p>Załóżmy, że Twój endpoint przyjmuje 1 MB. Poproś o trzy pliki leżące na tej granicy:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Plik</th><th class="num">Bajtów</th><th>System powinien</th><th>Bo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>przyjąć</strong></td><td>mieści się w limicie</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>przyjąć</strong></td><td>sam limit jest dozwolony</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>odrzucić</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Trzy pliki, trzy różne odpowiedzi, w postaci czytelnej dla maszyny. Test czyta manifest, zamiast żebyś pisał asercje ręcznie:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Tam, gdzie odpowiedź zależy od Twojej własnej polityki, manifest to mówi</p>
+    <p>
+      Zapisuje <code>unspecified</code>, zamiast wymyślać oczekiwanie. Generator, który zgaduje,
+      produkuje fałszywe błędy, a zestaw testów, który krzyczy bez powodu, zostaje wyłączony.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Szybki start</p>
+  <h2>Trzy polecenia, żeby zobaczyć, jak to działa</h2>
+  <ol class="steps">
+    <li>
+      <h3>Zrób plik</h3>
+      <p>Jeden PNG, dokładnie dwa megabajty:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Zrób dużo plików</h3>
+      <p>Dziesięć tysięcy plików logów, każdy od jednego do ośmiu kilobajtów, z rozmiarami losowanymi z ziarna, więc jutro dostaniesz ten sam zestaw:</p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Sprawdź je, a potem usuń</h3>
+      <p><code>verify</code> mówi, że nic się nie ruszyło. <code>cleanup</code> usuwa dokładnie to, co zostało zapisane, i nic poza tym:</p>
+      <pre><code>tfg verify ./fixtures/manifest.json
+tfg cleanup ./fixtures/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Rozmiary liczą się po 1024, tak jak pokazuje je menedżer plików, więc <code>2mb</code> znaczy
+    2097152 bajty. Zwykła liczba bajtów też zadziała. <a href="/pl/dokumentacja/">Dokumentacja</a>
+    opisuje przepisy, manifest i kody wyjścia.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Co dostajesz</p>
+  <h2>Zbudowane pod zestaw, który chodzi bez nadzoru</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Dokładny rozmiar, co do bajta</p>
+      <p class="muted">Poproś o 10485761 bajtów i tyle dostaniesz. Rozmiar nieosiągalny dla formatu to błąd z powodem, nigdy plik o innym rozmiarze.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} prawdziwych formatów</p>
+      <p class="muted">Nie zera z doklejonym rozszerzeniem. Wygenerowany PNG otwiera się w przeglądarce obrazów, DOCX w Wordzie, a ZIP się rozpakowuje. Każdy format jest sprawdzany niezależnym czytnikiem, zanim trafi do wydania.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Manifest, który jest wyrocznią testu</p>
+      <p class="muted">Ścieżka, rozmiar, SHA-256, format, ziarno, wersja narzędzia - i to, co system ma z plikiem zrobić.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Powtarzalność</p>
+      <p class="muted">Ten sam przepis i ziarno dają te same bajty na każdej maszynie. Commituj mały przepis YAML zamiast dużych plików binarnych.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dwie powierzchnie, jeden silnik</p>
+      <p class="muted">Wiersz poleceń zrobiony pod CI i okno do testów eksploracyjnych. Żadne nie jest okrojoną wersją drugiego, a test porównuje je możliwość po możliwości.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Całkowicie offline</p>
+      <p class="muted">Bez konta, bez chmury, bez telemetrii, bez sprawdzania aktualizacji. Binarka wiersza poleceń nie ma w ogóle wkompilowanej obsługi sieci.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Pobieranie</p>
+  <h2>Wybierz wersję dla swojego systemu</h2>
+  <p>
+    Rozpakuj archiwum i uruchom. <code>tfg</code> to wiersz poleceń, a <code>tfg-gui</code> to okno.
+    Nie ma instalatora i nie trzeba niczego dokładać do systemu.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note warn">
+    <p class="note-title">Binarki nie są podpisane</p>
+    <p>
+      System ostrzeże przy pierwszym uruchomieniu. Nota wydania mówi dokładnie, co pokaże każdy system
+      i dlaczego. Każde archiwum jest wypisane w pliku <code>SHA256SUMS.txt</code> na stronie wydania,
+      więc możesz sprawdzić, co pobrałeś.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="scope">
+  <p class="eyebrow">Uczciwy zakres</p>
+  <h2>Gdzie to dziś jest</h2>
+  <p>
+    Wersja {{ .Facts.Version }}. Narzędzie, które się przechwala, kosztuje popołudnie, więc oto stan
+    faktyczny.
+  </p>
+  <p>
+    <strong>Działa od początku do końca:</strong> {{ .Facts.FormatCount }} formatów, przepisy, presety,
+    okno, <code>generate</code>, <code>validate</code>, <code>verify</code>, <code>cleanup</code>,
+    zestawy graniczne, zawartość archiwów, zakresy rozmiarów, ustawienia formatów, manifesty i wszystkie
+    kody wyjścia.
+  </p>
+  <p>
+    <strong>Czego jeszcze nie ma:</strong> pięciu zaplanowanych formatów - <code>7z</code>,
+    <code>tiff</code>, <code>webp</code>, <code>mp3</code> i <code>mp4</code>. Katalog presetów ma na
+    razie jedną pozycję. Część kluczy przepisu jest rozpoznawana i odrzucana komunikatem, że nie ma ich
+    w tej wersji, zamiast być po cichu ignorowana. Binarki nie są podpisane.
+  </p>
+  <p>
+    Znalazłeś błąd albo potrzebujesz formatu? <a href="{{ .Facts.Issues }}">Zgłoszenia</a> są otwarte,
+    tak samo jak dyskusja o tym, co powstanie następne.
+  </p>
+</section>

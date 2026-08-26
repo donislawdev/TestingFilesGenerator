@@ -14,6 +14,12 @@ var layer = map[string]int{
 	"internal/version": 0,
 	"internal/core":    0,
 
+	// The site renderer imports nothing of ours. It is on the bottom layer
+	// because it has no reason to be anywhere else: the facts it needs are
+	// handed to it by the guard that renders the site, which is external to
+	// everything and already allowed to look anywhere. See internal/site.
+	"internal/site": 0,
+
 	"internal/format":            1,
 	"internal/format/all":        1,
 	"internal/format/imagelabel": 1,

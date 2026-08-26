@@ -1,0 +1,164 @@
+{
+  "code": "en",
+  "name": "English",
+  "dir": "",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Home",
+      "title": "Test File Generator for QA - Exact Size, {{ .Facts.FormatCount }} Real Formats",
+      "description": "Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in {{ .Facts.FormatCount }} formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline."
+    },
+    {
+      "key": "formats",
+      "slug": "formats",
+      "nav": "Formats",
+      "title": "{{ .Facts.FormatCount }} Supported File Formats - PDF, DOCX, PNG, ZIP and More",
+      "description": "Every file format this generator produces, the smallest file each one can be, and the settings each one accepts. All twenty open in the software that owns them."
+    },
+    {
+      "key": "docs",
+      "slug": "docs",
+      "nav": "Documentation",
+      "title": "Documentation - Commands, Recipes, Manifest, Exit Codes",
+      "description": "How to generate test files from the command line or a YAML recipe, what the manifest contains, and what every exit code means when the tool runs in CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "use-cases",
+      "nav": "Use cases",
+      "title": "Use Cases - Upload Limits, CI Fixtures, Bulk File Testing",
+      "description": "Testing an upload size limit, building reproducible fixtures for CI, generating ten thousand files, and filling archives with real contents."
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "FAQ",
+      "title": "FAQ - Questions About Generating Test Files",
+      "description": "How this differs from dd and fsutil, whether the files are safe to commit, whether runs repeat byte for byte, and what happens when a size cannot be reached."
+    }
+  ],
+  "words": {
+    "skip": "Skip to content",
+    "navLabel": "Main",
+    "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
+
+    "ctaDownload": "Download",
+    "ctaSource": "View the source",
+    "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.",
+
+    "colFormat": "Format",
+    "colExtension": "Extension",
+    "colSmallest": "Smallest file",
+    "colFidelity": "Fidelity",
+    "colChecked": "Checked against",
+    "colSetting": "Setting",
+    "colAccepts": "Accepts",
+    "colSystem": "System",
+    "colCli": "Command line",
+    "colWindow": "Desktop window",
+    "noBinary": "no binary yet",
+    "colCode": "Code",
+    "colMeaning": "Meaning",
+
+    "footerBlurb": "Test files for QA, at any exact size, with a manifest that states how your system should react to each one.",
+    "footerProject": "Project",
+    "footerSource": "Source on GitHub",
+    "footerReleases": "Downloads",
+    "footerIssues": "Report a problem",
+    "footerSupport": "Support the project",
+    "footerPages": "Pages",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.",
+    "footerPrivacy": "This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.",
+
+    "notFoundTitle": "That page is not here",
+    "notFoundLead": "The address you followed does not match any page on this site.",
+    "notFoundBack": "Go to the home page"
+  },
+  "endings": {
+    "0": "Everything worked.",
+    "1": "An unexpected error inside the tool.",
+    "2": "Wrong command or flag.",
+    "3": "The recipe is not valid.",
+    "4": "The format cannot do what was asked.",
+    "5": "A read or a write failed.",
+    "6": "Not enough disk space.",
+    "7": "verify found a mismatch.",
+    "8": "The run finished but not everything was produced.",
+    "130": "Interrupted with Ctrl+C.",
+    "143": "Stopped by a signal, which is what a CI timeout looks like."
+  },
+  "presets": {
+    "size-boundaries": "Is a size limit enforced exactly where it is declared?"
+  },
+  "terms": {
+    "oracleNone": "not applicable",
+    "int": "any whole number",
+    "choice": "one of a fixed set",
+    "bool": "true or false",
+    "size": "a size such as 2mb",
+    "text": "text",
+    "pixels": "pixels",
+    "paragraphs": "paragraphs",
+    "rows": "rows",
+    "columns": "columns",
+    "slides": "slides",
+    "hertz": "hertz",
+    "megapixels": "megapixels",
+    "million cells": "million cells"
+  },
+  "faq": [
+    {
+      "q": "How is this different from dd, fsutil or truncate?",
+      "a": "Those give you a file of the right size full of nothing. A 2 MB file named photo.png made that way is not a PNG, so anything that really parses it rejects it for the wrong reason, and your test then passes for the wrong reason too. This produces a real PNG of exactly 2 MB that opens in an image viewer, and it arrives with a statement about how your system should treat it.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Is it free, and can I use it at work?",
+      "a": "Yes to both. It is released under GPL-3.0 and costs nothing. There is no account, no licence key and no paid tier."
+    },
+    {
+      "q": "Can I use the generated files in a closed source product?",
+      "a": "Yes. The licence covers the code of the tool, not what the tool produces. Generated files, recipes and manifests are output rather than derived works, so you can commit them and ship them with no obligation."
+    },
+    {
+      "q": "Do the generated files contain real personal data?",
+      "a": "No. Everything inside is synthesised from a seed. No dataset is read, no service is contacted and no third party content is embedded. Treat a generated e-mail address as unusable rather than unused, because any random string can collide with a real one by chance."
+    },
+    {
+      "q": "Will I get exactly the same files on another machine?",
+      "a": "Yes, byte for byte, given the same recipe and the same seed. The project tests that on every change, and breaking it requires a major version bump. That is what lets you commit a small recipe instead of large binary fixtures."
+    },
+    {
+      "q": "Does it need an internet connection?",
+      "a": "Never. There is no telemetry, no update check and no cloud client, and the command line binary does not have a network stack compiled into it at all. It works on a machine with no network and inside a closed corporate environment."
+    },
+    {
+      "q": "What happens if I ask for a size a format cannot reach?",
+      "a": "You get an error naming the format, the smallest it can be, the reason for that floor and what to do instead, and no file is written. The tool never rounds a size silently. Every floor is listed on the formats page.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Can I generate a file that is deliberately broken?",
+      "a": "Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format."
+    },
+    {
+      "q": "Which formats are coming next?",
+      "a": "7z, tiff, webp, mp3 and mp4. {{ .Facts.FormatCount }} formats work end to end today."
+    },
+    {
+      "q": "Which systems can I run it on?",
+      "a": "The command line runs on Windows and Linux on both Intel and ARM, and on Apple silicon Macs. The desktop window ships for Windows on Intel, Linux on Intel and Apple silicon Macs. Intel Macs are not supported and nothing is built for them."
+    },
+    {
+      "q": "Do I have to install anything?",
+      "a": "No. Download the archive for your system, unpack it and run the binary. There is no installer, no runtime to add and no dependency to resolve. If you have Go, a single go install command works as well.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Why is a run over thousands of files slower on Windows?",
+      "a": "Because Windows charges more for every path it looks at, and a command that goes over thousands of files looks at thousands of paths. Measured on one machine with 3000 files of 1 kB, verify takes about 0.9 seconds on Windows and about 0.2 seconds on Linux in a container. A shorter output path makes the Windows figure smaller, because every folder above the files is part of what gets looked at."
+    }
+  ]
+}

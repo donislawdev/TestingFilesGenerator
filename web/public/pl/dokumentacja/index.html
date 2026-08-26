@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokumentacja - komendy, przepisy, manifest, kody wyjścia</title>
+<meta name="description" content="Jak generować pliki testowe z wiersza poleceń albo z przepisu YAML, co zawiera manifest i co znaczy każdy kod wyjścia, gdy narzędzie pracuje w CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pl">
+<meta property="og:title" content="Dokumentacja - komendy, przepisy, manifest, kody wyjścia">
+<meta property="og:description" content="Jak generować pliki testowe z wiersza poleceń albo z przepisu YAML, co zawiera manifest i co znaczy każdy kod wyjścia, gdy narzędzie pracuje w CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dokumentacja - komendy, przepisy, manifest, kody wyjścia">
+<meta name="twitter:description" content="Jak generować pliki testowe z wiersza poleceń albo z przepisu YAML, co zawiera manifest i co znaczy każdy kod wyjścia, gdy narzędzie pracuje w CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Przejdź do treści</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Główna">
+      <a href="/pl/">Start</a>
+      <a href="/pl/formaty/">Formaty</a>
+      <a href="/pl/dokumentacja/" aria-current="page">Dokumentacja</a>
+      <a href="/pl/zastosowania/">Zastosowania</a>
+      <a href="/pl/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Dokumentacja</h1>
+<p class="lead">
+  Wszystko, co narzędzie robi, ułożone jako pytania, z którymi ludzie naprawdę przychodzą.
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README w repozytorium</a> jest pełną dokumentacją i zawsze odpowiada
+  wersji, którą pobrałeś.
+</p>
+
+<section class="section" id="commands">
+  <h2>Jakie są komendy?</h2>
+  <p>Każda robi jedną rzecz:</p>
+  <pre><code>tfg generate    tworzy pliki, z przepisu albo z flag
+tfg validate    sprawdza przepis i nic nie zapisuje
+tfg verify      sprawdza katalog względem manifestu
+tfg cleanup     usuwa pliki wypisane w manifeście
+tfg recipe fmt  wypisuje przepis w postaci uporządkowanej
+tfg preset      buduje zestaw plików z nazwanego pytania testowego
+tfg formats     wypisuje formaty, które ta wersja obsługuje
+tfg version     wypisuje wersję narzędzia
+tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Jak wygenerować jeden plik o dokładnym rozmiarze?</h2>
+  <p>Podaj format, rozmiar i katalog. Rozmiary liczą się po 1024, więc <code>2mb</code> to 2097152 bajty, a zwykła liczba bajtów też zadziała.</p>
+  <pre><code>tfg generate --format png --size 2mb --out ./fixtures
+tfg generate --format pdf --size 10485761 --out ./fixtures</code></pre>
+  <p>Przydatne flagi komendy <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Flaga</th><th>Co robi</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>format plików, na przykład <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;rozmiar&gt;</code></td><td>dokładny rozmiar każdego pliku, na przykład <code>10mb</code> albo liczba bajtów</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>rozmiar losowany dla każdego pliku z zakresu, na przykład <code>1kb-8kb</code>. Losowanie idzie z ziarna</td></tr>
+        <tr><td><code>--boundary &lt;rozmiar&gt;</code></td><td>trzy pliki wokół limitu: bajt pod, dokładnie limit, bajt nad</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>ile plików zapisać. Domyślnie <code>1</code></td></tr>
+        <tr><td><code>--name &lt;szablon&gt;</code></td><td>szablon nazwy, na przykład <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;katalog&gt;</code></td><td>katalog, do którego trafiają pliki</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>ziarno przebiegu. To samo ziarno daje te same bajty</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>ustawienie formatu, można powtarzać</td></tr>
+        <tr><td><code>--expected &lt;wynik&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> albo <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>policz i pokaż, nie zapisuj niczego</td></tr>
+        <tr><td><code>--json</code></td><td>wypisz manifest na standardowe wyjście</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Jak wygląda przepis?</h2>
+  <p>
+    Przepis to plik YAML opisujący cały przebieg. Commitujesz go obok testów i dane testowe przestają
+    być binariami w repozytorium - każdy może je odtworzyć, co do bajta, z pliku o długości kilkuset
+    znaków.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Każdy cel potrzebuje dokładnie jednego z: <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> albo <code>contains</code>. Dwa naraz to błąd, brak też. Niepoprawny przepis
+    <strong>nie tworzy ani jednego pliku</strong> i zgłasza wszystkie problemy naraz, a nie pierwszy
+    z brzegu, przy czym każdy nazywa ustawienie, o które chodzi.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Jak zadeklarować, co system ma zrobić z plikiem?</h2>
+  <p>Krótka forma, gdy wystarczy sam wynik, i długa, gdy liczy się powód:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Wyniki to <code>accept</code>, <code>reject</code>, <code>sanitize</code> i
+    <code>unspecified</code>. Powody są zamkniętą listą, żeby raport mógł po nich grupować:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> i <code>size_zero</code>.
+  </p>
+  <p>
+    Powód nazywa <strong>regułę, o którą chodzi</strong>, a nie werdykt. Dlatego ten sam powód może
+    stać pod jednym i pod drugim wynikiem - plik bajt pod limitem jest <code>accept</code>, a reguła,
+    której dotyczy, to dalej <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Co zawiera manifest?</h2>
+  <p>
+    Powstaje obok plików na koniec każdego przebiegu, także takiego, który został przerwany. Jedna
+    pozycja na plik:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.1.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Do tego dochodzi <code>recipe_hash</code>, gdy przebieg pochodził z przepisu, oraz
+    <code>preset</code> i <code>overrides</code>, gdy pochodził z presetu - żeby manifest zawsze dało
+    się prześledzić z powrotem do tego, co go wyprodukowało.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Czym jest preset?</h2>
+  <p>
+    To gotowy zestaw plików odpowiadający na częste pytanie testowe, żebyś nie musiał projektować
+    zestawu samodzielnie. Presety są pod spodem zwykłymi przepisami, a <code>eject</code> wypisuje ten
+    przepis, więc możesz go od tego miejsca edytować.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><code>size-boundaries</code></p>
+    <p class="muted">Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?</p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 1mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> mówi, ile zestaw będzie kosztował, zanim go zbudujesz, i wprost zaznacza, kiedy
+    liczba jest naszą wartością zastępczą, a nie Twoim limitem.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Co znaczą kody wyjścia?</h2>
+  <p>
+    Każde zakończenie ma własny kod, wyjście czytelne dla maszyny idzie na standardowe wyjście,
+    a nieudany przebieg nie pisze tam nic. Tabela jest zamrożonym kontraktem - zmiana znaczenia kodu
+    wymaga podniesienia wersji głównej.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Kod</th>
+      <th>Znaczenie</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Wszystko się udało.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Nieoczekiwany błąd wewnątrz narzędzia.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Zła komenda albo flaga.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Przepis jest niepoprawny.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Format nie potrafi tego, o co poproszono.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Odczyt albo zapis się nie powiódł.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Za mało miejsca na dysku.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify znalazło niezgodność.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Przebieg się zakończył, ale nie wszystko powstało.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Przerwane przez Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Zatrzymane sygnałem - tak wygląda przekroczony czas w CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Przebieg zatrzymany przez Ctrl+C i tak zostawia manifest i nigdy nie zostawia pliku zapisanego
+    w połowie, więc anulowane zadanie da się posprzątać następnym.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Czy jest okno?</h2>
+  <p>
+    Tak, ten sam silnik z oknem, do testowania, które nie jest skryptowane. Nie jest okrojoną wersją:
+    test porównuje obie powierzchnie możliwość po możliwości, a wszystko, co potrafi tylko jedna z nich,
+    musi być zadeklarowane i uzasadnione, zamiast po cichu się rozjeżdżać.
+  </p>
+  <p>
+    Ekrany to pojedynczy wsad, presety, kilka wsadów naraz i informacje o programie. Okno pokazuje,
+    ile przebieg będzie kosztował, zanim cokolwiek zapisze, melduje postęp w trakcie i da się je
+    przerwać w połowie bez zostawiania pliku zapisanego do połowy. Nie wczytuje jeszcze przepisu
+    z pliku - przepisy są na razie sprawą wiersza poleceń, a okno buduje swoje wsady w formularzu.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kod na GitHubie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Pobieranie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Zgłoś problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Wesprzyj projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Strony</p>
+      <ul class="plain">
+        <li><a href="/pl/">Start</a></li>
+        <li><a href="/pl/formaty/">Formaty</a></li>
+        <li><a href="/pl/dokumentacja/">Dokumentacja</a></li>
+        <li><a href="/pl/zastosowania/">Zastosowania</a></li>
+        <li><a href="/pl/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.</p>
+    <p class="muted">Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.</p>
+  </div>
+</footer>
+</body>
+</html>

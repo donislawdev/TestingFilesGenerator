@@ -1,0 +1,181 @@
+{{- define "softwareSchema" -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Testing Files Generator",
+  "alternateName": "tfg",
+  "description": "{{ .Word "schemaDescription" }}",
+  "url": "{{ .Facts.Origin }}/",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Software Testing",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareVersion": "{{ .Facts.Version }}",
+  "downloadUrl": "{{ .Facts.Releases }}",
+  "installUrl": "{{ .Facts.Releases }}",
+  "softwareHelp": "{{ .Facts.Repo }}",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "DonislawDev",
+    "url": "https://donislawdev.com/"
+  }
+}
+</script>
+{{- end -}}
+
+{{- define "faqSchema" -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {{- range $i, $qa := .Lang.Faq }}{{ if $i }},{{ end }}
+    {
+      "@type": "Question",
+      "name": "{{ $qa.Q }}",
+      "acceptedAnswer": { "@type": "Answer", "text": "{{ $qa.A }}" }
+    }
+    {{- end }}
+  ]
+}
+</script>
+{{- end -}}
+
+{{- define "faqList" -}}
+<div class="faq">
+{{- range .Lang.Faq }}
+  <details class="qa">
+    <summary><h2>{{ .Q }}</h2></summary>
+    <div class="qa-body">
+      <p>{{ .A }}</p>
+      {{- if .Code }}
+      <pre><code>{{ .Code }}</code></pre>
+      {{- end }}
+    </div>
+  </details>
+{{- end }}
+</div>
+{{- end -}}
+
+{{- define "formatsTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .Word "colFormat" }}</th>
+      <th>{{ .Word "colExtension" }}</th>
+      <th class="num">{{ .Word "colSmallest" }}</th>
+      <th>{{ .Word "colFidelity" }}</th>
+      <th>{{ .Word "colChecked" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .Facts.Formats }}
+    <tr>
+      <td><code>{{ .ID }}</code></td>
+      <td><code>{{ .Extension }}</code></td>
+      <td class="num">{{ .Smallest }}</td>
+      <td>{{ .Fidelity }}</td>
+      <td>{{ if eq .Oracle "none" }}<span class="muted">{{ $.Term "oracleNone" }}</span>{{ else }}{{ .Oracle }}{{ end }}</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
+{{- define "propertiesTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .Word "colFormat" }}</th>
+      <th>{{ .Word "colSetting" }}</th>
+      <th>{{ .Word "colAccepts" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .Facts.WithProperties }}
+    {{- $id := .ID }}
+    {{- range $n, $p := .Properties }}
+    <tr>
+      <td>{{ if eq $n 0 }}<code>{{ $id }}</code>{{ end }}</td>
+      <td><code>{{ $p.Name }}</code></td>
+      <td>{{ $.AllowedOf $p }}</td>
+    </tr>
+    {{- end }}
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
+{{- define "downloadsTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .Word "colSystem" }}</th>
+      <th>{{ .Word "colCli" }}</th>
+      <th>{{ .Word "colWindow" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .Facts.Downloads }}
+    <tr>
+      <td>{{ .System }}</td>
+      <td><code>{{ join .CLI ", " }}</code></td>
+      <td>{{ if .GUI }}<code>{{ join .GUI ", " }}</code>{{ else }}<span class="muted">{{ $.Word "noBinary" }}</span>{{ end }}</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
+{{- define "exitCodesTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">{{ .Word "colCode" }}</th>
+      <th>{{ .Word "colMeaning" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .Endings }}
+    <tr>
+      <td class="num"><code>{{ .Code }}</code></td>
+      <td>{{ .Meaning }}</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
+{{- define "presetsList" -}}
+<ul class="cards">
+{{- range .PresetList }}
+  <li class="card">
+    <p class="card-title"><code>{{ .ID }}</code></p>
+    <p class="muted">{{ .Question }}</p>
+  </li>
+{{- end }}
+</ul>
+{{- end -}}
+
+{{- define "downloadCta" -}}
+<div class="cta">
+  <a class="button primary" href="{{ .Facts.Releases }}">{{ .Word "ctaDownload" }} {{ .Facts.Version }}</a>
+  <a class="button ghost" href="{{ .Facts.Repo }}">{{ .Word "ctaSource" }}</a>
+</div>
+<p class="cta-note">{{ .Word "ctaNote" }}</p>
+{{- end -}}

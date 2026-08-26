@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ .Lang.Code }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Page.Title }}</title>
+<meta name="description" content="{{ .Page.Description }}">
+<link rel="canonical" href="{{ .Canonical }}">
+{{- range .Alternates }}
+<link rel="alternate" hreflang="{{ .Lang }}" href="{{ .URL }}">
+{{- end }}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="{{ .Lang.Code }}">
+<meta property="og:title" content="{{ .Page.Title }}">
+<meta property="og:description" content="{{ .Page.Description }}">
+<meta property="og:url" content="{{ .Canonical }}">
+<meta property="og:image" content="{{ .Facts.Origin }}/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ .Page.Title }}">
+<meta name="twitter:description" content="{{ .Page.Description }}">
+<meta name="twitter:image" content="{{ .Facts.Origin }}/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+{{- if .IsHome }}
+{{ template "softwareSchema" . }}
+{{- end }}
+</head>
+<body>
+<a class="skip" href="#main">{{ .Word "skip" }}</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="{{ if .Lang.Dir }}/{{ .Lang.Dir }}/{{ else }}/{{ end }}">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="{{ .Word "navLabel" }}">
+      {{- range .Nav }}
+      <a href="{{ .URL }}"{{ if .Current }} aria-current="page"{{ end }}>{{ .Label }}</a>
+      {{- end }}
+    </nav>
+    <div class="langswitch">
+      {{- range .Switches }}
+      <a href="{{ .URL }}" hreflang="{{ .Code }}" lang="{{ .Code }}" rel="alternate">{{ .Name }}</a>
+      {{- end }}
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+{{ .Body }}
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator {{ .Facts.Version }}</p>
+      <p class="muted">{{ .Word "footerBlurb" }}</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">{{ .Word "footerProject" }}</p>
+      <ul class="plain">
+        <li><a href="{{ .Facts.Repo }}">{{ .Word "footerSource" }}</a></li>
+        <li><a href="{{ .Facts.Releases }}">{{ .Word "footerReleases" }}</a></li>
+        <li><a href="{{ .Facts.Issues }}">{{ .Word "footerIssues" }}</a></li>
+        <li><a href="{{ .Facts.Support }}">{{ .Word "footerSupport" }}</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">{{ .Word "footerPages" }}</p>
+      <ul class="plain">
+        {{- range .Nav }}
+        <li><a href="{{ .URL }}">{{ .Label }}</a></li>
+        {{- end }}
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">{{ .Word "footerLicence" }}</p>
+    <p class="muted">{{ .Word "footerPrivacy" }}</p>
+  </div>
+</footer>
+</body>
+</html>

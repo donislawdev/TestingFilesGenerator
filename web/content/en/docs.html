@@ -1,0 +1,225 @@
+<h1>Documentation</h1>
+<p class="lead">
+  Everything the tool does, arranged as the questions people actually arrive with. The
+  <a href="{{ .Facts.Repo }}">README in the repository</a> is the full reference and always matches the
+  build you downloaded.
+</p>
+
+<section class="section" id="commands">
+  <h2>What commands are there?</h2>
+  <p>Each one does a single thing:</p>
+  <pre><code>tfg generate    produce files, from a recipe or from flags
+tfg validate    check a recipe and write nothing
+tfg verify      check a directory against a manifest
+tfg cleanup     remove the files a manifest lists
+tfg recipe fmt  print a recipe in its settled shape
+tfg preset      build a set of files from a named test question
+tfg formats     list the formats this build supports
+tfg version     print the tool version
+tfg license     print the licence and what it means for generated files</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>How do I generate a single file of an exact size?</h2>
+  <p>Name the format, the size and where it goes. Sizes count in 1024s, so <code>2mb</code> is 2097152 bytes, and a plain byte count works too.</p>
+  <pre><code>tfg generate --format png --size 2mb --out ./fixtures
+tfg generate --format pdf --size 10485761 --out ./fixtures</code></pre>
+  <p>The useful flags on <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Flag</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>format of the files, for example <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>exact size of every file, such as <code>10mb</code> or a plain byte count</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>a size drawn per file from a range, such as <code>1kb-8kb</code>. The draw comes from the seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>three files around a limit: one byte under, the limit, one byte over</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>how many files to produce. Default <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>name template, for example <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>directory to write into</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>run seed. The same seed gives the same bytes</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>a format setting, repeatable</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> or <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>count and show, write nothing at all</td></tr>
+        <tr><td><code>--json</code></td><td>write the manifest to standard output</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="recipes">
+  <h2>What does a recipe look like?</h2>
+  <p>
+    A recipe is a YAML file describing a whole run. Commit it beside your tests and the fixtures stop
+    being binaries in your repository - anyone can rebuild them, byte for byte, from a file of a few
+    hundred characters.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Every target needs exactly one of <code>size</code>, <code>size-range</code>, <code>boundary</code>
+    or <code>contains</code>. Two of them is an error and so is none. An invalid recipe writes
+    <strong>no files at all</strong> and reports every problem at once rather than the first, each one
+    naming the setting it is about.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>How do I declare what my system should do with a file?</h2>
+  <p>Short form when the outcome is enough, long form when the reason matters:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    The outcomes are <code>accept</code>, <code>reject</code>, <code>sanitize</code> and
+    <code>unspecified</code>. The reasons are a closed list so a report can group by them:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> and <code>size_zero</code>.
+  </p>
+  <p>
+    A reason names <strong>the rule in play</strong>, not the verdict. That is why the same reason can
+    sit under either outcome - a file one byte under a limit is <code>accept</code>, and the rule it is
+    about is still <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>What is in the manifest?</h2>
+  <p>
+    It is written next to the files at the end of every run, including a run that was interrupted. One
+    entry per file:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    A <code>recipe_hash</code> is added when the run came from a recipe, and <code>preset</code> with
+    <code>overrides</code> when it came from a preset, so a manifest can always be traced back to what
+    produced it.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>What is a preset?</h2>
+  <p>
+    A ready made set of files that answers a common testing question, so you do not have to design the
+    set yourself. Presets are ordinary recipes underneath, and <code>eject</code> prints the recipe so
+    you can edit it from there.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 1mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> tells you what the set would cost before you build it, and says outright when a
+    number is a placeholder of ours rather than a limit of yours.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>What do the exit codes mean?</h2>
+  <p>
+    Every ending has its own code, machine readable output goes to standard output, and a failed run
+    prints nothing there. The table is a frozen contract - changing what a code means requires a major
+    version bump.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    A run stopped with Ctrl+C still leaves a manifest and never leaves a half written file behind, so
+    a cancelled job can still be cleaned up by the next one.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Is there a desktop window?</h2>
+  <p>
+    Yes, the same engine with a window on it, for the testing that is not scripted. It is not a cut
+    down version: a test compares the two interfaces capability by capability, and anything only one of
+    them can do has to be declared and justified rather than quietly drifting apart.
+  </p>
+  <p>
+    The screens are one batch, presets, several batches at once, and about. It shows what a run would
+    cost before writing anything, reports progress while it runs, and can be cancelled part way without
+    leaving a half written file behind. It does not open a recipe file yet - recipes are a command line
+    thing for now, and the window builds its batches in the form.
+  </p>
+</section>

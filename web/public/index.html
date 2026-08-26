@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test File Generator for QA - Exact Size, 20 Real Formats</title>
+<meta name="description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
+<meta property="og:description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
+<meta name="twitter:description" content="Free, open source test file generator. Produce PDF, DOCX, PNG, ZIP and more in 20 formats, at any exact size, with a manifest that says how your system should react. Windows, macOS, Linux, fully offline.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/window.png">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Testing Files Generator",
+  "alternateName": "tfg",
+  "description": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
+  "url": "https:\/\/testingfilesgenerator.donislawdev.com/",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Software Testing",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareVersion": "0.1.0",
+  "downloadUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases\/latest",
+  "installUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases\/latest",
+  "softwareHelp": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "DonislawDev",
+    "url": "https://donislawdev.com/"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/" aria-current="page">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<section class="hero">
+  <div class="hero-text">
+  <h1>Test files at an exact size, and a manifest that says how your system should react</h1>
+  <p class="lead">
+    Testing Files Generator makes <strong>real test files</strong> in 20 formats -
+    PDF, PNG, DOCX, ZIP and the rest - at <strong>any exact size you ask for</strong>. Then it writes
+    down what your application is supposed to do with each one. Command line and desktop window,
+    free and open source, working entirely on your machine.
+  </p>
+
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="1160" fetchpriority="high"
+         alt="The desktop window of Testing Files Generator, set up to write a batch of test files">
+    <figcaption>The desktop window, set up to write a batch of files. The same engine runs behind the command line.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">20</span>
+      <p class="fact-label">real formats, each one opening in the software that owns it</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 byte</span>
+      <p class="fact-label">the accuracy of every size you ask for, never rounded in silence</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">connections to anywhere - no account, no telemetry, no update check</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">The problem</p>
+  <h2>Making one test file is easy. Making the right thousand is the tedious part</h2>
+  <p>You are testing software that accepts files from people. Sooner or later you need:</p>
+  <ul class="ticks">
+    <li>a PDF of <strong>exactly</strong> 10 MB, to find out whether the upload limit is real</li>
+    <li>the three files that sit either side of that limit, to catch off by one errors</li>
+    <li>10,000 log files, to see what the nightly job does when the folder is big</li>
+    <li>a ZIP that genuinely holds 200 documents, not a stub with the right extension</li>
+    <li>a 4 GB file, without keeping a 4 GB file in your repository</li>
+    <li>the <strong>same</strong> fixtures on your laptop and on the build server, byte for byte</li>
+  </ul>
+  <p>
+    That is what this replaces. It is built for QA engineers, test automation, and anyone whose code
+    has an upload form, an import routine, a parser or a storage quota behind it.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">What makes it different</p>
+  <h2>Other generators stop at the bytes. This one answers what your test actually asks</h2>
+  <p>
+    A folder of files still leaves you deciding what each one is supposed to prove. Every run here
+    writes a <code>manifest.json</code> beside the files - a plain list of everything produced, and
+    for each entry a <strong>declared expectation</strong>.
+  </p>
+  <p>Say your upload endpoint allows 1 MB. Ask for the three files that sit on that line:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>File</th><th class="num">Bytes</th><th>Your system should</th><th>Because</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>accept</strong> it</td><td>it is inside the limit</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>accept</strong> it</td><td>the limit itself is allowed</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>reject</strong> it</td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Three files, three different answers, in machine readable form. Your test reads the manifest instead of you hand writing the assertions:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Where the answer depends on your own policy, the manifest says so</p>
+    <p>
+      It records <code>unspecified</code> rather than inventing an expectation. A generator that
+      guesses produces false failures, and a suite that cries wolf gets switched off.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Quick start</p>
+  <h2>Three commands to see it working</h2>
+  <ol class="steps">
+    <li>
+      <h3>Make a file</h3>
+      <p>One PNG, exactly two megabytes:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Make a lot of files</h3>
+      <p>Ten thousand log files, each between one and eight kilobytes, with the sizes drawn from the seed so tomorrow gives the same set:</p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Check them, then remove them</h3>
+      <p><code>verify</code> tells you nothing moved. <code>cleanup</code> removes exactly what was written and nothing else:</p>
+      <pre><code>tfg verify ./fixtures/manifest.json
+tfg cleanup ./fixtures/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Sizes count in 1024s, the way your file manager does, so <code>2mb</code> means 2097152 bytes.
+    A plain byte count works too. The <a href="/docs/">documentation</a> covers recipes, the manifest
+    and the exit codes.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">What you get</p>
+  <h2>Built for a suite that runs unattended</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Exact size, to the byte</p>
+      <p class="muted">Ask for 10485761 bytes and get exactly that. A size a format cannot reach is an error with a reason, never a file of the wrong size.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">20 real formats</p>
+      <p class="muted">Not padded zeros with an extension. A generated PNG opens in an image viewer, a DOCX opens in Word, a ZIP extracts. Each one is checked against independent readers before it ships.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">A manifest that is a test oracle</p>
+      <p class="muted">Path, size, SHA-256, format, seed, tool version - and what your system should do with the file.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproducible</p>
+      <p class="muted">Same recipe and seed, same bytes, on any machine. Commit a small YAML recipe instead of large binary fixtures.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Two interfaces, one engine</p>
+      <p class="muted">A command line built for CI and a desktop window for exploratory testing. Neither is a cut down version of the other, and a test compares them capability by capability.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Completely offline</p>
+      <p class="muted">No account, no cloud, no telemetry, no update check. The command line binary has no network stack compiled into it at all.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Download</p>
+  <h2>Pick the build for your system</h2>
+  <p>
+    Unpack the archive and run it. <code>tfg</code> is the command line and <code>tfg-gui</code> is the
+    desktop window. There is no installer and nothing to add to your machine.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>System</th>
+      <th>Command line</th>
+      <th>Desktop window</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td><code>arm64</code></td>
+      <td><code>arm64</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <div class="note warn">
+    <p class="note-title">The binaries are not signed</p>
+    <p>
+      Your system will warn you the first time you run one. The release notes say exactly what each
+      system shows and why. Every archive is listed in <code>SHA256SUMS.txt</code> on the release page,
+      so you can check what you downloaded.
+    </p>
+  </div>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.1.0</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+</section>
+
+<section class="section" id="scope">
+  <p class="eyebrow">Honest scope</p>
+  <h2>Where this is today</h2>
+  <p>
+    Version 0.1.0. A tool that oversells itself wastes your afternoon, so here is the
+    state of it.
+  </p>
+  <p>
+    <strong>Working end to end:</strong> 20 formats, recipes, presets, the desktop
+    window, <code>generate</code>, <code>validate</code>, <code>verify</code>, <code>cleanup</code>,
+    boundary sets, archive contents, size ranges, per format settings, manifests and every exit code.
+  </p>
+  <p>
+    <strong>Not there yet:</strong> five more formats are planned - <code>7z</code>, <code>tiff</code>,
+    <code>webp</code>, <code>mp3</code> and <code>mp4</code>. The preset catalogue has one entry so far.
+    Some recipe keys are recognised and refused with a message saying they are not built yet, rather
+    than being ignored quietly. The binaries are not signed.
+  </p>
+  <p>
+    Found a problem or want a format? The <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">issue tracker</a> is open, and
+    so is the discussion about what gets built next.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.1.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

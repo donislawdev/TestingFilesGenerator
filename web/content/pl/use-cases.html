@@ -1,0 +1,115 @@
+<h1>Do czego ludzie tego używają</h1>
+<p class="lead">
+  Pięć zadań, które pojawiają się w prawie każdym projekcie przyjmującym pliki od ludzi, i polecenie
+  robiące każde z nich. Wszystkie przykłady niżej działają tak, jak są napisane.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limity uploadu</p>
+  <h2>Sprawdzenie, czy limit rozmiaru pliku działa dokładnie tam, gdzie jest zadeklarowany</h2>
+  <p>
+    Limit to trzy przypadki testowe, nie jeden: tuż pod, dokładnie na granicy i tuż nad. Robienie ich
+    ręcznie znaczy liczenie bajtów i liczenie na to, że nie pomyliłeś się o jeden. Poproś o cały zestaw:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Dostajesz trzy prawdziwe PDF-y o rozmiarach 1048575, 1048576 i 1048577 bajtów oraz manifest mówiący,
+    że dwa pierwsze mają być przyjęte, a trzeci odrzucony z powodu <code>size_limit</code>. Test czyta
+    oczekiwanie, zamiast żebyś pisał trzy asercje ręcznie - a gdy limit się zmieni, zmieniasz jedną
+    liczbę i uruchamiasz ponownie.
+  </p>
+  <p>To samo działa bez presetu, gdy chcesz pojedynczy zestaw graniczny od ręki:</p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Ciągła integracja</p>
+  <h2>Trzymanie danych testowych poza repozytorium bez tracenia ich</h2>
+  <p>
+    Duże pliki binarne spowalniają klonowanie repozytorium i utrudniają przegląd, a przy podmianie
+    jednego z nich nikt nie widzi, co się właściwie zmieniło. Przepis to kilkaset znaków YAML-a, które
+    odtwarzają identyczne pliki - <strong>co do bajta, na dowolnej maszynie</strong> - bo każdy plik
+    jest wyprowadzony z ziarna przebiegu.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Każde zakończenie ma własny kod wyjścia, więc potok odróżni zły przepis od pełnego dysku i od
+    niezgodności przy weryfikacji. Nieudany przebieg nie pisze nic na standardowym wyjściu, co chroni
+    parser logów przed wzięciem błędu za dane.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Skala</p>
+  <h2>Sprawdzenie, co się dzieje, gdy katalog robi się duży</h2>
+  <p>
+    Import danych, nocne zadania i listowanie katalogu zachowują się inaczej przy dziesięciu tysiącach
+    plików niż przy dziesięciu. Rozmiary losowane z zakresu sprawiają, że zestaw wygląda jak prawdziwy
+    ruch, a nie jak dziesięć tysięcy identycznych plików - a losowanie idzie z ziarna, więc jutro
+    zestaw będzie ten sam.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Sprawdź, ile przebieg będzie kosztował, zanim cokolwiek zapisze - to ma znaczenie, gdy suma liczy
+    się w gigabajtach:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Przebieg większy niż wolne miejsce na dysku jest odrzucany przed zapisaniem pierwszego bajtu,
+    zamiast zapełnić dysk i paść w połowie.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archiwa</p>
+  <h2>Testowanie rozpakowywania archiwum, które naprawdę coś zawiera</h2>
+  <p>
+    Puste archiwum z właściwym rozszerzeniem nie dowodzi niczego o kodzie, który je otwiera i chodzi po
+    zawartości. Zadeklaruj zawartość, a archiwum naprawdę ją niesie:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Głębokość zagnieżdżenia, liczba wpisów i rozmiar tego, co jest w środku, to rzeczy, o których import
+    danych ma swoje zdanie - a to jest sposób, żeby się dowiedzieć, jakie.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsery i przeglądarki</p>
+  <h2>Sprawdzenie, czy Twój kod czyta format tak jak prawdziwe oprogramowanie</h2>
+  <p>
+    Każdy format tutaj jest sprawdzany niezależnym czytnikiem, zanim trafi do wydania - PNG jest
+    otwierany, a jego piksele porównywane, DOCX jest odczytywany przez osobne biblioteki, archiwum
+    jest rozpakowywane. To znaczy, że plik odrzucony przez Twój parser jest znaleziskiem o Twoim
+    parserze, a nie o generatorze.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./fixtures
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./fixtures</code></pre>
+  <p>
+    <a href="/pl/formaty/">Strona formatów</a> wypisuje ustawienia przyjmowane przez każdy z nich
+    i najmniejszy plik, jaki każdy potrafi zrobić.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Dla kogo to jest</h2>
+  <p>
+    Dla inżynierów QA, automatyzacji testów i każdego, kogo kod ma za sobą formularz uploadu, import
+    danych, parser albo limit miejsca. Działa na maszynie bez sieci, co ma znaczenie w zamkniętym
+    środowisku firmowym, gdzie generator w przeglądarce nie wchodzi w grę.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

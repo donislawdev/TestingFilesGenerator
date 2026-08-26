@@ -1,0 +1,164 @@
+{
+  "code": "pl",
+  "name": "Polski",
+  "dir": "pl",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Start",
+      "title": "Generator plików testowych dla QA - dokładny rozmiar, {{ .Facts.FormatCount }} formatów",
+      "description": "Darmowy generator plików testowych o zadanym rozmiarze. PDF, DOCX, PNG, ZIP i pozostałe - {{ .Facts.FormatCount }} formatów co do bajta, z manifestem mówiącym, jak system ma zareagować. Windows, macOS, Linux, w pełni offline."
+    },
+    {
+      "key": "formats",
+      "slug": "formaty",
+      "nav": "Formaty",
+      "title": "{{ .Facts.FormatCount }} obsługiwanych formatów plików - PDF, DOCX, PNG, ZIP i więcej",
+      "description": "Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w programie, do którego należy."
+    },
+    {
+      "key": "docs",
+      "slug": "dokumentacja",
+      "nav": "Dokumentacja",
+      "title": "Dokumentacja - komendy, przepisy, manifest, kody wyjścia",
+      "description": "Jak generować pliki testowe z wiersza poleceń albo z przepisu YAML, co zawiera manifest i co znaczy każdy kod wyjścia, gdy narzędzie pracuje w CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "zastosowania",
+      "nav": "Zastosowania",
+      "title": "Zastosowania - limity uploadu, dane do CI, testy masowe",
+      "description": "Testowanie limitu rozmiaru pliku, powtarzalne dane testowe w CI, dziesięć tysięcy plików jednym poleceniem i archiwa z prawdziwą zawartością."
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "FAQ",
+      "title": "FAQ - pytania o generowanie plików testowych",
+      "description": "Czym to się różni od dd i fsutil, czy pliki można commitować, czy przebieg powtarza się co do bajta i co się dzieje, gdy rozmiar jest nieosiągalny."
+    }
+  ],
+  "words": {
+    "skip": "Przejdź do treści",
+    "navLabel": "Główna",
+    "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w dwudziestu formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",
+
+    "ctaDownload": "Pobierz",
+    "ctaSource": "Zobacz kod źródłowy",
+    "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Binarki nie są jeszcze podpisane, więc system ostrzeże przy pierwszym uruchomieniu - nota wydania mówi dokładnie, czego się spodziewać.",
+
+    "colFormat": "Format",
+    "colExtension": "Rozszerzenie",
+    "colSmallest": "Najmniejszy plik",
+    "colFidelity": "Wierność",
+    "colChecked": "Sprawdzany przez",
+    "colSetting": "Ustawienie",
+    "colAccepts": "Przyjmuje",
+    "colSystem": "System",
+    "colCli": "Wiersz poleceń",
+    "colWindow": "Okno",
+    "noBinary": "brak binarki",
+    "colCode": "Kod",
+    "colMeaning": "Znaczenie",
+
+    "footerBlurb": "Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.",
+    "footerProject": "Projekt",
+    "footerSource": "Kod na GitHubie",
+    "footerReleases": "Pobieranie",
+    "footerIssues": "Zgłoś problem",
+    "footerSupport": "Wesprzyj projekt",
+    "footerPages": "Strony",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.",
+    "footerPrivacy": "Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.",
+
+    "notFoundTitle": "Tej strony tu nie ma",
+    "notFoundLead": "Adres, którym tu trafiłeś, nie pasuje do żadnej strony w tym serwisie.",
+    "notFoundBack": "Wróć na stronę główną"
+  },
+  "endings": {
+    "0": "Wszystko się udało.",
+    "1": "Nieoczekiwany błąd wewnątrz narzędzia.",
+    "2": "Zła komenda albo flaga.",
+    "3": "Przepis jest niepoprawny.",
+    "4": "Format nie potrafi tego, o co poproszono.",
+    "5": "Odczyt albo zapis się nie powiódł.",
+    "6": "Za mało miejsca na dysku.",
+    "7": "verify znalazło niezgodność.",
+    "8": "Przebieg się zakończył, ale nie wszystko powstało.",
+    "130": "Przerwane przez Ctrl+C.",
+    "143": "Zatrzymane sygnałem - tak wygląda przekroczony czas w CI."
+  },
+  "presets": {
+    "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?"
+  },
+  "terms": {
+    "oracleNone": "nie dotyczy",
+    "int": "dowolna liczba całkowita",
+    "choice": "jedna z ustalonych wartości",
+    "bool": "prawda albo fałsz",
+    "size": "rozmiar, na przykład 2mb",
+    "text": "tekst",
+    "pixels": "pikseli",
+    "paragraphs": "akapitów",
+    "rows": "wierszy",
+    "columns": "kolumn",
+    "slides": "slajdów",
+    "hertz": "herców",
+    "megapixels": "megapikseli",
+    "million cells": "milionów komórek"
+  },
+  "faq": [
+    {
+      "q": "Czym to się różni od dd, fsutil albo truncate?",
+      "a": "Tamte dają plik właściwego rozmiaru wypełniony niczym. Plik 2 MB nazwany photo.png zrobiony w ten sposób nie jest PNG, więc cokolwiek naprawdę go parsuje, odrzuci go z niewłaściwego powodu - a wtedy Twój test przechodzi też z niewłaściwego powodu. Tutaj powstaje prawdziwy PNG o rozmiarze dokładnie 2 MB, który otwiera się w przeglądarce obrazów, i przychodzi z informacją, jak system ma go potraktować.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Czy to jest darmowe i czy mogę tego używać w pracy?",
+      "a": "Tak na oba pytania. Narzędzie jest wydane na GPL-3.0 i nic nie kosztuje. Nie ma konta, klucza licencyjnego ani wersji płatnej."
+    },
+    {
+      "q": "Czy mogę użyć wygenerowanych plików w zamkniętym produkcie?",
+      "a": "Tak. Licencja obejmuje kod narzędzia, a nie to, co narzędzie tworzy. Wygenerowane pliki, przepisy i manifesty są wynikiem pracy programu, a nie dziełem zależnym, więc można je commitować i dostarczać bez żadnych zobowiązań."
+    },
+    {
+      "q": "Czy wygenerowane pliki zawierają prawdziwe dane osobowe?",
+      "a": "Nie. Wszystko w środku jest wytworzone z ziarna. Żaden zbiór danych nie jest czytany, żadna usługa nie jest odpytywana i żadna cudza treść nie jest osadzana. Wygenerowany adres e-mail traktuj jako nienadający się do użycia, a nie jako nieużywany - każdy losowy ciąg znaków może przypadkiem zderzyć się z prawdziwym."
+    },
+    {
+      "q": "Czy na innej maszynie dostanę dokładnie te same pliki?",
+      "a": "Tak, co do bajta, przy tym samym przepisie i tym samym ziarnie. Projekt sprawdza to przy każdej zmianie, a złamanie tego wymaga podniesienia wersji głównej. Właśnie dlatego zamiast dużych plików binarnych można commitować mały przepis."
+    },
+    {
+      "q": "Czy narzędzie potrzebuje internetu?",
+      "a": "Nigdy. Nie ma telemetrii, sprawdzania aktualizacji ani klienta chmurowego, a binarka wiersza poleceń nie ma w ogóle wkompilowanej obsługi sieci. Działa na maszynie bez sieci i w zamkniętym środowisku firmowym."
+    },
+    {
+      "q": "Co się stanie, gdy poproszę o rozmiar, którego format nie osiągnie?",
+      "a": "Dostaniesz błąd nazywający format, najmniejszy możliwy rozmiar, powód tego ograniczenia i podpowiedź, co zrobić zamiast tego, a żaden plik nie powstanie. Narzędzie nigdy nie zaokrągla rozmiaru po cichu. Wszystkie minima są wypisane na stronie formatów.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Czy mogę wygenerować plik celowo uszkodzony?",
+      "a": "Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu."
+    },
+    {
+      "q": "Jakie formaty są następne w kolejce?",
+      "a": "7z, tiff, webp, mp3 i mp4. Formatów działających dziś od początku do końca jest {{ .Facts.FormatCount }}."
+    },
+    {
+      "q": "Na jakich systemach to działa?",
+      "a": "Wiersz poleceń działa na Windows i Linux, zarówno na Intelu, jak i na ARM, oraz na Makach z procesorem Apple. Okno jest budowane dla Windows na Intelu, Linuksa na Intelu i Maków z procesorem Apple. Maki z procesorem Intel nie są wspierane i nic dla nich nie powstaje."
+    },
+    {
+      "q": "Czy muszę cokolwiek instalować?",
+      "a": "Nie. Pobierz archiwum dla swojego systemu, rozpakuj i uruchom. Nie ma instalatora, nie trzeba dokładać środowiska uruchomieniowego ani rozwiązywać zależności. Jeśli masz Go, wystarczy jedno polecenie go install.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Dlaczego przebieg po tysiącach plików jest wolniejszy na Windows?",
+      "a": "Bo Windows liczy sobie więcej za każdą ścieżkę, na którą patrzy, a polecenie chodzące po tysiącach plików patrzy na tysiące ścieżek. Zmierzone na jednej maszynie przy 3000 plików po 1 kB: verify trwa około 0,9 sekundy na Windows i około 0,2 sekundy na Linuksie w kontenerze. Krótsza ścieżka katalogu wyjściowego zmniejsza wynik na Windows, bo każdy katalog nad plikami też jest częścią tego, na co system patrzy."
+    }
+  ]
+}
