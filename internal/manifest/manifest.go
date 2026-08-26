@@ -315,25 +315,9 @@ func (e *TooLargeError) Error() string {
 // manifest is held in memory to be compared against a directory and the file
 // being read is not necessarily one of ours.
 func Load(path string) (*Manifest, error) {
-	// Asked on the directory entry rather than after reading. "Read it all,
-	// then say it was too big" is not a limit - the cost was already paid.
-	if info, statErr := os.Stat(path); statErr == nil && info.Size() > MaxBytes {
-		return nil, &TooLargeError{Path: path, Bytes: info.Size()}
-	}
-	// And again on the bytes, because the entry is a look and not a limit. The
-	// file can grow between the two, and a named pipe or a device reports a
-	// size of zero and then hands over as much as it likes - a manifest is
-	// described as arriving from outside, with somebody else's fixture set, so
-	// that belongs to the model rather than to the imagination.
-	//
-	// One byte over the ceiling is read on purpose. Reading exactly MaxBytes
-	// cannot tell a file of that size from a longer one cut off at it.
-	raw, err := readAtMost(path, MaxBytes+1)
+	raw, err := readAtMost(path)
 	if err != nil {
 		return nil, err
-	}
-	if int64(len(raw)) > MaxBytes {
-		return nil, &TooLargeError{Path: path, Bytes: int64(len(raw))}
 	}
 	var m Manifest
 	if err := json.Unmarshal(raw, &m); err != nil {
@@ -560,17 +544,45 @@ func claimName(path string) error {
 	return f.Close()
 }
 
-// readAtMost reads a file and stops at limit bytes.
+// readAtMost reads a manifest and refuses one that is over the ceiling.
 //
-// os.ReadFile has no ceiling: it asks the entry how big the file is, uses that
-// as a starting size and then keeps reading until the end, whatever the entry
-// said. For anything that is not an ordinary file, or an ordinary file somebody
-// is still writing, that is unbounded.
-func readAtMost(path string, limit int64) ([]byte, error) {
+// One rule in one place, and it used to be two. A look at the directory entry
+// ran before the read and the read had no ceiling of its own, which is the
+// pattern this project keeps finding: an entry is a look, not a limit. The
+// file can grow between the two, a named pipe reports a size of zero and then
+// hands over as much as it likes, and os.ReadFile takes the entry as a
+// starting size and reads to the end whatever that entry said.
+//
+// The pair also could not be proven. An ordinary oversized file is refused by
+// either check alone, so removing either one left the guard green - the
+// mutation runner said so on 2026-08-26, NOT CAUGHT, about a healthy guard.
+// Two checks of one rule are two places to be wrong and nowhere to be caught.
+//
+// One byte past the ceiling is read on purpose: reading exactly MaxBytes
+// cannot tell a manifest of that size from a longer one cut off at it. The
+// size in the refusal is still the real one, asked of the open file after the
+// read rather than of the path before it.
+func readAtMost(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	return io.ReadAll(io.LimitReader(f, limit))
+
+	raw, err := io.ReadAll(io.LimitReader(f, MaxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(raw)) <= MaxBytes {
+		return raw, nil
+	}
+	// Asked again, and of the open file rather than the path, so a file that
+	// grew is reported at the size it grew to. A pipe answers zero and the
+	// count of what was read stands in - one past the ceiling, which is all
+	// anybody can say about something that has no size to ask for.
+	bytes := int64(len(raw))
+	if info, statErr := f.Stat(); statErr == nil && info.Size() > bytes {
+		bytes = info.Size()
+	}
+	return nil, &TooLargeError{Path: path, Bytes: bytes}
 }
