@@ -55,6 +55,23 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
 	p.runner.openFolder = host.OpenFolder
 	p.runner.settle = p.settle
+	// No readdress here, and that is the boundary of this screen rather than an
+	// omission. The other two screens draw boxes for the settings of a target,
+	// so a refusal carrying a position has a box to be moved onto. This one
+	// draws six fields and every one of them is a parameter of the preset -
+	// format, limit, output.dir, preset, seed and spread. A preset describes the
+	// question, not the files, so there is nothing here for "targets[2].size" to
+	// land on and a hook would be code with no effect. O133.
+	//
+	// The one refusal that is about a file rather than a parameter does not need
+	// it: when a set cannot be built because a file would fall under its format's
+	// floor, the preset layer names "limit" as the setting, because that is the
+	// number the whole set is measured from and a message can only stand beside
+	// one box. See preset.ImpossibleError and sizeboundaries.go. That choice is
+	// held by TestTheBoxARefusalIsAboutIsMarkedOnThePresetScreenToo.
+	//
+	// So a refusal with no box of its own belongs at the button, and runner.refuse
+	// already puts it there through the loose path.
 	// Before the fields, because Add reads it. Only these two: every parameter
 	// a preset declares has a default and leaving it alone is the whole point
 	// of them - it is what the manifest records as defaulted, which is
