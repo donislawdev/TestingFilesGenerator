@@ -325,6 +325,50 @@ jobs:
         # sentence. Zero findings with the config in place.
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.7.0 ./...
 
+  lint:
+    name: linters
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: the headers the toolkit needs
+        # The same reason as in the staticcheck job above: anything that
+        # analyses the whole tree on Linux compiles GLFW through C, and no
+        # runner carries its headers.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
+        shell: bash
+
+      - name: the configuration is valid
+        # Run separately and first, because a plain run ACCEPTS a configuration
+        # this refuses. A key that does not exist, or a value outside what the
+        # schema allows, is otherwise ignored in silence - and a linter reading
+        # a setting nobody applied is a gate that reports what it feels like.
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1 config verify
+
+      - name: golangci-lint
+        # Run rather than imported, so it never enters go.mod and the
+        # dependency gate above does not see it - the same arrangement as
+        # staticcheck, measured there on 2026-08-02.
+        #
+        # The version is pinned because an unpinned analyser turns somebody
+        # else's release into a red build on a commit that changed nothing.
+        #
+        # Which linters run, and the measurement behind each, is in
+        # .golangci.yml. Measured before switching this on: zero findings from
+        # ineffassign and one from misspell, which turned out to be a comment
+        # written in the wrong language rather than a typo.
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1 run ./...
+
   touched:
     name: what this push touched
     runs-on: ubuntu-latest
