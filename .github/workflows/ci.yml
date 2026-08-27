@@ -1,7 +1,17 @@
 name: CI
 
 on:
+  # Only main, because every other branch reaches this through a pull request
+  # and would otherwise run the whole suite twice for one change. Measured on
+  # pull request 4, the first one this project had: every job appeared twice,
+  # once for the branch push and once for the pull request, and the race
+  # detector ran both times at about ten minutes each.
+  #
+  # The cost of the narrower trigger is that pushing a branch with no pull
+  # request open gives no signal. Since 2026-08-27 main only takes pull
+  # requests, so that state is a step on the way rather than a place work sits.
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:
@@ -461,7 +471,15 @@ jobs:
         run: |
           set -euo pipefail
           watched='internal/format/registry.go cmd/tfg/main.go internal/gui/window/run.go go.mod'
-          before="${{ github.event.before }}"
+          # On a pull request there is no "before" - the field belongs to a push
+          # - so this asked for something empty and every pull request answered
+          # "touched". That quietly undid the decision of 2026-08-20, because
+          # from the day this project started taking pull requests the detector
+          # was back to running on everything. The base of the pull request is
+          # the commit to compare against, and github.sha is the merge commit,
+          # so the difference between them is exactly what the pull request
+          # changes.
+          before="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$before" ] \
             || [ "$before" = "0000000000000000000000000000000000000000" ] \
             || ! git cat-file -e "${before}^{commit}" 2>/dev/null
