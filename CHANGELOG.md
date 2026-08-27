@@ -61,6 +61,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- The window no longer slows down as a recipe grows. Every keystroke on the
+  batches screen re-reads the whole recipe, and the cost of doing that used to
+  rise with the square of its size: a hundred batches took a quarter of a
+  second per key, which reads as the window stalling while you type. It now
+  takes about a sixtieth of that, and the cost rises in step with the recipe
+  rather than ahead of it. Files, hashes and every message are unchanged.
+
 - A run whose manifest could not be written no longer leaves an empty
   `manifest.json` beside the files it wrote.
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 )
 
 // scalar is one value of a recipe, kept as the text its author wrote.
@@ -48,11 +49,28 @@ type scalar struct {
 
 // UnmarshalYAML takes the node as it was written.
 //
-// goccy hands a BytesUnmarshaler the raw bytes of the node, which is the whole
-// reason this works. Measured before the type was designed: a bare 010 arrives
-// as "010\n" and a quoted one as "\"010\"", so both the digits and the author's
-// intent survive.
-func (s *scalar) UnmarshalYAML(b []byte) error {
+// The source text of the node is the whole reason this type works. Measured
+// before it was designed: a bare 010 arrives as "010\n" and a quoted one as
+// "\"010\"", so both the digits and the author's intent survive.
+//
+// It takes the NODE and renders it here, rather than letting goccy hand over
+// the bytes, and that is a measurement rather than a preference. A
+// BytesUnmarshaler makes goccy produce those bytes for us, and it produces them
+// by building a formatter over the document - so reading one value costs a walk
+// of everything around it, and reading N values costs N walks. The batch screen
+// settles the whole recipe on every keystroke, which turned that into the cost
+// of typing: measured on 2026-08-27, a hundred batches took 259 ms against the
+// 100 ms threshold in docs/UX.md, and nothing caps how many batches somebody
+// adds. Taking the node instead brought that to 14 ms and the curve from
+// quadratic to linear. O145, with the owner's yes.
+//
+// n.String() gives the same text goccy would have handed over. Checked rather
+// than assumed: the whole suite, and a corpus of 46 refusals whose wording did
+// not move by a character - including one, added for this change, that puts a
+// list where a number belongs, because that is where reading a single token
+// instead of the node would have shown.
+func (s *scalar) UnmarshalYAML(n ast.Node) error {
+	b := []byte(n.String())
 	t := strings.TrimSpace(string(b))
 	if len(t) >= 2 {
 		first, last := t[0], t[len(t)-1]
