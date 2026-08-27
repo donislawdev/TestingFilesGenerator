@@ -59,6 +59,7 @@ func (c Checker) Check(path string) Result {
 	// package and the path from a run this tool just produced, neither of
 	// them from anything a user typed.
 	//nolint:gosec // the command is ours and the path is one we just wrote
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.CommandContext(ctx, bin, c.args(path)...)
 	var out, errOut strings.Builder
 	cmd.Stdout = &out
@@ -327,6 +328,7 @@ func Strict(formatID, path string) Result {
 
 	//nolint:gosec // same as above - our own script, run against a file this
 	// tool wrote a moment ago
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.CommandContext(ctx, python, script, formatID, path)
 	var out, errOut strings.Builder
 	cmd.Stdout = &out

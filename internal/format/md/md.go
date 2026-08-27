@@ -10,6 +10,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	// D11 promises the same bytes from the same seed, so a deliberate,
+	// reproducible generator is the product rather than a weakness. Nothing
+	// here ever makes a secret.
+	// nosemgrep: go.lang.security.audit.crypto.math_random.math-random-used
 	"math/rand/v2"
 	"strconv"
 	"unicode"

@@ -33,14 +33,36 @@ concurrency:
 jobs:
   publish:
     # A dispatch is a person asking on purpose. Everything else has to be CI
-    # saying the tree is good.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # saying the tree is good, ON THIS REPOSITORY, for a push.
+    #
+    # The last two conditions were added on 2026-08-27, the day this project
+    # started taking pull requests, and they close a hole that opened with it.
+    # This job runs on workflow_run, which fires in the base repository with the
+    # base repository's permissions - and it holds pages: write. CI runs on
+    # pull_request, and the branches filter above matches the branch NAME of the
+    # run that triggered it, which for a fork is a name the fork chose. A fork
+    # whose branch is called main, opening a pull request that passes CI, would
+    # otherwise reach this job, and this job publishes web/public to the project
+    # website.
+    #
+    # Nothing here executes repository code, so the exposure was defacement
+    # rather than anything reaching a secret. That is still not a thing to leave
+    # open once anyone can open a pull request.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # The rule below is right about the shape and the condition above is the
+      # answer to it: this job only runs for a push, on this repository, so the
+      # head_sha it checks out cannot come from a fork.
+      # nosemgrep: yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           # The commit CI passed on, not whatever main happens to be now. On a
