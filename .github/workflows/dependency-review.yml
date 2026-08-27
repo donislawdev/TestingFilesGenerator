@@ -1,0 +1,55 @@
+# Blocks a pull request that introduces a dependency with a known vulnerability
+# or a licence this project may not distribute.
+#
+# Why a separate workflow and not a job in ci.yml: the action compares the
+# dependency manifests of the BASE and the HEAD of a pull request, so it is
+# meaningful on `pull_request` only. A push has nothing to diff against. Wiring
+# it into the main matrix would make it run, and be skipped, several more times
+# per push for no benefit.
+name: dependency review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  # The summary comment needs this. On a pull request from a fork the token is
+  # read only whatever this says, so the comment is a convenience on our own
+  # branches rather than something a stranger can reach.
+  pull-requests: write
+
+jobs:
+  review:
+    name: review new dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
+        with:
+          # This tool writes files wherever it is pointed and its releases are
+          # built by these same workflows, so a vulnerable dependency has no
+          # business arriving quietly. Anything at or above "moderate" fails the
+          # pull request rather than warning in a log nobody reads.
+          fail-on-severity: moderate
+          comment-summary-in-pr: always
+
+      # The half the action above cannot do. Its own documentation: "If we can't
+      # detect the license for a dependency we will inform you, but the action
+      # won't fail." For a GPL-3.0 project that ships a binary, an unidentified
+      # licence is the one answer nobody can act on, so the same data is read
+      # again here and an unknown licence blocks exactly like a denied one.
+      #
+      # `gh` is preinstalled and uses the job token. The gate exits 2 when it
+      # cannot read the answer, so a refusal from the endpoint fails the run
+      # instead of looking like an empty list of problems.
+      - name: Licences of what this pull request adds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$REPO/dependency-graph/compare/$BASE...$HEAD" > deps.json
+          python .github/scripts/dependency_gate.py deps.json
