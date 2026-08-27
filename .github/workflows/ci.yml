@@ -45,9 +45,9 @@ jobs:
       # one runner pays for a C toolchain it already has.
       CGO_ENABLED: ${{ matrix.os == 'macos-latest' && '1' || '0' }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -248,9 +248,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -287,9 +287,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -330,9 +330,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -369,6 +369,67 @@ jobs:
         # written in the wrong language rather than a typo.
         run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1 run ./...
 
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: the scanner, pinned
+        # Pinned for the reason staticcheck and golangci-lint are pinned: an
+        # unpinned analyser turns somebody else's release into a red build on a
+        # commit that changed nothing.
+        #
+        # Licence read from the pinned version rather than recalled, on
+        # 2026-08-27: LGPL-2.1-or-later, stated by the wheel metadata as a
+        # License-Expression and carried in full beside it. It analyses the tree
+        # and is never linked into either binary, so it is the same kind of
+        # dependency as the two above.
+        run: pip install semgrep==1.175.0
+
+      - name: scan
+        # No account and no token. p/default is fetched anonymously from the
+        # registry, used here, and never carried in this repository, because the
+        # Semgrep Rules License allows the first and forbids the second.
+        #
+        # No --error and no --severity: the scan reports and the gate decides.
+        # --severity knows INFO, WARNING and ERROR only, while registry rules
+        # also carry HIGH and CRITICAL, so a gate built on that flag would
+        # ignore exactly the severities it was asked to block.
+        #
+        # Metrics are off. This repository does not send telemetry about its own
+        # source anywhere, which is the same promise the tool itself makes.
+        #
+        # One rule is excluded, and the reason is measured rather than assumed.
+        # missing-integrity asks for a subresource integrity attribute, which
+        # applies to a script or a stylesheet fetched from another origin. On
+        # every page of web/public it matches lines 8 to 11 - the canonical link
+        # and three hreflang alternates - while the one real stylesheet, at line
+        # 31, it does not match at all. 48 findings, none of them about a
+        # subresource. This site loads nothing from another origin by design.
+        #
+        # Excluded here rather than through a .semgrepignore file, and that is
+        # also from measurement: a .semgrepignore REPLACES semgrep own default
+        # patterns instead of adding to them. Measured 2026-08-27, adding one
+        # took the scan from 217 files to 366 by pulling in all 166 guard test
+        # files, and with them a new blocking finding. Security scanning of test
+        # files is a question this project already answered for gosec, and the
+        # answer was no.
+        run: |
+          semgrep scan --config p/default --metrics=off --oss-only --json --output semgrep.json --quiet --exclude-rule html.security.audit.missing-integrity.missing-integrity
+
+      - name: decide
+        # Separate from the scan on purpose. Measured on the development machine
+        # 2026-08-27: a semgrep whose core failed printed four errors, exited 0,
+        # and wrote a 23 byte file that was not JSON. Reading the exit code would
+        # have called that a clean tree. The gate reads the report.
+        run: python .github/scripts/semgrep_gate.py semgrep.json
+
   touched:
     name: what this push touched
     runs-on: ubuntu-latest
@@ -376,7 +437,7 @@ jobs:
     outputs:
       concurrency: ${{ steps.look.outputs.concurrency }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           # The comparison needs the earlier commit, and the default checkout
           # fetches one.
@@ -452,9 +513,9 @@ jobs:
       # CGO_ENABLED=0 and stays fast.
       CGO_ENABLED: "1"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -508,9 +569,9 @@ jobs:
     env:
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -563,9 +624,9 @@ jobs:
     env:
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -604,9 +665,9 @@ jobs:
     env:
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           check-latest: false
@@ -632,7 +693,7 @@ jobs:
         # The corpus a failing run leaves behind is the whole value of the run,
         # and it lives in the runner's cache directory rather than the tree.
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: fuzz-findings
           path: |

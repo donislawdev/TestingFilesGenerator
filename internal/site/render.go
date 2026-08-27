@@ -201,6 +201,7 @@ func (s Site) notFound(partials, shell string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// nosemgrep: go.lang.security.audit.xss.template-html-does-not-escape.unsafe-template-type
 	v.Body = template.HTML(rendered) //nolint:gosec // built from the word list above
 	whole, err := run("page:404", partials+shell, v)
 	if err != nil {
@@ -230,6 +231,7 @@ func (s Site) renderPages(out map[string][]byte, partials, shell string) error {
 			if err != nil {
 				return err
 			}
+			// nosemgrep: go.lang.security.audit.xss.template-html-does-not-escape.unsafe-template-type
 			v.Body = template.HTML(body) //nolint:gosec // our own content files, rendered by us
 
 			whole, err := run("page:"+lang.Code+":"+page.Key, partials+shell, v)

@@ -16,6 +16,10 @@ import (
 	"strconv"
 	"strings"
 
+	// Deliberate, and the reason is on expand below: these values are put
+	// into pages as text and escaped there by html/template. Escaping them
+	// twice would show a reader the escape instead of the character.
+	// nosemgrep: go.lang.security.audit.xss.import-text-template.import-text-template
 	texttemplate "text/template"
 )
 

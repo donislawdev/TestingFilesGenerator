@@ -17,6 +17,10 @@ import (
 // contain and the refusal is what makes them visible. What this build does with
 // a key is a different question from whether the key exists.
 func Keys() []string {
+	// collect fills this map through the call below, which the rule does not
+	// follow, so it reads the map as one nothing ever writes to. An empty one
+	// would redden the two guards that read Keys.
+	// nosemgrep: trailofbits.go.iterate-over-empty-map.iterate-over-empty-map
 	seen := map[string]bool{}
 	collect(reflect.TypeOf(rawRecipe{}), "", seen)
 	out := make([]string, 0, len(seen))

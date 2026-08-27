@@ -6,6 +6,9 @@ import (
 	"io/fs"
 	"path"
 	"strings"
+	// Window labels and tooltips, which are never HTML. The rule is about
+	// rendering user content into a page, and this package renders neither.
+	// nosemgrep: go.lang.security.audit.xss.import-text-template.import-text-template
 	"text/template"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
