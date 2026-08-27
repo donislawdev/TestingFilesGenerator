@@ -21,6 +21,12 @@ type pkg struct {
 	imports []string // module relative imports, non test files only
 	all     []string // module relative imports, tests included
 	files   []string // absolute paths of non test .go files
+	// tests holds the _test.go files, kept SEPARATE rather than folded
+	// into files above. Every guard reading files expects production code
+	// only, and widening that field would change what all of them measure
+	// in one edit nobody would see. Added 2026-08-27 for the ceiling on
+	// test files, which is half the tree and had no ceiling at all.
+	tests []string // absolute paths of _test.go files
 }
 
 // repoRoot walks up from this test file until it finds go.mod.
@@ -70,8 +76,11 @@ func packages(t *testing.T) []pkg {
 
 		bp, err := build.ImportDir(p, 0)
 		if err != nil {
-			// No Go files here. Not an error for us.
-			return nil //nolint
+			// No Go files here. Not an error for us. The //nolint that used to
+			// sit on this line was removed on 2026-08-27: nolintlint reported it
+			// as unused, so it had been silencing nothing for as long as it was
+			// there and read as if it were.
+			return nil
 		}
 
 		rel, err := filepath.Rel(root, p)
@@ -87,6 +96,10 @@ func packages(t *testing.T) []pkg {
 		for _, f := range bp.GoFiles {
 			files = append(files, filepath.Join(p, f))
 		}
+		var tests []string
+		for _, f := range concat(bp.TestGoFiles, bp.XTestGoFiles) {
+			tests = append(tests, filepath.Join(p, f))
+		}
 
 		out = append(out, pkg{
 			rel:     rel,
@@ -94,6 +107,7 @@ func packages(t *testing.T) []pkg {
 			imports: internalOnly(bp.Imports),
 			all:     internalOnly(concat(bp.Imports, bp.TestImports, bp.XTestImports)),
 			files:   files,
+			tests:   tests,
 		})
 		return nil
 	})
