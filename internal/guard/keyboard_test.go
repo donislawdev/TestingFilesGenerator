@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -327,8 +328,9 @@ func TestAShortcutCannotStartASecondRunDuringTheFirst(t *testing.T) {
 
 	// Enough files that the run is still going when the second press lands.
 	entryUnder(t, screen, text.FieldOutputDir()).SetText(dir)
+	const files = 400
 	entryUnder(t, screen, text.FieldTargetID()).SetText("many")
-	entryUnder(t, screen, text.FieldCount()).SetText("400")
+	entryUnder(t, screen, text.FieldCount()).SetText(strconv.Itoa(files))
 	chooseSizeWay(t, screen, text.SizeWayExact())
 	entryUnder(t, screen, text.FieldSize()).SetText("4kb")
 
@@ -342,8 +344,28 @@ func TestAShortcutCannotStartASecondRunDuringTheFirst(t *testing.T) {
 	// A second run into the same directory is refused by the engine, so the
 	// sign of one having started is a refusal on the screen where a finished
 	// run should be reported.
-	if said := shownText(content); strings.Contains(said, text.RefusedBeforeWriting()) {
-		t.Error("Ctrl+Enter started a second run while the first was going, so the shortcut " +
-			"presses a button the screen has taken out of use")
+	// What the screen says is the whole evidence, and WHICH sentence to look
+	// for was measured rather than guessed - the version before 2026-08-27
+	// looked for the wrong one and passed on anything.
+	//
+	// Measured that day, with the check on the button removed: the second run
+	// really does start, and it ends saying "Stopped after 0 files" beside a
+	// refusal about the manifest the FIRST run had already claimed. It never
+	// says "Nothing was written", which is what this guard used to look for -
+	// so the mutation that takes the whole check away left it green, and the
+	// full mutation run reported it as a hole.
+	//
+	// Asked the other way round now: the screen has to carry the finished
+	// first run and nothing else. That does not depend on which refusal a
+	// second run happens to hit, and a second run cannot leave this sentence
+	// standing - it overwrites the line the moment it starts.
+	said := shownText(content)
+	if !strings.Contains(said, text.Written(files)) {
+		t.Errorf("the screen does not report the first run as finished, so something took the line over. "+
+			"Expected %q, and it says:\n%s", text.Written(files), said)
+	}
+	if strings.Contains(said, text.StoppedAfter(0)) {
+		t.Errorf("the screen reports a run that wrote nothing, which is the second one - "+
+			"Ctrl+Enter pressed a button the screen had taken out of use. It says:\n%s", said)
 	}
 }

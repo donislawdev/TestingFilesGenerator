@@ -26,7 +26,7 @@ import (
 // Asked of every format the registry holds rather than of BMP, because the
 // width comes from the declared kind and nothing here names a format.
 func TestABoxForANumberIsNotAsWideAsTheForm(t *testing.T) {
-	generate, choose := formatsLaidOut(t)
+	generate, choose, _ := formatsLaidOut(t)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -63,7 +63,7 @@ func TestABoxForANumberIsNotAsWideAsTheForm(t *testing.T) {
 // the same defect as one six times too wide - it is not the width of what goes
 // in it.
 func TestABoxIsWideEnoughForItsOwnPlaceholder(t *testing.T) {
-	generate, choose := formatsLaidOut(t)
+	generate, choose, _ := formatsLaidOut(t)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -113,7 +113,16 @@ func placeholderShownFor(p format.Property) string {
 // taking the width control away entirely left it green. What a person sees is
 // the size the layout gave the box, which only exists once something has been
 // laid out, and choosing a format rebuilds that part of the tree.
-func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser) {
+// Zwraca takze hosta, i to jest naprawa z 2026-08-27.
+//
+// Bez niego straznik naciskajacy Generuj nie ma czym zlaczyc pracy, a od
+// 2026-08-26 planowanie idzie na workera - wiec czyta ekran, zanim odmowa
+// zdazy na niego trafic. Zmierzone: `TestARefusalNamesTheBoxTheWayTheScreenNamesIt`
+// widzial na ekranie samo slowo "Width", czyli etykiete pola, i przechodzil
+// **obie** swoje kontrole trywialnie - jedna spelniona przez sama etykiete,
+// druga przez brak jakiejkolwiek linii z odmowa. Pelny przebieg mutacyjny
+// zglosil go jako dziure.
+func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser, *fakeHost) {
 	t.Helper()
 	ourTheme(t)
 	host := newFakeHost(t)
@@ -130,7 +139,7 @@ func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser) {
 	if !ok {
 		t.Fatal("the format field is not a list to choose from, so this guard read the wrong tree")
 	}
-	return generate, &formatChooser{t: t, w: w, picker: picker}
+	return generate, &formatChooser{t: t, w: w, picker: picker}, host
 }
 
 type formatChooser struct {

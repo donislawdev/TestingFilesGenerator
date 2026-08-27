@@ -24,7 +24,7 @@ import (
 // returns. Asking the function proves the function, and the defect was never in
 // the function - it was a screen calling something else.
 func TestNoSettingWearsItsRecipeKeyAsALabel(t *testing.T) {
-	generate, choose := formatsLaidOut(t)
+	generate, choose, _ := formatsLaidOut(t)
 
 	checked := 0
 	for _, d := range format.All() {
@@ -57,7 +57,7 @@ func TestNoSettingWearsItsRecipeKeyAsALabel(t *testing.T) {
 // is the only spelling that works there. Before this, the key was on the screen
 // because it WAS the label, so nothing had to carry it.
 func TestTheRecipeKeyOfASettingIsStillReachable(t *testing.T) {
-	generate, choose := formatsLaidOut(t)
+	generate, choose, _ := formatsLaidOut(t)
 
 	checked := 0
 	for _, d := range format.All() {

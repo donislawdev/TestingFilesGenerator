@@ -66,7 +66,7 @@ func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
 // before those, the key and the label were the same string and this could not
 // happen.
 func TestARefusalNamesTheBoxTheWayTheScreenNamesIt(t *testing.T) {
-	generate, choose := formatsLaidOut(t)
+	generate, choose, host := formatsLaidOut(t)
 	choose.to("bmp")
 
 	box := entryUnder(t, generate, text.SettingLabel("width"))
@@ -75,6 +75,18 @@ func TestARefusalNamesTheBoxTheWayTheScreenNamesIt(t *testing.T) {
 	}
 	box.SetText("99999")
 	press(t, generate, text.ButtonGenerate())
+	// Joined before anything is read, and without this the guard asked its
+	// question of a screen that had not been answered yet.
+	//
+	// Planning went onto a worker on 2026-08-26, so pressing Generate no longer
+	// means the refusal is on the screen. Measured on 2026-08-27, when the full
+	// mutation run reported this guard as a hole: before the join the screen
+	// holds the single word "Width", which is the LABEL of the box. Both checks
+	// below then passed on nothing - the first is satisfied by that label, and
+	// the second finds no line saying "cannot be" to look inside. After the
+	// join the refusal is there and reads "bmp: Width cannot be ...", which is
+	// what this guard exists to demand.
+	join(host)
 
 	shown := textIn(generate)
 	label := text.SettingLabel("width")
