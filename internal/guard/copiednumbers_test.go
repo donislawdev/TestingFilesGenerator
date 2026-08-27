@@ -110,6 +110,25 @@ var allowed = map[string]string{
 	"przy uzbrojeniu było":         "OBSERVATIONS.md O37, what the number was when the guard was armed",
 }
 
+// snapshots names documents that record the state of ONE MOMENT rather than
+// what is true today. A number copied into one of those is the point of the
+// file rather than a defect in it, and holding it to the rule this guard
+// enforces would mean deleting the only thing the file is for.
+//
+// The reason is required for the same purpose as on allowed: an entry with
+// nothing written beside it is indistinguishable from a hole. The list is
+// checked against the directory below, so a file renamed out from under an
+// entry reddens this rather than quietly exempting nothing.
+//
+// Owner's decision, 2026-08-27, after this guard was found red on a file
+// committed the evening before. It went red at the moment that file was
+// written and stayed red across a session boundary, which is the second half
+// of why the entry is here: a document whose whole job is to say what the
+// counts were cannot also promise they still hold.
+var snapshots = map[string]string{
+	"PROMPT-NOWY-CZAT.md": "the state handed to the next session, true at one hour and saying so in its own first lines",
+}
+
 func documentBodies(t *testing.T) map[string]string {
 	t.Helper()
 	root := repoRoot(t)
@@ -120,8 +139,13 @@ func documentBodies(t *testing.T) map[string]string {
 	if err != nil {
 		return nil
 	}
+	seen := map[string]bool{}
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+			continue
+		}
+		seen[e.Name()] = true
+		if _, snapshot := snapshots[e.Name()]; snapshot {
 			continue
 		}
 		body, err := os.ReadFile(filepath.Join(docs, e.Name()))
@@ -129,6 +153,17 @@ func documentBodies(t *testing.T) map[string]string {
 			t.Fatalf("reading %s: %v", e.Name(), err)
 		}
 		out["docs/"+e.Name()] = string(body)
+	}
+
+	// An entry naming a file that is not there exempts nothing and reads as if
+	// it does, which is the same shape as a mutation aimed at a renamed test.
+	for name, why := range snapshots {
+		if !seen[name] {
+			t.Errorf("snapshots names docs/%s and no such document exists - it was renamed or removed", name)
+		}
+		if strings.TrimSpace(why) == "" {
+			t.Errorf("docs/%s is exempt with no word about why, which is the same as no exemption at all", name)
+		}
 	}
 	if body, err := os.ReadFile(filepath.Join(root, "CLAUDE.md")); err == nil {
 		out["CLAUDE.md"] = string(body)
