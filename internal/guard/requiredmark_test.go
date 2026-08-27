@@ -82,7 +82,7 @@ func TestAStarIsOnEveryBoxTheRunWillNotDoWithout(t *testing.T) {
 // It walks the whole registry rather than a list, so a field added later is
 // held by this without anybody remembering to add it anywhere.
 func TestTheStarsDrawnAreTheOnesTheScreenDeclared(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	generate := window.NewGenerate(host)
 	presets := window.NewPreset(host)
 	batches := window.NewRecipe(host)
@@ -179,7 +179,7 @@ func screensWithBoxes(t *testing.T) []screenUnderTest {
 	onTab := func(name string) func(*testing.T) (*fakeHost, fyne.CanvasObject) {
 		return func(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 			t.Helper()
-			host := &fakeHost{}
+			host := newFakeHost(t)
 			window.Open(host)
 			if host.content == nil {
 				t.Fatal("opening the window put no screen in it")

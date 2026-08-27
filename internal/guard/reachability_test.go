@@ -24,7 +24,7 @@ import (
 // answers an easier question than the one a person asks.
 func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 	t.Helper()
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -334,7 +334,7 @@ func offScreenNote(onScreen map[fyne.Focusable]bool, f fyne.Focusable) string {
 // green is what everybody reads. Compared against the window itself rather than
 // against a second list somebody keeps.
 func TestEveryTabInTheWindowIsOnTheListGuardsWalk(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 
 	inWindow := tabNames(host.content)
@@ -369,7 +369,7 @@ func TestEveryTabInTheWindowIsOnTheListGuardsWalk(t *testing.T) {
 // network package inside internal/gui, and TestOurOwnWindowCodeDoesNotReachTheNetwork
 // refuses those - so the two guards together say the whole of it.
 func TestTheDonateButtonOpensTheSupportPage(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 
 	donate := buttonNamed(host.content, text.ButtonDonate())

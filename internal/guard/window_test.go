@@ -82,6 +82,41 @@ type fakeHost struct {
 	hold *holdDuringRun
 }
 
+// newFakeHost builds one and promises that nothing it starts outlives the test.
+//
+// The promise is the whole reason it exists. O124: the toolkit's test driver
+// runs fyne.Do on the CALLING goroutine and says so in its own source - "Tests
+// all run on a single (but potentially different per-test) thread" - so a
+// worker still going when a test ends shapes text inside the next one. It
+// panicked in the font shaper, in five consecutive runs, in four different
+// guards, and none of the four touched a preview. The name in a panic is the
+// test that happened to be running, not the one that leaked, so the cost of
+// finding it is paid by somebody with no reason to suspect their own guard.
+//
+// Three screen helpers already joined on cleanup, and that was the fix. What
+// was missing was anything making it true for a screen built by hand - and 57
+// of the 61 hosts in this package were built by hand. Putting the promise in
+// the constructor is what makes it hold for the sixty-second, written by
+// somebody who never read this comment.
+//
+// Measured before choosing this shape: a leak check in TestMain does not work
+// here. The worker ends within a fraction of a second, so by the end of the
+// package it is long gone - the damage happens BETWEEN tests, which is exactly
+// where Go offers no hook and t.Cleanup is the only seam there is.
+//
+// join on a host that never opened a window does nothing, so this is free for
+// the screens that only get looked at.
+func newFakeHost(t *testing.T) *fakeHost {
+	t.Helper()
+	// The one place the literal is still written, and it has to stay written
+	// here: the sweep that moved 58 call sites onto this constructor ate this
+	// line too and left the function calling itself. Nothing but reading the
+	// result caught it - go vet compiles infinite recursion happily.
+	h := &fakeHost{}
+	t.Cleanup(func() { join(h) })
+	return h
+}
+
 func (h *fakeHost) SetContent(o fyne.CanvasObject) {
 	h.content = o
 	// Onto the canvas as well, when a guard gave us one. The real host puts the
@@ -253,7 +288,7 @@ func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 // Worth writing down, because a colour count reads like a content check and is
 // not one.
 func TestTheWindowActuallyDrawsSomething(t *testing.T) {
-	w := test.NewWindow(window.FirstScreen(&fakeHost{}))
+	w := test.NewWindow(window.FirstScreen(newFakeHost(t)))
 	defer w.Close()
 	w.Resize(window.OpenSize)
 
@@ -294,7 +329,7 @@ func distinctColours(img image.Image) int {
 // font change and fails for the only reason worth failing for: the sentence
 // went away.
 func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
-	shown := textIn(window.About(&fakeHost{}))
+	shown := textIn(window.About(newFakeHost(t)))
 
 	for _, want := range []string{
 		"General Public License",
@@ -313,7 +348,7 @@ func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
 // each other, which is exactly the shape in which a second copy gets written
 // and nobody compares the two again.
 func TestTheWindowAndTheCommandQuoteTheSameLicence(t *testing.T) {
-	shown := textIn(window.About(&fakeHost{}))
+	shown := textIn(window.About(newFakeHost(t)))
 	if !strings.Contains(shown, strings.TrimSpace(version.LicenceNotice)) {
 		t.Error("the window does not show the licence notice verbatim, so it is a second copy now")
 	}
@@ -324,7 +359,7 @@ func TestTheWindowAndTheCommandQuoteTheSameLicence(t *testing.T) {
 // can get to is a notice that is not there, and the difference between those
 // two states is one button that anybody could delete without noticing.
 func TestTheLicenceIsStillReachableFromTheOpeningScreen(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 
 	if host.content == nil {
@@ -348,7 +383,7 @@ func TestTheLicenceIsStillReachableFromTheOpeningScreen(t *testing.T) {
 // keeping the notice as a splash - a screen shown at every start is one nobody
 // reads twice, and the reachability above is what the rule actually asks for.
 func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 
 	// Asked of the SELECTED tab rather than of the window, and that distinction

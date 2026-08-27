@@ -145,7 +145,7 @@ func holds(parent fyne.CanvasObject, wanted fyne.CanvasObject) bool {
 func TestClearingTheOutputDirectoryRefusesTheRunOnEveryScreen(t *testing.T) {
 	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
 		t.Run(tab, func(t *testing.T) {
-			host := &fakeHost{}
+			host := newFakeHost(t)
 			window.Open(host)
 			if host.content == nil {
 				t.Fatal("opening the window put no screen in it")

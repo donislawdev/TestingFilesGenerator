@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -150,6 +151,7 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 	// Redirections above the boundary are the caller's own, as the comment on
 	// crossesUnresolvedLink says.
 	boundary := core.NewBoundary(dir)
+	stored := storedNames{dirs: map[string]map[string]string{}}
 
 	var out []Outcome
 	for _, c := range cands {
@@ -172,6 +174,28 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 		if err != nil {
 			return out, err
 		}
+		// Untouchable rule 7 in the one place a filesystem can bend it without
+		// anybody noticing. os.Remove is given the name the manifest lists, and
+		// on a filesystem that ignores case it will happily delete a file
+		// stored under another spelling - measured on 2026-08-27, cleanup
+		// removed REPORT_0001.TXT for a manifest listing report_0001.txt and
+		// said "1 file removed", while verify on the same directory called that
+		// file extra. Two commands, one directory, opposite answers, and the
+		// destructive one was the one that assumed.
+		//
+		// So the name on the disk is read back and compared literally. Nothing
+		// changes on a filesystem that keeps the spellings apart, because there
+		// the file either is what the manifest says or was never found.
+		if actual, known := stored.differing(full); known {
+			out = append(out, Outcome{
+				Path:    c.Path,
+				Blocked: true,
+				Reason: fmt.Sprintf("the directory holds this as %q. This filesystem treats the two spellings "+
+					"as one file, so removing it here would delete a name the manifest does not list - "+
+					"rename it back, or clean up against a manifest written for these names", actual),
+			})
+			continue
+		}
 		if err := os.Remove(full); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				// It went away between the two passes. That is the state the
@@ -185,6 +209,44 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 		out = append(out, Outcome{Path: c.Path, Removed: true})
 	}
 	return out, ctx.Err()
+}
+
+// storedNames answers what a directory really stored a name as, reading each
+// directory once.
+//
+// Needed because os.Stat cannot answer it: on Windows and on a default APFS
+// volume it finds a file under a spelling the directory does not hold, which is
+// the whole point of those filesystems and the whole problem here.
+type storedNames struct {
+	dirs map[string]map[string]string
+}
+
+// differing reports the spelling on the disk when it is not the spelling asked
+// for, and whether there is one at all.
+//
+// A file that is absent, or a directory that cannot be read, returns false:
+// this exists to stop a deletion that would take the wrong name, not to invent
+// a second way for cleanup to fail. Whatever is really wrong is then reported
+// by os.Remove in its own words, which is where it belongs.
+func (s storedNames) differing(full string) (string, bool) {
+	dir, want := filepath.Split(full)
+	names, ok := s.dirs[dir]
+	if !ok {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return "", false
+		}
+		names = make(map[string]string, len(entries))
+		for _, e := range entries {
+			names[core.FoldName(e.Name())] = e.Name()
+		}
+		s.dirs[dir] = names
+	}
+	actual, found := names[core.FoldName(want)]
+	if !found || actual == want {
+		return "", false
+	}
+	return actual, true
 }
 
 func skipReason(c Candidate, force bool) string {

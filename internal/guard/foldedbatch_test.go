@@ -164,7 +164,7 @@ func assertFoldOpen(t *testing.T, o fyne.CanvasObject, after, title string) {
 // batches apart at a glance, and it has to come from what was typed rather than
 // from a placeholder - so this fills the boxes in and reads the line back.
 func TestAFoldedBatchSaysWhatIsInIt(t *testing.T) {
-	batches := window.NewRecipe(&fakeHost{}).Object()
+	batches := window.NewRecipe(newFakeHost(t)).Object()
 
 	entryUnder(t, batches, text.FieldTargetID()).SetText("invoices")
 	entryUnder(t, batches, text.FieldCount()).SetText("7")
@@ -200,7 +200,7 @@ func TestAFoldedBatchSaysWhatIsInIt(t *testing.T) {
 // registered whether or not it is on the screen, so a refusal finds it, and the
 // screen opens what it has to before moving the form.
 func TestARefusalOpensTheBatchItIsAbout(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	screen := window.NewRecipe(host)
 	batches := screen.Object()
 
@@ -245,7 +245,7 @@ func TestARefusalOpensTheBatchItIsAbout(t *testing.T) {
 // and a copy that arrives refused is a copy somebody has to repair before they
 // can use it.
 func TestACopiedBatchCarriesEverythingButItsName(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	batches := screen.Object()
 
 	entryUnder(t, batches, text.FieldTargetID()).SetText("invoices")

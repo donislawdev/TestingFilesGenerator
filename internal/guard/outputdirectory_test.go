@@ -20,7 +20,7 @@ import (
 // the buttons, rather than by calling the accessors. Calling them would prove
 // the getter and the setter agree, which nobody doubted.
 func TestBothScreensAgreeWhereTheFilesGo(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")

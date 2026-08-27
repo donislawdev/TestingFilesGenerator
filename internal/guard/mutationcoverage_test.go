@@ -97,6 +97,14 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestEveryFakeHostComesFromTheConstructorThatJoinsIt": "broken by hand on 2026-08-27, in both directions it can fail, and put back byte for byte. " +
+		"Turning one newFakeHost(t) in tabstrip_test.go back into the literal made it red, naming the file and the line. " +
+		"The other direction matters more and was checked first: written as a plain constant, the search string in this guard is itself a hand built host, " +
+		"and the guard reported ITSELF on its first run - so it is assembled from two pieces, which keeps its own file under the same rule as the rest. " +
+		"It also refuses to pass when the literal appears nowhere at all, because a search that finds nothing reads exactly like a search that finds nothing wrong. " +
+		"A probe rather than a mutation entry because there is no product code underneath: it reads the test files of this package, " +
+		"so a substitution in a shipped .go file never reaches it.",
+
 	"TestEveryGuardCitedInTheSummaryIsJustifiedInRegression": "broken by hand on 2026-08-26, in all three directions it can fail, and put back byte for byte through the checked restore in tools/mutate/runner.py. " +
 		"Taking keyboard_test.go off notYetJustified made it red, because CLAUDE.md cites that guard and REGRESSION.md still says nothing about it. " +
 		"Adding verify_test.go to the list made it red the other way, which is the direction that matters most: a list nobody prunes is where this drift would hide next. " +

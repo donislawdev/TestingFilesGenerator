@@ -215,7 +215,7 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 	// Every box either window screen draws, by both of its names. This is the
 	// real list rather than a copy of it, so a field added to a screen arrives
 	// here without anybody remembering to bring it.
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	seen := map[string]bool{}
 	for _, s := range []struct {
 		name   string

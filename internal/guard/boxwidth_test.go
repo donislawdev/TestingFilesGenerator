@@ -116,7 +116,7 @@ func placeholderShownFor(p format.Property) string {
 func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser) {
 	t.Helper()
 	ourTheme(t)
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -187,7 +187,7 @@ func typedInWidth(control fyne.CanvasObject) float32 {
 // the full column width while the single batch screen drew it at 178 px.
 func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	ourTheme(t)
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")

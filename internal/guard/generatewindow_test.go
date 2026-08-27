@@ -37,7 +37,7 @@ import (
 // though it worked.
 func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	t.Helper()
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -61,7 +61,8 @@ func screen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 func heldScreen(t *testing.T) (*fakeHost, fyne.CanvasObject, *holdDuringRun) {
 	t.Helper()
 	hold := newHold()
-	host := &fakeHost{hold: hold}
+	host := newFakeHost(t)
+	host.hold = hold
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -409,7 +410,7 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 	fill(t, content, text.FieldCount(), "4")
 	press(t, content, "Generate")
 
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	names := namesIn(t, dir)
@@ -508,7 +509,7 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 	label.SetChecked(false)
 
 	press(t, content, "Generate")
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	names := namesIn(t, dir)
@@ -609,25 +610,41 @@ func TestCancelStopsTheRun(t *testing.T) {
 // none - measured on 2026-08-05. The manifest is written by the worker before
 // it crosses back, and it is claimed as an empty file at the start of the run,
 // so the thing to wait for is a manifest with something in it.
-func waitForManifest(t *testing.T, dir string) {
+func waitForManifest(t *testing.T, host *fakeHost, dir string) {
 	t.Helper()
-	const budget = 10 * time.Second
-	started := time.Now()
-	deadline := started.Add(budget)
-	for time.Now().Before(deadline) {
-		if info, err := os.Stat(filepath.Join(dir, "manifest.json")); err == nil && info.Size() > 0 {
-			return
-		}
-		time.Sleep(5 * time.Millisecond)
+	manifestAfter(t, func() { join(host) }, dir, "manifest.json")
+}
+
+// manifestAfter joins the work and then reads the record, once.
+//
+// It used to poll the disk against a fixed budget, and that budget was the
+// wrong instrument: it bounded the WHOLE run rather than the wait for the
+// filesystem. O111 and O126 between them record four failures from it, and
+// every one landed just past its own budget - 10.08, 10.09, 10.12 seconds
+// against ten, and 20.18 against twenty - inside a full run of the package,
+// each passing on its own in under a third of a second. One of them said "the
+// run never wrote a manifest" and printed the directory with the manifest in
+// it, which is a guard reading as a defect in the product. That is the class
+// this project calls its most expensive.
+//
+// Joining is the whole answer, and the reason is in the worker: it calls
+// saveManifest and only then closes its channel, so when the wait returns the
+// record is on the disk or the run genuinely did not write one. No budget, no
+// polling, no race - and a slow machine makes the test slow rather than red.
+//
+// The wait is passed in rather than taken from the host, because two of these
+// screens are built without opening a window, and there the seam is the
+// screen's own Settled.
+func manifestAfter(t *testing.T, settle func(), dir, name string) {
+	t.Helper()
+	settle()
+	if info, err := os.Stat(filepath.Join(dir, name)); err == nil && info.Size() > 0 {
+		return
 	}
-	// What was waited for and what was there instead, because the sentence on
-	// its own is not a measurement. O126: this budget has run out three times on
-	// 2026-08-25, in three different guards, and only ever inside a full run of
-	// the package - each of the three passes on its own in under a third of a
-	// second. Nobody knows why, and the first thing anybody will want is the
-	// number and the state of the directory rather than another repetition.
-	t.Fatalf("the run never wrote a manifest. Waited %s of a %s budget, and %s holds %v",
-		time.Since(started).Round(time.Millisecond), budget, dir, whatIsIn(dir))
+	t.Fatalf("the work finished and %s holds no manifest called %q. It holds %v.\n"+
+		"Either the run did not write one, or nothing was joined before this looked - "+
+		"a screen built without opening a window has no waitForWork, and its own Settled is the seam",
+		dir, name, whatIsIn(dir))
 }
 
 // whatIsIn lists a directory for a failure message, saying why it cannot rather
@@ -733,6 +750,14 @@ func TestARunIsStoppableFromTheMomentItStarts(t *testing.T) {
 //
 // The manifest claims its name before the first file, so anything at all
 // appearing here means the writing has begun.
+//
+// This one polls a budget on purpose, and it is the ONLY wait here that still
+// should. Its siblings stopped: waiting for a manifest is now a join, because
+// the worker writes the record before it closes its channel, and the budget
+// there was bounding the whole run rather than the wait for a filesystem -
+// four failures came of that, O111 and O126. Joining cannot work here, because
+// this waits for a run to START so that it can be interrupted, and a join by
+// definition returns when the work is over.
 func waitUntilTheRunHasStarted(t *testing.T, dir string) {
 	t.Helper()
 	deadline := time.Now().Add(20 * time.Second)

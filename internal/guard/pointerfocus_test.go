@@ -131,7 +131,7 @@ func TestReachingForTheKeyboardTurnsTheMarkOn(t *testing.T) {
 // nothing would have said so - there is no such format today, which is exactly
 // why nobody would have noticed.
 func TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -196,7 +196,7 @@ func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	app.Settings().SetTheme(parts.Theme())
 	t.Cleanup(func() { test.NewApp() })
 
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")

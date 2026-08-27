@@ -29,7 +29,7 @@ import (
 // notice: every other guard here asks what a control holds, not how wide it is.
 func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 	for _, screenName := range []string{"generate", "preset"} {
-		host := &fakeHost{}
+		host := newFakeHost(t)
 		window.Open(host)
 		if screenName == "preset" {
 			selectTab(t, host.content, text.TabPresets())
@@ -82,7 +82,7 @@ func TestTheFormDoesNotRunToTheEdgeOfTheWindow(t *testing.T) {
 // a long path is the same defect pointing the other way.
 func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 	for _, screenName := range []string{"generate", "preset"} {
-		host := &fakeHost{}
+		host := newFakeHost(t)
 		window.Open(host)
 
 		// Through the tab rather than across the window. Both work screens
@@ -125,7 +125,7 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 // surface stop at the column would be pinning down the one thing that is
 // deliberately different, and the next person to widen the bar would delete it.
 func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	content := tabNamed(t, host.content, text.TabOneTarget())
 

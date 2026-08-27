@@ -24,7 +24,7 @@ import (
 // August: two screens that agreed until somebody changed one.
 func TestTheWindowOffersTheDirectoryItWasLastToldToUse(t *testing.T) {
 	const last = "D:/somewhere/else"
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	host.Remembered().RememberDirectory(last)
 	window.Open(host)
 	if host.content == nil {
@@ -53,7 +53,7 @@ func TestTheWindowOffersTheDirectoryItWasLastToldToUse(t *testing.T) {
 // directory, and the reason it is a folder rather than the directory itself is
 // ten thousand files landing in somebody's Downloads.
 func TestAFirstStartOffersTheFolderItAlwaysDid(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -82,7 +82,7 @@ func TestAFirstStartOffersTheFolderItAlwaysDid(t *testing.T) {
 // remember the wrong value for everybody who changed tabs.
 func TestClosingTheWindowRemembersWhereTheFilesWereGoing(t *testing.T) {
 	const chosen = "D:/chosen/on/the/preset/screen"
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.intercept == nil {
 		t.Fatal("the window has no close intercept, so closing it does nothing this can read")

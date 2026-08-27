@@ -53,6 +53,29 @@ const (
 	// authority over what may be removed and a file that never finished never
 	// reached it. So the only useful thing is to say plainly what it is.
 	Leftover Kind = "leftover"
+	// Respelled is the file this manifest describes, stored under a spelling
+	// the filesystem treats as the same name.
+	//
+	// Reported apart from Extra for the reason Leftover is: the two call for
+	// different answers. An extra file is somebody else's and the question is
+	// whose. This one is OURS - same bytes, same size - and the question is why
+	// the name on the disk is not the name that was written.
+	//
+	// Measured on 2026-08-27, and the measurement is what put this here. Rename
+	// a file to the other case on Windows and verify said "extra" and nothing
+	// else: no "missing" beside it, because os.Stat had found the entry under
+	// the name the manifest gives. One difference rather than the two a
+	// mismatch usually shows, so it read as a directory somebody had polluted
+	// rather than as a spelling - and meanwhile cleanup deleted that same file
+	// without comment. Two commands, one directory, opposite answers.
+	//
+	// Verify still compares literally, which is the older decision and stands:
+	// it asks whether the file the manifest describes is the file that is here,
+	// on THIS machine, where the filesystem has already answered by storing
+	// what it stored. Folding the comparison would make a run agree with a
+	// manifest naming a file the host never wrote. What changes is only that
+	// the disagreement is now named for what it is.
+	Respelled Kind = "respelled"
 )
 
 // Difference is one disagreement, in the words a person needs to act on it.
@@ -77,6 +100,13 @@ func (d Difference) String() string {
 				"Nothing described by this manifest is missing because of it. "+
 				"cleanup will not remove it, because it removes only what the manifest lists - delete it by hand",
 			d.Path)
+	case Respelled:
+		return fmt.Sprintf(
+			"respelled %s\n            the manifest calls this file %s. The letters differ only in a way this "+
+				"filesystem ignores, so it is one file under two spellings rather than a file somebody else put here. "+
+				"Nothing is lost. cleanup will not remove it, because it removes only the names the manifest lists - "+
+				"rename it back to %s, or verify against a manifest that was written for these names",
+			d.Path, d.Want, d.Want)
 	default:
 		return fmt.Sprintf("%-9s %s\n            expected %s\n            found    %s", d.Kind, d.Path, d.Want, d.Got)
 	}
@@ -165,6 +195,14 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 
 	var diffs []Difference
 	seen := make(map[string]bool, len(claimed))
+	// What each claimed path looks like with the differences a filesystem may
+	// ignore taken out, so a file on the disk can be recognised as one of ours
+	// under another spelling. The rule is core's rather than this package's,
+	// because planning asks the same question and the two must not drift.
+	folded := make(map[string]string, len(claimed))
+	for _, f := range claimed {
+		folded[core.FoldName(comparablePath(f.Path))] = f.Path
+	}
 
 	for _, f := range claimed {
 		if err := ctx.Err(); err != nil {
@@ -225,10 +263,21 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		}
 		// Ours or somebody else's, and the reader needs to be told which.
 		kind := Extra
-		if core.IsPartialName(filepath.Base(p)) {
+		want := ""
+		switch {
+		case core.IsPartialName(filepath.Base(p)):
 			kind = Leftover
+		default:
+			// One file under two spellings reads as a polluted directory
+			// otherwise, and on a filesystem that ignores the difference it
+			// arrives on its own, without the "missing" that would give it
+			// away - os.Stat found the entry under the name the manifest
+			// gives. Measured on 2026-08-27.
+			if claimedAs, ok := folded[core.FoldName(p)]; ok {
+				kind, want = Respelled, claimedAs
+			}
 		}
-		diffs = append(diffs, Difference{Kind: kind, Path: p})
+		diffs = append(diffs, Difference{Kind: kind, Path: p, Want: want})
 	}
 
 	sort.Slice(diffs, func(i, j int) bool {

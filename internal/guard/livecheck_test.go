@@ -208,7 +208,7 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 	fill(t, content, text.FieldSize(), "2kb")
 	fill(t, content, text.FieldCount(), "2")
 	press(t, content, "Generate")
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	// Asserted rather than assumed. A guard that reaches this line with the run

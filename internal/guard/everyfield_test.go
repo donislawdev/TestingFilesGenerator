@@ -30,7 +30,7 @@ import (
 // the same lesson as TestEveryFormatIsClassifiedAsTextOrBinary and is written
 // down in docs/UX.md section 7.0.
 func TestEveryBoxOnAScreenIsOneThatCanBeMarked(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	generate := window.NewGenerate(host)
 	presets := window.NewPreset(host)
 
@@ -79,7 +79,7 @@ func TestEveryBoxOnAScreenIsOneThatCanBeMarked(t *testing.T) {
 // Every field of both screens, rather than a sample, because the failure this
 // catches is per field.
 func TestEveryRegisteredFieldCanBeMarkedAndUnmarked(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	for _, s := range []struct {
 		name   string
 		fields *parts.Fields
@@ -115,7 +115,7 @@ func TestEveryRegisteredFieldCanBeMarkedAndUnmarked(t *testing.T) {
 // then forgot to on the second change would pass both guards above, which only
 // ever look at the format the screen opens on.
 func TestEveryFormatsOwnSettingsCanBeMarked(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	generate := window.NewGenerate(host)
 	picker, ok := controlUnder(generate.Object(), "Format").(*parts.Chooser)
 	if !ok {

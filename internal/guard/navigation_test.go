@@ -57,7 +57,7 @@ func TestCancelIsOnlyThereWhenThereIsSomethingToCancel(t *testing.T) {
 	})
 
 	join(host)
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 
 	// And gone again when the run is over. Without this the guard passes on the
 	// constructor alone - it hides the button once at the start, so a screen
@@ -106,7 +106,7 @@ func TestCancelIsDrawnAsAButton(t *testing.T) {
 // added at the top while the buttons stay where they were leaves two ways to do
 // one thing, and the screenshot of the top looks fixed.
 func TestMovingBetweenScreensIsTabsAndNotButtons(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 
 	// The order is the order of the list, and About stays last. The two work

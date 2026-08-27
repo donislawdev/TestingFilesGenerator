@@ -37,7 +37,7 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 	defer test.NewApp()
 	app.Settings().SetTheme(parts.Theme())
 
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	content := tabNamed(t, host.content, text.TabOneTarget())
 
@@ -134,7 +134,7 @@ func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 	defer test.NewApp()
 	app.Settings().SetTheme(parts.Theme())
 
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	content := tabNamed(t, host.content, text.TabOneTarget())
 

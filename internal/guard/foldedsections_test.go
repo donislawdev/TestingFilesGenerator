@@ -59,7 +59,7 @@ func TestARefusalOpensTheSectionTheBoxIsIn(t *testing.T) {
 	// two screens address the same declaration differently: a batch carries its
 	// position, one target on its own does not.
 	t.Run("the batch screen", func(t *testing.T) {
-		host := &fakeHost{}
+		host := newFakeHost(t)
 		screen := window.NewRecipe(host)
 		body := screen.Object()
 		fields := screen.Fields()
@@ -74,7 +74,7 @@ func TestARefusalOpensTheSectionTheBoxIsIn(t *testing.T) {
 	})
 
 	t.Run("the single batch screen", func(t *testing.T) {
-		host := &fakeHost{}
+		host := newFakeHost(t)
 		screen := window.NewGenerate(host)
 		body := screen.Object()
 		fields := screen.Fields()
@@ -178,7 +178,7 @@ type writtenRun struct {
 // opening it and seeing which registered boxes come onto the screen.
 func runWithNotes(t *testing.T, dir string, notes []string) ([]string, writtenRun) {
 	t.Helper()
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	screen := window.NewRecipe(host)
 	body := screen.Object()
 	fields := screen.Fields()
@@ -215,7 +215,7 @@ func runWithNotes(t *testing.T, dir string, notes []string) ([]string, writtenRu
 	}
 
 	pressNamed(t, body, text.ButtonGenerate())
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	screen.Stop()
 
 	return held, readRun(t, dir)
@@ -270,7 +270,7 @@ func readRun(t *testing.T, dir string) writtenRun {
 // word would be a setting somebody cannot see and did not remove, which is worse
 // than the scrolling folding was meant to save.
 func TestASectionPutAwayStillSaysWhatIsInIt(t *testing.T) {
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	screen := window.NewRecipe(host)
 	body := screen.Object()
 	fields := screen.Fields()
@@ -318,7 +318,7 @@ func TestTheSectionsInsideABatchArriveFolded(t *testing.T) {
 		{
 			name: "the single batch screen",
 			open: func(t *testing.T) (fyne.CanvasObject, *parts.Fields) {
-				s := window.NewGenerate(&fakeHost{})
+				s := window.NewGenerate(newFakeHost(t))
 				return s.Object(), s.Fields()
 			},
 			sections: []string{text.SettingsFor("bmp")},
@@ -326,7 +326,7 @@ func TestTheSectionsInsideABatchArriveFolded(t *testing.T) {
 		{
 			name: "the batch screen",
 			open: func(t *testing.T) (fyne.CanvasObject, *parts.Fields) {
-				s := window.NewRecipe(&fakeHost{})
+				s := window.NewRecipe(newFakeHost(t))
 				return s.Object(), s.Fields()
 			},
 			sections: []string{text.SettingsFor("bmp"), text.SectionManifestNotes()},

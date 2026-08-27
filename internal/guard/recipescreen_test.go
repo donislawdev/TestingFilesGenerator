@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
@@ -51,7 +50,7 @@ func TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			screen := window.NewRecipe(&fakeHost{})
+			screen := window.NewRecipe(newFakeHost(t))
 			body := screen.Object()
 			pressNamed(t, body, text.ButtonAddBatch())
 
@@ -96,7 +95,7 @@ func TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch(t *testing.T) {
 // key a recipe has: the ones this build refuses outright have no box on purpose,
 // and neither has the schema version.
 func TestTheRecipeScreenDrawsABoxForEverySettingItOffers(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	fields := screen.Fields()
 
 	perBatch := []string{
@@ -131,7 +130,7 @@ func TestTheRecipeScreenDrawsABoxForEverySettingItOffers(t *testing.T) {
 // The case that matters is removing a batch from the MIDDLE, because that is when
 // every address below the removal moves.
 func TestAddingAndRemovingBatchesKeepsWhatWasTypedAndRenumbersTheRest(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 	fields := screen.Fields()
 
@@ -171,7 +170,7 @@ func TestAddingAndRemovingBatchesKeepsWhatWasTypedAndRenumbersTheRest(t *testing
 // nothing and would answer a press with a refusal about a document rather than
 // about anything anybody did.
 func TestTheLastBatchCannotBeRemoved(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 
 	if buttons := buttonsNamed(body, text.ButtonRemoveBatch()); len(buttons) != 0 {
@@ -315,7 +314,7 @@ func buttonsNamed(o fyne.CanvasObject, name string) []*widget.Button {
 // archive with files inside, and a manifest under a name somebody chose.
 func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	dir := t.TempDir()
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	screen := window.NewRecipe(host)
 	body := screen.Object()
 
@@ -373,7 +372,7 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	toggleIn(t, fields, recipe.KeyDefaultsLabel).SetChecked(false)
 
 	pressNamed(t, body, "Generate")
-	waitForNamedManifest(t, dir, "run.json")
+	waitForNamedManifest(t, screen.Settled, dir, "run.json")
 	screen.Stop()
 
 	raw, err := os.ReadFile(filepath.Join(dir, "run.json"))
@@ -496,16 +495,9 @@ func toggleIn(t *testing.T, fields *parts.Fields, at string) *parts.Toggle {
 
 // waitForNamedManifest is waitForManifest for a run that was told what to call
 // its record, which is the whole point of the manifest name field.
-func waitForNamedManifest(t *testing.T, dir, name string) {
+func waitForNamedManifest(t *testing.T, settle func(), dir, name string) {
 	t.Helper()
-	deadline := time.Now().Add(20 * time.Second)
-	for time.Now().Before(deadline) {
-		if info, err := os.Stat(filepath.Join(dir, name)); err == nil && info.Size() > 0 {
-			return
-		}
-		time.Sleep(5 * time.Millisecond)
-	}
-	t.Fatalf("the run never wrote a manifest called %q. The directory holds: %v", name, namesIn(t, dir))
+	manifestAfter(t, settle, dir, name)
 }
 
 // A refusal from the ENGINE marks the batch it is about, the same as one from
@@ -522,7 +514,7 @@ func waitForNamedManifest(t *testing.T, dir, name string) {
 // The engine tests the running total before planning a batch's files, so this
 // reaches the refusal having planned one file rather than a million.
 func TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 	pressNamed(t, body, text.ButtonAddBatch())
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/text/cases"
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -120,8 +119,12 @@ func claimFileName(names map[string]nameOwner, position int, id, name string) er
 // and both filesystems keep them apart. The over-refusal at the Kelvin sign was
 // known and accepted as erring safely. This one is not that: folding does not
 // have it, so it was never the price of caution.
+// The rule itself moved to core on 2026-08-27, and this is the thin end of it.
+// Verify needs the same answer and sits on the same layer as this package, so
+// neither may import the other - and two copies of a rule about names is
+// exactly the shape this project has been removing all along.
 func collisionKey(name string) string {
-	return cases.Fold().String(norm.NFC.String(name))
+	return core.FoldName(name)
 }
 
 // collisionDetail says what the two names have in common. Two names that

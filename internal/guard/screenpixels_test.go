@@ -610,7 +610,7 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 	app.Settings().SetTheme(parts.Theme())
 	defer test.NewApp()
 
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")

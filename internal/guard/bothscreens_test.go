@@ -63,7 +63,7 @@ func TestOneRefusalMarksItsBoxOnBothScreens(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name+", single batch screen", func(t *testing.T) {
-			screen := window.NewGenerate(&fakeHost{})
+			screen := window.NewGenerate(newFakeHost(t))
 			body := screen.Object()
 			fields := screen.Fields()
 			chooserIn(t, fields, "format").SetSelected(c.format)
@@ -85,7 +85,7 @@ func TestOneRefusalMarksItsBoxOnBothScreens(t *testing.T) {
 		})
 
 		t.Run(c.name+", batch screen", func(t *testing.T) {
-			screen := window.NewRecipe(&fakeHost{})
+			screen := window.NewRecipe(newFakeHost(t))
 			body := screen.Object()
 			fields := screen.Fields()
 			setBox(t, fields, recipe.TargetAddress(1, recipe.KeyID), "batch1")
@@ -117,7 +117,7 @@ func TestOneRefusalMarksItsBoxOnBothScreens(t *testing.T) {
 // that had both it would have marked the wrong one, which is worse: a value
 // that is fine, pointed at, while the one that is wrong sits clean.
 func TestARefusalAboutTheManifestNameMarksTheManifestBox(t *testing.T) {
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 	fields := screen.Fields()
 	setBox(t, fields, recipe.TargetAddress(1, recipe.KeyID), "batch1")
@@ -151,7 +151,7 @@ func TestARefusalAboutTheManifestNameMarksTheManifestBox(t *testing.T) {
 // nothing else notices: every other guard here asks about a setting of a
 // target, and those all have a position to drop.
 func TestARefusalAboutTheRunItselfKeepsItsWholeAddress(t *testing.T) {
-	screen := window.NewGenerate(&fakeHost{})
+	screen := window.NewGenerate(newFakeHost(t))
 	body := screen.Object()
 	fields := screen.Fields()
 	setBox(t, fields, "size", "1kb")

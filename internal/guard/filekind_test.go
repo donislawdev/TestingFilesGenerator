@@ -39,7 +39,7 @@ func TestThePresetScreenCanBuildTheSetInAnyFormat(t *testing.T) {
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	written := namesIn(t, dir)
@@ -92,7 +92,7 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
 	press(t, content, "Generate")
-	waitForManifest(t, fromWindow)
+	waitForManifest(t, host, fromWindow)
 	join(host)
 
 	cliNames, windowNames := namesIn(t, fromCLI), namesIn(t, fromWindow)

@@ -34,7 +34,7 @@ func TestAFinishedRunIsColouredLikeAFinishedRun(t *testing.T) {
 	fill(t, content, text.FieldSize(), "2kb")
 	fill(t, content, text.FieldCount(), "3")
 	press(t, content, text.ButtonGenerate())
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	_, status := runMessages(content)
@@ -72,7 +72,7 @@ func TestTheColourOfAnOutcomeDoesNotOutliveIt(t *testing.T) {
 	fill(t, content, text.FieldSize(), "2kb")
 	fill(t, content, text.FieldCount(), "2")
 	press(t, content, text.ButtonGenerate())
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	_, status := runMessages(content)

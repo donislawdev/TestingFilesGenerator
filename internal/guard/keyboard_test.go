@@ -37,7 +37,8 @@ func keyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, fyne.Canvas) {
 	w := test.NewWindow(nil)
 	t.Cleanup(w.Close)
 
-	host := &fakeHost{canvas: w.Canvas()}
+	host := newFakeHost(t)
+	host.canvas = w.Canvas()
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -58,7 +59,9 @@ func heldKeyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, *holdDuringRun
 	t.Cleanup(w.Close)
 
 	hold := newHold()
-	host := &fakeHost{canvas: w.Canvas(), hold: hold}
+	host := newFakeHost(t)
+	host.canvas = w.Canvas()
+	host.hold = hold
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -87,7 +90,7 @@ func pressInABox(t *testing.T, box *parts.Entry, key fyne.KeyName, mod fyne.KeyM
 // real rather than registered.
 func TestTheKeyboardStartsARunFromInsideABox(t *testing.T) {
 	dir := t.TempDir()
-	_, content, _ := keyedWindow(t)
+	host, content, _ := keyedWindow(t)
 	screen := selectTab(t, content, text.TabOneTarget())
 
 	entryUnder(t, screen, text.FieldOutputDir()).SetText(dir)
@@ -97,7 +100,7 @@ func TestTheKeyboardStartsARunFromInsideABox(t *testing.T) {
 	// The keyboard is in a box, which is where it is after somebody types a
 	// size - and it is the case a canvas shortcut cannot reach.
 	pressInABox(t, entryUnder(t, screen, text.FieldSize()), fyne.KeyReturn, fyne.KeyModifierControl)
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 
 	// And the run really happened, read off the disk rather than off the screen.
 	if got := len(filesIn(t, dir)); got == 0 {
@@ -226,7 +229,7 @@ func TestAFinishedRunOffersTheFolderItWroteInto(t *testing.T) {
 	entryUnder(t, screen, text.FieldSize()).SetText("1kb")
 	entryUnder(t, screen, text.FieldTargetID()).SetText("done")
 	press(t, screen, text.ButtonGenerate())
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	button := shownButton(screen, text.ButtonOpenFolder())
@@ -258,7 +261,7 @@ func TestTheFolderOfferGoesAwayWhenTheNextRunStarts(t *testing.T) {
 	entryUnder(t, screen, text.FieldTargetID()).SetText("one")
 	entryUnder(t, screen, text.FieldOutputDir()).SetText(first)
 	press(t, screen, text.ButtonGenerate())
-	waitForManifest(t, first)
+	waitForManifest(t, host, first)
 	join(host)
 
 	if shownButton(screen, text.ButtonOpenFolder()) == nil {
@@ -267,7 +270,7 @@ func TestTheFolderOfferGoesAwayWhenTheNextRunStarts(t *testing.T) {
 
 	entryUnder(t, screen, text.FieldOutputDir()).SetText(second)
 	press(t, screen, text.ButtonGenerate())
-	waitForManifest(t, second)
+	waitForManifest(t, host, second)
 	join(host)
 
 	button := shownButton(screen, text.ButtonOpenFolder())

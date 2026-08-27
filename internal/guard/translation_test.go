@@ -105,7 +105,7 @@ func theWindowSpeaksTheCatalogue(t *testing.T) {
 
 	// The entries are one thing and a built screen is another: a screen holding
 	// a word it read once at package level would still show the English.
-	screen := window.NewGenerate(&fakeHost{})
+	screen := window.NewGenerate(newFakeHost(t))
 	said := textIn(screen.Object())
 	for _, word := range []string{"ROZMIAREK", "NAGLOWEK", "PODGLAD"} {
 		if !strings.Contains(said, word) {

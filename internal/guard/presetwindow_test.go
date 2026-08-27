@@ -41,7 +41,7 @@ import (
 // directory", so a lookup across the whole thing finds whichever comes first.
 func presetScreen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	t.Helper()
-	host := &fakeHost{}
+	host := newFakeHost(t)
 	window.Open(host)
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
@@ -131,7 +131,7 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 	fill(t, content, text.FieldOutputDir(), fromWindow)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	press(t, content, "Generate")
-	waitForManifest(t, fromWindow)
+	waitForManifest(t, host, fromWindow)
 	join(host)
 
 	cliNames, windowNames := namesIn(t, fromCLI), namesIn(t, fromWindow)
@@ -219,7 +219,7 @@ func TestThePresetScreenSaysWhichNumbersWereOurs(t *testing.T) {
 	// limit left at its declared default, spread stated by hand.
 	fill(t, content, text.SettingLabel("spread"), "1kb")
 	press(t, content, "Generate")
-	waitForManifest(t, dir)
+	waitForManifest(t, host, dir)
 	join(host)
 
 	recorded := manifestText(t, dir)
@@ -402,7 +402,8 @@ func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 // run will use. A button that asks and drops the answer looks exactly like one
 // that works, which is the shape this project keeps meeting.
 func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
-	host := &fakeHost{picked: filepath.Join(t.TempDir(), "chosen")}
+	host := newFakeHost(t)
+	host.picked = filepath.Join(t.TempDir(), "chosen")
 	window.Open(host)
 
 	for _, screenName := range []string{"generate", "preset"} {
@@ -439,7 +440,7 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 // A picker that is cancelled answers with nothing, and a field emptied by
 // cancelling would send the run at a directory nobody named.
 func TestCancellingTheDirectoryPickerLeavesTheFieldAlone(t *testing.T) {
-	host := &fakeHost{} // picked is empty, so nothing is chosen
+	host := newFakeHost(t) // picked is empty, so nothing is chosen
 	window.Open(host)
 
 	before := entryUnder(t, host.content, text.FieldOutputDir()).Text

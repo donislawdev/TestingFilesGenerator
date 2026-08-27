@@ -51,7 +51,7 @@ func TestAddingABatchIsReachableWithoutScrolling(t *testing.T) {
 // that is writing files.
 func TestAddingABatchIsOutOfUseWhileARunIsGoing(t *testing.T) {
 	dir := t.TempDir()
-	screen := window.NewRecipe(&fakeHost{})
+	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 	fields := screen.Fields()
 

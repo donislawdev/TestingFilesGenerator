@@ -61,6 +61,22 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- `verify` and `cleanup` no longer contradict each other about a file stored
+  under a different case. On Windows and on a Mac, `REPORT.TXT` and `report.txt`
+  are one file, and `verify` used to call such a file `extra` - the word it uses
+  for somebody else's file - while `cleanup`, given the same directory and the
+  same manifest, deleted it and reported a clean sweep.
+
+  `verify` now says `respelled` and names what the manifest calls the file, so
+  the report says what happened instead of sending you looking for a stranger's
+  file. `cleanup` refuses to remove it and ends with the partial exit code,
+  because it removes the names the manifest lists and that name is not one of
+  them. Rename the file back, or verify against a manifest written for the names
+  you have.
+
+  Nothing changes where the filesystem keeps the two spellings apart, as Linux
+  does: there they are two files, and both commands always agreed.
+
 - The window no longer slows down as a recipe grows. Every keystroke on the
   batches screen re-reads the whole recipe, and the cost of doing that used to
   rise with the square of its size: a hundred batches took a quarter of a
