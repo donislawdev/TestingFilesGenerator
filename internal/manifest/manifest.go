@@ -137,6 +137,10 @@ type Summary struct {
 	Materialized int            `json:"materialized"`
 	ByFormat     map[string]int `json:"by_format"`
 	ByExpected   map[string]int `json:"by_expected"`
+	// ByTarget counts the files each target produced, keyed by target id.
+	// The cheapest form of the question O97 is about - a person checking by
+	// eye, or a script asserting a shape, does not have to walk the entries.
+	ByTarget map[string]int `json:"by_target"`
 }
 
 // File is one entry.
@@ -147,6 +151,26 @@ type File struct {
 	// Materialized says whether the file is on disk. A name the host system
 	// refuses is still a test case, and its entry still exists.
 	Materialized bool `json:"materialized"`
+
+	// TargetID is the id of the target this file came from, as the recipe
+	// spells it - "invoices" rather than "f_0007".
+	//
+	// ID above answers a different question. It is the handle a test refers to
+	// one file by (MF2) and it is numbered across the whole run, so two targets
+	// in one recipe produce f_0001 to f_0004 with nothing saying where the
+	// break falls. Neither does anything else: format is shared the moment two
+	// targets ask for one format, group is optional and free text, and the
+	// name only carries the target while nobody supplies a template of their
+	// own - which is exactly when somebody would want to ask.
+	//
+	// So a consumer counting "how many files did which target produce" had to
+	// parse file names, which is the work a manifest exists to remove.
+	// Observation O97, added on 2026-08-27 with the owner's yes.
+	//
+	// Always written, never omitted, because a target without an id does not
+	// reach here - the engine refuses an empty one and refuses a duplicate, so
+	// this value identifies the target within the run.
+	TargetID string `json:"target_id"`
 
 	Bytes    int64  `json:"bytes"`
 	Format   string `json:"format"`
@@ -243,6 +267,7 @@ func New(toolName, toolVersion, runID, command string, seed int64, os, arch stri
 		Summary: Summary{
 			ByFormat:   map[string]int{},
 			ByExpected: map[string]int{},
+			ByTarget:   map[string]int{},
 		},
 		// An empty list rather than nothing. A run interrupted before its first
 		// file finished used to render "files": null, while every other empty
@@ -259,6 +284,9 @@ func (m *Manifest) Add(f File) {
 	m.Files = append(m.Files, f)
 	m.Summary.FileCount++
 	m.Summary.ByFormat[f.Format]++
+	if f.TargetID != "" {
+		m.Summary.ByTarget[f.TargetID]++
+	}
 	if f.Expected.Outcome != "" {
 		m.Summary.ByExpected[f.Expected.Outcome]++
 	}

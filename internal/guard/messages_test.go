@@ -152,7 +152,7 @@ func TestAManifestWithNoFilesRendersAnEmptyListNotNull(t *testing.T) {
 
 	// The raw bytes, because that is what a consumer parses. Decoding first
 	// would hide exactly the difference this is about.
-	for _, field := range []string{"files", "generators", "by_format", "by_expected"} {
+	for _, field := range []string{"files", "generators", "by_format", "by_expected", "by_target"} {
 		if strings.Contains(text, `"`+field+`": null`) {
 			t.Errorf("%q renders as null in a manifest describing no files - a reader looping over it meets a value that is not a collection", field)
 		}

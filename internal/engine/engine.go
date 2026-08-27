@@ -795,6 +795,7 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		Notes:         notes,
 		Expected:      expectationFor(f),
 		Group:         f.Target.Group,
+		TargetID:      f.Target.ID,
 	}
 
 	if failure != nil {

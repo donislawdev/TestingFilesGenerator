@@ -170,6 +170,11 @@ tfg generate fixtures.yaml</code></pre>
     <code>overrides</code> when it came from a preset, so a manifest can always be traced back to what
     produced it.
   </p>
+  <p>
+    Every entry also carries <code>target_id</code>, the id of the target in the recipe that produced
+    the file, and <code>summary.by_target</code> counts the files each target came to. A recipe with
+    several targets can therefore be checked target by target without reading file names.
+  </p>
 </section>
 
 <section class="section" id="presets">

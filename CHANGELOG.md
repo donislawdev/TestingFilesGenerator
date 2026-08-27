@@ -210,6 +210,19 @@ because it turns other people's test suites red.
 
 ### Added
 
+- Every manifest entry now says which target the file came from, under
+  `target_id`, and the summary counts the files each target produced under
+  `by_target`. Nothing else answered that question. The `id` on an entry is
+  numbered across the whole run, so two targets in one recipe produce `f_0001`
+  to `f_0005` with nothing marking where one ends. `format` is shared the moment
+  two targets ask for one format, `group` is optional, and the file name only
+  carries the target while nobody supplies a name template of their own - which
+  is exactly when somebody would want to ask. Counting files per target meant
+  parsing file names, which is the work a manifest exists to remove.
+
+  `manifest_version` stays at `1.0`. These are added fields, and a reader
+  written against `1.0` is unaffected by keys it never looks at.
+
 - The manifest records which Go toolchain built the binary that wrote it, as
   `tool.go`. Alongside `tool.version` and `tool.generators`, this is what makes
   a hash mismatch diagnosable: without it, a hash that moved because somebody

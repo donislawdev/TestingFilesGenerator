@@ -170,6 +170,11 @@ tfg generate fixtures.yaml</code></pre>
     <code>preset</code> i <code>overrides</code>, gdy pochodził z presetu - żeby manifest zawsze dało
     się prześledzić z powrotem do tego, co go wyprodukowało.
   </p>
+  <p>
+    Każdy wpis niesie też <code>target_id</code>, czyli <code>id</code> celu z przepisu, który
+    wyprodukował ten plik, a <code>summary.by_target</code> liczy pliki, które dał każdy cel. Przepis
+    z kilkoma celami da się dzięki temu sprawdzać cel po celu, bez czytania nazw plików.
+  </p>
 </section>
 
 <section class="section" id="presets">

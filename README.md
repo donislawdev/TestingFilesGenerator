@@ -478,6 +478,11 @@ interrupted. One entry per file:
 `overrides` when it came from a preset - so a manifest can always be traced back
 to what produced it.
 
+Every entry also carries `target_id`, the id of the target in the recipe that
+produced the file, and `summary.by_target` counts the files each target came to.
+A recipe with several targets can therefore be checked target by target without
+reading file names.
+
 ## 🧪 Presets
 
 A preset is a ready made set of files that answers a common testing question, so
