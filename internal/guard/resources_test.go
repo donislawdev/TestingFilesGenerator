@@ -37,7 +37,81 @@ import (
 //
 // A ratchet. It goes down when work makes it lowerable, never up to turn a run
 // green - the same rule as the coverage threshold and the pinned values.
+//
+// It held on 2026-08-27 when the number under it turned out to be exactly 128,
+// which is this ceiling with nothing to spare. The fix was not to raise it -
+// see growthTolerance below for what the ceiling was always standing in for.
 const allocCeiling = 128
+
+// steadySize is the file the object count is measured on, and steadyRounds is
+// how many times.
+//
+// A small file, because the count does not depend on the size: measured on
+// 2026-08-27 across a sixteenfold range, every one of the twenty formats
+// reported the same number at 4, 16 and 64 MiB. That buys the repetitions,
+// which is what the ceiling needed and never had.
+const (
+	steadySize   = 4 << 20
+	steadyRounds = 5
+)
+
+// growthTolerance is how far the count may move between a small file and one
+// sixteen times larger before it counts as growth.
+//
+// It sits between two measurements rather than being picked, which is the rule
+// this project arrived at for the arm64 pixel threshold. Below it, the noise:
+// measured at 1 to 2 objects. Above it, the defect this whole guard exists for,
+// measured rather than reasoned about - moving the txt write buffer inside its
+// own loop takes the count from 4 objects to 131 at 4 MiB and to 2051 at 64
+// MiB. That is a growth of 1920 against a tolerance of 8, and even the mildest
+// shape of the same defect, one object for every 4 MiB, grows by 15.
+//
+// Worth saying plainly: that defect leaves the bytes identical, so neither the
+// size guard nor the determinism guard sees it. This is the one that does.
+const growthTolerance = 8
+
+// objectsAllocated writes one file `rounds` times and returns the LOWEST object
+// count it saw.
+//
+// The lowest rather than the last, and that is the entire point of this helper.
+// runtime.ReadMemStats reports a counter for the whole PROCESS, not for this
+// goroutine, so anything allocating in the background between the two readings
+// lands in the answer. That noise only ever adds, so the floor of several
+// readings is the generator's own number and everything above it is somebody
+// else's work.
+//
+// This is what O123 turned out to be, and it stood open for three days because
+// nobody ran the failing case on its own: run alone, pptx reports 129 more
+// often than 128 against a ceiling of 128, while inside a full run of this file
+// it reported 128 in 29 runs out of 30. The comment further down used to say
+// allocation counts were "measured identical across runs". They are not.
+func objectsAllocated(t *testing.T, d format.Descriptor, size int64, rounds int) int64 {
+	t.Helper()
+
+	lowest := int64(-1)
+	for r := 0; r < rounds; r++ {
+		plan, err := d.Generator.Plan(format.Request{Bytes: size, Seed: 7741, Label: true})
+		if err != nil {
+			t.Fatalf("planning %d B failed: %v", size, err)
+		}
+
+		runtime.GC()
+		var before runtime.MemStats
+		runtime.ReadMemStats(&before)
+
+		if err := d.Generator.Write(context.Background(), &countingSink{}, plan); err != nil {
+			t.Fatalf("writing %d B failed: %v", size, err)
+		}
+
+		var after runtime.MemStats
+		runtime.ReadMemStats(&after)
+
+		if got := int64(after.Mallocs - before.Mallocs); lowest < 0 || got < lowest {
+			lowest = got
+		}
+	}
+	return lowest
+}
 
 func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 	const size = 64 << 20 // 64 MiB, large enough that holding it would show
@@ -99,13 +173,27 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 			// It is the half that answers "is the whole file in memory", and it
 			// answers it just as well with instrumentation in the way.
 			objects := int64(after.Mallocs - before.Mallocs)
-			switch {
-			case raceEnabled:
-				t.Logf("%s: object ceiling not applied under the race detector, which allocates on its own account - %d objects seen",
+			if raceEnabled {
+				t.Logf("%s: object counts not applied under the race detector, which allocates on its own account - %d objects seen",
 					d.ID, objects)
-			case objects > allocCeiling:
-				t.Errorf("%s allocated %d objects producing a %d B file, ceiling is %d - something in the loop is allocating per item",
-					d.ID, objects, size, allocCeiling)
+			} else {
+				// The ceiling is asked of the steady number, not of a single
+				// reading, so background noise cannot redden it.
+				steady := objectsAllocated(t, d, steadySize, steadyRounds)
+				if steady > allocCeiling {
+					t.Errorf("%s allocated %d objects producing a %d B file, ceiling is %d - something in the loop is allocating per item",
+						d.ID, steady, int64(steadySize), allocCeiling)
+				}
+
+				// And the property the ceiling was always a proxy for. A
+				// ceiling has to fit the heaviest format, so it says nothing
+				// about the rest: xlsx could go from 79 objects to 127 and png
+				// from 56 to 127 without a word. This asks each format about
+				// itself, so every one of them is held to what it does today.
+				if objects-steady > growthTolerance {
+					t.Errorf("%s allocated %d objects for a %d B file and %d for a %d B one, a growth of %d - it is allocating per item rather than streaming",
+						d.ID, steady, int64(steadySize), objects, size, objects-steady)
+				}
 			}
 			t.Logf("%s: allocated %d KiB in %d objects, producing %d KiB",
 				d.ID, grew/1024, objects, int64(size)/1024)
