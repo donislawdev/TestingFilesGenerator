@@ -323,6 +323,11 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		pressNamed(t, body, text.ButtonAddBatch())
 	}
+	// The archive is made an archive first, since 2026-08-27: the offer to say
+	// what a batch holds is only under a format that holds anything. buttonNamed
+	// takes the LAST match, which is the fourth batch - the one this run turns
+	// into a zip a few lines down.
+	chooserIn(t, screen.Fields(), recipe.TargetAddress(4, recipe.KeyFormat)).SetSelected("zip")
 	pressNamed(t, body, text.ButtonAddContents())
 
 	fields := screen.Fields()

@@ -226,18 +226,18 @@
 																			</widget>
 																		</container>
 																		<container pos="0,33" size="808x25">
-																			<container size="144x25">
-																				<widget size="144x25" type="*parts.Chooser">
-																					<rectangle fillColor="inputBackground" radius="5" size="144x25"/>
+																			<container size="97x25">
+																				<widget size="97x25" type="*parts.Chooser">
+																					<rectangle fillColor="inputBackground" radius="5" size="97x25"/>
 																					<rectangle size="0x0"/>
-																					<widget pos="6,3" size="112x19" type="*widget.RichText">
-																						<text size="100x19">not stated - pdf</text>
+																					<widget pos="6,3" size="65x19" type="*widget.RichText">
+																						<text size="22x19">pdf</text>
 																					</widget>
-																					<widget pos="118,2" size="20x20" type="*widget.Icon">
+																					<widget pos="71,2" size="20x20" type="*widget.Icon">
 																						<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 																					</widget>
 																				</widget>
-																				<rectangle radius="5" size="144x25" strokeColor="inputBorder" strokeWidth="1"/>
+																				<rectangle radius="5" size="97x25" strokeColor="inputBorder" strokeWidth="1"/>
 																			</container>
 																		</container>
 																	</container>

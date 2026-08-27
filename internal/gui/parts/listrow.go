@@ -120,13 +120,35 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 }
 
 func (r *listRowRenderer) MinSize() fyne.Size {
+	return fyne.NewSize(RowWidthFor(r.label.MinSize().Width, r.row.kind != nil), ListRowHeight())
+}
+
+// RowWidthFor is the room one row of an open list needs for a word that wide.
+//
+// Here rather than counted twice, because the menu that OPENS this list has to
+// be at least this wide - the list is drawn at the width of the box. Two copies
+// of this arithmetic is what the sizing defect of 2026-08-25 was, and it came
+// back on 2026-08-27 the moment two more menus started drawing pictures: the
+// preset screen's format menu was sized for its longest word, the row put a
+// picture in front of that word, and "targz" got a 14 px slot for 34 px of
+// name. Every one of the twenty formats was cut off, in the list that exists to
+// show them.
+//
+// The term for the picture was in menuWidth until 2026-08-25 and was taken out
+// the same hour, correctly: measured across all six menus then in the window,
+// the closed box was the wider of the two every time, so the term defended
+// nothing and this project does not keep defences nothing can turn red. The
+// comment left in its place said what would bring it back - "the day a row
+// grows another thing in front of the word, that goes red and this gets a term
+// with a number behind it". That day was 2026-08-27 and the guard did go red
+// first.
+func RowWidthFor(word float32, withKind bool) float32 {
 	icon := Theme().Size(theme.SizeNameInlineIcon)
-	text := r.label.MinSize()
-	width := rowGutter + icon + rowGap + text.Width + rowGutter
-	if r.row.kind != nil {
+	width := rowGutter + icon + rowGap + word + rowGutter
+	if withKind {
 		width += icon + rowGap
 	}
-	return fyne.NewSize(width, ListRowHeight())
+	return width
 }
 
 // Refresh draws the three states a row has. The order is deliberate: the

@@ -67,10 +67,6 @@
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
   },
-  "DetailFormat": {
-    "description": "The longer explanation behind the button beside a field name.",
-    "other": "Run out of the list and the tool has no other."
-  },
   "DetailGroup": {
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest, so a test can assert about a whole class of case at once."
@@ -85,7 +81,7 @@
   },
   "DetailNameTemplate": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "{index:04} becomes 0001, 0002 and so on."
+    "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
   },
   "DetailOutputDir": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -101,7 +97,7 @@
   },
   "DetailSeed": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "On any machine and in any build of this tool."
+    "other": "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
   },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -113,7 +109,7 @@
   },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "The seeds are derived from it, so changing it changes the bytes."
+    "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
   },
   "FieldBoundary": {
     "description": "The name above a box somebody fills in.",
@@ -214,7 +210,7 @@
   },
   "HintNameTemplate": {
     "description": "The line under a field name, saying what the field does.",
-    "other": "What the files are called."
+    "other": "What every file in this batch is called."
   },
   "HintOutputDir": {
     "description": "The line under a field name, saying what the field does.",
@@ -246,7 +242,7 @@
   },
   "HintTargetID": {
     "description": "The line under a field name, saying what the field does.",
-    "other": "Names this group of files."
+    "other": "A short name for this batch."
   },
   "ManifestNotSaved": {
     "description": "Shown in the window. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",

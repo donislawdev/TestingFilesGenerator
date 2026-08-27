@@ -119,3 +119,27 @@ func FileKinds() map[string]bool {
 // that checks two DIFFERENT kinds are not drawn with one picture. Formats of
 // one kind share a picture on purpose.
 func SameKind(a, b string) bool { return fileKinds[a] == fileKinds[b] }
+
+// IsEveryFormat says whether a menu is offering the whole list of formats,
+// which is what earns it the pictures. See NewChooser for why the question is
+// asked there rather than at each list.
+//
+// Asked of this table rather than of the registry, and that is what keeps the
+// answer honest without a second import: the table is already held against the
+// registry by TestEveryRegisteredFormatHasAKind, so a format registered without
+// a kind fails that guard rather than quietly making this one say no.
+//
+// The whole set rather than "every value happens to be a format", because a
+// subset is exactly the case that must NOT get pictures - two values of one
+// kind would draw one picture twice.
+func IsEveryFormat(values []string) bool {
+	if len(values) != len(fileKinds) {
+		return false
+	}
+	for _, v := range values {
+		if fileKinds[v] == kindUnknown {
+			return false
+		}
+	}
+	return true
+}

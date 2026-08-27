@@ -52,9 +52,9 @@ func FromProperty(p format.Property) PropertyField {
 	}
 }
 
-// An empty control means "not stated", and no field is filled in with its
-// declared default. That is a correction rather than a preference, and it was
-// found by a guard rather than by reading.
+// An empty control means "not stated", and no box somebody types in is filled
+// in with its declared default. That is a correction rather than a preference,
+// and it was found by a guard rather than by reading.
 //
 // Filling the default in makes "I did not state this" impossible to express
 // from a window, because every field arrives at the engine carrying a value.
@@ -65,43 +65,48 @@ func FromProperty(p format.Property) PropertyField {
 // running one preset from both surfaces: the command line recorded
 // defaulted: [spread] and the window recorded nothing.
 //
+// Menus stopped being part of that on 2026-08-27, and the exception is measured
+// rather than granted. The paragraph above stays because it is still true of
+// every box a person types in - see choiceField for the two ends of the
+// measurement that took menus out of it.
+//
 // What the default is stays visible, in the sentence under the field - Allowed
 // ends with ", default 10mb" - and in the placeholder.
 
 // choiceField is a closed set, so it is a list rather than a box to type in.
-// Nobody can misspell a value that is not typed.
-// choiceField is a menu, and where the setting has a declared default the menu
-// carries an entry for not stating it.
+// Nobody can misspell a value that is not typed. A setting with a declared
+// default opens on that default.
 //
-// The entry exists because a menu cannot show silence the way a text box can.
-// The toolkit paints a menu's placeholder in the ordinary foreground colour, so
-// a default nobody chose read exactly like a choice somebody made - and once
-// the menu had been moved off it there was no way back to saying nothing at
-// all. See text.ChoiceLeftAlone, and O104 for the measurement.
+// It used to open on an extra first entry reading "not stated - a4", and the
+// reason written here was that the entry is what lets the manifest record a
+// value as defaulted rather than chosen, untouchable rule 5. Measured on
+// 2026-08-27, at both ends, and that is not what happens at either:
 //
-// Its value is the empty string, which is what every other field sends when it
-// was left alone, so nothing downstream learns that menus are a special case.
+//   - A format setting. An ICO run with embed left alone and one asking for
+//     embed=bmp produce the same bytes and the same manifest, which writes
+//     embed: bmp in both. The word defaulted appears in neither.
+//   - A preset setting. Defaulted is built from the parameters a preset
+//     DECLARES, and format is a global flag rather than one of them, so a run
+//     that never states it records defaulted: [spread] and never names format.
+//
+// So the entry cost every menu a third value that read as a state and was not
+// one, beside two entries that already did the same thing. The one thing it did
+// change is recipe_hash, since two recipes differing by a line are two recipes,
+// and no screen in this window writes a recipe out.
+//
+// Boxes somebody types in are NOT this case and were left alone: a preset's
+// limit and spread are parameters, so an empty box there does reach the
+// manifest as defaulted. Measured in the same run.
 func choiceField(p format.Property) PropertyField {
-	options, notStated := p.Choices, ""
-	if p.Default != "" {
-		notStated = text.ChoiceLeftAlone(p.Default)
-		options = append([]string{notStated}, p.Choices...)
-	}
-
-	sel := NewChooser(options, nil)
+	sel := NewChooser(p.Choices, nil)
 	sel.PlaceHolder = leftAlone(p)
-	if notStated != "" {
-		sel.SetSelected(notStated)
+	if p.Default != "" {
+		sel.SetSelected(p.Default)
 	}
 	return PropertyField{
 		Name:    p.Name,
 		Control: sel,
-		Value: func() string {
-			if sel.Selected == notStated {
-				return ""
-			}
-			return sel.Selected
-		},
+		Value:   func() string { return sel.Selected },
 	}
 }
 

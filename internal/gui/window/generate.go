@@ -248,8 +248,11 @@ func (g *Generate) buildFields() {
 	// gets forgotten - so a fourteenth format appears in this menu on the day it
 	// is registered.
 	ids := format.IDs()
+	// The pictures come with the menu rather than being switched on here. They
+	// used to be assigned on the next line, on this screen and on one of the
+	// three format menus on the batch screen, and the two that nobody
+	// remembered went twenty days without them.
 	g.formatPick = parts.NewChooser(ids, g.onFormatChosen)
-	g.formatPick.KindOf = parts.KindOfFile
 	if len(ids) > 0 {
 		// The first rather than a favourite. Something has to be chosen, because
 		// a menu showing nothing turns the first press of Generate into a
@@ -305,7 +308,11 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			// px too tall. It belongs here anyway: what kind of file, how big,
 			// how many and what they are called are one set of questions.
 			add(engine.SettingFormat, text.FieldFormat(), text.HintFormat(),
-				g.tips.Say(text.DetailFormat()), g.formatPick),
+				// Nothing longer to say, and the button is still wanted: the
+				// line under the label lives behind it since the explanations
+				// moved there, so an empty detail here is what puts that line
+				// on screen at all.
+				g.tips.Say(""), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
 			g.fields.Row(

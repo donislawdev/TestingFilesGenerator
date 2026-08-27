@@ -120,9 +120,24 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 	fromCLI := t.TempDir()
 	fromWindow := t.TempDir()
 
+	// The format is stated on both sides, since 2026-08-27, and the reason is a
+	// correction worth keeping.
+	//
+	// The menu on this screen used to open on "not stated - pdf" and send
+	// nothing, so the command line matched it by not saying --format either.
+	// Taking that entry off was justified by measuring the manifest's
+	// DEFAULTED list, which never names format - true, and not the whole
+	// answer: the PARAMETERS block does record it once it is given, so a window
+	// that now states pdf writes a line the bare command line does not.
+	//
+	// Stated here rather than taken off the screen, because the screen is the
+	// honest half. The menu shows the word "pdf" to whoever is looking at it,
+	// so a manifest claiming nobody chose a format would be describing a
+	// different screen. What this guard is for is unchanged: one preset, two
+	// surfaces, the same bytes and the same record.
 	var out, errOut bytes.Buffer
 	if code := cli.Run(context.Background(), []string{
-		"generate", "--preset", "size-boundaries", "--limit", "2mb", "--out", fromCLI,
+		"generate", "--preset", "size-boundaries", "--limit", "2mb", "--format", "pdf", "--out", fromCLI,
 	}, &out, &errOut); code != cli.ExitOK {
 		t.Fatalf("the command line refused the preset: exit %d\n%s", code, errOut.String())
 	}

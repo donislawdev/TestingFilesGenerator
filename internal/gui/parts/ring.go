@@ -189,10 +189,34 @@ type Chooser struct {
 func (c *Chooser) Opened() *OpenList { return c.opened }
 
 // NewChooser makes a menu of options, in the order it is given them.
+//
+// A menu offering every registered format gets the pictures without being
+// asked. Three lists of formats existed on 2026-08-27 and only one of them
+// drew pictures: the batch screen's own format menu had them, while the list
+// inside "Add files inside" and the format a preset is built in had none, so
+// the same twenty values looked like three different kinds of list depending
+// on which tab somebody was standing on. Reported by the owner from the
+// running window.
+//
+// Decided here rather than at each call site, because the defect was somebody
+// forgetting one call site and there are only more of them coming. It is also
+// EARLIER than a call site can manage: the width of this menu is measured from
+// what a row holds, and a row with a picture in front of the word is wider, so
+// a KindOf assigned after the constructor is assigned after the width was
+// already worked out.
+//
+// The test is the whole set rather than "do these values look like formats".
+// A subset is deliberately left out, and ICO's embed setting is why: it offers
+// bmp and png, both of them pictures, so every row would carry the same
+// picture - which the comment on KindOfFile calls worse than no picture at all,
+// because it looks like information and is not.
 func NewChooser(options []string, changed func(string)) *Chooser {
 	c := &Chooser{}
 	c.Options = options
 	c.OnChanged = changed
+	if IsEveryFormat(options) {
+		c.KindOf = KindOfFile
+	}
 	c.ExtendBaseWidget(c)
 	return c
 }
@@ -240,19 +264,39 @@ func menuWidth(c *Chooser) float32 {
 	// This one number decides two things, because the list opens at the width of
 	// the box - so the box also has to fit a ROW, which carries a tick column
 	// and, on a list of things of different kinds, a picture in front of the
-	// word. A term for that was written on 2026-08-25 and taken back out the
-	// same hour: measured across all six menus in the window, the closed box is
-	// already the wider of the two every time. The margin a row has left over is
-	// 22 px on the format menus and 6 px on the rest, and it does not shrink as
-	// values get longer, because both sides grow with the word.
+	// word.
 	//
-	// So there is nothing here defending it, and something better instead:
-	// TestEveryValueInAMenuFitsInTheListItOpens opens every menu in the window
-	// and measures the room each row gave its words. The day a row grows another
-	// thing in front of the word, that goes red and this gets a term with a
-	// number behind it.
+	// Both are asked, and the wider wins. It was the closed box alone until
+	// 2026-08-27, on a measurement taken on 2026-08-25 across all six menus then
+	// in the window: the box was the wider of the two every time, with 22 px to
+	// spare on the format menus and 6 px on the rest. The comment left here said
+	// what would end that - a row growing another thing in front of the word -
+	// and two things happened on one day that did. Two more menus started
+	// drawing the file kind pictures, which widens a row by an icon and a gap.
+	// And the entry reading "not stated - pdf" came off every menu, which is
+	// what had been holding the preset screen's format box wide enough to hide
+	// the first change. Every one of the twenty values came out cut off, and
+	// TestEveryValueInAMenuFitsInTheListItOpens said so before anything here
+	// changed.
+	//
+	// The row's half is asked of RowWidthFor rather than counted again here.
+	// Two copies of it is what the original defect was.
+	//
+	// One mutation was retired here on 2026-08-27 and the reason is worth
+	// keeping. "pad*4 becomes pad*2" used to turn a guard red, and now it does
+	// not: the row is a FLOOR, so narrowing the box no longer pushes a value
+	// past the edge of the row it is drawn in - it only spends the 6 px of slack
+	// the box was buying. The thing that mutation defended is defended by the
+	// line above it instead, and that one is proven. What is left unguarded is
+	// slack rather than fit, and no rule in this project says how much slack a
+	// value gets, so inventing one to have something to turn red would be a
+	// guard about a preference.
 	pad := th.Size(theme.SizeNameInnerPadding)
-	return widest + pad*4 + th.Size(theme.SizeNameInlineIcon)
+	box := widest + pad*4 + th.Size(theme.SizeNameInlineIcon)
+	if row := RowWidthFor(widest, c.KindOf != nil); row > box {
+		return row
+	}
+	return box
 }
 
 // useRing takes the ring and asks it for a line at rest as well as the two it

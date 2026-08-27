@@ -53,7 +53,12 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 	// nobody can see until they press something, so an unwired button is
 	// invisible in exactly the way the permanent text was not.
 	for _, field := range []struct{ label, detail string }{
-		{text.FieldFormat(), text.DetailFormat()},
+		// The format field's sentence is the line under its label, which lives
+		// behind this button like every longer explanation since 2026-08-24.
+		// It had a second sentence until 2026-08-27 and the button outlived it,
+		// which is the point: an empty explanation would leave the line with
+		// nowhere to be read.
+		{text.FieldFormat(), text.HintFormat()},
 		{text.FieldSize(), text.DetailSize()},
 		{text.FieldTargetID(), text.DetailTargetID()},
 		{text.FieldNameTemplate(), text.DetailNameTemplate()},

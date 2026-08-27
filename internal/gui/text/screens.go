@@ -102,38 +102,45 @@ func FieldPreset() string       { return say("FieldPreset", "Preset") }
 // HintCount is gone rather than shortened. It said "How many files to produce"
 // under a field labelled "How many", which is the label again in a quieter
 // colour.
-func HintFormat() string       { return say("HintFormat", "What kind of file to produce.") }
-func HintSize() string         { return say("HintSize", "Exact size of every file.") }
-func HintTargetID() string     { return say("HintTargetID", "Names this group of files.") }
-func HintNameTemplate() string { return say("HintNameTemplate", "What the files are called.") }
-func HintOutputDir() string    { return say("HintOutputDir", "Where the files and the manifest go.") }
-func HintSeed() string         { return say("HintSeed", "The same seed gives the same bytes.") }
-func HintPreset() string       { return say("HintPreset", "What you are testing.") }
+func HintFormat() string { return say("HintFormat", "What kind of file to produce.") }
+func HintSize() string   { return say("HintSize", "Exact size of every file.") }
+func HintTargetID() string {
+	return say("HintTargetID", "A short name for this batch.")
+}
+func HintNameTemplate() string {
+	return say("HintNameTemplate", "What every file in this batch is called.")
+}
+func HintOutputDir() string { return say("HintOutputDir", "Where the files and the manifest go.") }
+func HintSeed() string      { return say("HintSeed", "The same seed gives the same bytes.") }
+func HintPreset() string    { return say("HintPreset", "What you are testing.") }
 
 // The longer explanation behind the button beside a field name.
 //
 // What somebody needs once rather than every time: the units, the example, the
 // consequence. Kept because each of these says something that cannot be worked
-// out from the label - that changing the group name changes the bytes, that
+// out from the label - that changing the batch name changes the bytes, that
 // 10mb is not ten million, that a seed carries across machines.
 //
 // DetailLabel holds the whole explanation because the switch says what it does
 // on its own face, so there is no short line left to put under it.
-func DetailFormat() string {
-	return say("DetailFormat", "Run out of the list and the tool has no other.")
-}
+//
+// The format menu has none, since 2026-08-27 and by the owner's decision. It
+// said "Run out of the list and the tool has no other", which is a sentence
+// about a list somebody is looking at - and every other one here says something
+// the field cannot show. The button is still there, carrying the line that says
+// what the setting does.
 func DetailSize() string {
 	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes.")
 }
 func DetailTargetID() string {
-	return say("DetailTargetID", "The seeds are derived from it, so changing it changes the bytes.")
+	return say("DetailTargetID", "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes.")
 }
 func DetailNameTemplate() string {
-	return say("DetailNameTemplate", "{index:04} becomes 0001, 0002 and so on.")
+	return say("DetailNameTemplate", "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it.")
 }
 func DetailOutputDir() string { return say("DetailOutputDir", "It is created if it is not there.") }
 func DetailSeed() string {
-	return say("DetailSeed", "On any machine and in any build of this tool.")
+	return say("DetailSeed", "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces.")
 }
 func DetailLabel() string {
 	return say("DetailLabel", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.")
@@ -180,25 +187,26 @@ func PlaceholderLeftEmpty(declared string) string {
 	return declared
 }
 
-// ChoiceLeftAlone is the first entry of a menu whose setting has a declared
-// default, and it means "I did not state this".
+// ChoiceLeftAlone is gone, and the reason it existed is worth keeping because
+// the colour measurement in it is still true.
 //
-// A menu needs a real entry for it where a text box needs none, and the reason
-// is measured rather than a preference: the toolkit draws a menu's placeholder
-// in the ordinary foreground colour, exactly like a value somebody picked, so
-// "pdf, because nobody said otherwise" and "pdf, because I chose it" looked
-// identical - measured on 2026-08-19 at RGB(230,230,230) for both, against
-// RGB(157,163,168) for a text box's placeholder, which the toolkit does dim.
-// Colour cannot carry the difference here, so words do.
+// It made the first entry of a menu read "not stated - pdf", so that a default
+// nobody picked could be told apart from a value somebody chose. The toolkit
+// draws a menu's placeholder in the ordinary foreground colour - measured on
+// 2026-08-19 at RGB(230,230,230), against RGB(157,163,168) for a text box's
+// placeholder, which the toolkit does dim - so colour could not carry that
+// difference and words had to.
 //
-// It also gives the setting a way BACK. A menu with only real values in it can
-// be moved off "not stated" and never returned to it, and being able to say
-// nothing is what lets the manifest record the value as defaulted rather than
-// chosen - which is a promise this window makes (O104).
-func ChoiceLeftAlone(declared string) string {
-	return PlaceholderNotStated() + " - " + declared
-}
-
+// What was never checked is whether anything downstream WANTED the difference.
+// Measured on 2026-08-27 at both ends: a format setting reaches the manifest
+// expanded either way, and a preset's defaulted is built from declared
+// parameters, which no menu on that screen is. Nothing read it, so five menus
+// carried a third entry that did nothing. Removed on 2026-08-27, by the owner's
+// decision, with the measurement in parts.choiceField.
+//
+// PlaceholderNotStated stays. It is a different thing: a menu with no declared
+// default, where nothing chosen really does mean nothing stated, and the
+// manifest really does record it as unspecified.
 // SettingsFor heads the block of fields a chosen format declares.
 //
 // A function rather than a constant with the id glued on: languages do not

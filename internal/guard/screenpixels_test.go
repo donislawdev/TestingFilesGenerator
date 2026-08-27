@@ -469,6 +469,10 @@ func screenScenes() []screenScene {
 		// What an archive holds, which is the one nested repeating thing in this
 		// window and had no picture anywhere before this screen.
 		{name: "recipe-contents", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			// An archive first. Since 2026-08-27 the offer to say what a batch
+			// holds is only under a format that holds anything, so this picture
+			// cannot be taken of the format a fresh screen opens on.
+			chooseFormat(t, s.tab, "zip")
 			pressNamed(t, s.tab, text.ButtonAddContents())
 		}},
 	}

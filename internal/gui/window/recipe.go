@@ -284,13 +284,12 @@ func (r *Recipe) newBatch() *batch {
 	b.formatPick = parts.NewChooser(format.IDs(), func(id string) {
 		r.onFormatChosen(b, id)
 	})
-	// Outside the callback, where the other screen has always had it. Inside it
-	// the pictures arrived only after somebody changed the format, so the list
-	// a person saw first was the one without them - and from 2026-08-25 it also
-	// decided how wide the menu is, because a row with a picture in front of the
-	// word needs more room than one without. Found by asking what menuWidth
-	// would be told at the moment the field is built.
-	b.formatPick.KindOf = parts.KindOfFile
+	// The pictures used to be switched on here, and the two things that line
+	// was carrying are both in NewChooser now, where no third format menu can
+	// miss them: they must be set outside the format callback, or a person sees
+	// the list without them until they change something, and they must be set
+	// before the menu is measured, since a row with a picture in front of the
+	// word is wider than one without.
 	return b
 }
 
@@ -378,7 +377,10 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 
 	rows = append(rows,
 		add(recipe.KeyFormat, text.FieldFormat(), text.HintFormat(),
-			r.tips.Say(text.DetailFormat()), b.formatPick),
+			// Empty for the reason the other screen gives: the button carries
+			// the line under the label, so it has to exist even when there is
+			// nothing further to add.
+			r.tips.Say(""), b.formatPick),
 		r.fields.Row(
 			add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
 				r.tips.Say(text.DetailTargetID()), b.id),
@@ -430,22 +432,42 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 
 // contentsBlock is the list of what an archive holds.
 //
-// Offered for every format rather than only for containers, and that is a
-// deliberate choice with a named cost. Asking a format whether it is a container
-// and hiding the block otherwise would put a rule about formats in the window,
-// and the refusal for telling a plain file to contain something is one the engine
-// already words and addresses. What it costs is a button on a TXT batch that
-// leads to a refusal - which is why a button is all that shows until somebody
-// presses it.
+// Offered only where a format says it holds other files, and the block is drawn
+// for no other format. This read the other way round until 2026-08-27, with the
+// cost written down and accepted: a PNG batch carried an "Add files inside"
+// button that led nowhere but a refusal.
+//
+// The reason given was that asking a format whether it is a container would put
+// a rule about formats in the window. That premise is false and the registry
+// says so - Container is a DECLARED field on a descriptor, sitting beside the
+// properties this same screen already draws from the declaration. Asking it is
+// the opposite of inventing a rule. Reported by the owner from the running
+// window, who saw the button under a PNG batch.
+//
+// What is already typed stays on screen whatever the format becomes, and that
+// is the half worth being careful about. Hiding filled rows would put the run
+// in a state where the engine refuses over a value nobody can see - the exact
+// defect that folding the batches closed - and dropping the rows instead would
+// throw away typed work on the strength of one menu press, which is the silence
+// untouchable rule 6 forbids. So the rows stay, the refusal lands on a box that
+// is on screen, and the way out of it is visible: remove them, or put the
+// format back.
 func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
+	holds := false
+	if d, err := format.Get(b.formatPick.Selected); err == nil {
+		holds = d.Container
+	}
+
 	addContents := widget.NewButton(text.ButtonAddContents(), func() {
 		b.contents = append(b.contents, r.newContent())
 		r.rebuild()
 	})
 	if len(b.contents) == 0 {
+		if !holds {
+			return nil
+		}
 		return addContents
 	}
-
 	rows := []fyne.CanvasObject{parts.Heading(text.ContentsHeading())}
 	for j, c := range b.contents {
 		at := func(setting string) string {
@@ -459,7 +481,12 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 			widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) }),
 		))
 	}
-	rows = append(rows, addContents)
+	// The button to add another only where another one would be legal. The rows
+	// above it can outlive a format change, the offer to make more of them
+	// cannot.
+	if holds {
+		rows = append(rows, addContents)
+	}
 	return container.NewVBox(rows...)
 }
 

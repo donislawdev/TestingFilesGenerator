@@ -77,18 +77,18 @@
 																					</widget>
 																				</container>
 																				<container pos="0,33" size="808x25">
-																					<container size="119x25">
-																						<widget size="119x25" type="*parts.Chooser">
-																							<rectangle fillColor="inputBackground" radius="5" size="119x25"/>
+																					<container size="139x25">
+																						<widget size="139x25" type="*parts.Chooser">
+																							<rectangle fillColor="inputBackground" radius="5" size="139x25"/>
 																							<rectangle size="0x0"/>
-																							<widget pos="6,3" size="87x19" type="*widget.RichText">
-																								<text size="30x19">bmp</text>
+																							<widget pos="6,3" size="107x19" type="*widget.RichText">
+																								<text size="18x19">zip</text>
 																							</widget>
-																							<widget pos="93,2" size="20x20" type="*widget.Icon">
+																							<widget pos="113,2" size="20x20" type="*widget.Icon">
 																								<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 																							</widget>
 																						</widget>
-																						<rectangle radius="5" size="119x25" strokeColor="inputBorder" strokeWidth="1"/>
+																						<rectangle radius="5" size="139x25" strokeColor="inputBorder" strokeWidth="1"/>
 																					</container>
 																				</container>
 																			</container>
@@ -262,17 +262,17 @@
 																		</container>
 																		<container pos="0,331" size="808x35">
 																			<container size="808x35">
-																				<widget size="153x35" type="*widget.Label">
-																					<widget size="153x35" type="*widget.RichText">
-																						<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
+																				<widget size="139x35" type="*widget.Label">
+																					<widget size="139x35" type="*widget.RichText">
+																						<text bold pos="6,6" size="127x23" textSize="17">Settings for zip</text>
 																					</widget>
 																				</widget>
-																				<widget pos="159,0" size="32x35" type="*widget.Button">
+																				<widget pos="145,0" size="32x35" type="*widget.Button">
 																					<rectangle radius="5" size="32x35"/>
 																					<rectangle size="32x35"/>
 																					<image fillMode="contain" pos="6,7" rsc="menuExpandIcon" size="iconInlineSize" themed="foreground"/>
 																				</widget>
-																				<spacer pos="197,0" size="616x35"/>
+																				<spacer pos="183,0" size="630x35"/>
 																			</container>
 																		</container>
 																		<container pos="0,375" size="808x35">
@@ -305,18 +305,18 @@
 																							</widget>
 																						</widget>
 																						<container pos="0,32" size="197x25">
-																							<container size="77x25">
-																								<widget size="77x25" type="*parts.Chooser">
-																									<rectangle fillColor="inputBackground" radius="5" size="77x25"/>
+																							<container size="97x25">
+																								<widget size="97x25" type="*parts.Chooser">
+																									<rectangle fillColor="inputBackground" radius="5" size="97x25"/>
 																									<rectangle size="0x0"/>
-																									<widget pos="6,3" size="45x19" type="*widget.RichText">
-																										<text size="42x19">(Sele…</text>
+																									<widget pos="6,3" size="65x19" type="*widget.RichText">
+																										<text size="57x19">(Select …</text>
 																									</widget>
-																									<widget pos="51,2" size="20x20" type="*widget.Icon">
+																									<widget pos="71,2" size="20x20" type="*widget.Icon">
 																										<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 																									</widget>
 																								</widget>
-																								<rectangle radius="5" size="77x25" strokeColor="inputBorder" strokeWidth="1"/>
+																								<rectangle radius="5" size="97x25" strokeColor="inputBorder" strokeWidth="1"/>
 																							</container>
 																						</container>
 																					</container>

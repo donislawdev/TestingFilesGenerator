@@ -282,6 +282,38 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- The window no longer offers to put files inside a format that holds none.
+  "Add files inside" now appears under ZIP and TAR.GZ, and nowhere else. It used
+  to appear under every batch, so a PNG batch carried a button whose only
+  destination was a refusal. Rows you already filled in stay on screen if you
+  change the format afterwards, so nothing you typed disappears and the refusal
+  still has a field to point at.
+
+- Every list of file formats in the window now draws the same small picture
+  beside each value. One of the three lists had them and two did not, so the
+  same twenty formats looked like different kinds of list depending on which tab
+  you were on.
+
+- A setting chosen from a list now opens on its own default instead of on an
+  extra entry reading "not stated - pdf". The extra entry existed so that a
+  default nobody picked could be told from a value somebody chose. Measured on
+  both surfaces, nothing downstream ever read that difference for a setting
+  drawn as a list: a run leaving an ICO's embed alone and a run asking for
+  embed=bmp produce the same bytes and the same manifest, and the preset block's
+  defaulted list is built from a preset's own parameters, which the format is
+  not one of. Boxes you type into are unchanged - leaving a preset's limit empty
+  still records it as ours rather than yours.
+
+  One visible consequence: a run started from the Presets tab now records the
+  format in the manifest's preset parameters, because the screen states it. The
+  files are the same.
+
+- Four fields explain themselves better. The format list dropped its second
+  sentence, which described the list you were already looking at. "File names"
+  and "Batch name" say what they are for and what they change. The seed says
+  what 0 means - it is the seed a run uses when nobody asks for another one, and
+  it is not a request for random files, which this tool never produces.
+
 - Two refusals are worded differently. Nothing about what is accepted has
   changed - only the sentences.
 

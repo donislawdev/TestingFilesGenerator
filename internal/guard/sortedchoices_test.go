@@ -116,15 +116,16 @@ func TestAMenuOffersItsChoicesInTheDeclaredOrder(t *testing.T) {
 				continue
 			}
 			checked++
-			// A setting with a declared default gets one extra entry in front,
-			// meaning "I did not state this" - the only way a menu can say
-			// that, because the toolkit paints its placeholder in the same
-			// colour as a real choice (O104). The declared values follow it in
-			// their declared order, which is what this is about.
+			// The declared values, all of them and nothing else, in the order
+			// the declaration lists them.
+			//
+			// A setting with a declared default used to get one extra entry in
+			// front of them reading "not stated - a4". It came off on
+			// 2026-08-27: what it was for was letting the manifest record the
+			// value as defaulted, and measuring both ends showed the manifest
+			// never does that for anything drawn as a menu. See
+			// parts.choiceField.
 			want := p.Choices
-			if p.Default != "" {
-				want = append([]string{text.ChoiceLeftAlone(p.Default)}, p.Choices...)
-			}
 			if got, want := strings.Join(menu.Options, ","), strings.Join(want, ","); got != want {
 				t.Errorf("the menu for %s.%s offers %s and it should offer %s", d.ID, p.Name, got, want)
 			}
