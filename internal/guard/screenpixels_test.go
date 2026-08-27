@@ -502,6 +502,32 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 		// stops here only on the system that has a reason.
 		t.Skip("the stored screens are not compared on macOS - the system hides scroll bars, see the comment above")
 	}
+	// One screen is built and thrown away before the loop, and that is a
+	// measurement rather than a superstition. Under Fyne 2.8.1 the first screen
+	// built in a process that has already run the rest of this package comes
+	// back with a tab bar of no height: the tab buttons keep their correct
+	// widths and lose their heights, and the text inside one reports a height
+	// of minus twelve. Measured on 2026-08-27, when the toolkit moved off
+	// 2.8.0:
+	//
+	//   - it follows the position and not the screen. Swapping the first two
+	//     entries of screenScenes moves the failure to the other one.
+	//   - it needs the rest of the package. This test on its own passes, and
+	//     goes on passing when run five times over.
+	//   - it is the instrument and not the window. The guirender probe draws
+	//     the same screen correctly, and the built binary draws all four tabs
+	//     properly - looked at, not assumed.
+	//   - another Resize does not help, and neither does waiting 200ms after
+	//     the Refresh. So it is not a layout pass that was skipped, and not a
+	//     race against a worker either.
+	//
+	// This hides nothing. Every screen is still compared against its stored
+	// tree and its stored picture, and only the first render is paid for.
+	// Whether the guard can still see a real change was not taken on trust
+	// either - both of its mutations were run again after this line went in.
+	//
+	// What causes it inside the toolkit is NOT known, and O148 says so.
+	renderScene(t, screenScenes()[0])
 	for _, sc := range screenScenes() {
 		t.Run(sc.name, func(t *testing.T) {
 			got, markup := renderScene(t, sc)

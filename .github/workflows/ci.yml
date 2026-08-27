@@ -69,10 +69,10 @@ jobs:
         # to be visible rather than discovered later.
         #
         # Two questions rather than one, since the graphics toolkit arrived
-        # on 2026-08-05. The graph below is 68 modules and most of them are
+        # on 2026-08-05. The graph below is 65 modules and most of them are
         # Fyne's. Their licences were measured before it was added and every
         # one in the linked set is permissive and one way compatible with
-        # GPL-3.0: 13 BSD-3, 10 MIT, 1 Apache-2.0, 1 BSD-2, 1 ISC.
+        # GPL-3.0: 13 BSD-3, 9 MIT, 1 Apache-2.0, 1 BSD-2, 1 ISC.
         #
         # Changed once since, on 2026-08-05, when the window gained a
         # folder picker. github.com/FyshOS/fancyfs was already named here
@@ -83,6 +83,17 @@ jobs:
         # package where it decorates folder icons. Tidying after it pruned
         # github.com/kr/text from go.mod, which took github.com/creack/pty
         # out of the graph, taking the count from 69 to 68.
+        #
+        # Changed again on 2026-08-27, when the toolkit went to 2.8.1. Three
+        # modules left the graph and none of them was ours to begin with -
+        # github.com/felixge/fgprof, github.com/google/pprof and
+        # github.com/pkg/profile all arrived through Fyne's own tooling and
+        # that release no longer asks for them, taking the count from 68 to
+        # 65. A fourth, github.com/fredbi/uri, stayed in the graph and left
+        # the linked set instead: 2.8.1 parses addresses itself. That is the
+        # difference these two questions exist to keep apart, so it is worth
+        # saying which one moved - the notices file tracks the linked set and
+        # dropped it, this list tracks the graph and keeps it.
         #
         # The second question protects what ships to most people. The
         # command line binary links exactly two external modules and the
@@ -105,7 +116,6 @@ jobs:
             github.com/clipperhouse/uax29/v2 \
             github.com/cpuguy83/go-md2man/v2 \
             github.com/davecgh/go-spew \
-            github.com/felixge/fgprof \
             github.com/fogleman/gg \
             github.com/fredbi/uri \
             github.com/fsnotify/fsnotify \
@@ -122,7 +132,6 @@ jobs:
             github.com/goccy/go-yaml \
             github.com/godbus/dbus/v5 \
             github.com/golang/freetype \
-            github.com/google/pprof \
             github.com/hack-pad/go-indexeddb \
             github.com/hack-pad/safejs \
             github.com/inconshreveable/mousetrap \
@@ -138,7 +147,6 @@ jobs:
             github.com/nfnt/resize \
             github.com/nicksnyder/go-i18n/v2 \
             github.com/niemeyer/pretty \
-            github.com/pkg/profile \
             github.com/pmezard/go-difflib \
             github.com/russross/blackfriday/v2 \
             github.com/rymdport/portal \

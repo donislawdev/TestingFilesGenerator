@@ -119,13 +119,21 @@ Source: <https://go.googlesource.com/text>
 
 ## The window binary only
 
-These 27 modules are the graphics toolkit and what it brings with it. They are
+These 26 modules are the graphics toolkit and what it brings with it. They are
 in `tfg-gui` and in no other binary this project produces.
 
 Their licences were read from the source of each module before the toolkit was
 added, on 2026-08-05. All are permissive and one way compatible with GPL-3.0:
-thirteen BSD 3-Clause, ten MIT, two Apache-2.0, one BSD 2-Clause and one ISC.
+thirteen BSD 3-Clause, nine MIT, two Apache-2.0, one BSD 2-Clause and one ISC.
 None is GPL-2.0-only or LGPL, which would not have been compatible.
+
+The toolkit moved to v2.8.1 on 2026-08-27, which took `fyne.io/systray` up with
+it and dropped `github.com/fredbi/uri` out of the graph altogether - that
+release parses addresses itself. The licence files of both moved modules were
+read again at the versions named below rather than carried over: Fyne is still
+BSD 3-Clause and systray is still Apache-2.0, byte for byte the same file it
+shipped before. One module fewer is why the count above went down by one, and
+the MIT line with it.
 
 Two arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
 same day with the folder picker, because the toolkit's dialog package
@@ -145,13 +153,13 @@ rymdport project.
 
 | module | version | licence | copyright |
 |---|---|---|---|
-| `fyne.io/fyne/v2` | v2.8.0 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
-| `fyne.io/systray` | v1.12.2 | Apache-2.0 | 2014 Brave New Software Project, Inc. |
+| `fyne.io/fyne/v2` | v2.8.1 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
+| `fyne.io/systray` | v1.12.3-0.20260810170012-af4e8e793ec4 | Apache-2.0 | 2014 Brave New Software Project, Inc. |
 | `github.com/BurntSushi/toml` | v1.6.0 | MIT | (c) 2013 TOML authors |
 | `github.com/FyshOS/fancyfs` | v0.0.1 | BSD-3-Clause | (C) 2025 FyshOS developers (see AUTHORS) |
 | `github.com/anthonynsimon/bild` | v0.14.0 | MIT | (c) 2021 Anthony Najjar Simon |
 | `github.com/clipperhouse/uax29/v2` | v2.2.0 | MIT | (c) 2020 Matt Sherman |
-| `github.com/fredbi/uri` | v1.1.1 | MIT | (c) 2018 Frederic Bidon |
+
 | `github.com/fsnotify/fsnotify` | v1.9.0 | BSD-3-Clause | Copyright 2012 The Go Authors |
 | `github.com/fyne-io/image` | v0.1.1 | BSD-3-Clause | (c) 2022, Fyne.io |
 | `github.com/fyne-io/oksvg` | v0.2.0 | BSD-3-Clause | (c) 2018, Steven R Wiley |
