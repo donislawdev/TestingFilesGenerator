@@ -319,6 +319,12 @@ func (s Site) copyDir(out map[string][]byte) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
+		// The path comes from the walk itself, over a directory in this
+		// repository, and this code renders the website rather than
+		// touching anybody's disk - it is not linked into either binary,
+		// which a guard enforces. The race this warns about needs somebody
+		// swapping a file for a link mid walk, on a tree only the build has.
+		//nolint:gosec // our own asset directory, walked at build time
 		b, readErr := os.ReadFile(p)
 		if readErr != nil {
 			return readErr

@@ -12,6 +12,7 @@ package xlsx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -160,7 +161,8 @@ func checkJointLimits(rows, columns int) error {
 func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
 	// The ceiling before the floor, because a package past it is refused by
 	// the packager for a reason that has nothing to do with being too small.
-	if big, ok := err.(*opc.TooLarge); ok {
+	var big *opc.TooLarge
+	if errors.As(err, &big) {
 		return &format.AboveMaximumError{
 			Format:    "XLSX",
 			Requested: big.Want,
@@ -171,7 +173,8 @@ func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
 		}
 	}
 	var gap *opc.Unreachable
-	if e, ok := err.(*opc.Unreachable); ok {
+	var e *opc.Unreachable
+	if errors.As(err, &e) {
 		gap = e
 		return &format.BelowMinimumError{
 			Format:    "XLSX",

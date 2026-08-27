@@ -224,6 +224,10 @@ func skipNote(c audit.Candidate, force bool) string {
 		}
 	case audit.Unreachable:
 		return "it could not be read, so there is no telling whether it is ours"
+	case audit.Ready:
+		// Named rather than left out, so a state added later reddens this
+		// instead of falling through the sentence below in silence. A file
+		// that is ready is not skipped, so it has no note.
 	}
 	// Unreachable today, and it stays a sentence rather than the bare state for
 	// the day it is not. Removable covers Ready and covers Changed with

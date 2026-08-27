@@ -117,7 +117,7 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs.SetOutput(errOut)
 	if err != nil {
 		if !explainUndefinedFlag(fs, rest, errOut) {
-			errOut.Write(complaint.Bytes())
+			_, _ = errOut.Write(complaint.Bytes())
 		}
 		return ExitUsage
 	}

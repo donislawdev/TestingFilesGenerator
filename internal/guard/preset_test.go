@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -150,7 +151,8 @@ func TestSizeBoundariesRefusesASetItCannotCompleteRatherThanPartOfIt(t *testing.
 }
 
 func asImpossible(err error, target **preset.ImpossibleError) bool {
-	if e, ok := err.(*preset.ImpossibleError); ok {
+	var e *preset.ImpossibleError
+	if errors.As(err, &e) {
 		*target = e
 		return true
 	}

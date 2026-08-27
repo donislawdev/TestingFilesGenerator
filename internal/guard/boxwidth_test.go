@@ -113,15 +113,16 @@ func placeholderShownFor(p format.Property) string {
 // taking the width control away entirely left it green. What a person sees is
 // the size the layout gave the box, which only exists once something has been
 // laid out, and choosing a format rebuilds that part of the tree.
-// Zwraca takze hosta, i to jest naprawa z 2026-08-27.
+// It returns the host as well, which is the repair made on 2026-08-27.
 //
-// Bez niego straznik naciskajacy Generuj nie ma czym zlaczyc pracy, a od
-// 2026-08-26 planowanie idzie na workera - wiec czyta ekran, zanim odmowa
-// zdazy na niego trafic. Zmierzone: `TestARefusalNamesTheBoxTheWayTheScreenNamesIt`
-// widzial na ekranie samo slowo "Width", czyli etykiete pola, i przechodzil
-// **obie** swoje kontrole trywialnie - jedna spelniona przez sama etykiete,
-// druga przez brak jakiejkolwiek linii z odmowa. Pelny przebieg mutacyjny
-// zglosil go jako dziure.
+// Without it a guard that presses Generate has nothing to join the work with,
+// and since 2026-08-26 planning runs on a worker - so the guard reads the
+// screen before the refusal has reached it. Measured:
+// TestARefusalNamesTheBoxTheWayTheScreenNamesIt saw nothing on screen but the
+// word "Width", which is the label of the field, and so passed both of its
+// checks trivially - one satisfied by the label alone, the other by there
+// being no line carrying a refusal at all. The full mutation run reported it
+// as a hole.
 func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser, *fakeHost) {
 	t.Helper()
 	ourTheme(t)

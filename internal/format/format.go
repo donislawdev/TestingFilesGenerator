@@ -487,6 +487,10 @@ func (p Property) Allows(raw string) (bad string) {
 		if _, err := core.ParseSize(raw); err != nil {
 			return "it takes " + sizePhrase
 		}
+	case PropertyText:
+		// Named rather than left out. Free text has no shape to check, so
+		// anything is allowed - and a kind added later reddens the linter
+		// instead of arriving here and being accepted without a word.
 	}
 	return ""
 }

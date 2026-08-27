@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -586,7 +587,7 @@ func TestTheSitemapNeedsNoSchemaButItsOwn(t *testing.T) {
 	decoder := xml.NewDecoder(bytes.NewReader(body))
 	for {
 		token, err := decoder.Token()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

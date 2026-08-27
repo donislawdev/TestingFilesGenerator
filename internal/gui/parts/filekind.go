@@ -51,6 +51,10 @@ func KindOfFile(id string) fyne.Resource {
 		return theme.MediaVideoIcon()
 	case kindWords:
 		return theme.ListIcon()
+	case kindUnknown:
+		// Named rather than left out. A format whose kind nobody declared
+		// draws no icon, which is the sentence at the top of this function,
+		// and a kind added later reddens the linter rather than landing here.
 	}
 	return nil
 }

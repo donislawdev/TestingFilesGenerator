@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -52,6 +53,12 @@ func (c Checker) Check(path string) Result {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
+	// The whole point of an oracle is to hand a file to somebody else's
+	// program and see what it says, so launching one from a variable is the
+	// behaviour rather than a risk. The name comes from a table in this
+	// package and the path from a run this tool just produced, neither of
+	// them from anything a user typed.
+	//nolint:gosec // the command is ours and the path is one we just wrote
 	cmd := exec.CommandContext(ctx, bin, c.args(path)...)
 	var out, errOut strings.Builder
 	cmd.Stdout = &out
@@ -70,7 +77,7 @@ func (c Checker) Check(path string) Result {
 				return Result{
 					Available: true, Tool: c.Name,
 					Output: strings.TrimSpace(out.String() + " " + errOut.String()),
-					Err: fmt.Errorf("%s crashed rather than answering (%v) - that is a defect in the tool, and a file that crashes it is still a file nobody will trust",
+					Err: fmt.Errorf("%s crashed rather than answering (%w) - that is a defect in the tool, and a file that crashes it is still a file nobody will trust",
 						c.Name, exitErr),
 				}
 			}
@@ -97,7 +104,8 @@ func (c Checker) Check(path string) Result {
 }
 
 func asExitError(err error, target **exec.ExitError) bool {
-	if e, ok := err.(*exec.ExitError); ok {
+	var e *exec.ExitError
+	if errors.As(err, &e) {
 		*target = e
 		return true
 	}
@@ -317,6 +325,8 @@ func Strict(formatID, path string) Result {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
+	//nolint:gosec // same as above - our own script, run against a file this
+	// tool wrote a moment ago
 	cmd := exec.CommandContext(ctx, python, script, formatID, path)
 	var out, errOut strings.Builder
 	cmd.Stdout = &out

@@ -746,11 +746,11 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	closeErr := fh.Close()
 
 	if writeErr != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return "", writeErr
 	}
 	if closeErr != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return "", closeErr
 	}
 
@@ -758,13 +758,13 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	// worth catching here rather than in someone's test suite, so the file
 	// never reaches its final name.
 	if counter.n != f.Plan.Bytes {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return "", fmt.Errorf("generator for %s produced %d B where the plan said %d B",
 			f.Desc.ID, counter.n, f.Plan.Bytes)
 	}
 
 	if err := os.Rename(tmp, final); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil

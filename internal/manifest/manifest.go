@@ -604,8 +604,8 @@ func (m *Manifest) writeOver(path string) error {
 		return err
 	}
 	if err := m.Encode(f); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return err
 	}
 	// On the device before the rename, because the rename is what turns this
@@ -619,18 +619,18 @@ func (m *Manifest) writeOver(path string) error {
 	// about ten thousand flushes, not one. docs/CODE-REVIEW-2026-08-23.md
 	// section 3.4, owner's call on 2026-08-25.
 	if err := f.Sync(); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return err
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	// Over our own claim, which is why this rename is allowed to replace
 	// something. Nobody else can be holding that name.
 	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	return nil
@@ -701,7 +701,7 @@ func readAtMost(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	raw, err := io.ReadAll(io.LimitReader(f, MaxBytes+1))
 	if err != nil {

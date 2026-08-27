@@ -316,7 +316,7 @@ Flags:
 	// Printing by default rather than rewriting. A command that edits a file
 	// somebody wrote, without being asked to, is the wrong default in a tool
 	// that already refuses to write over anything.
-	out.Write(canon)
+	_, _ = out.Write(canon)
 	return ExitOK
 }
 
@@ -346,7 +346,7 @@ func readRecipe(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	src, err := io.ReadAll(io.LimitReader(f, recipe.MaxBytes+1))
 	if err != nil {

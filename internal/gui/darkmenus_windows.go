@@ -77,6 +77,6 @@ func PreferDarkMenus() bool {
 	if addr == 0 {
 		return false
 	}
-	syscall.SyscallN(addr, uintptr(preferredAppModeForceDark))
+	_, _, _ = syscall.SyscallN(addr, uintptr(preferredAppModeForceDark))
 	return true
 }

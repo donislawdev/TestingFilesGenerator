@@ -47,11 +47,11 @@ func ReplaceFile(path string, content []byte) error {
 
 	tmp := path + writingSuffix
 	if err := writeWhole(tmp, content, mode); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return &ReplaceError{Path: path, Err: err}
 	}
 	return nil
@@ -94,7 +94,7 @@ func writeWhole(path string, content []byte, mode os.FileMode) error {
 		return err
 	}
 	if _, err := f.Write(content); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	// Before the close, because ReplaceFile renames this copy over a file
@@ -103,7 +103,7 @@ func writeWhole(path string, content []byte, mode os.FileMode) error {
 	// empty file where their recipe was. One call per command, and the command
 	// is "recipe fmt -w". Owner's call on 2026-08-25.
 	if err := f.Sync(); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Close(); err != nil {

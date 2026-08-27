@@ -11,6 +11,7 @@ package docx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -124,7 +125,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func refusal(err error, want int64, shape opc.Shape, paragraphs int) error {
 	// The ceiling before the floor, because a package past it is refused by
 	// the packager for a reason that has nothing to do with being too small.
-	if big, ok := err.(*opc.TooLarge); ok {
+	var big *opc.TooLarge
+	if errors.As(err, &big) {
 		return &format.AboveMaximumError{
 			Format:    "DOCX",
 			Requested: big.Want,
@@ -158,7 +160,8 @@ func refusal(err error, want int64, shape opc.Shape, paragraphs int) error {
 }
 
 func asUnreachable(err error, target **opc.Unreachable) bool {
-	if e, ok := err.(*opc.Unreachable); ok {
+	var e *opc.Unreachable
+	if errors.As(err, &e) {
 		*target = e
 		return true
 	}

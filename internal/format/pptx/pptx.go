@@ -14,6 +14,7 @@ package pptx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -126,7 +127,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func refusal(err error, want int64, shape opc.Shape, slides int) error {
 	// The ceiling before the floor, because a package past it is refused by
 	// the packager for a reason that has nothing to do with being too small.
-	if big, ok := err.(*opc.TooLarge); ok {
+	var big *opc.TooLarge
+	if errors.As(err, &big) {
 		return &format.AboveMaximumError{
 			Format:    "PPTX",
 			Requested: big.Want,
@@ -136,7 +138,8 @@ func refusal(err error, want int64, shape opc.Shape, slides int) error {
 			Hint: "Ask for less than 4 GiB, or split the content across several files.",
 		}
 	}
-	if gap, ok := err.(*opc.Unreachable); ok {
+	var gap *opc.Unreachable
+	if errors.As(err, &gap) {
 		return &format.BelowMinimumError{
 			Format:    "PPTX",
 			Requested: want,

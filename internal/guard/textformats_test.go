@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"io"
 	"math"
 	"regexp"
@@ -300,7 +301,7 @@ func TestAnXMLDocumentIsWellFormedAndCarriesRecords(t *testing.T) {
 			)
 			for {
 				tok, err := dec.Token()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if err != nil {
@@ -389,7 +390,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 			shapes, pendingText := 0, false
 			for {
 				tok, err := dec.Token()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if err != nil {
@@ -583,7 +584,7 @@ func TestNothingIsPaintedOverTheSVGLabel(t *testing.T) {
 			dec.Strict = true
 			for {
 				tok, err := dec.Token()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if err != nil {
