@@ -275,29 +275,26 @@ func (s Site) socialCard() ([]byte, error) {
 	return []byte(whole), nil
 }
 
-// sitemap lists every page, each carrying the addresses of its translations.
+// sitemap lists every page the site has, in every language, and says nothing
+// else about any of them.
 //
-// The alternates are inside the sitemap as well as in the pages because a
-// crawler that reaches the sitemap first should not have to fetch a page to
-// learn that another language exists.
+// The translations are deliberately not named here, though they were until
+// 2026-08-27. They sit in the head of every page instead, which is where a
+// crawler reads them anyway - each page carries its own canonical address and
+// the full set of alternates. Naming them in here as well takes a second
+// namespace, and the sitemap schema lets a foreign element in only through a
+// particle it insists on validating strictly. That tells a validating reader
+// it must hold the xhtml schema too, and a reader without it turns down the
+// whole file rather than the one element. So the alternates cost us a sitemap
+// that some readers throw away, and buy nothing the pages do not already say.
 func (s Site) sitemap() []byte {
 	var b bytes.Buffer
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
-	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">` + "\n")
+	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
 	for _, lang := range s.Languages {
 		for _, page := range lang.Pages {
 			b.WriteString("  <url>\n")
 			fmt.Fprintf(&b, "    <loc>%s%s</loc>\n", s.Origin(), pageURL(lang, page))
-			for _, other := range s.Languages {
-				if mate, ok := find(other, page.Key); ok {
-					fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=%q href=\"%s%s\"/>\n", other.Code, s.Origin(), pageURL(other, mate))
-				}
-			}
-			if root, ok := s.rootLanguage(); ok {
-				if mate, found := find(root, page.Key); found {
-					fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"%s%s\"/>\n", s.Origin(), pageURL(root, mate))
-				}
-			}
 			b.WriteString("  </url>\n")
 		}
 	}

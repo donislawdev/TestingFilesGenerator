@@ -1,75 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/formats/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/formats/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/formaty/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/formats/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/docs/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/use-cases/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/create-file-exact-size/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/faq/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/formaty/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/formats/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/formaty/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/formats/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/zastosowania/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/"/>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/faq/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/"/>
-    <xhtml:link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/"/>
   </url>
 </urlset>

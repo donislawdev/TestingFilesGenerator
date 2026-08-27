@@ -1,7 +1,10 @@
 package guard
 
 import (
+	"bytes"
 	"encoding/json"
+	"encoding/xml"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -549,5 +552,79 @@ func TestEveryLinkOnTheSiteLeadsSomewhere(t *testing.T) {
 				t.Errorf("%s links to /%s and nothing is published there", page, m[1])
 			}
 		}
+	}
+}
+
+// TestTheSitemapNeedsNoSchemaButItsOwn asks that the sitemap carry nothing a
+// reader would have to fetch a second schema to check.
+//
+// This guard exists because of a measurement rather than a preference. The
+// sitemap schema lets an element from another namespace in, but only through a
+// particle it insists on validating strictly - which tells a reader it must
+// hold that other schema as well, and a reader without it turns down the whole
+// file rather than the one element. We carried xhtml alternates in here until
+// 2026-08-27 and paid exactly that. They are still on every page, in the head,
+// which is where they are read from anyway.
+//
+// It asks the renderer rather than the published file because the renderer is
+// where the answer is decided. TestTheSiteSaysWhatTheToolSays is what holds
+// the published file to it.
+func TestTheSitemapNeedsNoSchemaButItsOwn(t *testing.T) {
+	const sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+	s := siteUnderTest(t)
+	rendered, err := s.Render()
+	if err != nil {
+		t.Fatalf("rendering the site: %v", err)
+	}
+	body, ok := rendered["sitemap.xml"]
+	if !ok {
+		t.Fatal("the program renders no sitemap.xml at all, so nothing here is being checked")
+	}
+
+	locations := 0
+	decoder := xml.NewDecoder(bytes.NewReader(body))
+	for {
+		token, err := decoder.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("the sitemap does not parse, so no reader will take it: %v", err)
+		}
+		start, ok := token.(xml.StartElement)
+		if !ok {
+			continue
+		}
+		if start.Name.Space != sitemapNamespace {
+			t.Errorf("the sitemap carries <%s> from %q - a reader holding only the sitemap schema has to find that one too, and turns the file down when it cannot", start.Name.Local, start.Name.Space)
+		}
+		for _, attribute := range start.Attr {
+			if attribute.Name.Space == "xmlns" {
+				t.Errorf("the sitemap declares a second namespace %q as %q, and the only reason to declare one is to carry an element from it", attribute.Name.Local, attribute.Value)
+			}
+			if attribute.Name.Space == "" && attribute.Name.Local == "xmlns" && attribute.Value != sitemapNamespace {
+				t.Errorf("the sitemap says it is %q, which is not the sitemap schema", attribute.Value)
+			}
+		}
+		if start.Name.Local != "loc" {
+			continue
+		}
+		locations++
+		var address string
+		if err := decoder.DecodeElement(&address, &start); err != nil {
+			t.Fatalf("reading an address out of the sitemap: %v", err)
+		}
+		if !strings.HasPrefix(address, siteOrigin+"/") {
+			t.Errorf("the sitemap names %q, which is not on the site it belongs to", address)
+		}
+	}
+
+	pages := 0
+	for _, language := range s.Languages {
+		pages += len(language.Pages)
+	}
+	if locations != pages {
+		t.Errorf("the site has %d pages and the sitemap names %d of them, so a crawler reading it is told about the wrong set", pages, locations)
 	}
 }
