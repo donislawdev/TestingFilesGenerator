@@ -34,8 +34,8 @@ const (
 	// that counted comments would be a limit on explaining. Measured before
 	// choosing: comments and blanks run 17 to 45 lines in the longest
 	// functions, so counting them would have punished the wrong thing.
-	longestFunction = 80
-	longestFile     = 550
+	longestFunction = 79
+	longestFile     = 503
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to
@@ -308,4 +308,145 @@ func f() {
 			base, n, base+3)
 	}
 	t.Logf("%d lines of code, unchanged by six lines of comment, plus three for three lines of code", base)
+}
+
+// The depth ceiling stands on the metric above it, and nothing was asking
+// whether that metric tells the truth.
+//
+// This is not decoration. The sister project in another language had to
+// correct the same measurement twice before it was right: a flat six branch
+// chain measured six levels deep, and an exception handler counted as a level
+// of its own. A ceiling standing on a metric that lies is worse than no
+// ceiling at all, because the suite is green and somebody believes it.
+//
+// Written in both directions on purpose. "A chain is one level" is satisfied
+// perfectly by a metric that returns zero for everything, and a ceiling
+// standing on a metric stuck at zero passes for ever while the code nests
+// deeper underneath it. So the cases below pair every claim about what does
+// NOT add a level with a claim about what does.
+func TestTheNestingMetricMeasuresWhatAPersonSeesIndented(t *testing.T) {
+	measure := func(t *testing.T, source string) int {
+		t.Helper()
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, "measured.go", source, parser.ParseComments)
+		if err != nil {
+			t.Fatalf("parsing the sample: %v", err)
+		}
+		for _, decl := range file.Decls {
+			if fn, ok := decl.(*ast.FuncDecl); ok && fn.Body != nil {
+				return nesting(fn)
+			}
+		}
+		t.Fatal("the sample holds no function, so this guard measured nothing")
+		return 0
+	}
+
+	cases := []struct {
+		what  string
+		want  int
+		claim string
+		src   string
+	}{
+		{
+			what:  "a body with no blocks",
+			want:  0,
+			claim: "a function nobody indented is zero deep",
+			src: `package sample
+func f() {
+	a := 1
+	b := 2
+	_ = a + b
+}
+`,
+		},
+		{
+			what:  "an else-if chain of four branches",
+			want:  1,
+			claim: "a chain reads as one thing and is drawn at one indent, so it counts once",
+			src: `package sample
+func f(x int) string {
+	if x == 1 {
+		return "a"
+	} else if x == 2 {
+		return "b"
+	} else if x == 3 {
+		return "c"
+	} else {
+		return "d"
+	}
+}
+`,
+		},
+		{
+			what:  "two loops side by side",
+			want:  1,
+			claim: "siblings are not nested, however many of them there are",
+			src: `package sample
+func f(xs, ys []int) {
+	for range xs {
+	}
+	for range ys {
+	}
+}
+`,
+		},
+		{
+			what:  "a switch with several cases",
+			want:  1,
+			claim: "the cases of one switch sit at one indent, like the branches of a chain",
+			src: `package sample
+func f(x int) string {
+	switch x {
+	case 1:
+		return "a"
+	case 2:
+		return "b"
+	default:
+		return "c"
+	}
+}
+`,
+		},
+		{
+			what:  "four blocks genuinely inside one another",
+			want:  4,
+			claim: "THE OTHER HALF - without this, a metric stuck at zero would pass every case above",
+			src: `package sample
+func f(xs [][]int, ok bool) {
+	for _, row := range xs {
+		for _, n := range row {
+			if n > 0 {
+				switch {
+				case ok:
+					_ = n
+				}
+			}
+		}
+	}
+}
+`,
+		},
+		{
+			what:  "a function literal inside a loop",
+			want:  2,
+			claim: "a closure is a block a person reads indented, so it counts like one",
+			src: `package sample
+func f(xs []int) {
+	for range xs {
+		func() {
+			_ = 1
+		}()
+	}
+}
+`,
+		},
+	}
+
+	for _, c := range cases {
+		if got := measure(t, c.src); got != c.want {
+			t.Errorf("%s measured %d and %d was expected.\n  %s\n"+
+				"The depth ceiling is only worth what this measurement is worth.",
+				c.what, got, c.want, c.claim)
+		}
+	}
 }

@@ -33,7 +33,8 @@ const (
 	// What counts as crowding. Three quarters of the ceiling is far enough from
 	// it that ordinary code does not trip the count, and close enough that
 	// something arriving there is on its way.
-	crowdingShare = 75
+	crowdingFileLines     = 413
+	crowdingFunctionLines = 60
 
 	// Caps measured on the tree of 2026-08-05, then frozen - eleven functions and
 	// two files were already crowding, against a first guess of four. That gap is
@@ -42,7 +43,7 @@ const (
 	// becomes a rubber band. Like the ceilings
 	// themselves these only go down. Raising one to turn a run green is the
 	// same act as editing a golden value for the same reason.
-	crowdedFunctions = 11
+	crowdedFunctions = 10
 	crowdedFiles     = 2
 )
 
@@ -70,7 +71,7 @@ func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {
 			}
 			rel = filepath.ToSlash(rel)
 
-			if n := codeLines(src, comments, 1, len(src)); crowding(n, longestFile) {
+			if n := codeLines(src, comments, 1, len(src)); crowding(n, crowdingFileLines) {
 				files = append(files, fmt.Sprintf("%s %d/%d", rel, n, longestFile))
 			}
 
@@ -81,7 +82,7 @@ func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {
 				}
 				from := fset.Position(fn.Pos()).Line
 				to := fset.Position(fn.End()).Line
-				if n := codeLines(src, comments, from, to); crowding(n, longestFunction) {
+				if n := codeLines(src, comments, from, to); crowding(n, crowdingFunctionLines) {
 					functions = append(functions, fmt.Sprintf("%s:%d %s %d/%d",
 						rel, from, name(fn), n, longestFunction))
 				}
@@ -93,14 +94,14 @@ func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {
 	sort.Strings(files)
 
 	if len(functions) > crowdedFunctions {
-		t.Errorf("%d function(s) are within %d%% of the ceiling and the cap is %d:\n  %s\n\n"+
+		t.Errorf("%d function(s) are %d lines of code or longer and the cap is %d:\n  %s\n\n"+
 			"Nothing is over the line, which is the point - this is the drift the other guard "+
 			"cannot see. Split one of these rather than raising the cap.",
-			len(functions), crowdingShare, crowdedFunctions, strings.Join(functions, "\n  "))
+			len(functions), crowdingFunctionLines, crowdedFunctions, strings.Join(functions, "\n  "))
 	}
 	if len(files) > crowdedFiles {
-		t.Errorf("%d file(s) are within %d%% of the ceiling and the cap is %d:\n  %s",
-			len(files), crowdingShare, crowdedFiles, strings.Join(files, "\n  "))
+		t.Errorf("%d file(s) are %d lines of code or longer and the cap is %d:\n  %s",
+			len(files), crowdingFileLines, crowdedFiles, strings.Join(files, "\n  "))
 	}
 
 	t.Logf("crowding the ceiling: %d function(s) of %d allowed, %d file(s) of %d allowed",
@@ -115,6 +116,6 @@ func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {
 
 // crowding reports whether a measurement has reached the share of the ceiling
 // at which it counts as on its way there.
-func crowding(n, ceiling int) bool {
-	return n*100 >= ceiling*crowdingShare
+func crowding(n, band int) bool {
+	return n >= band
 }
