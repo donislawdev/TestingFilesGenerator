@@ -11,12 +11,13 @@ name: dependency review
 on:
   pull_request:
 
+# Read only, and nothing here asks for more. The action can post a summary
+# comment on the pull request, which would need `pull-requests: write` - that is
+# deliberately not granted. A failing gate already says everything the comment
+# would: the check goes red and the log names the dependency. A write scope kept
+# for a convenience is a write scope a later job inherits.
 permissions:
   contents: read
-  # The summary comment needs this. On a pull request from a fork the token is
-  # read only whatever this says, so the comment is a convenience on our own
-  # branches rather than something a stranger can reach.
-  pull-requests: write
 
 jobs:
   review:
@@ -33,7 +34,6 @@ jobs:
           # business arriving quietly. Anything at or above "moderate" fails the
           # pull request rather than warning in a log nobody reads.
           fail-on-severity: moderate
-          comment-summary-in-pr: always
 
       # The half the action above cannot do. Its own documentation: "If we can't
       # detect the license for a dependency we will inform you, but the action

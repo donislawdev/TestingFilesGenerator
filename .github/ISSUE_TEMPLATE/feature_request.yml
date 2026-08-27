@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest an improvement or a new capability
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: The testing situation that is awkward today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution
+      description: What you would like the tool to do.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      description: >-
+        Two things this project has decided and will not revisit without a new
+        argument. Saying so here saves you writing a proposal that was never going
+        to be accepted.
+      options:
+        - label: This works entirely on the local machine. The tool makes no network connections of any kind, and no cloud or remote storage integration is in scope.
+          required: true
+        - label: This belongs in both the command line and the window, not in one of them. Every capability lives in the engine and appears on both surfaces.
+          required: true

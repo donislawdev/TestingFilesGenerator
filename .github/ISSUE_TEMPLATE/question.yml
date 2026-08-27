@@ -1,0 +1,42 @@
+name: Question or problem
+description: Ask about using the tool, or report something that does not fit the other two
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Questions belong here rather than in private mail, because the next person
+        to hit the same thing can find the answer.
+
+        If it turns out to be a defect we will relabel it - you do not have to
+        decide that first.
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do?
+      description: The testing situation, and what you have tried so far.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `tfg version`, if the tool is already installed.
+      placeholder: "0.1.0"
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Not relevant
+  - type: textarea
+    id: extra
+    attributes:
+      label: The command, if there is one
+      description: >-
+        Paste it rather than describing it. Anything you paste is public, so
+        check a path for your user name before it goes in.
+      render: shell

@@ -1,0 +1,91 @@
+name: Bug report
+description: Something in Testing Files Generator does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. The version, the exact command
+        and the exit code are the three most useful things you can give us.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `tfg version`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      description: This tool promises the same bytes everywhere, so which system you are on is part of the report.
+      options:
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: true
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Processor architecture
+      description: >-
+        Releases ship for both. It matters here because this tool promises the
+        same bytes on every machine, and the one measured difference between
+        these two was a rendering difference on arm64.
+      options:
+        - amd64 (Intel or AMD)
+        - arm64 (Apple silicon, ARM)
+        - Not sure
+  - type: dropdown
+    id: surface
+    attributes:
+      label: How were you running it?
+      options:
+        - Command line (tfg)
+        - Window (tfg-gui)
+    validations:
+      required: true
+  - type: input
+    id: format
+    attributes:
+      label: Which format, if it is about one
+      description: The identifier `tfg formats` prints, for example png or targz.
+      placeholder: "pdf"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: The command, or the recipe
+      description: >-
+        The smallest thing that triggers it. A single `tfg` command line is ideal.
+        If it takes a recipe, paste the recipe rather than describing it.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: exit
+    attributes:
+      label: Exit code
+      description: >-
+        What `echo $?` printed after the command, or `echo %ERRORLEVEL%` on Windows.
+        The codes are a frozen part of this tool's contract, so a wrong one is a
+        bug on its own even when the files came out right.
+      placeholder: "4"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: >-
+        The manifest, a screenshot of the window, or the output of `tfg verify`.
+        Before attaching a manifest: it records the directory the run wrote to and
+        the name of every file in it, and on most machines that path contains your
+        user name. This issue is public, so read it first and remove anything you
+        would rather not publish.

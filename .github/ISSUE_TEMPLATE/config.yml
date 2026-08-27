@@ -1,0 +1,13 @@
+# Problems belong here, on the issue tracker, where anyone hitting the same thing
+# can find the answer. There is deliberately no link out to a support page: the
+# only other channel is for vulnerabilities, which must not be public until there
+# is a fix.
+#
+# Blank issues are off because every template below asks for the two or three
+# things that make a report answerable - the version, the system, and the command.
+# A question that fits none of them still has a home: "Question or problem".
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/donislawdev/TestingFilesGenerator/security/advisories/new
+    about: Please report security issues privately, never as a public issue.
