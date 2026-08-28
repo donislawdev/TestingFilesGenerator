@@ -97,11 +97,11 @@
   <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.2.0</a>
   <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
 </div>
-<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.</p>
   </div>
 
   <figure class="hero-shot">
-    <img src="/assets/window.png" width="1000" height="1160" fetchpriority="high"
+    <img src="/assets/window.png" width="1000" height="780" fetchpriority="high"
          alt="The desktop window of Testing Files Generator, set up to write a batch of test files">
     <figcaption>The desktop window, set up to write a batch of files. The same engine runs behind the command line.</figcaption>
   </figure>
@@ -286,11 +286,12 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   </tbody>
 </table>
 </div>
-  <div class="note warn">
-    <p class="note-title">The binaries are not signed</p>
+  <div class="note">
+    <p class="note-title">What is signed, and what is not</p>
     <p>
-      Your system will warn you the first time you run one. The release notes say exactly what each
-      system shows and why. Every archive is listed in <code>verify-SHA256SUMS.txt</code> on the release page,
+      The Windows and macOS downloads are signed, so they start without a warning about an unknown
+      developer. The Linux ones are not, because desktop Linux has no equivalent to sign them with.
+      Every archive is listed in <code>verify-SHA256SUMS.txt</code> on the release page,
       so you can check what you downloaded.
     </p>
   </div>
@@ -298,7 +299,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.2.0</a>
   <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
 </div>
-<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.</p>
 </section>
 
 <section class="section" id="scope">
@@ -317,7 +318,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
     <strong>Not there yet:</strong> five more formats are planned - <code>7z</code>, <code>tiff</code>,
     <code>webp</code>, <code>mp3</code> and <code>mp4</code>. The preset catalogue has one entry so far.
     Some recipe keys are recognised and refused with a message saying they are not built yet, rather
-    than being ignored quietly. The binaries are not signed.
+    than being ignored quietly. The Linux downloads are unsigned.
   </p>
   <p>
     Found a problem or want a format? The <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">issue tracker</a> is open, and

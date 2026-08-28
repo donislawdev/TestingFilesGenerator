@@ -122,8 +122,9 @@ false failures, and a suite that cries wolf gets switched off.
 **Download a binary.** Take the archive for your system from the
 [releases page](https://github.com/donislawdev/TestingFilesGenerator/releases),
 unpack it and run it. `tfg` is the command line, `tfg-gui` is the desktop
-window. They are not signed yet, so your system will warn you the first time -
-the release notes say exactly what to expect and why.
+window. The Windows and macOS downloads are signed, so they start without a
+warning about an unknown developer. The Linux ones are not, because desktop
+Linux has no equivalent to sign them with.
 
 **With Go installed:**
 
@@ -629,8 +630,8 @@ Honest scope, because a tool that oversells itself wastes your afternoon.
 size ranges, per format settings, manifests and every exit code above.
 
 **Not there yet:** five more formats. The preset catalogue has one entry so far.
-The recipe keys listed under [Not built yet](#not-built-yet). Binaries are not
-signed.
+The recipe keys listed under [Not built yet](#not-built-yet). The Linux
+downloads are unsigned.
 
 Found a problem or want a format? The
 [issue tracker](https://github.com/donislawdev/TestingFilesGenerator/issues) is
