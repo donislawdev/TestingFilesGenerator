@@ -27,6 +27,12 @@ var layer = map[string]int{
 	// with itself depending on who asked.
 	"internal/legal": 0,
 
+	// The generator of the bill of materials. A main package, so nothing can
+	// import it and it cannot reach a binary by accident. It sits with the
+	// other commands because it imports the registry and the version, and
+	// because it is a program somebody runs rather than a library.
+	"internal/legal/cmd/sbom": 5,
+
 	"internal/format":            1,
 	"internal/format/all":        1,
 	"internal/format/imagelabel": 1,
