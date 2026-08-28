@@ -120,10 +120,26 @@ A renewal is a DIFFERENT certificate and internal/legal has to move with it."
 }
 
 # The certificate that ACTUALLY signed a bundle, read back out of it.
+# 🔴 Nothing here changes directory, and that is the whole of what this function
+# learned on 2026-08-28, on the first real release.
+#
+# It used to cd into the temporary directory and pass the bundle path after
+# that, because --extract-certificates looked like a file NAME. The path it was
+# given is relative - sign_release.py passes a directory under the home
+# directory - so after the cd it named nothing. codesign answered "No such file
+# or directory", no certificate came out, and the script stopped the release
+# saying the bundle "was signed by a DIFFERENT certificate, got none" about a
+# bundle that was correctly signed, by the pinned certificate, with a timestamp.
+# A refusal that is right about there being a problem and wrong about what it is
+# costs more than a silent one, because it sends somebody to look at the card.
+#
+# The prefix takes a path. Measured rather than assumed: with the prefix written
+# as "$tmp/cert" and the bundle path left exactly as it arrives, cert0 appears
+# and hashes to the pinned digest.
 certificate_of() {
   local bundle="$1" tmp
   tmp="$(mktemp -d)"
-  ( cd "$tmp" && codesign -d --extract-certificates=cert "$bundle" >/dev/null 2>&1 )
+  codesign -d --extract-certificates="$tmp/cert" "$bundle" >/dev/null 2>&1
   if [ ! -f "$tmp/cert0" ]; then
     rm -rf "$tmp"
     echo "none"
@@ -172,8 +188,15 @@ Nothing has been handed back."
   # Apple takes a zip, a pkg or a dmg, and will not take the tar.gz we publish.
   # So the zip exists only to carry the bundle there. What gets stapled and
   # republished is the bundle itself.
+  # The same trap as certificate_of, one step further on, and it was measured
+  # the same day rather than met later: this cd'd into the unpacked directory
+  # and then wrote to a path that was relative to where the script STARTED, so
+  # the zip was never created and the next line would have stopped the release
+  # with "could not zip". Without the cd, ditto is given both paths as they
+  # arrive and --keepParent still puts tfg-gui.app at the top of the archive,
+  # which is the shape notarisation wants - read back out of the zip.
   local zip="${work}/notarise.zip"
-  ( cd "$work" && ditto -c -k --keepParent "$(basename "$app")" "$zip" ) ||
+  ditto -c -k --keepParent "$app" "$zip" ||
     die "could not zip $(basename "$app") for notarisation"
 
   local out
