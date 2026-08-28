@@ -344,6 +344,25 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **macOS downloads are signed by the owner and notarised by Apple, and macOS
+  opens them without argument.** They used to be refused on the first try, with
+  a note here telling you to open them from the right click menu instead. That
+  note is gone because the reason for it is gone, and it works with the network
+  off as well - the notarisation travels inside the file rather than being
+  looked up.
+
+  The archive has a different shape because of it. The program now lives inside
+  `tfg.app` or `tfg-gui.app`, with a link called `tfg` or `tfg-gui` beside it,
+  so `./tfg` still works exactly as before. Keep the two together: a copy of the
+  program lifted out of the bundle on its own is refused, because the signature
+  covers the bundle rather than the file.
+
+  One thing this takes away, and it is written down rather than left to be
+  discovered. The build's own statement about where a file came from no longer
+  answers for the macOS archives, because signing them changes their bytes. It
+  still answers for Linux. What answers for macOS is the signature itself, and
+  the release notes say which two commands read it.
+
 - The window no longer offers to put files inside a format that holds none.
   "Add files inside" now appears under ZIP and TAR.GZ, and nowhere else. It used
   to appear under every batch, so a PNG batch carried a button whose only

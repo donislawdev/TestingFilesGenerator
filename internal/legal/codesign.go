@@ -38,3 +38,29 @@ const CodeSigningSHA256 = "47b79ad3cfa53ef846cad03a59148f8c981d0b1196891e48b8c8d
 // 3161 timestamp, and without one a signature dies with its certificate - but
 // nothing new can be signed past this date.
 const CodeSigningExpires = "2027-08-19"
+
+// AppleDeveloperIDSHA256 is the SHA-256 of the DER bytes of the Developer ID
+// Application certificate this project signs macOS bundles with.
+//
+// Read off the Mac on 2026-08-28, issued by Apple's Developer ID Certification
+// Authority. The same certificate sits in two keychains on that machine, the
+// login one and the system one, so "sign with Developer ID Application" is an
+// ambiguous instruction and the digest is what makes it unambiguous.
+//
+// Why a digest here and a SHA-1 at signing time: codesign selects a certificate
+// by SHA-1, and SHA-1 is not a digest worth pinning anything to. The signing
+// step hashes every identity it can see and picks the one matching this, so the
+// selector is derived rather than written down twice.
+//
+// Nothing about the certificate's subject is written here. It carries the
+// owner's name and Apple team, both of which become public the first time a
+// signed macOS release goes out, and that is a thing to say out loud once
+// rather than to spread through a repository.
+const AppleDeveloperIDSHA256 = "c656a279aba94f535d6fcf9aff1ce05cd51295aea52295677ae5e1f1d7d77794"
+
+// AppleDeveloperIDExpires is when that certificate stops being able to sign.
+//
+// Signatures outlive it, because every one this project makes carries a
+// timestamp, and notarisation tickets are issued by Apple rather than by the
+// certificate. Nothing new can be signed past this date.
+const AppleDeveloperIDExpires = "2029-10-27"
