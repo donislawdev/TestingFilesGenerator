@@ -255,6 +255,22 @@ func Menu(c *Chooser) fyne.CanvasObject { return Sized(menuWidth(c), c) }
 // for the placeholder, so a menu keeps the proportions the toolkit gives it.
 func menuWidth(c *Chooser) float32 {
 	th, size := Theme(), theme.TextSize()
+	// The placeholder read here is whatever has been set. The toolkit puts its
+	// own default in when the field is empty and does it while the renderer is
+	// made - fyne v2.8.1 widget/select.go line 94, read in the pinned module -
+	// so a menu built cold is measured against a string that is about to be
+	// replaced by a longer one. That is what made the same twenty format ids
+	// 139.91 px on two screens and 97.75 px on the other two, measured on
+	// 2026-08-28 with tools/probes/menuwidth, and the narrow ones then drew
+	// "(Select ..." in a box that exists to show "(Select one)".
+	//
+	// Asking the widget for its MinSize first would settle it, and it was
+	// written that way for an hour. It came out because it could not change an
+	// answer: the string the toolkit inserts needs 139.91 px, the floor at the
+	// end of this function is 140, so every menu it could affect is already
+	// wider than the placeholder it is about to be given. A line that cannot
+	// change an answer is not a defence, and this project has taken seven of
+	// them out for that reason.
 	widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width
 	for _, option := range c.Options {
 		if w := fyne.MeasureText(option, size, fyne.TextStyle{}).Width; w > widest {
@@ -294,9 +310,22 @@ func menuWidth(c *Chooser) float32 {
 	pad := th.Size(theme.SizeNameInnerPadding)
 	box := widest + pad*4 + th.Size(theme.SizeNameInlineIcon)
 	if row := RowWidthFor(widest, c.KindOf != nil); row > box {
-		return row
+		box = row
 	}
-	return box
+	// And never narrower than the narrowest box on these screens.
+	//
+	// The owner's report of 2026-08-28, from the running window: the format menu
+	// on the preset screen reads as too short. It was 97.75 px, sitting between
+	// a limit and a seed of 140, because the values it holds are three and five
+	// letters long. Every value fitted, so nothing was cut off - what was wrong
+	// is that a control this window never draws under 140 px was drawn at 98.
+	//
+	// NumericWidth rather than a number of its own, so there is one answer to
+	// "how narrow does a control get here" and a menu cannot drift away from
+	// the boxes it stands beside. It is a floor and not a size: a menu of long
+	// values is as wide as its values, which is what the arithmetic above is
+	// for.
+	return fyne.Max(NumericWidth, box)
 }
 
 // useRing takes the ring and asks it for a line at rest as well as the two it

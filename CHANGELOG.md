@@ -61,6 +61,19 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- In the window, a menu is now the same width wherever it appears, and always
+  wide enough for the words in it. The menu for choosing a format was 140 px
+  wide on the single batch screen and 98 px on the presets screen and in a row
+  of an archive's contents, for the same twenty formats. In that narrow box the
+  toolkit's own "(Select one)" was cut off mid word, so a row of an archive's
+  contents offered "(Select ..." until a format was picked. No menu is drawn
+  narrower than the boxes standing beside it any more.
+
+- In the window, the Remove button ending a row of an archive's contents is the
+  size of a button. It was taking a quarter of the form's width and the height
+  of a label and a control together, which drew it as a panel with a word in
+  the middle rather than as something to press.
+
 - The notices that travel with a release now name the fonts and drawings the
   window binary carries. Seven font files and ninety-seven images are compiled
   into `tfg-gui` from inside the graphics toolkit, under the SIL Open Font

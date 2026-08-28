@@ -48,7 +48,7 @@ var notYetJustified = []string{
 	"everyfield_test.go",
 	"exeproperties_test.go",
 	"foldedsections_test.go",
-	"formwidth_test.go",
+
 	"guitext_test.go",
 	"keyboard_test.go",
 	"livecheck_test.go",
