@@ -7,12 +7,17 @@ package version
 // Version is written into every manifest. A manifest without it cannot
 // explain a hash mismatch after an upgrade.
 //
-// Set to 0.1.0 by the owner on 2026-08-02. It is an internal number: nothing
-// has been released, the repository is private, and both changelogs keep
-// everything under [Unreleased] because there is no release to point at. What
-// it buys today is that a manifest found later says which line of the tool
-// produced it, which "0.0.0-dev" could not.
-const Version = "0.1.0"
+// Set to 0.1.0 by the owner on 2026-08-02 and raised to 0.2.0 by the owner on
+// 2026-08-28. It stopped being an internal number the day 0.1.0 was published:
+// this is what somebody compares their build against when a hash they stored
+// months ago does not match.
+//
+// A minor bump rather than a major one, and here that is a claim about other
+// people's CI rather than a habit - D11 and immutable rule 3. What changed
+// under Breaking is which names and sizes this tool AGREES to produce, not what
+// it writes once it agrees. The machine answer to that is the golden hashes in
+// internal/guard/testdata, which are byte for byte the ones 0.1.0 shipped with.
+const Version = "0.2.0"
 
 // LicenceNotice is what "tfg license" prints and what the window's about
 // screen shows.

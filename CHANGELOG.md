@@ -14,6 +14,8 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-28
+
 ### Breaking
 
 - A file name holding `<`, `>`, `"`, `|`, `?`, `*` or a control character is now
@@ -58,213 +60,6 @@ because it turns other people's test suites red.
   do `con`, `con.txt`, `prn`, `aux`, `com1` and the rest of the names people
   expect to be reserved - they were each tried on Windows 11 and on Windows
   Server 2025, and every one of them is an ordinary file there now.
-
-### Fixed
-
-- On macOS the program now has an icon. It is a `.app` bundle since the release
-  before this one, and a bundle with no icon in it is drawn by the Finder and
-  the Dock as a blank sheet of paper - which is what a program the system knows
-  nothing about looks like. The icon is the same drawing the other two systems
-  use, on the rounded square macOS puts every icon on, at every size from 16 px
-  to 1024.
-
-- In the window, a menu is now the same width wherever it appears, and always
-  wide enough for the words in it. The menu for choosing a format was 140 px
-  wide on the single batch screen and 98 px on the presets screen and in a row
-  of an archive's contents, for the same twenty formats. In that narrow box the
-  toolkit's own "(Select one)" was cut off mid word, so a row of an archive's
-  contents offered "(Select ..." until a format was picked. No menu is drawn
-  narrower than the boxes standing beside it any more.
-
-- In the window, the Remove button ending a row of an archive's contents is the
-  size of a button. It was taking a quarter of the form's width and the height
-  of a label and a control together, which drew it as a panel with a word in
-  the middle rather than as something to press.
-
-- The notices that travel with a release now name the fonts and drawings the
-  window binary carries. Seven font files and ninety-seven images are compiled
-  into `tfg-gui` from inside the graphics toolkit, under the SIL Open Font
-  License, the Bitstream Vera licence and MIT, and `THIRD-PARTY-NOTICES.md`
-  named none of them. It described modules, and a font is a file inside a
-  module rather than a module of its own, so nothing that asked about modules
-  could see them. Those licences ask for their notices to travel with the
-  bytes, so the full texts are in that file now.
-
-  `tfg`, the command line binary, embeds none of this and never did. The file
-  says so as well, rather than leaving it to be assumed.
-
-  The same file also stated that `golang.org/x/text` was version 0.40.0 while
-  every binary linked 0.41.0. Both numbers are now compared with the build.
-
-- `verify` and `cleanup` no longer contradict each other about a file stored
-  under a different case. On Windows and on a Mac, `REPORT.TXT` and `report.txt`
-  are one file, and `verify` used to call such a file `extra` - the word it uses
-  for somebody else's file - while `cleanup`, given the same directory and the
-  same manifest, deleted it and reported a clean sweep.
-
-  `verify` now says `respelled` and names what the manifest calls the file, so
-  the report says what happened instead of sending you looking for a stranger's
-  file. `cleanup` refuses to remove it and ends with the partial exit code,
-  because it removes the names the manifest lists and that name is not one of
-  them. Rename the file back, or verify against a manifest written for the names
-  you have.
-
-  Nothing changes where the filesystem keeps the two spellings apart, as Linux
-  does: there they are two files, and both commands always agreed.
-
-- The window no longer slows down as a recipe grows. Every keystroke on the
-  batches screen re-reads the whole recipe, and the cost of doing that used to
-  rise with the square of its size: a hundred batches took a quarter of a
-  second per key, which reads as the window stalling while you type. It now
-  takes about a sixtieth of that, and the cost rises in step with the recipe
-  rather than ahead of it. Files, hashes and every message are unchanged.
-
-- A run whose manifest could not be written no longer leaves an empty
-  `manifest.json` beside the files it wrote.
-
-  The name is taken before the first file, as an empty file, so that two runs
-  into one directory cannot both claim it. When the manifest then failed to be
-  written - a full disk, a permission, something already sitting under the
-  temporary name - that empty claim stayed. `tfg cleanup` and `tfg verify` both
-  refused it with "unexpected end of JSON input", so the files it should have
-  described could not be removed by the one thing allowed to remove them. Worse,
-  the next run into that directory was refused with a sentence saying the file
-  "is the only record of what an earlier run wrote" - true every other time it
-  is printed, and here about a file that recorded nothing.
-
-  The claim is now given back when the write fails, so the next run is refused
-  about a file that really is in the way, and names it. A manifest with anything
-  in it is never removed.
-
-- A run that could not save its manifest now says what that leaves behind. The
-  message about the manifest was about the manifest, and the problem is the
-  files: they are on the disk, nothing records them, and cleanup works from a
-  manifest. That is now said in the run rather than discovered later.
-
-- Working out what a run would cost no longer freezes the window, and can now be
-  stopped. Pressing Preview or Generate used to work the whole plan out on the
-  thread that draws, on the reasoning that planning is fast. It is fast for text:
-  measured across formats at two thousand files, a text run plans in about 0.4 s
-  and a PNG run in 16 to 23 s, because a picture is encoded while it is planned.
-  Ten thousand pictures was a minute and a half of a window that did not redraw,
-  with both buttons still looking pressable. It now happens off that thread, with
-  Cancel offered while it goes.
-
-- Closing the window during a preview no longer waits for the whole preview. The
-  check that a preview runs asks the filesystem about every planned file, twice
-  each, and could not be interrupted - so on a large set or a directory on a
-  network share, closing the window sat there until it finished.
-
-- An archive or an Office file asked for four gigabytes or more is now refused
-  while it is planned. Above that line a ZIP needs extra records to describe
-  itself, and the arithmetic this tool uses to work out an archive's size before
-  writing it cannot account for them - so the file came out 112 bytes longer than
-  planned, which the tool then caught and reported as a fault in itself, after
-  writing four gigabytes and removing them. TAR.GZ is unaffected and keeps
-  working at those sizes.
-
-- `tfg cleanup --json` now reports counts that add up. A run of four files with
-  one already deleted reported three removed, none kept, and four files - because
-  the kept count only counted files that were still there and blocked, while the
-  list called every file it did not remove "kept". Adding the two numbers lost an
-  entry with no way to tell which.
-
-- A WAV asked for more than about four gigabytes is now refused instead of being
-  written with a length field that does not match the file. A RIFF file states
-  its own length in a four byte field, and nothing checked it, so a request for
-  eight gigabytes produced a file of exactly that size whose header announced
-  four - and every part of this tool agreed the file was fine. The size was
-  right, so the run succeeded, the hash went into the manifest, and `tfg verify`
-  called it a match. A file that is broken and certified as sound is worse than
-  one that fails loudly, which is why this is a refusal.
-
-  The ceiling is 4294967303 B rather than four gigabytes exactly, and the
-  difference is deliberate: the length field counts everything after itself, so
-  a file eight bytes over four gigabytes still describes itself correctly.
-
-- A refusal about a size that is too large now says so. BMP, ICO and PNG already
-  refused sizes they cannot describe, but all three said "cannot be smaller than
-  N B" about a request that was larger - a sentence that contradicts itself and
-  offers, as the way out, the very ceiling the request had just passed.
-
-- An archive asked through `contains` to hold more files than the format allows
-  is now refused, with the same sentence and the same exit code as asking for
-  the same number through the `entries` setting. The two ways of saying it
-  disagreed: `entries: 50000` was refused as being outside 0 to 10000, while a
-  `contains` list asking for fifty thousand files validated cleanly, passed
-  `--dry-run`, and then built a plan for every one of them.
-
-- A run whose plan would not fit in memory is now refused while the plan is
-  being built, rather than ending as an out of memory kill with no message.
-  There was a ceiling on the number of files, but how much a file costs to plan
-  depends on its format - a PDF of a thousand pages costs about six thousand
-  times what a text file costs - so `--format pdf --set pages=1000 --count
-  10000` passed every check and then asked for around fifty gigabytes before
-  writing a byte. The ceiling is now on the memory, which is the thing that runs
-  out.
-
-- The `size-boundaries` preset now answers a limit with no room above it the way
-  `--boundary` already did. A limit at the largest number there is used to be
-  refused with a sentence about a file that "cannot be smaller than nothing",
-  and advice to raise the limit - an answer about the bottom of the range to a
-  question about the top.
-
-- On the batch screen, a refusal about one batch now marks that batch's box. A
-  batch asking for a size its format cannot deliver, or a name your system will
-  not store, used to stop the run and mark nothing at all - with twenty batches
-  on screen there was nothing to say which one to change. Those are the two
-  refusals you meet most.
-- A bad name for the manifest marks the manifest box rather than nothing. It
-  was reported as though it were the name of a file.
-- `tfg validate` now checks the name of the manifest, so it stops calling a
-  recipe valid that `tfg generate` refuses a second later. If you run validate
-  in a pre-commit hook, that is one fewer way for a broken recipe to get past
-  it.
-- A run whose files would take the name of its own manifest is now refused
-  before anything is written. It used to write every file, put one of them where
-  the manifest was going, and then stop with "file already exists" - leaving the
-  files on disk with no manifest, which means `tfg cleanup` could never remove
-  them again. It happened whenever a target produced a file named exactly what
-  the manifest is called, including the `manifest.json` a run uses when the
-  recipe does not name one. `tfg validate` and `--dry-run` both called such a
-  recipe fine, so there was no way to find out before the files were on disk.
-  All three now give the same refusal, and it says which target to change.
-- `tfg verify` no longer calls a file extra because the manifest spells its path
-  the long way round. A manifest listing `./report.txt` for a file called
-  `report.txt` used to report `extra report.txt` - one difference rather than
-  the pair a real mismatch shows, so it read as a directory somebody had put a
-  file into rather than as two spellings of one name. Both spellings were
-  already accepted everywhere else in the tool. Nothing about which files are
-  looked at changed, only which spellings count as the same name.
-- The manifest and `tfg recipe fmt -w` now flush their work to the disk before
-  putting it in place. Both are written beside the target and renamed over it,
-  and a rename can reach the disk before the bytes do - so a power cut at the
-  wrong moment could leave an empty file under the name of your manifest, or of
-  the recipe you had just formatted. Generated files are still not flushed, on
-  purpose: that is ten thousand of them against one of these.
-- A machine readable report that could not be written whole no longer ends with
-  a zero exit code. `tfg verify --json | head` on a large report used to hand
-  you half a document and say the run was fine, so a script parsing it failed on
-  the syntax and blamed itself. A run that had already failed keeps the code it
-  failed with - a broken pipe is not why your recipe was wrong.
-- A recipe is now refused for being too large however that size is discovered.
-  The check used to ask the directory entry before reading, which is a look
-  rather than a limit: a file can grow between the look and the read, and
-  `tfg recipe fmt` would then have formatted the first megabyte of a longer file
-  and reported success. The message and the exit code are unchanged, including
-  the size it reports. The same applies to reading a manifest.
-- Files whose format writes them in many small pieces are written much faster.
-  The worst shape the settings allow - a BMP one pixel wide and twenty thousand
-  tall - went from 3.660 s to 0.138 s for sixty files. An ordinary 1 MB BMP is
-  about a third faster, plain text and PNG a little. The bytes are identical, so
-  nothing that checks a hash sees a change.
-- `Ctrl+C` during `tfg verify` now stops while it is still listing the
-  directory. On a tree with hundreds of thousands of files it used to finish the
-  listing first, which on a slow disk is a long time to keep pressing it.
-- The refusal for a boundary limit below 1 B now reads the same from the command
-  line and from a recipe. Both took it from their own sentence, and the two had
-  already drifted apart by a comma. The wording is the four part shape the rest
-  of the tool uses: what is wrong, why, and what to do instead.
 
 ### Added
 
@@ -551,9 +346,217 @@ because it turns other people's test suites red.
   the one you are sure to see, and "7 files written." is more use there than a
   note explaining a default.
 
+### Fixed
+
+- On macOS the program now has an icon. It is a `.app` bundle since the release
+  before this one, and a bundle with no icon in it is drawn by the Finder and
+  the Dock as a blank sheet of paper - which is what a program the system knows
+  nothing about looks like. The icon is the same drawing the other two systems
+  use, on the rounded square macOS puts every icon on, at every size from 16 px
+  to 1024.
+
+- In the window, a menu is now the same width wherever it appears, and always
+  wide enough for the words in it. The menu for choosing a format was 140 px
+  wide on the single batch screen and 98 px on the presets screen and in a row
+  of an archive's contents, for the same twenty formats. In that narrow box the
+  toolkit's own "(Select one)" was cut off mid word, so a row of an archive's
+  contents offered "(Select ..." until a format was picked. No menu is drawn
+  narrower than the boxes standing beside it any more.
+
+- In the window, the Remove button ending a row of an archive's contents is the
+  size of a button. It was taking a quarter of the form's width and the height
+  of a label and a control together, which drew it as a panel with a word in
+  the middle rather than as something to press.
+
+- The notices that travel with a release now name the fonts and drawings the
+  window binary carries. Seven font files and ninety-seven images are compiled
+  into `tfg-gui` from inside the graphics toolkit, under the SIL Open Font
+  License, the Bitstream Vera licence and MIT, and `THIRD-PARTY-NOTICES.md`
+  named none of them. It described modules, and a font is a file inside a
+  module rather than a module of its own, so nothing that asked about modules
+  could see them. Those licences ask for their notices to travel with the
+  bytes, so the full texts are in that file now.
+
+  `tfg`, the command line binary, embeds none of this and never did. The file
+  says so as well, rather than leaving it to be assumed.
+
+  The same file also stated that `golang.org/x/text` was version 0.40.0 while
+  every binary linked 0.41.0. Both numbers are now compared with the build.
+
+- `verify` and `cleanup` no longer contradict each other about a file stored
+  under a different case. On Windows and on a Mac, `REPORT.TXT` and `report.txt`
+  are one file, and `verify` used to call such a file `extra` - the word it uses
+  for somebody else's file - while `cleanup`, given the same directory and the
+  same manifest, deleted it and reported a clean sweep.
+
+  `verify` now says `respelled` and names what the manifest calls the file, so
+  the report says what happened instead of sending you looking for a stranger's
+  file. `cleanup` refuses to remove it and ends with the partial exit code,
+  because it removes the names the manifest lists and that name is not one of
+  them. Rename the file back, or verify against a manifest written for the names
+  you have.
+
+  Nothing changes where the filesystem keeps the two spellings apart, as Linux
+  does: there they are two files, and both commands always agreed.
+
+- The window no longer slows down as a recipe grows. Every keystroke on the
+  batches screen re-reads the whole recipe, and the cost of doing that used to
+  rise with the square of its size: a hundred batches took a quarter of a
+  second per key, which reads as the window stalling while you type. It now
+  takes about a sixtieth of that, and the cost rises in step with the recipe
+  rather than ahead of it. Files, hashes and every message are unchanged.
+
+- A run whose manifest could not be written no longer leaves an empty
+  `manifest.json` beside the files it wrote.
+
+  The name is taken before the first file, as an empty file, so that two runs
+  into one directory cannot both claim it. When the manifest then failed to be
+  written - a full disk, a permission, something already sitting under the
+  temporary name - that empty claim stayed. `tfg cleanup` and `tfg verify` both
+  refused it with "unexpected end of JSON input", so the files it should have
+  described could not be removed by the one thing allowed to remove them. Worse,
+  the next run into that directory was refused with a sentence saying the file
+  "is the only record of what an earlier run wrote" - true every other time it
+  is printed, and here about a file that recorded nothing.
+
+  The claim is now given back when the write fails, so the next run is refused
+  about a file that really is in the way, and names it. A manifest with anything
+  in it is never removed.
+
+- A run that could not save its manifest now says what that leaves behind. The
+  message about the manifest was about the manifest, and the problem is the
+  files: they are on the disk, nothing records them, and cleanup works from a
+  manifest. That is now said in the run rather than discovered later.
+
+- Working out what a run would cost no longer freezes the window, and can now be
+  stopped. Pressing Preview or Generate used to work the whole plan out on the
+  thread that draws, on the reasoning that planning is fast. It is fast for text:
+  measured across formats at two thousand files, a text run plans in about 0.4 s
+  and a PNG run in 16 to 23 s, because a picture is encoded while it is planned.
+  Ten thousand pictures was a minute and a half of a window that did not redraw,
+  with both buttons still looking pressable. It now happens off that thread, with
+  Cancel offered while it goes.
+
+- Closing the window during a preview no longer waits for the whole preview. The
+  check that a preview runs asks the filesystem about every planned file, twice
+  each, and could not be interrupted - so on a large set or a directory on a
+  network share, closing the window sat there until it finished.
+
+- An archive or an Office file asked for four gigabytes or more is now refused
+  while it is planned. Above that line a ZIP needs extra records to describe
+  itself, and the arithmetic this tool uses to work out an archive's size before
+  writing it cannot account for them - so the file came out 112 bytes longer than
+  planned, which the tool then caught and reported as a fault in itself, after
+  writing four gigabytes and removing them. TAR.GZ is unaffected and keeps
+  working at those sizes.
+
+- `tfg cleanup --json` now reports counts that add up. A run of four files with
+  one already deleted reported three removed, none kept, and four files - because
+  the kept count only counted files that were still there and blocked, while the
+  list called every file it did not remove "kept". Adding the two numbers lost an
+  entry with no way to tell which.
+
+- A WAV asked for more than about four gigabytes is now refused instead of being
+  written with a length field that does not match the file. A RIFF file states
+  its own length in a four byte field, and nothing checked it, so a request for
+  eight gigabytes produced a file of exactly that size whose header announced
+  four - and every part of this tool agreed the file was fine. The size was
+  right, so the run succeeded, the hash went into the manifest, and `tfg verify`
+  called it a match. A file that is broken and certified as sound is worse than
+  one that fails loudly, which is why this is a refusal.
+
+  The ceiling is 4294967303 B rather than four gigabytes exactly, and the
+  difference is deliberate: the length field counts everything after itself, so
+  a file eight bytes over four gigabytes still describes itself correctly.
+
+- A refusal about a size that is too large now says so. BMP, ICO and PNG already
+  refused sizes they cannot describe, but all three said "cannot be smaller than
+  N B" about a request that was larger - a sentence that contradicts itself and
+  offers, as the way out, the very ceiling the request had just passed.
+
+- An archive asked through `contains` to hold more files than the format allows
+  is now refused, with the same sentence and the same exit code as asking for
+  the same number through the `entries` setting. The two ways of saying it
+  disagreed: `entries: 50000` was refused as being outside 0 to 10000, while a
+  `contains` list asking for fifty thousand files validated cleanly, passed
+  `--dry-run`, and then built a plan for every one of them.
+
+- A run whose plan would not fit in memory is now refused while the plan is
+  being built, rather than ending as an out of memory kill with no message.
+  There was a ceiling on the number of files, but how much a file costs to plan
+  depends on its format - a PDF of a thousand pages costs about six thousand
+  times what a text file costs - so `--format pdf --set pages=1000 --count
+  10000` passed every check and then asked for around fifty gigabytes before
+  writing a byte. The ceiling is now on the memory, which is the thing that runs
+  out.
+
+- The `size-boundaries` preset now answers a limit with no room above it the way
+  `--boundary` already did. A limit at the largest number there is used to be
+  refused with a sentence about a file that "cannot be smaller than nothing",
+  and advice to raise the limit - an answer about the bottom of the range to a
+  question about the top.
+
+- On the batch screen, a refusal about one batch now marks that batch's box. A
+  batch asking for a size its format cannot deliver, or a name your system will
+  not store, used to stop the run and mark nothing at all - with twenty batches
+  on screen there was nothing to say which one to change. Those are the two
+  refusals you meet most.
+- A bad name for the manifest marks the manifest box rather than nothing. It
+  was reported as though it were the name of a file.
+- `tfg validate` now checks the name of the manifest, so it stops calling a
+  recipe valid that `tfg generate` refuses a second later. If you run validate
+  in a pre-commit hook, that is one fewer way for a broken recipe to get past
+  it.
+- A run whose files would take the name of its own manifest is now refused
+  before anything is written. It used to write every file, put one of them where
+  the manifest was going, and then stop with "file already exists" - leaving the
+  files on disk with no manifest, which means `tfg cleanup` could never remove
+  them again. It happened whenever a target produced a file named exactly what
+  the manifest is called, including the `manifest.json` a run uses when the
+  recipe does not name one. `tfg validate` and `--dry-run` both called such a
+  recipe fine, so there was no way to find out before the files were on disk.
+  All three now give the same refusal, and it says which target to change.
+- `tfg verify` no longer calls a file extra because the manifest spells its path
+  the long way round. A manifest listing `./report.txt` for a file called
+  `report.txt` used to report `extra report.txt` - one difference rather than
+  the pair a real mismatch shows, so it read as a directory somebody had put a
+  file into rather than as two spellings of one name. Both spellings were
+  already accepted everywhere else in the tool. Nothing about which files are
+  looked at changed, only which spellings count as the same name.
+- The manifest and `tfg recipe fmt -w` now flush their work to the disk before
+  putting it in place. Both are written beside the target and renamed over it,
+  and a rename can reach the disk before the bytes do - so a power cut at the
+  wrong moment could leave an empty file under the name of your manifest, or of
+  the recipe you had just formatted. Generated files are still not flushed, on
+  purpose: that is ten thousand of them against one of these.
+- A machine readable report that could not be written whole no longer ends with
+  a zero exit code. `tfg verify --json | head` on a large report used to hand
+  you half a document and say the run was fine, so a script parsing it failed on
+  the syntax and blamed itself. A run that had already failed keeps the code it
+  failed with - a broken pipe is not why your recipe was wrong.
+- A recipe is now refused for being too large however that size is discovered.
+  The check used to ask the directory entry before reading, which is a look
+  rather than a limit: a file can grow between the look and the read, and
+  `tfg recipe fmt` would then have formatted the first megabyte of a longer file
+  and reported success. The message and the exit code are unchanged, including
+  the size it reports. The same applies to reading a manifest.
+- Files whose format writes them in many small pieces are written much faster.
+  The worst shape the settings allow - a BMP one pixel wide and twenty thousand
+  tall - went from 3.660 s to 0.138 s for sixty files. An ordinary 1 MB BMP is
+  about a third faster, plain text and PNG a little. The bytes are identical, so
+  nothing that checks a hash sees a change.
+- `Ctrl+C` during `tfg verify` now stops while it is still listing the
+  directory. On a tree with hundreds of thousands of files it used to finish the
+  listing first, which on a slow disk is a long time to keep pressing it.
+- The refusal for a boundary limit below 1 B now reads the same from the command
+  line and from a recipe. Both took it from their own sentence, and the two had
+  already drifted apart by a comma. The wording is the four part shape the rest
+  of the tool uses: what is wrong, why, and what to do instead.
+
 ## [0.1.0] - 2026-08-20
 
 Initial release.
 
-[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/donislawdev/TestingFilesGenerator/releases/tag/v0.1.0
