@@ -204,6 +204,45 @@ func TestTheIconMacOSReadsCarriesEverySizeItIsAskedFor(t *testing.T) {
 	t.Logf("%d entries, every size macOS asks for, %d bytes", len(found), len(body))
 }
 
+// The macOS signing script never changes directory.
+//
+// Found by the first real release, on 2026-08-28, and it stopped that release
+// twice in two consecutive steps. Every path this script works with is derived
+// from the directory it is handed, and sign_release.py hands it one relative to
+// the home directory. Two commands ran inside a subshell that had cd'd
+// somewhere else first, so the paths they were given stopped meaning anything:
+//
+//   - certificate_of cd'd into a temporary directory and then asked codesign
+//     about the bundle. codesign answered "No such file or directory", no
+//     certificate came out, and the script refused the release saying the
+//     bundle was "signed by a DIFFERENT certificate, got none" - about a bundle
+//     that was correctly signed by the pinned certificate, with a timestamp,
+//     chaining to the Apple Root CA. Measured after the fact: the same command
+//     with the path resolved gives exactly the pinned digest;
+//   - the zip for notarisation cd'd into the unpacked bundle and wrote to a
+//     path relative to where the script started, so the file was never created.
+//     That one had not been reached yet and would have stopped the next step.
+//
+// Asked as "no cd at all" rather than "the paths are absolute", because that is
+// the property that can be read off the file. If a directory change is ever
+// genuinely needed here, make every path absolute first and this guard is the
+// conversation about it.
+//
+// Why nothing caught this before: the rehearsal of 2026-08-28 ran the script
+// by hand with an absolute directory, and sign_release.py passes a relative one.
+// The command was proven, the call was not.
+func TestTheMacSigningScriptDoesNotDependOnWhereItIsRunFrom(t *testing.T) {
+	script := macSigningScript(t)
+
+	if strings.Contains(script, "cd \"") {
+		t.Error("sign_macos.sh changes directory somewhere. Every path in it comes from the " +
+			"directory it is handed, and sign_release.py hands it a relative one - so a cd " +
+			"silently changes what those paths mean.\n" +
+			"What happened when this was last true: codesign reported no certificate for a " +
+			"correctly signed bundle, and the release stopped saying the wrong thing about why.")
+	}
+}
+
 // The pin is a digest with a date, and the script derives its selector from it.
 //
 // Same shape as the Windows pin and for the same reason: codesign selects by
