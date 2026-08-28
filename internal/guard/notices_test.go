@@ -60,6 +60,32 @@ func unlisted(body string, built map[string]string) []string {
 
 var noticeRow = regexp.MustCompile(`^\| ` + "`" + `([^` + "`" + `]+)` + "`" + ` \| (v[^ |]+) \|`)
 
+// statedVersion is how a headed section opens: the version, then a full stop,
+// then what the module does here. Written without the leading v, because that
+// is how a person writes it in prose.
+var statedVersion = regexp.MustCompile(`(?m)^Version (\S+?)\.(?:\s|$)`)
+
+// sectionVersion reads the version a module's own section states.
+//
+// Cut on the heading rather than searched for anywhere, because two sections
+// would otherwise answer for each other and the guard would compare a number
+// with the wrong module - which is the failure it exists to catch, dressed up
+// as a pass.
+func sectionVersion(body, path string) (string, bool) {
+	_, after, found := strings.Cut(body, "\n## "+path+"\n")
+	if !found {
+		return "", false
+	}
+	if end := strings.Index(after, "\n## "); end >= 0 {
+		after = after[:end]
+	}
+	m := statedVersion.FindStringSubmatch(after)
+	if m == nil {
+		return "", false
+	}
+	return m[1], true
+}
+
 func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 	root := repoRoot(t)
 	body, err := os.ReadFile(filepath.Join(root, "THIRD-PARTY-NOTICES.md"))
@@ -74,12 +100,14 @@ func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 	t.Logf("%d module(s) across windows, linux and darwin", len(built))
 
 	listed := 0
+	inRow := map[string]bool{}
 	for _, line := range strings.Split(string(body), "\n") {
 		m := noticeRow.FindStringSubmatch(line)
 		if m == nil {
 			continue
 		}
 		path, version := m[1], m[2]
+		inRow[path] = true
 		want, ok := built[path]
 		if !ok {
 			t.Errorf("the notices file lists %s and nothing links it any more - "+
@@ -96,6 +124,31 @@ func TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt(t *testing.T) {
 	}
 	if listed < 5 {
 		t.Fatalf("only %d rows were compared, so this guard would pass on an empty table", listed)
+	}
+
+	// The modules named by a section instead of a row, which is both binaries'
+	// worth of the command line. Until 2026-08-28 nothing compared the number
+	// those sections state: the file said golang.org/x/text was 0.40.0 while
+	// every binary linked 0.41.0, and this guard was green because it read only
+	// rows. The section is the stronger notice and had the weaker check - and
+	// it covers the two modules that almost everybody actually runs.
+	for path, want := range built {
+		if inRow[path] {
+			continue
+		}
+		stated, found := sectionVersion(string(body), path)
+		if !found {
+			t.Errorf("%s has a section of its own in the notices and that section states no version.\n"+
+				"Write \"Version %s.\" under the heading, so the number can be compared with the build.",
+				path, strings.TrimPrefix(want, "v"))
+			continue
+		}
+		listed++
+		if stated != strings.TrimPrefix(want, "v") {
+			t.Errorf("the notices say %s is version %s and the build links %s.\n"+
+				"A section carries the whole licence text, so a wrong number there is a notice "+
+				"about a release nobody ships.", path, stated, strings.TrimPrefix(want, "v"))
+		}
 	}
 
 	// And the other direction, which is the one that was missing. Until

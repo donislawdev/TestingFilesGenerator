@@ -61,6 +61,21 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- The notices that travel with a release now name the fonts and drawings the
+  window binary carries. Seven font files and ninety-seven images are compiled
+  into `tfg-gui` from inside the graphics toolkit, under the SIL Open Font
+  License, the Bitstream Vera licence and MIT, and `THIRD-PARTY-NOTICES.md`
+  named none of them. It described modules, and a font is a file inside a
+  module rather than a module of its own, so nothing that asked about modules
+  could see them. Those licences ask for their notices to travel with the
+  bytes, so the full texts are in that file now.
+
+  `tfg`, the command line binary, embeds none of this and never did. The file
+  says so as well, rather than leaving it to be assumed.
+
+  The same file also stated that `golang.org/x/text` was version 0.40.0 while
+  every binary linked 0.41.0. Both numbers are now compared with the build.
+
 - `verify` and `cleanup` no longer contradict each other about a file stored
   under a different case. On Windows and on a Mac, `REPORT.TXT` and `report.txt`
   are one file, and `verify` used to call such a file `extra` - the word it uses
