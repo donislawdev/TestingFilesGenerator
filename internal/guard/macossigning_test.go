@@ -228,7 +228,7 @@ func TestTheIconMacOSReadsCarriesEverySizeItIsAskedFor(t *testing.T) {
 // genuinely needed here, make every path absolute first and this guard is the
 // conversation about it.
 //
-// 🔴 Why nothing caught this before: the rehearsal of 2026-08-28 ran the script
+// Why nothing caught this before: the rehearsal of 2026-08-28 ran the script
 // by hand with an absolute directory, and sign_release.py passes a relative one.
 // The command was proven, the call was not.
 func TestTheMacSigningScriptDoesNotDependOnWhereItIsRunFrom(t *testing.T) {

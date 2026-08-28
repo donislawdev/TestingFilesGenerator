@@ -180,7 +180,7 @@ func TestTheAttestingHalfFetchesWhatTheChecksumsName(t *testing.T) {
 // command for real. They are three different jobs in three different files and
 // a workflow cannot read a constant out of another one.
 //
-// 🔴 What it cost when they disagreed, on the first real release, on
+// What it cost when they disagreed, on the first real release, on
 // 2026-08-28: the notes promised https://spdx.dev/Document, the statement
 // carried https://spdx.dev/Document/v2.3, and the attesting half stopped the
 // release. It was RIGHT to - the promise was written from the action's
