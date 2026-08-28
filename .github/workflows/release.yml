@@ -194,6 +194,15 @@ jobs:
             # it - see THIRD-PARTY-NOTICES.md, which says so itself. The licence
             # and the readme go along for the person who downloaded an archive
             # and nothing else.
+            # macOS gets a .app bundle, and it is not decoration: a bare binary
+            # cannot carry a notarisation ticket at all, so Gatekeeper rejects
+            # it even after it is signed and notarised. Measured 2026-08-28.
+            # A symlink goes in beside it, so a person still types ./tfg.
+            if [ "$os" = "darwin" ]; then
+              .github/scripts/make_app_bundle.sh \
+                "${work}" "${binary}" "com.donislawdev.tfg" "${version}"
+            fi
+
             cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
 
             base="tfg_${version}_${label}_${arch}"
@@ -290,6 +299,13 @@ jobs:
               -o "${work}/tfg-gui.exe" ./cmd/tfg-gui
           else
             go build -trimpath -o "${work}/tfg-gui" ./cmd/tfg-gui
+          fi
+
+          # Same reason as the command line archives: on macOS the ticket has
+          # nowhere to attach unless the binary is inside a bundle.
+          if [ "$os" = "darwin" ]; then
+            .github/scripts/make_app_bundle.sh \
+              "${work}" "tfg-gui" "com.donislawdev.tfg-gui" "${version}"
           fi
 
           cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
@@ -424,11 +440,16 @@ jobs:
             echo "carries a timestamp, and names \`Open Source Developer Dominik Babiarz\`, issued by"
             echo "Certum. Windows checks it when you run the program."
             echo
-            echo "**macOS and Linux binaries are not signed yet.**"
+            echo "**macOS binaries are signed and notarised by Apple.** The program lives inside"
+            echo "\`tfg.app\` or \`tfg-gui.app\`, with a link called \`tfg\` or \`tfg-gui\` next to it, so"
+            echo "you can still type \`./tfg\`. macOS opens them without complaining, and without"
+            echo "asking the network, because the notarisation ticket travels inside the bundle."
             echo
-            echo "- **macOS** refuses to open it on the first try. Open it from the right click menu,"
-            echo "  or allow it in System Settings under Privacy and Security."
-            echo "- **Linux** says nothing, but you may need \`chmod +x\`."
+            echo "> Keep the \`.app\` and the link together. A copy of the program taken out of the"
+            echo "> bundle on its own is refused, because the signature covers the bundle."
+            echo
+            echo "**Linux binaries are not signed.** Linux says nothing about that, but you may"
+            echo "need \`chmod +x\`."
             echo
             echo "## What you can check without trusting this page"
             echo
@@ -442,16 +463,22 @@ jobs:
             echo "The predicate type has to be given. \`gh\` asks for build provenance unless told"
             echo "otherwise, and that is a different statement - see below."
             echo
-            echo "Where a **macOS or Linux** archive came from. These are exactly the bytes the"
-            echo "build produced, so the build's own statement still describes them:"
+            echo "Where a **Linux** archive came from. These are exactly the bytes the build"
+            echo "produced, so the build's own statement still describes them:"
             echo
             echo "\`\`\`"
             echo "gh attestation verify <the file you downloaded> -R ${GITHUB_REPOSITORY}"
             echo "\`\`\`"
             echo
-            echo "That one does not answer for a **Windows** archive, and deliberately: a person"
-            echo "signed those on their own machine after the build, so the bytes are no longer the"
-            echo "bytes the runner made. Their signature is the Authenticode one above."
+            echo "That one does not answer for a **Windows or macOS** archive, and deliberately: a"
+            echo "person signed those on their own machines after the build, so the bytes are no"
+            echo "longer the bytes the runner made. What answers for them is the signature itself -"
+            echo "Authenticode on Windows, and on macOS:"
+            echo
+            echo "\`\`\`"
+            echo "spctl -a -vv tfg.app          # what Gatekeeper thinks of it"
+            echo "xcrun stapler validate tfg.app  # that the ticket is really in the file"
+            echo "\`\`\`"
             echo
             echo "The \`.spdx.json\` file lists every library and every font compiled into these"
             echo "binaries, with its licence. The \`.sigstore.json\` files are the statements"
@@ -497,11 +524,15 @@ jobs:
           set -euo pipefail
           echo "Built, attested, and opened as an EMPTY DRAFT."
           echo
-          echo "Nothing is published yet. On the machine with the card:"
+          echo "Nothing is published yet. On the machine with the card, with the Mac awake:"
           echo
-          echo "    python .github/scripts/sign_release.py ${GITHUB_REF_NAME}"
+          echo "    python .github/scripts/sign_release.py ${GITHUB_REF_NAME} --macos-host user@mac"
           echo
           echo "That verifies this build's provenance before touching it, signs the three"
-          echo "Windows binaries with the card, writes SHA256SUMS.txt over what it made,"
-          echo "uploads everything to the draft and asks attest-release.yml for the statement"
-          echo "about the signed bytes. Then read the draft and publish it."
+          echo "Windows binaries with the card, hands the two macOS archives to the Mac to be"
+          echo "signed, notarised and stapled, writes SHA256SUMS.txt over what it made, uploads"
+          echo "everything to the draft and asks attest-release.yml for the statement about the"
+          echo "signed bytes. Then read the draft and publish it."
+          echo
+          echo "It refuses without a Mac rather than publishing five signed archives and two"
+          echo "that Gatekeeper will turn away."

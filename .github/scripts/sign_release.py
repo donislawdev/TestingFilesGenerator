@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""Sign the Windows binaries of a release with the card, then hand it back.
+"""Sign a release on the two machines that hold its keys, then hand it back.
 
-    python .github/scripts/sign_release.py v0.2.0
+    python .github/scripts/sign_release.py v0.2.0 --macos-host user@mac
     python .github/scripts/sign_release.py v0.2.0 --dry-run   # everything but sign and upload
 
 Why this is a step a person runs
 --------------------------------
-The signing key lives on a cryptographic card in a USB reader and cannot be
+The Windows key lives on a cryptographic card in a USB reader and cannot be
 exported - that is the whole value of it - so no GitHub hosted runner can ever
 reach it. A self hosted runner could, and this is a PUBLIC repository, where a
 self hosted runner is a machine strangers can aim a pull request at. So the build
 happens where builds belong and the signature happens where the card is, and this
 script is the seam between them.
+
+The Apple key is the same problem with a different shape: Apple's notary service
+only talks to credentials held in a keychain, and that keychain is on the owner's
+Mac. So five of the eight archives are signed here, in two places, and the
+checksums are written once at the end over everything.
 
 What it does, in order, and what it refuses
 -------------------------------------------
@@ -25,11 +30,15 @@ What it does, in order, and what it refuses
     unless it hashes to the pin in internal/legal. A second code signing
     certificate on the same machine - a renewal, a test one, one from another
     project - signs just as willingly and the release page looks identical;
- 5. repacks those three archives and writes SHA256SUMS.txt over everything it is
+ 5. hands the two macOS archives to the Mac, which signs the .app bundle inside
+    each one, notarises it with Apple and staples the ticket on. A bare macOS
+    binary cannot be stapled at all, so without this those two archives are
+    refused by Gatekeeper even though they are signed;
+ 6. repacks those archives and writes SHA256SUMS.txt over everything it is
     about to publish, signed and unsigned alike;
- 6. uploads the lot to the DRAFT release and asks attest-release.yml for the
+ 7. uploads the lot to the DRAFT release and asks attest-release.yml for the
     statement about the signed bytes;
- 7. waits for that statement and confirms the draft is complete. Until this
+ 8. waits for that statement and confirms the draft is complete. Until this
     existed in the project this came from, the script ended at "dispatched, go
     look" - and a draft missing one file looks almost exactly like a finished one.
 
@@ -56,6 +65,15 @@ TIMESTAMP_URL = "http://time.certum.pl/"
 # untouched: a Linux or a macOS archive is the finished article here, and the
 # statement the build made about it stays true because its bytes do not move.
 SIGNED_ARCHIVES = ("windows_amd64.zip", "windows_arm64.zip")
+
+# The macOS half. These are signed on the owner's Mac rather than here, because
+# Apple's notary service only talks to credentials held in a keychain there.
+#
+# A bare binary cannot carry a notarisation ticket, measured on 2026-08-28, so
+# the release workflow wraps both macOS binaries in .app bundles and it is the
+# bundle inside each archive that gets signed and stapled.
+MACOS_SUFFIX = "_macos_arm64.tar.gz"
+NOTARY_PROFILE = "tfg-notary"
 
 # Where the pin lives. Read out of the Go source rather than copied here,
 # because two written copies of one digest is exactly the drift this pin exists
@@ -84,13 +102,13 @@ def powershell(script):
     return out.stdout
 
 
-def pinned_digest():
-    """The certificate digest this project signs with, read from the Go source."""
+def pinned_digest(name="CodeSigningSHA256"):
+    """A certificate digest this project signs with, read from the Go source."""
     with open(PIN_FILE, encoding="utf-8") as handle:
         body = handle.read()
-    found = re.search(r'CodeSigningSHA256 = "([0-9a-f]{64})"', body)
+    found = re.search(r'%s = "([0-9a-f]{64})"' % name, body)
     if not found:
-        raise SystemExit("sign_release: no pinned certificate digest in %s" % PIN_FILE)
+        raise SystemExit("sign_release: no %s in %s" % (name, PIN_FILE))
     return found.group(1)
 
 
@@ -296,6 +314,51 @@ def sign_archive(path, thumbprint, pin, signtool, dry_run):
     print("    %s: %s signed and repacked" % (os.path.basename(path), programs[0]))
 
 
+def macos_archives(directory):
+    """The macOS archives, refusing a surprise in the count."""
+    found = [n for n in sorted(os.listdir(directory)) if n.endswith(MACOS_SUFFIX)]
+    if len(found) != 2:
+        raise SystemExit(
+            "sign_release: expected two macOS archives and found %d: %s\n"
+            "One command line build and one window build carry a macOS program. "
+            "Signing one of two would publish an unsigned binary next to a signed one."
+            % (len(found), ", ".join(found) or "none"))
+    return found
+
+
+def sign_macos(tag, directory, host, dry_run):
+    """Hand the macOS archives to the Mac, and take back signed ones.
+
+    Apple's notary service only talks to credentials in a keychain, and the
+    Developer ID key is in one on the owner's Mac. So this half of the signing
+    happens over ssh, the same way the Windows half happens at the card.
+
+    -t because the script over there asks for the keychain password on the
+    terminal. A password given that way is not in argv, so it is not in ps, and
+    it is nowhere in this repository.
+
+    The address of the Mac is an argument rather than a constant. A machine
+    address is not something a public repository should carry.
+    """
+    archives = macos_archives(directory)
+    if dry_run:
+        print("  DRY RUN, would sign %d macOS archive(s) on %s"
+              % (len(archives), host))
+        return
+    remote = "tfg-signing-%s" % tag
+    run(["ssh", host, "rm -rf %s && mkdir -p %s/dist" % (remote, remote)])
+    run(["scp", os.path.join(".github", "scripts", "sign_macos.sh"),
+         "%s:%s/" % (host, remote)])
+    for name in archives:
+        run(["scp", os.path.join(directory, name), "%s:%s/dist/" % (host, remote)])
+    run(["ssh", "-t", host, "bash %s/sign_macos.sh %s/dist %s %s"
+         % (remote, remote, pinned_digest("AppleDeveloperIDSHA256"), NOTARY_PROFILE)])
+    for name in archives:
+        run(["scp", "%s:%s/dist/%s" % (host, remote, name), directory])
+    run(["ssh", host, "rm -rf %s" % remote])
+    print("  %d macOS archive(s) signed, notarised and stapled" % len(archives))
+
+
 def name_for_publication(directory, tag):
     """Give the build's own files the names a person will see, or drop them.
 
@@ -400,37 +463,52 @@ def main(argv=None):
                         help="everything except signing, uploading and dispatching")
     parser.add_argument("--wait", type=int, default=300,
                         help="seconds to wait for the statement (default 300)")
+    parser.add_argument("--macos-host", default=os.environ.get("TFG_MACOS_HOST"),
+                        help="user@host of the Mac that signs the macOS archives, "
+                             "or set TFG_MACOS_HOST")
     args = parser.parse_args(argv)
 
     if not os.path.isfile(PIN_FILE):
         raise SystemExit("sign_release: run this from the root of the repository")
+    # Refused here rather than after the Windows half, because stopping halfway
+    # would leave a build with three signed archives and two unsigned ones, and
+    # a release page cannot say that.
+    if not args.macos_host:
+        raise SystemExit(
+            "sign_release: no Mac to sign the macOS archives on.\n"
+            "Pass --macos-host user@host, or set TFG_MACOS_HOST.\n"
+            "A bare macOS binary cannot carry a notarisation ticket, so those two\n"
+            "archives are rejected by Gatekeeper unless this step runs.")
     pin = pinned_digest()
     work = os.path.join("dist", "signing", args.tag)
 
-    print("\n[1/7] fetching the build for %s" % args.tag)
+    print("\n[1/8] fetching the build for %s" % args.tag)
     fetch_build(args.tag, work)
 
-    print("\n[2/7] checking it before touching it")
+    print("\n[2/8] checking it before touching it")
     verify_before_touching(work)
 
-    print("\n[3/7] the card")
+    print("\n[3/8] the card")
     thumbprint = signing_thumbprint(pin)
     signtool = find_signtool()
 
-    print("\n[4/7] signing the Windows programs")
+    print("\n[4/8] signing the Windows programs")
     for name in windows_archives(work):
         sign_archive(os.path.join(work, name), thumbprint, pin, signtool, args.dry_run)
 
-    print("\n[5/7] checksums over what will be published")
+    print("\n[5/8] signing the macOS bundles on %s" % args.macos_host)
+    sign_macos(args.tag, work, args.macos_host, args.dry_run)
+
+    print("\n[6/8] checksums over what will be published")
     name_for_publication(work, args.tag)
     digest = write_checksums(work)
     print("  SHA256SUMS.txt: %s" % digest)
 
-    print("\n[6/7] uploading to the draft")
+    print("\n[7/8] uploading to the draft")
     upload_to_draft(args.tag, work, args.dry_run)
     ask_for_the_statement(args.tag, digest, args.dry_run)
 
-    print("\n[7/7] waiting for the statement and checking the draft")
+    print("\n[8/8] waiting for the statement and checking the draft")
     confirm_draft(args.tag, args.wait, args.dry_run)
 
     print("\nDone. %s is a complete DRAFT." % args.tag)
