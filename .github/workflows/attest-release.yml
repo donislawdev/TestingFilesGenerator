@@ -56,8 +56,21 @@ jobs:
           set -euo pipefail
           mkdir -p signed
           cd signed
-          gh release download "$TAG" --pattern '*.zip' --pattern '*.tar.gz' \
-            --pattern '*.spdx.json' --pattern 'verify-SHA256SUMS.txt'
+          # The checksums first, because they are the list of what to fetch.
+          #
+          # 🔴 This used to be a hand written list of patterns beside them, and
+          # the first real release is what said why that cannot work: the
+          # patterns fetched the archives, the SBOM and the checksums, and the
+          # checksums also describe the provenance bundle - which nothing in
+          # that list matched. sha256sum then reported "No such file or
+          # directory" for a file that was on the release page all along, and
+          # the run stopped after the signing was already done.
+          #
+          # Two lists of what a release holds is one list too many. The names
+          # come out of the checksums now, so the thing being verified is also
+          # the thing that says what to verify, and adding an asset cannot make
+          # them disagree again.
+          gh release download "$TAG" --pattern 'verify-SHA256SUMS.txt'
           actual="$(sha256sum verify-SHA256SUMS.txt | cut -d' ' -f1)"
           echo "the release carries: $actual"
           if [ "$actual" != "$CLAIMED" ]; then
@@ -65,6 +78,20 @@ jobs:
             echo "::error::was dispatched for $CLAIMED - something changed in between"
             exit 1
           fi
+          # Collected before anything is fetched, because gh reads stdin and a
+          # download inside the read loop eats the rest of the list.
+          names=()
+          while read -r _ name; do
+            [ -n "${name:-}" ] && names+=("$name")
+          done < verify-SHA256SUMS.txt
+          if [ "${#names[@]}" -eq 0 ]; then
+            echo "::error::verify-SHA256SUMS.txt names no files, so there is nothing to attest"
+            exit 1
+          fi
+          echo "the checksums describe ${#names[@]} file(s)"
+          for name in "${names[@]}"; do
+            gh release download "$TAG" --pattern "$name"
+          done
           # And the checksums have to describe the files that came with them,
           # because everything below is a statement about that list.
           sha256sum -c verify-SHA256SUMS.txt

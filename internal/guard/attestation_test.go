@@ -138,6 +138,39 @@ func TestTheReleaseMakesItsDocumentAndHandsItOver(t *testing.T) {
 
 // And the notes tell somebody how to use any of it. A statement nobody knows
 // about is a statement nobody checks.
+// What the attesting half downloads is named BY the checksums, not beside them.
+//
+// Found by the first real release, on 2026-08-28, after the signing was already
+// done. That job fetched the release with a hand written list of patterns -
+// archives, the SBOM, the checksums - and then ran sha256sum -c over the
+// checksums. The checksums also describe the provenance bundle, which no
+// pattern matched, so sha256sum said "No such file or directory" about a file
+// that was sitting on the release page the whole time, and the run stopped.
+//
+// Two lists of what a release holds is one list too many, and the failure mode
+// is not a missing file: it is a check that reports a problem with the release
+// when the problem is in the checker. That is expensive here, because it lands
+// at the one moment when somebody is holding a card and half a release.
+//
+// So the names come out of the file being verified. Adding an asset cannot make
+// the two disagree again, because there is only one list.
+func TestTheAttestingHalfFetchesWhatTheChecksumsName(t *testing.T) {
+	attest := workflowText(t, "attest-release.yml")
+
+	if strings.Contains(attest, "--pattern '*.zip'") {
+		t.Error("attest-release.yml fetches the release with its own list of patterns. " +
+			"That list is a second description of what a release holds, and when it " +
+			"disagrees with the checksums the run stops with a message about the release " +
+			"rather than about itself.\n" +
+			"What to do: read the names out of verify-SHA256SUMS.txt and fetch those.")
+	}
+	if !strings.Contains(attest, "done < verify-SHA256SUMS.txt") {
+		t.Error("attest-release.yml does not take the list of files to fetch from " +
+			"verify-SHA256SUMS.txt, so nothing keeps what it downloads and what it " +
+			"verifies in step")
+	}
+}
+
 func TestTheReleaseNotesSayHowToCheckWhatWasDownloaded(t *testing.T) {
 	job := releasePublishJob(t)
 	var notes string
