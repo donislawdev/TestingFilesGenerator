@@ -58,6 +58,13 @@ type Asset struct {
 	// Package is the import path that embeds the files, as go list reports it.
 	Package string
 
+	// Module is the module that package belongs to. Written rather than cut
+	// out of the import path, because a module path is not a prefix anybody
+	// can guess - and a binary asked what it carries answers from its list of
+	// modules, which is where this has to match. A guard compares it with what
+	// go list says the package's module is.
+	Module string
+
 	// Files are the embedded paths this entry accounts for, spelled as go list
 	// spells them. A path ending in a slash accounts for everything embedded
 	// beneath it, which is how ninety-seven icons take one entry rather than

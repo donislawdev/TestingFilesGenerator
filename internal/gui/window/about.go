@@ -6,11 +6,14 @@
 package window
 
 import (
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
@@ -78,14 +81,15 @@ var OpenSize = fyne.NewSize(1000, 1000)
 // replaced the whole window it needed a door, and a door somebody could delete
 // without noticing was the thing worth guarding.
 func About(h Host) fyne.CanvasObject {
-	page := parts.Screen(
-		text.HeadingAbout(version.Version),
+	sections := []fyne.CanvasObject{
 		parts.Prose(text.AboutTagline()),
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
 		parts.Section(text.SectionLicence(), parts.Prose(version.LicenceNotice)),
-	)
+	}
+	sections = append(sections, carried()...)
+	page := parts.Screen(text.HeadingAbout(version.Version), sections...)
 
 	// The same bar the work screens carry, holding only the Donate button.
 	//
@@ -95,6 +99,51 @@ func About(h Host) fyne.CanvasObject {
 	// screen in four is one people conclude they imagined. It is also the screen
 	// somebody reads when deciding what this program costs them, which is the
 	// worst one to leave it off.
+	//
+	// The page is scrolled, which the other three screens have been from the
+	// start and this one did not need while it held four paragraphs. It holds
+	// the list of what the binary carries now, and a licence notice that cannot
+	// be read to the end is the one kind of notice that fails at its only job.
 	return container.NewBorder(
-		nil, parts.ActionBar(rail(donateButton(h))), nil, nil, page)
+		nil, parts.ActionBar(rail(donateButton(h))), nil, nil, container.NewVScroll(page))
+}
+
+// carried is what this binary contains that somebody else wrote, read out of
+// the build's own record.
+//
+// The reviewed list rather than this build's own record of itself, and the
+// reason is in internal/legal beside Reviewed: the window links the whole
+// registry, and a binary built by go test reports no dependencies at all, so
+// a screen asking its own build would draw something no user ever sees. The
+// command line does ask its own build, because there the answer is real.
+//
+// The values are names and licence identifiers, which are not translated. The
+// two headings are, and they come from the text package like every other word
+// on this screen.
+//
+// Two sections rather than one, because a library and a font are different
+// questions to whoever is checking what they may ship. A section with nothing
+// in it is not drawn at all: the command line binary carries no embedded files
+// and a heading over an empty space would be a claim that it does.
+func carried() []fyne.CanvasObject {
+	items := legal.Reviewed()
+	var out []fyne.CanvasObject
+	if lines := carriedLines(items, false); lines != "" {
+		out = append(out, parts.Section(text.SectionCarriedCode(), parts.Prose(lines)))
+	}
+	if lines := carriedLines(items, true); lines != "" {
+		out = append(out, parts.Section(text.SectionCarriedFiles(), parts.Prose(lines)))
+	}
+	return out
+}
+
+// carriedLines writes one group as text, in the order internal/legal settled.
+func carriedLines(items []legal.Item, embedded bool) string {
+	var lines []string
+	for _, item := range items {
+		if item.Embedded == embedded {
+			lines = append(lines, item.Line())
+		}
+	}
+	return strings.Join(lines, "\n")
 }

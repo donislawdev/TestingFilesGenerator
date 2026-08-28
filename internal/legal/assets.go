@@ -19,6 +19,7 @@ var assets = []Asset{
 	{
 		Name:      "Noto Sans",
 		Package:   "fyne.io/fyne/v2/theme",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"font/NotoSans-Regular.ttf", "font/NotoSans-Bold.ttf", "font/NotoSans-Italic.ttf", "font/NotoSans-BoldItalic.ttf"},
 		SPDX:      "OFL-1.1",
 		Copyright: "Copyright 2015 Google Inc. All Rights Reserved.",
@@ -27,6 +28,7 @@ var assets = []Asset{
 	{
 		Name:      "Inter",
 		Package:   "fyne.io/fyne/v2/theme",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"font/InterSymbols-Regular.ttf"},
 		SPDX:      "OFL-1.1",
 		Copyright: "(c) 2020 The Inter Project Authors",
@@ -35,6 +37,7 @@ var assets = []Asset{
 	{
 		Name:      "DejaVu Sans Mono for Powerline",
 		Package:   "fyne.io/fyne/v2/theme",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"font/DejaVuSansMono-Powerline.ttf"},
 		SPDX:      "Bitstream-Vera",
 		Copyright: "Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. DejaVu changes are in public domain",
@@ -43,6 +46,7 @@ var assets = []Asset{
 	{
 		Name:      "EmojiOne Color",
 		Package:   "fyne.io/fyne/v2/theme",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"font/EmojiOneColor.otf"},
 		SPDX:      "MIT",
 		Copyright: "Copyright 2016 Adobe Systems Incorporated",
@@ -51,6 +55,7 @@ var assets = []Asset{
 	{
 		Name:      "Fyne icon set",
 		Package:   "fyne.io/fyne/v2/theme",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"icons/"},
 		SPDX:      "BSD-3-Clause",
 		Copyright: "(C) 2018 Fyne.io developers (see AUTHORS)",
@@ -59,6 +64,7 @@ var assets = []Asset{
 	{
 		Name:      "Fyne translations",
 		Package:   "fyne.io/fyne/v2/lang",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"translations/"},
 		SPDX:      "BSD-3-Clause",
 		Copyright: "(C) 2018 Fyne.io developers (see AUTHORS)",
@@ -67,6 +73,7 @@ var assets = []Asset{
 	{
 		Name:      "Fyne shaders",
 		Package:   "fyne.io/fyne/v2/internal/painter/gl",
+		Module:    "fyne.io/fyne/v2",
 		Files:     []string{"shaders/"},
 		SPDX:      "BSD-3-Clause",
 		Copyright: "(C) 2018 Fyne.io developers (see AUTHORS)",
