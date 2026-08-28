@@ -57,6 +57,22 @@ func SectionPreset() string        { return say("SectionPreset", "The question")
 func SectionSettings() string      { return say("SectionSettings", "Settings") }
 func SectionLicence() string       { return say("SectionLicence", "Licence") }
 
+// The two headings over what this binary carries that somebody else wrote.
+//
+// They are two rather than one because the difference matters to whoever is
+// reading: a library and a font are not the same kind of thing, they arrive
+// under different licences, and a person checking whether they may ship this
+// is asking about both. Seven fonts and ninety-seven drawings sat unnamed
+// until 2026-08-28 precisely because everything only ever counted libraries.
+//
+// The values under them - names, versions, licence identifiers - are not
+// translated. They are the same in every language, and the program reads them
+// out of its own build rather than out of this catalogue.
+func SectionCarriedCode() string { return say("SectionCarriedCode", "Third party code compiled in") }
+func SectionCarriedFiles() string {
+	return say("SectionCarriedFiles", "Files compiled in that are not code")
+}
+
 // Field labels on the generate screen, in the order somebody fills them in.
 //
 // Sentence case since 2026-08-12. They were lower case throughout while the

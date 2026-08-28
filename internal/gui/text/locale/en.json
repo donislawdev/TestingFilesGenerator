@@ -292,6 +292,14 @@
     "description": "The heading over a group of fields.",
     "other": "Batches"
   },
+  "SectionCarriedCode": {
+    "description": "The heading over a group of fields.",
+    "other": "Third party code compiled in"
+  },
+  "SectionCarriedFiles": {
+    "description": "The heading over a group of fields.",
+    "other": "Files compiled in that are not code"
+  },
   "SectionConfiguration": {
     "description": "The heading over a group of fields.",
     "other": "File configuration"

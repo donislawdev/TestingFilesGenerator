@@ -24,56 +24,135 @@
 					<widget pos="0,38" size="1088x1250" type="*container.ThemeOverride">
 						<container size="1088x1250">
 							<container size="1088x1250">
-								<container size="1088x1200">
-									<container pos="134,0" size="820x1200">
-										<container size="820x39">
-											<widget pos="6,0" size="808x39" type="*widget.Label">
-												<widget size="808x39" type="*widget.RichText">
-													<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
+								<widget size="1088x1200" type="*widget.Scroll">
+									<container size="1088x1380">
+										<container pos="134,0" size="820x1380">
+											<container size="820x39">
+												<widget pos="6,0" size="808x39" type="*widget.Label">
+													<widget size="808x39" type="*widget.RichText">
+														<text bold pos="6,6" size="280x27" textSize="20">Testing Files Generator 0.1.0</text>
+													</widget>
+												</widget>
+											</container>
+											<widget pos="0,53" size="820x31" type="*widget.Label">
+												<widget size="820x31" type="*widget.RichText">
+													<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
 												</widget>
 											</widget>
-										</container>
-										<widget pos="0,53" size="820x31" type="*widget.Label">
-											<widget size="820x31" type="*widget.RichText">
-												<text pos="6,6" size="513x19">Generate test files, and know how the system under test should react to them.</text>
-											</widget>
-										</widget>
-										<container pos="0,98" size="820x411">
-											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x411"/>
-											<container size="820x411">
-												<container pos="6,6" size="808x399">
-													<widget size="808x35" type="*widget.Label">
-														<widget size="808x35" type="*widget.RichText">
-															<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
+											<container pos="0,98" size="820x411">
+												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x411"/>
+												<container size="820x411">
+													<container pos="6,6" size="808x399">
+														<widget size="808x35" type="*widget.Label">
+															<widget size="808x35" type="*widget.RichText">
+																<text bold pos="6,6" size="63x23" textSize="17">Licence</text>
+															</widget>
 														</widget>
-													</widget>
-													<widget pos="0,44" size="808x355" type="*widget.Label">
-														<widget size="808x355" type="*widget.RichText">
-															<text pos="6,6" size="150x19">Testing Files Generator</text>
-															<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>
-															<text pos="6,44" size="0x19"></text>
-															<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is at</text>
-															<text pos="6,82" size="509x19">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have</text>
-															<text pos="6,101" size="191x19">the source or the full release.</text>
-															<text pos="6,120" size="0x19"></text>
-															<text pos="6,139" size="325x19">There is no warranty, to the extent the law allows.</text>
-															<text pos="6,158" size="0x19"></text>
-															<text pos="6,177" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
-															<text pos="6,196" size="490x19">output of this program and not derived works of it, so this licence does not</text>
-															<text pos="6,215" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
-															<text pos="6,234" size="347x19">closed source product with no obligation of any kind.</text>
-															<text pos="6,254" size="0x19"></text>
-															<text pos="6,273" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
-															<text pos="6,292" size="530x19">copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source</text>
-															<text pos="6,311" size="161x19">and with the full release.</text>
-															<text pos="6,330" size="0x19"></text>
+														<widget pos="0,44" size="808x355" type="*widget.Label">
+															<widget size="808x355" type="*widget.RichText">
+																<text pos="6,6" size="150x19">Testing Files Generator</text>
+																<text pos="6,25" size="209x19">Copyright (C) 2026 DonislawDev</text>
+																<text pos="6,44" size="0x19"></text>
+																<text pos="6,63" size="495x19">Released under the GNU General Public License, version 3. The full text is at</text>
+																<text pos="6,82" size="509x19">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have</text>
+																<text pos="6,101" size="191x19">the source or the full release.</text>
+																<text pos="6,120" size="0x19"></text>
+																<text pos="6,139" size="325x19">There is no warranty, to the extent the law allows.</text>
+																<text pos="6,158" size="0x19"></text>
+																<text pos="6,177" size="494x19">The files you generate are yours. Generated files, recipes and manifests are</text>
+																<text pos="6,196" size="490x19">output of this program and not derived works of it, so this licence does not</text>
+																<text pos="6,215" size="498x19">reach them. You can generate fixtures, commit them and ship them inside a</text>
+																<text pos="6,234" size="347x19">closed source product with no obligation of any kind.</text>
+																<text pos="6,254" size="0x19"></text>
+																<text pos="6,273" size="486x19">Code from other projects is compiled into this program. Their licences and</text>
+																<text pos="6,292" size="530x19">copyright notices are in THIRD-PARTY-NOTICES.md, which comes with the source</text>
+																<text pos="6,311" size="161x19">and with the full release.</text>
+																<text pos="6,330" size="0x19"></text>
+															</widget>
 														</widget>
-													</widget>
+													</container>
+												</container>
+											</container>
+											<container pos="0,523" size="820x621">
+												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x621"/>
+												<container size="820x621">
+													<container pos="6,6" size="808x609">
+														<widget size="808x35" type="*widget.Label">
+															<widget size="808x35" type="*widget.RichText">
+																<text bold pos="6,6" size="242x23" textSize="17">Third party code compiled in</text>
+															</widget>
+														</widget>
+														<widget pos="0,44" size="808x565" type="*widget.Label">
+															<widget size="808x565" type="*widget.RichText">
+																<text pos="6,6" size="520x19">Go runtime and standard library  BSD-3-Clause  Copyright 2009 The Go Authors</text>
+																<text pos="6,25" size="482x19">fyne.io/fyne/v2  BSD-3-Clause  (C) 2018 Fyne.io developers (see AUTHORS)</text>
+																<text pos="6,44" size="431x19">fyne.io/systray  Apache-2.0  2014 Brave New Software Project, Inc.</text>
+																<text pos="6,63" size="375x19">github.com/BurntSushi/toml  MIT  (c) 2013 TOML authors</text>
+																<text pos="6,82" size="566x19">github.com/FyshOS/fancyfs  BSD-3-Clause  (C) 2025 FyshOS developers (see AUTHORS)</text>
+																<text pos="6,101" size="451x19">github.com/anthonynsimon/bild  MIT  (c) 2021 Anthony Najjar Simon</text>
+																<text pos="6,120" size="419x19">github.com/clipperhouse/uax29/v2  MIT  (c) 2020 Matt Sherman</text>
+																<text pos="6,139" size="492x19">github.com/fsnotify/fsnotify  BSD-3-Clause  Copyright 2012 The Go Authors</text>
+																<text pos="6,158" size="378x19">github.com/fyne-io/image  BSD-3-Clause  (c) 2022, Fyne.io</text>
+																<text pos="6,177" size="424x19">github.com/fyne-io/oksvg  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
+																<text pos="6,196" size="323x19">github.com/go-gl/gl  MIT  (c) 2014 Eric Woroshow</text>
+																<text pos="6,215" size="641x19">github.com/go-gl/glfw/v3.4/glfw  BSD-3-Clause  (c) 2012 The glfw3-go Authors. All rights reserved.</text>
+																<text pos="6,234" size="444x19">github.com/go-text/render  BSD-3-Clause  2021 The go-text authors</text>
+																<text pos="6,254" size="473x19">github.com/go-text/typesetting  BSD-3-Clause  2021 The go-text authors</text>
+																<text pos="6,273" size="387x19">github.com/goccy/go-yaml  MIT  (c) 2019 Masaaki Goshima</text>
+																<text pos="6,292" size="682x19">github.com/godbus/dbus/v5  BSD-2-Clause  (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google</text>
+																<text pos="6,311" size="414x19">github.com/jeandeaual/go-locale  MIT  (c) 2020 Alexis Jeandeau</text>
+																<text pos="6,330" size="431x19">github.com/jsummers/gobmp  MIT  (c) 2012-2015 Jason Summers</text>
+																<text pos="6,349" size="445x19">github.com/mattn/go-runewidth  MIT  (c) 2016 Yasuhiro Matsumoto</text>
+																<text pos="6,368" size="319x19">github.com/nfnt/resize  ISC  (c) 2012, Jan Schlicht</text>
+																<text pos="6,387" size="602x19">github.com/nicksnyder/go-i18n/v2  MIT  (c) 2014 Nick Snyder https://github.com/nicksnyder</text>
+																<text pos="6,406" size="267x19">github.com/rymdport/portal  Apache-2.0</text>
+																<text pos="6,425" size="424x19">github.com/srwiley/oksvg  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
+																<text pos="6,444" size="432x19">github.com/srwiley/rasterx  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
+																<text pos="6,463" size="374x19">github.com/yuin/goldmark  MIT  (c) 2019 Yusuke Inuzuka</text>
+																<text pos="6,482" size="375x19">golang.org/x/image  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,502" size="355x19">golang.org/x/net  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,521" size="354x19">golang.org/x/sys  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,540" size="423x19">golang.org/x/text  BSD-3-Clause  Copyright 2009 The Go Authors</text>
+															</widget>
+														</widget>
+													</container>
+												</container>
+											</container>
+											<container pos="0,1159" size="820x220">
+												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x220"/>
+												<container size="820x220">
+													<container pos="6,6" size="808x208">
+														<widget size="808x35" type="*widget.Label">
+															<widget size="808x35" type="*widget.RichText">
+																<text bold pos="6,6" size="292x23" textSize="17">Files compiled in that are not code</text>
+															</widget>
+														</widget>
+														<widget pos="0,44" size="808x164" type="*widget.Label">
+															<widget size="808x164" type="*widget.RichText">
+																<text pos="6,6" size="746x19">DejaVu Sans Mono for Powerline  Bitstream-Vera  Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. DejaVu</text>
+																<text pos="6,25" size="193x19">changes are in public domain</text>
+																<text pos="6,44" size="436x19">EmojiOne Color  MIT  Copyright 2016 Adobe Systems Incorporated</text>
+																<text pos="6,63" size="469x19">Fyne icon set  BSD-3-Clause  (C) 2018 Fyne.io developers (see AUTHORS)</text>
+																<text pos="6,82" size="471x19">Fyne shaders  BSD-3-Clause  (C) 2018 Fyne.io developers (see AUTHORS)</text>
+																<text pos="6,101" size="496x19">Fyne translations  BSD-3-Clause  (C) 2018 Fyne.io developers (see AUTHORS)</text>
+																<text pos="6,120" size="316x19">Inter  OFL-1.1  (c) 2020 The Inter Project Authors</text>
+																<text pos="6,139" size="442x19">Noto Sans  OFL-1.1  Copyright 2015 Google Inc. All Rights Reserved.</text>
+															</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
 									</container>
-								</container>
+									<widget pos="0,1200" size="1088x0" type="*widget.Shadow">
+										<linearGradient pos="0,-8" size="1088x8"/>
+									</widget>
+									<widget pos="1082,0" size="6x1200" type="*widget.scrollBarArea">
+										<widget pos="3,0" size="3x1043" type="*widget.scrollBar">
+											<rectangle fillColor="scrollbar" radius="3" size="3x1043"/>
+										</widget>
+									</widget>
+								</widget>
 								<container pos="0,1206" size="1088x44">
 									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1088x44"/>
 									<container size="1088x44">

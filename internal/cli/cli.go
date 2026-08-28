@@ -17,6 +17,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
@@ -92,6 +93,14 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		//
 		// An answer, so it goes to out and ends with zero, the same as version.
 		fmt.Fprint(out, version.LicenceNotice)
+		// And then what this particular binary actually carries. The notice
+		// above points at a file, which is no help to somebody holding only
+		// the binary - a download of the window is one file and the notices
+		// are not in it. The list is read out of the build's own record, so
+		// it describes the binary being asked rather than the source tree it
+		// came from: the command line answers with two libraries, the window
+		// with twenty-seven and the fonts they bring.
+		printCarried(out, legal.CarriedHere())
 		return ExitOK
 	case "--help", "-h", "help":
 		// Asking is not a mistake, so the answer goes where answers go and

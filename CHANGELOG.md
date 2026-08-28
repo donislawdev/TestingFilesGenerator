@@ -248,6 +248,21 @@ because it turns other people's test suites red.
 
 ### Added
 
+- `tfg license` now lists what the binary in front of you actually carries:
+  every module compiled into it, with its version and its licence, and the
+  fonts and drawings that arrive inside those modules. It used to point at
+  THIRD-PARTY-NOTICES.md, which is no help at all when what you downloaded is
+  one file and that file is the binary.
+
+  The list is read out of the build's own record, so it describes the binary
+  being asked rather than a source tree somewhere else. The command line
+  answers with three entries. The window answers with thirty.
+
+  The window shows the same names and licences on its About screen, which
+  scrolls now. Versions are on the command line's answer and in
+  THIRD-PARTY-NOTICES.md, because the screen is rendered in places where a
+  build record cannot be read.
+
 - Every manifest entry now says which target the file came from, under
   `target_id`, and the summary counts the files each target produced under
   `by_target`. Nothing else answered that question. The `id` on an entry is
