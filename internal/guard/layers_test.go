@@ -20,6 +20,13 @@ var layer = map[string]int{
 	// everything and already allowed to look anywhere. See internal/site.
 	"internal/site": 0,
 
+	// The licence registry imports nothing of ours either, and for the same
+	// kind of reason: it is a list of facts about what we ship, read by the
+	// guards, by the licence command and by whatever renders an SBOM. A list
+	// that could reach into the engine would be a list that could disagree
+	// with itself depending on who asked.
+	"internal/legal": 0,
+
 	"internal/format":            1,
 	"internal/format/all":        1,
 	"internal/format/imagelabel": 1,
