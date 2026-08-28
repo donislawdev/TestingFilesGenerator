@@ -1,0 +1,206 @@
+# The last phase: check the page a person actually sees.
+#
+# Three phases come before this one. The build checks the tree and hands itself
+# over, the signing script checks the build before touching it and confirms the
+# draft is complete, and the attestation workflow checks the digest it was given
+# against the files it downloads. None of them looks at the published release -
+# the one thing a user sees - and that is exactly the gap this fills. In the
+# project this ritual came from, that gap let a wrong verification command sit
+# in the release notes through two releases.
+#
+# So this downloads what a user downloads and does what a user is told to do,
+# with the commands taken from the notes rather than invented here.
+#
+# Read only, and that is not a detail: a verifier that can publish is not a
+# verifier any more.
+name: Verify a published release
+
+on:
+  release:
+    types: [published]
+  # Re-runnable by hand against any published tag, because "does that old
+  # release still verify" is worth being able to ask without cutting a new one.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published tag to check, for example v0.2.0"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: download what users download, then check it
+    # Windows, because one of these questions cannot be asked anywhere else: a
+    # checksum says the bytes did not change and says nothing about who signed
+    # them.
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: which release this is
+        id: which
+        shell: bash
+        env:
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          tag="${EVENT_TAG:-$INPUT_TAG}"
+          test -n "$tag" || { echo "no tag to check"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "checking $tag"
+
+      - name: download every published asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.which.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p published
+          cd published
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY"
+          ls -l
+
+      - name: everything a release is made of is there
+        shell: bash
+        working-directory: published
+        # A release missing one file looks almost exactly like a finished one,
+        # which is why this counts rather than glances. Eight archives, the
+        # checksums, the bill of materials and the two statements.
+        run: |
+          set -euo pipefail
+          archives="$(ls -1 -- *.zip *.tar.gz 2>/dev/null | wc -l)"
+          echo "archives: $archives"
+          test "$archives" = "8" || { echo "expected eight archives"; exit 1; }
+          for needed in SHA256SUMS.txt *.spdx.json *.provenance.sigstore.json *.sbom.sigstore.json; do
+            ls -1 -- $needed >/dev/null || { echo "missing: $needed"; exit 1; }
+          done
+          echo "every expected asset is published"
+
+      - name: the checksum a user is told to compare
+        shell: bash
+        working-directory: published
+        run: |
+          set -euo pipefail
+          sha256sum -c SHA256SUMS.txt
+
+      - name: the two commands the notes tell people to run
+        shell: bash
+        working-directory: published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Run against a real download, exactly as written on the release page.
+        # The provenance one answers for the five archives nothing signed - the
+        # Windows ones changed bytes when a person signed them, and the notes
+        # say so. The predicate type is given because gh asks for provenance
+        # unless told otherwise, and a wrong URI answers "no attestation found",
+        # which reads like a broken release rather than a wrong flag.
+        run: |
+          set -euo pipefail
+          linux="$(ls -1 -- *linux_amd64.tar.gz | head -1)"
+          windows="$(ls -1 -- *windows_amd64.zip | head -1)"
+          echo "provenance, on a file nothing signed: $linux"
+          gh attestation verify "$linux" -R "$GITHUB_REPOSITORY"
+          echo "what is inside, on a signed file: $windows"
+          gh attestation verify "$windows" -R "$GITHUB_REPOSITORY" \
+            --predicate-type https://spdx.dev/Document
+
+      - name: the same two commands with no network to the API
+        shell: bash
+        working-directory: published
+        # The notes promise these work offline with --bundle, and a person
+        # behind a proxy that blocks the API is exactly who needs them to.
+        run: |
+          set -euo pipefail
+          linux="$(ls -1 -- *linux_amd64.tar.gz | head -1)"
+          windows="$(ls -1 -- *windows_amd64.zip | head -1)"
+          gh attestation verify "$linux" -R "$GITHUB_REPOSITORY" \
+            --bundle ./*.provenance.sigstore.json
+          gh attestation verify "$windows" -R "$GITHUB_REPOSITORY" \
+            --bundle ./*.sbom.sigstore.json \
+            --predicate-type https://spdx.dev/Document
+
+      - name: every Windows program is signed, stamped, and by OUR certificate
+        shell: pwsh
+        working-directory: published
+        # This is the step the whole job runs on Windows for. All three, not the
+        # first one found: signing two of three and publishing the third
+        # unsigned is a mistake that looks like nothing at all on the page.
+        run: |
+          $line = Select-String -Path ../internal/legal/codesign.go `
+                    -Pattern 'CodeSigningSHA256 = "([0-9a-f]{64})"'
+          if (-not $line) { throw "could not read the pinned certificate out of internal/legal/codesign.go" }
+          $pinned = $line.Matches[0].Groups[1].Value
+          "pinned  : $pinned"
+
+          $zips = Get-ChildItem -Filter *windows*.zip
+          if ($zips.Count -ne 3) { throw "expected three Windows archives, found $($zips.Count)" }
+
+          foreach ($zip in $zips) {
+            $into = Join-Path $PWD ("unpacked_" + $zip.BaseName)
+            Expand-Archive -LiteralPath $zip.FullName -DestinationPath $into -Force
+            $exe = Get-ChildItem -Path $into -Filter *.exe -Recurse | Select-Object -First 1
+            if (-not $exe) { throw "no program inside $($zip.Name)" }
+
+            $sig = Get-AuthenticodeSignature -LiteralPath $exe.FullName
+            "$($zip.Name) -> $($exe.Name): $($sig.Status)"
+            if ($sig.Status -ne 'Valid') { throw "$($exe.Name): signature status is $($sig.Status)" }
+
+            # Without a timestamp the signature dies when the certificate
+            # expires, so its absence is a defect rather than a detail.
+            if (-not $sig.TimeStamperCertificate) { throw "$($exe.Name): the signature carries no timestamp" }
+
+            $bytes = [System.Security.Cryptography.SHA256]::Create().ComputeHash($sig.SignerCertificate.RawData)
+            $actual = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
+            if ($actual -ne $pinned) {
+              throw "$($exe.Name) was signed by a DIFFERENT certificate: $actual"
+            }
+          }
+          "all three signed by the pinned certificate, each with a timestamp"
+
+      - name: the page promises what was just checked
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.which.outputs.tag }}
+        # The commands above are written twice - here and on the release page -
+        # and two written copies of one instruction drift. This is the
+        # comparison that stops them: what the page tells a person to type has
+        # to be what was just run.
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > notes.md
+          for promised in "gh attestation verify" "--predicate-type https://spdx.dev/Document" "SHA256SUMS.txt"; do
+            grep -qF -- "$promised" notes.md || {
+              echo "the release notes never mention: $promised"
+              echo "This job just ran it, so the page and the check disagree about what a person should do."
+              exit 1
+            }
+          done
+          echo "the notes and this job say the same thing"
+
+      - name: a full release has to be the one people are offered
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.which.outputs.tag }}
+        # The site and the readme point at /releases/latest, so "published" and
+        # "what people get" are the same thing only while this holds. Asked of
+        # the API rather than of the event payload, because a dispatch has no
+        # payload and a pre-release is supposed to fail this.
+        run: |
+          set -euo pipefail
+          prerelease="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)"
+          if [ "$prerelease" = "true" ]; then
+            echo "$TAG is a pre-release, so it must not be latest and is not checked here"
+            exit 0
+          fi
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"
+          echo "latest is $latest, this release is $TAG"
+          test "$latest" = "$TAG"
