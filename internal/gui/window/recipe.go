@@ -478,7 +478,11 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
 			r.fields.Add(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
 			r.fields.Add(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
-			widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) }),
+			// Not a field, so the row would hand it a whole column and the
+			// height of a label and a control together - see parts.BesideFields
+			// for the numbers that came off this very button.
+			parts.BesideFields(
+				widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
 		))
 	}
 	// The button to add another only where another one would be legal. The rows

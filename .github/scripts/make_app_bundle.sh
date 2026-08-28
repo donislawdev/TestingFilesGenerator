@@ -37,9 +37,28 @@ if [ ! -f "${work}/${binary}" ]; then
 fi
 
 app="${work}/${binary}.app"
-mkdir -p "${app}/Contents/MacOS"
+mkdir -p "${app}/Contents/MacOS" "${app}/Contents/Resources"
 mv "${work}/${binary}" "${app}/Contents/MacOS/${binary}"
 chmod +x "${app}/Contents/MacOS/${binary}"
+
+# The icon, and it is refused rather than skipped when it is missing.
+#
+# A bundle without one is not a bundle that looks slightly worse - macOS draws a
+# blank sheet of paper for it in the Finder and the Dock, which is what a program
+# it knows nothing about looks like. O154, reported by the owner on 2026-08-28.
+#
+# The file is in the repository rather than made here with sips and iconutil,
+# because this script runs on ubuntu: the command line archives are cross
+# compiled, so Apple's tools are not there. tools/appicon.py writes it, at every
+# size macOS asks for, and Apple's own iconutil was asked whether it accepts
+# what came out.
+here="$(cd "$(dirname "$0")" && pwd)"
+icon="${here}/../../internal/gui/icon/chickpea.icns"
+if [ ! -f "${icon}" ]; then
+  echo "make_app_bundle: no icon at ${icon}, so the bundle would show a blank page" >&2
+  exit 1
+fi
+cp "${icon}" "${app}/Contents/Resources/icon.icns"
 
 # LSMinimumSystemVersion is 11.0 because this project builds darwin/arm64 only
 # and Apple silicon starts there. NSHighResolutionCapable keeps the window from
@@ -51,6 +70,8 @@ cat > "${app}/Contents/Info.plist" <<PLIST
 <dict>
 	<key>CFBundleExecutable</key>
 	<string>${binary}</string>
+	<key>CFBundleIconFile</key>
+	<string>icon</string>
 	<key>CFBundleIdentifier</key>
 	<string>${bundle_id}</string>
 	<key>CFBundleName</key>

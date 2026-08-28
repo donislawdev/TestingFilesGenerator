@@ -25,6 +25,7 @@ import (
 
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -176,6 +177,25 @@ const bulletMarker = "•"
 // the screen.
 func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewGridWithColumns(len(fields), fields...)
+}
+
+// BesideFields puts something that is not a field into a row of them without
+// letting the row decide how big it is.
+//
+// Row shares the width out in equal columns, which is what fields want and what
+// anything else gets whether it wants it or not. Measured on 2026-08-28, from
+// the owner reading the batch screen: the Remove button ending a row of an
+// archive's contents came out 198x63 px for a word needing 63x32, so it was
+// drawn as a panel with a word in the middle of it rather than as a button. The
+// Duplicate button at the head of the same batch, which is in no row, is 79x35.
+//
+// Two layouts and each answers one half. The box across gives it the width it
+// asks for instead of the column's. The spacer above pushes it down onto the
+// line the controls are on - a row of fields is a label with a control under
+// it, so anything sitting at the top of that column lines up with the labels
+// and reads as a heading of its own.
+func BesideFields(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewVBox(layout.NewSpacer(), container.NewHBox(o))
 }
 
 // Divider is a line between two things standing side by side.

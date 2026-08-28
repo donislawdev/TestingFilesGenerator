@@ -9,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // What this defends. A control you press to open a list is not drawn as a
@@ -179,4 +180,135 @@ func typingBoxesOn(screen fyne.CanvasObject) []*parts.Entry {
 		}
 	})
 	return found
+}
+
+// What this defends. A menu is at least as wide as the toolkit says it needs to
+// show what it is showing.
+//
+// Why it needed a guard, and it is a defect somebody looked straight at.
+// Reported by the owner on 2026-08-28 from the running window and then rendered:
+// the format menu in a row of an archive's contents drew "(Select ..." - the
+// placeholder cut off in the middle of the word it exists to show. Measured with
+// tools/probes/menuwidth: that box was 97.75 px and the toolkit's own answer for
+// what it needs was 119.91.
+//
+// How it is asked. Against MinSize, which is the widget's own claim about the
+// room its text takes, rather than against arithmetic repeated here. That is
+// deliberate for two reasons. A guard that recomputed parts.menuWidth would
+// agree with a wrong answer. And the string being measured is one the toolkit
+// puts in by itself - fyne v2.8.1 widget/select.go line 94 substitutes its
+// default placeholder while the renderer is made - so the only party that knows
+// what a menu will end up showing is the menu.
+func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
+	ourTheme(t)
+	content, canvas := laidOutWindow(t)
+
+	checked := 0
+	tightest, tightestIn := float32(0), float32(0)
+	for _, tab := range allTabs() {
+		screen := selectTab(t, content, tab)
+		for _, menu := range menusWithAnArchiveOpened(t, screen, tab, canvas) {
+			room, needs := menu.Size().Width, menu.MinSize().Width
+			if room == 0 {
+				continue
+			}
+			if room < needs {
+				t.Errorf("a menu of %v on the %s screen is %.2f px and the toolkit says it needs"+
+					" %.2f to show what is in it, so the words are cut off in the box that"+
+					" exists to show them.\n"+
+					"What to do: parts.menuWidth is what decides this width.",
+					menu.Options, tab, room, needs)
+			}
+			if slack := room - needs; tightest == 0 || slack < tightest {
+				tightest, tightestIn = slack, room
+			}
+			checked++
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no menu was laid out, so this guard checked nothing")
+	}
+	t.Logf("%d menus, all wide enough. The tightest has %.2f px to spare in %.2f", checked, tightest, tightestIn)
+}
+
+// And no menu is narrower than the boxes it stands beside.
+//
+// This is the owner's report of 2026-08-28 rather than a preference. The format
+// menu on the preset screen sat between a limit and a seed, both 140 px, and was
+// 97.75 - so the same setting was 140 px on the single batch screen and 98 on
+// this one, because the width came from how long the words "targz" and "pdf"
+// happen to be. Nothing was cut off. What was wrong is that a control this
+// window never draws under 140 px was drawn at 98.
+//
+// Asked against the narrowest box laid out on the SAME screen, for the reason
+// its sibling above is asked against the widest: the claim is a relationship
+// between the controls a person sees together, not a number written down twice.
+// Boxes with no width are left out - the two ways of stating a size that the
+// switch is hiding are laid out at nought and minus three, and a floor taken
+// from those would be no floor at all.
+func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
+	ourTheme(t)
+	content, canvas := laidOutWindow(t)
+
+	checked := 0
+	for _, tab := range allTabs() {
+		screen := selectTab(t, content, tab)
+		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
+		if len(menus) == 0 {
+			continue
+		}
+		narrowest := float32(0)
+		for _, box := range typingBoxesOn(screen) {
+			w := box.Size().Width
+			if w <= 0 {
+				continue
+			}
+			if narrowest == 0 || w < narrowest {
+				narrowest = w
+			}
+		}
+		if narrowest == 0 {
+			t.Fatalf("the %s screen has %d menus and no box to type in that was laid out,"+
+				" so there is nothing to compare them against", tab, len(menus))
+		}
+		for _, menu := range menus {
+			got := menu.Size().Width
+			if got == 0 {
+				continue
+			}
+			if got < narrowest {
+				t.Errorf("a menu of %v on the %s screen is %.2f px and the narrowest box beside it"+
+					" is %.2f, so one setting is drawn shorter here than the same setting is"+
+					" elsewhere in this window.\n"+
+					"What to do: parts.menuWidth holds a menu to parts.NumericWidth at the least.",
+					menu.Options, tab, got, narrowest)
+			}
+			checked++
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no screen has a menu, so this guard checked nothing")
+	}
+	t.Logf("%d menus, none of them narrower than the boxes beside them", checked)
+}
+
+// menusWithAnArchiveOpened is every menu of a screen, including the ones that
+// only exist once a batch says it holds files.
+//
+// Without this the row an archive's contents are typed into is invisible to
+// these guards, and that row is where the defect they are about was seen. A
+// screen is left exactly as it was found on every other tab.
+func menusWithAnArchiveOpened(t *testing.T, screen fyne.CanvasObject, tab string, canvas fyne.Canvas) []*parts.Chooser {
+	t.Helper()
+	if tab != text.TabRecipe() {
+		return menusOn(screen)
+	}
+	// An archive first, because since 2026-08-27 the offer to say what a batch
+	// holds is only under a format that holds anything.
+	chooseFormat(t, screen, "zip")
+	pressNamed(t, screen, text.ButtonAddContents())
+	if canvas != nil {
+		canvas.Content().Resize(canvas.Size())
+	}
+	return menusOn(screen)
 }

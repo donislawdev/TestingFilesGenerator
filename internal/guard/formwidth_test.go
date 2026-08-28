@@ -124,6 +124,60 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 // Only the contents are asked about here. A guard that also demanded the
 // surface stop at the column would be pinning down the one thing that is
 // deliberately different, and the next person to widen the bar would delete it.
+// A button standing in a row of fields is the size of a button.
+//
+// Reported by the owner on 2026-08-28 from the running window, and the numbers
+// are off the laid out screen rather than off the code: the Remove button
+// ending a row of an archive's contents was 197.50 x 63.16 px for a word the
+// toolkit says needs 67.92 x 32. That is a quarter of the form wide and as tall
+// as a label and a control together, so it read as a grey panel with a word in
+// the middle of it. The Duplicate button at the head of the same batch, which
+// stands in no row, is 78.97 x 35.16.
+//
+// The cause is that parts.Row shares the width out in equal columns, which is
+// what a field wants and what anything else gets whether it wants it or not.
+// See parts.BesideFields.
+//
+// Asked against MinSize, which is the widget's own answer for the room its word
+// needs, so nothing here repeats a layout's arithmetic. Both directions, because
+// a button smaller than its own minimum is a word cut in half.
+func TestAButtonInARowOfFieldsIsTheSizeOfAButton(t *testing.T) {
+	ourTheme(t)
+	content, _ := laidOutWindow(t)
+	screen := selectTab(t, content, text.TabRecipe())
+
+	// An archive first. The only row in this window that ends in a button is
+	// the one saying what an archive holds, and it is not on the screen until a
+	// batch says it holds anything.
+	chooseFormat(t, screen, "zip")
+	pressNamed(t, screen, text.ButtonAddContents())
+
+	remove := buttonNamed(screen, text.ButtonRemoveContents())
+	if remove == nil {
+		t.Fatalf("no %q button after asking a zip what it holds, so this guard checked nothing",
+			text.ButtonRemoveContents())
+	}
+	got, needs := remove.Size(), remove.MinSize()
+	if got.Width == 0 || got.Height == 0 {
+		t.Fatal("the button was never laid out, so its size says nothing")
+	}
+	const slack = 0.5
+	if got.Width > needs.Width+slack || got.Height > needs.Height+slack {
+		t.Errorf("the %q button in a row of an archive's contents is %.2f x %.2f px and the word"+
+			" in it needs %.2f x %.2f, so the row is drawing it as a panel rather than as a"+
+			" button.\n"+
+			"What to do: parts.BesideFields keeps something that is not a field out of the"+
+			" column arithmetic.",
+			remove.Text, got.Width, got.Height, needs.Width, needs.Height)
+	}
+	if got.Width+slack < needs.Width || got.Height+slack < needs.Height {
+		t.Errorf("the %q button is %.2f x %.2f px and needs %.2f x %.2f, so its word is cut off.",
+			remove.Text, got.Width, got.Height, needs.Width, needs.Height)
+	}
+	t.Logf("the %q button is %.2f x %.2f, and it needs %.2f x %.2f",
+		remove.Text, got.Width, got.Height, needs.Width, needs.Height)
+}
+
 func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 	host := newFakeHost(t)
 	window.Open(host)
