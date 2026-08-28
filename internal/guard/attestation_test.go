@@ -114,7 +114,7 @@ func TestTheReleaseMakesItsDocumentAndHandsItOver(t *testing.T) {
 
 	for what, want := range map[string]string{
 		"the bill of materials is generated":           "go run ./internal/legal/cmd/sbom",
-		"it is written where the build is handed over": "-o \"incoming/tfg_${version}.spdx.json\"",
+		"it is written where the build is handed over": "-o \"incoming/verify-tfg_${version}.spdx.json\"",
 		"the statement travels with the build":         "build.provenance.sigstore.json",
 	} {
 		if !strings.Contains(all, want) {

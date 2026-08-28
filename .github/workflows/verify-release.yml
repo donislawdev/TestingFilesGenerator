@@ -188,7 +188,10 @@ jobs:
           archives="$(ls -1 -- *.zip *.tar.gz 2>/dev/null | wc -l)"
           echo "archives: $archives"
           test "$archives" = "8" || { echo "expected eight archives"; exit 1; }
-          for needed in SHA256SUMS.txt *.spdx.json *.provenance.sigstore.json *.sbom.sigstore.json; do
+          # Named with the verify- prefix rather than by suffix alone, because
+          # the prefix is the only thing keeping these four at the end of the
+          # download list, and a suffix is happy with a file that lost it.
+          for needed in verify-SHA256SUMS.txt verify-*.spdx.json verify-*.provenance.sigstore.json verify-*.sbom.sigstore.json; do
             ls -1 -- $needed >/dev/null || { echo "missing: $needed"; exit 1; }
           done
           echo "every expected asset is published"
@@ -198,7 +201,7 @@ jobs:
         working-directory: published
         run: |
           set -euo pipefail
-          sha256sum -c SHA256SUMS.txt
+          sha256sum -c verify-SHA256SUMS.txt
 
       - name: the two commands the notes tell people to run
         shell: bash
@@ -286,7 +289,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > notes.md
-          for promised in "gh attestation verify" "--predicate-type https://spdx.dev/Document" "SHA256SUMS.txt"; do
+          for promised in "gh attestation verify" "--predicate-type https://spdx.dev/Document" "verify-SHA256SUMS.txt"; do
             grep -qF -- "$promised" notes.md || {
               echo "the release notes never mention: $promised"
               echo "This job just ran it, so the page and the check disagree about what a person should do."
