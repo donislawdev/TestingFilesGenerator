@@ -34,8 +34,8 @@ What it does, in order, and what it refuses
     each one, notarises it with Apple and staples the ticket on. A bare macOS
     binary cannot be stapled at all, so without this those two archives are
     refused by Gatekeeper even though they are signed;
- 6. repacks those archives and writes SHA256SUMS.txt over everything it is
-    about to publish, signed and unsigned alike;
+ 6. repacks those archives and writes verify-SHA256SUMS.txt over everything it
+    is about to publish, signed and unsigned alike;
  7. uploads the lot to the DRAFT release and asks attest-release.yml for the
     statement about the signed bytes;
  8. waits for that statement and confirms the draft is complete. Until this
@@ -74,6 +74,21 @@ SIGNED_ARCHIVES = ("windows_amd64.zip", "windows_arm64.zip")
 # bundle inside each archive that gets signed and stapled.
 MACOS_SUFFIX = "_macos_arm64.tar.gz"
 NOTARY_PROFILE = "tfg-notary"
+
+# The four files a person uses to CHECK a download, rather than download itself.
+#
+# The prefix is the only thing that puts them at the end of the release page.
+# Measured on 2026-08-28 against a draft release: GitHub orders the download
+# list ALPHABETICALLY BY FILE NAME and nothing else moves it - not the upload
+# order, not the asset id, not the label, and the sort ignores letter case.
+# Without a prefix SHA256SUMS.txt sorts FIRST, above every archive, and the
+# .json files land in the middle, between the window archives and the command
+# line ones, because a dot sorts before an underscore.
+#
+# verify- rather than a number, because the word is true: these four are what
+# you verify a download with. A number would sort just as well and would say
+# nothing.
+AUX_PREFIX = "verify-"
 
 # Where the pin lives. Read out of the Go source rather than copied here,
 # because two written copies of one digest is exactly the drift this pin exists
@@ -363,32 +378,34 @@ def name_for_publication(directory, tag):
     """Give the build's own files the names a person will see, or drop them.
 
     build.sha256 was the subject list for the statement the runner made. It
-    describes three archives that no longer exist in that form, so publishing it
-    beside SHA256SUMS.txt would put two lists of checksums on one page and one of
+    describes archives that no longer exist in that form, so publishing it beside
+    the real checksum file would put two lists of checksums on one page and one of
     them would be wrong about half the files.
 
     The provenance bundle does stay, under a name a person can use: it still
     describes the five archives nothing signed, byte for byte.
     """
     build_sums = os.path.join(directory, "build.sha256")
+    # Not renamed and not published: this one names bytes that no longer exist
+    # in that form, and it is deleted just below.
     if os.path.isfile(build_sums):
         os.remove(build_sums)
     made = os.path.join(directory, "build.provenance.sigstore.json")
     if os.path.isfile(made):
         os.rename(made, os.path.join(
-            directory, "tfg_%s.provenance.sigstore.json" % tag.lstrip("v")))
+            directory, "verify-tfg_%s.provenance.sigstore.json" % tag.lstrip("v")))
 
 
 def write_checksums(directory):
-    """SHA256SUMS.txt over what is about to be published, and its own digest."""
+    """The checksum file over what is about to be published, and its own digest."""
     published = sorted(os.listdir(directory))
     lines = []
     for name in published:
         lines.append("%s  %s\n" % (sha256_of(os.path.join(directory, name)), name))
-    sums = os.path.join(directory, "SHA256SUMS.txt")
+    sums = os.path.join(directory, AUX_PREFIX + "SHA256SUMS.txt")
     with open(sums, "w", encoding="utf-8", newline="\n") as handle:
         handle.writelines(lines)
-    print("  %d file(s) listed in SHA256SUMS.txt" % len(published))
+    print("  %d file(s) listed in %sSHA256SUMS.txt" % (len(published), AUX_PREFIX))
     return sha256_of(sums)
 
 
@@ -441,9 +458,13 @@ def confirm_draft(tag, wait_seconds, dry_run):
     missing = []
     if sum(1 for n in names if n.endswith((".zip", ".tar.gz"))) != 8:
         missing.append("eight archives")
-    for needed in ("SHA256SUMS.txt", ".spdx.json", ".sbom.sigstore.json",
-                   ".provenance.sigstore.json"):
-        if not any(n.endswith(needed) or n == needed for n in names):
+    # Each of the four is asked for WITH its prefix, not by suffix alone. A
+    # suffix would be happy with a file the prefix fell off, and the prefix is
+    # the only thing keeping these four at the end of the download list.
+    for needed in (AUX_PREFIX + "SHA256SUMS.txt", ".spdx.json",
+                   ".sbom.sigstore.json", ".provenance.sigstore.json"):
+        if not any((n.startswith(AUX_PREFIX) and n.endswith(needed)) or n == needed
+                   for n in names):
             missing.append(needed)
     if missing:
         raise SystemExit(
@@ -502,7 +523,7 @@ def main(argv=None):
     print("\n[6/8] checksums over what will be published")
     name_for_publication(work, args.tag)
     digest = write_checksums(work)
-    print("  SHA256SUMS.txt: %s" % digest)
+    print("  %sSHA256SUMS.txt: %s" % (AUX_PREFIX, digest))
 
     print("\n[7/8] uploading to the draft")
     upload_to_draft(args.tag, work, args.dry_run)

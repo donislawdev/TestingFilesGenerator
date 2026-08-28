@@ -366,10 +366,18 @@ jobs:
         run: |
           set -euo pipefail
           version="${{ needs.check.outputs.version }}"
+          # verify- rather than tfg-, and the prefix is doing one job: GitHub
+          # sorts a release's downloads ALPHABETICALLY BY FILE NAME, and nothing
+          # else moves them. Measured on 2026-08-28 against a draft release: not
+          # the upload order, not the asset id, not the label, and the sort
+          # ignores letter case. Without the prefix this file lands BETWEEN the
+          # window archives and the command line ones, because a dot sorts
+          # before an underscore. With it, the four files a person uses to check
+          # a download sit together at the end, under the things they check.
           go run ./internal/legal/cmd/sbom \
             -seed "${GITHUB_REF_NAME}" \
-            -o "incoming/tfg_${version}.spdx.json"
-          echo "SBOM=incoming/tfg_${version}.spdx.json" >> "$GITHUB_ENV"
+            -o "incoming/verify-tfg_${version}.spdx.json"
+          echo "SBOM=incoming/verify-tfg_${version}.spdx.json" >> "$GITHUB_ENV"
 
       - name: one list of what this build produced
         # build.sha256 rather than SHA256SUMS.txt, and the difference is the
@@ -432,7 +440,7 @@ jobs:
             echo "- \`tfg-gui_*\` is the desktop window. Same engine, same features."
             echo
             echo "Match the file to your system and architecture. Check what you downloaded against"
-            echo "\`SHA256SUMS.txt\`."
+            echo "\`verify-SHA256SUMS.txt\`, at the bottom of this list."
             echo
             echo "## Signing"
             echo
@@ -480,7 +488,9 @@ jobs:
             echo "xcrun stapler validate tfg.app  # that the ticket is really in the file"
             echo "\`\`\`"
             echo
-            echo "The \`.spdx.json\` file lists every library and every font compiled into these"
+            echo "The four files whose names start with \`verify-\` are the ones you check a"
+            echo "download against, and they sit together at the bottom of the list. The"
+            echo "\`.spdx.json\` file lists every library and every font compiled into these"
             echo "binaries, with its licence. The \`.sigstore.json\` files are the statements"
             echo "themselves, so both commands also work offline with \`--bundle\`."
             echo

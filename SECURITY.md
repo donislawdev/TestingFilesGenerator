@@ -54,7 +54,7 @@ through a symbolic link, are refused.
 
 **The released binaries are not signed.** Signing is not set up, the release notes
 say so, and your operating system will warn you. Verify a download against
-`SHA256SUMS.txt` from the same release.
+`verify-SHA256SUMS.txt` from the same release.
 
 ### In scope
 

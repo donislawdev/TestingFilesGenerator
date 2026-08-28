@@ -344,6 +344,21 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The four files you check a download against now sit together at the bottom
+  of the release page, and their names say so.** `SHA256SUMS.txt` is now
+  `verify-SHA256SUMS.txt`, and the `.spdx.json` and two `.sigstore.json` files
+  gained the same `verify-` prefix.
+
+  Nothing about what they contain changed. What changed is where they appear:
+  GitHub orders a release's download list alphabetically by file name and by
+  nothing else, so the old names put the checksums file at the very top, above
+  every program, and dropped the three statement files into the middle of the
+  list between the desktop archives and the command line ones. Now the programs
+  come first and the things you check them with come last.
+
+  If you have a script that fetches `SHA256SUMS.txt` by name, it needs the new
+  name from the next release on. The release notes carry it too.
+
 - **macOS downloads are signed by the owner and notarised by Apple, and macOS
   opens them without argument.** They used to be refused on the first try, with
   a note here telling you to open them from the right click menu instead. That

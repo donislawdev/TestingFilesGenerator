@@ -67,8 +67,12 @@ func TestTheReleaseHandsTheBuildOverInsteadOfPublishingIt(t *testing.T) {
 	if !strings.Contains(release, "sha256sum -- * > build.sha256") {
 		t.Error("the build no longer lists what it produced, so the statement below it names nothing")
 	}
-	if strings.Contains(release, "sha256sum -- * > SHA256SUMS.txt") {
-		t.Error("the build writes the checksums a user reads, and three of the files still change afterwards")
+	// The exact command, not the two halves separately. An earlier version of
+	// this asked whether the file appears anywhere AND whether that command
+	// appears anywhere, and went red on a release note that merely NAMES the
+	// checksums file - a sentence, not a build step.
+	if strings.Contains(release, "sha256sum -- * > verify-SHA256SUMS.txt") {
+		t.Error("the build writes the checksums a user reads, and five of the files still change afterwards")
 	}
 }
 
@@ -126,7 +130,7 @@ func TestTheAttestationWorkflowDoesNotClaimToHaveBuiltAnything(t *testing.T) {
 	for what, want := range map[string]string{
 		"it downloads what the release holds":                       "gh release download",
 		"it cross-checks the digest it was given":                   "CLAIMED",
-		"it checks the checksums describe the files they came with": "sha256sum -c SHA256SUMS.txt",
+		"it checks the checksums describe the files they came with": "sha256sum -c verify-SHA256SUMS.txt",
 		"it attests the document against those bytes":               "sbom-path",
 		"it publishes the statement as an asset":                    "gh release upload",
 	} {
@@ -165,7 +169,7 @@ func TestThePublishedReleaseIsCheckedTheWayAUserWould(t *testing.T) {
 		"it runs when a release is published":                         "types: [published]",
 		"it can be asked about an old tag":                            "workflow_dispatch",
 		"it downloads what a user downloads":                          "gh release download",
-		"it compares the checksums a user is told to compare":         "sha256sum -c SHA256SUMS.txt",
+		"it compares the checksums a user is told to compare":         "sha256sum -c verify-SHA256SUMS.txt",
 		"it runs the command the notes give":                          "gh attestation verify",
 		"it runs it the offline way too":                              "--bundle",
 		"it reads the certificate pin from the source":                "CodeSigningSHA256",
