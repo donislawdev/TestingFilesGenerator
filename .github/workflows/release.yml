@@ -465,7 +465,7 @@ jobs:
             echo
             echo "\`\`\`"
             echo "gh attestation verify <the file you downloaded> -R ${GITHUB_REPOSITORY} \\"
-            echo "   --predicate-type https://spdx.dev/Document"
+            echo "   --predicate-type https://spdx.dev/Document/v2.3"
             echo "\`\`\`"
             echo
             echo "The predicate type has to be given. \`gh\` asks for build provenance unless told"

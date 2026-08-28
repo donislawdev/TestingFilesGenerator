@@ -123,7 +123,7 @@ jobs:
         # missing file rather than a wrong flag.
         run: |
           set -euo pipefail
-          promised="https://spdx.dev/Document"
+          promised="https://spdx.dev/Document/v2.3"
           actual="$(python3 - "$BUNDLE" <<'PY'
           import base64, json, sys
           bundle = json.load(open(sys.argv[1], encoding="utf-8"))
