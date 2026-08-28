@@ -38,8 +38,8 @@
  * the fourth number of FILEVERSION is a zero rather than a build counter.
  */
 1 VERSIONINFO
-FILEVERSION 0,1,0,0
-PRODUCTVERSION 0,1,0,0
+FILEVERSION 0,2,0,0
+PRODUCTVERSION 0,2,0,0
 FILEOS 0x40004L
 FILETYPE 0x1L
 BEGIN
@@ -49,12 +49,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "DonislawDev"
             VALUE "FileDescription", "Generates test files for QA"
-            VALUE "FileVersion", "0.1.0"
+            VALUE "FileVersion", "0.2.0"
             VALUE "InternalName", "tfg-gui"
             VALUE "LegalCopyright", "Copyright (C) 2026 DonislawDev. GNU GPL version 3."
             VALUE "OriginalFilename", "tfg-gui.exe"
             VALUE "ProductName", "Testing Files Generator"
-            VALUE "ProductVersion", "0.1.0"
+            VALUE "ProductVersion", "0.2.0"
         END
     END
     BLOCK "VarFileInfo"
