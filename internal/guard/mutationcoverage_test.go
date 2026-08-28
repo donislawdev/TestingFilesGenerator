@@ -97,6 +97,15 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestTheIconMacOSReadsCarriesEverySizeItIsAskedFor": "broken by hand on 2026-08-28, three ways, and put back byte for byte - the file is untracked in git, so the restore was checked by hash rather than by a clean diff. " +
+		"Cutting the icp4 chunk out made it red naming that entry and the 16 px it holds, which is the failure that matters most: the file still opens, still shows an icon, and is missing the size a screen without Retina asks for. " +
+		"Resizing the 1024 px picture to 900 made it red as well, which is what an upscale from the wrong master would look like. " +
+		"Lying in the length field of the header made it red a third time, and that is the one a viewer would forgive and a reader that trusts the header would not. " +
+		"A probe rather than a mutation entry because what it reads is a committed BINARY asset, not code: no substitution in a .go or .py file changes those bytes, " +
+		"and the script that writes them - tools/appicon.py - is not run in CI at all, so mutating it would leave this guard green while proving nothing. " +
+		"Apple's own iconutil was asked the same question on a real Mac on the day this went in and handed back all ten entries at these pixel sizes, " +
+		"which is the half of the answer that cannot be asked again on a machine without macOS.",
+
 	"TestEveryScriptAWorkflowRunsDirectlyIsExecutable": "broken by hand on 2026-08-28, in both directions, and put back byte for byte. " +
 		"git update-index --chmod=-x on .github/scripts/make_app_bundle.sh made it red, naming the file, the mode it found and the command that fixes it. " +
 		"Putting the bit back made it green again. " +

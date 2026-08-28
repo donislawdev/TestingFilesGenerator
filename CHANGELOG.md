@@ -61,6 +61,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- On macOS the program now has an icon. It is a `.app` bundle since the release
+  before this one, and a bundle with no icon in it is drawn by the Finder and
+  the Dock as a blank sheet of paper - which is what a program the system knows
+  nothing about looks like. The icon is the same drawing the other two systems
+  use, on the rounded square macOS puts every icon on, at every size from 16 px
+  to 1024.
+
 - In the window, a menu is now the same width wherever it appears, and always
   wide enough for the words in it. The menu for choosing a format was 140 px
   wide on the single batch screen and 98 px on the presets screen and in a row

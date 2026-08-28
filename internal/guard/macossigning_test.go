@@ -1,6 +1,10 @@
 package guard
 
 import (
+	"bytes"
+	"encoding/binary"
+	"image"
+	_ "image/png"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -94,6 +98,110 @@ func TestTheLinkBesideTheBundleCannotBeACopy(t *testing.T) {
 		t.Error("make_app_bundle.sh does not put a link beside the bundle, so a person " +
 			"has to reach inside a .app to run a command line tool")
 	}
+}
+
+// The bundle carries an icon, and it refuses to be built without one.
+//
+// O154, reported by the owner on 2026-08-28: a bundle with no CFBundleIconFile
+// and nothing in Resources is drawn by the Finder and the Dock as a blank sheet
+// of paper, which is what a program the system knows nothing about looks like.
+// It was not a regression - until that day macOS got a bare binary and had no
+// icon either - and it became visible the moment the program became a .app.
+//
+// Refusing rather than skipping, because the failure is silent on both ends: a
+// bundle without an icon builds, signs, notarises and staples exactly like one
+// with an icon, and nothing before a person's screen would say a word.
+func TestTheMacBundleCarriesOurIcon(t *testing.T) {
+	script := bundleScript(t)
+
+	if !strings.Contains(script, "chickpea.icns") {
+		t.Error("make_app_bundle.sh never copies an icon into the bundle, so macOS draws " +
+			"the program as a blank page in the Finder and the Dock")
+	}
+	if !strings.Contains(script, "Contents/Resources/icon.icns") {
+		t.Error("make_app_bundle.sh puts no icon.icns in Contents/Resources, which is " +
+			"where CFBundleIconFile is looked up")
+	}
+	if !strings.Contains(script, "CFBundleIconFile") {
+		t.Error("the Info.plist this script writes names no icon file, so an icon sitting " +
+			"in Resources is never read")
+	}
+	// The refusal, and it is the half worth guarding. An icon that quietly is
+	// not there produces a bundle that is wrong in the one way nothing later in
+	// the release can see.
+	if !strings.Contains(script, "no icon at") {
+		t.Error("make_app_bundle.sh does not stop when the icon is missing, so a build " +
+			"with no icon file produces a bundle that looks finished and shows a blank page")
+	}
+}
+
+// And the icon it copies really carries every size macOS asks for.
+//
+// Read out of the bytes rather than trusted, because this file is written by a
+// script that is not run in CI and cannot be regenerated here - Pillow is a
+// build tool on one machine. So the committed file is the artefact, and what
+// nobody would notice is a file that parses, opens in a viewer, and is missing
+// the two sizes a screen without Retina asks for.
+//
+// Apple's own iconutil was asked whether it accepts what tools/appicon.py
+// writes, on a real Mac on 2026-08-28, and handed back all ten entries at the
+// pixel sizes below. This guard is the part of that answer that can be asked
+// again on any machine, on every run.
+func TestTheIconMacOSReadsCarriesEverySizeItIsAskedFor(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join(repoRoot(t), "internal", "gui", "icon", "chickpea.icns"))
+	if err != nil {
+		t.Skipf("no macOS icon here: %v", err)
+	}
+	if len(body) < 8 || string(body[:4]) != "icns" {
+		t.Fatalf("the icon does not start with the four bytes that say what it is, so no "+
+			"reader will take it: %q", body[:min(8, len(body))])
+	}
+	if declared := binary.BigEndian.Uint32(body[4:8]); int(declared) != len(body) {
+		t.Errorf("the icon says it is %d bytes and it is %d, and a reader that trusts the "+
+			"header stops early or runs off the end", declared, len(body))
+	}
+	// Apple's names for the sizes, with the pixels each one has to hold. Both
+	// members of a pair are the same picture: macOS asks for a point size and a
+	// scale, so 32 px answers two questions and has to be in the file twice.
+	wanted := map[string]int{
+		"icp4": 16, "ic11": 32, "icp5": 32, "ic12": 64, "ic07": 128,
+		"ic13": 256, "ic08": 256, "ic14": 512, "ic09": 512, "ic10": 1024,
+	}
+	found := map[string]int{}
+	for at := 8; at < len(body); {
+		if at+8 > len(body) {
+			t.Fatalf("a chunk header runs past the end of the file at byte %d", at)
+		}
+		name := string(body[at : at+4])
+		size := int(binary.BigEndian.Uint32(body[at+4 : at+8]))
+		if size < 8 || at+size > len(body) {
+			t.Fatalf("the %q chunk says it is %d bytes, which does not fit in the file", name, size)
+		}
+		config, format, err := image.DecodeConfig(bytes.NewReader(body[at+8 : at+size]))
+		if err != nil {
+			t.Fatalf("the %q chunk does not hold a picture: %v", name, err)
+		}
+		if format != "png" {
+			t.Errorf("the %q chunk holds a %s and a bundle icon is read as PNG", name, format)
+		}
+		if config.Width != config.Height {
+			t.Errorf("the %q chunk is %dx%d and an icon is square", name, config.Width, config.Height)
+		}
+		found[name] = config.Width
+		at += size
+	}
+	for name, pixels := range wanted {
+		got, is := found[name]
+		if !is {
+			t.Errorf("the icon has no %q entry, so macOS falls back to scaling another size "+
+				"where it wanted %d px", name, pixels)
+			continue
+		}
+		if got != pixels {
+			t.Errorf("the %q entry is %d px and macOS reads it as %d", name, got, pixels)
+		}
+	}
+	t.Logf("%d entries, every size macOS asks for, %d bytes", len(found), len(body))
 }
 
 // The pin is a digest with a date, and the script derives its selector from it.
