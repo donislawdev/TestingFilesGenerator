@@ -63,6 +63,56 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "the code says $version"
 
+      - name: the tree was green on this exact commit
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # This workflow builds and publishes. It does run the suite above, but
+        # the suite is not the whole of CI - the linters, the scanners, the
+        # coverage gate and the reference tools all live in the CI workflow and
+        # none of them runs here. Without this, the only thing standing between
+        # a red tree and a published release is somebody remembering.
+        #
+        # 🔴 Asked BY NAME rather than as "were all the checks green". A query
+        # for every check answers about whatever happened to report, so a
+        # workflow that never ran reads exactly like one that passed.
+        run: |
+          set -euo pipefail
+          verdict="$(gh run list --workflow=CI --commit="${GITHUB_SHA}" \
+            --limit 1 --json conclusion --jq '.[0].conclusion // "never ran"')"
+          echo "CI on ${GITHUB_SHA}: ${verdict}"
+          if [ "$verdict" != "success" ]; then
+            echo "The CI workflow on this commit says: ${verdict}."
+            echo "A release is built from a commit CI has passed, so push the commit,"
+            echo "wait for CI, and tag it only then."
+            exit 1
+          fi
+
+      - name: the changelog is closed for this version
+        if: startsWith(github.ref, 'refs/tags/')
+        # A release page points at the changelog, and a changelog whose section
+        # for this version does not exist points back at nothing. The other
+        # half matters more: entries left under Unreleased are changes that went
+        # out without being described, and nobody notices until the next release
+        # inherits them.
+        run: |
+          set -euo pipefail
+          version="${{ steps.version.outputs.version }}"
+          if ! grep -q "^## \[${version}\]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for ${version}."
+            echo "Move what is under [Unreleased] into a dated section for this version first."
+            exit 1
+          fi
+          # Everything between [Unreleased] and the next version heading. A
+          # heading of its own with nothing under it is what "closed" means.
+          left="$(awk '/^## \[Unreleased\]/{f=1;next} /^## \[/{f=0} f' CHANGELOG.md | grep -c '[^[:space:]]' || true)"
+          if [ "$left" != "0" ]; then
+            echo "CHANGELOG.md still has ${left} line(s) under [Unreleased]."
+            echo "Those are changes that would go out undescribed. Move them into ${version}."
+            exit 1
+          fi
+          echo "changelog is closed for ${version}"
+
       - name: the tag says the same as the code
         if: startsWith(github.ref, 'refs/tags/')
         # The version lives in internal/version and only the owner raises it -
@@ -305,15 +355,18 @@ jobs:
             -o "incoming/tfg_${version}.spdx.json"
           echo "SBOM=incoming/tfg_${version}.spdx.json" >> "$GITHUB_ENV"
 
-      - name: one list of what is being published
+      - name: one list of what this build produced
+        # build.sha256 rather than SHA256SUMS.txt, and the difference is the
+        # whole point of this phase. These are the bytes the RUNNER made. Three
+        # of the archives get a signature on the maintainer's machine, which
+        # changes them, so the list a user checks is written there, over what
+        # they will actually download. This one exists so the statement below
+        # names exactly what was built.
         run: |
           set -euo pipefail
           cd incoming
-          # Bare names rather than ./name. Somebody checking one download runs
-          # sha256sum -c beside the file they just fetched, and a leading ./ is
-          # one more thing between them and an answer.
-          sha256sum -- * > SHA256SUMS.txt
-          cat SHA256SUMS.txt
+          sha256sum -- * > build.sha256
+          cat build.sha256
 
       # WHO built it, and FROM WHAT. This says the files came out of this
       # repository, from this commit, through this workflow, on a GitHub hosted
@@ -340,33 +393,16 @@ jobs:
         id: provenance
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
         with:
-          subject-checksums: incoming/SHA256SUMS.txt
+          subject-checksums: incoming/build.sha256
 
-      # WHAT IS INSIDE. A separate statement from a separate action on purpose:
-      # the one above builds its predicate from the workflow's own context and
-      # there is nothing to hand it, while this one carries a document we
-      # generated. Two questions, two answers.
-      - name: attest what is inside it
-        id: sbom
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
-        with:
-          subject-checksums: incoming/SHA256SUMS.txt
-          sbom-path: ${{ env.SBOM }}
-
-      - name: publish the statements beside the files
-        # As RELEASE ASSETS, not only in the attestation store. Scorecard reads
-        # assets by file extension and never opens that store, and a person
-        # behind a proxy that blocks the API cannot use it either. With the
-        # bundle beside the archive, "gh attestation verify <file> --bundle
-        # <bundle>" answers offline, from a mirror, from anywhere.
-        run: |
-          set -euo pipefail
-          version="${{ needs.check.outputs.version }}"
-          cp "${{ steps.provenance.outputs.bundle-path }}" \
-             "incoming/tfg_${version}.provenance.sigstore.json"
-          cp "${{ steps.sbom.outputs.bundle-path }}" \
-             "incoming/tfg_${version}.sbom.sigstore.json"
-          ls -l incoming
+      - name: keep the statement with the build
+        # The bundle travels with the artefact rather than to the release page.
+        # Five of the eight archives are the finished article - nothing signs a
+        # Linux or a macOS build here - so for those this statement describes
+        # the bytes a user will hold. For the three Windows archives it
+        # describes what the runner made before a person signed it, which is
+        # true and is not what anybody downloads.
+        run: cp "${{ steps.provenance.outputs.bundle-path }}" incoming/build.provenance.sigstore.json
 
       - name: notes
         run: |
@@ -382,31 +418,44 @@ jobs:
             echo "Match the file to your system and architecture. Check what you downloaded against"
             echo "\`SHA256SUMS.txt\`."
             echo
-            echo "## These binaries are not signed"
+            echo "## Signing"
             echo
-            echo "Signing is not set up yet, so your system will say so."
+            echo "**Windows binaries are signed.** The signature is on the program inside the zip,"
+            echo "carries a timestamp, and names \`Open Source Developer Dominik Babiarz\`, issued by"
+            echo "Certum. Windows checks it when you run the program."
             echo
-            echo "- **Windows** shows a SmartScreen warning. More info, then Run anyway."
+            echo "**macOS and Linux binaries are not signed yet.**"
+            echo
             echo "- **macOS** refuses to open it on the first try. Open it from the right click menu,"
             echo "  or allow it in System Settings under Privacy and Security."
             echo "- **Linux** says nothing, but you may need \`chmod +x\`."
             echo
-            echo "If that is not a trade you want to make, build from source - it takes one command"
-            echo "and the readme has it."
+            echo "## What you can check without trusting this page"
             echo
-            echo "## What you can check"
+            echo "What is inside any of these files, signed when the release was made:"
             echo
-            echo "Every file here carries two statements made when it was built: where it came from,"
-            echo "and what is inside it. Both are signed by the build itself, and neither needs a"
-            echo "certificate from us."
+            echo "\`\`\`"
+            echo "gh attestation verify <the file you downloaded> -R ${GITHUB_REPOSITORY} \\"
+            echo "   --predicate-type https://spdx.dev/Document"
+            echo "\`\`\`"
+            echo
+            echo "The predicate type has to be given. \`gh\` asks for build provenance unless told"
+            echo "otherwise, and that is a different statement - see below."
+            echo
+            echo "Where a **macOS or Linux** archive came from. These are exactly the bytes the"
+            echo "build produced, so the build's own statement still describes them:"
             echo
             echo "\`\`\`"
             echo "gh attestation verify <the file you downloaded> -R ${GITHUB_REPOSITORY}"
             echo "\`\`\`"
             echo
+            echo "That one does not answer for a **Windows** archive, and deliberately: a person"
+            echo "signed those on their own machine after the build, so the bytes are no longer the"
+            echo "bytes the runner made. Their signature is the Authenticode one above."
+            echo
             echo "The \`.spdx.json\` file lists every library and every font compiled into these"
             echo "binaries, with its licence. The \`.sigstore.json\` files are the statements"
-            echo "themselves, so the command above also works offline with \`--bundle\`."
+            echo "themselves, so both commands also work offline with \`--bundle\`."
             echo
             echo "## Everything that changed"
             echo
@@ -414,18 +463,45 @@ jobs:
           } > notes.md
           cat notes.md
 
-      - name: create the draft release
+      - name: open the draft, with nothing in it yet
         env:
           GH_TOKEN: ${{ github.token }}
-        # A draft, so the tag starts the release and the owner finishes it. It
-        # is also the last chance to read the notes before anybody downloads
-        # anything. A tag whose name carries a hyphen - v0.2.0-rc1 - is marked
-        # a prerelease as well.
+        # 🔴 No assets. This phase does not publish archives and does not write
+        # the checksums a user reads, because these are not the bytes a user
+        # gets: three of them are signed afterwards on the machine that holds
+        # the card. An unsigned executable on a public release page - even for
+        # a quarter of an hour - is an executable somebody downloads.
+        #
+        # A draft, so the tag starts the release and a person finishes it. A tag
+        # whose name carries a hyphen - v0.2.0-rc1 - is marked a prerelease.
         run: |
           set -euo pipefail
           flags=(--draft --title "${GITHUB_REF_NAME}" --notes-file notes.md)
           case "${GITHUB_REF_NAME}" in
             *-*) flags+=(--prerelease) ;;
           esac
-          gh release create "${GITHUB_REF_NAME}" "${flags[@]}" incoming/*
-          echo "drafted ${GITHUB_REF_NAME} - publish it from the Releases page"
+          gh release create "${GITHUB_REF_NAME}" "${flags[@]}"
+          echo "drafted ${GITHUB_REF_NAME}, empty on purpose"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        # The build, handed to the machine with the card. This is the seam
+        # between where builds belong and where signatures belong, and the name
+        # is what the signing script asks for.
+        with:
+          name: unsigned-build-${{ github.ref_name }}
+          path: incoming/*
+          if-no-files-found: error
+
+      - name: what happens next
+        run: |
+          set -euo pipefail
+          echo "Built, attested, and opened as an EMPTY DRAFT."
+          echo
+          echo "Nothing is published yet. On the machine with the card:"
+          echo
+          echo "    python .github/scripts/sign_release.py ${GITHUB_REF_NAME}"
+          echo
+          echo "That verifies this build's provenance before touching it, signs the three"
+          echo "Windows binaries with the card, writes SHA256SUMS.txt over what it made,"
+          echo "uploads everything to the draft and asks attest-release.yml for the statement"
+          echo "about the signed bytes. Then read the draft and publish it."
