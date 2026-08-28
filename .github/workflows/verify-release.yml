@@ -30,6 +30,116 @@ permissions:
   contents: read
 
 jobs:
+  # macOS is checked on a Mac for the same reason Windows is checked on Windows:
+  # a checksum says the bytes did not move and says nothing about who signed
+  # them, and nothing but a Mac can read a notarisation ticket.
+  verify-macos:
+    name: check the macOS downloads the way a Mac does
+    runs-on: macos-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: which release this is
+        id: which
+        shell: bash
+        env:
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          tag="${EVENT_TAG:-$INPUT_TAG}"
+          test -n "$tag" || { echo "no tag to check"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "checking $tag"
+
+      - name: download the macOS archives
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.which.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p published
+          cd published
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*macos*.tar.gz'
+          ls -l
+
+      - name: every macOS bundle is signed, stapled and by OUR certificate
+        shell: bash
+        working-directory: published
+        run: |
+          set -euo pipefail
+
+          # Read out of the Go source rather than written here, so there is one
+          # copy of the digest rather than two that can drift apart.
+          pinned="$(sed -n 's/.*AppleDeveloperIDSHA256 = "\([0-9a-f]\{64\}\)".*/\1/p' \
+                     ../internal/legal/codesign.go)"
+          test -n "$pinned" || {
+            echo "could not read the pinned Apple certificate out of internal/legal/codesign.go"
+            exit 1
+          }
+          echo "pinned  : $pinned"
+
+          archives=()
+          while IFS= read -r line; do archives+=("$line"); done < <(ls *macos*.tar.gz | sort)
+          if [ "${#archives[@]}" -ne 2 ]; then
+            echo "expected two macOS archives, found ${#archives[@]}"
+            exit 1
+          fi
+
+          for archive in "${archives[@]}"; do
+            work="unpacked_${archive%%.tar.gz}"
+            rm -rf "$work"; mkdir -p "$work"
+            tar -xzf "$archive" -C "$work"
+
+            app="$(find "$work" -maxdepth 1 -name '*.app' -type d | head -1)"
+            if [ -z "$app" ]; then
+              echo "$archive holds no .app bundle, so nothing in it can carry a ticket"
+              exit 1
+            fi
+
+            # What is beside the bundle has to be a link. A copy of the binary
+            # out there is refused by Gatekeeper with "invalid resource
+            # directory", and ln makes one silently where symlinks do not work.
+            name="$(basename "$app" .app)"
+            if [ -e "$work/$name" ] && [ ! -L "$work/$name" ]; then
+              echo "$archive carries a COPY of $name beside the bundle, not a link"
+              exit 1
+            fi
+
+            codesign --verify --strict --deep "$app"
+            # The ticket, read out of the file itself. This one does not depend
+            # on Gatekeeper being switched on, which is why it comes first.
+            xcrun stapler validate "$app"
+
+            certs="$(mktemp -d)"
+            ( cd "$certs" && codesign -d --extract-certificates=cert "$OLDPWD/$app" >/dev/null 2>&1 )
+            actual="$(shasum -a 256 "$certs/cert0" | awk '{print $1}')"
+            rm -rf "$certs"
+            if [ "$actual" != "$pinned" ]; then
+              echo "$archive was signed by a DIFFERENT certificate: $actual"
+              exit 1
+            fi
+            echo "$archive -> $(basename "$app"): signed by the pinned certificate, stapled"
+          done
+
+          # Gatekeeper last, and only when it is actually on. A runner with it
+          # disabled answers "accepted" to everything, and a check that cannot
+          # fail is worse than no check - it reads like proof.
+          if spctl --status 2>/dev/null | grep -q "assessments enabled"; then
+            for archive in "${archives[@]}"; do
+              app="$(find "unpacked_${archive%%.tar.gz}" -maxdepth 1 -name '*.app' -type d | head -1)"
+              spctl -a -vv -t exec "$app"
+            done
+            echo "Gatekeeper accepts both bundles"
+          else
+            echo "NOTE: Gatekeeper assessments are off on this runner, so spctl was not asked."
+            echo "The ticket and the certificate were checked above, and neither needs it."
+          fi
+
   verify:
     name: download what users download, then check it
     # Windows, because one of these questions cannot be asked anywhere else: a

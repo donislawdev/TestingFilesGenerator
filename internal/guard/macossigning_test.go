@@ -222,3 +222,96 @@ func TestTheReleaseNotesDoNotCallTheMacBinariesUnsigned(t *testing.T) {
 			"for anybody who runs it")
 	}
 }
+
+// A script a workflow runs DIRECTLY has to be executable in the repository.
+//
+// Measured on 2026-08-28, on a real Unix filesystem: a file without the bit,
+// invoked as ./script, exits 126 with "permission denied". Windows has no such
+// bit and git bash ignores it, so a script can look perfectly fine here, pass
+// every test here, and fail on the first runner that tries to run it.
+//
+// Found on this project's own work: make_app_bundle.sh went in as 100644 and
+// would have stopped the FIRST release build, at the step that wraps the macOS
+// binaries. Nothing else would have caught it - the guards read the script as
+// text, and text does not have permissions.
+func TestEveryScriptAWorkflowRunsDirectlyIsExecutable(t *testing.T) {
+	root := repoRoot(t)
+	entries, err := os.ReadDir(filepath.Join(root, ".github", "workflows"))
+	if err != nil {
+		t.Skipf("no workflows here: %v", err)
+	}
+
+	// Called directly means the line names the script with nothing in front of
+	// it. A script handed to an interpreter - python x.py, bash x.sh - does not
+	// need the bit, and demanding it there would be a rule this project does
+	// not have.
+	direct := regexp.MustCompile(`(?m)^\s*(\.github/scripts/[A-Za-z0-9_.-]+)`)
+	wanted := map[string]bool{}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yml") {
+			continue
+		}
+		body := withoutYamlComments(workflowText(t, entry.Name()))
+		for _, m := range direct.FindAllStringSubmatch(body, -1) {
+			wanted[m[1]] = true
+		}
+	}
+	if len(wanted) == 0 {
+		t.Skip("no workflow runs a script directly, so there is nothing to ask about")
+	}
+
+	// The mode git records, not the mode this filesystem reports. On Windows
+	// the filesystem has no answer, and the repository is what the runner
+	// clones.
+	modes := map[string]string{}
+	for _, line := range strings.Split(gitOutput(t, "ls-files", "-s", ".github/scripts"), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 4 {
+			modes[fields[3]] = fields[0]
+		}
+	}
+
+	for path := range wanted {
+		mode, known := modes[path]
+		if !known {
+			t.Errorf("a workflow runs %s directly and git does not track it, so the "+
+				"runner will not find it at all", path)
+			continue
+		}
+		if mode != "100755" {
+			t.Errorf("a workflow runs %s directly and git records it as %s, so the "+
+				"runner gets permission denied and exits 126. It needs 100755 - "+
+				"git update-index --chmod=+x %s", path, mode, path)
+		}
+	}
+}
+
+// The published release is checked on a Mac too, not only on Windows.
+//
+// Phase D exists to ask the questions a person downloading the release would
+// ask, and until macOS was signed there was nothing to ask on that side. Now
+// there is, and a checksum cannot answer it: it says the bytes did not move and
+// says nothing about who signed them or whether a ticket is attached.
+func TestThePublishedReleaseIsCheckedOnAMacAsWell(t *testing.T) {
+	workflow := withoutYamlComments(workflowText(t, "verify-release.yml"))
+
+	if !strings.Contains(workflow, "macos-latest") {
+		t.Fatal("nothing in the release check runs on a Mac, so the macOS signatures " +
+			"and tickets are never read by anything - and no other system can read them")
+	}
+	for _, want := range []struct{ needle, why string }{
+		{"stapler validate",
+			"the ticket has to be read out of the published file, and this is the " +
+				"one question that does not depend on Gatekeeper being switched on"},
+		{"AppleDeveloperIDSHA256",
+			"the certificate that signed the published bundle has to be compared " +
+				"with the pinned one, read from the source rather than copied"},
+		{"assessments enabled",
+			"a runner with Gatekeeper switched off answers accepted to everything, " +
+				"so asking it without checking first is a test that cannot fail"},
+	} {
+		if !strings.Contains(workflow, want.needle) {
+			t.Errorf("the release check never mentions %q: %s", want.needle, want.why)
+		}
+	}
+}

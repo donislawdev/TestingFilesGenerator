@@ -97,6 +97,15 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	"TestEveryScriptAWorkflowRunsDirectlyIsExecutable": "broken by hand on 2026-08-28, in both directions, and put back byte for byte. " +
+		"git update-index --chmod=-x on .github/scripts/make_app_bundle.sh made it red, naming the file, the mode it found and the command that fixes it. " +
+		"Putting the bit back made it green again. " +
+		"A probe rather than a mutation entry because what it reads is not text: the thing that can be wrong is a FILE MODE recorded in the git index, " +
+		"and entries in mutate.py substitute one string for another inside a file, which never touches a mode. " +
+		"Worth having at all because this failure is invisible on the machine it is written on - Windows has no such bit and git bash ignores it, " +
+		"so the script looks fine, passes every guard that reads it as text, and the FIRST release build stops on it with exit 126. " +
+		"That is not hypothetical: make_app_bundle.sh went in as 100644 and this guard is what found it.",
+
 	"TestEveryFakeHostComesFromTheConstructorThatJoinsIt": "broken by hand on 2026-08-27, in both directions it can fail, and put back byte for byte. " +
 		"Turning one newFakeHost(t) in tabstrip_test.go back into the literal made it red, naming the file and the line. " +
 		"The other direction matters more and was checked first: written as a plain constant, the search string in this guard is itself a hand built host, " +
