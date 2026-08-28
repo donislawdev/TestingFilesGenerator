@@ -1,0 +1,134 @@
+# The second half of a release, after a person has signed it.
+#
+# The build workflow cannot sign. The key lives on a cryptographic card in a USB
+# reader and cannot be exported, so .github/scripts/sign_release.py signs on the
+# maintainer's machine and then dispatches this. Here the signed files get the
+# statement that travels with them, and the release is still a draft when this
+# finishes.
+#
+# 🔴 It DOWNLOADS what the release holds rather than trusting the digest it was
+# handed. Everything attested here is then a statement about bytes this job is
+# holding, which is the whole difference between an attestation and a rumour.
+# The digest input is kept as a cross-check: if it disagrees with the file on the
+# release, something moved between signing and publishing and the run stops.
+#
+# What it does NOT do: build provenance. That belongs to the workflow that
+# actually built something, and it is made there, over the unsigned build.
+# Claiming here that this workflow produced files a person signed on their own
+# machine would be false in the one document nobody should have to doubt.
+name: Attest a signed release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release tag, for example v0.2.0"
+        required: true
+      digest:
+        description: "sha256 of SHA256SUMS.txt, as sign_release.py printed it"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  attest:
+    name: attest the signed files
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # Reading the draft's assets and uploading the bundle back to it.
+      contents: write
+      # id-token mints the short lived OIDC token that signs the attestation,
+      # attestations writes the result to this repository's store.
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: fetch what the maintainer signed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          CLAIMED: ${{ inputs.digest }}
+        run: |
+          set -euo pipefail
+          mkdir -p signed
+          cd signed
+          gh release download "$TAG" --pattern '*.zip' --pattern '*.tar.gz' \
+            --pattern '*.spdx.json' --pattern 'SHA256SUMS.txt'
+          actual="$(sha256sum SHA256SUMS.txt | cut -d' ' -f1)"
+          echo "the release carries: $actual"
+          if [ "$actual" != "$CLAIMED" ]; then
+            echo "::error::the checksums file on the release hashes to $actual, but this run"
+            echo "::error::was dispatched for $CLAIMED - something changed in between"
+            exit 1
+          fi
+          # And the checksums have to describe the files that came with them,
+          # because everything below is a statement about that list.
+          sha256sum -c SHA256SUMS.txt
+          sbom="$(ls -- *.spdx.json)"
+          echo "SBOM=signed/${sbom}" >> "$GITHUB_ENV"
+          echo "SUMS=signed/SHA256SUMS.txt" >> "$GITHUB_ENV"
+
+      # The bill of materials, bound to the files a person actually downloads.
+      # Before the signature existed this binding was made at build time. It is
+      # made here now, because the signature changes the bytes and a statement
+      # about the wrong bytes verifies against nothing.
+      - name: attest what is inside the signed files
+        id: attestation
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
+        with:
+          subject-checksums: ${{ env.SUMS }}
+          sbom-path: ${{ env.SBOM }}
+
+      - name: the release notes promise a command, so check the command works
+        shell: bash
+        env:
+          BUNDLE: ${{ steps.attestation.outputs.bundle-path }}
+        # 🔴 The notes tell people to pass --predicate-type, because gh asks for
+        # build provenance unless told otherwise and this is not that. The URI in
+        # those notes is written by hand, so it is checked here against the
+        # statement that was actually made - the only moment where the real value
+        # exists. A wrong URI would make a correct release look broken, and the
+        # message a person gets is "no attestation found", which reads like a
+        # missing file rather than a wrong flag.
+        run: |
+          set -euo pipefail
+          promised="https://spdx.dev/Document"
+          actual="$(python3 - "$BUNDLE" <<'PY'
+          import base64, json, sys
+          bundle = json.load(open(sys.argv[1], encoding="utf-8"))
+          payload = bundle["dsseEnvelope"]["payload"]
+          statement = json.loads(base64.b64decode(payload))
+          print(statement["predicateType"])
+          PY
+          )"
+          echo "the statement carries: $actual"
+          if [ "$actual" != "$promised" ]; then
+            echo "::error::the release notes tell people to pass --predicate-type $promised"
+            echo "::error::and the statement that was just made is $actual."
+            echo "::error::Fix the notes in release.yml, because as written the command answers"
+            echo "::error::\"no attestation found\" and that reads like a broken release."
+            exit 1
+          fi
+
+      - name: publish the statement beside the files
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          BUNDLE: ${{ steps.attestation.outputs.bundle-path }}
+        # 🔴 As an ASSET, not only in the attestation store. Scorecard's signed
+        # releases check reads assets by file extension and never opens that
+        # store, and a person whose network has no route to the API cannot use it
+        # either. "gh attestation verify <file> --bundle <this file>" answers
+        # offline, from a mirror, from anywhere.
+        run: |
+          set -euo pipefail
+          name="tfg_${TAG#v}.sbom.sigstore.json"
+          cp "$BUNDLE" "$name"
+          python3 -c "import json,sys; json.load(open(sys.argv[1])); print('the bundle parses as JSON')" "$name"
+          gh release upload "$TAG" "$name" --clobber
+          echo "attached $name to $TAG, which is still a draft"

@@ -68,65 +68,71 @@ func TestTheReleaseAsksForWhatAnAttestationNeeds(t *testing.T) {
 	}
 }
 
-// Two statements, two actions, and each over the files the release actually
-// publishes rather than over a glob that might match something else.
-func TestTheReleaseAttestsEveryFileItPublishes(t *testing.T) {
+// The build states what IT made, over a list of exactly those files.
+//
+// It says nothing about what is inside them any more, and that moved rather
+// than disappeared: three of these archives get a signature afterwards, which
+// changes their bytes, so the statement about what a person downloads is made
+// by attest-release.yml over the signed files. A statement about the wrong
+// bytes verifies against nothing.
+func TestTheReleaseAttestsWhatItBuilt(t *testing.T) {
 	job := releasePublishJob(t)
 
-	wanted := map[string]bool{
-		"actions/attest-build-provenance": false,
-		"actions/attest":                  false,
-	}
+	attested := false
 	for _, step := range job.Steps {
 		action, _, _ := strings.Cut(step.Uses, "@")
-		if _, want := wanted[action]; !want {
+		if action != "actions/attest-build-provenance" {
 			continue
 		}
-		wanted[action] = true
-		// The list of checksums is the list the release publishes, so the
-		// statement covers exactly what is on the page, under the names people
-		// download. A glob would cover whatever happened to be in the
-		// directory.
-		if got, _ := step.With["subject-checksums"].(string); got != "incoming/SHA256SUMS.txt" {
-			t.Errorf("%s attests %q rather than the checksums of what is published", action, got)
+		attested = true
+		// A list rather than a glob: the statement then covers exactly what was
+		// built, under the names it was built under.
+		if got, _ := step.With["subject-checksums"].(string); got != "incoming/build.sha256" {
+			t.Errorf("the build attests %q rather than the list of what it produced", got)
 		}
 	}
-	for action, found := range wanted {
-		if !found {
-			t.Errorf("the release never runs %s, so it publishes files nobody can check", action)
-		}
+	if !attested {
+		t.Error("the build makes no statement about what it produced, " +
+			"so the signing step has nothing to check before it signs")
 	}
 }
 
-// The document has to be generated and the statements have to end up beside the
-// downloads. An attestation only in the store is one a person behind a proxy
-// cannot reach, and Scorecard reads assets by extension and never opens it.
-func TestTheReleasePublishesItsDocumentAndItsStatements(t *testing.T) {
+// The document is generated where the versions can be read, and it travels with
+// the build to the machine that signs. The statements end up beside the
+// downloads rather than only in the attestation store: a person behind a proxy
+// cannot reach that store, and Scorecard reads assets by extension and never
+// opens it.
+func TestTheReleaseMakesItsDocumentAndHandsItOver(t *testing.T) {
 	job := releasePublishJob(t)
 
 	var script strings.Builder
-	sbomAttested := false
 	for _, step := range job.Steps {
 		script.WriteString(step.Run)
 		script.WriteString("\n")
-		if _, ok := step.With["sbom-path"]; ok {
-			sbomAttested = true
-		}
 	}
 	all := script.String()
 
 	for what, want := range map[string]string{
-		"the bill of materials is generated":             "go run ./internal/legal/cmd/sbom",
-		"it is written where the release publishes from": "-o \"incoming/tfg_${version}.spdx.json\"",
-		"the provenance bundle becomes an asset":         "provenance.sigstore.json",
-		"the sbom bundle becomes an asset":               "sbom.sigstore.json",
+		"the bill of materials is generated":           "go run ./internal/legal/cmd/sbom",
+		"it is written where the build is handed over": "-o \"incoming/tfg_${version}.spdx.json\"",
+		"the statement travels with the build":         "build.provenance.sigstore.json",
 	} {
 		if !strings.Contains(all, want) {
 			t.Errorf("%s: the publish job never runs %q", what, want)
 		}
 	}
-	if !sbomAttested {
-		t.Error("no step attests the bill of materials, so the document travels unsigned")
+
+	// And the ritual that follows publishes both statements as assets. One is
+	// renamed by the signing script, the other is uploaded by the workflow that
+	// makes it.
+	signing := signingScript(t)
+	if !strings.Contains(signing, "provenance.sigstore.json") {
+		t.Error("the signing script never publishes the build's statement, " +
+			"so verifying a Linux or macOS archive offline is impossible")
+	}
+	attest := workflowText(t, "attest-release.yml")
+	if !strings.Contains(attest, "sbom.sigstore.json") {
+		t.Error("nothing publishes the statement about what is inside the signed files")
 	}
 }
 

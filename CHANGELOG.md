@@ -248,6 +248,19 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Windows binaries are signed.** The signature sits on the program inside the
+  zip, carries an RFC 3161 timestamp, and names an Open Source Developer
+  certificate issued by Certum. Windows checks it when you run the program, so
+  the SmartScreen warning that used to greet every download is gone.
+
+  macOS and Linux binaries are not signed yet and the release notes say so.
+
+  A release is now made in two halves. A tag builds everything and opens an
+  empty draft. A person with the signing card runs one script, which checks the
+  build's own provenance before touching it, signs, writes the checksums over
+  what it made, and asks a workflow for the statement about the signed bytes.
+  Nothing is published until somebody reads the draft and presses the button.
+
 - Every file in a release now carries two statements made while it was built:
   where it came from, and what is inside it. Both are signed by the build with
   a short lived identity and written to a public log, so anybody can check a
