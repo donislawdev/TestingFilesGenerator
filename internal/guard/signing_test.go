@@ -151,6 +151,52 @@ func TestTheAttestationWorkflowDoesNotClaimToHaveBuiltAnything(t *testing.T) {
 	}
 }
 
+// And after all of it, somebody has to look at the page.
+//
+// Three phases come before: the build checks the tree, the signing script
+// checks the build, the attestation workflow checks the digest it was handed.
+// None of them looks at the published release - the one thing a user sees.
+// In the project this ritual came from, that gap let a wrong verification
+// command sit in the release notes through two releases.
+func TestThePublishedReleaseIsCheckedTheWayAUserWould(t *testing.T) {
+	verify := workflowText(t, "verify-release.yml")
+
+	for what, want := range map[string]string{
+		"it runs when a release is published":                         "types: [published]",
+		"it can be asked about an old tag":                            "workflow_dispatch",
+		"it downloads what a user downloads":                          "gh release download",
+		"it compares the checksums a user is told to compare":         "sha256sum -c SHA256SUMS.txt",
+		"it runs the command the notes give":                          "gh attestation verify",
+		"it runs it the offline way too":                              "--bundle",
+		"it reads the certificate pin from the source":                "CodeSigningSHA256",
+		"it checks the timestamp, without which a signature dies":     "TimeStamperCertificate",
+		"it checks that a full release is the one people are offered": "releases/latest",
+	} {
+		if !strings.Contains(verify, want) {
+			t.Errorf("%s: verify-release.yml does not contain %q", what, want)
+		}
+	}
+
+	// A verifier that can publish is not a verifier any more.
+	if strings.Contains(verify, "contents: write") {
+		t.Error("the verification workflow asks for write access, and it verifies rather than publishes")
+	}
+
+	// The signature question is the reason this job cannot run anywhere else: a
+	// checksum says the bytes did not change and says nothing about who signed
+	// them.
+	if !strings.Contains(verify, "runs-on: windows-latest") {
+		t.Error("the verification job does not run on Windows, so it cannot ask who signed the programs")
+	}
+
+	// Both halves of what the notes promise are checked, not one of them. The
+	// notes tell a Linux user to ask where a file came from and everybody to
+	// ask what is inside it.
+	if !strings.Contains(verify, "--predicate-type https://spdx.dev/Document") {
+		t.Error("the verification never asks for the statement about what is inside a signed file")
+	}
+}
+
 // The pin is a digest of bytes, not a name somebody can rename.
 func TestThePinnedCertificateIsADigestWithADate(t *testing.T) {
 	if !regexp.MustCompile(`^[0-9a-f]{64}$`).MatchString(legal.CodeSigningSHA256) {
