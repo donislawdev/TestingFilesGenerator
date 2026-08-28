@@ -248,6 +248,25 @@ because it turns other people's test suites red.
 
 ### Added
 
+- Every file in a release now carries two statements made while it was built:
+  where it came from, and what is inside it. Both are signed by the build with
+  a short lived identity and written to a public log, so anybody can check a
+  download without having to trust this page:
+
+  ```
+  gh attestation verify <the file you downloaded> -R donislawdev/TestingFilesGenerator
+  ```
+
+  A release also carries `tfg_<version>.spdx.json`, a bill of materials naming
+  every library and every font compiled into these binaries, with its licence.
+  The statements themselves are published beside the downloads, so the command
+  above works offline with `--bundle` as well.
+
+  The binaries are still not signed and the notes still say so. Provenance
+  answers a different question from a signature: which source and which build
+  produced a file, rather than who vouches for it. It does not stop Windows or
+  macOS from warning about an unsigned program.
+
 - `tfg license` now lists what the binary in front of you actually carries:
   every module compiled into it, with its version and its licence, and the
   fonts and drawings that arrive inside those modules. It used to point at

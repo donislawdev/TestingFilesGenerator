@@ -269,13 +269,41 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      # The two the attestation steps need and nothing else grants. id-token
+      # mints the short lived OIDC token that signs the statement, attestations
+      # writes the result to this repository's store. A release without them
+      # would still publish - it would just publish nothing anybody can check.
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           path: incoming
           merge-multiple: true
+
+      - name: what is inside what we are publishing
+        # The bill of materials, generated from internal/legal - the reviewed
+        # list of what this project ships - with the versions read from the
+        # build. Not from a scan of the artefact: measured 2026-08-27, a scan of
+        # the window binary names every module with an exact version and
+        # attaches a licence to one of thirty.
+        #
+        # The tag seeds the document namespace, so re-running this workflow on
+        # one tag produces the same URI rather than a fresh random one nobody
+        # can correlate.
+        run: |
+          set -euo pipefail
+          version="${{ needs.check.outputs.version }}"
+          go run ./internal/legal/cmd/sbom \
+            -seed "${GITHUB_REF_NAME}" \
+            -o "incoming/tfg_${version}.spdx.json"
+          echo "SBOM=incoming/tfg_${version}.spdx.json" >> "$GITHUB_ENV"
 
       - name: one list of what is being published
         run: |
@@ -286,6 +314,59 @@ jobs:
           # one more thing between them and an answer.
           sha256sum -- * > SHA256SUMS.txt
           cat SHA256SUMS.txt
+
+      # WHO built it, and FROM WHAT. This says the files came out of this
+      # repository, from this commit, through this workflow, on a GitHub hosted
+      # runner - signed with a short lived identity and recorded in a public
+      # log. A user checks it with one command:
+      #
+      #     gh attestation verify tfg_<version>_linux_amd64.tar.gz \
+      #        -R donislawdev/TestingFilesGenerator
+      #
+      # It is a different question from a code signature, which is why both are
+      # worth having: a signature says who vouches for the file, provenance says
+      # which source and which build produced it. A stolen key cannot forge
+      # this, and a fork cannot claim to be this repository.
+      #
+      # subject-checksums rather than a glob: the file it reads is the one the
+      # release publishes, so the statement covers exactly what is on the page,
+      # under the names people download.
+      #
+      # 🔴 When signing arrives, this moves. A signature changes the bytes, and
+      # a statement about the wrong bytes verifies against nothing - so the
+      # signed archive gets its own attestation after the signing ritual, and
+      # this one stays here describing what this workflow actually built.
+      - name: attest what this build produced
+        id: provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-checksums: incoming/SHA256SUMS.txt
+
+      # WHAT IS INSIDE. A separate statement from a separate action on purpose:
+      # the one above builds its predicate from the workflow's own context and
+      # there is nothing to hand it, while this one carries a document we
+      # generated. Two questions, two answers.
+      - name: attest what is inside it
+        id: sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
+        with:
+          subject-checksums: incoming/SHA256SUMS.txt
+          sbom-path: ${{ env.SBOM }}
+
+      - name: publish the statements beside the files
+        # As RELEASE ASSETS, not only in the attestation store. Scorecard reads
+        # assets by file extension and never opens that store, and a person
+        # behind a proxy that blocks the API cannot use it either. With the
+        # bundle beside the archive, "gh attestation verify <file> --bundle
+        # <bundle>" answers offline, from a mirror, from anywhere.
+        run: |
+          set -euo pipefail
+          version="${{ needs.check.outputs.version }}"
+          cp "${{ steps.provenance.outputs.bundle-path }}" \
+             "incoming/tfg_${version}.provenance.sigstore.json"
+          cp "${{ steps.sbom.outputs.bundle-path }}" \
+             "incoming/tfg_${version}.sbom.sigstore.json"
+          ls -l incoming
 
       - name: notes
         run: |
@@ -312,6 +393,20 @@ jobs:
             echo
             echo "If that is not a trade you want to make, build from source - it takes one command"
             echo "and the readme has it."
+            echo
+            echo "## What you can check"
+            echo
+            echo "Every file here carries two statements made when it was built: where it came from,"
+            echo "and what is inside it. Both are signed by the build itself, and neither needs a"
+            echo "certificate from us."
+            echo
+            echo "\`\`\`"
+            echo "gh attestation verify <the file you downloaded> -R ${GITHUB_REPOSITORY}"
+            echo "\`\`\`"
+            echo
+            echo "The \`.spdx.json\` file lists every library and every font compiled into these"
+            echo "binaries, with its licence. The \`.sigstore.json\` files are the statements"
+            echo "themselves, so the command above also works offline with \`--bundle\`."
             echo
             echo "## Everything that changed"
             echo
