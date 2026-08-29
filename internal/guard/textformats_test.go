@@ -446,7 +446,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 // already written down cannot, by construction, find what is missing from them.
 var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg"}
 
-var binaryFormats = []string{"bmp", "docx", "gif", "ico", "jpg", "pdf", "png", "pptx", "targz", "tiff", "wav", "xlsx", "zip"}
+var binaryFormats = []string{"bmp", "docx", "gif", "ico", "jpg", "pdf", "png", "pptx", "targz", "tiff", "wav", "webp", "xlsx", "zip"}
 
 // Every registered format is on exactly one of the two lists above.
 //

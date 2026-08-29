@@ -85,8 +85,45 @@ func goldenCases() map[string]engine.Target {
 		// rather than in the code, and this is what closes it.
 		"tiff_64kib_width_only": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "128"}},
+		// WebP, pinned from three sides. Its size is arithmetic rather than
+		// whatever a compressor decides, so a drift here can be a wrong SIZE and
+		// not only different bytes - the same shape as BMP and TIFF.
+		"webp_64kib": {ID: "g", Format: "webp", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
+		// One side named, so the other is worked out from the bytes that are
+		// left. TIFF found by measurement that a case naming both sides and a
+		// case naming neither both miss that arithmetic entirely.
+		"webp_64kib_width_only": {ID: "g", Format: "webp", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "100"}},
+
+		// An odd size, which is the case the padding was rebuilt for. Every RIFF
+		// chunk block costs an even number of bytes, so without the tail after
+		// the payload this request could not be answered at all.
+		"webp_odd_size": {ID: "g", Format: "webp", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
 		"gif_64kib": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
+
+		// The still GIF, which is a different encoder rather than the same one
+		// with a smaller number. frames: 1 takes the plain path and writes no
+		// control block, no loop block and no second image descriptor, so the
+		// case above never reaches any of that arithmetic and a change to it
+		// would move nobody's bytes that anything here measures.
+		//
+		// It is also the way back to the bytes this package wrote before it
+		// could animate, which is a promise the package comment makes. Pinning
+		// it is what stops that sentence from being a sentence.
+		"gif_64kib_one_frame": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64", "frames": "1"}},
+
+		// Enough frames that the marker lands somewhere different from either
+		// end, so the arithmetic placing it is measured rather than assumed.
+		// With three frames a wrong divisor still puts the square inside the
+		// picture and nothing notices.
+		"gif_64kib_eight_frames": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64", "frames": "8"}},
 		"ico_32kib": {ID: "g", Format: "ico", Sizes: engine.Uniform(1, 32768), Label: true,
 			Properties: map[string]string{"width": "32", "height": "32"}},
 

@@ -10,7 +10,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 21 formats and the size you want,
+has an opinion about it. You pick one of its 22 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -23,7 +23,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 21 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 22 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
@@ -76,18 +76,18 @@ reference is below it.
 
 ## 📁 Formats it generates
 
-Twenty one, and every one is a **real file of that format** - it opens in the
+Twenty two, and every one is a **real file of that format** - it opens in the
 software that owns it, at the exact size you asked for:
 
 | group | formats |
 |---|---|
 | 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
-| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff` |
+| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 
-Coming next: `7z`, `webp`, `mp3`, `mp4`.
+Coming next: `7z`, `mp3`, `mp4`.
 
 Most of them take settings of their own - image dimensions, JPEG quality, PDF
 page count, rows and columns in a spreadsheet, what goes inside an archive. See
@@ -437,7 +437,7 @@ ignored quietly: `extends`, `with`, `policy`, `engine`, `defaults.fill`,
 
 ## 📁 Formats in detail
 
-The twenty one formats are listed near the top of this file. Each is produced at an
+The twenty two formats are listed near the top of this file. Each is produced at an
 exact size and checked against independent readers before it ships - a PNG is
 opened and its pixels compared, a DOCX is read back by three separate
 libraries, an archive is extracted.
@@ -455,7 +455,8 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | format | settings |
 |---|---|
 | `pdf` | `pages`, `page_size` |
-| `png`, `bmp`, `gif`, `tiff` | `width`, `height` |
+| `png`, `bmp`, `tiff`, `webp` | `width`, `height` |
+| `gif` | `width`, `height`, `frames` |
 | `jpg` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
@@ -659,17 +660,17 @@ a valid one of its format.
 
 ### Which formats are coming next?
 
-`7z`, `webp`, `mp3` and `mp4`.
+`7z`, `mp3` and `mp4`.
 
 ## 🚧 Where this is
 
 Honest scope, because a tool that oversells itself wastes your afternoon.
 
-**Working end to end:** twenty one formats, recipes, presets, the desktop window,
+**Working end to end:** twenty two formats, recipes, presets, the desktop window,
 `generate`, `validate`, `verify`, `cleanup`, boundary sets, archive contents,
 size ranges, per format settings, manifests and every exit code above.
 
-**Not there yet:** four more formats. The preset catalogue has one entry so far.
+**Not there yet:** three more formats. The preset catalogue has one entry so far.
 The recipe keys listed under [Not built yet](#not-built-yet). The Linux
 downloads are unsigned.
 
