@@ -238,14 +238,24 @@ finally:
 
 // pillowScript opens the image and forces every pixel to be decoded, so a
 // truncated or malformed image fails rather than passing on its header alone.
+//
+// Every frame, not only the first. GIF started writing animations on
+// 2026-08-29 and until then this decoded frame one and stopped, which means a
+// second frame could have been malformed and the oracle would have said OK.
+// The loop costs nothing on a still picture, where there is one frame to walk.
 const pillowScript = `
 import sys
 try:
-    from PIL import Image
+    from PIL import Image, ImageSequence
 except ImportError:
     print("SKIP no pillow"); sys.exit(0)
 im = Image.open(sys.argv[1])
-im.load()
-im.convert("RGBA").tobytes()
-print("OK", im.format, im.width, im.height)
+frames = 0
+for frame in ImageSequence.Iterator(im):
+    frame.load()
+    frame.convert("RGBA").tobytes()
+    frames += 1
+if frames < 1:
+    print("FAIL the reader found no frame at all"); sys.exit(1)
+print("OK", im.format, im.width, im.height, "frames", frames)
 `

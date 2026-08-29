@@ -14,7 +14,44 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- **A generated GIF now moves, so its bytes are different.** A GIF is the one
+  picture format here that can hold more than one frame, and a still one told
+  you nothing about how the system under test treats an animation - whether it
+  keeps it, flattens it to the first frame, or re-encodes it. Every GIF now
+  carries a marker that travels across the picture in three frames, and the
+  manifest says `animated` and `frame_count` for each file.
+
+  Two things change with it. The smallest GIF this tool will write goes from
+  41 B to 114 B, because the number a format announces as its minimum has to be
+  a number a plain run accepts, and a plain run animates. And the bytes of every
+  GIF change, so a suite pinning their hashes will go red.
+
+  **The way back is `--set frames=1`**, or `frames: 1` on a target in a recipe.
+  That takes the plain encoder and writes the same bytes this tool wrote before,
+  to the byte - there is a pinned hash proving it.
+
 ### Added
+
+- **WEBP, the twenty second format.** Lossless, one frame, no alpha.
+  `tfg generate --format webp --size 300kb` writes a picture worth 300 kB rather
+  than a thumbnail followed by filler, because the encoder measures out three
+  bytes a pixel and the size is therefore arithmetic - the same shape as BMP and
+  TIFF. `width` and `height` can be set, and naming one lets the other be worked
+  out from the size. The smallest WEBP this produces is 148 B.
+
+  **Every size from that minimum upwards is reachable, with no gaps.** No other
+  format here manages that. A WebP is made of RIFF chunks and a chunk always
+  costs an even number of bytes, so the padding is in two parts: a private chunk
+  for the bulk, and up to seven bytes after it for the rest.
+
+  There is no lossy variant and no `quality`. Lossy WebP is VP8, which is a
+  different codec rather than a setting, and `tfg formats webp` says what this
+  build writes rather than implying more.
+
+- **`frames` on GIF**, from 1 to 60, default 3. How many frames the animation
+  has. Set it to 1 for a still picture.
 
 - **TIFF, the twenty first format.** Uncompressed, RGB, one page, little-endian.
   `tfg generate --format tiff --size 300kb` writes a picture worth 300 kB rather

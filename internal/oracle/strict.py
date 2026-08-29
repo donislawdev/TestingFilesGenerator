@@ -1218,11 +1218,56 @@ def check_pptx(data):
                      "ppt/theme/theme1.xml"], "PowerPoint presentation", "pptx")
 
 
+def check_webp(data):
+    if data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        fail("the signature is not a WebP signature")
+    if len(data) < 20:
+        fail(f"the file is {len(data)} B and the container alone needs 20 B")
+
+    declared = struct.unpack("<I", data[4:8])[0]
+    # Everything the RIFF size covers, plus whatever sits after it. This
+    # generator puts one to seven bytes there on purpose, because a chunk
+    # block always costs an even number and half of every size would
+    # otherwise be unreachable. More than seven means the padding went to the
+    # wrong place, which no viewer would ever complain about.
+    payload_end = 8 + declared
+    if payload_end > len(data):
+        fail(f"the header says the payload runs to {payload_end} and the file is {len(data)} B")
+    trailing = len(data) - payload_end
+    if trailing > 7:
+        fail(f"{trailing} B sit after the RIFF payload, and only the odd byte belongs there - "
+             "the bulk of the padding belongs in a chunk")
+
+    pos, image, private, seen = 12, 0, 0, []
+    while pos + 8 <= payload_end:
+        tag = data[pos:pos + 4]
+        size = struct.unpack("<I", data[pos + 4:pos + 8])[0]
+        end = pos + 8 + size
+        if end > payload_end:
+            fail(f"the chunk {tag.decode('latin1')!r} says {size} B and only "
+                 f"{payload_end - pos - 8} B are left")
+        seen.append(tag.decode("latin1"))
+        if tag in (b"VP8L", b"VP8 ", b"VP8X"):
+            image += 1
+            if tag == b"VP8L" and data[pos + 8] != 0x2F:
+                fail("the lossless stream does not start with its signature byte")
+        else:
+            private += 1
+        pos = end + (size & 1)
+
+    if pos != payload_end:
+        fail(f"the chunks end at {pos} and the payload ends at {payload_end}")
+    if image != 1:
+        fail(f"the file carries {image} image chunks and a still WebP has one")
+
+    ok(f"riff {declared} B, chunks {seen}, {private} private, {trailing} B after the payload")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
-          "tiff": check_tiff,
+          "tiff": check_tiff, "webp": check_webp,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":

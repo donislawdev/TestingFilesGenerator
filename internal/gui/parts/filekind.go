@@ -93,6 +93,7 @@ var fileKinds = map[string]fileKind{
 	"png":   kindPicture,
 	"svg":   kindPicture,
 	"tiff":  kindPicture,
+	"webp":  kindPicture,
 	"docx":  kindDocument,
 	"pdf":   kindDocument,
 	"pptx":  kindDocument,

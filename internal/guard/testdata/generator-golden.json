@@ -29,8 +29,18 @@
     },
     "gif_64kib": {
       "bytes": 65536,
+      "sha256": "ff48902dceca395b00db2ede471825f4b224a2ee82063c330022efd60c4158b2",
+      "measured_on": "2026-08-29"
+    },
+    "gif_64kib_eight_frames": {
+      "bytes": 65536,
+      "sha256": "73f49717016a4f1ed53131645974973250c9e1a830704af3a6faf9415cd60c90",
+      "measured_on": "2026-08-29"
+    },
+    "gif_64kib_one_frame": {
+      "bytes": 65536,
       "sha256": "659e48806e3abe402148f8246921769d66f3ea9d2f73e94888a3fb7abcf76977",
-      "measured_on": "2026-08-19"
+      "measured_on": "2026-08-29"
     },
     "html_8kib": {
       "bytes": 8192,
@@ -115,14 +125,14 @@
       "sha256": "172e2e47dda124de9cdbc122b55d25c2fc20de4c78ab963bbf6c7645da247bbd",
       "measured_on": "2026-08-29"
     },
-    "tiff_64kib_width_only": {
-      "bytes": 65536,
-      "sha256": "c5c38af41809c7e98333fc2a6bdcca36a955f70ab4413dbfde9b9ec4dd3d0b8f",
-      "measured_on": "2026-08-29"
-    },
     "tiff_64kib": {
       "bytes": 65536,
       "sha256": "4d174b53a1603f63b1cd49307f793540190b2d03e26f60b91ca767a93d610340",
+      "measured_on": "2026-08-29"
+    },
+    "tiff_64kib_width_only": {
+      "bytes": 65536,
+      "sha256": "c5c38af41809c7e98333fc2a6bdcca36a955f70ab4413dbfde9b9ec4dd3d0b8f",
       "measured_on": "2026-08-29"
     },
     "txt_4kib": {
@@ -136,6 +146,21 @@
     "wav_32kib": {
       "bytes": 32768,
       "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
+    },
+    "webp_64kib": {
+      "bytes": 65536,
+      "sha256": "de9034bd6315f0a51fd8fe1b99adfa5719597f7c3d7cdaba1d3b8624754bf89e",
+      "measured_on": "2026-08-29"
+    },
+    "webp_64kib_width_only": {
+      "bytes": 65536,
+      "sha256": "0b56974137d6bd3c5923b2d2dff713efdc93e34c49a59c283ebdceb410541951",
+      "measured_on": "2026-08-29"
+    },
+    "webp_odd_size": {
+      "bytes": 65537,
+      "sha256": "cab2df93e3a618f27b927f7fc3fc99e30787c640c2cb23a14effd5745f19dfff",
+      "measured_on": "2026-08-29"
     },
     "xlsx_32kib": {
       "bytes": 32768,
