@@ -8,14 +8,13 @@
 ![Platform: Linux](https://img.shields.io/badge/platform-Linux-FCC624)
 ![Platform: macOS](https://img.shields.io/badge/platform-macOS-000000)
 
-Testing Files Generator is a tool for QA engineers and developers who need real
+**Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
 has an opinion about it. You pick one of its 21 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
-to you. It runs from a desktop window or a command line built for CI, never
-touches the network, and works on Windows, macOS and Linux.
+to you. GUI + CLI
 
 ⭐ **If it saved you time, leave a star.** That is how the next tester who
 needs it finds out it exists.
