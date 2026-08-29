@@ -71,7 +71,7 @@ jobs:
         shell: bash
 
       - name: vet
-        run: go vet ./...
+        run: go vet -tags "$(cat .github/build-tags)" ./...
 
       - name: the dependency list has not grown by accident
         # Every dependency is a licence question and a byte stability
@@ -133,6 +133,7 @@ jobs:
             github.com/fyne-io/glfw-js \
             github.com/fyne-io/image \
             github.com/fyne-io/oksvg \
+            github.com/gen2brain/gav1d \
             github.com/go-gl/gl \
             github.com/go-gl/glfw/v3.4/glfw \
             github.com/go-ole/go-ole \
@@ -210,10 +211,10 @@ jobs:
         shell: bash
 
       - name: test
-        run: go test ./... -count=1
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1
 
       - name: build the command line binary
-        run: go build ./cmd/tfg
+        run: go build -tags "$(cat .github/build-tags)" ./cmd/tfg
 
       - name: build the window binary
         # The toolkit arrived on 2026-08-05 and this step still passes, which
@@ -247,9 +248,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$RUNNER_OS" = "Windows" ]; then
-            go build -ldflags="$(cat .github/gui-ldflags)" ./cmd/tfg-gui
+            go build -tags "$(cat .github/build-tags)" -ldflags="$(cat .github/gui-ldflags)" ./cmd/tfg-gui
           else
-            go build ./cmd/tfg-gui
+            go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui
           fi
         shell: bash
 
@@ -477,8 +478,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          CGO_ENABLED=0 go build -trimpath -o dist/tfg ./cmd/tfg
-          CGO_ENABLED=1 go build -trimpath -o dist/tfg-gui ./cmd/tfg-gui
+          CGO_ENABLED=0 go build -tags "$(cat .github/build-tags)" -trimpath -o dist/tfg ./cmd/tfg
+          CGO_ENABLED=1 go build -tags "$(cat .github/build-tags)" -trimpath -o dist/tfg-gui ./cmd/tfg-gui
           ls -l dist
 
       - name: the document we would publish
@@ -645,7 +646,7 @@ jobs:
         # Race instrumentation costs five to twenty times the wall clock, and
         # this package renders twenty five screens and builds two binaries. The
         # job's own thirty minutes is the ceiling that means something.
-        run: go test ./... -count=1 -race -timeout 25m
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -race -timeout 25m
 
   coverage:
     name: coverage gate
@@ -670,7 +671,7 @@ jobs:
         # under test - which reports 0.0% and makes the gate meaningless.
         # Measured, not assumed.
         run: >
-          go test ./... -count=1 -covermode=atomic
+          go test -tags "$(cat .github/build-tags)" ./... -count=1 -covermode=atomic
           -coverpkg=./internal/...,./cmd/...
           -coverprofile=coverage.out
 
@@ -729,7 +730,7 @@ jobs:
         # -v so that a skip is visible in the log. A tool that failed to install
         # would otherwise turn this job back into the green nothing it exists
         # to replace.
-        run: go test ./internal/guard/ -count=1 -run 'ReferenceTool' -v
+        run: go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -run 'ReferenceTool' -v
         shell: bash
 
   fuzz:
@@ -770,7 +771,7 @@ jobs:
           set -euo pipefail
           for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe; do
             echo "=== $target ==="
-            go test ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
+            go test -tags "$(cat .github/build-tags)" ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
           done
         shell: bash
 

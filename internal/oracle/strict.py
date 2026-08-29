@@ -1263,11 +1263,94 @@ def check_webp(data):
     ok(f"riff {declared} B, chunks {seen}, {private} private, {trailing} B after the payload")
 
 
+def avif_boxes(data, start, end, depth=0):
+    """Walks one level of the box tree and yields (name, payload start, payload end)."""
+    pos = start
+    while pos + 8 <= end:
+        size = struct.unpack(">I", data[pos:pos + 4])[0]
+        name = data[pos + 4:pos + 8]
+        body = pos + 8
+        if size == 1:
+            if pos + 16 > end:
+                fail("a box says its length is written in 64 bits and the file ends first")
+            size = struct.unpack(">Q", data[pos + 8:pos + 16])[0]
+            body = pos + 16
+        elif size == 0:
+            size = end - pos
+        if size < body - pos:
+            fail(f"the box {name.decode('latin1')!r} declares {size} B, which is shorter than its own header")
+        stop = pos + size
+        if stop > end:
+            fail(f"the box {name.decode('latin1')!r} runs to {stop} and its parent ends at {end}")
+        yield name, body, stop
+        pos = stop
+    if pos != end:
+        fail(f"the boxes end at {pos} and the area they sit in ends at {end}")
+
+
+def check_avif(data):
+    if len(data) < 16:
+        fail(f"the file is {len(data)} B and the smallest container needs more than that")
+
+    top = list(avif_boxes(data, 0, len(data)))
+    if not top:
+        fail("the file carries no boxes at all")
+
+    names = [n.decode("latin1") for n, _, _ in top]
+    if names[0] != "ftyp":
+        fail(f"the first box is {names[0]!r} and every ISO base media file starts with ftyp")
+
+    _, ftyp_start, ftyp_end = top[0]
+    if ftyp_end - ftyp_start < 8:
+        fail("the ftyp box is too short to carry a brand")
+    brands = [data[ftyp_start:ftyp_start + 4]]
+    for at in range(ftyp_start + 8, ftyp_end, 4):
+        brands.append(data[at:at + 4])
+    if b"avif" not in brands:
+        fail("no box says this file is an AVIF - the brand avif is in neither the major brand nor the compatible ones")
+
+    if names.count("meta") != 1:
+        fail(f"the file carries {names.count('meta')} meta boxes and an AVIF has one")
+    if names.count("mdat") < 1:
+        fail("the file carries no mdat box, so there is nothing for the picture to be stored in")
+
+    # The metadata has to say what the item is and where it lives. Without
+    # these a reader has a container and no picture, which is exactly the
+    # shape a padding channel written to the wrong place would produce.
+    meta_start, meta_end = next((s, e) for n, s, e in top if n == b"meta")
+    inner = [n.decode("latin1") for n, _, _ in avif_boxes(data, meta_start + 4, meta_end)]
+    for needed in ("hdlr", "pitm", "iloc", "iinf", "iprp"):
+        if needed not in inner:
+            fail(f"the meta box has no {needed} box, so it does not say {AVIF_MEANING[needed]}")
+
+    # Padding belongs after the picture and nowhere else.
+    free_bytes = 0
+    seen_mdat = False
+    for name, start, stop in top:
+        if name == b"mdat":
+            seen_mdat = True
+        elif name == b"free":
+            free_bytes += stop - start + 8
+            if not seen_mdat:
+                fail("a free box sits before the picture data, and this generator puts padding after it")
+
+    ok(f"boxes {names}, brands {[b.decode('latin1') for b in brands]}, {free_bytes} B of free")
+
+
+AVIF_MEANING = {
+    "hdlr": "what kind of thing it holds",
+    "pitm": "which item is the picture",
+    "iloc": "where the picture data is",
+    "iinf": "what the item is",
+    "iprp": "how wide and tall the picture is",
+}
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
-          "tiff": check_tiff, "webp": check_webp,
+          "tiff": check_tiff, "webp": check_webp, "avif": check_avif,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":

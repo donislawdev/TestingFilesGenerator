@@ -17,14 +17,14 @@ first, so the difference is worth stating rather than leaving to be assumed.
 
 | binary | what it is | third party code in it |
 |---|---|---|
-| `tfg` | the command line | the Go runtime, and **two** modules: `github.com/goccy/go-yaml` and `golang.org/x/text` |
+| `tfg` | the command line | the Go runtime, and **three** modules: `github.com/goccy/go-yaml`, `github.com/gen2brain/gav1d` and `golang.org/x/text` |
 | `tfg-gui` | the desktop window | the same, plus **27** more for the graphics toolkit, one of them on Linux only |
 
 The window is a separate binary because its toolkit needs a C compiler and
 OpenGL, neither of which the command line uses. A server or a build agent
 running `tfg` therefore carries none of the 27, and that is checked rather than
 asserted: a guard in the source compares what the command line binary actually
-links against that list of two.
+links against that list of three.
 
 ---
 
@@ -114,6 +114,48 @@ the same terms as the Go project. Its text is at
 <https://go.googlesource.com/text/+/refs/heads/master/PATENTS>.
 
 Source: <https://go.googlesource.com/text>
+
+---
+
+## github.com/gen2brain/gav1d
+
+Version 0.2.5. Codes and reads AV1, which is what the picture inside an
+AVIF is. It is written in Go and assembly with no C in it and no module
+of its own behind it, so it brings nothing else along.
+
+```
+Copyright (c) 2018-2025, VideoLAN and dav1d authors
+Copyright (c) 2016, Alliance for Open Media
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+It also ships a `PATENTS` file carrying the **Alliance for Open Media
+Patent License 1.0**, which grants a patent licence for AV1 and withdraws
+it from anybody who sues over the codec. The full text is in the module,
+at `PATENTS`, and at <https://aomedia.org/license/patent-license/>.
+
+Source: <https://github.com/gen2brain/gav1d>
 
 ---
 

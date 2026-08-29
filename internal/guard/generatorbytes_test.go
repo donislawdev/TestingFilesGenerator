@@ -103,6 +103,28 @@ func goldenCases() map[string]engine.Target {
 		"webp_odd_size": {ID: "g", Format: "webp", Sizes: engine.Uniform(1, 65537), Label: true,
 			Properties: map[string]string{"width": "64", "height": "48"}},
 
+		// AVIF, and it is pinned for a reason the formats above do not have: the
+		// pixels are coded by a library this project does not own. These hashes
+		// are what would notice the codec being raised underneath us, which is
+		// the whole reason it is pinned rather than followed.
+		//
+		// No width only case here. Every other picture format works the missing
+		// side out from the bytes that are left, and AVIF cannot: what a picture
+		// encodes to is whatever the coder decides, so there is no arithmetic to
+		// run backwards and a named width simply keeps the default height.
+		"avif_64kib": {ID: "g", Format: "avif", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
+		// Quality is the one setting that changes how many bytes the coder
+		// emits, so it reaches code the case above never does.
+		"avif_quality": {ID: "g", Format: "avif", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48", "quality": "90"}},
+
+		// An odd size. The free box takes any length at all, so this is the case
+		// that would catch padding that could only step in twos.
+		"avif_odd_size": {ID: "g", Format: "avif", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
 		"gif_64kib": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 
