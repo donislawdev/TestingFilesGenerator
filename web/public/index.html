@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Test File Generator for QA - Exact Size, 20 Real Formats</title>
+<title>Test File Generator for QA - Exact Size, 21 Real Formats</title>
 <meta name="description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="en">
-<meta property="og:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
+<meta property="og:title" content="Test File Generator for QA - Exact Size, 21 Real Formats">
 <meta property="og:description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
@@ -21,7 +21,7 @@
 <meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
 <meta property="og:locale:alternate" content="pl">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Test File Generator for QA - Exact Size, 20 Real Formats">
+<meta name="twitter:title" content="Test File Generator for QA - Exact Size, 21 Real Formats">
 <meta name="twitter:description" content="Free, open source test file generator for QA. Real PDF, DOCX, PNG and ZIP files at any exact size, plus a manifest saying how your system should react.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
@@ -87,7 +87,7 @@
   <div class="hero-text">
   <h1>Generate real test files at any exact size</h1>
   <p class="lead">
-    PDF, PNG, DOCX, ZIP - <strong>20 formats in all</strong>, and every one is a
+    PDF, PNG, DOCX, ZIP - <strong>21 formats in all</strong>, and every one is a
     real file that opens in the software that owns it, at <strong>exactly the size you asked
     for</strong>. Each run also writes down what your application is supposed to do with each file.
     Command line and desktop window, free and open source, working entirely on your machine.
@@ -97,11 +97,11 @@
   <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.2.0</a>
   <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
 </div>
-<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.</p>
   </div>
 
   <figure class="hero-shot">
-    <img src="/assets/window.png" width="1000" height="1160" fetchpriority="high"
+    <img src="/assets/window.png" width="1000" height="780" fetchpriority="high"
          alt="The desktop window of Testing Files Generator, set up to write a batch of test files">
     <figcaption>The desktop window, set up to write a batch of files. The same engine runs behind the command line.</figcaption>
   </figure>
@@ -109,7 +109,7 @@
 
 <ul class="facts">
     <li class="fact">
-      <span class="fact-figure">20</span>
+      <span class="fact-figure">21</span>
       <p class="fact-label">real formats, each one opening in the software that owns it</p>
     </li>
     <li class="fact">
@@ -229,7 +229,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
       <p class="muted">Ask for 10485761 bytes and get exactly that. A size a format cannot reach is an error with a reason, never a file of the wrong size.</p>
     </li>
     <li class="card">
-      <p class="card-title">20 real formats</p>
+      <p class="card-title">21 real formats</p>
       <p class="muted">Not padded zeros with an extension. A generated PNG opens in an image viewer, a DOCX opens in Word, a ZIP extracts. Each one is checked against independent readers before it ships.</p>
     </li>
     <li class="card">
@@ -286,11 +286,12 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   </tbody>
 </table>
 </div>
-  <div class="note warn">
-    <p class="note-title">The binaries are not signed</p>
+  <div class="note">
+    <p class="note-title">What is signed, and what is not</p>
     <p>
-      Your system will warn you the first time you run one. The release notes say exactly what each
-      system shows and why. Every archive is listed in <code>verify-SHA256SUMS.txt</code> on the release page,
+      The Windows and macOS downloads are signed, so they start without a warning about an unknown
+      developer. The Linux ones are not, because desktop Linux has no equivalent to sign them with.
+      Every archive is listed in <code>verify-SHA256SUMS.txt</code> on the release page,
       so you can check what you downloaded.
     </p>
   </div>
@@ -298,7 +299,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases/latest">Download 0.2.0</a>
   <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
 </div>
-<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The binaries are not signed yet, so your system will warn you the first time - the release notes say what to expect.</p>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.</p>
 </section>
 
 <section class="section" id="scope">
@@ -309,7 +310,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
     state of it.
   </p>
   <p>
-    <strong>Working end to end:</strong> 20 formats, recipes, presets, the desktop
+    <strong>Working end to end:</strong> 21 formats, recipes, presets, the desktop
     window, <code>generate</code>, <code>validate</code>, <code>verify</code>, <code>cleanup</code>,
     boundary sets, archive contents, size ranges, per format settings, manifests and every exit code.
   </p>
@@ -317,7 +318,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
     <strong>Not there yet:</strong> five more formats are planned - <code>7z</code>, <code>tiff</code>,
     <code>webp</code>, <code>mp3</code> and <code>mp4</code>. The preset catalogue has one entry so far.
     Some recipe keys are recognised and refused with a message saying they are not built yet, rather
-    than being ignored quietly. The binaries are not signed.
+    than being ignored quietly. The Linux downloads are unsigned.
   </p>
   <p>
     Found a problem or want a format? The <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">issue tracker</a> is open, and

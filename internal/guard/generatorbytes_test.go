@@ -66,10 +66,25 @@ func goldenCases() map[string]engine.Target {
 		"bmp_64kib": {ID: "g", Format: "bmp", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 
-		// The one format whose picture is grown to fill the request, so the
+		// The two formats whose picture is grown to fill the request, so the
 		// dimensions are arithmetic rather than a setting. Pinned without them,
 		// because that arithmetic is what a refactor would move.
+		//
+		// It was one until 2026-08-29. TIFF stores its pixels uncompressed
+		// too, so it is built the same way and needs the same pair of cases.
 		"bmp_100kib_sized_to_fit": {ID: "g", Format: "bmp", Sizes: engine.Uniform(1, 102400), Label: true},
+		"tiff_64kib": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64"}},
+		"tiff_100kib_sized_to_fit": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 102400), Label: true},
+
+		// Naming one side and letting the other be worked out is its own
+		// branch, and it had no case until 2026-08-29. The mutation that
+		// removes that arithmetic came back NOT CAUGHT with the two cases
+		// above in place: one names both sides and the other names neither,
+		// so neither of them ever reached it. That was a hole in the evidence
+		// rather than in the code, and this is what closes it.
+		"tiff_64kib_width_only": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "128"}},
 		"gif_64kib": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 		"ico_32kib": {ID: "g", Format: "ico", Sizes: engine.Uniform(1, 32768), Label: true,

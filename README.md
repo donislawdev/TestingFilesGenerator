@@ -23,18 +23,18 @@ reference is below it.
 
 ## 📁 Formats it generates
 
-Twenty, and every one is a **real file of that format** - it opens in the
+Twenty one, and every one is a **real file of that format** - it opens in the
 software that owns it, at the exact size you asked for:
 
 | group | formats |
 |---|---|
 | 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
-| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg` |
+| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 
-Coming next: `7z`, `tiff`, `webp`, `mp3`, `mp4`.
+Coming next: `7z`, `webp`, `mp3`, `mp4`.
 
 Most of them take settings of their own - image dimensions, JPEG quality, PDF
 page count, rows and columns in a spreadsheet, what goes inside an archive. See
@@ -122,8 +122,9 @@ false failures, and a suite that cries wolf gets switched off.
 **Download a binary.** Take the archive for your system from the
 [releases page](https://github.com/donislawdev/TestingFilesGenerator/releases),
 unpack it and run it. `tfg` is the command line, `tfg-gui` is the desktop
-window. They are not signed yet, so your system will warn you the first time -
-the release notes say exactly what to expect and why.
+window. The Windows and macOS downloads are signed, so they start without a
+warning about an unknown developer. The Linux ones are not, because desktop
+Linux has no equivalent to sign them with.
 
 **With Go installed:**
 
@@ -396,7 +397,7 @@ ignored quietly: `extends`, `with`, `policy`, `engine`, `defaults.fill`,
 
 ## 📁 Formats in detail
 
-The twenty formats are listed near the top of this file. Each is produced at an
+The twenty one formats are listed near the top of this file. Each is produced at an
 exact size and checked against independent readers before it ships - a PNG is
 opened and its pixels compared, a DOCX is read back by three separate
 libraries, an archive is extracted.
@@ -414,7 +415,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | format | settings |
 |---|---|
 | `pdf` | `pages`, `page_size` |
-| `png`, `bmp`, `gif` | `width`, `height` |
+| `png`, `bmp`, `gif`, `tiff` | `width`, `height` |
 | `jpg` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
@@ -624,13 +625,13 @@ a valid one of its format.
 
 Honest scope, because a tool that oversells itself wastes your afternoon.
 
-**Working end to end:** twenty formats, recipes, presets, the desktop window,
+**Working end to end:** twenty one formats, recipes, presets, the desktop window,
 `generate`, `validate`, `verify`, `cleanup`, boundary sets, archive contents,
 size ranges, per format settings, manifests and every exit code above.
 
-**Not there yet:** five more formats. The preset catalogue has one entry so far.
-The recipe keys listed under [Not built yet](#not-built-yet). Binaries are not
-signed.
+**Not there yet:** four more formats. The preset catalogue has one entry so far.
+The recipe keys listed under [Not built yet](#not-built-yet). The Linux
+downloads are unsigned.
 
 Found a problem or want a format? The
 [issue tracker](https://github.com/donislawdev/TestingFilesGenerator/issues) is

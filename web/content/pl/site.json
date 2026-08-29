@@ -55,7 +55,7 @@
 
     "ctaDownload": "Pobierz",
     "ctaSource": "Zobacz kod źródłowy",
-    "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Binarki nie są jeszcze podpisane, więc system ostrzeże przy pierwszym uruchomieniu - nota wydania mówi dokładnie, czego się spodziewać.",
+    "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Pliki dla Windows i macOS są podpisane i uruchamiają się bez ostrzeżenia. Pliki dla Linuksa nie są podpisane.",
 
     "colFormat": "Format",
     "colExtension": "Rozszerzenie",

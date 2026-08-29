@@ -56,6 +56,7 @@ var layer = map[string]int{
 	"internal/format/pdf":        1,
 	"internal/format/zip":        1,
 	"internal/format/targz":      1,
+	"internal/format/tiff":       1,
 	"internal/format/wav":        1,
 
 	"internal/recipe":   2,
@@ -102,6 +103,7 @@ var sameLayerAllowed = map[string][]string{
 		"internal/format/pdf",
 		"internal/format/zip",
 		"internal/format/targz",
+		"internal/format/tiff",
 		"internal/format/wav",
 	},
 	"internal/format/imagelabel": {"internal/format"},
@@ -125,6 +127,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/pdf":        {"internal/format", "internal/format/imagelabel"},
 	"internal/format/zip":        {"internal/format", "internal/format/imagelabel"},
 	"internal/format/targz":      {"internal/format"},
+	"internal/format/tiff":       {"internal/format", "internal/format/imagelabel"},
 	"internal/format/wav":        {"internal/format", "internal/format/imagelabel"},
 	"internal/preset":            {"internal/recipe"},
 
