@@ -199,8 +199,8 @@ jobs:
           fi
           echo "dependencies unchanged, $(echo "$expected" | wc -l) modules"
 
-          linked=$(go list -deps -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | LC_ALL=C sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
-          wanted=$(printf '%s\n' github.com/goccy/go-yaml golang.org/x/text)
+          linked=$(go list -deps -tags "$(cat .github/build-tags)" -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | LC_ALL=C sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
+          wanted=$(printf '%s\n' github.com/gen2brain/gav1d github.com/goccy/go-yaml golang.org/x/text)
           if [ "$linked" != "$wanted" ]; then
             echo "the command line binary links a different set of modules."
             echo "expected: $wanted"
