@@ -1,25 +1,79 @@
-# Testing Files Generator
+# Testing Files Generator - make real test files at any exact size
 
-**Generate test files for QA, and know how the system under test should react to them.**. A free, open source tool that creates **real test files** - PDF, PNG, JPG, ZIP, DOCX, XLSX and fourteen more - at **any exact size you ask for**. It also writes down what your application should do with each one. Command line and desktop app, fully offline, on Windows, macOS and Linux.
-
-[![Download](https://img.shields.io/github/v/release/donislawdev/TestingFilesGenerator?label=download&color=2ea043&logo=github&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
 [![CI](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml/badge.svg)](https://github.com/donislawdev/TestingFilesGenerator/actions/workflows/ci.yml)
-[![Licence](https://img.shields.io/badge/licence-GPL--3.0-A42E2B?logo=gnu&logoColor=white)](LICENSE)
-[![Go](https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![Latest release](https://img.shields.io/github/v/release/donislawdev/TestingFilesGenerator?sort=semver)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/donislawdev/TestingFilesGenerator/total)](https://github.com/donislawdev/TestingFilesGenerator/releases)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6)
+![Platform: Linux](https://img.shields.io/badge/platform-Linux-FCC624)
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-000000)
 
-[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
-[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://github.com/donislawdev/TestingFilesGenerator/releases/latest)
+Testing Files Generator is a tool for QA engineers and developers who need real
+files to test against - an upload form, a parser, anything that takes a file and
+has an opinion about it. You pick one of its 21 formats and the size you want,
+and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
+will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
+your system should do with each file**, which is the part other generators leave
+to you. It runs from a desktop window or a command line built for CI, never
+touches the network, and works on Windows, macOS and Linux.
 
+⭐ **If it saved you time, leave a star.** That is how the next tester who
+needs it finds out it exists.
 
+## ⚡ What it can do
 
-⭐ **If it saved you time, leave a star.** That is how the next tester who needs it finds out it
-exists.
+- **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
+  that, never a silently rounded file.
+- **Write 21 real formats** - a generated PNG opens in an image viewer, a DOCX
+  opens in Word, a ZIP extracts. Not padded zeros with an extension.
+- **Say what should happen to each file** - the manifest carries an expected
+  outcome, so your test reads the assertion instead of you writing it out.
+- **Repeat itself byte for byte** - same recipe and seed, same bytes, on any
+  machine. Commit a small recipe instead of large binary fixtures.
+- **Build a boundary set in one command** - one byte under a limit, the limit
+  itself, one byte over. That is where off by one errors live.
+- **Produce ten thousand files at once** - one command, one manifest, and sizes
+  drawn from the seed.
+- **Fill an archive for real** - a ZIP that holds 200 documents, not a stub with
+  the right extension.
+- **Take settings per format** - image dimensions, JPEG quality, PDF pages,
+  spreadsheet rows and columns.
+- **Fit into CI** - an exit code for every ending, machine readable output, and
+  nothing on standard output when a run fails.
+- **Clean up after itself** - `verify` tells you nothing moved, `cleanup`
+  removes exactly what it wrote and nothing else.
+- **Work completely offline** - no account, no cloud, no telemetry, no update
+  check. The command line binary has no network stack compiled into it at all.
+- **Cost nothing and stay out of your way** - GPL-3.0, and the files you
+  generate are yours with no strings attached.
 
-![The desktop window of Testing Files Generator, set up to write a batch of test files](.github/window.png)
+![The desktop window of Testing Files Generator building a set of files around an upload limit, and the files appearing in a folder as they are written](.github/tfg-in-work.gif)
+
+![The Star button at the top of this page, with a cursor pressing it](.github/star-the-repo.gif)
+
+## 🧭 Table of contents
 
 This README is also the manual. The short version is above the line, the full
 reference is below it.
+
+- [What it can do](#-what-it-can-do)
+- [Formats it generates](#-formats-it-generates)
+- [The problem it solves](#-the-problem-it-solves)
+- [What makes it different](#-what-makes-it-different)
+- [Install](#-install)
+- [Quick start](#-quick-start)
+- [Reference](#reference)
+  - [Commands](#️-commands)
+  - [Recipes](#-recipes)
+  - [Formats in detail](#-formats-in-detail)
+  - [The manifest](#-the-manifest)
+  - [Presets](#-presets)
+  - [The desktop window](#️-the-desktop-window)
+  - [Using it in CI](#️-using-it-in-ci)
+  - [Questions](#-questions)
+  - [Where this is](#-where-this-is)
+  - [Everything inside a generated file is made up](#-everything-inside-a-generated-file-is-made-up)
+  - [Licence](#-licence)
 
 ## 📁 Formats it generates
 
@@ -103,19 +157,6 @@ for entry in manifest["files"]:
 And where the right answer genuinely depends on your own policy, the manifest
 says `unspecified` instead of inventing one. A generator that guesses produces
 false failures, and a suite that cries wolf gets switched off.
-
-## ✨ Features
-
-| | |
-|---|---|
-| 🎯 **Exact size, to the byte** | Ask for 10485761 bytes and get exactly that. Never a silently rounded file. |
-| 📄 **20 real formats** | Not padded zeros with an extension. A generated PNG opens in an image viewer, a DOCX opens in Word, a ZIP extracts. |
-| 🧾 **A manifest that is a test oracle** | Path, size, SHA-256, format, seed, tool version - and what your system should do with the file. |
-| 🔁 **Reproducible** | Same recipe and seed, same bytes, on any machine. Commit a small recipe instead of large binary fixtures. |
-| 🖥️ **Two interfaces, one engine** | A command line built for CI, and a desktop window for exploratory testing. Neither is a cut down version of the other. |
-| 🔌 **Completely offline** | No account, no cloud, no telemetry, no update checks. The command line binary has no network stack compiled into it at all. |
-| 🧹 **Cleans up after itself** | `verify` tells you nothing moved, `cleanup` removes exactly what was written and nothing else. |
-| 🆓 **Free and open source** | GPL-3.0. The files you generate are yours, with no strings attached. |
 
 ## 📦 Install
 
@@ -441,7 +482,7 @@ interrupted. One entry per file:
 ```json
 {
   "manifest_version": "1.0",
-  "tool": { "name": "testing-files-generator", "version": "0.1.0" },
+  "tool": { "name": "testing-files-generator", "version": "0.2.0" },
   "run": {
     "id": "run_b359aa8d94",
     "seed": 0,
@@ -619,7 +660,7 @@ a valid one of its format.
 
 ### Which formats are coming next?
 
-`7z`, `tiff`, `webp`, `mp3` and `mp4`.
+`7z`, `webp`, `mp3` and `mp4`.
 
 ## 🚧 Where this is
 
