@@ -1094,6 +1094,115 @@ def check_jpg(data):
        f"{comments} comment(s) carrying {comment_bytes} B")
 
 
+def check_tiff(data):
+    # This layer earns more at TIFF than anywhere else, and that is measured
+    # rather than assumed. On 2026-08-29 six deliberately broken files went
+    # through five readers: a StripByteCounts announcing half the pixel data
+    # was accepted by FOUR of them - Pillow, exiftool, WIC and GDI+ - and
+    # caught only by x/image. A reader that decodes the image it can find does
+    # not have to care that the directory lied about how much there was.
+    if data[:2] != b"II":
+        fail("the byte order mark is not II, and this generator writes little-endian only")
+    if len(data) < 8:
+        fail(f"the file is {len(data)} B and the header alone is 8 B")
+
+    magic = struct.unpack("<H", data[2:4])[0]
+    if magic != 42:
+        fail(f"the magic number is {magic} and a TIFF says 42")
+
+    ifd_at = struct.unpack("<I", data[4:8])[0]
+    if ifd_at + 2 > len(data):
+        fail(f"the directory is said to start at {ifd_at} and the file ends at {len(data)}")
+
+    count = struct.unpack("<H", data[ifd_at:ifd_at + 2])[0]
+    if count < 1:
+        fail("the directory holds no entries")
+    end = ifd_at + 2 + 12 * count + 4
+    if end > len(data):
+        fail(f"a directory of {count} entries runs to {end} and the file ends at {len(data)}")
+
+    sizes = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1}
+    tags, previous = {}, -1
+    for i in range(count):
+        at = ifd_at + 2 + 12 * i
+        tag, kind, n = struct.unpack("<HHI", data[at:at + 8])
+        raw = data[at + 8:at + 12]
+        # The specification requires ascending tag order and readers rely on
+        # it. Nothing that merely decodes the picture would notice.
+        if tag <= previous:
+            fail(f"entry {i} has tag {tag} after tag {previous}, and a directory is in ascending order")
+        previous = tag
+        width = sizes.get(kind)
+        if width is None:
+            fail(f"entry {i} declares data type {kind}, which is not one this generator writes")
+        total = width * n
+        if total > 4:
+            off = struct.unpack("<I", raw)[0]
+            if off + total > len(data):
+                fail(f"the value of tag {tag} runs to {off + total} and the file ends at {len(data)}")
+            value = data[off:off + total]
+        else:
+            value = raw[:total]
+        tags[tag] = (kind, n, value)
+
+    nxt = struct.unpack("<I", data[ifd_at + 2 + 12 * count:end])[0]
+    if nxt != 0:
+        fail(f"the directory points at another one at {nxt}, and this generator writes a single page")
+
+    def one(tag, name):
+        if tag not in tags:
+            fail(f"the directory has no {name}")
+        kind, n, value = tags[tag]
+        if n != 1:
+            fail(f"{name} has {n} values and it should have one")
+        return struct.unpack("<H", value)[0] if kind == 3 else struct.unpack("<I", value)[0]
+
+    width = one(256, "ImageWidth")
+    height = one(257, "ImageLength")
+    compression = one(259, "Compression")
+    photometric = one(262, "PhotometricInterpretation")
+    offset = one(273, "StripOffsets")
+    samples = one(277, "SamplesPerPixel")
+    counts = one(279, "StripByteCounts")
+
+    if width < 1 or height < 1:
+        fail(f"the picture is {width}x{height}")
+    if compression != 1:
+        fail(f"the directory declares compression {compression} and this generator writes none")
+    if photometric != 2:
+        fail(f"the directory declares photometric {photometric} and this generator writes RGB")
+    if samples != 3:
+        fail(f"the directory declares {samples} samples per pixel and this generator writes three")
+
+    if 258 not in tags:
+        fail("the directory has no BitsPerSample")
+    bits = tags[258][2]
+    if len(bits) != samples * 2:
+        fail(f"BitsPerSample carries {len(bits)} B for {samples} samples")
+    for i in range(samples):
+        depth = struct.unpack("<H", bits[i * 2:i * 2 + 2])[0]
+        if depth != 8:
+            fail(f"sample {i} is {depth} bits and this generator writes eight")
+
+    # The defect four readers of five let through: the directory saying the
+    # pixels are one length while the geometry says another.
+    expected = width * height * samples
+    if counts != expected:
+        fail(f"the directory says the pixels are {counts} B and {width}x{height} at {samples} bytes is {expected} B")
+    if offset < 8:
+        fail(f"the pixels are said to start at {offset}, inside the header")
+    if offset + counts > len(data):
+        fail(f"the pixels run to {offset + counts} and the file ends at {len(data)}")
+    # The pixels have to end where the directory begins, because this
+    # generator puts its padding in front of them and nothing between.
+    if offset + counts != ifd_at:
+        fail(f"the pixels end at {offset + counts} and the directory begins at {ifd_at}")
+
+    gap = offset - 8
+    ok(f"{width}x{height}, {samples * 8} bit, uncompressed, gap {gap} B, "
+       f"{count} entries in one directory, byte counts agree with the geometry")
+
+
 def check_docx(data):
     opc_check(data, ["word/document.xml"], "Word document", "docx")
 
@@ -1113,6 +1222,7 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
+          "tiff": check_tiff,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":

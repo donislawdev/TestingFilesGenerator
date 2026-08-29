@@ -110,6 +110,21 @@
       "sha256": "84a776cc5439d9a7edb29018dca7b0fb1462f7b57a374de34c21b0cf7f601eb5",
       "measured_on": "2026-08-04"
     },
+    "tiff_100kib_sized_to_fit": {
+      "bytes": 102400,
+      "sha256": "172e2e47dda124de9cdbc122b55d25c2fc20de4c78ab963bbf6c7645da247bbd",
+      "measured_on": "2026-08-29"
+    },
+    "tiff_64kib_width_only": {
+      "bytes": 65536,
+      "sha256": "c5c38af41809c7e98333fc2a6bdcca36a955f70ab4413dbfde9b9ec4dd3d0b8f",
+      "measured_on": "2026-08-29"
+    },
+    "tiff_64kib": {
+      "bytes": 65536,
+      "sha256": "4d174b53a1603f63b1cd49307f793540190b2d03e26f60b91ca767a93d610340",
+      "measured_on": "2026-08-29"
+    },
     "txt_4kib": {
       "bytes": 4096,
       "sha256": "26a697bd184868acaa1da3f474b32a063e1b76e55ced42e38e79fdc63cf66161"

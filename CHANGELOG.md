@@ -14,6 +14,15 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **TIFF, the twenty first format.** Uncompressed, RGB, one page, little-endian.
+  `tfg generate --format tiff --size 300kb` writes a picture worth 300 kB rather
+  than a thumbnail followed by filler, because TIFF stores its pixels
+  uncompressed and the size is arithmetic - the same shape as BMP. `width` and
+  `height` can be set, and naming one lets the other be worked out from the
+  size. The smallest TIFF this produces is 183 B.
+
 ## [0.2.0] - 2026-08-28
 
 ### Breaking

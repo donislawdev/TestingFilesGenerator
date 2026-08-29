@@ -23,6 +23,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pptx"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/svgfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/targz"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/tiff"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/wav"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xlsx"

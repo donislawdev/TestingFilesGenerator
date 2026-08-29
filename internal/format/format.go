@@ -44,9 +44,14 @@ const (
 // Placement says where in the stream a format tolerates arbitrary bytes.
 //
 // This is not decoration. Four Tier 1 formats pad at the front - MP3 inside
-// its ID3v2 tag, BMP and ICO in the gap before the image data, TIFF between
-// its directories. An interface built around "padding goes at the end" would
-// have to be rewritten when the twelfth format arrives.
+// its ID3v2 tag, and BMP, ICO and TIFF in the gap before the image data. An
+// interface built around "padding goes at the end" would have to be rewritten
+// when the twelfth format arrives.
+//
+// TIFF used to be described here as padding "between its directories", which
+// is what the documents said before anybody measured. It writes one directory,
+// so there is no between - and the gap it does use is the one StripOffsets
+// points past, the same shape as bfOffBits in BMP. Corrected 2026-08-29.
 type Placement string
 
 const (

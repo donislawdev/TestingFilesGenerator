@@ -27,16 +27,23 @@ const (
 	// Depth is absolute because a percentage needs a range to be a percentage
 	// OF, and depth here runs 0 to 4. Three quarters of 4 is 3, which happens
 	// to be right today - but the moment the ceiling dropped to 3 the band
-	// would become "2 or more" and the count would jump from 53 into the
+	// would become "2 or more" and the count would jump from 54 into the
 	// hundreds. A band that reshapes itself under the thing it watches says
 	// nothing.
 	crowdingComplexity = 17
 	crowdingArguments  = 7
 	crowdingDepth      = 3
 
-	crowdedComplexity     = 5
-	crowdedArguments      = 5
-	crowdedDepthFunctions = 53
+	crowdedComplexity = 5
+	crowdedArguments  = 5
+	// 53 until 2026-08-29, when TIFF arrived. The function that took it to 54
+	// is tiff.chooseSize, and it is the same shape as bmp.chooseSize because
+	// the two formats do the same arithmetic - the picture is grown to fill
+	// the request, so one branch handles both dimensions named, one handles
+	// either, and one handles neither. Flattening it in TIFF alone would make
+	// two functions that answer the same question look different, which costs
+	// more than the depth does.
+	crowdedDepthFunctions = 54
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.

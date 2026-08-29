@@ -428,7 +428,7 @@
 							<container size="140x224">
 								<widget size="140x224" type="*widget.List">
 									<widget size="140x224" type="*widget.Scroll">
-										<container size="140x560">
+										<container size="140x588">
 											<widget size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
@@ -525,8 +525,8 @@
 											<linearGradient pos="0,-8" size="140x8"/>
 										</widget>
 										<widget pos="134,0" size="6x224" type="*widget.scrollBarArea">
-											<widget pos="3,0" size="3x89" type="*widget.scrollBar">
-												<rectangle fillColor="scrollbar" radius="3" size="3x89"/>
+											<widget pos="3,0" size="3x85" type="*widget.scrollBar">
+												<rectangle fillColor="scrollbar" radius="3" size="3x85"/>
 											</widget>
 										</widget>
 									</widget>

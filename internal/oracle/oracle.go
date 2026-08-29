@@ -351,7 +351,7 @@ func Strict(formatID, path string) Result {
 func StrictKnows(formatID string) bool {
 	switch formatID {
 	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",
-		"bmp", "gif", "ico", "jpg", "docx", "xlsx", "pptx":
+		"bmp", "gif", "ico", "jpg", "tiff", "docx", "xlsx", "pptx":
 		return true
 	}
 	return false
