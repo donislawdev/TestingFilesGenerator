@@ -154,7 +154,7 @@
     },
     {
       "q": "Which formats are coming next?",
-      "a": "7z, tiff, webp, mp3 and mp4. {{ .Facts.FormatCount }} formats work end to end today."
+      "a": "7z, mp3 and mp4. {{ .Facts.FormatCount }} formats work end to end today."
     },
     {
       "q": "Which systems can I run it on?",

@@ -191,7 +191,7 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"Around a limit": "an", "Size range": "a", "Expected outcome": "an",
 		"Limit to test": "a", "One size": "a", "A range": "a",
 		"Rule being tested": "a", "Manifest file name": "a", "Preset": "a",
-		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a",
+		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a", "Quality": "a",
 		"Write a label inside each file": "a",
 	}
 

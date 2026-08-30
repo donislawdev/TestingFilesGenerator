@@ -3,6 +3,21 @@
   "measured_on": "2026-08-01",
   "seed": 7741,
   "files": {
+    "avif_64kib": {
+      "bytes": 65536,
+      "sha256": "15ecccbfddba75a1434091d97bd47f50930bd3c1f3a43c285309e77ca015118b",
+      "measured_on": "2026-08-29"
+    },
+    "avif_odd_size": {
+      "bytes": 65537,
+      "sha256": "07cf052b18f6c908c1591db5b62127c597f37088d7d3872c3fac8ccbb5ed5a51",
+      "measured_on": "2026-08-29"
+    },
+    "avif_quality": {
+      "bytes": 65536,
+      "sha256": "98fc93cb109545ea3e99795962944dac7071a8d2f5053187c2bcbbf80806356c",
+      "measured_on": "2026-08-29"
+    },
     "bmp_100kib_sized_to_fit": {
       "bytes": 102400,
       "sha256": "07fb4045fd8ec4225f2ada3b93a5c93e7122612db35334cdf5f446dde0775310",

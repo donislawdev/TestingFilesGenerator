@@ -143,9 +143,12 @@ func TestTheWorkflowScansBothBinariesAndReadsTheReport(t *testing.T) {
 	}
 	workflow := string(body)
 
+	// The flags between "go build" and the output path are not this guard's
+	// business - build tags arrived there on 2026-08-29 and broke a check that
+	// was quoting a whole command line to ask a question about two binaries.
 	for _, want := range []string{
-		"go build -trimpath -o dist/tfg ./cmd/tfg",
-		"go build -trimpath -o dist/tfg-gui ./cmd/tfg-gui",
+		"-trimpath -o dist/tfg ./cmd/tfg",
+		"-trimpath -o dist/tfg-gui ./cmd/tfg-gui",
 		"go run ./internal/legal/cmd/sbom",
 		"python .github/scripts/sbom_gate.py scan.json ours.spdx.json",
 	} {

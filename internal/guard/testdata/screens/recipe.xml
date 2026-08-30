@@ -82,7 +82,7 @@
 																							<rectangle fillColor="inputBackground" radius="5" size="140x25"/>
 																							<rectangle size="0x0"/>
 																							<widget pos="6,3" size="108x19" type="*widget.RichText">
-																								<text size="30x19">bmp</text>
+																								<text size="23x19">avif</text>
 																							</widget>
 																							<widget pos="114,2" size="20x20" type="*widget.Icon">
 																								<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
@@ -262,17 +262,17 @@
 																		</container>
 																		<container pos="0,331" size="808x35">
 																			<container size="808x35">
-																				<widget size="153x35" type="*widget.Label">
-																					<widget size="153x35" type="*widget.RichText">
-																						<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
+																				<widget size="147x35" type="*widget.Label">
+																					<widget size="147x35" type="*widget.RichText">
+																						<text bold pos="6,6" size="135x23" textSize="17">Settings for avif</text>
 																					</widget>
 																				</widget>
-																				<widget pos="159,0" size="32x35" type="*widget.Button">
+																				<widget pos="153,0" size="32x35" type="*widget.Button">
 																					<rectangle radius="5" size="32x35"/>
 																					<rectangle size="32x35"/>
 																					<image fillMode="contain" pos="6,7" rsc="menuExpandIcon" size="iconInlineSize" themed="foreground"/>
 																				</widget>
-																				<spacer pos="197,0" size="616x35"/>
+																				<spacer pos="191,0" size="622x35"/>
 																			</container>
 																		</container>
 																		<container pos="0,375" size="808x35">

@@ -35,7 +35,7 @@ func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
 	join(host)
 	settle(content, w)
 
-	said := refusalLabelSaying(content, "BMP")
+	said := refusalLabelSaying(content, strings.ToUpper(firstFormat()))
 	if said == nil {
 		t.Fatalf("nothing on the screen is complaining about the size. It says:\n%s", textIn(content))
 	}

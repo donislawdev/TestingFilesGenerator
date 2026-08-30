@@ -8,6 +8,7 @@ package all
 
 import (
 	// Each format registers itself when its package is loaded.
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/avif"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/bmp"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/csvfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/docx"
