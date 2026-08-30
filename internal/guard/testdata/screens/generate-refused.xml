@@ -35,10 +35,10 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,53" size="820x355">
-													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x355"/>
-													<container size="820x355">
-														<container pos="6,6" size="808x343">
+												<container pos="0,53" size="820x374">
+													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x374"/>
+													<container size="820x374">
+														<container pos="6,6" size="808x362">
 															<widget size="808x35" type="*widget.Label">
 																<widget size="808x35" type="*widget.RichText">
 																	<text bold pos="6,6" size="150x23" textSize="17">File configuration</text>
@@ -64,7 +64,7 @@
 																				<rectangle fillColor="inputBackground" radius="5" size="140x25"/>
 																				<rectangle size="0x0"/>
 																				<widget pos="6,3" size="108x19" type="*widget.RichText">
-																					<text size="30x19">bmp</text>
+																					<text size="23x19">avif</text>
 																				</widget>
 																				<widget pos="114,2" size="20x20" type="*widget.Icon">
 																					<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
@@ -75,7 +75,7 @@
 																	</container>
 																</container>
 															</container>
-															<container pos="0,111" size="808x115">
+															<container pos="0,111" size="808x134">
 																<container size="808x64">
 																	<container size="401x64">
 																		<container size="401x32">
@@ -149,16 +149,17 @@
 																		</container>
 																	</container>
 																</container>
-																<container pos="0,65" size="808x50">
-																	<widget size="808x50" type="*widget.Label">
-																		<widget size="808x50" type="*widget.RichText">
-																			<text color="error" pos="6,6" size="781x19">BMP cannot be smaller than 58 B - a 1x1 picture is 4 B of pixels once each row is rounded up to four bytes, and the 54 B</text>
-																			<text color="error" pos="6,25" size="625x19">header sits in front of it. Requested: 1 B. Ask for 58 B or more, or set a smaller width and height</text>
+																<container pos="0,65" size="808x69">
+																	<widget size="808x69" type="*widget.Label">
+																		<widget size="808x69" type="*widget.RichText">
+																			<text color="error" pos="6,6" size="771x19">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303 B at worst, and the file always</text>
+																			<text color="error" pos="6,25" size="767x19">carries a free box, which costs 8 B even when it holds nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller</text>
+																			<text color="error" pos="6,44" size="233x19">width and height, or a lower quality</text>
 																		</widget>
 																	</widget>
 																</container>
 															</container>
-															<container pos="0,235" size="808x64">
+															<container pos="0,254" size="808x64">
 																<container size="808x64">
 																	<container size="401x64">
 																		<container size="401x32">
@@ -226,27 +227,27 @@
 																	</container>
 																</container>
 															</container>
-															<container pos="0,308" size="808x35">
+															<container pos="0,327" size="808x35">
 																<container size="808x35">
 																	<container size="808x35">
-																		<widget size="153x35" type="*widget.Label">
-																			<widget size="153x35" type="*widget.RichText">
-																				<text bold pos="6,6" size="141x23" textSize="17">Settings for bmp</text>
+																		<widget size="147x35" type="*widget.Label">
+																			<widget size="147x35" type="*widget.RichText">
+																				<text bold pos="6,6" size="135x23" textSize="17">Settings for avif</text>
 																			</widget>
 																		</widget>
-																		<widget pos="159,0" size="32x35" type="*widget.Button">
+																		<widget pos="153,0" size="32x35" type="*widget.Button">
 																			<rectangle radius="5" size="32x35"/>
 																			<rectangle size="32x35"/>
 																			<image fillMode="contain" pos="6,7" rsc="menuExpandIcon" size="iconInlineSize" themed="foreground"/>
 																		</widget>
-																		<spacer pos="197,0" size="616x35"/>
+																		<spacer pos="191,0" size="622x35"/>
 																	</container>
 																</container>
 															</container>
 														</container>
 													</container>
 												</container>
-												<container pos="0,422" size="820x194">
+												<container pos="0,442" size="820x194">
 													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x194"/>
 													<container size="820x194">
 														<container pos="6,6" size="808x182">

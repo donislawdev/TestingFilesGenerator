@@ -25,8 +25,8 @@
 						<container size="1088x1250">
 							<container size="1088x1250">
 								<widget size="1088x1200" type="*widget.Scroll">
-									<container size="1088x1380">
-										<container pos="134,0" size="820x1380">
+									<container size="1088x1418">
+										<container pos="134,0" size="820x1418">
 											<container size="820x39">
 												<widget pos="6,0" size="808x39" type="*widget.Label">
 													<widget size="808x39" type="*widget.RichText">
@@ -73,17 +73,17 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,523" size="820x621">
-												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x621"/>
-												<container size="820x621">
-													<container pos="6,6" size="808x609">
+											<container pos="0,523" size="820x659">
+												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x659"/>
+												<container size="820x659">
+													<container pos="6,6" size="808x647">
 														<widget size="808x35" type="*widget.Label">
 															<widget size="808x35" type="*widget.RichText">
 																<text bold pos="6,6" size="242x23" textSize="17">Third party code compiled in</text>
 															</widget>
 														</widget>
-														<widget pos="0,44" size="808x565" type="*widget.Label">
-															<widget size="808x565" type="*widget.RichText">
+														<widget pos="0,44" size="808x603" type="*widget.Label">
+															<widget size="808x603" type="*widget.RichText">
 																<text pos="6,6" size="520x19">Go runtime and standard library  BSD-3-Clause  Copyright 2009 The Go Authors</text>
 																<text pos="6,25" size="482x19">fyne.io/fyne/v2  BSD-3-Clause  (C) 2018 Fyne.io developers (see AUTHORS)</text>
 																<text pos="6,44" size="431x19">fyne.io/systray  Apache-2.0  2014 Brave New Software Project, Inc.</text>
@@ -94,31 +94,33 @@
 																<text pos="6,139" size="492x19">github.com/fsnotify/fsnotify  BSD-3-Clause  Copyright 2012 The Go Authors</text>
 																<text pos="6,158" size="378x19">github.com/fyne-io/image  BSD-3-Clause  (c) 2022, Fyne.io</text>
 																<text pos="6,177" size="424x19">github.com/fyne-io/oksvg  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
-																<text pos="6,196" size="323x19">github.com/go-gl/gl  MIT  (c) 2014 Eric Woroshow</text>
-																<text pos="6,215" size="641x19">github.com/go-gl/glfw/v3.4/glfw  BSD-3-Clause  (c) 2012 The glfw3-go Authors. All rights reserved.</text>
-																<text pos="6,234" size="444x19">github.com/go-text/render  BSD-3-Clause  2021 The go-text authors</text>
-																<text pos="6,254" size="473x19">github.com/go-text/typesetting  BSD-3-Clause  2021 The go-text authors</text>
-																<text pos="6,273" size="387x19">github.com/goccy/go-yaml  MIT  (c) 2019 Masaaki Goshima</text>
-																<text pos="6,292" size="682x19">github.com/godbus/dbus/v5  BSD-2-Clause  (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google</text>
-																<text pos="6,311" size="414x19">github.com/jeandeaual/go-locale  MIT  (c) 2020 Alexis Jeandeau</text>
-																<text pos="6,330" size="431x19">github.com/jsummers/gobmp  MIT  (c) 2012-2015 Jason Summers</text>
-																<text pos="6,349" size="445x19">github.com/mattn/go-runewidth  MIT  (c) 2016 Yasuhiro Matsumoto</text>
-																<text pos="6,368" size="319x19">github.com/nfnt/resize  ISC  (c) 2012, Jan Schlicht</text>
-																<text pos="6,387" size="602x19">github.com/nicksnyder/go-i18n/v2  MIT  (c) 2014 Nick Snyder https://github.com/nicksnyder</text>
-																<text pos="6,406" size="267x19">github.com/rymdport/portal  Apache-2.0</text>
-																<text pos="6,425" size="424x19">github.com/srwiley/oksvg  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
-																<text pos="6,444" size="432x19">github.com/srwiley/rasterx  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
-																<text pos="6,463" size="374x19">github.com/yuin/goldmark  MIT  (c) 2019 Yusuke Inuzuka</text>
-																<text pos="6,482" size="375x19">golang.org/x/image  BSD-3-Clause  2009 The Go Authors.</text>
-																<text pos="6,502" size="355x19">golang.org/x/net  BSD-3-Clause  2009 The Go Authors.</text>
-																<text pos="6,521" size="354x19">golang.org/x/sys  BSD-3-Clause  2009 The Go Authors.</text>
-																<text pos="6,540" size="423x19">golang.org/x/text  BSD-3-Clause  Copyright 2009 The Go Authors</text>
+																<text pos="6,196" size="753x19">github.com/gen2brain/gav1d  BSD-2-Clause  (c) 2018-2025 VideoLAN and dav1d authors, (c) 2016 Alliance for Open</text>
+																<text pos="6,215" size="40x19">Media</text>
+																<text pos="6,234" size="323x19">github.com/go-gl/gl  MIT  (c) 2014 Eric Woroshow</text>
+																<text pos="6,254" size="641x19">github.com/go-gl/glfw/v3.4/glfw  BSD-3-Clause  (c) 2012 The glfw3-go Authors. All rights reserved.</text>
+																<text pos="6,273" size="444x19">github.com/go-text/render  BSD-3-Clause  2021 The go-text authors</text>
+																<text pos="6,292" size="473x19">github.com/go-text/typesetting  BSD-3-Clause  2021 The go-text authors</text>
+																<text pos="6,311" size="387x19">github.com/goccy/go-yaml  MIT  (c) 2019 Masaaki Goshima</text>
+																<text pos="6,330" size="682x19">github.com/godbus/dbus/v5  BSD-2-Clause  (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google</text>
+																<text pos="6,349" size="414x19">github.com/jeandeaual/go-locale  MIT  (c) 2020 Alexis Jeandeau</text>
+																<text pos="6,368" size="431x19">github.com/jsummers/gobmp  MIT  (c) 2012-2015 Jason Summers</text>
+																<text pos="6,387" size="445x19">github.com/mattn/go-runewidth  MIT  (c) 2016 Yasuhiro Matsumoto</text>
+																<text pos="6,406" size="319x19">github.com/nfnt/resize  ISC  (c) 2012, Jan Schlicht</text>
+																<text pos="6,425" size="602x19">github.com/nicksnyder/go-i18n/v2  MIT  (c) 2014 Nick Snyder https://github.com/nicksnyder</text>
+																<text pos="6,444" size="267x19">github.com/rymdport/portal  Apache-2.0</text>
+																<text pos="6,463" size="424x19">github.com/srwiley/oksvg  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
+																<text pos="6,482" size="432x19">github.com/srwiley/rasterx  BSD-3-Clause  (c) 2018, Steven R Wiley</text>
+																<text pos="6,502" size="374x19">github.com/yuin/goldmark  MIT  (c) 2019 Yusuke Inuzuka</text>
+																<text pos="6,521" size="375x19">golang.org/x/image  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,540" size="355x19">golang.org/x/net  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,559" size="354x19">golang.org/x/sys  BSD-3-Clause  2009 The Go Authors.</text>
+																<text pos="6,578" size="423x19">golang.org/x/text  BSD-3-Clause  Copyright 2009 The Go Authors</text>
 															</widget>
 														</widget>
 													</container>
 												</container>
 											</container>
-											<container pos="0,1159" size="820x220">
+											<container pos="0,1197" size="820x220">
 												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x220"/>
 												<container size="820x220">
 													<container pos="6,6" size="808x208">
@@ -148,8 +150,8 @@
 										<linearGradient pos="0,-8" size="1088x8"/>
 									</widget>
 									<widget pos="1082,0" size="6x1200" type="*widget.scrollBarArea">
-										<widget pos="3,0" size="3x1043" type="*widget.scrollBar">
-											<rectangle fillColor="scrollbar" radius="3" size="3x1043"/>
+										<widget pos="3,0" size="3x1015" type="*widget.scrollBar">
+											<rectangle fillColor="scrollbar" radius="3" size="3x1015"/>
 										</widget>
 									</widget>
 								</widget>

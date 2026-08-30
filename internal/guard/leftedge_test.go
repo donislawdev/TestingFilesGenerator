@@ -66,7 +66,7 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 			text.HeadingGenerate(),
 			text.SectionConfiguration(),
 			text.FieldFormat(),
-			text.SettingsFor("bmp"),
+			text.SettingsFor(firstFormat()),
 		}},
 		// The preset screen names its section and its first field with the
 		// same word, so only one of the two can be found by its text. Asked

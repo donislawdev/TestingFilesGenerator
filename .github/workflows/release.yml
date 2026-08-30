@@ -51,7 +51,7 @@ jobs:
         # A release built from a red tree is the one kind of release that
         # cannot be taken back, because the binaries are already on somebody's
         # disk. This is the same command CI runs.
-        run: go test ./... -count=1
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1
 
       - name: what version the code says
         id: version
@@ -188,7 +188,7 @@ jobs:
             # -trimpath keeps the build machine's directory names out of the
             # binary. On a public release that is a privacy line as much as a
             # reproducibility one.
-            GOOS="$os" GOARCH="$arch" go build -trimpath -o "${work}/${binary}" ./cmd/tfg
+            GOOS="$os" GOARCH="$arch" go build -tags "$(cat .github/build-tags)" -trimpath -o "${work}/${binary}" ./cmd/tfg
 
             # The notices travel with the binary because their licences require
             # it - see THIRD-PARTY-NOTICES.md, which says so itself. The licence
@@ -295,10 +295,10 @@ jobs:
             # release and a local build cannot drift. Without them Windows
             # hangs a black console window behind the program. Windows only:
             # the flag names a Windows subsystem and means nothing elsewhere.
-            go build -trimpath -ldflags="$(cat .github/gui-ldflags)" \
+            go build -tags "$(cat .github/build-tags)" -trimpath -ldflags="$(cat .github/gui-ldflags)" \
               -o "${work}/tfg-gui.exe" ./cmd/tfg-gui
           else
-            go build -trimpath -o "${work}/tfg-gui" ./cmd/tfg-gui
+            go build -tags "$(cat .github/build-tags)" -trimpath -o "${work}/tfg-gui" ./cmd/tfg-gui
           fi
 
           # Same reason as the command line archives: on macOS the ticket has

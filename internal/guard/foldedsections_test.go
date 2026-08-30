@@ -321,7 +321,7 @@ func TestTheSectionsInsideABatchArriveFolded(t *testing.T) {
 				s := window.NewGenerate(newFakeHost(t))
 				return s.Object(), s.Fields()
 			},
-			sections: []string{text.SettingsFor("bmp")},
+			sections: []string{text.SettingsFor(firstFormat())},
 		},
 		{
 			name: "the batch screen",
@@ -329,7 +329,7 @@ func TestTheSectionsInsideABatchArriveFolded(t *testing.T) {
 				s := window.NewRecipe(newFakeHost(t))
 				return s.Object(), s.Fields()
 			},
-			sections: []string{text.SettingsFor("bmp"), text.SectionManifestNotes()},
+			sections: []string{text.SettingsFor(firstFormat()), text.SectionManifestNotes()},
 		},
 	} {
 		t.Run(screen.name, func(t *testing.T) {

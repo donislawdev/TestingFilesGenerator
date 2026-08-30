@@ -34,6 +34,24 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **AVIF, the twenty third format.** One frame, 8 bit, 4:2:0.
+  `tfg generate --format avif --size 300kb` writes an AV1 picture in an ISO base
+  media container. `width`, `height` and `quality` can be set, and the picture
+  goes up to 40 megapixels, so Full HD and 4K are both in reach. Left alone, the
+  picture is the largest of a fixed set that fits the size asked for, up to
+  640x480 - the same as JPG.
+
+  **Every size from its minimum of 311 B upwards is reachable, with no gaps.**
+  The padding travels in a `free` box, which is the box the format sets aside
+  for space that means nothing, and it takes any length at all.
+
+  This is the first format here whose pixels are coded by somebody else's
+  encoder rather than by code in this repository. AV1 is too large to write by
+  hand for one format - the coefficient tables alone in the nearest
+  implementation are fourteen times the size of this project's whole WebP
+  encoder. The encoder is pinned, so raising it is a breaking change like any
+  other, and it is pure Go: no C compiler, no shared library and no socket.
+
 - **WEBP, the twenty second format.** Lossless, one frame, no alpha.
   `tfg generate --format webp --size 300kb` writes a picture worth 300 kB rather
   than a thumbnail followed by filler, because the encoder measures out three

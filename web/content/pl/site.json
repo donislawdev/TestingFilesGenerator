@@ -154,7 +154,7 @@
     },
     {
       "q": "Jakie formaty są następne w kolejce?",
-      "a": "7z, tiff, webp, mp3 i mp4. Formatów działających dziś od początku do końca jest {{ .Facts.FormatCount }}."
+      "a": "7z, mp3 i mp4. Formatów działających dziś od początku do końca jest {{ .Facts.FormatCount }}."
     },
     {
       "q": "Na jakich systemach to działa?",
