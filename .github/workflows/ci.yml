@@ -724,6 +724,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             p7zip-full ffmpeg poppler-utils inkscape python3-pil
+
+          # The distribution's Pillow cannot open an AVIF - measured on this
+          # runner, PIL.UnidentifiedImageError on a file the structural checker
+          # had just called sound. Installed for the SAME interpreter the oracle
+          # reaches for, then asked whether it can actually read one. No version
+          # is named: the question is what this Pillow can do, not when the
+          # support landed.
+          python -m pip install --break-system-packages --upgrade pillow
+          python - <<'PY'
+          from PIL import Image, features
+          print("pillow", Image.__version__, "avif:", features.check("avif"))
+          if not features.check("avif"):
+              raise SystemExit("this Pillow cannot read AVIF, so the oracle would fail on a good file")
+          PY
         shell: bash
 
       - name: every format past its reference tool

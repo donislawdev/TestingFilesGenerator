@@ -24,8 +24,9 @@
 //
 // One thing follows from not owning the encoder. What a picture codes to cannot
 // be worked out with arithmetic the way BMP, TIFF and WebP work theirs out, so
-// planning encodes the picture and keeps the bytes rather than throwing them
-// away and encoding a second time while writing.
+// the picture is chosen from a ladder of sizes, each carrying a measured
+// ceiling. Planning stays arithmetic and the coding happens while writing,
+// which is what keeps a preview of a large run cheap.
 //
 // The padding channel is a free box, which is the box the container defines
 // for space that means nothing. It goes after everything the encoder wrote,
