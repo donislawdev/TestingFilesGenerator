@@ -34,6 +34,7 @@ require github.com/goccy/go-yaml v1.19.2
 
 require (
 	github.com/gen2brain/gav1d v0.2.5
+	github.com/gen2brain/jxl v0.2.0
 	golang.org/x/text v0.41.0
 )
 

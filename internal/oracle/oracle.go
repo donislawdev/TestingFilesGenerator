@@ -214,6 +214,33 @@ var checkers = map[string]Checker{
 		},
 	},
 
+	// libjxl, reached through pillow-jxl-plugin, which is a C++ implementation
+	// and therefore not the Go one this project encodes with.
+	//
+	// It earns the name witness rather than reader: measured 2026-08-31, it
+	// REFUSES a file cut in half and one with a byte flipped in the middle,
+	// while exiftool reads JPEG XL and accepts both. It also refuses a
+	// container whose ftyp names no compatible brand, which is stricter than
+	// the Go decoder and is why the generator writes that brand.
+	"pillow-jxl": {
+		Name: "libjxl-through-pillow",
+		find: inPath("python"),
+		args: func(p string) []string {
+			return []string{"-c", pillowJXLScript, p}
+		},
+		accept: func(stdout, stderr string, code int) error {
+			if code != 0 {
+				return fmt.Errorf("libjxl refused the image: %s", strings.TrimSpace(stderr))
+			}
+			// A missing Pillow or a missing plugin never reaches here: Check
+			// turns a SKIP into "not installed" before asking this.
+			if !strings.HasPrefix(strings.TrimSpace(stdout), "OK") {
+				return fmt.Errorf("libjxl did not confirm the image: %s", strings.TrimSpace(stdout+stderr))
+			}
+			return nil
+		},
+	},
+
 	// V8's parser, which is neither our code nor our language. Measured present
 	// on this machine as node v26.5.0 on 2026-08-01.
 	"node-json": {
@@ -351,7 +378,7 @@ func Strict(formatID, path string) Result {
 func StrictKnows(formatID string) bool {
 	switch formatID {
 	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",
-		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "docx", "xlsx", "pptx":
+		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "jxl", "docx", "xlsx", "pptx":
 		return true
 	}
 	return false

@@ -1263,8 +1263,11 @@ def check_webp(data):
     ok(f"riff {declared} B, chunks {seen}, {private} private, {trailing} B after the payload")
 
 
-def avif_boxes(data, start, end, depth=0):
-    """Walks one level of the box tree and yields (name, payload start, payload end)."""
+def iso_boxes(data, start, end, depth=0):
+    """Walks one level of the box tree and yields (name, payload start, payload end).
+
+    Shared by AVIF and JPEG XL, which both sit in ISO base media boxes.
+    """
     pos = start
     while pos + 8 <= end:
         size = struct.unpack(">I", data[pos:pos + 4])[0]
@@ -1292,7 +1295,7 @@ def check_avif(data):
     if len(data) < 16:
         fail(f"the file is {len(data)} B and the smallest container needs more than that")
 
-    top = list(avif_boxes(data, 0, len(data)))
+    top = list(iso_boxes(data, 0, len(data)))
     if not top:
         fail("the file carries no boxes at all")
 
@@ -1318,7 +1321,7 @@ def check_avif(data):
     # these a reader has a container and no picture, which is exactly the
     # shape a padding channel written to the wrong place would produce.
     meta_start, meta_end = next((s, e) for n, s, e in top if n == b"meta")
-    inner = [n.decode("latin1") for n, _, _ in avif_boxes(data, meta_start + 4, meta_end)]
+    inner = [n.decode("latin1") for n, _, _ in iso_boxes(data, meta_start + 4, meta_end)]
     for needed in ("hdlr", "pitm", "iloc", "iinf", "iprp"):
         if needed not in inner:
             fail(f"the meta box has no {needed} box, so it does not say {AVIF_MEANING[needed]}")
@@ -1337,6 +1340,72 @@ def check_avif(data):
     ok(f"boxes {names}, brands {[b.decode('latin1') for b in brands]}, {free_bytes} B of free")
 
 
+JXL_SIGNATURE = b"\x00\x00\x00\x0cJXL \x0d\x0a\x87\x0a"
+
+
+def check_jxl(data):
+    """A JPEG XL in the container form this generator writes.
+
+    Two shapes are legal for the format - a bare codestream starting FF 0A, and
+    the container. This tool always writes the container, because that is where
+    a free box can live, so a bare codestream here means the writer changed and
+    the padding went somewhere undefined.
+    """
+    if len(data) < len(JXL_SIGNATURE) + 8:
+        fail(f"the file is {len(data)} B and the smallest container needs more than that")
+
+    if data[:2] == b"\xff\x0a":
+        fail("the file is a bare codestream, and this generator writes the container form")
+    if data[:len(JXL_SIGNATURE)] != JXL_SIGNATURE:
+        fail("the file does not open with the JPEG XL signature box")
+
+    top = list(iso_boxes(data, 0, len(data)))
+    names = [n.decode("latin1") for n, _, _ in top]
+    if names[0] != "JXL ":
+        fail(f"the first box is {names[0]!r} and a JPEG XL container starts with the signature box")
+    if len(names) < 2 or names[1] != "ftyp":
+        fail("the signature box is not followed by ftyp, so nothing says what this file is")
+
+    _, ftyp_start, ftyp_end = top[1]
+    if ftyp_end - ftyp_start < 8:
+        fail("the ftyp box is too short to carry a brand")
+    brands = [data[ftyp_start:ftyp_start + 4]]
+    for at in range(ftyp_start + 8, ftyp_end, 4):
+        brands.append(data[at:at + 4])
+    if brands[0] != b"jxl ":
+        fail(f"the major brand is {brands[0]!r} and a JPEG XL says jxl ")
+    # Measured 2026-08-31: libjxl refuses the file when the compatible brand is
+    # missing, while the pure Go decoder accepts it. The stricter reader is the
+    # one worth writing for, so this checker asks for it too.
+    if b"jxl " not in brands[1:]:
+        fail("ftyp names no compatible brand jxl , which libjxl refuses")
+
+    if names.count("jxlc") != 1:
+        fail(f"the file carries {names.count('jxlc')} jxlc boxes and this generator writes one")
+
+    _, code_start, code_end = next((n, s, e) for n, s, e in top if n == b"jxlc")
+    if data[code_start:code_start + 2] != b"\xff\x0a":
+        fail("the jxlc box does not start with the codestream signature FF 0A")
+
+    # Padding belongs after the picture and nowhere else.
+    free_bytes = 0
+    seen_code = False
+    for name, start, stop in top:
+        if name == b"jxlc":
+            seen_code = True
+        elif name == b"free":
+            free_bytes += stop - start + 8
+            if not seen_code:
+                fail("a free box sits before the picture data, and this generator puts padding after it")
+
+    tail = len(data) - top[-1][2]
+    if tail:
+        fail(f"{tail} B sit after the last box, outside any box at all")
+
+    ok(f"boxes {names}, brands {[b.decode('latin1') for b in brands]}, "
+       f"codestream {code_end - code_start} B, {free_bytes} B of free")
+
+
 AVIF_MEANING = {
     "hdlr": "what kind of thing it holds",
     "pitm": "which item is the picture",
@@ -1350,7 +1419,7 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
-          "tiff": check_tiff, "webp": check_webp, "avif": check_avif,
+          "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
 if __name__ == "__main__":

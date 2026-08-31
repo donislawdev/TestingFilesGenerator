@@ -17,14 +17,14 @@ first, so the difference is worth stating rather than leaving to be assumed.
 
 | binary | what it is | third party code in it |
 |---|---|---|
-| `tfg` | the command line | the Go runtime, and **three** modules: `github.com/goccy/go-yaml`, `github.com/gen2brain/gav1d` and `golang.org/x/text` |
+| `tfg` | the command line | the Go runtime, and **four** modules: `github.com/goccy/go-yaml`, `github.com/gen2brain/gav1d`, `github.com/gen2brain/jxl` and `golang.org/x/text` |
 | `tfg-gui` | the desktop window | the same, plus **27** more for the graphics toolkit, one of them on Linux only |
 
 The window is a separate binary because its toolkit needs a C compiler and
 OpenGL, neither of which the command line uses. A server or a build agent
 running `tfg` therefore carries none of the 27, and that is checked rather than
 asserted: a guard in the source compares what the command line binary actually
-links against that list of three.
+links against that list of four.
 
 ---
 
@@ -156,6 +156,51 @@ it from anybody who sues over the codec. The full text is in the module,
 at `PATENTS`, and at <https://aomedia.org/license/patent-license/>.
 
 Source: <https://github.com/gen2brain/gav1d>
+
+---
+
+## github.com/gen2brain/jxl
+
+Version 0.2.0. Codes JPEG XL. It is written in Go and assembly with no C in
+it and no module of its own behind it, so it brings nothing else along.
+
+```
+Copyright (c) the JPEG XL Project Authors.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+It also ships a `PATENTS` file carrying a patent grant from Google: a
+perpetual, worldwide, non-exclusive, no-charge, royalty-free licence to the
+Google patents necessarily infringed by this implementation of JPEG XL,
+withdrawn from anybody who sues over it. The full text is in the module, at
+`PATENTS`.
+
+Source: <https://github.com/gen2brain/jxl>
 
 ---
 

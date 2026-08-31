@@ -259,3 +259,30 @@ if frames < 1:
     print("FAIL the reader found no frame at all"); sys.exit(1)
 print("OK", im.format, im.width, im.height, "frames", frames)
 `
+
+// pillowJXLScript is Pillow again, with the JPEG XL codec registered first.
+//
+// A script of its own rather than an import bolted onto the one above, because
+// the two absences mean different things. Pillow missing is a machine without
+// the reader. The plugin missing is a machine with Pillow that cannot read this
+// one format - measured on 2026-08-31, Pillow 12.3.0 reports jpg_xl as
+// unsupported and opens nothing. Both have to SKIP rather than FAIL, or every
+// runner without the plugin reports a broken file.
+//
+// The plugin registers the codec as a side effect of being imported, which is
+// why it is imported and never named again.
+const pillowJXLScript = `
+import sys
+try:
+    from PIL import Image
+except ImportError:
+    print("SKIP no pillow"); sys.exit(0)
+try:
+    import pillow_jxl  # noqa: F401  registers the JPEG XL codec
+except ImportError:
+    print("SKIP no pillow-jxl-plugin"); sys.exit(0)
+im = Image.open(sys.argv[1])
+im.load()
+im.convert("RGBA").tobytes()
+print("OK", im.format, im.width, im.height)
+`

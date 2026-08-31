@@ -125,6 +125,23 @@ func goldenCases() map[string]engine.Target {
 		"avif_odd_size": {ID: "g", Format: "avif", Sizes: engine.Uniform(1, 65537), Label: true,
 			Properties: map[string]string{"width": "64", "height": "48"}},
 
+		// JPEG XL, whose picture is coded by a borrowed encoder like AVIF's, so
+		// these hashes pin that module's version as much as our own bytes.
+		// The dimensions are named, which keeps the case away from the size
+		// ladder and pointed at the container and the padding instead.
+		"jxl_64kib": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
+		// Quality is the one setting that changes how many bytes the coder
+		// emits, so it reaches code the case above never does.
+		"jxl_quality": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48", "quality": "70"}},
+
+		// An odd size. The free box takes any length at all, so this is the case
+		// that would catch padding that could only step in twos.
+		"jxl_odd_size": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
 		"gif_64kib": {ID: "g", Format: "gif", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 
