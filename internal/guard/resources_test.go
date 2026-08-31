@@ -238,9 +238,31 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 				// about the rest: xlsx could go from 79 objects to 127 and png
 				// from 56 to 127 without a word. This asks each format about
 				// itself, so every one of them is held to what it does today.
-				if objects-steady > growthAllowanceFor(steady) {
+				//
+				// Both sides are floors of several readings, and that is a
+				// repair rather than a flourish. Until 2026-08-31 this compared
+				// the floor of five readings at the small size against a SINGLE
+				// reading at the large one - and ReadMemStats counts the whole
+				// process, so background work landed in one side of a
+				// subtraction and never the other. The difference was therefore
+				// biased upwards by however busy the machine was.
+				//
+				// It was not theoretical. avif reported a growth of 31 to 38
+				// against a tolerance of 8 on the machine this was written on,
+				// reproducibly, while CI stayed green - so the guard said
+				// "allocating per item" about a generator that was doing
+				// nothing of the kind, and said it only on some machines.
+				// Measured with both sides as floors: that failure goes away
+				// and jxl, whose growth is real, still reports it.
+				//
+				// The cost is five writes of 64 MiB per format instead of one,
+				// measured at 5.08 s to 20.81 s for this whole function. Paid
+				// on purpose: a guard that reddens on the weather is one
+				// somebody eventually switches off.
+				big := objectsAllocated(t, d, size, steadyRounds)
+				if big-steady > growthAllowanceFor(steady) {
 					t.Errorf("%s allocated %d objects for a %d B file and %d for a %d B one, a growth of %d - it is allocating per item rather than streaming",
-						d.ID, steady, int64(steadySize), objects, size, objects-steady)
+						d.ID, steady, int64(steadySize), big, size, big-steady)
 				}
 			}
 			t.Logf("%s: allocated %d KiB in %d objects, producing %d KiB",
