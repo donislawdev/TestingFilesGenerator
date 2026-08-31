@@ -135,7 +135,7 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 // structurally - in silence. The drift between the two lists was guarded, the
 // absence from both was not.
 //
-// Four Tier 1 formats are still to come and all four are binary, which is where
+// Three Tier 1 formats are still to come and all three are binary, which is where
 // the structural check earns most: at JPG it caught bytes after EOI that Pillow
 // read without complaint, and at TIFF it is the only layer that sees a
 // directory lying about how many bytes of pixels there are - measured
@@ -144,7 +144,7 @@ var structurallyChecked = map[string]bool{
 	"png": true, "wav": true, "pdf": true, "zip": true, "targz": true,
 	"log": true, "csv": true, "json": true, "xml": true, "svg": true, "html": true,
 	"bmp": true, "gif": true, "ico": true, "jpg": true, "tiff": true, "webp": true,
-	"avif": true,
+	"avif": true, "jxl": true,
 	"docx": true, "xlsx": true, "pptx": true,
 	// Nothing to check against beyond "these are the bytes we meant", so they
 	// have one layer and it is honest to say so out loud.

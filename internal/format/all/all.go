@@ -17,6 +17,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/ico"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/jpg"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/jsonfile"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/jxl"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/logfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/md"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pdf"

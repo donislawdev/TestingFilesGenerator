@@ -416,14 +416,7 @@
 							<container size="140x224">
 								<widget size="140x224" type="*widget.List">
 									<widget size="140x224" type="*widget.Scroll">
-										<container pos="0,-112" size="140x644">
-											<widget pos="0,112" size="140x28" type="*widget.listItem">
-												<widget size="140x28" type="*parts.ListRow">
-													<rectangle radius="5" size="140x28"/>
-													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="58,4" size="76x19">gif</text>
-												</widget>
-											</widget>
+										<container pos="0,-140" size="140x672">
 											<widget pos="0,140" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
@@ -455,18 +448,25 @@
 											<widget pos="0,252" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
-													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="58,4" size="76x19">log</text>
+													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="76x19">jxl</text>
 												</widget>
 											</widget>
 											<widget pos="0,280" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
 													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="58,4" size="76x19">md</text>
+													<text pos="58,4" size="76x19">log</text>
 												</widget>
 											</widget>
 											<widget pos="0,308" size="140x28" type="*widget.listItem">
+												<widget size="140x28" type="*parts.ListRow">
+													<rectangle radius="5" size="140x28"/>
+													<image pos="32,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="58,4" size="76x19">md</text>
+												</widget>
+											</widget>
+											<widget pos="0,336" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
 													<image pos="6,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
@@ -474,7 +474,7 @@
 													<text pos="58,4" size="76x19">pdf</text>
 												</widget>
 											</widget>
-											<widget pos="0,336" size="140x28" type="*widget.listItem">
+											<widget pos="0,364" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="5" size="140x28"/>
 													<image pos="32,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
@@ -483,9 +483,6 @@
 											</widget>
 											<widget size="0x0" type="*widget.Separator">
 												<rectangle fillColor="separator" size="0x0"/>
-											</widget>
-											<widget pos="0,140" size="140x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="140x0"/>
 											</widget>
 											<widget pos="0,168" size="140x0" type="*widget.Separator">
 												<rectangle fillColor="separator" size="140x0"/>
@@ -508,6 +505,9 @@
 											<widget pos="0,336" size="140x0" type="*widget.Separator">
 												<rectangle fillColor="separator" size="140x0"/>
 											</widget>
+											<widget pos="0,364" size="140x0" type="*widget.Separator">
+												<rectangle fillColor="separator" size="140x0"/>
+											</widget>
 										</container>
 										<widget size="140x0" type="*widget.Shadow">
 											<linearGradient size="140x8"/>
@@ -516,8 +516,8 @@
 											<linearGradient pos="0,-8" size="140x8"/>
 										</widget>
 										<widget pos="134,0" size="6x224" type="*widget.scrollBarArea">
-											<widget pos="3,38" size="3x77" type="*widget.scrollBar">
-												<rectangle fillColor="scrollbar" radius="3" size="3x77"/>
+											<widget pos="3,46" size="3x74" type="*widget.scrollBar">
+												<rectangle fillColor="scrollbar" radius="3" size="3x74"/>
 											</widget>
 										</widget>
 									</widget>

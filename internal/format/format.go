@@ -257,6 +257,26 @@ type Descriptor struct {
 	// its own. Empty for every format that has none.
 	JointLimits []JointLimit
 
+	// AllocCeiling is how many objects this format may allocate producing one
+	// file, when the flat ceiling every other one meets does not describe it.
+	// Zero means the flat one applies, which is the case for all but one.
+	//
+	// It exists because a borrowed encoder allocates on its own account. The
+	// hand written generators here sit between 3 and 128 objects a file, and
+	// gav1d, the AVIF encoder, sits at about a hundred - but gen2brain/jxl
+	// allocates per block, about 618 000 of them for one 640x480 picture. A
+	// single ceiling has to fit the heaviest format, so one that fits that one
+	// would say nothing about the other twenty three.
+	//
+	// What the ceiling stands in for is untouched by this: the guard also asks
+	// each format whether its allocation GROWS with the size of the file
+	// asked for, and that question is the real one. Every format answers it,
+	// this one included. Owner's decision, 2026-08-31.
+	//
+	// A ratchet, like the coverage threshold and the code shape ceilings: it
+	// goes down when work makes it lowerable, never up to turn a run green.
+	AllocCeiling int64
+
 	// Container says this format holds other files, so a recipe may declare
 	// contains for it.
 	//

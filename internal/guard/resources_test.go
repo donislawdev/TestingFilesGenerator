@@ -70,6 +70,54 @@ const (
 // size guard nor the determinism guard sees it. This is the one that does.
 const growthTolerance = 8
 
+// growthAllowanceFor is how far the count may move for one format, and it is
+// the flat tolerance above plus a thousandth of what that format allocates.
+//
+// The flat number was measured against generators allocating between 3 and 128
+// objects a file, where the noise is 1 to 2. It does not survive a format whose
+// encoder allocates six hundred thousand: measured on 2026-08-31, jxl reports a
+// growth of 76 to 83 across five runs between a 4 MiB file and a 64 MiB one,
+// steadily rather than erratically. Nothing in our loop runs more often for the
+// larger file except the padding writes, which allocate nothing - what moves is
+// the garbage collector's own bookkeeping, and that scales with how much has
+// been allocated rather than with anything this project wrote.
+//
+// So the allowance scales with it too. A thousandth, which sits between two
+// measurements the way this project's other thresholds do:
+//
+//   - below it, the noise at 83
+//   - above it, the defect this whole check exists for. Moving a write buffer
+//     inside its own loop costs one object per 32 KiB chunk. Measured on jxl on
+//     2026-08-31 by doing exactly that: a growth of 2018 against an allowance
+//     of 634, so the defect is still caught with three times the margin.
+//
+// For every other format this changes nothing at all, and that is checkable
+// rather than hoped for: a thousandth of 128 is zero, and no other format
+// allocates more than that.
+func growthAllowanceFor(steady int64) int64 {
+	return growthTolerance + steady/1000
+}
+
+// ceilingFor is the object budget one format has to stay inside.
+//
+// Almost always the flat one above. A format may declare its own when a
+// borrowed encoder allocates on an order the hand written generators do not -
+// gen2brain/jxl allocates per block, about 618 000 objects for one 640x480
+// picture, against about a hundred for the AVIF encoder. Setting the flat
+// ceiling high enough for that would stop it saying anything about the other
+// twenty three, which is why the number lives beside the format that needs it
+// rather than here.
+//
+// This weakens the flat check for exactly one format and nothing else. The
+// growth check below is untouched and applies to every format equally, and it
+// is the one that asks the question this ceiling is a proxy for.
+func ceilingFor(d format.Descriptor) int64 {
+	if d.AllocCeiling > 0 {
+		return d.AllocCeiling
+	}
+	return allocCeiling
+}
+
 // objectsAllocated writes one file `rounds` times and returns the LOWEST object
 // count it saw.
 //
@@ -180,9 +228,9 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 				// The ceiling is asked of the steady number, not of a single
 				// reading, so background noise cannot redden it.
 				steady := objectsAllocated(t, d, steadySize, steadyRounds)
-				if steady > allocCeiling {
+				if ceiling := ceilingFor(d); steady > ceiling {
 					t.Errorf("%s allocated %d objects producing a %d B file, ceiling is %d - something in the loop is allocating per item",
-						d.ID, steady, int64(steadySize), allocCeiling)
+						d.ID, steady, int64(steadySize), ceiling)
 				}
 
 				// And the property the ceiling was always a proxy for. A
@@ -190,9 +238,31 @@ func TestNoGeneratorHoldsTheWholeFileInMemory(t *testing.T) {
 				// about the rest: xlsx could go from 79 objects to 127 and png
 				// from 56 to 127 without a word. This asks each format about
 				// itself, so every one of them is held to what it does today.
-				if objects-steady > growthTolerance {
+				//
+				// Both sides are floors of several readings, and that is a
+				// repair rather than a flourish. Until 2026-08-31 this compared
+				// the floor of five readings at the small size against a SINGLE
+				// reading at the large one - and ReadMemStats counts the whole
+				// process, so background work landed in one side of a
+				// subtraction and never the other. The difference was therefore
+				// biased upwards by however busy the machine was.
+				//
+				// It was not theoretical. avif reported a growth of 31 to 38
+				// against a tolerance of 8 on the machine this was written on,
+				// reproducibly, while CI stayed green - so the guard said
+				// "allocating per item" about a generator that was doing
+				// nothing of the kind, and said it only on some machines.
+				// Measured with both sides as floors: that failure goes away
+				// and jxl, whose growth is real, still reports it.
+				//
+				// The cost is five writes of 64 MiB per format instead of one,
+				// measured at 5.08 s to 20.81 s for this whole function. Paid
+				// on purpose: a guard that reddens on the weather is one
+				// somebody eventually switches off.
+				big := objectsAllocated(t, d, size, steadyRounds)
+				if big-steady > growthAllowanceFor(steady) {
 					t.Errorf("%s allocated %d objects for a %d B file and %d for a %d B one, a growth of %d - it is allocating per item rather than streaming",
-						d.ID, steady, int64(steadySize), objects, size, objects-steady)
+						d.ID, steady, int64(steadySize), big, size, big-steady)
 				}
 			}
 			t.Logf("%s: allocated %d KiB in %d objects, producing %d KiB",

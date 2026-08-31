@@ -90,6 +90,21 @@
       "bytes": 8192,
       "sha256": "0b717f6295487af0afa21c68e2fc5649239eb010089079b9364f9b8fd2538a30"
     },
+    "jxl_64kib": {
+      "bytes": 65536,
+      "sha256": "1f7946aacc7f6a90c3b2cc9713dca2a9113d1b76d7ec61691b52935d74b26437",
+      "measured_on": "2026-08-31"
+    },
+    "jxl_odd_size": {
+      "bytes": 65537,
+      "sha256": "768e0af192480e02607d4fa6f0f343f1cb0dd8ab49d373c92245f3aa68caa017",
+      "measured_on": "2026-08-31"
+    },
+    "jxl_quality": {
+      "bytes": 65536,
+      "sha256": "c5c522aed0d2051a20f8eb52bfecd49bb13f41cf86b30170eaf3c05998323a9a",
+      "measured_on": "2026-08-31"
+    },
     "log_8kib": {
       "bytes": 8192,
       "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"

@@ -105,8 +105,23 @@ jobs:
         # saying which one moved - the notices file tracks the linked set and
         # dropped it, this list tracks the graph and keeps it.
         #
+        # Changed on 2026-08-29 when AVIF arrived, and again on 2026-08-31
+        # when JPEG XL did: github.com/gen2brain/gav1d and then
+        # github.com/gen2brain/jxl, both picture encoders written in Go with
+        # empty go.mod files of their own, so neither brought anything else
+        # into the graph. Both licences were read out of the pinned module
+        # rather than off a web page - BSD-2-Clause with an AOM patent grant,
+        # and BSD-3-Clause with a Google patent grant - and both are one way
+        # compatible with GPL-3.0. The count went 65 to 66 to 67.
+        #
+        # Worth saying plainly, because it is the failure this comment exists
+        # to prevent: the sentence above went stale on 2026-08-29 and nobody
+        # noticed. It still said 65 while the list held 66, because AVIF
+        # updated the list and not the prose. The list is checked by the job
+        # below and the prose is checked by nobody.
+        #
         # The second question protects what ships to most people. The
-        # command line binary links exactly two external modules and the
+        # command line binary links exactly four external modules and the
         # toolkit is not among them, so a build for a server carries no
         # window, no OpenGL and - see internal/guard - no socket.
         run: |
@@ -134,6 +149,7 @@ jobs:
             github.com/fyne-io/image \
             github.com/fyne-io/oksvg \
             github.com/gen2brain/gav1d \
+            github.com/gen2brain/jxl \
             github.com/go-gl/gl \
             github.com/go-gl/glfw/v3.4/glfw \
             github.com/go-ole/go-ole \
@@ -200,7 +216,7 @@ jobs:
           echo "dependencies unchanged, $(echo "$expected" | wc -l) modules"
 
           linked=$(go list -deps -tags "$(cat .github/build-tags)" -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | LC_ALL=C sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
-          wanted=$(printf '%s\n' github.com/gen2brain/gav1d github.com/goccy/go-yaml golang.org/x/text)
+          wanted=$(printf '%s\n' github.com/gen2brain/gav1d github.com/gen2brain/jxl github.com/goccy/go-yaml golang.org/x/text)
           if [ "$linked" != "$wanted" ]; then
             echo "the command line binary links a different set of modules."
             echo "expected: $wanted"

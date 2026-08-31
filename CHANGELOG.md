@@ -34,6 +34,24 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **JPEG XL, the twenty fourth format.** One frame, 8 bit, RGB.
+  `tfg generate --format jxl --size 300kb` writes a JPEG XL picture in the
+  container the format defines for it. `width`, `height` and `quality` can be
+  set, and the picture goes up to 40 megapixels, so Full HD and 4K are both in
+  reach. Left alone, the picture is the largest of a fixed set that fits the
+  size asked for, up to 640x480 - the same as JPG and AVIF, so the picture
+  formats answer the same request with the same sized picture.
+
+  **Every size from its minimum of 147 B upwards is reachable, with no gaps.**
+  The padding travels in a `free` box, which is the box the container sets aside
+  for space that means nothing, and it takes any length at all.
+
+  The second format here whose pixels are coded by somebody else's encoder. It
+  is pinned, so raising it is a breaking change like any other, and it is pure
+  Go: no C compiler, no shared library and no socket. The files were read back
+  by two independent decoders, one of them libjxl, and both refuse a file that
+  has been truncated or corrupted.
+
 - **AVIF, the twenty third format.** One frame, 8 bit, 4:2:0.
   `tfg generate --format avif --size 300kb` writes an AV1 picture in an ISO base
   media container. `width`, `height` and `quality` can be set, and the picture
