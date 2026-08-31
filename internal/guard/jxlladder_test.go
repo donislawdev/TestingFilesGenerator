@@ -89,6 +89,15 @@ func TestJxlDrawsAPictureThatGrowsWithTheFileAndAlwaysFits(t *testing.T) {
 // tools/probes/jxlladder, which takes minutes. This is the version that runs
 // on every push and would still catch a codec raised underneath us, because a
 // new encoder moves every rung at once rather than one seed of one rung.
+//
+// Fewer seeds again under the race detector, and that needs saying rather than
+// hiding. This encoder is slow and the detector makes it slower: measured on
+// 2026-08-31, this one test took 80 s of the 102 s the four JPEG XL guards cost
+// under -race, and the whole guard package went past the 25 minute timeout the
+// race job allows. What that job exists to find is data races, and this test
+// walks the same single threaded arithmetic whatever it is given - so the
+// seeds it drops buy no race coverage at all. The full sweep still runs on all
+// three operating system jobs, which is where a wrong ceiling would show.
 func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 	rungs := jxl.Rungs()
 	if len(rungs) == 0 {
@@ -99,11 +108,17 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 	// asked for, and a longer label is more ink in the picture.
 	requested := []int64{int64(jxl.MinimumBytes), 1 << 14, 1 << 30}
 
+	seeds := uint64(8)
+	if raceEnabled {
+		seeds = 2
+		t.Logf("the race detector is on, so this sweeps %d seeds rather than 8 - it costs minutes here and finds no races either way", seeds)
+	}
+
 	for _, r := range rungs {
 		w, h, ceiling := int(r[0]), int(r[1]), r[2]
 		worst := int64(0)
 		var worstSeed uint64
-		for seed := uint64(0); seed < 8; seed++ {
+		for seed := uint64(0); seed < seeds; seed++ {
 			for _, want := range requested {
 				for _, withLabel := range []bool{true, false} {
 					label := ""
