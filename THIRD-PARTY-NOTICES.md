@@ -259,7 +259,7 @@ rymdport project.
 | `github.com/jsummers/gobmp` | v0.0.0-20230614200233-a9de23ed2e25 | MIT | (c) 2012-2015 Jason Summers |
 | `github.com/mattn/go-runewidth` | v0.0.24 | MIT | (c) 2016 Yasuhiro Matsumoto |
 | `github.com/nfnt/resize` | v0.0.0-20180221191011-83c6a9932646 | ISC | (c) 2012, Jan Schlicht |
-| `github.com/nicksnyder/go-i18n/v2` | v2.5.1 | MIT | (c) 2014 Nick Snyder https://github.com/nicksnyder |
+| `github.com/nicksnyder/go-i18n/v2` | v2.6.1 | MIT | (c) 2014 Nick Snyder https://github.com/nicksnyder |
 | `github.com/rymdport/portal` | v0.4.2 | Apache-2.0 | none stated, see below |
 | `github.com/srwiley/oksvg` | v0.0.0-20221011165216-be6e8873101c | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
