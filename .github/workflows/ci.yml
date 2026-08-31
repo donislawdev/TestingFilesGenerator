@@ -625,7 +625,9 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       needs.touched.outputs.concurrency == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Raised from 30 on 2026-08-31, with the Go timeout below, and the reason is
+    # measured rather than "it went red". See that step for the numbers.
+    timeout-minutes: 45
     env:
       # The one thing in this project that needs a C toolchain. Linux runners
       # ship one, so this job carries the cost and the matrix above stays on
@@ -678,8 +680,27 @@ jobs:
         #
         # Race instrumentation costs five to twenty times the wall clock, and
         # this package renders twenty five screens and builds two binaries. The
-        # job's own thirty minutes is the ceiling that means something.
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -race -timeout 25m
+        # job's own ceiling is the one that means something, and this number
+        # stays below it so a slow run fails as a test rather than as a killed
+        # job with no output.
+        #
+        # Both were raised on 2026-08-31, from 25m under a 30m job. Not because
+        # a run went red, but because the margin had already gone and the reds
+        # were the symptom. Measured on the runner across four consecutive runs:
+        # 21m35s on main before JPEG XL, a timeout on the JPEG XL branch, 20m15s
+        # on main after it merged, and a timeout on the dependency bump. Two out
+        # of four, with no data race reported in any of them - a limit that
+        # decides on how busy the runner is tells you nothing about the code.
+        #
+        # 21m35s against 25m was never a margin, and that predates JPEG XL. What
+        # this package holds now is twenty four formats, two of them running a
+        # borrowed encoder, twenty five screens and two binaries, and the 25m
+        # was chosen when it held less. The cheap half of the answer is in
+        # internal/guard/jxlladder_test.go, which stopped spending the budget on
+        # arithmetic that finds no races - 102s to 54s under -race. This is the
+        # other half: the ceiling now matches the work rather than the work
+        # being shaved to fit a ceiling nobody remeasured.
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -race -timeout 40m
 
   coverage:
     name: coverage gate
