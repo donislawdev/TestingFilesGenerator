@@ -105,6 +105,22 @@ jobs:
         # saying which one moved - the notices file tracks the linked set and
         # dropped it, this list tracks the graph and keeps it.
         #
+        # Changed on 2026-08-31 by a Dependabot bump, and it is the exact case
+        # the second paragraph of .github/dependabot.yml warns about. Taking
+        # github.com/nicksnyder/go-i18n/v2 from 2.5.1 to 2.6.1 pulled a module
+        # nobody asked for into the graph: go.yaml.in/yaml/v3, which is the
+        # same yaml library as gopkg.in/yaml.v3 under the module path that
+        # project moved to. Both are in the graph now, because other modules
+        # still ask for the old path.
+        #
+        # Its licence was read from the pinned version rather than off a web
+        # page: LICENSE is MIT and Apache-2.0 together - the files ported from
+        # libyaml keep the MIT of the original C, the rest is Apache-2.0 with a
+        # NOTICE from Canonical - and both are one way compatible with GPL-3.0.
+        # It is in the GRAPH and linked into NEITHER binary, which is the
+        # distinction these two questions exist to keep apart, so it belongs
+        # here and not in the notices. The count went 67 to 68.
+        #
         # Changed on 2026-08-29 when AVIF arrived, and again on 2026-08-31
         # when JPEG XL did: github.com/gen2brain/gav1d and then
         # github.com/gen2brain/jxl, both picture encoders written in Go with
@@ -186,6 +202,7 @@ jobs:
             github.com/urfave/cli/v2 \
             github.com/xrash/smetrics \
             github.com/yuin/goldmark \
+            go.yaml.in/yaml/v3 \
             golang.org/x/crypto \
             golang.org/x/image \
             golang.org/x/mobile \
