@@ -22,6 +22,23 @@ type PropertyField struct {
 	// recipe and a --set flag both carry, so the engine judges one thing however
 	// it was asked.
 	Value func() string
+	// Chosen says whether what Value returns is something somebody picked,
+	// rather than what the field started on.
+	//
+	// It exists because a menu cannot be empty: it opens on its declared
+	// default and so always has a value, which is fine for what is SENT - a
+	// default present and a default absent mean the same to a format - and
+	// wrong for what is SAID. A folded section that lists every setting it
+	// holds, whether or not anybody touched one, stops being a summary: log
+	// declares seven and the line ran off the edge of the window, reported
+	// from a screenshot on 2026-08-31.
+	//
+	// A box somebody types in answers this the old way, on emptiness, and
+	// that difference is deliberate. For a preset parameter an empty box and
+	// a typed default are NOT the same thing - the manifest records which
+	// numbers were ours through defaulted, untouchable rule 5 - so hiding a
+	// typed value there would hide a real one.
+	Chosen func() bool
 }
 
 // FromProperty draws the field a declaration describes.
@@ -107,6 +124,7 @@ func choiceField(p format.Property) PropertyField {
 		Name:    p.Name,
 		Control: sel,
 		Value:   func() string { return sel.Selected },
+		Chosen:  func() bool { return sel.Selected != "" && sel.Selected != p.Default },
 	}
 }
 
@@ -126,6 +144,7 @@ func boolField(p format.Property) PropertyField {
 		Name:    p.Name,
 		Control: check,
 		Value:   func() string { return strconv.FormatBool(check.Checked) },
+		Chosen:  func() bool { return strconv.FormatBool(check.Checked) != p.Default },
 	}
 }
 
@@ -139,6 +158,8 @@ func textField(p format.Property) PropertyField {
 		Name:    p.Name,
 		Control: entry,
 		Value:   func() string { return entry.Text },
+		// A box answers on emptiness, for the reason on Chosen.
+		Chosen: func() bool { return entry.Text != "" },
 	}
 }
 

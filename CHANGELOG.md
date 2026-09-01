@@ -16,6 +16,19 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **A generated log now advances through time, so its bytes are different.**
+  Every entry used to carry the same instant. Ten thousand requests all landing
+  at one moment is not a log anybody can test a time window, a rate alert or a
+  rotation against, and it was obvious the moment you looked at a file.
+
+  Entries are now one second apart by default, and `rate` sets how many arrive
+  a second. The bytes of every log change, so a suite pinning their hashes will
+  go red.
+
+  **The way back is `--set timestamps=fixed`**, or `timestamps: fixed` on a
+  target in a recipe. That holds the clock still and writes the same bytes this
+  tool wrote before, to the byte - there is a pinned hash proving it.
+
 - **A generated GIF now moves, so its bytes are different.** A GIF is the one
   picture format here that can hold more than one frame, and a still one told
   you nothing about how the system under test treats an animation - whether it
@@ -33,6 +46,30 @@ because it turns other people's test suites red.
   to the byte - there is a pinned hash proving it.
 
 ### Added
+
+- **A log can now be six shapes rather than one, and seven settings shape it.**
+  `tfg generate --format log --set entry_format=nginx` writes an nginx access
+  log. The others are `apache-combined` (the default, and what this format has
+  always written), `apache-common`, `syslog`, `plain` and `json-lines`.
+
+  Every template was taken from a real file rather than from a specification
+  remembered: a real nginx and a real Apache, and rsyslog on a real machine. Two
+  of them would have been wrong otherwise. An nginx line carries one more
+  quoted field than "combined" does, and Apache's own default is `common`, with
+  no referrer and no agent at all.
+
+  The rest of the settings: `timestamps` and `rate` for the clock, `methods` for
+  which verbs appear, `status_mix` for which response codes, `ip_version` to put
+  IPv6 addresses in front of a reader that may not expect them, and
+  `line_ending` for a log written by a Windows service.
+
+  **A setting that could not do anything is refused rather than ignored.**
+  Asking for `methods` beside `entry_format=syslog` is an error naming both,
+  because a syslog line carries no request - and a setting that silently does
+  nothing is worse than one that is not offered.
+
+  Every shape still hits the size to the byte, and every line is still a whole
+  entry. `tfg formats log` lists all of it.
 
 - **JPEG XL, the twenty fourth format.** One frame, 8 bit, RGB.
   `tfg generate --format jxl --size 300kb` writes a JPEG XL picture in the

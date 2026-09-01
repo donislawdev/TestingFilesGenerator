@@ -52,11 +52,9 @@
     "breadcrumbHome": "Start",
     "imageAlt": "Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować",
     "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w dwudziestu formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",
-
     "ctaDownload": "Pobierz",
     "ctaSource": "Zobacz kod źródłowy",
     "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Pliki dla Windows i macOS są podpisane i uruchamiają się bez ostrzeżenia. Pliki dla Linuksa nie są podpisane.",
-
     "colFormat": "Format",
     "colExtension": "Rozszerzenie",
     "colSmallest": "Najmniejszy plik",
@@ -70,7 +68,6 @@
     "noBinary": "brak binarki",
     "colCode": "Kod",
     "colMeaning": "Znaczenie",
-
     "footerBlurb": "Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.",
     "footerProject": "Projekt",
     "footerSource": "Kod na GitHubie",
@@ -80,7 +77,6 @@
     "footerPages": "Strony",
     "footerLicence": "Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.",
     "footerPrivacy": "Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.",
-
     "notFoundTitle": "Tej strony tu nie ma",
     "notFoundLead": "Adres, którym tu trafiłeś, nie pasuje do żadnej strony w tym serwisie.",
     "notFoundBack": "Wróć na stronę główną"
@@ -115,7 +111,8 @@
     "slides": "slajdów",
     "hertz": "herców",
     "megapixels": "megapikseli",
-    "million cells": "milionów komórek"
+    "million cells": "milionów komórek",
+    "entries per second": "wpisów na sekundę"
   },
   "faq": [
     {

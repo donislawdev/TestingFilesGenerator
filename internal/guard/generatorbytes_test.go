@@ -194,6 +194,28 @@ func goldenCases() map[string]engine.Target {
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},
 		"log_8kib":  {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true},
+
+		// The way back from the breaking change of 2026-08-31, and the reason
+		// this case exists rather than a sentence promising the same thing:
+		// timestamps=fixed has to reproduce the file this tool wrote before it
+		// could advance the clock, to the byte. The hash below is the one
+		// log_8kib carried until that day, moved here unchanged. Same shape as
+		// frames=1 for the still GIF.
+		"log_8kib_the_way_back": {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"timestamps": "fixed"}},
+
+		// One case per shape that is not built out of the Apache line, because
+		// each has its own stretchable field and its own arithmetic. JSON lines
+		// is the one whose closing entry has to land inside a quoted string.
+		"log_syslog": {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"entry_format": "syslog"}},
+		"log_json_lines": {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"entry_format": "json-lines"}},
+
+		// The axes that change the length of a line rather than its shape: a
+		// longer address, and a terminator of two bytes instead of one.
+		"log_nginx_v6_crlf": {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8193), Label: true,
+			Properties: map[string]string{"entry_format": "nginx", "ip_version": "v6", "line_ending": "crlf"}},
 		"csv_8kib":  {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true},
 		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
 		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},

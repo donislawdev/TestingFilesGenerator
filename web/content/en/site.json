@@ -52,11 +52,9 @@
     "breadcrumbHome": "Home",
     "imageAlt": "Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one",
     "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
-
     "ctaDownload": "Download",
     "ctaSource": "View the source",
     "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.",
-
     "colFormat": "Format",
     "colExtension": "Extension",
     "colSmallest": "Smallest file",
@@ -70,7 +68,6 @@
     "noBinary": "no binary yet",
     "colCode": "Code",
     "colMeaning": "Meaning",
-
     "footerBlurb": "Test files for QA, at any exact size, with a manifest that states how your system should react to each one.",
     "footerProject": "Project",
     "footerSource": "Source on GitHub",
@@ -80,7 +77,6 @@
     "footerPages": "Pages",
     "footerLicence": "Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.",
     "footerPrivacy": "This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.",
-
     "notFoundTitle": "That page is not here",
     "notFoundLead": "The address you followed does not match any page on this site.",
     "notFoundBack": "Go to the home page"
@@ -115,7 +111,8 @@
     "slides": "slides",
     "hertz": "hertz",
     "megapixels": "megapixels",
-    "million cells": "million cells"
+    "million cells": "million cells",
+    "entries per second": "entries per second"
   },
   "faq": [
     {

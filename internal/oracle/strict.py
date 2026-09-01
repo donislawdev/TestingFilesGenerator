@@ -157,8 +157,29 @@ def check_zip(data):
     ok(f"{entries} entries, comment {comment_len} B")
 
 
+OCTET = r"(?:0|[1-9][0-9]{0,2})"
+ADDR_V4 = OCTET + r"(?:\." + OCTET + r"){3}"
+ADDR_V6 = r"[0-9a-f]{1,4}(?::[0-9a-f]{1,4}){7}"
+ADDR = r"(?:" + ADDR_V4 + r"|" + ADDR_V6 + r")"
+ISO_TIME = r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}[+-][0-9]{2}:[0-9]{2}"
+REQUEST = (r" - - \[[^\]]+\] \"(?:GET|POST|PUT|DELETE|HEAD|PATCH) /\S* HTTP/1\.[01]\""
+           r" [1-5][0-9]{2} [0-9]+")
+
+# One pattern per shape this generator writes. Ordered most specific first,
+# because nginx is combined plus one more quoted field and combined is common
+# plus two, so a looser pattern tried first would claim a line it does not
+# describe.
+LOG_SHAPES = [
+    ("nginx", re.compile(r"^" + ADDR + REQUEST + r" \"[^\"]*\" \"[^\"]*\" \"[^\"]*\"$")),
+    ("apache-combined", re.compile(r"^" + ADDR + REQUEST + r" \"[^\"]*\" \"[^\"]*\"$")),
+    ("apache-common", re.compile(r"^" + ADDR + REQUEST + r"$")),
+    ("syslog", re.compile(r"^" + ISO_TIME + r" \S+ \S+\[[0-9]+\]: .*$")),
+    ("plain", re.compile(r"^" + ISO_TIME + r" (?:DEBUG|INFO|WARN|ERROR) .*$")),
+]
+
+
 def check_log(data):
-    """Every line is a whole entry in the Apache combined format.
+    """Every line is a whole entry, and every entry is the SAME shape.
 
     A log is read line by line, so a line that is not a whole entry is a broken
     file however right its length is. And "the last line is truncated" is what
@@ -170,36 +191,78 @@ def check_log(data):
     octal by some address parsers - where 069 is not even valid octal. Our
     generator produced padded octets until 2026-08-01, and a checker written to
     match it would have blessed that instead of catching it.
+
+    Since 2026-08-31 the generator writes six shapes, and this checker is told
+    which one only by the file - it is handed a format id and a path, never the
+    recipe. So it takes the shape from the first entry and holds every other
+    line to THAT one. Asking each line merely to be valid on its own would pass
+    a file that changed shape half way down, which no reader could load.
     """
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
         fail(f"not valid UTF-8: {exc}")
 
-    if not text.endswith("\n"):
+    if not text.endswith(("\n", "\r\n")):
         fail("the file does not end with a newline, so the last entry is unterminated")
 
-    octet = r"(?:0|[1-9][0-9]{0,2})"
-    pattern = re.compile(
-        r"^" + octet + r"\." + octet + r"\." + octet + r"\." + octet +
-        r" - - \[[^\]]+\] \"(?:GET|POST|PUT|DELETE|HEAD|PATCH) /\S* HTTP/1\.[01]\""
-        r" [1-5][0-9]{2} [0-9]+ \"[^\"]*\" \"[^\"]*\"$")
+    # Line endings have to be consistent. A file mixing them is the shape a
+    # careless writer produces and a strict reader rejects.
+    crlf = "\r\n" in text
+    if crlf and re.search(r"(?<!\r)\n", text):
+        fail("the file mixes CRLF and bare LF endings")
+    lines = text.replace("\r\n", "\n").rstrip("\n").split("\n")
 
-    entries = 0
-    for number, line in enumerate(text.rstrip("\n").split("\n"), start=1):
+    entries, shape = 0, None
+    for number, line in enumerate(lines, start=1):
         if line.startswith("# "):
             continue  # the label line, which says in words that it is not an entry
-        if not pattern.match(line):
-            fail(f"line {number} is not a whole entry: {line[:90]!r}")
-        # An octet above 255 parses as a number and is not an address.
-        address = line.split(" ", 1)[0]
-        if any(int(part) > 255 for part in address.split(".")):
-            fail(f"line {number} has an octet above 255: {address}")
+        if line.startswith('{"label":'):
+            continue  # the same thing where a comment would not parse
+        if shape is None:
+            shape = detect_log_shape(line, number)
+        check_log_line(line, number, shape)
         entries += 1
 
     if entries == 0:
         fail("the file holds no entries at all")
-    ok(f"{entries} entries, all whole")
+    ok(f"{entries} {shape} entries, all whole, {'crlf' if crlf else 'lf'} endings")
+
+
+def detect_log_shape(line, number):
+    if line.startswith("{"):
+        return "json-lines"
+    for name, pattern in LOG_SHAPES:
+        if pattern.match(line):
+            return name
+    fail(f"line {number} is not a whole entry in any shape this tool writes: {line[:90]!r}")
+
+
+def check_log_line(line, number, shape):
+    if shape == "json-lines":
+        # A real parser rather than a pattern, which is what makes this the one
+        # shape here checked by somebody else's implementation.
+        import json
+        try:
+            obj = json.loads(line)
+        except ValueError as exc:
+            fail(f"line {number} is not valid JSON: {exc}")
+        if not isinstance(obj, dict):
+            fail(f"line {number} is JSON but not an object: {line[:60]!r}")
+        for key in ("time", "level", "msg"):
+            if key not in obj:
+                fail(f"line {number} has no {key!r} field")
+        return
+
+    pattern = dict(LOG_SHAPES)[shape]
+    if not pattern.match(line):
+        fail(f"line {number} is not a whole {shape} entry: {line[:90]!r}")
+
+    if shape in ("nginx", "apache-combined", "apache-common"):
+        # An octet above 255 parses as a number and is not an address.
+        address = line.split(" ", 1)[0]
+        if "." in address and any(int(part) > 255 for part in address.split(".")):
+            fail(f"line {number} has an octet above 255: {address}")
 
 
 def check_csv(data):
