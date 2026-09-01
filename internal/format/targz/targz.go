@@ -116,7 +116,7 @@ func init() {
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
 		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
-			archive.Depth, archive.DirectoryEntries,
+			archive.Compression, archive.Depth, archive.DirectoryEntries,
 			archive.EntryMode, archive.EntryOwner),
 
 		// Neither half of this format has anywhere to put a password, and
@@ -165,6 +165,13 @@ type memo struct {
 	// The zero value is not the default - ReadOwnership fills it, because
 	// the mode this format has always written is 644 rather than 0.
 	own archive.Ownership
+	// squeeze is how hard the stream is compressed, and the zero value is
+	// stored - which is what this format has always written.
+	squeeze archive.Squeeze
+	// target is the size a compressed archive has to come to. It is only set
+	// when squeezing, because that is the only case where the writer rather
+	// than the plan settles the padding.
+	target int64
 	// layout is where the files inside sit. It has to be here rather than an
 	// argument because tarLength counts from this struct and build writes
 	// from it: a layout the two disagreed about would promise one size and
@@ -196,7 +203,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed, own: own, layout: layout}
+	squeeze, err := archive.ReadCompression("targz", r, false)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, own: own, layout: layout, squeeze: squeeze}
 	if m.children, err = planChildren(r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
@@ -207,7 +219,17 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	p := describe(target, label, m, groups)
-	if err := pad(&m, &p, target, label, groups); err != nil {
+	if m.squeeze.On() {
+		// A compressed archive settles its padding at WRITE time, because its
+		// length cannot be worked out without compressing it. What is checked
+		// here is only that the size is reachable at all, and the check is
+		// deliberately the STORED one: compression can only ever make the
+		// contents smaller, so an archive that fits stored fits squeezed.
+		m.target = target
+		if err := reachable(&m, target, label, groups); err != nil {
+			return format.Plan{}, err
+		}
+	} else if err := pad(&m, &p, target, label, groups); err != nil {
 		return format.Plan{}, err
 	}
 
@@ -298,15 +320,18 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 		Properties: map[string]any{
 			"entries":  len(m.children),
 			"contains": contentSummary(groups),
-			// Stored rather than deflated, which is what makes the size exact
-			// in one pass. Stated here so a test can assert on it rather than
-			// infer it from how well the file compresses.
-			"compression": "none",
 			// Where the files sit, and whether the directories are named -
 			// written every time rather than only when nested, so a harness
 			// never has to read a missing key as flat.
-			archive.Depth:                m.layout.Depth,
-			archive.DirectoryEntries:     m.layout.DirEntries,
+			archive.Depth:            m.layout.Depth,
+			archive.DirectoryEntries: m.layout.DirEntries,
+			// How hard the stream was squeezed. This key used to be the
+			// constant "none", written when the format could only store - and
+			// the comment beside it said so, which is why it is worth saying
+			// that the constant is gone rather than deleting it quietly. It
+			// is still written every time, so a harness never has to read a
+			// missing key as stored.
+			archive.Compression:          m.squeeze.Name,
 			format.PropertyLabelEmbedded: label != "",
 		},
 	}
@@ -347,6 +372,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
 		return fmt.Errorf("targz: the plan was not produced by this generator")
+	}
+	if m.squeeze.On() {
+		return writeCompressed(ctx, w, m)
 	}
 	return build(ctx, w, m)
 }

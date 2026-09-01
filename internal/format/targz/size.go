@@ -276,7 +276,7 @@ func solveFiller(base, target int64, label string) (size int64, header headerPad
 // the stream measured before the comment can be sized, so it is two passes and
 // a separate decision.
 func build(ctx context.Context, w io.Writer, m memo) error {
-	zw, err := gzip.NewWriterLevel(w, gzip.NoCompression)
+	zw, err := gzip.NewWriterLevel(w, m.squeeze.Level)
 	if err != nil {
 		return fmt.Errorf("targz: the archive could not be started: %w", err)
 	}
