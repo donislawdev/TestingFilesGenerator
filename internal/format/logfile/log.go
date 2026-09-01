@@ -105,6 +105,11 @@ func properties() []format.Property {
 			Detail: "Which response codes appear. Realistic is mostly success with a tail of errors.",
 		},
 		{
+			Name: "level_mix", Kind: format.PropertyChoice,
+			Choices: levelMixIDs, Default: "realistic",
+			Detail: "Which severities appear. Only the plain and json-lines shapes carry one, and asking for it beside another shape is refused.",
+		},
+		{
 			Name: "ip_version", Kind: format.PropertyChoice,
 			Choices: []string{"v4", "v6", "mixed"}, Default: "v4",
 			Detail: "Which kind of client address appears. Choose v6 to find out whether a reader handles it.",
@@ -168,6 +173,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 	if opt.shape.web || opt.shape.id == "json-lines" {
 		p.Properties["status_mix"] = opt.statusMix
+	}
+	if opt.shape.levelled {
+		p.Properties["level_mix"] = opt.levelMix
 	}
 
 	m := memo{seed: r.Seed, opt: opt}
@@ -277,4 +285,36 @@ const (
 
 var tags = []string{"sshd", "cron", "systemd", "kernel", "nginx", "dockerd"}
 
-var levels = []string{"INFO", "INFO", "INFO", "WARN", "ERROR", "DEBUG"}
+// levelSets are the severity mixes, drawn from one vocabulary on purpose.
+//
+// Every set here is built from DEBUG, INFO, WARN and ERROR and nothing else,
+// so the longest level in any of them is five bytes. That is not tidiness: the
+// shortest entry a shape can write leaves room for the longest level it might
+// draw, so a set carrying a longer word would move the minimum for plain and
+// JSON lines. Adding CRITICAL later is allowed, it just has to be a decision
+// about the minimum rather than a word slipped into a list.
+//
+// Repeats are the weighting. There is no separate share for each level because
+// a list with three INFOs in it says the same thing and is what the draw
+// already reads.
+var levelSets = map[string][]string{
+	// realistic is the mix this format has always written, in the order it has
+	// always been in. D11 rests on that: the same seed has to draw the same
+	// levels it did before this setting existed, so this slice is the old
+	// variable moved rather than rewritten.
+	"realistic": {"INFO", "INFO", "INFO", "WARN", "ERROR", "DEBUG"},
+	// quiet is the boring baseline - a service with nothing to report. Useful
+	// as the control when a reader is being tested for what it does with the
+	// levels rather than for whether it parses.
+	"quiet": {"INFO"},
+	// errors is a service having a bad day, for a reader whose error handling
+	// is what is under test.
+	"errors": {"ERROR", "ERROR", "ERROR", "WARN", "WARN", "INFO"},
+	// debug is a build left verbose, which is how a log gets large in the first
+	// place.
+	"debug": {"DEBUG", "DEBUG", "DEBUG", "INFO", "INFO", "WARN"},
+}
+
+// levelMixIDs is the closed set the registry offers, in one order so that
+// every surface lists them the same way.
+var levelMixIDs = []string{"realistic", "quiet", "errors", "debug"}

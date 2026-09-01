@@ -38,6 +38,11 @@ type shape struct {
 	// if the method, status and address settings mean anything for it. A
 	// setting that would do nothing is refused rather than ignored.
 	web bool
+	// levelled says whether this shape carries a severity, which decides the
+	// same thing for level_mix. Separate from web rather than derived from it,
+	// because the two do not line up: no web shape carries a level, and of the
+	// three that are not web, only two do.
+	levelled bool
 	// appendTo writes one entry. want below zero means whatever length it
 	// comes out. Any other value is the exact length the line must have, its
 	// terminator included, and the stretchable field reaches it.
@@ -65,8 +70,8 @@ var shapes = map[string]*shape{
 	"apache-combined": {id: "apache-combined", web: true, appendTo: appendApacheCombined, shortest: shortestApacheCombined, label: hashLabel},
 	"nginx":           {id: "nginx", web: true, appendTo: appendNginx, shortest: shortestNginx, label: hashLabel},
 	"syslog":          {id: "syslog", web: false, appendTo: appendSyslog, shortest: shortestSyslog, label: hashLabel},
-	"plain":           {id: "plain", web: false, appendTo: appendPlain, shortest: shortestPlain, label: hashLabel},
-	"json-lines":      {id: "json-lines", web: false, appendTo: appendJSONLine, shortest: shortestJSONLine, label: jsonLabel},
+	"plain":           {id: "plain", web: false, levelled: true, appendTo: appendPlain, shortest: shortestPlain, label: hashLabel},
+	"json-lines":      {id: "json-lines", web: false, levelled: true, appendTo: appendJSONLine, shortest: shortestJSONLine, label: jsonLabel},
 }
 
 // shapeIDs is the closed set the registry offers, in one order so that every
@@ -253,7 +258,7 @@ func pidWidth(pid int) int {
 // most home grown loggers write and the one with the least agreement about it,
 // so this is the plainest reading of it.
 func appendPlain(dst []byte, st *state, want int64) []byte {
-	level := pick(st.rng, levels)
+	level := pick(st.rng, st.opt.levels)
 	at := st.clock.tick()
 
 	base := int64(len(isoTime)+1+len(level)+1) + int64(len(st.opt.eol))
@@ -266,7 +271,7 @@ func appendPlain(dst []byte, st *state, want int64) []byte {
 }
 
 func shortestPlain(o options) int64 {
-	return int64(len(isoTime)+1+longestLevel()+1) + int64(len(o.eol)) + 1
+	return int64(len(isoTime)+1+longestLevel(o)+1) + int64(len(o.eol)) + 1
 }
 
 // JSON lines: one object a line, which is what makes it the one shape here
@@ -277,7 +282,7 @@ func shortestPlain(o options) int64 {
 // nothing in it ever needs escaping - which matters, because an escape would
 // make the line longer than the arithmetic said.
 func appendJSONLine(dst []byte, st *state, want int64) []byte {
-	level := pick(st.rng, levels)
+	level := pick(st.rng, st.opt.levels)
 	status := pick(st.rng, st.opt.statuses)
 	at := st.clock.tick()
 
@@ -302,7 +307,7 @@ func appendJSONLine(dst []byte, st *state, want int64) []byte {
 
 func shortestJSONLine(o options) int64 {
 	return int64(len(`{"time":"","level":"","status":,"msg":""}`)+
-		len(isoTime)+longestLevel()+statusWidth) + int64(len(o.eol)) + 1
+		len(isoTime)+longestLevel(o)+statusWidth) + int64(len(o.eol)) + 1
 }
 
 // appendMessage writes the sentence the message shapes end with, stretched to

@@ -70,6 +70,23 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A log can be made quiet, or full of errors.** `--set level_mix=errors` on
+  a `log`, with `realistic`, `quiet`, `errors` and `debug` to choose from. It
+  decides which severities appear, the way `status_mix` already decides which
+  response codes do.
+
+  Only the `plain` and `json-lines` entry formats carry a severity at all. Ask
+  for a mix beside one of the other four and the tool says so and stops,
+  naming both settings, rather than accepting a setting that would do nothing.
+
+  One thing worth knowing before you pick `quiet`: it draws only `INFO`, which
+  is a shorter word than `ERROR`, so the smallest log it can write is one byte
+  smaller than the other mixes. The tool tells you the floor for the settings
+  you gave it.
+
+  The default is `realistic`, the mix these logs have always had, so **no
+  existing file changes by a byte**.
+
 - **An archive can compress what it holds.** `--set compression=best` on a
   `zip` or a `targz`, with `none`, `fast`, `default` and `best` to choose from.
 

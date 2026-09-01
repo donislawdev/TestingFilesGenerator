@@ -152,10 +152,14 @@ func longestAddress(o options) int {
 	return v4Longest
 }
 
+// longestLevel reads the SET IN FORCE rather than every level this format
+// knows, because that is what the minimum entry has to leave room for. Reading
+// the whole vocabulary instead would be wrong in the safe direction - a floor
+// one byte too high - but it would announce a minimum the format can beat.
+func longestLevel(o options) int  { return longest(o.levels) }
 func longestMethod(o options) int { return longest(o.methods) }
 func longestAgent() int           { return longest(agents) }
 func longestTag() int             { return longest(tags) }
-func longestLevel() int           { return longest(levels) }
 
 func longest(xs []string) int {
 	n := 0

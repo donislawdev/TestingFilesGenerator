@@ -46,6 +46,9 @@ type options struct {
 	statusMix string
 	statuses  []int
 
+	levelMix string
+	levels   []string
+
 	ipVersion string
 	ipv6      bool
 	ipMixed   bool
@@ -63,6 +66,8 @@ func defaultOptions() options {
 		methods:    methodSets["get"],
 		statusMix:  "realistic",
 		statuses:   statusSets["realistic"],
+		levelMix:   "realistic",
+		levels:     levelSets["realistic"],
 		ipVersion:  "v4",
 	}
 	return o
@@ -94,7 +99,7 @@ func parseOptions(props map[string]string) (options, error) {
 	o := defaultOptions()
 	for _, read := range []func(map[string]string, *options) error{
 		readShape, readLineEnding, readTimestamps, readRate,
-		readMethods, readStatusMix, readIPVersion,
+		readMethods, readStatusMix, readLevelMix, readIPVersion,
 	} {
 		if err := read(props, &o); err != nil {
 			return options{}, err
@@ -202,6 +207,34 @@ func readStatusMix(props map[string]string, o *options) error {
 			"the "+o.shape.id+" shape carries no response code")
 	}
 	o.statusMix, o.statuses = v, set
+	return nil
+}
+
+// readLevelMix reads the severity mix, which only two shapes carry.
+//
+// Unlike status_mix, the set chosen here can move the MINIMUM: the shortest
+// entry a shape can write has to leave room for the longest level it might
+// draw, and quiet draws only INFO. That is why the set is settled here and
+// read back out of options by longestLevel, rather than either of them
+// reaching for the vocabulary directly.
+func readLevelMix(props map[string]string, o *options) error {
+	v, ok := value(props, "level_mix")
+	if !ok {
+		return nil
+	}
+	set, known := levelSets[v]
+	if !known {
+		return badValue("level_mix", v, "it has to be realistic, quiet, errors or debug")
+	}
+	// Only a real choice can disagree with the shape - see asked. A window
+	// sends this key on every run, so refusing whenever it arrived would put
+	// the four shapes without a level out of reach from the window entirely,
+	// which is the defect reported from a screenshot on 2026-08-31.
+	if _, chosen := asked(props, "level_mix", "realistic"); chosen && !o.shape.levelled {
+		return conflict("level_mix and entry_format", v,
+			"the "+o.shape.id+" shape carries no severity")
+	}
+	o.levelMix, o.levels = v, set
 	return nil
 }
 
