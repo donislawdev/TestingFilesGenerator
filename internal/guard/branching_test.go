@@ -43,7 +43,7 @@ const (
 	// either, and one handles neither. Flattening it in TIFF alone would make
 	// two functions that answer the same question look different, which costs
 	// more than the depth does.
-	crowdedDepthFunctions = 54
+	crowdedDepthFunctions = 52
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.
