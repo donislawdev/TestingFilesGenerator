@@ -216,8 +216,18 @@ func TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt(t *testi
 		t.Fatal(err)
 	}
 
+	// The sizes matter as much as the qualities, and the first version of this
+	// guard had too few of them. It asked 2000, 20000 and 200000, and the full
+	// mutation run of 2026-09-01 called it a HOLE: turning the slow road off
+	// left it green. Measured afterwards by sweeping, the break shows at
+	// quality 100 and 5000 B, where a 160x120 picture codes to 6047 B and the
+	// file was to be 5000 - so the rung the table picked does not fit at all.
+	//
+	// The guard was right about what it watches and short on where it looked,
+	// which is the same shape as O163 one file over: a measurement proves what
+	// its sample covers and says nothing about the gap beside it.
 	for _, quality := range []string{"1", "10", "70", "90", "100"} {
-		for _, want := range []int64{2000, 20000, 200000} {
+		for _, want := range []int64{2000, 5000, 20000, 60000, 200000} {
 			p, err := d.Generator.Plan(format.Request{
 				Bytes: want, Seed: 7741, Label: true,
 				Properties: map[string]string{"quality": quality},
