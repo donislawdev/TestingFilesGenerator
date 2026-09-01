@@ -84,105 +84,156 @@ var statusSets = map[string][]int{
 }
 
 // parseOptions reads the settings and refuses the pairs that disagree.
+//
+// One reader per setting, run in order, because the order matters: the shape
+// and the clock have to be settled before anything can be asked whether it
+// disagrees with them. It was one function until the code shape gates called
+// it at 32 decision points against a ceiling of 22 - and those ceilings only
+// ever go down, so the branches came out rather than the number going up.
 func parseOptions(props map[string]string) (options, error) {
 	o := defaultOptions()
-
-	if v, ok := value(props, "entry_format"); ok {
-		s, known := shapes[v]
-		if !known {
-			return options{}, badValue("entry_format", v, "it is not one of the shapes this format writes")
+	for _, read := range []func(map[string]string, *options) error{
+		readShape, readLineEnding, readTimestamps, readRate,
+		readMethods, readStatusMix, readIPVersion,
+	} {
+		if err := read(props, &o); err != nil {
+			return options{}, err
 		}
-		o.shape = s
 	}
-
-	if v, ok := value(props, "line_ending"); ok {
-		switch v {
-		case "lf":
-			o.eol = "\n"
-		case "crlf":
-			o.eol = "\r\n"
-		default:
-			return options{}, badValue("line_ending", v, "it has to be lf or crlf")
-		}
-		o.lineEnding = v
-	}
-
-	if v, ok := value(props, "timestamps"); ok {
-		switch v {
-		case "advancing", "fixed":
-		default:
-			return options{}, badValue("timestamps", v, "it has to be advancing or fixed")
-		}
-		o.timestamps = v
-		o.advancing = v == "advancing"
-	}
-
-	if v, ok := value(props, "rate"); ok {
-		n, err := strconv.Atoi(v)
-		if err != nil {
-			return options{}, fmt.Errorf("log: rate must be a whole number of entries per second, got %q", v)
-		}
-		if n < minRate || n > maxRate {
-			return options{}, fmt.Errorf("log: rate must be between %d and %d entries per second, got %d", minRate, maxRate, n)
-		}
-		// A rate somebody CHOSE while the clock is held still would change
-		// nothing at all, so it is said out loud rather than ignored. A rate
-		// sitting at its default was not chosen - see asked.
-		if _, chosen := asked(props, "rate", strconv.Itoa(defaultRate)); chosen && !o.advancing {
-			return options{}, conflict("rate and timestamps", v,
-				"a rate says how fast entries arrive and timestamps=fixed puts them all at one instant")
-		}
-		o.rate = n
-	}
-
-	if v, ok := value(props, "methods"); ok {
-		set, known := methodSets[v]
-		if !known {
-			return options{}, badValue("methods", v, "it has to be get, read or mixed")
-		}
-		if _, chosen := asked(props, "methods", "get"); chosen {
-			if err := needsWeb(o.shape, "methods", v, "request method"); err != nil {
-				return options{}, err
-			}
-		}
-		o.methodMix, o.methods = v, set
-	}
-
-	if v, ok := value(props, "status_mix"); ok {
-		set, known := statusSets[v]
-		if !known {
-			return options{}, badValue("status_mix", v, "it has to be realistic, success, client-errors or server-errors")
-		}
-		// JSON lines carry a status of their own, so this one applies there
-		// too - it is the address and the method that have no place outside a
-		// web shape.
-		if _, chosen := asked(props, "status_mix", "realistic"); chosen &&
-			!o.shape.web && o.shape.id != "json-lines" {
-			return options{}, conflict("status_mix and entry_format", v,
-				"the "+o.shape.id+" shape carries no response code")
-		}
-		o.statusMix, o.statuses = v, set
-	}
-
-	if v, ok := value(props, "ip_version"); ok {
-		switch v {
-		case "v4":
-		case "v6":
-			o.ipv6 = true
-		case "mixed":
-			o.ipMixed = true
-		default:
-			return options{}, badValue("ip_version", v, "it has to be v4, v6 or mixed")
-		}
-		if _, chosen := asked(props, "ip_version", "v4"); chosen {
-			if err := needsWeb(o.shape, "ip_version", v, "client address"); err != nil {
-				return options{}, err
-			}
-		}
-		o.ipVersion = v
-	}
-
 	return o, nil
+}
+
+func readShape(props map[string]string, o *options) error {
+	v, ok := value(props, "entry_format")
+	if !ok {
+		return nil
+	}
+	s, known := shapes[v]
+	if !known {
+		return badValue("entry_format", v, "it is not one of the shapes this format writes")
+	}
+	o.shape = s
+	return nil
+}
+
+func readLineEnding(props map[string]string, o *options) error {
+	v, ok := value(props, "line_ending")
+	if !ok {
+		return nil
+	}
+	switch v {
+	case "lf":
+		o.eol = "\n"
+	case "crlf":
+		o.eol = "\r\n"
+	default:
+		return badValue("line_ending", v, "it has to be lf or crlf")
+	}
+	o.lineEnding = v
+	return nil
+}
+
+func readTimestamps(props map[string]string, o *options) error {
+	v, ok := value(props, "timestamps")
+	if !ok {
+		return nil
+	}
+	if v != "advancing" && v != "fixed" {
+		return badValue("timestamps", v, "it has to be advancing or fixed")
+	}
+	o.timestamps = v
+	o.advancing = v == "advancing"
+	return nil
+}
+
+func readRate(props map[string]string, o *options) error {
+	v, ok := value(props, "rate")
+	if !ok {
+		return nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fmt.Errorf("log: rate must be a whole number of entries per second, got %q", v)
+	}
+	if n < minRate || n > maxRate {
+		return fmt.Errorf("log: rate must be between %d and %d entries per second, got %d", minRate, maxRate, n)
+	}
+	// A rate somebody CHOSE while the clock is held still would change nothing
+	// at all, so it is said out loud rather than ignored. A rate sitting at its
+	// default was not chosen - see asked.
+	if _, chosen := asked(props, "rate", strconv.Itoa(defaultRate)); chosen && !o.advancing {
+		return conflict("rate and timestamps", v,
+			"a rate says how fast entries arrive and timestamps=fixed puts them all at one instant")
+	}
+	o.rate = n
+	return nil
+}
+
+func readMethods(props map[string]string, o *options) error {
+	v, ok := value(props, "methods")
+	if !ok {
+		return nil
+	}
+	set, known := methodSets[v]
+	if !known {
+		return badValue("methods", v, "it has to be get, read or mixed")
+	}
+	if err := refuseUnlessWeb(props, o.shape, "methods", "get", v, "request method"); err != nil {
+		return err
+	}
+	o.methodMix, o.methods = v, set
+	return nil
+}
+
+func readStatusMix(props map[string]string, o *options) error {
+	v, ok := value(props, "status_mix")
+	if !ok {
+		return nil
+	}
+	set, known := statusSets[v]
+	if !known {
+		return badValue("status_mix", v, "it has to be realistic, success, client-errors or server-errors")
+	}
+	// JSON lines carry a status of their own, so this one applies there too - it
+	// is the address and the method that have no place outside a web shape.
+	if _, chosen := asked(props, "status_mix", "realistic"); chosen &&
+		!o.shape.web && o.shape.id != "json-lines" {
+		return conflict("status_mix and entry_format", v,
+			"the "+o.shape.id+" shape carries no response code")
+	}
+	o.statusMix, o.statuses = v, set
+	return nil
+}
+
+func readIPVersion(props map[string]string, o *options) error {
+	v, ok := value(props, "ip_version")
+	if !ok {
+		return nil
+	}
+	switch v {
+	case "v4":
+	case "v6":
+		o.ipv6 = true
+	case "mixed":
+		o.ipMixed = true
+	default:
+		return badValue("ip_version", v, "it has to be v4, v6 or mixed")
+	}
+	if err := refuseUnlessWeb(props, o.shape, "ip_version", "v4", v, "client address"); err != nil {
+		return err
+	}
+	o.ipVersion = v
+	return nil
+}
+
+// refuseUnlessWeb refuses a CHOSEN setting that only means something for a
+// shape carrying a request. A value left at its default was not chosen and so
+// cannot disagree with anything - see asked.
+func refuseUnlessWeb(props map[string]string, s *shape, key, def, val, what string) error {
+	if _, chosen := asked(props, key, def); !chosen {
+		return nil
+	}
+	return needsWeb(s, key, val, what)
 }
 
 // needsWeb refuses a setting that only means something for a shape carrying a

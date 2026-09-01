@@ -85,19 +85,28 @@ func (a address) length() int {
 }
 
 func (a address) append(dst []byte) []byte {
-	if !a.v6 {
-		// No leading zeros. Padding octets to three digits made the line
-		// length trivial to predict and produced addresses no real log
-		// contains - and a leading zero is read as octal by some address
-		// parsers, where 069 is not even valid octal.
-		for i := 0; i < 4; i++ {
-			if i > 0 {
-				dst = append(dst, '.')
-			}
-			dst = strconv.AppendInt(dst, int64(a.parts[i]), 10)
-		}
-		return dst
+	if a.v6 {
+		return a.appendV6(dst)
 	}
+	return a.appendV4(dst)
+}
+
+// No leading zeros. Padding octets to three digits made the line length trivial
+// to predict and produced addresses no real log contains - and a leading zero
+// is read as octal by some address parsers, where 069 is not even valid octal.
+func (a address) appendV4(dst []byte) []byte {
+	for i := 0; i < 4; i++ {
+		if i > 0 {
+			dst = append(dst, '.')
+		}
+		dst = strconv.AppendInt(dst, int64(a.parts[i]), 10)
+	}
+	return dst
+}
+
+// Groups without leading zeros, which is how every reader shows them and why
+// the length of one of these varies.
+func (a address) appendV6(dst []byte) []byte {
 	for i, p := range a.parts {
 		if i > 0 {
 			dst = append(dst, ':')
