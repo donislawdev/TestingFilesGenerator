@@ -59,6 +59,16 @@ func roundUpBlock(n int64) int64 {
 // tarLength is the length of the tar stream before it reaches gzip.
 func tarLength(m memo) int64 {
 	total := int64(2 * tarBlock) // the end of archive marker
+	// A directory is a header and nothing else, so it costs exactly one block.
+	// Measured 2026-09-01 against archive/tar rather than read off the format:
+	// a tar holding one directory and nothing else comes to 1536 B, of which
+	// 1024 is the end of archive marker. A guard holds that number.
+	//
+	// The path length does NOT appear here, and that is measured too. USTAR
+	// splits a path across a 155 byte prefix and a 100 byte name, so a header
+	// is the same 512 bytes at every depth it accepts - flat all the way to
+	// the refusal, with no step. maxDepth is what keeps it on the near side.
+	total += int64(len(m.layout.Directories())) * tarBlock
 	for _, c := range m.children {
 		total += tarBlock + roundUpBlock(c.plan.Bytes)
 	}
@@ -279,6 +289,20 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 	}
 	tw := tar.NewWriter(zw)
 
+	// Directories first, outermost first, and only when asked for. They are
+	// not in m.children on purpose: a child's seed is FileSeed(seed, index)
+	// over a running index, so a directory in that list would shift the seed
+	// of every file after it and rewrite its contents. That is untouchable
+	// rule 2 - an edit in one place moving the bytes in another.
+	for _, dir := range m.layout.Directories() {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := writeDirectory(tw, dir, m.own); err != nil {
+			return fmt.Errorf("targz: the directory %q could not be named: %w", dir, err)
+		}
+	}
+
 	for _, c := range m.children {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -332,6 +356,34 @@ func writeEntry(ctx context.Context, tw *tar.Writer, e tarEntry, body func(io.Wr
 		return err
 	}
 	return body(tw)
+}
+
+// writeDirectory names one directory in the tar.
+//
+// The mode is 0755 rather than own.Mode, and that is a decision rather than an
+// oversight. entry_mode is declared as "the permissions recorded for each file
+// inside", and a directory is not a file - recording 644 on one would produce
+// an archive that extracts into directories nothing can be written into, which
+// is a surprise nobody asked this setting for. The owner fields DO follow
+// entry_owner, so an archive that says everything belongs to root says it about
+// the directories too.
+//
+// It costs exactly one block and no more, which is the whole of what the
+// arithmetic above had to learn about it. Measured rather than read off the
+// format, and a guard holds the number.
+func writeDirectory(tw *tar.Writer, name string, own archive.Ownership) error {
+	return tw.WriteHeader(&tar.Header{
+		Name:     name,
+		Size:     0,
+		Mode:     0o755,
+		Uid:      own.Uid,
+		Gid:      own.Gid,
+		Uname:    own.Uname,
+		Gname:    own.Gname,
+		ModTime:  fixedTime,
+		Typeflag: tar.TypeDir,
+		Format:   tar.FormatUSTAR,
+	})
 }
 
 // tarEntry is one entry's header, as both the measuring pass and the

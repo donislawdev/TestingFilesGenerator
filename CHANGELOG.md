@@ -70,6 +70,30 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **An archive can hold its files in directories.** `--set depth=3` puts every
+  file three levels down, and `--set directory_entries=true` also makes the
+  archive list the directories themselves. Both work on `zip` and on `targz`.
+
+  Two settings rather than one, because they are two questions. Depth is about
+  the paths inside. Directory entries are about whether the archive names the
+  directories at all - and extractors differ there: some create a directory
+  when they meet a path that needs one, and some create only what the archive
+  names. An archive is the one format where you can test both.
+
+  The default is flat, which is what archives from this tool have always been,
+  so **no existing file changes by a byte**. Asking for `directory_entries`
+  without a depth is refused rather than quietly ignored: a flat archive has no
+  directories to name, and the message says so and names both settings.
+
+  Depth goes up to 50. The limit is measured rather than picked: a `.tar.gz`
+  writes USTAR headers, which carry a path in a 155 byte prefix and a 100 byte
+  name split on a slash, and past a certain length no split works. Directories
+  cost 512 bytes each in a `.tar.gz` and about 76 plus the path in a `.zip`.
+  The size you order is still the size you get, to the byte.
+
+  The padding entry stays at the top of the archive rather than moving into the
+  directories, so you can always tell it apart from the files you asked for.
+
 - **A zip can be locked with ZipCrypto, the old scheme.** `--set encryption=zipcrypto`.
 
   It is here for what it does to a reader rather than for what it protects. Measured: .NET's own `ZipFile` opens one of these, reports the entry at its true length, hands back a stream and fills it with the ENCRYPTED bytes - and never says the entry was encrypted at all. An application built on that library processes noise and calls it data. AES fails loudly in the same library, which is the safer defect and the less interesting one.

@@ -113,6 +113,19 @@ func mustSize(s string) int64 {
 // somebody kept them so by hand, and the comment saying so was the whole
 // mechanism.
 var axes = map[string]format.Property{
+	Depth: {
+		Name: Depth, Kind: format.PropertyInt,
+		Min: 0, Max: maxDepth,
+		Default: strconv.Itoa(defaultDepth),
+		Detail:  "How many directories deep the files inside sit. 0 puts them all at the top.",
+	},
+	DirectoryEntries: {
+		Name: DirectoryEntries, Kind: format.PropertyBool,
+		Default: "false",
+		Detail: "Whether the archive also lists the directories themselves. " +
+			"Most file browsers show the same folders either way, so the difference is in the entry list rather than on screen. " +
+			"It matters for readers that only create a directory the archive names.",
+	},
 	Entries: {
 		Name: Entries, Kind: format.PropertyInt,
 		Min: 0, Max: maxEntries,
