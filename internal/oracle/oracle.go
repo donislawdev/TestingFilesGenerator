@@ -348,7 +348,14 @@ func sevenZip() (string, bool) {
 //
 // It is written in another language, to the specification, so it is not our
 // own code judging our own code.
-func Strict(formatID, path string) Result {
+// The optional settings are handed to the checker after the path, as
+// key=value words. They exist for the formats whose file SHAPE is a setting -
+// a CSV separated by semicolons is well formed and a checker told to split on
+// commas would call it a single column table. The checker is told rather than
+// left to work it out, because a checker that guesses the separator would
+// happily agree with a file that used the wrong one, which is the question a
+// guard has to answer instead.
+func Strict(formatID, path string, settings ...string) Result {
 	python, ok := inPath("python")()
 	if !ok {
 		return Result{Available: false, Tool: "strict structural check"}
@@ -364,7 +371,7 @@ func Strict(formatID, path string) Result {
 	//nolint:gosec // same as above - our own script, run against a file this
 	// tool wrote a moment ago
 	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
-	cmd := exec.CommandContext(ctx, python, script, formatID, path)
+	cmd := exec.CommandContext(ctx, python, append([]string{script, formatID, path}, settings...)...)
 	var out, errOut strings.Builder
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
