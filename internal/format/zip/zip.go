@@ -48,6 +48,11 @@ const (
 	fillerName = "tfg-padding.bin"
 
 	writeChunk = 32 * 1024
+
+	// winZipAES is the compression method a locked entry declares. It is
+	// not a compression at all - the real method sits in the 0x9901 field
+	// and is store, like everything else here.
+	winZipAES = 99
 )
 
 // A fixed timestamp on every entry. Taking one from the clock would make two
@@ -73,7 +78,8 @@ func init() {
 		// The settings every container shares, declared once in the archive
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
-		Properties:       archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize),
+		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
+			archive.Password, archive.Encryption),
 		Container:        true,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -94,6 +100,11 @@ type memo struct {
 	fillerSize int64
 	withFiller bool
 	seed       uint64
+	// lock is what the archive is locked with, and the zero value is an
+	// archive that is not. It reaches build through here rather than
+	// through an argument because the counting pass and the writing pass
+	// have to agree about it exactly, and they share this.
+	lock archive.Lock
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -102,7 +113,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed}
+	lock, err := archive.ReadLock("zip", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, lock: lock}
 	if m.children, err = planChildren(r, groups); err != nil {
 		return format.Plan{}, err
 	}
@@ -290,6 +306,16 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 			format.PropertyLabelEmbedded: label != "",
 		},
 	}
+	// The lock goes into the manifest, password and all. A locked fixture
+	// whose password is not written down is a file no test can open, which
+	// makes it worth nothing - so the manifest says it in plain text, on
+	// purpose. Left out entirely when the archive is open, rather than
+	// written as "none" beside an empty password, because a key that is
+	// there says something happened.
+	if m.lock.On() {
+		p.Properties[archive.Encryption] = m.lock.Method
+		p.Properties[archive.Password] = m.lock.Password
+	}
 	// The single format shape keeps the keys it always had, so a test asserting
 	// on entry_format does not break the day contains arrives.
 	if len(groups) == 1 {
@@ -387,46 +413,124 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 // One function with a mode rather than two, so the structure, the order of the
 // entries and the comment cannot drift between what was measured and what is
 // written. Only the data writes differ.
+// entryPlan is one entry, as both passes see it.
+//
+// A record rather than five arguments, because the two passes have to
+// describe the entry identically and a positional list of five is where
+// that stops being obvious.
+type entryPlan struct {
+	name  string
+	plain int64
+	index int
+	// withContents is false during the pass that only measures.
+	withContents bool
+}
+
+// openEntry starts the next entry and gives back what its contents go to.
+//
+// Two shapes, and the difference is the whole of what locking costs here. An
+// open archive streams: CreateHeader writes a header with the sizes left blank
+// and puts them in a descriptor after the data, which is what this format has
+// always done. A locked one cannot, because the entry carries a salt and an
+// authentication code that the declared size has to include - so it goes
+// through CreateRaw with the sizes stated up front, which is also exactly the
+// shape 7-Zip writes. Measured, in docs/MVP-FORMATS.md section 2.16.
+//
+// plain is the size of the contents before locking. index numbers the entry
+// across the archive, and it is what gives each one its own salt.
+//
+// The returned closer finishes the entry. It writes the authentication code
+// for a locked entry and does nothing for an open one, and it is not called at
+// all during the counting pass - where no contents are written, and CreateRaw
+// is content to be handed a header and no bytes.
+func openEntry(zw *stdzip.Writer, m memo, e entryPlan) (io.Writer, func() error, error) {
+	nothingToShut := func() error { return nil }
+
+	if !m.lock.On() {
+		entry, err := zw.CreateHeader(&stdzip.FileHeader{
+			Name:     e.name,
+			Method:   stdzip.Store,
+			Modified: fixedTime,
+		})
+		return entry, nothingToShut, err
+	}
+
+	h := &stdzip.FileHeader{
+		Name:     e.name,
+		Method:   winZipAES,
+		Modified: fixedTime,
+		Extra:    m.lock.Extra(),
+	}
+	// Bit 0 says the entry is encrypted. The CRC stays zero because AE-2
+	// carries none - which is what lets the contents be written in one pass.
+	h.Flags |= 1
+	h.CRC32 = 0
+	h.CompressedSize64 = uint64(e.plain + m.lock.EntryOverhead())
+	h.UncompressedSize64 = uint64(e.plain)
+
+	raw, err := zw.CreateRaw(h)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !e.withContents {
+		// The counting pass writes nothing, and that has to include the salt
+		// and the verifier. Building the locked writer here would emit both
+		// straight away, so the measurement would count them and the
+		// arithmetic below would add them again - eighteen bytes an entry,
+		// which is what the engine caught when this was written the other way.
+		return raw, nothingToShut, nil
+	}
+	locked, err := m.lock.NewEntryWriter(raw, m.seed, e.index)
+	if err != nil {
+		return nil, nil, err
+	}
+	return locked, locked.Close, nil
+}
+
 func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 	zw := stdzip.NewWriter(w)
 	if err := zw.SetComment(m.comment); err != nil {
 		return fmt.Errorf("zip: the archive comment was refused: %w", err)
 	}
 
-	for _, c := range m.children {
+	for i, c := range m.children {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
 
-		entry, err := zw.CreateHeader(&stdzip.FileHeader{
-			Name:     c.name,
-			Method:   stdzip.Store,
-			Modified: fixedTime,
+		entry, shut, err := openEntry(zw, m, entryPlan{
+			name: c.name, plain: c.plan.Bytes, index: i, withContents: withContents,
 		})
 		if err != nil {
 			return err
 		}
-		if !withContents {
-			continue
-		}
-		if err := c.desc.Generator.Write(ctx, entry, c.plan); err != nil {
-			return fmt.Errorf("zip: the %s file inside could not be written: %w", c.desc.ID, err)
+		if withContents {
+			if err := c.desc.Generator.Write(ctx, entry, c.plan); err != nil {
+				return fmt.Errorf("zip: the %s file inside could not be written: %w", c.desc.ID, err)
+			}
+			if err := shut(); err != nil {
+				return err
+			}
 		}
 	}
 
 	if m.withFiller {
-		entry, err := zw.CreateHeader(&stdzip.FileHeader{
-			Name:     fillerName,
-			Method:   stdzip.Store,
-			Modified: fixedTime,
+		// The filler is locked with everything else. An archive where one entry
+		// opens without the password and the rest do not is a file nobody
+		// asked for, and the arithmetic is the same either way.
+		entry, shut, err := openEntry(zw, m, entryPlan{
+			name: fillerName, plain: m.fillerSize, index: len(m.children), withContents: withContents,
 		})
 		if err != nil {
 			return err
 		}
 		if withContents {
 			if err := writeFiller(ctx, entry, m.seed, m.fillerSize); err != nil {
+				return err
+			}
+			if err := shut(); err != nil {
 				return err
 			}
 		}
@@ -495,10 +599,10 @@ func archiveSize(m memo) (int64, error) {
 	}
 	total := c.n
 	for _, ch := range m.children {
-		total += ch.plan.Bytes
+		total += ch.plan.Bytes + m.lock.EntryOverhead()
 	}
 	if m.withFiller {
-		total += m.fillerSize
+		total += m.fillerSize + m.lock.EntryOverhead()
 	}
 	return total, nil
 }

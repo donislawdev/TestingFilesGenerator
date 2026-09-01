@@ -141,9 +141,11 @@ var reachableFromTheWindow = []string{
 	"property:wav.channels",
 	"property:wav.content",
 	"property:wav.sample_rate",
+	"property:zip.encryption",
 	"property:zip.entries",
 	"property:zip.entry_format",
 	"property:zip.entry_size",
+	"property:zip.password",
 
 	// One target's worth of settings, each with a field and each found again in
 	// the manifest of a run started from the window.

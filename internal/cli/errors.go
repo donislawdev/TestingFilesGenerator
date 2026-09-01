@@ -200,6 +200,14 @@ func classifyFormat(err error) (int, bool) {
 	if errors.As(err, &nesting) {
 		return ExitFormat, true
 	}
+	// A setting the format cannot carry is the same class again: the request
+	// is well formed and this file format has nowhere to put it. Deliberately
+	// not the code a misspelt key gets - that one is a typo in what somebody
+	// typed, and this one is true of the format itself.
+	var unsupported *format.UnsupportedSettingError
+	if errors.As(err, &unsupported) {
+		return ExitFormat, true
+	}
 	// A value outside what the format declares is a request the format cannot
 	// deliver, which is what FORMAT means - the same class as a size below the
 	// minimum. It used to fall through to RUNTIME, so "--set width=abc" told

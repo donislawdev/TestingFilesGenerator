@@ -257,6 +257,11 @@ type Descriptor struct {
 	// its own. Empty for every format that has none.
 	JointLimits []JointLimit
 
+	// Unsupported are settings this format deliberately cannot take, each with
+	// the reason. A key here is refused with that reason rather than with the
+	// generic "no such property", which reads as a gap in this build.
+	Unsupported []UnsupportedSetting
+
 	// AllocCeiling is how many objects this format may allocate producing one
 	// file, when the flat ceiling every other one meets does not describe it.
 	// Zero means the flat one applies, which is the case for all but one.
@@ -359,122 +364,6 @@ func Containers() []string {
 	sort.Strings(out)
 	return out
 }
-
-// UnknownPropertyError is a property key no format recognises.
-type UnknownPropertyError struct {
-	Format string
-	Key    string
-	Known  []string
-}
-
-// AboutSetting is the property this refusal is about, so a form can put the
-// message under the box it came from. Its sibling below has carried this since
-// 2026-08-12 and this one did not, which made a mistyped key the one refusal
-// about a declared setting that still landed at the foot of the form.
-func (e *UnknownPropertyError) AboutSetting() string { return e.Key }
-
-// Why this is refused, for a report that keeps the four parts of D6 apart.
-func (e *UnknownPropertyError) Why() string {
-	return "a format takes only the settings it declares, and one it does not know would be dropped on the way"
-}
-
-// Instead is what to do about it, named from the declaration.
-func (e *UnknownPropertyError) Instead() string {
-	if len(e.Known) == 0 {
-		return "remove the line"
-	}
-	return "use one of: " + strings.Join(e.Known, ", ")
-}
-
-// What happened, without the list of names. Kept apart from Error so a report
-// with four parts does not print the names twice - once in the sentence and
-// again in what to do instead.
-func (e *UnknownPropertyError) What() string {
-	if len(e.Known) == 0 {
-		return fmt.Sprintf("%s takes no properties, so %q is not one of them", e.Format, e.Key)
-	}
-	return fmt.Sprintf("%s does not have a property called %q", e.Format, e.Key)
-}
-
-// Error is the whole thing in one sentence, unchanged to the character - it is
-// what the one-target path from the command line flags prints.
-func (e *UnknownPropertyError) Error() string {
-	if len(e.Known) == 0 {
-		return e.What()
-	}
-	return e.What() + ". It takes: " + strings.Join(e.Known, ", ")
-}
-
-// PropertyValueError is a declared key given a value the declaration forbids.
-//
-// Separate from UnknownPropertyError because the mistake is different and so
-// is the fix: one is a key that does not exist, the other a value out of
-// range. Both are the caller's doing rather than the tool's, which is the
-// point - this used to surface as a plain error and end with the exit code
-// that means the program itself failed, so CI could not tell "you typed that
-// wrong" from "this build has a bug".
-type PropertyValueError struct {
-	Format string
-	Key    string
-	Value  string
-	Reason string
-	// Remedy is what to do about it, built from the declaration. It is carried
-	// here rather than worked out by whoever reports this, because a refusal in
-	// this tool has four parts - what happened, why, what is allowed, what to do
-	// instead (D6) - and the fourth had nowhere to come from until 2026-08-25.
-	// A reader that wants the whole thing in one sentence still gets it from
-	// Error, which leaves this out: it is the part a form puts under the box.
-	//
-	// Named Remedy rather than Instead because the accessor below has to be
-	// called Instead - that is the name the other refusals in this package use
-	// for the same part, and the reader that asks for all three asks by name.
-	Remedy string
-}
-
-// What happened, why the declaration forbids it, and what to do instead.
-//
-// Instead is the part Error leaves out on purpose - see the field - so this is
-// the only way a report gets all four parts of D6 for the refusal a person hits
-// most often, by typing a number.
-func (e *PropertyValueError) What() string {
-	return fmt.Sprintf("%s: %s cannot be %q", e.Format, e.Key, e.Value)
-}
-
-func (e *PropertyValueError) Why() string { return core.InTheWordsOf(e.Reason, e.Key) }
-
-func (e *PropertyValueError) Instead() string { return e.Remedy }
-
-func (e *PropertyValueError) Error() string {
-	return e.InTheWordsOf(e.Key)
-}
-
-// InTheWordsOf is this refusal with the property named the way one surface
-// names it - the declared key on the command line, the label above the box in
-// a window. See core.SettingSlot.
-//
-// The name is a field here rather than a slot in a sentence, because this
-// refusal is assembled rather than written out: the key already stands on its
-// own in the format string. The reason a property gives can still hold slots,
-// so a declaration that names itself twice needs no special case.
-func (e *PropertyValueError) InTheWordsOf(name string) string {
-	if name == "" {
-		name = e.Key
-	}
-	return fmt.Sprintf("%s: %s cannot be %q - %s",
-		e.Format, name, e.Value, core.InTheWordsOf(e.Reason, name))
-}
-
-// AboutSetting is the property this refusal is about, so a window can put the
-// message under the box it came from.
-//
-// It was missing until 2026-08-12, and the gap is worth recording because it
-// was invisible from either side. A window cannot place a message it is not
-// told the subject of, so every refusal about a declared setting - width,
-// height, pages, entries, a preset's own parameters - landed at the foot of the
-// form however carefully the window was written. Two of the three interfaces
-// beside this one had the method. This one is the one that fires most often,
-// because it is the one a person hits by typing a number.
-func (e *PropertyValueError) AboutSetting() string { return e.Key }
 
 // Allows reports whether raw is a value this property accepts, and says what
 // is wrong when it is not.
@@ -682,6 +571,10 @@ func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 	for _, k := range keys {
 		p, ok := known[k]
 		if !ok {
+			if cannot, declared := d.cannotCarry(k); declared {
+				bad = append(bad, cannot)
+				continue
+			}
 			bad = append(bad, &UnknownPropertyError{Format: d.ID, Key: k, Known: d.PropertyNames()})
 			continue
 		}

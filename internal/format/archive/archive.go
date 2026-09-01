@@ -41,6 +41,17 @@ const (
 	Entries     = "entries"
 	EntryFormat = "entry_format"
 	EntrySize   = "entry_size"
+	Password    = "password"
+	Encryption  = "encryption"
+)
+
+// The encryption methods, spelled the way a recipe writes them.
+const (
+	NoEncryption = "none"
+	ZipCrypto    = "zipcrypto"
+	AES128       = "aes-128"
+	AES192       = "aes-192"
+	AES256       = "aes-256"
 )
 
 const (
@@ -108,6 +119,23 @@ var axes = map[string]format.Property{
 		Name: EntrySize, Kind: format.PropertySize,
 		Default: defaultSizeText,
 		Detail:  "How big each file inside is.",
+	},
+	Password: {
+		Name: Password, Kind: format.PropertyText,
+		Shape: "the password, in plain text",
+		// No default, and that is the point. A box somebody types in arrives
+		// empty from a window, so leaving it alone is how "no password" is
+		// said - see the pair rule in readLock.
+		Detail: "The password the archive is locked with. It is written into the manifest as you typed it, " +
+			"because a test that cannot open the file cannot check anything.",
+	},
+	Encryption: {
+		Name: Encryption, Kind: format.PropertyChoice,
+		// Sorted, because a closed set has one order on every surface.
+		Choices: []string{AES128, AES192, AES256, NoEncryption, ZipCrypto},
+		Default: NoEncryption,
+		Detail: "How the archive is locked. ZipCrypto is the old scheme every reader opens and nothing modern trusts. " +
+			"AES is the WinZip scheme, and some readers cannot open it at all.",
 	},
 }
 

@@ -312,6 +312,14 @@ func inPath(name string) func() (string, bool) {
 
 // sevenZip looks in the usual place on Windows as well, because the installer
 // does not put it on the path.
+// SevenZip is where the archiver lives on this machine.
+//
+// Exported for a guard that has to run it with arguments no Checker
+// declares - a password, for one. The alternative was a second copy of
+// these search paths in the test package, which is exactly the shape this
+// tree spends its time removing.
+func SevenZip() (string, bool) { return sevenZip() }
+
 func sevenZip() (string, bool) {
 	if p, err := exec.LookPath("7z"); err == nil {
 		return p, true
