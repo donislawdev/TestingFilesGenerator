@@ -16,6 +16,29 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **A generated `.tar.gz` has different bytes, because a lot of them could
+  not be opened by a Go program.** Sizes are unchanged, every size that
+  worked before still works, and every reader that took these files still
+  takes them. What moved is where the padding sits inside the header.
+
+  The padding used to ride in the gzip header comment. Go's own
+  `compress/gzip` reads that field into a fixed buffer and refuses a comment
+  of 512 bytes or more, so **4134 of the 11 260 reachable sizes produced an
+  archive no Go program could open** - and the message it gives,
+  `gzip: invalid header`, reads like a corrupt file rather than like a field
+  the reader will not take. 7-Zip, GNU tar, bsdtar, Python and node all took
+  those files without a word, which is why it was not noticed sooner.
+
+  The padding now rides in the gzip extra field, which Go reads to the end
+  of. After the change: 11 260 sizes reachable, none unreachable, none
+  unreadable.
+
+  **There is no way back to the old bytes**, and that is the difference
+  between this and the other two entries here. The old bytes are the ones a
+  Go program cannot read, so keeping a switch for them would be keeping a
+  switch for the fault. A suite pinning `.tar.gz` hashes will go red once
+  and then stay green.
+
 - **A generated log now advances through time, so its bytes are different.**
   Every entry used to carry the same instant. Ten thousand requests all landing
   at one moment is not a log anybody can test a time window, a rate alert or a
@@ -46,6 +69,14 @@ because it turns other people's test suites red.
   to the byte - there is a pinned hash proving it.
 
 ### Added
+
+- **A zip can be locked with ZipCrypto, the old scheme.** `--set encryption=zipcrypto`.
+
+  It is here for what it does to a reader rather than for what it protects. Measured: .NET's own `ZipFile` opens one of these, reports the entry at its true length, hands back a stream and fills it with the ENCRYPTED bytes - and never says the entry was encrypted at all. An application built on that library processes noise and calls it data. AES fails loudly in the same library, which is the safer defect and the less interesting one.
+
+  So this is the fixture for finding out whether something in a pipeline waves an encrypted archive through.
+
+  **It is not protection and it is not offered as any.** ZipCrypto has been broken for decades. Use `aes-256` when the point is that the contents are hard to read.
 
 - **A zip can be locked with a password.**
 

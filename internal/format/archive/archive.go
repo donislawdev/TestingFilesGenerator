@@ -61,6 +61,7 @@ const (
 // The encryption methods, spelled the way a recipe writes them.
 const (
 	NoEncryption = "none"
+	ZipCrypto    = "zipcrypto"
 	AES128       = "aes-128"
 	AES192       = "aes-192"
 	AES256       = "aes-256"
@@ -162,10 +163,11 @@ var axes = map[string]format.Property{
 	Encryption: {
 		Name: Encryption, Kind: format.PropertyChoice,
 		// Sorted, because a closed set has one order on every surface.
-		Choices: []string{AES128, AES192, AES256, NoEncryption},
+		Choices: []string{AES128, AES192, AES256, NoEncryption, ZipCrypto},
 		Default: NoEncryption,
-		Detail: "How the archive is locked. This is the WinZip AES scheme, which 7-Zip and WinZip open " +
-			"and some other readers cannot open at all - .NET lists the files and then fails on reading one.",
+		Detail: "How the archive is locked. AES is the WinZip scheme, and some readers cannot open it " +
+			"at all. ZipCrypto is the old one every reader opens and nothing modern trusts, and some " +
+			"of them hand back the encrypted bytes without saying so.",
 	},
 }
 

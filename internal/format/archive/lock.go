@@ -41,6 +41,12 @@ const (
 	authLen    = 10
 	iterations = 1000
 
+	// zipStore is a stored entry, and winZipAES is the number an AES entry
+	// declares instead. The second is not a compression at all: the real method
+	// sits in the 0x9901 field beside it, and this build always stores.
+	zipStore  = 0
+	winZipAES = 99
+
 	// aesExtraLen is the 0x9901 field: two bytes of id, two of length and
 	// seven of body. It is written into the local header AND the central
 	// directory, so an entry pays for it twice.
@@ -63,6 +69,22 @@ type Lock struct {
 
 // On says whether anything is encrypted.
 func (l Lock) On() bool { return l.Method != "" && l.Method != NoEncryption }
+
+// NeedsPlaintextCRC says whether an entry cannot be started until its
+// contents are known.
+//
+// True for ZipCrypto and false for AES, and the difference is measured rather
+// than assumed. Read out of what 7-Zip writes: a ZipCrypto entry carries the
+// real CRC of the plaintext and puts its high byte in the header, so a reader
+// can reject a wrong password without decrypting anything. An AE-2 entry
+// carries a CRC of zero, because its authentication code does that job.
+//
+// The cost falls on the caller and it is real: an entry that needs this is
+// generated twice, once to be counted and once to be encrypted. Twice the
+// processor and not a byte more memory, which is the trade this project takes
+// every time - holding the file to hash it would break the guard that says a
+// generator does not.
+func (l Lock) NeedsPlaintextCRC() bool { return l.Method == ZipCrypto }
 
 // keyLen is the AES key in bytes, and the salt is half of it. Zero for an
 // archive that is not locked with AES.
@@ -98,6 +120,7 @@ func (l Lock) strength() byte {
 // Measured, and it agrees from two directions - the size of the whole file and
 // the compressed size field in the local header:
 //
+//	ZipCrypto   +12   (eleven bytes that vary and one check byte)
 //	AES-128     +20   (8 salt, 2 verifier, 10 authentication)
 //	AES-192     +24
 //	AES-256     +28
@@ -106,10 +129,32 @@ func (l Lock) strength() byte {
 // headers are written for real during the counting pass, so the writer counts
 // those eleven bytes twice over on its own.
 func (l Lock) EntryOverhead() int64 {
-	if !l.On() {
+	switch {
+	case !l.On():
 		return 0
+	case l.Method == ZipCrypto:
+		return zipCryptoHeader
 	}
 	return int64(l.saltLen() + pwvLen + authLen)
+}
+
+// ZipMethod is the compression method the entry declares. Named for what it
+// answers rather than for the field it reads, because Method is that field.
+//
+// AES entries declare 99, which is not a compression at all - the real
+// method sits in the 0x9901 field beside it. ZipCrypto declares what it
+// really is, because it changes nothing about how the bytes are stored, it
+// only puts twelve bytes in front of them and scrambles what follows.
+//
+// Getting this wrong is quiet. An entry declaring 99 with no 0x9901 field
+// beside it gets past the check byte and fails on the checksum, and 7-Zip
+// reports "Data Error in encrypted file. Wrong password?" - which points at
+// the password, the one thing that was right.
+func (l Lock) ZipMethod() uint16 {
+	if l.keyLen() == 0 {
+		return zipStore
+	}
+	return winZipAES
 }
 
 // Extra is the 0x9901 field an AES entry carries, and nil for anything else.
@@ -185,7 +230,10 @@ func ReadLock(id string, props map[string]string) (Lock, error) {
 // would give two runs of one recipe different bytes, which is untouchable rule
 // 3 - and the same recipe producing the same file is more of the product here
 // than the encryption is.
-func (l Lock) NewEntryWriter(w io.Writer, seed uint64, index int) (io.WriteCloser, error) {
+func (l Lock) NewEntryWriter(w io.Writer, seed uint64, index int, crc uint32) (io.WriteCloser, error) {
+	if l.Method == ZipCrypto {
+		return l.newZipCryptoWriter(w, seed, index, crc)
+	}
 	if l.keyLen() == 0 {
 		return nil, fmt.Errorf("archive: %q is not an encryption this build can write", l.Method)
 	}
