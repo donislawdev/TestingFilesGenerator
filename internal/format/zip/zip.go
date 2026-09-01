@@ -403,16 +403,6 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	return build(ctx, w, m, true)
 }
 
-// build writes the archive.
-//
-// withContents says whether the files inside are actually generated. The
-// writing path passes true. Planning passes false and adds the sizes on
-// afterwards, which is what keeps measuring an archive from costing as much as
-// producing one - see archiveSize.
-//
-// One function with a mode rather than two, so the structure, the order of the
-// entries and the comment cannot drift between what was measured and what is
-// written. Only the data writes differ.
 // entryPlan is one entry, as both passes see it.
 //
 // A record rather than five arguments, because the two passes have to
@@ -487,6 +477,16 @@ func openEntry(zw *stdzip.Writer, m memo, e entryPlan) (io.Writer, func() error,
 	return locked, locked.Close, nil
 }
 
+// build writes the archive.
+//
+// withContents says whether the files inside are actually generated. The
+// writing path passes true. Planning passes false and adds the sizes on
+// afterwards, which is what keeps measuring an archive from costing as much as
+// producing one - see archiveSize.
+//
+// One function with a mode rather than two, so the structure, the order of the
+// entries and the comment cannot drift between what was measured and what is
+// written. Only the data writes differ.
 func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 	zw := stdzip.NewWriter(w)
 	if err := zw.SetComment(m.comment); err != nil {

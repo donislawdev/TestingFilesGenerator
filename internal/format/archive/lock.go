@@ -5,6 +5,12 @@ import (
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/pbkdf2"
+	// SHA-1 is not a choice here. WinZip AES derives its key with
+	// PBKDF2-HMAC-SHA1 and signs the ciphertext with HMAC-SHA1, both named
+	// in the specification, and an archive built with anything else is one
+	// no archiver on earth opens. It is used for key derivation and for a
+	// message code, never as a digest anybody trusts to be collision free.
+	//nolint:gosec // G505: the format specifies SHA-1 and a different hash writes an unreadable archive
 	"crypto/sha1"
 	"encoding/binary"
 	"fmt"
@@ -92,7 +98,6 @@ func (l Lock) strength() byte {
 // Measured, and it agrees from two directions - the size of the whole file and
 // the compressed size field in the local header:
 //
-//	ZipCrypto   +12
 //	AES-128     +20   (8 salt, 2 verifier, 10 authentication)
 //	AES-192     +24
 //	AES-256     +28
@@ -103,9 +108,6 @@ func (l Lock) strength() byte {
 func (l Lock) EntryOverhead() int64 {
 	if !l.On() {
 		return 0
-	}
-	if l.Method == ZipCrypto {
-		return 12
 	}
 	return int64(l.saltLen() + pwvLen + authLen)
 }

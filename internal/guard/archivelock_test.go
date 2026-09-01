@@ -105,6 +105,64 @@ func TestARealArchiverOpensALockedArchiveAndRefusesTheWrongPassword(t *testing.T
 	}
 }
 
+// Every lock the registry offers is one this build can actually fit.
+//
+// Written after offering one it could not. zipcrypto was declared among the
+// choices while nothing implemented it, so the registry accepted the value, the
+// plan carried it, and the write failed at the last moment - a run that produced
+// no file, exit code 5, and a note in the manifest, for a value the tool had
+// listed itself. `tfg formats zip` printed it and so did the website.
+//
+// That is the shape untouchable rule 6 is about. The refusal has to come from
+// the declaration, before anything is attempted, or not be needed at all -
+// offering something and failing on it later is the worst of the three.
+//
+// Asked of the declaration rather than of a list here, so the day 7Z arrives
+// with a method of its own this covers it without being edited.
+func TestEveryLockTheRegistryOffersCanActuallyBeWritten(t *testing.T) {
+	dir := t.TempDir()
+	offered := 0
+
+	for _, d := range format.All() {
+		for _, p := range d.Properties {
+			if p.Name != archive.Encryption {
+				continue
+			}
+			for _, method := range p.Choices {
+				if method == archive.NoEncryption {
+					continue
+				}
+				offered++
+				plan, err := d.Generator.Plan(format.Request{
+					Bytes: 40 * 1024, Seed: 7741, Label: true,
+					Properties: map[string]string{archive.Password: "Secret123", archive.Encryption: method},
+				})
+				if err != nil {
+					t.Errorf("%s offers %s and planning it fails: %v", d.ID, method, err)
+					continue
+				}
+				f, err := os.Create(filepath.Join(dir, d.ID+"-"+method+d.Extension))
+				if err != nil {
+					t.Fatal(err)
+				}
+				writeErr := d.Generator.Write(context.Background(), f, plan)
+				if err := f.Close(); err != nil {
+					t.Fatal(err)
+				}
+				if writeErr != nil {
+					t.Errorf("%s offers %s in its declaration and cannot write it: %v\n"+
+						"  a value the registry lists is one tfg formats prints and the website publishes, "+
+						"so this is the tool advertising something it fails on", d.ID, method, writeErr)
+				}
+			}
+		}
+	}
+
+	if offered == 0 {
+		t.Fatal("no format offers any encryption, so this proved nothing")
+	}
+}
+
 // Locking does not cost the exact size, which is the promise the format makes.
 //
 // The reason it can be kept is the measurement: a stream cipher does not change
@@ -417,7 +475,6 @@ func runSevenZip(bin, path, password string) (string, error) {
 	}
 	// The binary is the one the oracle package found and the path is a file
 	// this test just wrote, so neither comes from anything a person typed.
-	//nolint:gosec // both arguments are ours
 	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	out, err := exec.Command(bin, args...).CombinedOutput()
 	return string(out), err
@@ -455,7 +512,6 @@ func extract(t *testing.T, bin, path, member, password string) []byte {
 	}
 	// Both arguments are ours: the binary came from the oracle package and
 	// the path is a file this test just wrote.
-	//nolint:gosec // the command is ours
 	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.Command(bin, args...)
 	var out, errOut bytes.Buffer
