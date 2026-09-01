@@ -116,6 +116,7 @@ func init() {
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
 		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
+			archive.Depth, archive.DirectoryEntries,
 			archive.EntryMode, archive.EntryOwner),
 
 		// Neither half of this format has anywhere to put a password, and
@@ -164,6 +165,11 @@ type memo struct {
 	// The zero value is not the default - ReadOwnership fills it, because
 	// the mode this format has always written is 644 rather than 0.
 	own archive.Ownership
+	// layout is where the files inside sit. It has to be here rather than an
+	// argument because tarLength counts from this struct and build writes
+	// from it: a layout the two disagreed about would promise one size and
+	// write another.
+	layout archive.Layout
 	// withExtra says whether the header carries a gzip extra field at all,
 	// and extraLen says how many bytes it holds. Two fields rather than one
 	// with a sentinel, matching withFiller beside them, because an EMPTY
@@ -185,8 +191,13 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed, own: own}
-	if m.children, err = planChildren(r, groups); err != nil {
+	layout, err := archive.ReadLayout("targz", r)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, own: own, layout: layout}
+	if m.children, err = planChildren(r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
 
@@ -209,7 +220,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // Members are numbered across the whole archive rather than per group, so the
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
-func planChildren(r format.Request, groups []format.Content) ([]child, error) {
+func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
 	var out []child
 	index := 0
 	// Numbering runs per format rather than per group, so two groups of the
@@ -231,7 +242,7 @@ func planChildren(r format.Request, groups []format.Content) ([]child, error) {
 			}
 			numbered[g.Format]++
 			out = append(out, child{
-				name: fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
+				name: layout.Path(fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension)),
 				desc: desc,
 				plan: cp,
 			})
@@ -290,7 +301,12 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 			// Stored rather than deflated, which is what makes the size exact
 			// in one pass. Stated here so a test can assert on it rather than
 			// infer it from how well the file compresses.
-			"compression":                "none",
+			"compression": "none",
+			// Where the files sit, and whether the directories are named -
+			// written every time rather than only when nested, so a harness
+			// never has to read a missing key as flat.
+			archive.Depth:                m.layout.Depth,
+			archive.DirectoryEntries:     m.layout.DirEntries,
 			format.PropertyLabelEmbedded: label != "",
 		},
 	}

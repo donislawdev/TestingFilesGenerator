@@ -32,6 +32,15 @@ import (
 // means saying out loud that a guard is unproven. The list should only ever get
 // shorter.
 var notProvenByMutation = map[string]bool{
+	// A directory entry costs one tar block and nothing more.
+	//
+	// There is no line of ours under this one to break. It asserts what
+	// archive/tar does with a directory header, and that number is what the
+	// tar size arithmetic is built on - so the guard is here to catch the
+	// standard library moving, which is the one thing a substitution in this
+	// repository cannot simulate. The five guards that came with it on
+	// 2026-09-01 are proven by mutation instead.
+	"TestADirectoryEntryCostsExactlyOneTarBlock": true,
 	// The property belongs to the USTAR header rather than to anything here:
 	// every field of it is fixed width, so the mode and the owner are written
 	// into space already paid for whatever they say. There is no line of ours

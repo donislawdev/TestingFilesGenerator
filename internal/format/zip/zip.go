@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+
 	"strings"
 	"time"
 
@@ -75,6 +76,7 @@ func init() {
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
 		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
+			archive.Depth, archive.DirectoryEntries,
 			archive.Password, archive.Encryption),
 		Container:        true,
 		GeneratorVersion: generatorVersion,
@@ -101,6 +103,11 @@ type memo struct {
 	// through an argument because the counting pass and the writing pass
 	// have to agree about it exactly, and they share this.
 	lock archive.Lock
+	// layout is where the files inside sit, and it travels the same way and
+	// for the same reason: archiveSize counts by running build against a
+	// counter, so a layout the two passes disagreed about would produce an
+	// archive whose size had been promised for a different shape.
+	layout archive.Layout
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -114,8 +121,13 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed, lock: lock}
-	if m.children, err = planChildren(r, groups); err != nil {
+	layout, err := archive.ReadLayout("zip", r)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, lock: lock, layout: layout}
+	if m.children, err = planChildren(r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
 
@@ -204,7 +216,7 @@ func withinZip32(total int64) error {
 // Members are numbered across the whole archive rather than per group, so the
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
-func planChildren(r format.Request, groups []format.Content) ([]child, error) {
+func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
 	var out []child
 	index := 0
 	// Numbering runs per format rather than per group, so two groups of the
@@ -227,7 +239,7 @@ func planChildren(r format.Request, groups []format.Content) ([]child, error) {
 			}
 			numbered[g.Format]++
 			out = append(out, child{
-				name: fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
+				name: layout.Path(fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension)),
 				desc: desc,
 				plan: cp,
 			})
@@ -296,9 +308,18 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"entries":                    len(m.children),
-			"contains":                   contentSummary(groups),
-			"method":                     "store",
+			"entries":  len(m.children),
+			"contains": contentSummary(groups),
+			"method":   "store",
+			// Where the files sit, and whether the directories are named.
+			// Written every time rather than only when nested, like method
+			// and entries beside them: a harness reading this should not have
+			// to know that a missing key means flat. Rule 6 - what the run
+			// produced has to be visible in the manifest, and "the archive is
+			// three levels deep" is exactly the kind of thing a test asserts
+			// against.
+			archive.Depth:                m.layout.Depth,
+			archive.DirectoryEntries:     m.layout.DirEntries,
 			format.PropertyLabelEmbedded: label != "",
 		},
 	}
@@ -523,6 +544,12 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		return fmt.Errorf("zip: the archive comment was refused: %w", err)
 	}
 
+	// The directories the archive names come before anything that sits in
+	// them. See writeDirectories for why they are not children.
+	if err := writeDirectories(ctx, zw, m.layout); err != nil {
+		return err
+	}
+
 	for i, c := range m.children {
 		select {
 		case <-ctx.Done():
@@ -552,31 +579,8 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		}
 	}
 
-	if m.withFiller {
-		// The filler is locked with everything else. An archive where one entry
-		// opens without the password and the rest do not is a file nobody
-		// asked for, and the arithmetic is the same either way.
-		crc, err := plaintextCRC(ctx, m, withContents, func(w io.Writer) error {
-			return writeFiller(ctx, w, m.seed, m.fillerSize)
-		})
-		if err != nil {
-			return err
-		}
-		entry, shut, err := openEntry(zw, m, entryPlan{
-			name: fillerName, plain: m.fillerSize, index: len(m.children),
-			withContents: withContents, crc: crc,
-		})
-		if err != nil {
-			return err
-		}
-		if withContents {
-			if err := writeFiller(ctx, entry, m.seed, m.fillerSize); err != nil {
-				return err
-			}
-			if err := shut(); err != nil {
-				return err
-			}
-		}
+	if err := writeFillerEntry(ctx, zw, m, withContents); err != nil {
+		return err
 	}
 
 	return zw.Close()
