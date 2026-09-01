@@ -395,6 +395,13 @@ func (g *Generate) onFormatChosen(id string) {
 func (g *Generate) settingsSaid() string {
 	said := make([]string, 0, len(g.props))
 	for _, f := range g.props {
+		// What was CHOSEN, not what the field started on. A menu opens on its
+		// default and so always has a value, and listing all of them turned
+		// this line into every setting the format declares - which for log,
+		// with seven, ran off the edge of the window.
+		if f.Chosen != nil && !f.Chosen() {
+			continue
+		}
 		if v := f.Value(); v != "" {
 			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
 		}

@@ -56,6 +56,12 @@ files.jsonl
 /dist/
 /build/
 
+# What the tool itself writes. The window proposes this directory by default,
+# so running the program from a checkout fills it with generated files - and
+# this is a file generator, so its own repository fills up faster than any
+# other would.
+/tfg-out/
+
 # ---------------------------------------------------------------------------
 # Test and coverage artifacts
 # ---------------------------------------------------------------------------

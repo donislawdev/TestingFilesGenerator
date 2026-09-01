@@ -107,7 +107,28 @@
     },
     "log_8kib": {
       "bytes": 8192,
-      "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102"
+      "sha256": "593705edb46ba0c12a23863b0798df448ebd569e650a9fed97ebe131e1f89684",
+      "measured_on": "2026-08-31"
+    },
+    "log_8kib_the_way_back": {
+      "bytes": 8192,
+      "sha256": "231e732a7781da7640a1ff202a4c37c5380eb429e924499a60cdf46015075102",
+      "measured_on": "2026-08-31"
+    },
+    "log_json_lines": {
+      "bytes": 8192,
+      "sha256": "0d51a986bd84fca51e301fb918055be8273b2164f767b43ce8f3d706df34a871",
+      "measured_on": "2026-08-31"
+    },
+    "log_nginx_v6_crlf": {
+      "bytes": 8193,
+      "sha256": "71aac4d67ff5d3ca6a5ab958776685e13fd918eef5da3098625da20efd0e74f6",
+      "measured_on": "2026-08-31"
+    },
+    "log_syslog": {
+      "bytes": 8192,
+      "sha256": "adfd35176aaa710daae05cb1165ac0db79c134fbe8bb3bf6c6ccba6dcf44f9fa",
+      "measured_on": "2026-08-31"
     },
     "md_8kib": {
       "bytes": 8192,

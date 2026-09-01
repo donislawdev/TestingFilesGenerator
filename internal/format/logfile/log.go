@@ -1,7 +1,12 @@
-// Package logfile generates access log files.
+// Package logfile generates log files.
 //
 // The package is not called "log" so that it cannot be confused with the
 // standard library package of that name at a glance. The format id is "log".
+//
+// Six shapes since 2026-08-31, where there was one before: the Apache family,
+// nginx, syslog, a plain application log and JSON lines. Every template was
+// taken from a real file rather than from memory - see shapes.go, which says
+// which two of them memory would have got wrong.
 package logfile
 
 import (
@@ -27,32 +32,17 @@ import (
 // half entry that a parser rejects - and "the last line is truncated" is
 // exactly what a real log looks like mid rotation, so the failure would read
 // as realism rather than as a defect. Instead the last entry is built to the
-// byte, with the request path taking up the difference. Every line parses.
-//
-// Same shape as the CSV finding on 2026-08-01: padding goes where the format
-// has room for a long value, never into a truncated record.
+// byte, with one stretchable field per shape taking up the difference. Every
+// line parses.
 
 const (
 	generatorVersion = "1"
 
-	// Every field except the path is fixed width, so the length of an entry
-	// is known before it is built and the path absorbs the difference.
-	timestamp = "01/Aug/2026:12:00:00 +0000"
-
-	// statusWidth and sizeWidth are why the ranges below are picked - a status
-	// is always three digits and a byte count always six, so neither changes
-	// the length of a line.
+	// statusWidth and sizeWidth are why the ranges in shapes.go are picked - a
+	// status is always three digits and a byte count always six, so neither
+	// changes the length of a line.
 	statusWidth = 3
 	sizeWidth   = 6
-
-	// longestAddress is 255.255.255.255. Used for the minimum, which has to
-	// hold for every draw rather than for the lucky one.
-	longestAddress = 15
-
-	// fixedWidth is every byte of a line except the address, the path and the
-	// user agent. A constant expression, so it costs nothing at run time.
-	fixedWidth = len(" - - [") + len(timestamp) + len("] \"GET /") +
-		len(" HTTP/1.1\" ") + statusWidth + len(" ") + sizeWidth + len(" \"-\" \"") + len("\"\n")
 )
 
 func init() {
@@ -65,39 +55,91 @@ func init() {
 		// Unlike text, a log file of nought bytes holds no entries and a log
 		// with no entries is not a fixture anybody asked for. The minimum is
 		// one whole entry, and asking for less is refused with the number.
+		//
+		// The number announced is the DEFAULT shape's, because a guard holds
+		// this tool to accepting whatever minimum it prints. A shape that
+		// needs more raises the floor when it is chosen, and says its own
+		// number then - the same way a picture size named by hand does.
 		MinBytes: minimumBytes(),
 
 		Padding: format.PaddingChannel{
-			Name:     "the request path of the last entry",
+			Name:     "the request path or message of the last entry",
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:  format.LabelVisible,
-		Oracle: format.OracleNone,
-		// Entry format, rate, time range and level mix come later. Declaring
-		// none now makes a recipe asking for them fail loudly.
-		Properties:       nil,
+		Label:      format.LabelVisible,
+		Oracle:     format.OracleNone,
+		Properties: properties(),
+
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
 }
 
+func properties() []format.Property {
+	return []format.Property{
+		{
+			Name: "entry_format", Kind: format.PropertyChoice,
+			Choices: shapeIDs, Default: defaultShape,
+			Detail: "Which kind of log to write. Web server shapes carry a request and a status, the others carry a level and a message.",
+		},
+		{
+			Name: "timestamps", Kind: format.PropertyChoice,
+			Choices: []string{"advancing", "fixed"}, Default: "advancing",
+			Detail: "Whether each entry happens later than the one before it. Fixed puts every entry at the same instant, which is what this format did before it could advance.",
+		},
+		{
+			Name: "rate", Kind: format.PropertyInt,
+			Min: minRate, Max: maxRate, Unit: "entries per second",
+			Default: strconv.Itoa(defaultRate),
+			Detail:  "How fast the entries arrive. Only means anything while timestamps advance.",
+		},
+		{
+			Name: "methods", Kind: format.PropertyChoice,
+			Choices: []string{"get", "read", "mixed"}, Default: "get",
+			Detail: "Which request methods appear. Read is GET and HEAD, mixed adds POST, PUT, PATCH and DELETE.",
+		},
+		{
+			Name: "status_mix", Kind: format.PropertyChoice,
+			Choices: []string{"realistic", "success", "client-errors", "server-errors"}, Default: "realistic",
+			Detail: "Which response codes appear. Realistic is mostly success with a tail of errors.",
+		},
+		{
+			Name: "ip_version", Kind: format.PropertyChoice,
+			Choices: []string{"v4", "v6", "mixed"}, Default: "v4",
+			Detail: "Which kind of client address appears. Choose v6 to find out whether a reader handles it.",
+		},
+		{
+			Name: "line_ending", Kind: format.PropertyChoice,
+			Choices: []string{"lf", "crlf"}, Default: "lf",
+			Detail: "How each line ends. Choose crlf for a log written by a Windows service.",
+		},
+	}
+}
+
 type generator struct{}
 
 type memo struct {
-	labelLine string // includes the trailing newline, empty when absent
+	labelLine string // includes the terminator, empty when absent
 	seed      uint64
+	opt       options
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	min := minimumBytes()
+	opt, err := parseOptions(r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	min := opt.shape.shortest(opt)
 	if r.Bytes < min {
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "LOG",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a log holds whole entries and one entry in the combined format needs that much",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Reason: fmt.Sprintf(
+				"a log holds whole entries and one entry in the %s shape needs that much", opt.shape.id),
+			Hint: fmt.Sprintf("Ask for %d B or more, or choose a shorter entry_format.", min),
 		}
 	}
 
@@ -105,22 +147,39 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Bytes:       r.Bytes,
 		Exact:       true,
 		Determinism: format.DeterminismByte,
+		// Only what is true OF THIS SHAPE. A syslog line carries no request,
+		// so recording methods beside it would be the manifest stating a fact
+		// about the file that is not one - and the manifest is the half of this
+		// tool a test suite reads rather than a person, so a value nobody can
+		// see in the file is worse there than anywhere.
 		Properties: map[string]any{
 			"encoding":     "utf-8",
-			"line_ending":  "lf",
-			"entry_format": "apache-combined",
+			"line_ending":  opt.lineEnding,
+			"entry_format": opt.shape.id,
+			"timestamps":   opt.timestamps,
 		},
 	}
+	if opt.advancing {
+		p.Properties["rate"] = opt.rate
+	}
+	if opt.shape.web {
+		p.Properties["methods"] = opt.methodMix
+		p.Properties["ip_version"] = opt.ipVersion
+	}
+	if opt.shape.web || opt.shape.id == "json-lines" {
+		p.Properties["status_mix"] = opt.statusMix
+	}
 
-	m := memo{seed: r.Seed}
+	m := memo{seed: r.Seed, opt: opt}
 	if r.Label {
 		// A log has no comment syntax that every reader agrees on, so the
 		// label is a line of its own. It is the one line that is not an entry,
-		// and it says so in words rather than pretending to be one.
-		line := "# " + core.Label("log", r.Bytes, r.Seed) + "\n"
+		// and it says so in words rather than pretending to be one - except in
+		// JSON lines, where a comment is not a line any reader would take.
+		line := opt.shape.label(core.Label("log", r.Bytes, r.Seed), opt)
 		// It has to leave room for at least one whole entry, or the file would
 		// be a label and nothing else.
-		if int64(len(line))+minEntry() <= r.Bytes {
+		if int64(len(line))+min <= r.Bytes {
 			m.labelLine = line
 		} else {
 			p.Notes = append(p.Notes, format.Note{
@@ -156,131 +215,36 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// for every record based format here, so it lives in core rather than
 	// being written out a fourth time.
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, remaining, entries{})
+	rec := &entries{st: state{rng: rng, clock: newClock(m.opt), opt: m.opt}}
+	return core.FillRecords(ctx, w, rng, remaining, rec)
 }
 
 // entries is the log seen as a stream of records.
-type entries struct{}
+type entries struct{ st state }
 
-func (entries) Shortest() int64 { return minEntry() }
+func (e *entries) Shortest() int64 { return e.st.opt.shape.shortest(e.st.opt) }
 
-func (entries) Append(dst []byte, rng *rand.Rand) []byte {
-	return appendEntry(dst, rng, -1)
+func (e *entries) Append(dst []byte, _ *rand.Rand) []byte {
+	return e.st.opt.shape.appendTo(dst, &e.st, -1)
 }
 
-func (entries) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
-	return appendEntry(dst, rng, n)
+func (e *entries) AppendExact(dst []byte, _ *rand.Rand, n int64) []byte {
+	return e.st.opt.shape.appendTo(dst, &e.st, n)
 }
 
-// Discard has nothing to put back. An entry carries no state from one to the
-// next, so throwing one away leaves no trace to undo.
-func (entries) Discard() {}
+// Discard puts the clock back. The filler builds one entry past the end to
+// measure it and throws it away, and without this the file would skip a tick -
+// which nothing else here could see, because the size stays exact and every
+// line still parses. csv counts rows and puts them back for the same reason.
+func (e *entries) Discard() { e.st.clock.back() }
 
-// appendEntry appends one line in the Apache combined format.
-//
-// want below zero means "whatever length it comes out". Any other value is the exact
-// length the line must have, newline included, and the request path is
-// stretched to reach it.
-//
-// It appends rather than returning a new slice because a log of any size is
-// millions of entries, and one allocation per entry is a multiple of the file
-// in garbage. The resource guard measures that.
-func appendEntry(dst []byte, rng *rand.Rand, want int64) []byte {
-	// Every field but the path is fixed width or drawn from a list, so the
-	// length of the line is known before the path is chosen.
-	a, b, c, d := 10+rng.IntN(240), rng.IntN(256), rng.IntN(256), 1+rng.IntN(254)
-	status := statuses[rng.IntN(len(statuses))]
-	size := 100000 + rng.IntN(899999)
-	agent := agents[rng.IntN(len(agents))]
-	path := paths[rng.IntN(len(paths))]
-
-	// The length of everything but the path, as arithmetic rather than by
-	// building a string and measuring it - that allocated once per entry,
-	// about the size of the file again in garbage over a large log.
-	base := int64(fixedWidth + len(agent) + digits(a) + digits(b) + digits(c) + digits(d) + 3)
-
-	// No leading zeros. Padding octets to three digits made the line length
-	// trivial to predict and produced addresses no real log contains - and a
-	// leading zero is read as octal by some address parsers, where 069 is not
-	// even valid octal. Untouchable rule 4: fidelity does not drop for the
-	// convenience of the implementation.
-	dst = strconv.AppendInt(dst, int64(a), 10)
-	dst = append(dst, '.')
-	dst = strconv.AppendInt(dst, int64(b), 10)
-	dst = append(dst, '.')
-	dst = strconv.AppendInt(dst, int64(c), 10)
-	dst = append(dst, '.')
-	dst = strconv.AppendInt(dst, int64(d), 10)
-	dst = append(dst, " - - ["...)
-	dst = append(dst, timestamp...)
-	dst = append(dst, "] \"GET /"...)
-
-	if want < 0 {
-		dst = append(dst, path...)
-	} else {
-		dst = appendPath(dst, want-base)
-	}
-
-	dst = append(dst, " HTTP/1.1\" "...)
-	dst = strconv.AppendInt(dst, int64(status), 10)
-	dst = append(dst, ' ')
-	dst = strconv.AppendInt(dst, int64(size), 10)
-	dst = append(dst, " \"-\" \""...)
-	dst = append(dst, agent...)
-	return append(dst, "\"\n"...)
+// minimumBytes is the floor the registry announces: the default shape with
+// nothing set. Computed rather than written down, so it cannot drift away from
+// the templates the way a number in a document would.
+func minimumBytes() int64 {
+	o := defaultOptions()
+	return o.shape.shortest(o)
 }
-
-// digits is how many characters a byte sized number takes. The address is
-// written the way a person sees it, so the length varies and the path has to
-// know by how much.
-func digits(n int) int {
-	switch {
-	case n < 10:
-		return 1
-	case n < 100:
-		return 2
-	default:
-		return 3
-	}
-}
-
-// appendPath writes a URL path of exactly n bytes out of readable segments, so
-// a padded entry still looks like a request rather than a run of one letter.
-func appendPath(dst []byte, n int64) []byte {
-	if n < 1 {
-		// Only reachable if the caller ignored the minimum. The check in Write
-		// turns that into an error rather than a file of the wrong size.
-		return append(dst, 'x')
-	}
-	// One word and a slash between the repeats, so the padding reads as a path
-	// rather than as prose. The vocabulary is a literal here because a URL path
-	// is ASCII by definition, but it goes through the shared filler all the
-	// same - one copy of "cut to the byte" rather than six.
-	return core.AppendFiller(dst, pathFiller, n, func(int) string { return "/" })
-}
-
-var pathFiller = []string{"segment"}
-
-// minEntry is the length of the shortest line this generator can produce, and
-// minimumBytes is the smallest file - one whole entry.
-//
-// Computed rather than written down, so it cannot drift away from the template
-// above the way a number in a document would.
-func minEntry() int64 {
-	// The longest agent, because any entry may draw it and the minimum has to
-	// hold for every draw rather than for the lucky one.
-	longest := 0
-	for _, a := range agents {
-		if len(a) > longest {
-			longest = len(a)
-		}
-	}
-	// The longest address too, for the same reason, plus one character of
-	// path - the shortest a path can be.
-	return int64(fixedWidth + longestAddress + longest + 1)
-}
-
-func minimumBytes() int64 { return minEntry() }
 
 var statuses = []int{200, 200, 200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 409, 429, 500, 502, 503}
 
@@ -298,3 +262,19 @@ var agents = []string{
 	"python-requests/2.32.3",
 	"Go-http-client/2.0",
 }
+
+// syslogHost and tags are what the message shapes say produced the line. Taken
+// from the shape of a real rsyslog file rather than invented.
+const syslogHost = "app-01"
+
+// The range a process id is drawn from. Named rather than written into
+// the draw, because the widest of them is what the minimum entry has to
+// leave room for and the two must not drift apart.
+const (
+	minPid = 100
+	maxPid = 9998
+)
+
+var tags = []string{"sshd", "cron", "systemd", "kernel", "nginx", "dockerd"}
+
+var levels = []string{"INFO", "INFO", "INFO", "WARN", "ERROR", "DEBUG"}

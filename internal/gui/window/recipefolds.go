@@ -137,6 +137,13 @@ func (r *Recipe) wire(fold *parts.Folding, folded *bool, say func() string) {
 func (b *batch) settingsSaid() string {
 	said := make([]string, 0, len(b.props))
 	for _, f := range b.props {
+		// What was CHOSEN, not what the field started on. A menu opens on its
+		// default and so always has a value, and listing all of them turned
+		// this line into every setting the format declares - which for log,
+		// with seven, ran off the edge of the window.
+		if f.Chosen != nil && !f.Chosen() {
+			continue
+		}
 		if v := f.Value(); v != "" {
 			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
 		}
