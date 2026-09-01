@@ -1,6 +1,8 @@
 package guard
 
 import (
+	stdzip "archive/zip"
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -60,6 +62,35 @@ func TestARealArchiverOpensALockedArchiveAndRefusesTheWrongPassword(t *testing.T
 			if out, err := runSevenZip(bin, path, password); err != nil {
 				t.Fatalf("7-Zip refused an archive locked with %s and given the right password: %v\n%s",
 					method, err, out)
+			}
+
+			// And the contents come back out as themselves.
+			//
+			// This half was missing until a mutation found it, and the miss is
+			// worth writing down because it is a property of AE-2 rather than
+			// an oversight. An AE-2 entry carries a CRC of zero and its
+			// authentication code is computed over the CIPHERTEXT, so a reader
+			// checks that nobody edited the encrypted bytes and never that the
+			// plaintext is what was put in. Turn the keystream counter the
+			// wrong way round and 7-Zip still says "Everything is Ok" - the
+			// file is well formed, the password verifies, the code matches,
+			// and what comes out is noise.
+			//
+			// So the archive is opened for real and compared against the same
+			// archive built without a lock, which holds the same children from
+			// the same seed. Both sides are extracted by 7-Zip, so this is not
+			// our own code judging its own arithmetic.
+			open := filepath.Join(dir, "open-"+method+".zip")
+			writeArchive(t, open, 40*1024, nil, 7741)
+
+			locked := extract(t, bin, path, "txt_0001.txt", password)
+			plain := extract(t, bin, open, "txt_0001.txt", "")
+			if string(locked) != string(plain) {
+				t.Errorf("%s: the file inside came back out different from the same file in an unlocked "+
+					"archive, so the contents are being scrambled rather than encrypted", method)
+			}
+			if len(plain) == 0 {
+				t.Fatal("the unlocked archive gave nothing back, so the comparison above proved nothing")
 			}
 			if _, err := runSevenZip(bin, path, "NotThePassword"); err == nil {
 				t.Errorf("7-Zip accepted %s with the WRONG password, so nothing here proves the archive is locked",
@@ -294,18 +325,72 @@ func TestALockedArchiveIsTheSameFileForTheSameSeed(t *testing.T) {
 	if string(a) == string(c) {
 		t.Error("two different seeds gave the same archive, so the salt ignores the seed")
 	}
+
+	// The salt itself, not the file it is in.
+	//
+	// Comparing whole archives is too blunt to say anything about the salt: the
+	// children are seeded from the run too, so two seeds give different
+	// contents and therefore different files whatever the salt does. A mutation
+	// that made the salt ignore the seed entirely left the comparison above
+	// green. This reads the sixteen bytes at the start of the entry, which is
+	// where a WinZip AES entry keeps its salt, and asks them directly.
+	if first, other := saltOf(t, first), saltOf(t, other); string(first) == string(other) {
+		t.Errorf("two seeds gave the same salt %x, so the salt is not derived from the run - "+
+			"every archive this build writes shares it", first)
+	}
+}
+
+// saltOf is the salt at the start of the first entry of a locked archive.
+//
+// DataOffset is what makes this readable without a second zip parser: the
+// standard library says where the entry's bytes begin, and for an AES entry the
+// salt is the first thing there.
+func saltOf(t *testing.T, path string) []byte {
+	t.Helper()
+	r, err := stdzip.OpenReader(path)
+	if err != nil {
+		t.Fatalf("opening %s: %v", path, err)
+	}
+	defer func() { _ = r.Close() }()
+	if len(r.File) == 0 {
+		t.Fatalf("%s holds nothing, so there is no salt to read", path)
+	}
+	at, err := r.File[0].DataOffset()
+	if err != nil {
+		t.Fatalf("finding the data of %s: %v", r.File[0].Name, err)
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = f.Close() }()
+	// Sixteen, because these archives are locked with AES-256 and its salt is
+	// half the key.
+	salt := make([]byte, 16)
+	if _, err := f.ReadAt(salt, at); err != nil {
+		t.Fatalf("reading the salt of %s: %v", path, err)
+	}
+	return salt
 }
 
 // writeLocked builds one locked archive on disk.
 func writeLocked(t *testing.T, path string, size int64, method, password string, seed uint64) {
 	t.Helper()
+	writeArchive(t, path, size, map[string]string{
+		archive.Password: password, archive.Encryption: method,
+	}, seed)
+}
+
+// writeArchive builds one archive on disk, locked or not.
+func writeArchive(t *testing.T, path string, size int64, props map[string]string, seed uint64) {
+	t.Helper()
 	d := descriptorFor(t, "zip")
 	plan, err := d.Generator.Plan(format.Request{
-		Bytes: size, Seed: seed, Label: true,
-		Properties: map[string]string{archive.Password: password, archive.Encryption: method},
+		Bytes: size, Seed: seed, Label: true, Properties: props,
 	})
 	if err != nil {
-		t.Fatalf("planning %d B locked with %s: %v", size, method, err)
+		t.Fatalf("planning %d B with %v: %v", size, props, err)
 	}
 	f, err := os.Create(path)
 	if err != nil {
@@ -355,4 +440,29 @@ func descriptorFor(t *testing.T, id string) format.Descriptor {
 		t.Fatalf("%s is not registered: %v", id, err)
 	}
 	return d
+}
+
+// extract pulls one member out of an archive, using the archiver rather than
+// anything of ours. Reading it back with our own code would be the generator
+// checking its own arithmetic.
+func extract(t *testing.T, bin, path, member, password string) []byte {
+	t.Helper()
+	args := []string{"e", "-so", path, member}
+	if password != "" {
+		args = append(args, "-p"+password)
+	} else {
+		args = append(args, "-p")
+	}
+	// Both arguments are ours: the binary came from the oracle package and
+	// the path is a file this test just wrote.
+	//nolint:gosec // the command is ours
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	cmd := exec.Command(bin, args...)
+	var out, errOut bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &errOut
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("extracting %s from %s: %v\n%s", member, filepath.Base(path), err, errOut.String())
+	}
+	return out.Bytes()
 }
