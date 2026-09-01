@@ -125,6 +125,8 @@ var reachableFromTheWindow = []string{
 	"property:png.height",
 	"property:png.width",
 	"property:targz.entries",
+	"property:targz.entry_mode",
+	"property:targz.entry_owner",
 	"property:targz.entry_format",
 	"property:targz.entry_size",
 	"property:tiff.height",

@@ -43,6 +43,19 @@ const (
 	EntrySize   = "entry_size"
 	Password    = "password"
 	Encryption  = "encryption"
+	EntryMode   = "entry_mode"
+	EntryOwner  = "entry_owner"
+)
+
+// The owners an entry can be recorded as.
+const (
+	// OwnerUnset records no owner at all, which is what a tar written here has
+	// always carried and therefore what the default has to stay - a different
+	// default would move the bytes of every archive, which is untouchable rule
+	// 3.
+	OwnerUnset = "unset"
+	OwnerRoot  = "root"
+	OwnerUser  = "user"
 )
 
 // The encryption methods, spelled the way a recipe writes them.
@@ -128,6 +141,24 @@ var axes = map[string]format.Property{
 		// said - see the pair rule in readLock.
 		Detail: "The password the archive is locked with. It is written into the manifest as you typed it, " +
 			"because a test that cannot open the file cannot check anything.",
+	},
+	EntryMode: {
+		Name: EntryMode, Kind: format.PropertyChoice,
+		// Written the way chmod takes them, and sorted, because a closed set
+		// has one order on every surface. The interesting ones for a test are
+		// at the ends: 000 is a file nothing can read, 444 is read only, and
+		// 666 and 777 are what a scanner should have something to say about.
+		Choices: []string{"000", "400", "444", "600", "644", "664", "666", "700", "755", "777"},
+		Default: "644",
+		Detail: "The permissions recorded for each file inside. It is what the archive says, " +
+			"not what the file gets - that depends on who unpacks it and how.",
+	},
+	EntryOwner: {
+		Name: EntryOwner, Kind: format.PropertyChoice,
+		Choices: []string{OwnerRoot, OwnerUnset, OwnerUser},
+		Default: OwnerUnset,
+		Detail: "Who each file inside belongs to. Leave it unset and the archive names nobody, " +
+			"which is what most archives written by a build carry.",
 	},
 	Encryption: {
 		Name: Encryption, Kind: format.PropertyChoice,

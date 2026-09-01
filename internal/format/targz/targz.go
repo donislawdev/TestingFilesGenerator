@@ -104,7 +104,8 @@ func init() {
 		// The settings every container shares, declared once in the archive
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
-		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize),
+		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
+			archive.EntryMode, archive.EntryOwner),
 
 		// Neither half of this format has anywhere to put a password, and
 		// saying so is worth more than the generic "no such property" - that
@@ -148,6 +149,10 @@ type memo struct {
 	fillerSize int64
 	withFiller bool
 	seed       uint64
+	// own is what every entry records about its permissions and its owner.
+	// The zero value is not the default - ReadOwnership fills it, because
+	// the mode this format has always written is 644 rather than 0.
+	own archive.Ownership
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -156,7 +161,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed}
+	own, err := archive.ReadOwnership("targz", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, own: own}
 	if m.children, err = planChildren(r, groups); err != nil {
 		return format.Plan{}, err
 	}

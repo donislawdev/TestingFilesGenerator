@@ -32,6 +32,15 @@ import (
 // means saying out loud that a guard is unproven. The list should only ever get
 // shorter.
 var notProvenByMutation = map[string]bool{
+	// The property belongs to the USTAR header rather than to anything here:
+	// every field of it is fixed width, so the mode and the owner are written
+	// into space already paid for whatever they say. There is no line of ours
+	// to break that would make recording an owner cost bytes - a wrong mode
+	// still costs nothing, and the guard beside it catches that. What this one
+	// would catch is a FUTURE change: somebody swapping the declared tar format
+	// for one that writes extended header blocks, which is exactly the kind of
+	// change that looks harmless and moves every archive's size.
+	"TestRecordingAnOwnerCostsNoBytes": true,
 	// The property is the ABSENCE of an override, and no substitution can
 	// remove code nobody wrote. It is on this list rather than the one below
 	// because it is genuinely unproven: it drives the box directly, so it would
