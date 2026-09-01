@@ -208,9 +208,49 @@ func TestTheWindowBinaryIsBuiltSomewhere(t *testing.T) {
 	if err != nil {
 		t.Skipf("the workflow is not here: %v", err)
 	}
-	if !strings.Contains(string(raw), "./cmd/tfg-gui") {
-		t.Error("nothing in CI builds ./cmd/tfg-gui, so it can stop compiling without a red run")
+	// Asked of the job that runs on every operating system, not of the file.
+	//
+	// It used to ask the file, and the full mutation run of 2026-09-01 called
+	// that a HOLE. Removing both builds from the platform matrix left the guard
+	// green, because a third build had appeared since - in the sbom job, which
+	// runs on Linux alone. So the substring was still there and the protection
+	// was gone: a window binary that stops compiling on Windows or macOS would
+	// have passed CI in silence, which is the whole thing this watches for.
+	//
+	// That is the failure a guard asking "is this text in the file" always has,
+	// and it arrives the day the text appears a second time. Nothing about the
+	// text changed - the tree grew a second writer of it.
+	const matrixJob = "\n  test:\n"
+	at := strings.Index(string(raw), matrixJob)
+	if at < 0 {
+		t.Fatal("ci.yml has no job called test, so this guard is reading a file it does not understand")
 	}
+	// The job ends where the next one begins, at the next key on its own
+	// indentation.
+	block := string(raw)[at+1:]
+	if end := nextJobAfter(block); end > 0 {
+		block = block[:end]
+	}
+	if !strings.Contains(block, "./cmd/tfg-gui") {
+		t.Error("the job that runs on every operating system does not build ./cmd/tfg-gui, " +
+			"so the window can stop compiling on one of them without a red run.\n" +
+			"  A build elsewhere is not the same promise - the sbom job runs on Linux alone.")
+	}
+}
+
+// nextJobAfter is where the job starting at the top of block ends, which is the
+// next key at the same indentation. Zero when it runs to the end of the file.
+func nextJobAfter(block string) int {
+	for i := 1; i < len(block); i++ {
+		if block[i-1] != '\n' {
+			continue
+		}
+		rest := block[i:]
+		if len(rest) > 2 && rest[0] == ' ' && rest[1] == ' ' && rest[2] != ' ' && rest[2] != '#' {
+			return i
+		}
+	}
+	return 0
 }
 
 // The formatter leaves nothing beside the file it settled. It writes through a

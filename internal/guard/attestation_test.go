@@ -245,6 +245,26 @@ func TestTheReleaseNotesSayHowToCheckWhatWasDownloaded(t *testing.T) {
 			t.Errorf("the release notes never mention %q", want)
 		}
 	}
+
+	// BOTH commands, because they answer different questions and the notes say
+	// so themselves. One asks what is inside a file and needs the predicate
+	// type spelled out, since gh asks for build provenance unless told
+	// otherwise. The other asks where a Linux archive came from and must not
+	// carry that flag.
+	//
+	// Asking only whether the words appear was not enough, and the full
+	// mutation run of 2026-09-01 said so: replacing one of the two left the
+	// guard green, because the other still carried the phrase. That is the
+	// third guard in this tree to fail the same way in one run - "is this text
+	// in the file" stops meaning anything the day the text appears twice.
+	if n := strings.Count(notes, "gh attestation verify"); n < 2 {
+		t.Errorf("the release notes give %d attestation command(s) and there are two things to check - "+
+			"what is inside a file, and where a Linux archive came from", n)
+	}
+	if !strings.Contains(notes, "--predicate-type https://spdx.dev/Document/v2.3") {
+		t.Error("the release notes never name the predicate type, so somebody following them asks " +
+			"for build provenance and is told the bill of materials is not there")
+	}
 	// The binaries are still unsigned, and the notes have said so since the
 	// first release. Provenance is a different question and must not be read
 	// as an answer to that one.
