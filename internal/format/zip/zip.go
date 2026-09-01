@@ -7,6 +7,7 @@ package zip
 
 import (
 	stdzip "archive/zip"
+	"compress/flate"
 	"context"
 	"fmt"
 	"hash/crc32"
@@ -76,7 +77,7 @@ func init() {
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
 		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
-			archive.Depth, archive.DirectoryEntries,
+			archive.Compression, archive.Depth, archive.DirectoryEntries,
 			archive.Password, archive.Encryption),
 		Container:        true,
 		GeneratorVersion: generatorVersion,
@@ -108,6 +109,16 @@ type memo struct {
 	// counter, so a layout the two passes disagreed about would produce an
 	// archive whose size had been promised for a different shape.
 	layout archive.Layout
+	// squeeze is how hard the entries are compressed, and the zero value is
+	// stored - which is what every archive written before this was.
+	//
+	// It changes WHEN the padding is settled, which is the whole difficulty.
+	// A stored archive's length follows from its declared parts, so the plan
+	// works the padding out. A compressed one does not: the project measured
+	// on TIFF that deflate moves the length with the seed. So the plan still
+	// works out the padding for the STORED archive, and the writer adds back
+	// exactly what the compressor freed - see build.
+	squeeze archive.Squeeze
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -126,7 +137,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed, lock: lock, layout: layout}
+	squeeze, err := archive.ReadCompression("zip", r, lock.On())
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, lock: lock, layout: layout, squeeze: squeeze}
 	if m.children, err = planChildren(r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
@@ -207,48 +223,6 @@ func withinZip32(total int64) error {
 	}
 }
 
-// planChildren plans every file the archive will hold.
-//
-// The children are real files of another format, each valid on its own. The
-// registry sits on the same layer as this package, so reaching for it needs
-// nothing from the engine.
-//
-// Members are numbered across the whole archive rather than per group, so the
-// seed of a member does not move when a group above it changes count. That is
-// untouchable rule 2 applied one level down.
-func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
-	var out []child
-	index := 0
-	// Numbering runs per format rather than per group, so two groups of the
-	// same format do not both start at 0001 and collide inside the archive.
-	numbered := map[string]int{}
-	for _, g := range groups {
-		desc, err := format.Get(g.Format)
-		if err != nil {
-			return nil, err
-		}
-		for i := 0; i < g.Count; i++ {
-			childSeed := core.FileSeed(r.Seed, index)
-			cp, err := desc.Generator.Plan(format.Request{
-				Bytes: g.Bytes,
-				Seed:  childSeed,
-				Label: r.Label,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("zip: the %s file inside cannot be made: %w", g.Format, err)
-			}
-			numbered[g.Format]++
-			out = append(out, child{
-				name: layout.Path(fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension)),
-				desc: desc,
-				plan: cp,
-			})
-			index++
-		}
-	}
-	return out, nil
-}
-
 // settleSize returns the size the archive is aiming at, the size it comes to
 // with no padding, and the label it carries.
 //
@@ -318,8 +292,12 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 			// produced has to be visible in the manifest, and "the archive is
 			// three levels deep" is exactly the kind of thing a test asserts
 			// against.
-			archive.Depth:                m.layout.Depth,
-			archive.DirectoryEntries:     m.layout.DirEntries,
+			archive.Depth:            m.layout.Depth,
+			archive.DirectoryEntries: m.layout.DirEntries,
+			// What a reader will meet inside. Recorded every time, like the
+			// method beside it, so a harness never has to read a missing key
+			// as "stored".
+			archive.Compression:          m.squeeze.Name,
 			format.PropertyLabelEmbedded: label != "",
 		},
 	}
@@ -356,6 +334,18 @@ func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label st
 		}
 	case target == bare:
 		return nil // Nothing to pad.
+	}
+
+	// A compressed archive puts ALL of its padding in the filler entry rather
+	// than sharing it with the comment, and that is not a preference.
+	//
+	// The writer cannot know how much the compressor will free until it has
+	// run, so the padding has to be the one thing that can still move at write
+	// time - and the comment cannot, because it is written before the entries.
+	// Giving the filler the whole job keeps one number to adjust instead of
+	// two.
+	if m.squeeze.On() {
+		return padCompressed(m, p, r, groups)
 	}
 
 	needed := r.Bytes - bare
@@ -431,6 +421,11 @@ type entryPlan struct {
 	index int
 	// withContents is false during the pass that only measures.
 	withContents bool
+	// stored keeps this entry out of the compressor however hard the archive
+	// is squeezed. The padding entry sets it: it is random, so deflate grows
+	// it rather than shrinking it, and a padding entry whose length nobody can
+	// aim cannot do the one job it has.
+	stored bool
 	// crc is the checksum of the contents, and it is only ever filled for a
 	// lock that needs the contents known before the first byte. Zero
 	// otherwise, which is what an AE-2 entry carries anyway and what the
@@ -461,7 +456,7 @@ func openEntry(zw *stdzip.Writer, m memo, e entryPlan) (io.Writer, func() error,
 	if !m.lock.On() {
 		entry, err := zw.CreateHeader(&stdzip.FileHeader{
 			Name:     e.name,
-			Method:   stdzip.Store,
+			Method:   m.methodFor(e),
 			Modified: fixedTime,
 		})
 		return entry, nothingToShut, err
@@ -528,20 +523,22 @@ func plaintextCRC(ctx context.Context, m memo, withContents bool, write func(io.
 	return sum.Sum32(), nil
 }
 
-// build writes the archive.
-//
-// withContents says whether the files inside are actually generated. The
-// writing path passes true. Planning passes false and adds the sizes on
-// afterwards, which is what keeps measuring an archive from costing as much as
-// producing one - see archiveSize.
-//
-// One function with a mode rather than two, so the structure, the order of the
-// entries and the comment cannot drift between what was measured and what is
-// written. Only the data writes differ.
 func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 	zw := stdzip.NewWriter(w)
 	if err := zw.SetComment(m.comment); err != nil {
 		return fmt.Errorf("zip: the archive comment was refused: %w", err)
+	}
+
+	// squeezed is how many bytes the entries actually came to once compressed.
+	// The plan worked the padding out for a STORED archive, and every
+	// structural field of a zip is fixed width - so the compressed archive is
+	// shorter by exactly the difference in entry data, and the filler gives
+	// that difference back.
+	var squeezed int64
+	if m.squeeze.On() {
+		zw.RegisterCompressor(stdzip.Deflate, func(dst io.Writer) (io.WriteCloser, error) {
+			return flate.NewWriter(&tally{to: dst, n: &squeezed}, m.squeeze.Level)
+		})
 	}
 
 	// The directories the archive names come before anything that sits in
@@ -579,7 +576,23 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		}
 	}
 
-	if err := writeFillerEntry(ctx, zw, m, withContents); err != nil {
+	// What the compressor freed, given back through the filler so the archive
+	// still lands on the ordered size. Nought on the counting pass, where no
+	// contents are written and the plan's own arithmetic is the answer.
+	// Asked as a question rather than worked out here, because the answer does
+	// not exist yet: the last entry's compressed bytes only reach the writer
+	// when its entry closes, and what closes it is the filler's own header.
+	freed := func() int64 {
+		if !withContents || !m.squeeze.On() {
+			return 0
+		}
+		var plain int64
+		for _, c := range m.children {
+			plain += c.plan.Bytes
+		}
+		return plain - squeezed
+	}
+	if err := writeFillerEntry(ctx, zw, m, withContents, freed); err != nil {
 		return err
 	}
 

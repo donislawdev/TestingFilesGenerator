@@ -70,6 +70,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **An archive can compress what it holds.** `--set compression=best` on a
+  `zip` or a `targz`, with `none`, `fast`, `default` and `best` to choose from.
+
+  The archive still comes out **exactly the size you asked for**. What changes
+  is how much of it is your files and how much is padding: at `best` a
+  megabyte archive holding four 32 KB text files carries the same four files
+  deflated, and the padding entry grows to make up the difference. A reader
+  sees real deflated entries, which is what a tool under test has to cope with.
+
+  The default is `none`, which is what archives from this tool have always
+  been, so **no existing file changes by a byte**.
+
+  Two combinations are refused rather than half-supported, and the message
+  says which two settings to choose between. Compression with a size taken
+  **from the contents**: the archive's length would then be whatever the
+  contents compress to, which is only knowable by compressing them, and that
+  would make a preview cost as much as the run. Compression with a
+  **password**: a locked entry has to state its length before its data is
+  written, so a compressed one would have to be held in memory whole.
+
+  Compressing costs time at write, not at preview. A 10 MB archive takes about
+  25 ms at `fast` and 140 ms at `default`, against 8 ms stored, and a `.tar.gz`
+  pays that twice because gzip compresses the whole stream and the size has to
+  be measured before it can be hit.
+
 - **An archive can hold its files in directories.** `--set depth=3` puts every
   file three levels down, and `--set directory_entries=true` also makes the
   archive list the directories themselves. Both work on `zip` and on `targz`.

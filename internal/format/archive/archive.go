@@ -113,6 +113,13 @@ func mustSize(s string) int64 {
 // somebody kept them so by hand, and the comment saying so was the whole
 // mechanism.
 var axes = map[string]format.Property{
+	Compression: {
+		Name: Compression, Kind: format.PropertyChoice,
+		Choices: []string{CompressBest, CompressDefault, CompressFast, CompressNone},
+		Default: CompressNone,
+		Detail: "How hard the files inside are squeezed. " +
+			"The archive still comes out the size you asked for - what changes is how much of it is real content and how much is padding.",
+	},
 	Depth: {
 		Name: Depth, Kind: format.PropertyInt,
 		Min: 0, Max: maxDepth,
