@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -287,6 +288,8 @@ func TestALogRefusesASettingThatWouldChangeNothing(t *testing.T) {
 		{map[string]string{"entry_format": "syslog", "ip_version": "v6"}},
 		{map[string]string{"entry_format": "plain", "status_mix": "success"}},
 		{map[string]string{"timestamps": "fixed", "rate": "5"}},
+		{map[string]string{"entry_format": "nginx", "level_mix": "quiet"}},
+		{map[string]string{"entry_format": "syslog", "level_mix": "errors"}},
 	}
 	for _, c := range cases {
 		t.Run(fmt.Sprint(c.props), func(t *testing.T) {
@@ -337,5 +340,169 @@ func TestTheLogLabelIsALineItsOwnReaderAccepts(t *testing.T) {
 	hashed := writeLog(t, 4096, map[string]string{"entry_format": "syslog"})
 	if !bytes.HasPrefix(hashed, []byte("# ")) {
 		t.Errorf("the syslog label is not a hash comment, so the one line that is not an entry does not say so")
+	}
+}
+
+// The severity mix is the set that gets drawn, and it moves the minimum.
+//
+// Two things could be wrong here and they fail differently.
+//
+// The first is the setting doing nothing: level_mix is read, stored, and then
+// the draw reaches for the whole vocabulary anyway. Nothing else would see it -
+// the size stays exact, every line still parses, and the manifest still says
+// which mix was asked for. So this asks the FILE which severities are in it.
+//
+// The second is subtler and is why this guard exists at all. The shortest entry
+// a shape can write has to leave room for the LONGEST severity it might draw,
+// because the closing entry is built to an exact length and the unluckiest draw
+// has to fit. quiet draws only INFO, four bytes, where realistic can draw ERROR
+// or DEBUG at five. If the arithmetic reads the whole vocabulary instead of the
+// set in force, the minimum is one byte too high for quiet - a floor the format
+// can actually beat, announced as if it could not. That is checked by asking
+// for the announced minimum and for one byte below it, rather than by repeating
+// the arithmetic here, which would only prove the guard agrees with itself.
+func TestTheLogSeverityMixIsDrawnAndSetsTheMinimum(t *testing.T) {
+	d, err := format.Get("log")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// What each declared mix is allowed to contain. Stated here on purpose:
+	// this guard is outside the package, so it says what the contract is rather
+	// than reading it back out of the thing under test. A mix added to the
+	// registry without a line here stops the guard instead of slipping past it.
+	allowed := map[string]map[string]bool{
+		"realistic": {"DEBUG": true, "INFO": true, "WARN": true, "ERROR": true},
+		"quiet":     {"INFO": true},
+		"errors":    {"INFO": true, "WARN": true, "ERROR": true},
+		"debug":     {"DEBUG": true, "INFO": true, "WARN": true},
+	}
+
+	var mixes []string
+	for _, p := range d.Properties {
+		if p.Name == "level_mix" {
+			mixes = p.Choices
+		}
+	}
+	if len(mixes) == 0 {
+		t.Fatal("the log format declares no level_mix, so this guard would check nothing")
+	}
+	for _, m := range mixes {
+		if allowed[m] == nil {
+			t.Fatalf("level_mix offers %q and this guard does not say what may be in it. "+
+				"Add the line rather than deleting this check - a mix nobody described is a mix nobody verified.", m)
+		}
+	}
+
+	// Which shapes carry a severity is asked of the product, not listed here.
+	// A shape reports level_mix in its plan exactly when it has one.
+	var levelled, flat []string
+	for _, shape := range logShapes(t) {
+		p, err := d.Generator.Plan(format.Request{Bytes: 20 << 10, Seed: 7741, Label: true,
+			Properties: map[string]string{"entry_format": shape}})
+		if err != nil {
+			t.Fatalf("%s would not plan at its defaults: %v", shape, err)
+		}
+		if _, ok := p.Properties["level_mix"]; ok {
+			levelled = append(levelled, shape)
+		} else {
+			flat = append(flat, shape)
+		}
+	}
+	if len(levelled) == 0 || len(flat) == 0 {
+		t.Fatalf("found %d shapes with a severity and %d without, so this guard is walking nothing",
+			len(levelled), len(flat))
+	}
+
+	severity := regexp.MustCompile(`\b(DEBUG|INFO|WARN|ERROR)\b`)
+	minimum := func(shape, mix string) int64 {
+		t.Helper()
+		props := map[string]string{"entry_format": shape, "level_mix": mix}
+		_, err := d.Generator.Plan(format.Request{Bytes: 1, Seed: 7741, Label: true, Properties: props})
+		var below *format.BelowMinimumError
+		if !errors.As(err, &below) {
+			t.Fatalf("%s/%s took a one byte log, or refused it without saying what the floor is: %v", shape, mix, err)
+		}
+		return below.Minimum
+	}
+
+	for _, shape := range levelled {
+		for _, mix := range mixes {
+			t.Run(shape+"/"+mix, func(t *testing.T) {
+				props := map[string]string{"entry_format": shape, "level_mix": mix}
+
+				// The file, not the manifest, says which severities are in it.
+				body := writeLog(t, 64<<10, props)
+				seen := map[string]bool{}
+				for _, m := range severity.FindAllString(string(body), -1) {
+					seen[m] = true
+				}
+				if len(seen) == 0 {
+					t.Fatalf("no severity at all in 64 kB of %s, so nothing here is being read", shape)
+				}
+				for level := range seen {
+					if !allowed[mix][level] {
+						t.Errorf("%s is in a %s log and that mix does not offer it, "+
+							"so the setting was stored and then the draw ignored it", level, mix)
+					}
+				}
+
+				// The floor it announces is the floor it takes, and one below is
+				// refused. This is where a minimum read off the whole vocabulary
+				// rather than off this mix goes red.
+				n := minimum(shape, mix)
+				if _, err := d.Generator.Plan(format.Request{Bytes: n, Seed: 7741, Label: true,
+					Properties: props}); err != nil {
+					t.Errorf("%s/%s announces %d B as its minimum and then refuses it: %v", shape, mix, n, err)
+				}
+				if _, err := d.Generator.Plan(format.Request{Bytes: n - 1, Seed: 7741, Label: true,
+					Properties: props}); err == nil {
+					t.Errorf("%s/%s took %d B, one below the %d B it calls its minimum", shape, mix, n-1, n)
+				}
+
+				// Exact to the byte at every seed, because the closing entry is
+				// built to a length and the severity is part of that arithmetic.
+				for seed := int64(1); seed <= 8; seed++ {
+					for _, size := range []int64{n, n + 1, 777, 4 << 10} {
+						if size < n {
+							continue
+						}
+						p, err := d.Generator.Plan(format.Request{Bytes: size, Seed: uint64(seed),
+							Label: true, Properties: props})
+						if err != nil {
+							t.Fatalf("seed %d, %d B: %v", seed, size, err)
+						}
+						var buf bytes.Buffer
+						if err := d.Generator.Write(context.Background(), &buf, p); err != nil {
+							t.Fatalf("seed %d, %d B: %v", seed, size, err)
+						}
+						if int64(buf.Len()) != size {
+							t.Fatalf("seed %d asked for %d B and got %d", seed, size, buf.Len())
+						}
+					}
+				}
+			})
+		}
+
+		// The mixes are not all the same thing under different names, and the
+		// arithmetic reads the one in force. quiet draws only INFO, which is
+		// shorter than the longest severity realistic can draw, so its floor
+		// has to be lower. Without this the whole test above would still pass
+		// on a build where every mix was realistic.
+		q, r := minimum(shape, "quiet"), minimum(shape, "realistic")
+		if q >= r {
+			t.Errorf("%s: the quiet floor is %d B and the realistic one %d B. quiet draws only INFO, "+
+				"which is shorter than ERROR, so a floor that did not move was measured against "+
+				"every severity this format knows rather than against the mix that was chosen.", shape, q, r)
+		}
+	}
+
+	// And the shapes with no severity keep refusing a mix that was really
+	// chosen, so the guard cannot pass by accepting everything.
+	for _, shape := range flat {
+		if _, err := d.Generator.Plan(format.Request{Bytes: 4096, Seed: 7741, Label: true,
+			Properties: map[string]string{"entry_format": shape, "level_mix": "quiet"}}); err == nil {
+			t.Errorf("%s carries no severity and took level_mix anyway, so the setting does nothing there", shape)
+		}
 	}
 }

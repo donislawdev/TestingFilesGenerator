@@ -115,6 +115,7 @@ var reachableFromTheWindow = []string{
 	"property:jpg.width",
 	"property:log.entry_format",
 	"property:log.ip_version",
+	"property:log.level_mix",
 	"property:log.line_ending",
 	"property:log.methods",
 	"property:log.rate",
