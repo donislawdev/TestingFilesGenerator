@@ -99,6 +99,9 @@ var reachableFromTheWindow = []string{
 	// gains a property gains its field with no window code.
 	// TestTheWindowDrawsAFieldForEveryDeclaredProperty.
 	"property:bmp.height",
+	"property:csv.delimiter",
+	"property:csv.header",
+	"property:csv.line_ending",
 	"property:docx.paragraphs",
 	"property:pptx.slides",
 	"property:xlsx.columns",

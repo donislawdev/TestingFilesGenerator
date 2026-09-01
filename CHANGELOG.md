@@ -70,6 +70,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A CSV can be written in the dialect you were handed.** `--set
+  delimiter=semicolon`, `--set line_ending=crlf` and `--set header=false` on a
+  `csv`, separately or together. Separators are named rather than typed, so
+  `tab` and `pipe` need no escaping: the four are `comma`, `semicolon`, `tab`
+  and `pipe`.
+
+  These are the three ways a real CSV differs before its contents do. A
+  European spreadsheet exports with semicolons, anything written on Windows
+  ends its rows with CRLF, and a table dumped straight out of a database has no
+  header. All three are CSV and all three break a reader that assumed the other
+  thing.
+
+  The description column keeps carrying the separator, so a semicolon file
+  still exercises quoted fields rather than quietly testing less than a comma
+  one does.
+
+  Two things worth knowing. The smallest file changes with the dialect, because
+  a CRLF row is a byte longer and a header is a whole line - the tool tells you
+  the floor for the settings you gave it. And the manifest records the
+  separator as the character that is in the file, where the recipe names it as
+  a word.
+
+  The defaults are `comma`, `lf` and a header, which is what this tool has
+  always written, so **no existing file changes by a byte**.
+
 - **A log can be made quiet, or full of errors.** `--set level_mix=errors` on
   a `log`, with `realistic`, `quiet`, `errors` and `debug` to choose from. It
   decides which severities appear, the way `status_mix` already decides which

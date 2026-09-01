@@ -265,7 +265,11 @@ def check_log_line(line, number, shape):
             fail(f"line {number} has an octet above 255: {address}")
 
 
-def check_csv(data):
+CSV_DELIMITERS = {"comma": ",", "semicolon": ";", "tab": "\t", "pipe": "|"}
+CSV_LINE_ENDINGS = {"lf": "\n", "crlf": "\r\n"}
+
+
+def check_csv(data, settings=None):
     """Every row carries the same columns, written to RFC 4180 by hand.
 
     Not csv.reader. That module is the tolerant reader used as the reference
@@ -278,16 +282,29 @@ def check_csv(data):
     131 072 B. Padding pushed into one field instead of through rows would sail
     past every size and determinism guard and break the reader a tester has
     nearest.
+
+    The dialect is TOLD rather than worked out. A checker that sniffed the
+    separator would agree with a file that used the wrong one - it would split
+    on whatever it found and report a tidy table either way - and whether the
+    file uses the separator that was ordered is a question for a guard reading
+    the manifest, not for this. Told, it can still catch the defect that
+    matters here: a header and its rows disagreeing about the separator.
     """
     FIELD_CEILING = 131072
+
+    settings = settings or {}
+    sep = CSV_DELIMITERS[settings.get("delimiter", "comma")]
+    eol = CSV_LINE_ENDINGS[settings.get("line_ending", "lf")]
+    has_header = settings.get("header", "true") == "true"
 
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
         fail(f"not valid UTF-8: {exc}")
 
-    if not text.endswith("\n"):
-        fail("the file does not end with a newline, so the last row is unterminated")
+    if not text.endswith(eol):
+        fail(f"the file does not end with {settings.get('line_ending', 'lf')}, "
+             "so the last row is unterminated")
 
     rows, field, row, quoted, i = [], [], [], False, 0
     while i < len(text):
@@ -307,14 +324,24 @@ def check_csv(data):
             if field:
                 fail(f"row {len(rows) + 1} opens a quote in the middle of a field")
             quoted = True
-        elif ch == ",":
+        elif ch == sep:
             row.append("".join(field))
             field = []
-        elif ch == "\n":
+        elif text.startswith(eol, i):
             row.append("".join(field))
             field = []
             rows.append(row)
             row = []
+            i += len(eol)
+            continue
+        elif ch in "\r\n":
+            # A bare terminator where the dialect says there should be another
+            # one. Caught here rather than swept into a field, because a lone CR
+            # inside a CRLF file is the shape a half converted writer produces
+            # and it splits rows for some readers and not others.
+            fail(f"row {len(rows) + 1} carries a bare "
+                 f"{'CR' if ch == chr(13) else 'LF'} where the rows end with "
+                 f"{settings.get('line_ending', 'lf')}")
         else:
             field.append(ch)
         i += 1
@@ -323,21 +350,28 @@ def check_csv(data):
         fail("a quoted field is never closed")
     if field or row:
         fail("the file ends in the middle of a row")
-    if len(rows) < 2:
+    # With a header there has to be something under it. Without one, a single
+    # row is the whole file and is legal - there is simply nothing to compare
+    # it against, which is a limit of this check rather than a fault in it.
+    least = 2 if has_header else 1
+    if len(rows) < least:
         fail(f"the table holds {len(rows)} row(s), so there is no data to check")
 
     columns = len(rows[0])
     if columns < 2:
-        fail(f"the header declares {columns} column(s)")
+        fail(f"the first row has {columns} column(s), so nothing is separated by "
+             f"the {settings.get('delimiter', 'comma')} this file is meant to use")
+    declares = "the header" if has_header else "the first row"
     for number, r in enumerate(rows, start=1):
         if len(r) != columns:
-            fail(f"row {number} has {len(r)} fields and the header declares {columns}")
+            fail(f"row {number} has {len(r)} fields and {declares} declares {columns}")
         for value in r:
             if len(value.encode("utf-8")) > FIELD_CEILING:
                 fail(f"row {number} has a field of {len(value.encode('utf-8'))} B - "
                      f"the default Python reader refuses anything above {FIELD_CEILING} B")
 
-    ok(f"{len(rows) - 1} data rows, {columns} columns each")
+    data = len(rows) - 1 if has_header else len(rows)
+    ok(f"{data} data rows, {columns} columns each")
 
 
 def check_json(data):
@@ -1485,9 +1519,29 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
 
+# Checks that take the shape of the file as well as its bytes. Everything else
+# is handed the bytes alone, so adding a setting to one check cannot change how
+# any other one is called.
+TAKES_SETTINGS = {"csv"}
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3 or sys.argv[1] not in CHECKS:
-        print("FAIL usage: strict.py <" + "|".join(CHECKS) + "> <path>")
+    if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:
+        print("FAIL usage: strict.py <" + "|".join(CHECKS) + "> <path> [key=value ...]")
+        sys.exit(1)
+    kind = sys.argv[1]
+    extra = {}
+    for word in sys.argv[3:]:
+        if "=" not in word:
+            print(f"FAIL setting {word!r} is not key=value")
+            sys.exit(1)
+        key, _, value = word.partition("=")
+        extra[key] = value
+    if extra and kind not in TAKES_SETTINGS:
+        print(f"FAIL the {kind} check takes no settings, and was given {sorted(extra)}")
         sys.exit(1)
     with open(sys.argv[2], "rb") as handle:
-        CHECKS[sys.argv[1]](handle.read())
+        body = handle.read()
+    if kind in TAKES_SETTINGS:
+        CHECKS[kind](body, extra)
+    else:
+        CHECKS[kind](body)
