@@ -70,6 +70,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A zip can be locked with ZipCrypto, the old scheme.** `--set encryption=zipcrypto`.
+
+  It is here for what it does to a reader rather than for what it protects. Measured: .NET's own `ZipFile` opens one of these, reports the entry at its true length, hands back a stream and fills it with the ENCRYPTED bytes - and never says the entry was encrypted at all. An application built on that library processes noise and calls it data. AES fails loudly in the same library, which is the safer defect and the less interesting one.
+
+  So this is the fixture for finding out whether something in a pipeline waves an encrypted archive through.
+
+  **It is not protection and it is not offered as any.** ZipCrypto has been broken for decades. Use `aes-256` when the point is that the contents are hard to read.
+
 - **A zip can be locked with a password.**
 
       tfg generate --format zip --size 30kb --set entries=3 \

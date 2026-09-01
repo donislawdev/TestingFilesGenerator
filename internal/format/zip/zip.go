@@ -9,6 +9,7 @@ import (
 	stdzip "archive/zip"
 	"context"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"strings"
 	"time"
@@ -48,11 +49,6 @@ const (
 	fillerName = "tfg-padding.bin"
 
 	writeChunk = 32 * 1024
-
-	// winZipAES is the compression method a locked entry declares. It is
-	// not a compression at all - the real method sits in the 0x9901 field
-	// and is store, like everything else here.
-	winZipAES = 99
 )
 
 // A fixed timestamp on every entry. Taking one from the clock would make two
@@ -414,6 +410,11 @@ type entryPlan struct {
 	index int
 	// withContents is false during the pass that only measures.
 	withContents bool
+	// crc is the checksum of the contents, and it is only ever filled for a
+	// lock that needs the contents known before the first byte. Zero
+	// otherwise, which is what an AE-2 entry carries anyway and what the
+	// counting pass writes into a header nobody reads.
+	crc uint32
 }
 
 // openEntry starts the next entry and gives back what its contents go to.
@@ -447,14 +448,14 @@ func openEntry(zw *stdzip.Writer, m memo, e entryPlan) (io.Writer, func() error,
 
 	h := &stdzip.FileHeader{
 		Name:     e.name,
-		Method:   winZipAES,
+		Method:   m.lock.ZipMethod(),
 		Modified: fixedTime,
 		Extra:    m.lock.Extra(),
 	}
 	// Bit 0 says the entry is encrypted. The CRC stays zero because AE-2
 	// carries none - which is what lets the contents be written in one pass.
 	h.Flags |= 1
-	h.CRC32 = 0
+	h.CRC32 = e.crc
 	h.CompressedSize64 = uint64(e.plain + m.lock.EntryOverhead())
 	h.UncompressedSize64 = uint64(e.plain)
 
@@ -470,11 +471,40 @@ func openEntry(zw *stdzip.Writer, m memo, e entryPlan) (io.Writer, func() error,
 		// which is what the engine caught when this was written the other way.
 		return raw, nothingToShut, nil
 	}
-	locked, err := m.lock.NewEntryWriter(raw, m.seed, e.index)
+	locked, err := m.lock.NewEntryWriter(raw, m.seed, e.index, e.crc)
 	if err != nil {
 		return nil, nil, err
 	}
 	return locked, locked.Close, nil
+}
+
+// plaintextCRC is the checksum of what an entry is about to hold, worked out
+// by generating it once and throwing the bytes away.
+//
+// Only ZipCrypto asks for this, and only when the contents are really being
+// written. That scheme puts the high byte of the plaintext CRC in the twelve
+// byte header it prepends, so a reader can turn away a wrong password without
+// decrypting anything - which means the checksum has to be known before the
+// first byte of the entry goes out, and the contents arrive as a stream.
+//
+// Generating twice rather than buffering, and that is the trade taken
+// deliberately. Holding the entry to hash it would break the guard that says
+// a generator does not keep a whole file in memory, and the second pass is
+// free of risk because a generator producing different bytes on two calls in
+// one process is itself a guarded impossibility. It costs processor time on
+// locked archives and nothing at all on open ones.
+func plaintextCRC(ctx context.Context, m memo, withContents bool, write func(io.Writer) error) (uint32, error) {
+	if !withContents || !m.lock.NeedsPlaintextCRC() {
+		return 0, nil
+	}
+	sum := crc32.NewIEEE()
+	if err := write(sum); err != nil {
+		return 0, err
+	}
+	if err := ctx.Err(); err != nil {
+		return 0, err
+	}
+	return sum.Sum32(), nil
 }
 
 // build writes the archive.
@@ -500,8 +530,14 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		default:
 		}
 
+		crc, err := plaintextCRC(ctx, m, withContents, func(w io.Writer) error {
+			return c.desc.Generator.Write(ctx, w, c.plan)
+		})
+		if err != nil {
+			return fmt.Errorf("zip: the %s file inside could not be checksummed: %w", c.desc.ID, err)
+		}
 		entry, shut, err := openEntry(zw, m, entryPlan{
-			name: c.name, plain: c.plan.Bytes, index: i, withContents: withContents,
+			name: c.name, plain: c.plan.Bytes, index: i, withContents: withContents, crc: crc,
 		})
 		if err != nil {
 			return err
@@ -520,8 +556,15 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		// The filler is locked with everything else. An archive where one entry
 		// opens without the password and the rest do not is a file nobody
 		// asked for, and the arithmetic is the same either way.
+		crc, err := plaintextCRC(ctx, m, withContents, func(w io.Writer) error {
+			return writeFiller(ctx, w, m.seed, m.fillerSize)
+		})
+		if err != nil {
+			return err
+		}
 		entry, shut, err := openEntry(zw, m, entryPlan{
-			name: fillerName, plain: m.fillerSize, index: len(m.children), withContents: withContents,
+			name: fillerName, plain: m.fillerSize, index: len(m.children),
+			withContents: withContents, crc: crc,
 		})
 		if err != nil {
 			return err

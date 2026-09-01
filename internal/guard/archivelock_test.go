@@ -25,9 +25,34 @@ import (
 // 2.16. Repeated here on purpose: a guard that reads its expectation out of the
 // code it is guarding proves the code agrees with itself.
 var lockOverhead = map[string]int64{
-	archive.AES128: 20,
-	archive.AES192: 24,
-	archive.AES256: 28,
+	archive.ZipCrypto: 12,
+	archive.AES128:    20,
+	archive.AES192:    24,
+	archive.AES256:    28,
+}
+
+// locksOffered is every encryption a format declares, apart from none.
+//
+// Read out of the registry rather than written out here, because a list in a
+// test is a list somebody has to remember on the day a fourth scheme arrives -
+// and three guards carried the same one until ZipCrypto was that day.
+func locksOffered(t *testing.T, id string) []string {
+	t.Helper()
+	var out []string
+	for _, p := range descriptorFor(t, id).Properties {
+		if p.Name != archive.Encryption {
+			continue
+		}
+		for _, method := range p.Choices {
+			if method != archive.NoEncryption {
+				out = append(out, method)
+			}
+		}
+	}
+	if len(out) == 0 {
+		t.Fatalf("%s offers no encryption, so the guard asking about them proves nothing", id)
+	}
+	return out
 }
 
 // A locked archive is one a real archiver opens with the password and refuses
@@ -54,7 +79,7 @@ func TestARealArchiverOpensALockedArchiveAndRefusesTheWrongPassword(t *testing.T
 	const password = "Secret123"
 	dir := t.TempDir()
 
-	for _, method := range []string{archive.AES128, archive.AES192, archive.AES256} {
+	for _, method := range locksOffered(t, "zip") {
 		t.Run(method, func(t *testing.T) {
 			path := filepath.Join(dir, "locked-"+method+".zip")
 			writeLocked(t, path, 40*1024, method, password, 7741)
@@ -163,6 +188,75 @@ func TestEveryLockTheRegistryOffersCanActuallyBeWritten(t *testing.T) {
 	}
 }
 
+// Each scheme declares the header shape it requires, and they are not the
+// same shape.
+//
+// Written after getting it wrong. Every locked entry was declaring method 99,
+// which is what WinZip AES uses - and a ZipCrypto entry has to stay stored,
+// because it changes nothing about how the bytes sit, it only puts twelve in
+// front of them. 7-Zip found it, and the way it reported it is the reason this
+// guard exists: "Data Error in encrypted file. Wrong password?", pointing at
+// the password, which was the one thing that was right.
+//
+// The CRC is the other half and it goes the opposite way between the two.
+// ZipCrypto carries the real checksum of the plaintext and puts its high byte
+// in the header, so a reader can turn away a wrong password without decrypting.
+// AE-2 carries nought, because its authentication code does that job. Getting
+// either backwards produces a file that opens and then fails on something that
+// sounds like the user's fault.
+func TestALockedEntryDeclaresTheShapeItsSchemeRequires(t *testing.T) {
+	dir := t.TempDir()
+	for _, method := range locksOffered(t, "zip") {
+		t.Run(method, func(t *testing.T) {
+			path := filepath.Join(dir, "shape-"+method+".zip")
+			writeLocked(t, path, 40*1024, method, "Secret123", 7741)
+
+			r, err := stdzip.OpenReader(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() { _ = r.Close() }()
+			if len(r.File) == 0 {
+				t.Fatal("the archive holds nothing, so there is no header to read")
+			}
+			h := r.File[0].FileHeader
+
+			if h.Flags&1 == 0 {
+				t.Errorf("the entry does not say it is encrypted: flags %04x", h.Flags)
+			}
+			if h.CompressedSize64 != h.UncompressedSize64+uint64(lockOverhead[method]) {
+				t.Errorf("the entry stores %d B for %d B of contents, and %s adds %d",
+					h.CompressedSize64, h.UncompressedSize64, method, lockOverhead[method])
+			}
+
+			if method == archive.ZipCrypto {
+				if h.Method != stdzip.Store {
+					t.Errorf("a ZipCrypto entry declares method %d and has to stay stored", h.Method)
+				}
+				if h.CRC32 == 0 {
+					t.Error("a ZipCrypto entry carries no checksum, so no reader can turn away " +
+						"a wrong password without decrypting the whole entry")
+				}
+				if len(h.Extra) != 0 {
+					t.Errorf("a ZipCrypto entry carries %d bytes of extra field and needs none", len(h.Extra))
+				}
+				return
+			}
+
+			const winZipAES = 99
+			if h.Method != winZipAES {
+				t.Errorf("an AES entry declares method %d and the scheme is %d", h.Method, winZipAES)
+			}
+			if h.CRC32 != 0 {
+				t.Errorf("an AE-2 entry carries the checksum %08x and the scheme says nought", h.CRC32)
+			}
+			if len(h.Extra) == 0 {
+				t.Error("an AES entry carries no 0x9901 field, so nothing says which key length it used")
+			}
+		})
+	}
+}
+
 // Locking does not cost the exact size, which is the promise the format makes.
 //
 // The reason it can be kept is the measurement: a stream cipher does not change
@@ -176,7 +270,7 @@ func TestEveryLockTheRegistryOffersCanActuallyBeWritten(t *testing.T) {
 // enough that the padding entry is doing the work rather than the comment.
 func TestALockedArchiveStillHitsTheSizeToTheByte(t *testing.T) {
 	dir := t.TempDir()
-	for _, method := range []string{archive.AES128, archive.AES192, archive.AES256} {
+	for _, method := range locksOffered(t, "zip") {
 		for _, size := range []int64{12 * 1024, 12*1024 + 1, 40 * 1024, 300*1024 + 7} {
 			path := filepath.Join(dir, "size.zip")
 			writeLocked(t, path, size, method, "Secret123", 11)
@@ -369,20 +463,28 @@ func TestTheManifestCarriesThePasswordSoATestCanOpenTheFile(t *testing.T) {
 func TestALockedArchiveIsTheSameFileForTheSameSeed(t *testing.T) {
 	dir := t.TempDir()
 
-	first := filepath.Join(dir, "a.zip")
-	same := filepath.Join(dir, "b.zip")
-	other := filepath.Join(dir, "c.zip")
-	writeLocked(t, first, 40*1024, archive.AES256, "Secret123", 4242)
-	writeLocked(t, same, 40*1024, archive.AES256, "Secret123", 4242)
-	writeLocked(t, other, 40*1024, archive.AES256, "Secret123", 9999)
+	// Every scheme, because each draws bytes of its own: AES a salt, ZipCrypto
+	// eleven bytes at the head of the entry. Both come from the run.
+	for _, method := range locksOffered(t, "zip") {
+		first := filepath.Join(dir, method+"-a.zip")
+		same := filepath.Join(dir, method+"-b.zip")
+		other := filepath.Join(dir, method+"-c.zip")
+		writeLocked(t, first, 40*1024, method, "Secret123", 4242)
+		writeLocked(t, same, 40*1024, method, "Secret123", 4242)
+		writeLocked(t, other, 40*1024, method, "Secret123", 9999)
 
-	a, b, c := readAll(t, first), readAll(t, same), readAll(t, other)
-	if string(a) != string(b) {
-		t.Error("the same recipe and seed gave two different archives, so the salt is drawn rather than derived")
+		a, b, c := readAll(t, first), readAll(t, same), readAll(t, other)
+		if string(a) != string(b) {
+			t.Errorf("%s: the same recipe and seed gave two different archives, "+
+				"so what it draws is drawn rather than derived", method)
+		}
+		if string(a) == string(c) {
+			t.Errorf("%s: two different seeds gave the same archive", method)
+		}
 	}
-	if string(a) == string(c) {
-		t.Error("two different seeds gave the same archive, so the salt ignores the seed")
-	}
+
+	first := filepath.Join(dir, archive.AES256+"-a.zip")
+	other := filepath.Join(dir, archive.AES256+"-c.zip")
 
 	// The salt itself, not the file it is in.
 	//
