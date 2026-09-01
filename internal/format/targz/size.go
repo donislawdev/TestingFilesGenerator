@@ -93,40 +93,68 @@ func commentCost(comment string) int64 {
 
 // archiveSize is the exact size of the archive described by m.
 func archiveSize(m memo) int64 {
-	return gzipFixed(tarLength(m)) + commentCost(m.comment)
+	return gzipFixed(tarLength(m)) + commentCost(m.comment) + extraCost(m.withExtra, m.extraLen)
+}
+
+// extraCost is what a gzip extra field of n bytes costs in the file.
+//
+// Measured rather than read off the specification: two bytes of length and
+// then the bytes themselves, so an EMPTY field still costs two and no field
+// at all costs nothing. That difference is the whole reason noExtra is not
+// simply zero.
+func extraCost(present bool, n int64) int64 {
+	if !present {
+		return 0
+	}
+	return n + 2
 }
 
 // maxCost is the largest comment cost we allow, from the limit on its length.
-func maxCost() int64 { return commentPaddingLimit + 1 }
-
-// validCost says whether a comment of exactly this cost can be built.
+// maxCost is the most padding the header can take, across both channels.
 //
-// There is a gap at one, and it is a property of the writer rather than of the
-// format. A zero length comment with the flag set is legal and costs the one
-// terminating byte - measured, and all five readers accept it - but Go leaves
-// the flag off for an empty string, so the smallest comment it will emit is one
-// character and costs two. That gap only bites without a label, because a label
-// already costs more than that and grows a byte at a time from there.
-func validCost(label string, cost int64) bool {
-	if label == "" {
-		return cost == 0 || cost >= 2
-	}
-	return cost >= int64(len(label))+1
-}
+// The comment reaches commentPaddingLimit beyond the label and the extra
+// field reaches extraPaddingLimit plus its own two bytes. Anything past
+// this needs a filler entry inside the tar.
+func maxCost() int64 { return commentPaddingLimit + extraPaddingLimit + 2 }
 
-// commentOfCost builds a comment that costs exactly cost and starts with the
-// label.
+// place works out where a given number of padding bytes goes.
 //
-// The cost has to have passed validCost, which is the same question asked
-// before the decision to use one - both callers ask it. Repeating it here would
-// be a third copy of one rule, and a copy is where two answers come from. What
-// happens without it is a panic inside strings.Repeat rather than a wrong file,
-// which is the failure this project prefers of the two.
-func commentOfCost(label string, cost int64) string {
-	if cost == 0 {
-		return ""
+// Two channels, and which one is used is decided by size rather than by
+// preference. The extra field is where bulk goes: it holds 65 531 bytes, it
+// is byte granular, and Go reads all of it - which the comment does not, and
+// that is O163. But it cannot cost one byte, because its own length field
+// costs two, so a single byte of padding has nowhere to go there.
+//
+// The comment closes that. It already carries the label, so lengthening it by
+// one is free of any structural minimum, and one byte is exactly what the
+// extra field cannot do. Without a label there is no comment to lengthen and
+// the gap at one stays - which is the gap this format has always had, written
+// up in MVP-FORMATS.md section 3.1 as a property rather than a fault.
+//
+// Returns false when the amount cannot be built at all, so the caller refuses
+// rather than producing an archive of the wrong size.
+func place(label string, padding int64) (comment string, withExtra bool, extraLen int64, ok bool) {
+	switch {
+	case padding < 0 || padding > maxCost():
+		return "", false, 0, false
+	case padding == 0:
+		return label, false, 0, true
+	case padding == 1:
+		if label == "" {
+			// Nothing to lengthen, and neither channel starts at one.
+			return "", false, 0, false
+		}
+		return label + " ", false, 0, true
+	case padding <= extraPaddingLimit+2:
+		return label, true, padding - 2, true
 	}
-	return label + strings.Repeat(" ", int(cost)-1-len(label))
+	// Past what the field holds, the comment takes the remainder. It is
+	// capped well under what Go reads, so the pair together stay readable.
+	rest := padding - (extraPaddingLimit + 2)
+	if label == "" || rest > commentPaddingLimit {
+		return "", false, 0, false
+	}
+	return label + strings.Repeat(" ", int(rest)), true, extraPaddingLimit, true
 }
 
 // pad decides where the difference between the bare archive and the size that
@@ -145,48 +173,66 @@ func pad(m *memo, p *format.Plan, target int64, label string, groups []format.Co
 		}
 	}
 
-	// What the comment would have to cost to land on the target on its own.
-	want := target - fixed
+	// What the header would have to carry to land on the target on its own.
+	// The label is already counted in bare, so this is padding and nothing
+	// else - which is the change O163 brought: the comment holds the label
+	// and the extra field holds the padding, rather than one field holding
+	// both and growing past what a Go reader will take.
+	want := target - bare
 	if want <= maxCost() {
-		if !validCost(label, want) {
+		comment, withExtra, extra, ok := place(label, want)
+		if !ok {
 			return &format.BelowMinimumError{
 				Format:    "TAR.GZ",
 				Requested: target,
 				Minimum:   bare + 2,
-				Reason:    "the gzip comment that would make up the difference cannot be one byte long, so this size sits in a gap just above the smallest archive",
-				Hint:      fmt.Sprintf("Ask for %d B or more, or keep the label on and any size from %d B works.", bare+2, bare),
+				Reason: "the padding that would make up the difference cannot be one byte long, " +
+					"so this size sits in a gap just above the smallest archive",
+				Hint: fmt.Sprintf("Ask for %d B or more, or keep the label on and any size from %d B works.", bare+2, bare),
 			}
 		}
-		m.comment = commentOfCost(label, want)
+		m.comment, m.withExtra, m.extraLen = comment, withExtra, extra
 		return nil
 	}
 
 	// Above what the comment holds, the bulk goes into a stored entry inside
 	// the tar. A tar entry is aligned to 512 bytes, so it never lands on an
 	// exact size by itself - the comment closes the last few bytes.
-	size, comment, ok := solveFiller(tarLength(*m), target, label)
+	size, header, ok := solveFiller(tarLength(*m), target, label)
 	if !ok {
 		return fmt.Errorf("targz: no arrangement of padding reaches exactly %d B", target)
 	}
 	m.withFiller = true
 	m.fillerSize = size
-	m.comment = comment
+	m.comment = header.comment
+	m.withExtra = header.withExtra
+	m.extraLen = header.extraLen
 	p.Properties["padding_entry"] = fillerName
 	return nil
 }
 
-// solveFiller picks how big the padding entry is and what the comment says.
+// headerPadding is where a solved arrangement puts the bytes the filler
+// entry could not carry. A record rather than three return values, because
+// three of them in a row is where a reader stops being able to tell which is
+// which.
+type headerPadding struct {
+	comment   string
+	withExtra bool
+	extraLen  int64
+}
+
+// solveFiller picks how big the padding entry is and where the rest goes.
 //
 // The padding entry is a whole number of tar blocks, so it moves the total in
 // steps of 512. The largest step that still fits is taken first, and whatever
-// is left over becomes comment. Stepping back down by a block adds 512 to that
-// leftover, which is how the one byte gap is stepped over when there is no
-// label.
-func solveFiller(base, target int64, label string) (size int64, comment string, ok bool) {
+// is left over goes into the header. Stepping back down by a block adds 512 to
+// that leftover, which is how the one byte gap is stepped over when there is
+// no label to lengthen.
+func solveFiller(base, target int64, label string) (size int64, header headerPadding, ok bool) {
 	minCost := commentCost(label)
 	withHeader := base + tarBlock
 	if gzipFixed(withHeader)+minCost > target {
-		return 0, "", false
+		return 0, headerPadding{}, false
 	}
 
 	lo, hi := int64(0), target/tarBlock+2
@@ -203,12 +249,14 @@ func solveFiller(base, target int64, label string) (size int64, comment string, 
 	// the comment holds several thousand.
 	for k := lo; k >= 0 && k > lo-3; k-- {
 		blocks := k * tarBlock
-		cost := target - gzipFixed(withHeader+blocks)
-		if validCost(label, cost) && cost <= maxCost() {
-			return blocks, commentOfCost(label, cost), true
+		// What is left for the header once the filler has taken its blocks.
+		// minCost is the label, which the comment carries either way.
+		padding := target - gzipFixed(withHeader+blocks) - minCost
+		if comment, withExtra, extra, ok := place(label, padding); ok {
+			return blocks, headerPadding{comment: comment, withExtra: withExtra, extraLen: extra}, true
 		}
 	}
-	return 0, "", false
+	return 0, headerPadding{}, false
 }
 
 // build writes the archive.
@@ -223,6 +271,12 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 		return fmt.Errorf("targz: the archive could not be started: %w", err)
 	}
 	zw.Comment = m.comment
+	// The extra field is where padding rides. It precedes everything, like
+	// the comment, so how long it is has to be settled before the first byte
+	// goes out - which is what the arithmetic above is for.
+	if m.withExtra {
+		zw.Extra = make([]byte, m.extraLen)
+	}
 	tw := tar.NewWriter(zw)
 
 	for _, c := range m.children {

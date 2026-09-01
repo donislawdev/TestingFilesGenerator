@@ -21,37 +21,43 @@ import (
 const (
 	generatorVersion = "1"
 
-	// commentCapacity is the largest gzip header comment any reader here
-	// accepts. RFC 1952 gives the field no length at all, and the document
-	// carried that as "no limit" until it was measured on 2026-08-04.
+	// commentPaddingLimit is how much of the comment padding may use.
 	//
-	// Measured, by bisection, on two builds of the same archiver:
+	// What every OTHER reader takes is far more than this and was measured by
+	// bisection on 2026-08-04: 7-Zip 26.02 and p7zip 23.01 both accept 65 535
+	// and refuse 65 536, while GNU gzip, GNU tar, bsdtar, Python and node take
+	// ten megabytes without a word. None of that is the binding number any
+	// more, so it is written here rather than kept as a constant nothing uses.
 	//
-	//	7-Zip 26.02 on Windows   accepts 65 535, refuses 65 536
-	//	p7zip 23.01 on Linux     accepts 65 535, refuses 65 536
+	// It was 4096 until 2026-09-01, and that number could not be read by a
+	// very ordinary reader. Go's compress/gzip takes a header comment of 511
+	// bytes and refuses 512, because it reads the field into a fixed buffer -
+	// so 4134 of the 11 260 reachable sizes in a twenty kilobyte sweep produced
+	// an archive no Go program could open, with a message that reads like a
+	// corrupt file. 7-Zip, GNU tar, bsdtar, Python and node all took them
+	// without a word, which is why nobody noticed for a month. O163.
 	//
-	// The refusal is "Is not archive" on the whole file rather than a warning,
-	// so a fixture past that line is not degraded, it is unreadable. GNU gzip
-	// 1.12, GNU tar 1.35, bsdtar 3.8.4, Python and node take ten megabytes
-	// without a word, and bsdtar draws its own line at 1 048 566 - one mebibyte
-	// less the fixed ten byte header, so that one caps the whole header rather
-	// than this field.
-	commentCapacity = 65535
+	// The comment now carries the label and at most a byte or two beyond it.
+	// Bulk padding moved to the extra field, which holds sixteen times more and
+	// which Go reads to the end of.
+	commentPaddingLimit = 480
 
-	// commentPaddingLimit is how much of that we actually use.
+	// extraPaddingLimit is how many bytes the gzip extra field may carry.
 	//
-	// Not the measured ceiling, and the reason is local rather than borrowed.
-	// The second stage below pads through a tar entry, and a tar entry is
-	// aligned to 512 bytes, so it delivers bulk and never the last few bytes.
-	// The comment is what reaches an exact size, and a few kilobytes of it is
-	// more than enough for that - the gap it has to close is under one block.
+	// The field's own limit is 65 535, since XLEN is two bytes wide. This build
+	// stops at 65 531, which is the number measured across every reader on
+	// 2026-08-04 and re-measured against Go on 2026-09-01 - accepted to the
+	// last byte, beside a comment, with the cost exactly two bytes more than
+	// what is carried.
 	//
-	// Which leaves no reason to sit on the edge of a two byte length field, and
-	// one reason not to: that edge is where a known bad build of p7zip crashed
-	// on a ZIP comment filled to its maximum. That build is not installed on
-	// any machine here, so this is caution about something unmeasured rather
-	// than a measurement, and it costs nothing.
-	commentPaddingLimit = 4096
+	// That cost is what makes this the right channel rather than a bigger one:
+	// it is byte granular. The comment was too, but it had to hold the label as
+	// well, and a tar filler entry is aligned to 512 bytes so it delivers bulk
+	// and never the last few. Capping the comment at what Go reads and leaving
+	// the rest to the filler was measured and rejected: 831 sizes in the same
+	// sweep stopped being reachable at all, because nothing could bridge the
+	// gap under one block.
+	extraPaddingLimit = 65531
 
 	// fillerName is the entry that carries padding the comment cannot hold.
 	// Named plainly, because somebody opening the archive should see what it
@@ -91,13 +97,18 @@ func init() {
 		MinBytes:    minimumBytes(),
 
 		Padding: format.PaddingChannel{
-			Name:  "gzip header comment, then a stored filler entry above its limit",
+			Name:  "gzip extra field, then a stored filler entry above its limit",
 			Where: format.PlacementStart,
-			// The comment precedes everything, so how long it is has to be
+			// The extra field precedes everything, so how long it is has to be
 			// settled before the first byte goes out. That is the whole reason
 			// the size is worked out by arithmetic rather than by measuring
 			// what came before.
-			Capacity: commentCapacity,
+			//
+			// It was the comment until 2026-09-01, and the comment is still
+			// here carrying the label. What moved is the padding, because Go
+			// reads a comment of 511 bytes and refuses 512 while it reads this
+			// field to the end. O163.
+			Capacity: extraPaddingLimit,
 		},
 		Label:  format.LabelInternal,
 		Oracle: "7z",
@@ -153,6 +164,14 @@ type memo struct {
 	// The zero value is not the default - ReadOwnership fills it, because
 	// the mode this format has always written is 644 rather than 0.
 	own archive.Ownership
+	// withExtra says whether the header carries a gzip extra field at all,
+	// and extraLen says how many bytes it holds. Two fields rather than one
+	// with a sentinel, matching withFiller beside them, because an EMPTY
+	// field still costs its two byte length while no field costs nothing -
+	// and a sentinel makes the zero value of this struct wrong, which is a
+	// thing minimumBytes met on the first try.
+	withExtra bool
+	extraLen  int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {

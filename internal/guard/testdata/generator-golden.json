@@ -158,18 +158,18 @@
     },
     "targz_16kib": {
       "bytes": 16384,
-      "sha256": "03bba423e483a3606a8d43e40ea24e98356e1e07ef474c9178cb5cdf084384a6",
-      "measured_on": "2026-08-04"
+      "sha256": "47304109c42a00e600fb25cfa25bc218140a7bb5b3914b5310cfbb3874366baa",
+      "measured_on": "2026-09-01"
     },
     "targz_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "0031527861ad2753e25ab242a8415fdf1c027f0be377de948894778caa26e0eb",
-      "measured_on": "2026-08-04"
+      "sha256": "8b20c23fb1e2ed4dae11755ef7f356a65377a83b3323c7be20bfafa42f5511d2",
+      "measured_on": "2026-09-01"
     },
     "targz_with_three_pdfs": {
       "bytes": 65536,
-      "sha256": "84a776cc5439d9a7edb29018dca7b0fb1462f7b57a374de34c21b0cf7f601eb5",
-      "measured_on": "2026-08-04"
+      "sha256": "01969ba9c8368dbc8af3810291cf37468359b1b6b2ba9bf224c1b72cde19c612",
+      "measured_on": "2026-09-01"
     },
     "tiff_100kib_sized_to_fit": {
       "bytes": 102400,
@@ -245,6 +245,15 @@
     }
   },
   "remeasured": [
+    {
+      "on": "2026-09-01",
+      "why": "TAR.GZ pads through the gzip EXTRA field now, where it used to pad through the header comment. The comment keeps the label and at most a byte beyond it. Sizes are unchanged - every one of these archives is the same length it was, and the same sizes are reachable, measured across 11 260 of them. What moved is where the padding sits in the header. The reason is O163: Go's compress/gzip reads a header comment into a fixed buffer and refuses one of 512 bytes or more, so 4 134 of those 11 260 sizes produced an archive no Go program could open - with the message gzip: invalid header, which reads like a corrupt file rather than like a field the reader will not take. 7-Zip, GNU tar, bsdtar, Python and node all took them without a word, which is why it went a month unnoticed, and testers write tools in Go. The extra field was measured against Go on the same day and accepted to 65 531 bytes beside a comment, at a cost of exactly two bytes more than it carries, so it is byte granular where a tar filler entry is aligned to 512. The cheaper looking fix - capping the comment at 511 and leaving the rest to the filler - was measured and rejected: 831 sizes in the same sweep stopped being reachable at all, because nothing could bridge the gap under one block. After the change: 11 260 reachable, 0 unreachable, 0 unreadable. Guarded from now on by TestEveryArchiveThisToolWritesCanBeReadByTheStandardLibrary.",
+      "files": [
+        "targz_16kib",
+        "targz_past_the_comment_limit",
+        "targz_with_three_pdfs"
+      ]
+    },
     {
       "on": "2026-08-04",
       "why": "The files inside a container now default to 8 kB rather than 4 kB, which is what the registry always said they did. entry_size was declared as 8kb and the generator used 4096, so tfg formats printed one answer and generating without the setting gave the other - neither number wrong on its own, written in two places, and one of them drifted. The declaration is the half consumers believe, because AR9 makes the registry the place a consumer asks what a format accepts, so the generator was moved to the declaration rather than the other way round. Both values now come from one constant in each container, and the two containers use the same one, because two settings of the same name defaulting differently is a difference nobody would predict. Only the four cases that leave entry_size unset moved. Sizes are unchanged - the archives hold the same number of files and those files are bigger. Guarded from now on by TestADeclaredDefaultIsTheOneTheFormatUses, which generates with each declared default left out and written out and compares the bytes.",
