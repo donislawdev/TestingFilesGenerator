@@ -3,12 +3,12 @@ package guard
 import (
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
 )
 
 // Both binaries carry the format registrations, asked of the compiler.
@@ -120,12 +120,12 @@ func TestTheArchiveEntryFormatSortsBeforeTheArchive(t *testing.T) {
 	const module = "github.com/donislawdev/TestingFilesGenerator/internal/format/"
 
 	entry := entryFormatOfZip(t)
-	archive := module + "zip"
-	if entryPath := module + entry; entryPath >= archive {
+	archivePath := module + "zip"
+	if entryPath := module + entry; entryPath >= archivePath {
 		t.Errorf("%q does not sort before %q, so the archive can be initialised first and "+
 			"panic while working out its own minimum. Go initialises packages in the order of "+
 			"their import paths - see the specification, Program initialization",
-			entryPath, archive)
+			entryPath, archivePath)
 	}
 
 	// The entry format is really registered under that id, or the constant
@@ -136,24 +136,23 @@ func TestTheArchiveEntryFormatSortsBeforeTheArchive(t *testing.T) {
 	}
 }
 
-// entryFormatOfZip reads the id the archive builds its minimum from.
+// entryFormatOfZip is the id the archive builds its minimum from.
 //
-// From the source because the constant is unexported and this guard lives
-// outside its package. Naming it here as well would be the second copy of a
-// value, which is the shape this project spends its time removing.
+// It used to read the constant out of internal/format/zip/zip.go as text,
+// because the constant was unexported and this guard lives outside that
+// package. On 2026-09-01 the containers' shared vocabulary moved to
+// internal/format/archive and the constant went with it, exported, and this
+// went red saying it could no longer find what it was reading - which is the
+// good failure, but it was reading source in the first place only because there
+// was nothing to import.
+//
+// Now there is, so it asks the constant itself. Still one copy of the value,
+// which was the point of scraping, and one that a rename moves rather than
+// breaks.
 func entryFormatOfZip(t *testing.T) string {
 	t.Helper()
-	source := readFile(t, filepath.Join(repoRoot(t), "internal", "format", "zip", "zip.go"))
-	const marker = "defaultEntryFmt = "
-	at := strings.Index(source, marker)
-	if at < 0 {
-		t.Fatalf("internal/format/zip/zip.go no longer declares %s, so this guard reads nothing", marker)
+	if archive.DefaultFormat == "" {
+		t.Fatal("the archive package declares no default entry format, so this guard reads nothing")
 	}
-	rest := source[at+len(marker):]
-	open := strings.Index(rest, `"`)
-	shut := strings.Index(rest[open+1:], `"`)
-	if open < 0 || shut < 0 {
-		t.Fatal("the default entry format is not a plain string constant any more")
-	}
-	return rest[open+1 : open+1+shut]
+	return archive.DefaultFormat
 }

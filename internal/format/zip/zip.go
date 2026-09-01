@@ -10,12 +10,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
 )
 
 const (
@@ -47,36 +47,8 @@ const (
 	// is rather than wonder.
 	fillerName = "tfg-padding.bin"
 
-	defaultEntries  = 1
-	defaultEntryFmt = "txt"
-	maxEntries      = 10000
-
-	// defaultEntrySizeText is the default size of a file inside, written the
-	// way somebody writes it. The number below is derived from it rather than
-	// spelled a second time.
-	//
-	// They used to be two constants and they had drifted: the declaration said
-	// 8kb and the generator used 4096, so tfg formats printed one answer and
-	// generating without the setting gave the other. Nothing could see it,
-	// because the declaration is only read for printing. The declaration is
-	// the half consumers believe - AR9 makes the registry the place a consumer
-	// asks - so the generator was moved to it rather than the other way round.
-	defaultEntrySizeText = "8kb"
-
 	writeChunk = 32 * 1024
 )
-
-// defaultEntrySize is defaultEntrySizeText in bytes. Package variables are
-// initialised before init runs, so the registration below can rely on it.
-var defaultEntrySize = mustSize(defaultEntrySizeText)
-
-func mustSize(s string) int64 {
-	n, err := core.ParseSize(s)
-	if err != nil {
-		panic(fmt.Sprintf("zip: the default entry size %q is not a size this build can parse: %v", s, err))
-	}
-	return n
-}
 
 // A fixed timestamp on every entry. Taking one from the clock would make two
 // runs of the same recipe differ, and relying on the zero value would be an
@@ -98,28 +70,10 @@ func init() {
 		},
 		Label:  format.LabelInternal,
 		Oracle: "7z",
-		Properties: []format.Property{
-			{
-				Name: "entries", Kind: format.PropertyInt,
-				Min: 0, Max: maxEntries,
-				Default: strconv.Itoa(defaultEntries),
-				Detail:  "How many files the archive holds. Use contains instead when the files are not all alike.",
-			},
-			{
-				Name: "entry_format", Kind: format.PropertyText,
-				Shape: "the id of a format, as tfg formats lists them",
-				// Not a choice, because the allowed values are whatever this
-				// build registered, and a list frozen here would drift away
-				// from the registry the moment a format is added.
-				Default: defaultEntryFmt,
-				Detail:  "The format of the files inside. Run tfg formats to see what this build supports.",
-			},
-			{
-				Name: "entry_size", Kind: format.PropertySize,
-				Default: defaultEntrySizeText,
-				Detail:  "How big each file inside is.",
-			},
-		},
+		// The settings every container shares, declared once in the archive
+		// package. Listed rather than received whole, so a format takes only
+		// the axes it can actually carry.
+		Properties:       archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize),
 		Container:        true,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -142,90 +96,8 @@ type memo struct {
 	seed       uint64
 }
 
-// groupsFor works out what the archive holds.
-//
-// There are two ways to say it. "contains" in a recipe is the general one and
-// takes a list of groups of different formats. The entries, entry_format and
-// entry_size properties are the flag sized one, reachable through --set, and
-// they say the same thing for a single format.
-//
-// Both at once is refused rather than one of them being picked. Picking would
-// produce an archive holding something other than what the recipe says, and
-// the recipe is the thing somebody reads in a pull request. Same rule as a
-// boundary declared beside a size.
-func groupsFor(r format.Request) ([]format.Content, error) {
-	var stated []string
-	for _, key := range []string{"entries", "entry_format", "entry_size"} {
-		if _, ok := r.Properties[key]; ok {
-			stated = append(stated, key)
-		}
-	}
-
-	// Not len() > 0. An empty contains says "an archive holding nothing",
-	// which is a legitimate thing to ask for, and it is a different statement
-	// from saying nothing at all.
-	if r.Contains != nil {
-		if len(stated) > 0 {
-			return nil, &format.ContentsConflictError{Format: "zip", Keys: stated}
-		}
-		asked := 0
-		for _, g := range r.Contains {
-			if g.Format == "zip" {
-				return nil, &format.NestingUnsupportedError{Format: "zip"}
-			}
-			asked += g.Count
-		}
-		// The same ceiling the entries property has, on the other way of
-		// saying the same thing. Until 2026-08-26 this path had none: a
-		// recipe asking for fifty thousand entries through contains validated
-		// clean and dry ran clean, while entries=50000 was refused with "must
-		// be between 0 and 10000". One quantity, two doors, two answers - and
-		// the door with no ceiling planned a format.Plan for every child.
-		if asked > maxEntries {
-			// Spelled as the refusal the entries property already produces,
-			// down to the exit code: a plain error here would have landed on
-			// 1 while the same request through entries lands on 4, which is
-			// the same disagreement one level further down.
-			return nil, &format.PropertyValueError{
-				Format: "zip",
-				Key:    "contains",
-				Value:  strconv.Itoa(asked),
-				Reason: fmt.Sprintf("it takes a whole number from 0 to %d", maxEntries),
-				Remedy: fmt.Sprintf("Ask for %d entries or fewer.", maxEntries),
-			}
-		}
-		return r.Contains, nil
-	}
-
-	if r.SizeFromContents {
-		// Only reachable if a caller sets the flag without contents. Saying so
-		// beats producing an empty archive and calling it the answer.
-		return nil, fmt.Errorf("zip: the size was left to the contents and there are none")
-	}
-
-	entries, err := intProperty(r.Properties, "entries", defaultEntries, 0, maxEntries)
-	if err != nil {
-		return nil, err
-	}
-	// Sizes in properties use the same syntax as --size. Anything else would
-	// mean entry_size=200kb failing while size=200kb works, which nobody
-	// would predict.
-	entrySize, err := sizeProperty(r.Properties, "entry_size", defaultEntrySize)
-	if err != nil {
-		return nil, err
-	}
-	entryFmt := defaultEntryFmt
-	if v, ok := r.Properties["entry_format"]; ok && v != "" {
-		entryFmt = v
-	}
-	if entryFmt == "zip" {
-		return nil, &format.NestingUnsupportedError{Format: "zip"}
-	}
-	return []format.Content{{Format: entryFmt, Count: entries, Bytes: entrySize}}, nil
-}
-
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	groups, err := groupsFor(r)
+	groups, err := archive.Groups("zip", r)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -661,13 +533,13 @@ func (c *counter) Write(p []byte) (int, error) { c.n += int64(len(p)); return le
 // of mistake, so this matches it: a build that cannot state its own minimum
 // fails at start rather than at every use.
 func minimumBytes() int64 {
-	desc, err := format.Get(defaultEntryFmt)
+	desc, err := format.Get(archive.DefaultFormat)
 	if err != nil {
-		panic(fmt.Sprintf("zip: the default entry format %q is not registered yet, so the minimum size of an archive cannot be worked out. Check the import order in internal/format/all", defaultEntryFmt))
+		panic(fmt.Sprintf("zip: the default entry format %q is not registered yet, so the minimum size of an archive cannot be worked out. Check the import order in internal/format/all", archive.DefaultFormat))
 	}
 	cp, err := desc.Generator.Plan(format.Request{Bytes: 0, Seed: 0, Label: false})
 	if err != nil {
-		panic(fmt.Sprintf("zip: the default entry format %q cannot produce an empty file, so the minimum size of an archive cannot be worked out: %v", defaultEntryFmt, err))
+		panic(fmt.Sprintf("zip: the default entry format %q cannot produce an empty file, so the minimum size of an archive cannot be worked out: %v", archive.DefaultFormat, err))
 	}
 	n, err := archiveSize(memo{children: []child{{
 		name: "txt_0001.txt", desc: desc, plan: cp,
