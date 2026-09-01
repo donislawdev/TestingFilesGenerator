@@ -47,6 +47,45 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A zip can be locked with a password.**
+
+      tfg generate --format zip --size 30kb --set entries=3 \
+        --set password=Secret123 --set encryption=aes-256
+
+  writes an archive of exactly 30720 B that 7-Zip opens with that password
+  and refuses without it. The methods are `aes-128`, `aes-192` and
+  `aes-256`.
+
+  **The password goes into the manifest in plain text.** A locked fixture
+  nobody can open is worth nothing, so the manifest records it exactly as
+  you typed it - that is the point rather than a leak. Do not use a password
+  you use anywhere else.
+
+  Both settings are needed together. A password with `encryption=none`, or
+  an encryption with no password, is refused rather than guessed at, and the
+  refusal names both of them.
+
+  **Limits worth knowing before you build a fixture.** Some readers cannot
+  open AES archives at all - .NET's own `ZipFile` lists the entries and then
+  fails on reading one. Nothing in this build writes the older ZipCrypto
+  scheme yet, so an archive meant for a reader that only speaks that is not
+  something this can make. And `tar.gz` cannot be locked at all - neither
+  tar nor gzip has any encryption in it, and asking for one there is refused
+  with that reason rather than ignored.
+
+- **A tar.gz can say what permissions its files have and who owns them.**
+  `--set entry_mode=755` and `--set entry_owner=root`. The modes are the
+  ones chmod takes, from `000` through `777`, and the owners are `unset`
+  (the default, and what this tool has always written), `root` and `user`.
+
+  The useful cases are the ones nobody makes by accident: `000` is a file
+  nothing can read after unpacking, `777` is one a scanner should have
+  something to say about, and an archive claiming root owns everything is
+  what a careless extractor turns into a privilege problem.
+
+  It changes no bytes unless you ask for it, and the size of the archive is
+  the same either way.
+
 - **A log can now be six shapes rather than one, and seven settings shape it.**
   `tfg generate --format log --set entry_format=nginx` writes an nginx access
   log. The others are `apache-combined` (the default, and what this format has

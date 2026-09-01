@@ -125,6 +125,8 @@ var reachableFromTheWindow = []string{
 	"property:png.height",
 	"property:png.width",
 	"property:targz.entries",
+	"property:targz.entry_mode",
+	"property:targz.entry_owner",
 	"property:targz.entry_format",
 	"property:targz.entry_size",
 	"property:tiff.height",
@@ -141,9 +143,11 @@ var reachableFromTheWindow = []string{
 	"property:wav.channels",
 	"property:wav.content",
 	"property:wav.sample_rate",
+	"property:zip.encryption",
 	"property:zip.entries",
 	"property:zip.entry_format",
 	"property:zip.entry_size",
+	"property:zip.password",
 
 	// One target's worth of settings, each with a field and each found again in
 	// the manifest of a run started from the window.

@@ -10,6 +10,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
 )
 
 // How the size of this format is worked out.
@@ -228,17 +229,19 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		if err := writeEntry(ctx, tw, c.name, c.plan.Bytes, func(dst io.Writer) error {
-			return c.desc.Generator.Write(ctx, dst, c.plan)
-		}); err != nil {
+		if err := writeEntry(ctx, tw, tarEntry{name: c.name, size: c.plan.Bytes, own: m.own},
+			func(dst io.Writer) error {
+				return c.desc.Generator.Write(ctx, dst, c.plan)
+			}); err != nil {
 			return fmt.Errorf("targz: the %s file inside could not be written: %w", c.desc.ID, err)
 		}
 	}
 
 	if m.withFiller {
-		if err := writeEntry(ctx, tw, fillerName, m.fillerSize, func(dst io.Writer) error {
-			return writeFiller(ctx, dst, m.seed, m.fillerSize)
-		}); err != nil {
+		if err := writeEntry(ctx, tw, tarEntry{name: fillerName, size: m.fillerSize, own: m.own},
+			func(dst io.Writer) error {
+				return writeFiller(ctx, dst, m.seed, m.fillerSize)
+			}); err != nil {
 			return err
 		}
 	}
@@ -256,14 +259,18 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 // and those blocks are invisible to the arithmetic above - the size would come
 // out wrong only for archives holding a long name. Asking for USTAR turns that
 // into a refusal at the point of writing.
-func writeEntry(ctx context.Context, tw *tar.Writer, name string, size int64, body func(io.Writer) error) error {
+func writeEntry(ctx context.Context, tw *tar.Writer, e tarEntry, body func(io.Writer) error) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 	if err := tw.WriteHeader(&tar.Header{
-		Name:     name,
-		Size:     size,
-		Mode:     0o644,
+		Name:     e.name,
+		Size:     e.size,
+		Mode:     e.own.Mode,
+		Uid:      e.own.Uid,
+		Gid:      e.own.Gid,
+		Uname:    e.own.Uname,
+		Gname:    e.own.Gname,
 		ModTime:  fixedTime,
 		Typeflag: tar.TypeReg,
 		Format:   tar.FormatUSTAR,
@@ -271,6 +278,18 @@ func writeEntry(ctx context.Context, tw *tar.Writer, name string, size int64, bo
 		return err
 	}
 	return body(tw)
+}
+
+// tarEntry is one entry's header, as both the measuring pass and the
+// writing pass describe it.
+//
+// A record rather than more arguments, because every field of a USTAR
+// header is fixed width - so none of this changes the size of anything, and
+// a reader should be able to see that at a glance rather than by counting.
+type tarEntry struct {
+	name string
+	size int64
+	own  archive.Ownership
 }
 
 // writeFiller emits the padding entry without holding it in memory.

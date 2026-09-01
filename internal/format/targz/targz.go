@@ -104,7 +104,31 @@ func init() {
 		// The settings every container shares, declared once in the archive
 		// package. Listed rather than received whole, so a format takes only
 		// the axes it can actually carry.
-		Properties:       archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize),
+		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
+			archive.EntryMode, archive.EntryOwner),
+
+		// Neither half of this format has anywhere to put a password, and
+		// saying so is worth more than the generic "no such property" - that
+		// one reads as a gap in this build, and somebody would go looking for
+		// the version that closed it.
+		//
+		// What the world does here is worse than either. Measured on
+		// 2026-09-01: 7-Zip accepts -p on a tar and on a gzip, exits 0,
+		// prints nothing, and writes a PLAINTEXT archive. Somebody asking
+		// for a locked fixture gets an open one and never finds out.
+		Unsupported: []format.UnsupportedSetting{
+			{
+				Name: archive.Password,
+				Why: "neither tar nor gzip has any encryption in it, so there is no field in either " +
+					"one to put a password in",
+				Instead: "Use zip for an archive with a password, or leave this one open.",
+			},
+			{
+				Name:    archive.Encryption,
+				Why:     "neither tar nor gzip has any encryption in it, so there is nothing to choose between",
+				Instead: "Use zip for an archive with a password, or leave this one open.",
+			},
+		},
 		Container:        true,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -125,6 +149,10 @@ type memo struct {
 	fillerSize int64
 	withFiller bool
 	seed       uint64
+	// own is what every entry records about its permissions and its owner.
+	// The zero value is not the default - ReadOwnership fills it, because
+	// the mode this format has always written is 644 rather than 0.
+	own archive.Ownership
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -133,7 +161,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed}
+	own, err := archive.ReadOwnership("targz", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	m := memo{seed: r.Seed, own: own}
 	if m.children, err = planChildren(r, groups); err != nil {
 		return format.Plan{}, err
 	}
