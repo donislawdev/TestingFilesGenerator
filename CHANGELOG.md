@@ -16,6 +16,40 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **Six formats have different bytes, because the tool is built with Go 1.27
+  now.** Sizes are unchanged. Every size that worked before still works, every
+  reader that took these files still takes them, and the same sizes are
+  reachable. What changed is the compressed data inside them.
+
+  Affected: `targz`, `png`, `docx`, `xlsx`, `pptx`, `ico` when it holds a png,
+  and `zip` when you ask for compression. `zip` left alone is untouched,
+  because its default stores rather than compresses. The other seventeen
+  formats are byte for byte what they were.
+
+  Go 1.27 changed `compress/flate`, which is what all of those run through.
+  Below the default compression level the change is only how a stream is
+  closed, and above it the compressor itself behaves differently.
+
+  Two minimums moved with it. The smallest `png` is **74 B** rather than 73,
+  and sizes 75 to 82 and 85 are the ones it cannot produce. The smallest
+  `targz` is **1049 B** rather than 1052, the next size up is 1051, and 1050 is
+  the one it cannot produce. `tfg formats` prints the current numbers.
+
+  **A suite pinning hashes for those formats will go red once and then stay
+  green.** There is no switch back: staying on the old compiler was not a
+  choice this tool can offer, since the compiler comes from whoever builds it.
+
+- **`.tar.gz` could not be produced at all under Go 1.27 until this release.**
+  Every size was refused with an error saying the generator produced three
+  bytes fewer than planned. The size of a `.tar.gz` is worked out rather than
+  measured - compressing twice to learn a length would make a preview cost what
+  the run costs - and that arithmetic carried a number that turned out to
+  describe one release of Go.
+
+  It measures that number now, at first use, and checks its own answer before
+  trusting it. A later Go release can move these bytes again, but it can no
+  longer stop the format from being written.
+
 - **A generated `.tar.gz` has different bytes, because a lot of them could
   not be opened by a Go program.** Sizes are unchanged, every size that
   worked before still works, and every reader that took these files still

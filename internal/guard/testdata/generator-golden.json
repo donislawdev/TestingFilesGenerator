@@ -34,13 +34,13 @@
     },
     "docx_32kib": {
       "bytes": 32768,
-      "sha256": "ba7994133148c6016a7b2c2bd1361c8b98b9b55abbf9471fa5256ce746dc7c66",
-      "measured_on": "2026-08-19"
+      "sha256": "b3012da61624aae102bc8b8b55b031e5881daa77086eaeb0f95efc09a765635e",
+      "measured_on": "2026-09-01"
     },
     "docx_32kib_many_paragraphs": {
       "bytes": 32768,
-      "sha256": "11a40c75a83468e9adddc9fc00ce9f4edd3a658cc03cc81c3700ed2238230cd4",
-      "measured_on": "2026-08-19"
+      "sha256": "a72407997a6b22d6955c1813b5df8b67fc9d11a0b1d596fbd34e19324e9d1511",
+      "measured_on": "2026-09-01"
     },
     "gif_64kib": {
       "bytes": 65536,
@@ -68,8 +68,8 @@
     },
     "ico_32kib_png_inside": {
       "bytes": 32768,
-      "sha256": "72197d05fa9cccac8545d01b5878ea2f5b3e69cb13a3120f546e8a4ece799d01",
-      "measured_on": "2026-08-19"
+      "sha256": "e7a3c65676224d2f7c79ce1b54b93124fafd8a7f158afe43f86ea99805f6cba8",
+      "measured_on": "2026-09-01"
     },
     "jpg_192kib_many_segments": {
       "bytes": 196608,
@@ -140,17 +140,18 @@
     },
     "png_64kib": {
       "bytes": 65536,
-      "sha256": "85e174c37ebd91b39afdd5b4ca906d7b996c8ceb43a287424412b08ab815e521"
+      "sha256": "65c6153643fe861e3e32149cefb638f5209a9c783cf702e655585d4e405ff657",
+      "measured_on": "2026-09-01"
     },
     "pptx_32kib": {
       "bytes": 32768,
-      "sha256": "5ff36a308816c9938deba34d83d175a33df1f757acc872ba39305c46282ebdb4",
-      "measured_on": "2026-08-19"
+      "sha256": "a8383149e40ca00d0b3cc118290cdd163cfcd6480b4c8c68e0913bda1b3462ef",
+      "measured_on": "2026-09-01"
     },
     "pptx_32kib_five_slides": {
       "bytes": 32768,
-      "sha256": "6a9db5085b0b8d2b288290c2169422307d7d61f8eb08c3c1cfe880c7189b4555",
-      "measured_on": "2026-08-19"
+      "sha256": "0e2c4b5722b4b123a4eeae4d64570b4a158af82cbc138a3063b98e4c118bb2e3",
+      "measured_on": "2026-09-01"
     },
     "svg_8kib": {
       "bytes": 8192,
@@ -158,17 +159,17 @@
     },
     "targz_16kib": {
       "bytes": 16384,
-      "sha256": "47304109c42a00e600fb25cfa25bc218140a7bb5b3914b5310cfbb3874366baa",
+      "sha256": "e44c58b38ede2c3bc6c332fd807a7d182b42b4f087a9899aad39d318aeb515a6",
       "measured_on": "2026-09-01"
     },
     "targz_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "8b20c23fb1e2ed4dae11755ef7f356a65377a83b3323c7be20bfafa42f5511d2",
+      "sha256": "e0ea316d5fd0d3dee866a551660cd7626fc1902d5d36dfdb2e1ca8e240395e13",
       "measured_on": "2026-09-01"
     },
     "targz_with_three_pdfs": {
       "bytes": 65536,
-      "sha256": "01969ba9c8368dbc8af3810291cf37468359b1b6b2ba9bf224c1b72cde19c612",
+      "sha256": "e13105e912e3ebef8f5a41bb30be6160e6afd8611cec245aa781fc26d21d0d9c",
       "measured_on": "2026-09-01"
     },
     "tiff_100kib_sized_to_fit": {
@@ -215,13 +216,13 @@
     },
     "xlsx_32kib": {
       "bytes": 32768,
-      "sha256": "11c19f918b1a996634117117c63e337513db7cadaa1872880482b59abfc7e1da",
-      "measured_on": "2026-08-19"
+      "sha256": "37ca56ea77ebcfa13af54b16fba2c95d10fc4f762f6c9a04506d83a340a3b35a",
+      "measured_on": "2026-09-01"
     },
     "xlsx_32kib_grid": {
       "bytes": 32768,
-      "sha256": "c60de4f39aac004d4cc42369fc59e910dca5224b12567deaade3e63c85a3163e",
-      "measured_on": "2026-08-19"
+      "sha256": "ad434e7c8c47519c4b96f2b826bf6eceabd846b6e9e5e2cc8c1ef7a86188f328",
+      "measured_on": "2026-09-01"
     },
     "xml_8kib": {
       "bytes": 8192,
@@ -282,6 +283,10 @@
         "pdf_16kib",
         "zip_with_three_pdfs"
       ]
+    },
+    {
+      "on": "2026-09-01",
+      "why": "The project moved from Go 1.26.7 to Go 1.27.0, and Go 1.27 changed compress/flate. Every format here that puts bytes through deflate produces different ones: docx, pptx and xlsx compress their parts, png compresses its image data, ico when it holds a png, and targz through gzip. Sizes are unchanged - every one of these files is the length it was, and the same sizes are reachable. At compression level zero the change is framing rather than algorithm: the block that closes the stream went from five bytes to two. Above level zero the algorithm itself moved, so the difference is larger and not constant. zip is absent from this list because its default is store, which puts nothing through deflate - ask for compression and it moves too. The tar.gz arithmetic that broke on this now MEASURES the framing rather than carrying it as a constant, so a later Go release moves the bytes again but does not stop the format from being produced."
     }
   ]
 }

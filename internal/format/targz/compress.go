@@ -126,8 +126,34 @@ func nextFiller(target, got, filler int64) (next, extra int64, useExtra, done bo
 	case deficit < 0 || (deficit > 0 && deficit < 2):
 		// Overshot, or left a remainder the extra field cannot hold: it costs
 		// two bytes before it holds anything. Give the filler back enough that
-		// the field has room to work.
-		return filler - (2 - deficit), 0, false, false
+		// the field has room to work, and give back A WHOLE BLOCK MORE.
+		//
+		// The block is the point, and giving back only the overshoot is what
+		// used to happen and does not converge. The filler is a tar entry, and
+		// a tar entry is padded up to a whole 512 byte block - so handing back
+		// fewer than 512 bytes changes WHICH bytes the archive carries and not
+		// HOW MANY. What comes out the other side of gzip then wobbles by a
+		// byte or so either way, and the walk spends its rounds stepping five
+		// bytes at a time across a staircase, never landing.
+		//
+		// Measured 2026-09-01: a 256 KiB archive at compression best sat at
+		// 262 147 and 262 148 B for eight rounds while the filler came down
+		// from 258 481 to 258 447. This had been true all along and Go 1.27
+		// only moved which sizes land on a step edge, so it looked like the
+		// compiler broke it. Probe: tools/probes/targzsettle.
+		//
+		// Undershooting is safe and overshooting is not: the extra field adds
+		// exactly what it is given, up to 65 531 B, so a round that lands under
+		// the target finishes on the next pass. A whole block is well inside
+		// that.
+		next := filler - (2 - deficit) - tarBlock
+		if next < 0 && filler > 0 {
+			// Try with no filler at all before deciding the size is out of
+			// reach. Only an archive that overshoots with nothing in it is
+			// genuinely too small.
+			next = 0
+		}
+		return next, 0, false, false
 	case deficit == 0:
 		// Landed without needing the field at all.
 		return filler, 0, false, true

@@ -29,7 +29,7 @@ concurrency:
 env:
   # The same pin CI carries. A release built on a different toolchain than the
   # one the byte stability guards ran under is a release nobody measured.
-  GO_VERSION: "1.26.7"
+  GO_VERSION: "1.27.0"
 
 jobs:
   check:

@@ -28,7 +28,23 @@ go 1.26.5
 // here" and "green there" have to mean the same compiler. The byte stability
 // guards were run under 1.26.7 before this line moved and none of them
 // shifted, so D11 holds and no major version is owed.
-toolchain go1.26.7
+//
+// Raised to 1.27.0 on 2026-09-01, and this one IS owed a major version. Go
+// 1.27 changed compress/flate, so every format that puts bytes through deflate
+// produces different ones - eleven of the fifty one pinned cases moved, and all
+// seven of the pinned standard library paths. Sizes are unchanged and the same
+// sizes are reachable. Decision by the owner, and the reason was not that the
+// release is better: this machine builds other projects that are already on
+// 1.27, a toolchain setting belongs to the account rather than to a project, so
+// the two were taking it in turns. Staying meant a check before every command
+// forever. Written up in docs/GO-127-MIGRATION.md.
+//
+// TAR.GZ could not be produced at all under 1.27 until this move, because its
+// size arithmetic carried the gzip framing as a constant and the block that
+// closes a level zero stream went from five bytes to two. It measures the
+// framing now, so the next release moves the bytes again but does not stop the
+// format from being written.
+toolchain go1.27.0
 
 require github.com/goccy/go-yaml v1.19.2
 

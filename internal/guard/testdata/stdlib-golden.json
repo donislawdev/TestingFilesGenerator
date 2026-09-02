@@ -1,37 +1,37 @@
 {
   "note": "Measured values for the standard library paths that produce our bytes. If a test goes red against this file, that is a breaking change - bump the major version and write the changelog entry. Never edit the numbers here to make a run green.",
-  "measured_on": "2026-08-01",
-  "go_version": "go1.26.5 windows/amd64",
+  "measured_on": "2026-09-01",
+  "go_version": "go1.27.0 windows/amd64",
   "paths": {
     "flate_level_1": {
-      "bytes": 971,
-      "sha256": "6712e08ec1ada0f3d35f07100a0b726b6112b24cb94ad69920fe5e65317f3dee"
+      "bytes": 577,
+      "sha256": "fd1f4f82788ac84d8647b5189a9a8479775e0605085e73fe8471017123e33d44"
     },
     "flate_default": {
-      "bytes": 574,
-      "sha256": "ff87807f62eca68f717f730c0a7a23a4a31f2197472aa9beaa0d9a96912483e3"
+      "bytes": 577,
+      "sha256": "fd1f4f82788ac84d8647b5189a9a8479775e0605085e73fe8471017123e33d44"
     },
     "gzip_default": {
-      "bytes": 592,
-      "sha256": "51af913d03c1595df26696ede2751448249b578393147c0106566cc49ec56810"
+      "bytes": 595,
+      "sha256": "461bb8b70264485c48a6ec4d924e8e42e19d8289055242158293bb3e510ee448"
     },
     "gzip_store": {
-      "bytes": 65569,
-      "sha256": "324638839c7230e01c38c9c21925c62dfecbeea820138249c7f70d4e505ee52b",
+      "bytes": 65566,
+      "sha256": "da6527c020455e10b4a99d9f0a883bbae3b77a9a1c2c6a8fe12c6af1af1b8035",
       "measured_on": "2026-08-04",
       "why": "TAR.GZ writes every archive through this path, and its exact size arithmetic depends on the stored block framing it produces. Confirmed identical on go1.26.5 windows/amd64 and go1.26.5 linux/amd64, and byte for byte across six toolchains - go1.21.13, go1.22.12, go1.23.12, go1.24.0, go1.25.0 and go1.26.5 - by tools/toolchain-sweep.py, which runs the same inputs in a standalone module because go.mod here requires 1.26.5 and an older toolchain will not build it."
     },
     "zip_deflate": {
-      "bytes": 728,
-      "sha256": "bf16317f2aef3141a567dd17eb272839d1cd382e4b1125a79d5c1de0e63d7169"
+      "bytes": 731,
+      "sha256": "ff29df157b068b2254dc30932ab9b1a21e99c9c99c08ea461201fc4ba4db173e"
     },
     "png_default": {
-      "bytes": 1319,
-      "sha256": "98e83eaa0f8b23a39e36eb9f93c6500001ee44f62f9f9060329c9b71c545dec7"
+      "bytes": 1400,
+      "sha256": "5c7a9cd72c2471549201fcacea29cf613c5809ba9ffd3ccbf06264bed8a5428b"
     },
     "png_best": {
-      "bytes": 1313,
-      "sha256": "eed381ee6b99dfb4b2039333efd83b06c637d602fc7e791f495e5353e953246e"
+      "bytes": 1310,
+      "sha256": "35526c2b39059a53bec53151ca03f7391f3e58b6d637e977ecd9b8d6553d51a8"
     }
   }
 }

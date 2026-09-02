@@ -502,16 +502,16 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	}
 
 	return []engine.Target{{
-			ID:         g.id.Text,
-			Format:     g.formatPick.Selected,
-			Sizes:      engine.Uniform(files, bytesWanted),
-			NameTmpl:   g.name.Text,
-			Label:      g.label.Checked,
-			Properties: g.properties(),
-		}}, engine.Options{
-			OutDir:       g.outDir.Text,
-			Seed:         seed,
-			Command:      "tfg-gui",
-			ManifestName: engine.DefaultManifestName,
-		}, nil
+		ID:         g.id.Text,
+		Format:     g.formatPick.Selected,
+		Sizes:      engine.Uniform(files, bytesWanted),
+		NameTmpl:   g.name.Text,
+		Label:      g.label.Checked,
+		Properties: g.properties(),
+	}}, engine.Options{
+		OutDir:       g.outDir.Text,
+		Seed:         seed,
+		Command:      "tfg-gui",
+		ManifestName: engine.DefaultManifestName,
+	}, nil
 }
