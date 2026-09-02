@@ -377,8 +377,11 @@ tfg generate fixtures.yaml
 | `seed` | the number that makes a run repeatable. Same seed, same bytes |
 | `defaults.label` | write the self describing label inside each file. Default `true` |
 | `targets` | the list of things to produce. See below |
-| `output.dir` | where the files and the manifest go |
+| `output.dir` | where the files and the manifest go. A relative path is read from the directory you run in, not from the one the recipe sits in |
 | `output.manifest` | manifest file name. Default `manifest.json` |
+
+So a recipe kept in `recipes/` with `dir: out` writes into `out` next to you, not
+next to the recipe. Give an absolute path, or `--out`, when you want it fixed.
 
 ### Target keys
 
