@@ -78,7 +78,19 @@ func ReadCompression(id string, r format.Request, locked bool) (Squeeze, error) 
 			Format: id,
 			Key:    Compression,
 			Value:  raw,
-			Reason: "it takes one of: " + CompressBest + ", " + CompressDefault + ", " + CompressFast + ", " + CompressNone,
+			// Asked of the declaration rather than written out again. The
+			// words used to be listed here by hand, in the registry's order
+			// and the registry's phrasing, and identical is how a copy looks
+			// right up until it is not - O171. A fifth level added to the
+			// declaration would have reached tfg formats, reached the window,
+			// reached the registry's refusal, and not reached this line.
+			//
+			// This is empty for a value the declaration allows, and a value
+			// the declaration allows but levels has no entry for would arrive
+			// here. That pair cannot come apart without a guard going red:
+			// every declared word is put through this function and has to be
+			// accepted.
+			Reason: axes[Compression].Allows(raw),
 			Remedy: "Ask for " + CompressNone + " to store the files as they are.",
 		}
 	}
