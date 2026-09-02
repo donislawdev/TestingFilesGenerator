@@ -105,7 +105,13 @@ func ReadOwnership(id string, props map[string]string) (Ownership, error) {
 		// for the other door: this function is callable directly.
 		return Ownership{}, &format.PropertyValueError{
 			Format: id, Key: EntryOwner, Value: raw,
-			Reason: "it takes one of: " + OwnerRoot + ", " + OwnerUnset + ", " + OwnerUser,
+			// From the declaration, for the reason the same branch in
+			// compression.go gives: a hand written list is a copy of the
+			// registry's sentence with nothing comparing the two - O171.
+			// A word added to the declaration and not to this switch lands
+			// here, and the guard that puts every declared word through this
+			// function is what stops that arriving as an empty reason.
+			Reason: axes[EntryOwner].Allows(raw),
 			Remedy: "Write it the way the setting is declared, so root or user, " +
 				"or leave the line out and the entries carry no owner.",
 		}
