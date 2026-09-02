@@ -1,0 +1,50 @@
+# Are the tools CI pins still the current ones?
+#
+# Dependabot cannot answer this. It reads go.mod for Go modules and `uses:` for
+# actions, and staticcheck, govulncheck and golangci-lint are none of those -
+# they are shell commands inside a workflow step. Measured 2026-09-02: thirty
+# pull requests from that bot, not one about any of them.
+#
+# The cost of nobody watching was paid on 2026-09-01. staticcheck was pinned to
+# a version that could not read Go 1.27 at all, and govulncheck to one that
+# panicked on it. Both surfaced in the middle of a migration, as failures, and
+# neither was a warning anybody had ignored - there was never going to be one.
+#
+# This reports rather than proposes, and that is a limit rather than a choice.
+# A workflow token cannot push changes under .github/workflows, so no bot can
+# open a pull request against the line these versions live on. Moving them
+# where a bot could reach was measured too: as go.mod tool directives the graph
+# went from 69 modules to 439, against immutable rule 11 and against two gates
+# that pin that graph deliberately. So a human is told, weekly, and does it.
+# Written up as O170.
+#
+# Weekly and on request only. Never on push: a new release upstream is not a
+# fault in the commit somebody just wrote, and failing their build for it is
+# how a gate gets ignored.
+name: tool versions
+
+on:
+  schedule:
+    # Monday morning, before the week's work rather than after it.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-tools:
+    name: the pinned tools are the current ones
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: compare each pin with its latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # The pins are read out of the workflow rather than repeated here. A
+        # list copied into a checker stops describing the thing it checks the
+        # moment somebody edits the original, and this repository has been
+        # caught by exactly that more than once.
+        run: python .github/scripts/tool_versions.py

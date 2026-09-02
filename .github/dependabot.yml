@@ -61,3 +61,28 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+
+  # The scanner CI installs, which used to be a version written inside a
+  # workflow step and therefore watched by nothing at all.
+  #
+  # Measured 2026-09-02: thirty pull requests from this bot, not one of them
+  # about staticcheck, govulncheck, golangci-lint or semgrep. Dependabot reads
+  # go.mod for Go modules and `uses:` for actions. It does not read shell
+  # commands, and nobody had missed a warning about it, because there was never
+  # going to be one. The bill came due on 2026-09-01, when staticcheck turned
+  # out to be on a version that could not read Go 1.27 at all and govulncheck
+  # on one that panicked.
+  #
+  # Semgrep could be moved into a file this bot reads. The three Go tools next
+  # door could not, twice over: a token cannot push changes under
+  # .github/workflows, so a bot cannot edit the line they live on, and putting
+  # them in go.mod as tool directives was measured at 69 modules becoming 439 -
+  # against immutable rule 11, which asks for a licence check on every one, and
+  # against two gates that pin this graph on purpose. They are watched by a
+  # scheduled job instead, which reports rather than proposes. O170.
+  - package-ecosystem: pip
+    directory: "/.github"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7

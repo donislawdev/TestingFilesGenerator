@@ -397,7 +397,7 @@ jobs:
         # this refuses. A key that does not exist, or a value outside what the
         # schema allows, is otherwise ignored in silence - and a linter reading
         # a setting nobody applied is a gate that reports what it feels like.
-        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1 config verify
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 config verify
 
       - name: golangci-lint
         # Run rather than imported, so it never enters go.mod and the
@@ -411,7 +411,7 @@ jobs:
         # .golangci.yml. Measured before switching this on: zero findings from
         # ineffassign and one from misspell, which turned out to be a comment
         # written in the wrong language rather than a typo.
-        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.1 run ./...
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 run ./...
 
   semgrep:
     name: semgrep
@@ -429,12 +429,15 @@ jobs:
         # unpinned analyser turns somebody else's release into a red build on a
         # commit that changed nothing.
         #
-        # Licence read from the pinned version rather than recalled, on
-        # 2026-08-27: LGPL-2.1-or-later, stated by the wheel metadata as a
-        # License-Expression and carried in full beside it. It analyses the tree
-        # and is never linked into either binary, so it is the same kind of
-        # dependency as the two above.
-        run: pip install semgrep==1.175.0
+        # The version lives in .github/requirements-semgrep.txt rather than on
+        # this line, and the reason is in that file: a version written into a
+        # workflow step is watched by nothing, which is how staticcheck came to
+        # be two releases behind a compiler it could not read. A requirements
+        # file is an ecosystem Dependabot reads, so this one now arrives as a
+        # pull request when it moves.
+        #
+        # The licence note and the reason for pinning moved there with it.
+        run: pip install -r .github/requirements-semgrep.txt
 
       - name: scan
         # No account and no token. p/default is fetched anonymously from the
@@ -526,7 +529,7 @@ jobs:
         # Pinned by commit like every other action here. The scan is evidence,
         # not the document: its job is to ask whether the built binaries contain
         # something the registry does not know about.
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0.24.0
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26  # v0.24.0
         with:
           path: dist
           format: syft-json

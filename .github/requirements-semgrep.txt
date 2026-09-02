@@ -1,0 +1,25 @@
+# The scanner CI runs, pinned, in a file a bot can edit.
+#
+# It lived as `pip install semgrep==X` inside a workflow step until 2026-09-02,
+# and that is a place nothing watches. Dependabot reads go.mod for Go modules
+# and `uses:` for actions, and it does not read shell commands - measured on
+# this repository, thirty pull requests, none of them about a pinned tool. The
+# cost of that was paid on 2026-09-01: staticcheck sat on a version that could
+# not read Go 1.27 at all, and nobody had missed a warning, because there was
+# never going to be one.
+#
+# A requirements file is an ecosystem Dependabot does read, so a new semgrep
+# release now arrives as a pull request against THIS file. It can, because this
+# file is not a workflow: a token cannot push changes under .github/workflows,
+# which is why the three Go tools next door still cannot be handled this way.
+# Written up as O170.
+#
+# Pinned rather than floating for the reason the workflow gives: an unpinned
+# analyser turns somebody else's release into a red build on a commit that
+# changed nothing.
+#
+# Licence read from the pinned version rather than recalled, on 2026-08-27:
+# LGPL-2.1-or-later, stated by the wheel metadata as a License-Expression and
+# carried in full beside it. It analyses the tree and is never linked into
+# either binary.
+semgrep==1.176.0

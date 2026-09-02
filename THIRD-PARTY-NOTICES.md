@@ -264,7 +264,7 @@ rymdport project.
 | `github.com/srwiley/oksvg` | v0.0.0-20221011165216-be6e8873101c | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
-| `golang.org/x/image` | v0.43.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/image` | v0.45.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/net` | v0.57.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/sys` | v0.47.0 | BSD-3-Clause | 2009 The Go Authors. |
 
