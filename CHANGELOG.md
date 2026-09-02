@@ -349,6 +349,22 @@ because it turns other people's test suites red.
   `height` can be set, and naming one lets the other be worked out from the
   size. The smallest TIFF this produces is 183 B.
 
+### Fixed
+
+- **Ctrl+C now stops `generate`, `validate` and `preset show` while they are
+  still planning.** Until this release they finished planning first and noticed
+  the key only afterwards, so a large batch could look frozen: ten thousand
+  pictures is about a minute and a half of planning before the first byte is
+  written, and all of it ignored the key. Under a CI timeout the grace period
+  ran out and the job was killed rather than shutting down.
+
+  Writing was never affected. A run interrupted while producing files already
+  stopped promptly, saved its manifest and left no partial files behind.
+
+- **A `validate --json` that is stopped no longer says the recipe is invalid.**
+  It never finished reading the recipe, so it has no verdict to report. The
+  exit code says what happened instead.
+
 ## [0.2.0] - 2026-08-28
 
 ### Breaking

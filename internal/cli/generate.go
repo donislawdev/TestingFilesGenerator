@@ -372,7 +372,13 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 
 // produce plans the run, writes it and reports what happened.
 func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g *generateOpts, out, errOut io.Writer) int {
-	planned, err := engine.Plan(targets, opt)
+	// PlanContext rather than Plan, because planning is where the time goes for
+	// anything that encodes a picture and it is work somebody may want to stop.
+	// Measured 2026-09-02: about 8.5 ms a png, so ten thousand of them is about
+	// a minute and a half before a byte is written. preflight would notice the
+	// signal on the way to writing, which is late enough that Ctrl+C looks
+	// ignored and SIGTERM in CI runs out its grace period.
+	planned, err := engine.PlanContext(ctx, targets, opt)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
