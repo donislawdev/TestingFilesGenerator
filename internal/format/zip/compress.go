@@ -30,7 +30,7 @@ import (
 // the two differ by a number the writer can measure and the plan does not have
 // to predict.
 func padCompressed(m *memo, p *format.Plan, r format.Request, groups []format.Content) error {
-	m.withFiller = true
+	m.withFiller, m.target = true, r.Bytes
 	withFiller, err := archiveSize(*m)
 	if err != nil {
 		return err

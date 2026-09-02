@@ -119,6 +119,11 @@ type memo struct {
 	// works out the padding for the STORED archive, and the writer adds back
 	// exactly what the compressor freed - see build.
 	squeeze archive.Squeeze
+	// target is the size that was ordered, carried so the writer can say what
+	// the smallest archive would have been when it turns out this one cannot be
+	// made. Only the compressed path needs it: a stored archive settles its
+	// padding while planning, so a size it cannot reach is refused there.
+	target int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -332,7 +337,14 @@ func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label st
 			Reason:    fmt.Sprintf("an archive holding %s already needs that much", describeGroups(groups)),
 			Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", bare),
 		}
-	case target == bare:
+	// Exactly the bare size, and nothing to add - but only when the entries
+	// are stored. A squeezed archive comes out SHORTER than its stored
+	// arithmetic says, and the filler entry is the only thing that can give
+	// those bytes back. Returning here leaves withFiller false, so the
+	// writer has nowhere to put them and the archive ends up short: measured
+	// 2026-09-02 at 8382 B, where every level but none produced about 2.6 kB
+	// and --dry-run had already said the size was fine.
+	case target == bare && !m.squeeze.On():
 		return nil // Nothing to pad.
 	}
 

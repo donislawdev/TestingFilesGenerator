@@ -361,6 +361,25 @@ because it turns other people's test suites red.
   Writing was never affected. A run interrupted while producing files already
   stopped promptly, saved its manifest and left no partial files behind.
 
+- **A compressed `zip` is now either produced at the size you asked for or
+  refused, never quietly written at the wrong length.** Two sizes did the
+  second thing, and both passed `--dry-run` first.
+
+  Asking for a compressed zip at exactly the smallest size the tool reports
+  produced no file at all. That size is now refused, and the smallest
+  compressed zip is a little larger than the smallest stored one - the padding
+  entry a compressed archive needs costs a few bytes of its own. `tfg formats`
+  is unchanged, because it reports the stored floor and compression is off by
+  default.
+
+  Asking for a zip whose contents are already compressed - other zips, Office
+  documents, pictures - could also land in a narrow band of sizes that could
+  not be produced. Deflate makes such data slightly larger rather than smaller,
+  and the padding could not shrink far enough to make up for it. Those sizes
+  are now refused with the smallest size that does work.
+
+  Sizes that worked before are unaffected, byte for byte.
+
 - **A `validate --json` that is stopped no longer says the recipe is invalid.**
   It never finished reading the recipe, so it has no verdict to report. The
   exit code says what happened instead.
