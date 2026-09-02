@@ -298,17 +298,21 @@ jobs:
         # and two written copies of one instruction drift. This is the
         # comparison that stops them: what the page tells a person to type has
         # to be what was just run.
+        #
+        # What has to be said lives in .github/release-note-must-say.txt, and
+        # release.yml checks its generated note against the same file. The list
+        # used to be written out here while the generator wrote the sentences
+        # out separately - two copies of one fact, which is how a check ends up
+        # red on a correct page after somebody edits the wording in one of them.
         run: |
           set -euo pipefail
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > notes.md
-          for promised in "gh attestation verify" "--predicate-type https://spdx.dev/Document/v2.3" "verify-SHA256SUMS.txt"; do
-            grep -qF -- "$promised" notes.md || {
-              echo "the release notes never mention: $promised"
-              echo "This job just ran it, so the page and the check disagree about what a person should do."
-              exit 1
-            }
-          done
-          echo "the notes and this job say the same thing"
+          bash .github/scripts/note_says.sh notes.md || {
+            echo "This job just ran those, so the page and the check disagree about"
+            echo "what a person should do. Either the page lost them, or the list in"
+            echo ".github/release-note-must-say.txt no longer describes this release."
+            exit 1
+          }
 
       - name: a full release has to be the one people are offered
         id: latest

@@ -500,6 +500,14 @@ jobs:
           } > notes.md
           cat notes.md
 
+          # The note this just wrote has to say what a release note has to say,
+          # checked against the same file verify-release.yml reads after the
+          # release is published. A generator that quietly stops emitting one of
+          # those sentences would produce a draft that looks finished and a gate
+          # that goes red hours later, on the published page, where fixing it is
+          # a public edit rather than a build failure.
+          bash .github/scripts/note_says.sh notes.md
+
       - name: open the draft, with nothing in it yet
         env:
           GH_TOKEN: ${{ github.token }}
