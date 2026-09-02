@@ -29,7 +29,7 @@
 // this compiler - the mutation runner was pointed at exactly that and it
 // cannot go red. What the measurement buys is the NEXT release, and no test
 // that runs today can demonstrate that. The mutations here cover the
-// arithmetic being wrong; they cannot cover it being right for the wrong
+// arithmetic being wrong. They cannot cover it being right for the wrong
 // reason. That is why this comment is long: it is the only thing standing
 // between a later reader and a tidy simplification back to the bug.
 package targz
@@ -39,7 +39,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"sync"
 )
 
 // framing is what a level zero gzip stream costs beyond its content.
@@ -50,12 +49,20 @@ type framing struct {
 	perBlock int64
 }
 
-// gzipFraming measures the framing once and hands back the same answer after.
+// The framing, measured once before anything can ask for it.
 //
-// Lazy rather than at init because the answer is only needed when a size is
-// being worked out, and a package that measures something on every program
-// start makes every command pay for the one that needs it.
-var measuredFraming = sync.OnceValues(measureFraming)
+// A package level variable rather than a sync.Once, and the guard against
+// stray concurrency is what pointed that out. The first version reached for
+// sync.OnceValues to keep the measurement lazy, and lazy bought nothing here:
+// the registry works out this format's minimum during init, which asks for the
+// framing anyway, so every program was paying for it before main started
+// whichever way it was written. Go initialises a package variable exactly once
+// and before any goroutine exists, so there is nothing here for a lock to
+// protect.
+var framingValue, framingErr = measureFraming()
+
+// measuredFraming hands back what was measured, in the shape the callers want.
+func measuredFraming() (framing, error) { return framingValue, framingErr }
 
 // measureFraming works the two constants out from three compressions, and then
 // checks the model against a fourth.
