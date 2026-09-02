@@ -178,6 +178,8 @@ jobs:
           ls -l
 
       - name: everything a release is made of is there
+        id: assets
+        continue-on-error: true
         shell: bash
         working-directory: published
         # A release missing one file looks almost exactly like a finished one,
@@ -197,6 +199,8 @@ jobs:
           echo "every expected asset is published"
 
       - name: the checksum a user is told to compare
+        id: checksums
+        continue-on-error: true
         shell: bash
         working-directory: published
         run: |
@@ -204,6 +208,8 @@ jobs:
           sha256sum -c verify-SHA256SUMS.txt
 
       - name: the two commands the notes tell people to run
+        id: commands_api
+        continue-on-error: true
         shell: bash
         working-directory: published
         env:
@@ -225,6 +231,8 @@ jobs:
             --predicate-type https://spdx.dev/Document/v2.3
 
       - name: the same two commands with no network to the API
+        id: commands_offline
+        continue-on-error: true
         shell: bash
         working-directory: published
         # The notes promise these work offline with --bundle, and a person
@@ -240,6 +248,8 @@ jobs:
             --predicate-type https://spdx.dev/Document/v2.3
 
       - name: every Windows program is signed, stamped, and by OUR certificate
+        id: signatures
+        continue-on-error: true
         shell: pwsh
         working-directory: published
         # This is the step the whole job runs on Windows for. All three, not the
@@ -278,6 +288,8 @@ jobs:
           "all three signed by the pinned certificate, each with a timestamp"
 
       - name: the page promises what was just checked
+        id: notes
+        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -299,6 +311,8 @@ jobs:
           echo "the notes and this job say the same thing"
 
       - name: a full release has to be the one people are offered
+        id: latest
+        continue-on-error: true
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -317,3 +331,56 @@ jobs:
           latest="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"
           echo "latest is $latest, this release is $TAG"
           test "$latest" = "$TAG"
+
+      - name: one verdict, not the first failure
+        if: always()
+        shell: bash
+        # Every check above carries continue-on-error, so this step is reached
+        # whatever happened, and this step is the one that decides. A person
+        # reads a release page once and wants the whole list of what is wrong
+        # with it, not the first line - the same rule a recipe follows when it
+        # refuses (RC7).
+        #
+        # Measured on the v0.2.0 publish, 2026-08-28: the offline command step
+        # went red and the three checks after it never ran at all. One of those
+        # three would have gone red too, because the published notes carry none
+        # of the three sentences the notes check looks for. So the run reported
+        # one problem where there were at least two, and nothing on the page
+        # said the rest had not been asked.
+        #
+        # outcome and not conclusion. continue-on-error rewrites conclusion to
+        # success and leaves outcome alone, so reading conclusion here would
+        # report every check as passing however they went.
+        env:
+          ASSETS: ${{ steps.assets.outcome }}
+          CHECKSUMS: ${{ steps.checksums.outcome }}
+          COMMANDS_API: ${{ steps.commands_api.outcome }}
+          COMMANDS_OFFLINE: ${{ steps.commands_offline.outcome }}
+          SIGNATURES: ${{ steps.signatures.outcome }}
+          NOTES: ${{ steps.notes.outcome }}
+          LATEST: ${{ steps.latest.outcome }}
+        run: |
+          set -euo pipefail
+          failed=0
+          report() {
+            printf '  %-52s %s\n' "$2" "$1"
+            if [ "$1" != "success" ]; then
+              failed=1
+            fi
+          }
+          echo "what this release page answers for:"
+          report "$ASSETS" "everything a release is made of is there"
+          report "$CHECKSUMS" "the checksum a user is told to compare"
+          report "$COMMANDS_API" "the commands the notes tell people to run"
+          report "$COMMANDS_OFFLINE" "the same commands with no network"
+          report "$SIGNATURES" "every Windows program by our certificate"
+          report "$NOTES" "the page promises what was just checked"
+          report "$LATEST" "a full release is the one people are offered"
+          echo
+          if [ "$failed" != "0" ]; then
+            echo "This release page does not answer for itself."
+            echo "Every line above that is not success is a separate thing to fix,"
+            echo "and they are all listed rather than found one release at a time."
+            exit 1
+          fi
+          echo "the release page answers for itself"
