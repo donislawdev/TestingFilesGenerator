@@ -1,0 +1,20 @@
+# What a release note has to say, in one place.
+#
+# A person landing on a release page has to be told how to check what they
+# downloaded. These are the substrings that have to appear in the note, and
+# they are here rather than written into a workflow because they were written
+# into two things at once: the workflow that generates the note and the
+# workflow that checks the published page. Two copies of one fact agree until
+# the day one of them is edited, and this project has measured that day twice.
+#
+# The predicate URI is the sharpest example. Change it in the generator alone
+# and the check goes red on a correct page. Change it in the check alone and a
+# page telling people the wrong command passes.
+#
+# One substring per line. Blank lines and lines starting with # are ignored.
+# Matched literally, not as a pattern, because a URI is full of characters a
+# pattern would read as syntax.
+
+gh attestation verify
+--predicate-type https://spdx.dev/Document/v2.3
+verify-SHA256SUMS.txt
