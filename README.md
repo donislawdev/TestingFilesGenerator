@@ -377,8 +377,11 @@ tfg generate fixtures.yaml
 | `seed` | the number that makes a run repeatable. Same seed, same bytes |
 | `defaults.label` | write the self describing label inside each file. Default `true` |
 | `targets` | the list of things to produce. See below |
-| `output.dir` | where the files and the manifest go |
+| `output.dir` | where the files and the manifest go. A relative path is read from the directory you run in, not from the one the recipe sits in |
 | `output.manifest` | manifest file name. Default `manifest.json` |
+
+So a recipe kept in `recipes/` with `dir: out` writes into `out` next to you, not
+next to the recipe. Give an absolute path, or `--out`, when you want it fixed.
 
 ### Target keys
 
@@ -589,6 +592,21 @@ to standard output, and a failed run prints nothing there:
 An invalid recipe writes **no files at all** and reports every problem at once,
 each naming the setting it is about. A run stopped with Ctrl+C still leaves a
 manifest, and never leaves a half written file behind.
+
+### A PowerShell script needs one more line
+
+PowerShell does not carry the exit code of a program out of a `.ps1` file. Run
+one with `-File` and the script answers `0` even when the tool inside refused
+the work, so a build that should be red goes green:
+
+```powershell
+tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE
+```
+
+That last line is the whole of it. This is how PowerShell behaves rather than
+anything about this tool, which returns the code from the table above either
+way. `cmd`, `bash` and `zsh` need nothing extra.
 
 ## ❓ Questions
 
