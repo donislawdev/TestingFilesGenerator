@@ -72,13 +72,15 @@ const (
 	// storeBlock is the largest run of bytes gzip emits as one stored block at
 	// compression level zero. It decides the framing overhead, so it decides
 	// the arithmetic in size.go.
+	//
+	// This one stays written down because it is a fact about DEFLATE - a
+	// stored block carries a sixteen bit length - rather than about a release
+	// of Go. What each block COSTS, and what the header, trailer and closing
+	// block cost, moved to framing.go and are measured, because those did turn
+	// out to be facts about a release. framing.go checks this number too: if a
+	// build ever framed at a different block size, the model would stop
+	// predicting a third block and the format refuses rather than guessing.
 	storeBlock = 65535
-
-	// gzipFraming is the fixed ten byte header plus the eight byte trailer.
-	gzipFraming = 18
-
-	// storeBlockCost is what each stored block costs on top of its content.
-	storeBlockCost = 5
 
 	writeChunk = 32 * 1024
 )
@@ -188,6 +190,13 @@ type memo struct {
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
+	// Before anything else, because every size below is worked out from this
+	// and a framing this tool does not understand has to be a refusal rather
+	// than an archive of the wrong length. See framing.go.
+	if _, err := measuredFraming(); err != nil {
+		return format.Plan{}, err
+	}
+
 	groups, err := archive.Groups("targz", r)
 	if err != nil {
 		return format.Plan{}, err

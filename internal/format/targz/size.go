@@ -79,12 +79,19 @@ func tarLength(m memo) int64 {
 }
 
 // gzipFixed is the whole file except the comment.
+//
+// The framing comes from framing.go, which asks the gzip that is linked rather
+// than reading a number written here. If that measurement refused, this uses a
+// zero framing and the sizes are nonsense - which is safe only because Plan
+// returns the refusal before anything is written or announced. Nothing acts on
+// a size worked out from a framing this tool did not understand.
 func gzipFixed(tarLen int64) int64 {
+	f, _ := measuredFraming()
 	blocks := tarLen / storeBlock
 	if tarLen%storeBlock != 0 {
 		blocks++
 	}
-	return gzipFraming + storeBlockCost*(blocks+1) + tarLen
+	return f.base + f.perBlock*blocks + tarLen
 }
 
 // commentCost is what a comment adds to the file: its bytes plus the zero that
