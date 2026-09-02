@@ -361,6 +361,16 @@ because it turns other people's test suites red.
   Writing was never affected. A run interrupted while producing files already
   stopped promptly, saved its manifest and left no partial files behind.
 
+- **A recipe can no longer use up all the memory on the machine.** A document
+  of 40 kB that nested brackets twenty thousand deep took most of a gigabyte
+  before it was refused, and the size limit did not help - forty kilobytes is a
+  small fraction of what a recipe is allowed to be.
+
+  Recipes now refuse to nest brackets and braces more than thirty two deep.
+  Nothing anybody writes comes close: a list such as `[1B, 1kb, 1mb]` is one
+  deep, and so is a target written out with braces. Brackets inside a quoted
+  value are text and are not counted.
+
 - **A compressed `zip` is now either produced at the size you asked for or
   refused, never quietly written at the wrong length.** Two sizes did the
   second thing, and both passed `--dry-run` first.

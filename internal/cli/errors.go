@@ -146,6 +146,13 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &recipeTooLarge) {
 		return ExitRecipe, true
 	}
+	// Same class, one more shape: a recipe whose brackets nest far enough to
+	// exhaust this machine. A fact about the document rather than a fault of
+	// ours, so it ends the way a recipe that will not parse does.
+	var recipeTooDeep *recipe.TooDeepError
+	if errors.As(err, &recipeTooDeep) {
+		return ExitRecipe, true
+	}
 	// Two parts of one recipe saying different things about the same archive
 	// is a recipe problem, like a boundary stated beside a size.
 	var conflict *format.ContentsConflictError

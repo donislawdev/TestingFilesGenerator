@@ -121,14 +121,16 @@ type Output struct {
 // and the cost sits inside the YAML parser where nothing we do afterwards can
 // reduce it. The only lever before parsing is the size of the input.
 //
-// Measured on 2026-08-02: a deliberately nested document of 80 kB cost about
-// 1.3 s of parsing over the baseline, and the growth is faster than linear. A
-// megabyte caps the worst case at seconds rather than minutes, and is far above
-// any recipe a person writes - ten thousand targets spelled out in full come to
-// roughly half of it.
+// A megabyte is far above any recipe a person writes - twenty thousand targets
+// spelled out in full come to 949 kB, and read in 1.02 s.
 //
-// What this does not do: it does not defend against a recipe that fits and is
-// still expensive. Seconds on a hostile file are acceptable, minutes were not.
+// What this does NOT do, and the sentence here used to claim otherwise: it does
+// not bound the work. It said "a megabyte caps the worst case at seconds rather
+// than minutes", measured on 2026-08-02. Measured again on 2026-09-02, a
+// document of 40 kB - a twenty fifth of this limit - took 918 MB of heap by
+// nesting flow collections twenty thousand deep, and would have taken whatever
+// the machine had. The size of the input says nothing about the shape of it.
+// What bounds the shape is in limits.go.
 const MaxBytes = 1 << 20
 
 // TooLargeError is returned for a recipe past MaxBytes.
@@ -180,6 +182,14 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// a first key nobody typed. Dropped here rather than in one of the two
 	// readers below, so both see the same bytes.
 	src = withoutBOM(src)
+
+	// Asked before the parser sees any of it, because the parser is where the
+	// cost is and no amount of it can be given back afterwards. See limits.go
+	// for the two shapes this and the budget below answer, and why one number
+	// cannot answer both.
+	if depth := flowDepth(src); depth > MaxFlowDepth {
+		return nil, &TooDeepError{Name: name, Depth: depth}
+	}
 
 	// One file is one recipe. Everything after a document separator would be
 	// dropped by the decoder, which means somebody gets half the fixtures they
