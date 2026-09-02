@@ -385,14 +385,28 @@ func (p Property) Allows(raw string) (bad string) {
 			}
 		}
 	case PropertyChoice:
+		// Spelled the way it is declared, not merely close to it. This used to
+		// fold with EqualFold, and the folding was invisible here and decisive
+		// three layers down: a value the declaration does not contain reached
+		// the generator, and each generator did something different with it.
+		// Measured 2026-09-02 across the eight formats with a closed set, four
+		// answers - a refusal in the generator's own words, a fold that
+		// understood it, a swallow that made the DEFAULT file and reported
+		// success, and a misread that demanded a password to lock an archive
+		// with "NONE". O168. One place to say no is the whole point of
+		// declaring the set here.
 		for _, c := range p.Choices {
-			if strings.EqualFold(raw, c) {
+			if raw == c {
 				return ""
 			}
 		}
 		return "it takes one of: " + strings.Join(p.Choices, ", ")
 	case PropertyBool:
-		switch strings.ToLower(raw) {
+		// Exact for the same reason, and it costs a user nothing: a recipe
+		// writing `header: True` arrives as "true" already, because the reader
+		// puts a YAML boolean through FormatBool. Only a hand quoted "TRUE"
+		// changes, and it changes into a refusal that names the setting.
+		switch raw {
 		case "true", "false":
 		default:
 			return "it takes true or false"

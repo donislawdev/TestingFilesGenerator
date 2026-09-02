@@ -334,6 +334,15 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 			// never has to read a missing key as flat.
 			archive.Depth:            m.layout.Depth,
 			archive.DirectoryEntries: m.layout.DirEntries,
+			// What every entry says about itself. Neither of these reached the
+			// manifest until 2026-09-02, and the gap is what made a swallowed
+			// owner invisible: a run asking for entry_owner=USER produced an
+			// archive owned by nobody and a manifest identical to the one that
+			// asked for user, so there was nothing to disagree with. Written
+			// every time rather than only when stated, like depth and
+			// compression beside them.
+			archive.EntryMode:  m.own.Stated.Mode,
+			archive.EntryOwner: m.own.Stated.Owner,
 			// How hard the stream was squeezed. This key used to be the
 			// constant "none", written when the format could only store - and
 			// the comment beside it said so, which is why it is worth saying

@@ -80,10 +80,14 @@ func defaultDialect() dialect {
 //
 // A value that is not in the declared set has already been refused by the
 // registry, which checks it against the declaration for every format at once.
-// The refusals here catch what that check lets through: it compares without
-// regard for case, so REALISTIC style spellings arrive here rather than being
-// stopped there. Written up as O168 - the branches below are reachable through
-// that door and only through it, so they are not dead code.
+//
+// Until 2026-09-02 that check compared without regard for case, so a REALISTIC
+// style spelling walked past it and was refused here instead, in different
+// words - O168. The registry compares exactly now, so nothing arriving through
+// a recipe or a flag can reach these branches. They stay because this function
+// is callable directly and a guard calling it is such a caller, and because a
+// generator that trusts its input is one registry change away from writing a
+// file nobody ordered.
 func parseDialect(props map[string]string) (dialect, error) {
 	d := defaultDialect()
 
