@@ -10,9 +10,19 @@ import (
 // The command line is English only, error messages included. Only the window
 // gets translations.
 //
-// This catches accented characters. It does not catch another language
-// written in plain ASCII, and no automated check ever will - that part stays
-// with reading. See docs/QUALITY.md section 8.
+// This catches accented characters. It does not catch another language written
+// in plain ASCII - see language_test.go, which does, for the part of it this
+// project actually writes.
+//
+// Until 2026-09-02 the sentence here read "and no automated check ever will".
+// That was a written impossibility with nothing holding it, and it was wrong in
+// the way this project has recorded twice before: the limit was in the
+// mechanism rather than in the problem. Asking whether a character is above 127
+// cannot see a language. Asking whether a WORD is one only Polish uses can, and
+// a comment in Polish had already shipped once while this sentence stood.
+//
+// It is still true that no check catches every language, and the reading it
+// leaves to a person is smaller rather than gone. See docs/QUALITY.md section 8.
 //
 // Test files are exempt on purpose. Other languages are legitimate there as
 // test data.
