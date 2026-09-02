@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -148,7 +149,7 @@ func TestCIRunsSemgrepAndDecidesFromTheReportRatherThanTheExitCode(t *testing.T)
 	text := withoutYamlComments(string(body))
 
 	for _, want := range []struct{ needle, why string }{
-		{"semgrep==", "an unpinned analyser turns somebody else's release into a red build"},
+		{"requirements-semgrep.txt", "the version has to come from somewhere, and that file is where it is"},
 		{"--config p/default", "the rules come from the registry rather than from this repository"},
 		{"--metrics=off", "this repository sends no telemetry about its own source"},
 		{".github/scripts/semgrep_gate.py", "the report is what decides, not the scanner's exit code"},
@@ -156,5 +157,25 @@ func TestCIRunsSemgrepAndDecidesFromTheReportRatherThanTheExitCode(t *testing.T)
 		if !strings.Contains(text, want.needle) {
 			t.Errorf("the semgrep job never mentions %q, and %s", want.needle, want.why)
 		}
+	}
+
+	// And the file that name points at really pins a version.
+	//
+	// This used to be one check: the job itself had to carry "semgrep==". The
+	// pin moved out on 2026-09-02 so that Dependabot could see it - a version
+	// written into a workflow step is watched by nothing, which is how
+	// staticcheck came to sit two releases behind a compiler it could not read.
+	//
+	// Splitting it in two rather than dropping it, because the thing being
+	// guarded never changed: an unpinned analyser turns somebody else's release
+	// into a red build on a commit that changed nothing. Asking only for the
+	// file name would let an empty file pass.
+	req, err := os.ReadFile(filepath.Join(repoRoot(t), ".github", "requirements-semgrep.txt"))
+	if err != nil {
+		t.Fatalf("the semgrep job installs from a requirements file that is not here: %v", err)
+	}
+	if !regexp.MustCompile(`(?m)^semgrep==\d`).Match(req) {
+		t.Errorf("requirements-semgrep.txt does not pin semgrep to an exact version, and %s\n  %s",
+			"an unpinned analyser turns somebody else's release into a red build", req)
 	}
 }

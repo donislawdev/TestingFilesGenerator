@@ -7,8 +7,11 @@
 // there why it compresses nothing.
 //
 // Written by hand rather than taken from a library, and the reason is
-// measured rather than assumed: x/image/webp at v0.43.0 holds decode.go and
-// doc.go and nothing else, so the ecosystem offers no encoder to take. Pure Go
+// measured rather than assumed: x/image/webp holds decode.go and doc.go and
+// nothing else, so the ecosystem offers no encoder to take. Checked at v0.43.0
+// and again at v0.45.0 on 2026-09-02, when the module was raised - a claim
+// about what somebody else ships has to be re-read when their version moves,
+// not carried across with the number changed. Pure Go
 // encoders exist outside it, and taking one would have put somebody else's
 // release inside the byte stability contract D11 - their next version would
 // move the hashes in our users' test suites. See docs/STACK.md section 4.2.
