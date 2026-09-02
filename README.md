@@ -590,6 +590,21 @@ An invalid recipe writes **no files at all** and reports every problem at once,
 each naming the setting it is about. A run stopped with Ctrl+C still leaves a
 manifest, and never leaves a half written file behind.
 
+### A PowerShell script needs one more line
+
+PowerShell does not carry the exit code of a program out of a `.ps1` file. Run
+one with `-File` and the script answers `0` even when the tool inside refused
+the work, so a build that should be red goes green:
+
+```powershell
+tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE
+```
+
+That last line is the whole of it. This is how PowerShell behaves rather than
+anything about this tool, which returns the code from the table above either
+way. `cmd`, `bash` and `zsh` need nothing extra.
+
 ## ❓ Questions
 
 ### How is this different from `dd`, `fsutil` or `truncate`?
