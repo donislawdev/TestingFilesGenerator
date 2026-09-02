@@ -102,7 +102,28 @@ because it turns other people's test suites red.
   That takes the plain encoder and writes the same bytes this tool wrote before,
   to the byte - there is a pinned hash proving it.
 
+- **A setting value is spelled the way the format declares it.** `--set
+  page_size=A4` and `--set directory_entries=TRUE` used to be accepted and now
+  refuse with exit 4, naming the setting and the value. Write `a4` and `true`.
+
+  Nothing else changes: the bytes of every file are what they were, and a
+  recipe writing `header: true` is unaffected, because a YAML boolean arrives
+  as `true` either way. Only a value quoted into another case is refused.
+
+  It is a breaking change for a fourth of a reason and a fix for the rest. A
+  value the declaration did not contain used to pass the check and land on the
+  format, which then did one of four things with it: refuse in its own words,
+  understand it anyway, **quietly ignore it and produce the default file**, or
+  read it as something else entirely. `--set entry_owner=USER` on a `targz`
+  wrote an archive owned by nobody and reported success. Now nothing gets that
+  far.
+
 ### Added
+
+- **A `targz` manifest says what its entries claim about themselves.** Two new
+  keys on the file entry, `entry_mode` and `entry_owner`, written every run
+  rather than only when you ask for them, so a harness never has to read a
+  missing key as "nobody owns this". The manifest schema version is unchanged.
 
 - **A CSV can be written in the dialect you were handed.** `--set
   delimiter=semicolon`, `--set line_ending=crlf` and `--set header=false` on a

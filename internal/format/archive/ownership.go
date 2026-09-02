@@ -34,6 +34,23 @@ type Ownership struct {
 	// All four are left at nought and empty for the unset owner.
 	Uid, Gid     int
 	Uname, Gname string
+	// Stated is what the settings said, in the words they were written in, for
+	// the manifest to record.
+	//
+	// Carried rather than worked out again at the far end. A mode of 000 turns
+	// back into "0" rather than "000" through the obvious arithmetic, and an
+	// owner would have to be recovered from Uname, which is empty for two
+	// different reasons. A fact the writer already has is cheaper to pass along
+	// than to reconstruct - ARCHITECTURE.md 5.
+	Stated Stated
+}
+
+// Stated is the pair of settings as a person wrote them.
+type Stated struct {
+	// Mode is the three octal digits, so 644 stays 644.
+	Mode string
+	// Owner is the declared word: root, user or unset.
+	Owner string
 }
 
 // ReadOwnership reads the two settings that say what an entry records about
@@ -45,7 +62,7 @@ type Ownership struct {
 // a setting where the number a person types is not the number the file gets is
 // the kind of difference nobody predicts.
 func ReadOwnership(id string, props map[string]string) (Ownership, error) {
-	own := Ownership{Mode: 0o644}
+	own := Ownership{Mode: 0o644, Stated: Stated{Mode: "644", Owner: OwnerUnset}}
 
 	if raw := props[EntryMode]; raw != "" {
 		mode, err := strconv.ParseInt(raw, 8, 32)
@@ -61,16 +78,37 @@ func ReadOwnership(id string, props map[string]string) (Ownership, error) {
 			}
 		}
 		own.Mode = mode
+		own.Stated.Mode = raw
 	}
 
-	switch props[EntryOwner] {
+	switch raw := props[EntryOwner]; raw {
 	case OwnerRoot:
+		own.Stated.Owner = OwnerRoot
 		own.Uname, own.Gname = "root", "root"
 	case OwnerUser:
 		// The first ordinary account on a Linux system, which is what somebody
 		// unpacking a fixture on their own machine most likely is.
+		own.Stated.Owner = OwnerUser
 		own.Uid, own.Gid = 1000, 1000
 		own.Uname, own.Gname = "user", "user"
+	case "", OwnerUnset:
+		// Nothing to record, which is what this format wrote before the setting
+		// existed. An absent key and the declared word for absent mean the same
+		// archive.
+	default:
+		// There was no default branch here, and the value fell through to an
+		// archive owned by nobody - the same bytes as unset, reported as
+		// success. Measured 2026-09-02: entry_owner=USER and entry_owner=ROOT
+		// each produced a file byte for byte identical to the default one, with
+		// exit 0 and not a word about it, which is rule 6 broken outright. The
+		// registry now stops a misspelling before it arrives, so this branch is
+		// for the other door: this function is callable directly.
+		return Ownership{}, &format.PropertyValueError{
+			Format: id, Key: EntryOwner, Value: raw,
+			Reason: "it takes one of: " + OwnerRoot + ", " + OwnerUnset + ", " + OwnerUser,
+			Remedy: "Write it the way the setting is declared, so root or user, " +
+				"or leave the line out and the entries carry no owner.",
+		}
 	}
 	return own, nil
 }
