@@ -349,6 +349,83 @@ because it turns other people's test suites red.
   `height` can be set, and naming one lets the other be worked out from the
   size. The smallest TIFF this produces is 183 B.
 
+### Fixed
+
+- **A run of a few files is now weighed against the memory ceiling too.** The
+  ceiling that stops a run from planning more than it can hold only started
+  counting once a run asked for sixty four files, so a smaller run had no
+  ceiling at all - and it counted files across the whole run, so a recipe of
+  sixty four one file targets began counting after sixty three of them were
+  already planned.
+
+  That was reachable with ordinary settings rather than with a contrived one. A
+  zip of ten thousand entries costs about 75 MB to plan, so twenty nine of them
+  come to 2.17 GB, past the ceiling and without a single check. Such a run is
+  now refused before anything is written, and the refusal says how far it had
+  got and what the ceiling is.
+
+  Runs this tool was designed around are orders of magnitude under the ceiling
+  and are unaffected. Nothing about the files that are produced changes.
+
+- **A crash inside a generator now costs one file instead of the whole run.**
+  Until this release a defect in one of them ended the process, and it left the
+  file it was writing on the disk under its temporary name - a name `cleanup`
+  will not remove, because `cleanup` only removes what the manifest lists, and a
+  file that never finished never reached one. `verify` then reported it for
+  good.
+
+  Such a crash is now an ordinary failure of one file: the rest of the run
+  carries on, the manifest says which file it was and what happened, the
+  temporary file is removed, and the run ends with the partial exit code. A
+  crash while planning ends the run instead, with the exit code that means this
+  tool has a defect rather than the recipe does.
+
+  This is a safety net, not a licence. A crash is still a defect worth
+  reporting, and the message says so.
+
+- **Ctrl+C now stops `generate`, `validate` and `preset show` while they are
+  still planning.** Until this release they finished planning first and noticed
+  the key only afterwards, so a large batch could look frozen: ten thousand
+  pictures is about a minute and a half of planning before the first byte is
+  written, and all of it ignored the key. Under a CI timeout the grace period
+  ran out and the job was killed rather than shutting down.
+
+  Writing was never affected. A run interrupted while producing files already
+  stopped promptly, saved its manifest and left no partial files behind.
+
+- **A recipe can no longer use up all the memory on the machine.** A document
+  of 40 kB that nested brackets twenty thousand deep took most of a gigabyte
+  before it was refused, and the size limit did not help - forty kilobytes is a
+  small fraction of what a recipe is allowed to be.
+
+  Recipes now refuse to nest brackets and braces more than thirty two deep.
+  Nothing anybody writes comes close: a list such as `[1B, 1kb, 1mb]` is one
+  deep, and so is a target written out with braces. Brackets inside a quoted
+  value are text and are not counted.
+
+- **A compressed `zip` is now either produced at the size you asked for or
+  refused, never quietly written at the wrong length.** Two sizes did the
+  second thing, and both passed `--dry-run` first.
+
+  Asking for a compressed zip at exactly the smallest size the tool reports
+  produced no file at all. That size is now refused, and the smallest
+  compressed zip is a little larger than the smallest stored one - the padding
+  entry a compressed archive needs costs a few bytes of its own. `tfg formats`
+  is unchanged, because it reports the stored floor and compression is off by
+  default.
+
+  Asking for a zip whose contents are already compressed - other zips, Office
+  documents, pictures - could also land in a narrow band of sizes that could
+  not be produced. Deflate makes such data slightly larger rather than smaller,
+  and the padding could not shrink far enough to make up for it. Those sizes
+  are now refused with the smallest size that does work.
+
+  Sizes that worked before are unaffected, byte for byte.
+
+- **A `validate --json` that is stopped no longer says the recipe is invalid.**
+  It never finished reading the recipe, so it has no verdict to report. The
+  exit code says what happened instead.
+
 ## [0.2.0] - 2026-08-28
 
 ### Breaking

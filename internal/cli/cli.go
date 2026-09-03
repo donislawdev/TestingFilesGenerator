@@ -72,7 +72,7 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	case "generate":
 		return generate(ctx, args[1:], out, errOut)
 	case "validate":
-		return validate(args[1:], out, errOut)
+		return validate(ctx, args[1:], out, errOut)
 	case "verify":
 		return verify(ctx, args[1:], out, errOut)
 	case "cleanup":
@@ -80,7 +80,7 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	case "recipe":
 		return recipeCmd(args[1:], out, errOut)
 	case "preset":
-		return presetCmd(args[1:], out, errOut)
+		return presetCmd(ctx, args[1:], out, errOut)
 	case "formats":
 		return formats(args[1:], out, errOut)
 	case "--version", "version":

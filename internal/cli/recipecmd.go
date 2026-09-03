@@ -3,6 +3,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -36,7 +37,7 @@ func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 
 // validate runs the checks a run would run and writes nothing at all, so it
 // suits a pre commit hook.
-func validate(args []string, out, errOut io.Writer) int {
+func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	asJSON := fs.Bool("json", false, "write the result as JSON, with every problem separately")
@@ -79,14 +80,9 @@ func validate(args []string, out, errOut io.Writer) int {
 	for _, t := range rec.Targets {
 		targets = append(targets, engineTarget(t, t.Label))
 	}
-	planned, err := engine.Plan(targets, planningOptions(rec))
+	planned, err := engine.PlanContext(ctx, targets, planningOptions(rec))
 	if err != nil {
-		if *asJSON {
-			return writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
-				Problems: []validateProblem{problemOf(err)}}, classify(err))
-		}
-		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-		return classify(err)
+		return planningRefusal(err, path, *asJSON, errOut)
 	}
 
 	if *asJSON {
@@ -101,6 +97,25 @@ func validate(args []string, out, errOut io.Writer) int {
 	fmt.Fprintf(out, "%s is valid: %s, %s, %d B total\n%s\n",
 		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"), engine.TotalBytes(planned), hash)
 	return ExitOK
+}
+
+// planningRefusal reports a plan that did not finish, and gives the exit code
+// for it.
+//
+// The stopped case is told apart because a run that was stopped has no verdict
+// about the recipe and must not print one. "valid: false" is a claim about the
+// file, and all that happened is that somebody pressed Ctrl+C - a consumer
+// reading that one field would act on a recipe this never finished reading. The
+// exit code says what really happened. Untouchable rule 5 in the other surface:
+// do not claim a certainty there is none of.
+func planningRefusal(err error, path string, asJSON bool, errOut io.Writer) int {
+	stopped := errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
+	if asJSON && !stopped {
+		return writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
+			Problems: []validateProblem{problemOf(err)}}, classify(err))
+	}
+	fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
+	return classify(err)
 }
 
 // planningOptions is what this command hands the planner.

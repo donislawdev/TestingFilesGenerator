@@ -3,7 +3,10 @@ package zip
 import (
 	stdzip "archive/zip"
 	"context"
+	"fmt"
 	"io"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // writeFillerEntry puts the padding entry into the archive.
@@ -79,7 +82,35 @@ func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, m memo, withC
 		// writing its bytes here would count them twice.
 		return nil
 	}
-	if err := writeFiller(ctx, entry, m.seed, m.fillerSize+freed()); err != nil {
+	// What the compressor freed can be NEGATIVE, and that is the case this
+	// arithmetic was written without. Deflate grows data it cannot shrink -
+	// about five bytes for every 65535 - so an archive holding already
+	// compressed files comes out of the compressor LARGER than it went in.
+	// The filler then has to shrink to compensate, and below zero it cannot.
+	//
+	// Left alone, writeFiller's loop simply wrote nothing and the archive came
+	// out too long with no error at all - measured 2026-09-02 as a band 50 B
+	// wide holding two 1 MB docx entries, which the engine reported as this
+	// generator disagreeing with its own plan. That reads as a broken tool
+	// rather than as an impossible size, and a person cannot act on it.
+	//
+	// Refused here rather than while planning, which is where targz refuses
+	// the same thing for the same reason: how far contents squeeze is not
+	// knowable without squeezing them, and planning is not allowed to. The
+	// floor reported is measured rather than derived - it is what this
+	// archive came to with no padding at all.
+	size := m.fillerSize + freed()
+	if size < 0 {
+		return &format.BelowMinimumError{
+			Format:    "ZIP",
+			Requested: m.target,
+			Minimum:   m.target - size,
+			Reason: "these contents come out of the compressor larger than they went in, " +
+				"so the archive cannot be made this small once they are squeezed",
+			Hint: fmt.Sprintf("Ask for %d B or more, or ask for compression: none.", m.target-size),
+		}
+	}
+	if err := writeFiller(ctx, entry, m.seed, size); err != nil {
 		return err
 	}
 	return shut()

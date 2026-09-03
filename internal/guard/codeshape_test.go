@@ -35,7 +35,11 @@ const (
 	// choosing: comments and blanks run 17 to 45 lines in the longest
 	// functions, so counting them would have punished the wrong thing.
 	longestFunction = 79
-	longestFile     = 503
+	// 503 until 2026-09-03. engine.go lost the line that told the plan budget
+	// how big a target was, because the budget stopped needing to be told - it
+	// takes its reference point when it is built. A ratchet goes down when work
+	// makes it lowerable.
+	longestFile = 502
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

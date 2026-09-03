@@ -33,19 +33,6 @@ import (
 // without being told about.
 
 const (
-	// planCheckFirst is both when the first reading is taken and how many
-	// files a run needs before any of this happens at all.
-	//
-	// The second half is what keeps it cheap. A reading means collecting
-	// first, which measured 4.9 ms against 0.023 ms for the reading on its own
-	// - fifty rounds each, 2026-08-26 - and a test suite plans thousands of
-	// times, almost always a handful of files. Putting a collection on every
-	// plan took the guard package from 124 s past its ten minute limit.
-	//
-	// Sixty four files of the dearest shape measured is about 340 MB, well
-	// under the ceiling, so nothing that matters is missed by waiting.
-	planCheckFirst = 64
-
 	// planCheckEvery is the longest this waits between readings.
 	//
 	// An upper bound rather than a fixed interval, and the arithmetic says
@@ -65,46 +52,68 @@ const (
 // target has been walked, and it needs the per file cost to be uniform, which
 // it is not - a recipe can put a thousand page pdf next to a text file. Asking
 // the real heap needs neither and cannot be wrong about the shape of the run.
+//
+// What it can be wrong about is whose heap it is. ReadMemStats answers for the
+// whole process, so anything else allocating in it while a plan is being built
+// is counted against the plan - O162. Two gigabytes is a great deal to borrow
+// by accident, and every run this tool was designed around is orders of
+// magnitude under the ceiling, so the room for a wrong refusal is small. It is
+// not nought, and this is where it lives.
 type planMemory struct {
 	baseline uint64
-	started  bool
-	expected int
 	seen     int
 	nextAt   int
 	ceiling  uint64
 }
 
+// newPlanMemory takes the reference point, and it is taken here because here
+// is before the first target has been looked at.
+//
+// Both readings come from the same method - collected first - which is the
+// part that matters: a baseline read without collecting counts whatever has
+// not been swept yet, so it can be HIGHER than a collected reading taken
+// later, and the growth between them comes out negative. That is not a small
+// error in a number, it is the check quietly answering "nothing to refuse" for
+// every run.
+//
+// Until 2026-09-03 this waited. The reading was taken only once a run had
+// announced sixty four files, and account below returned at once until then,
+// so a run of sixty three files had no ceiling at all. The comment that
+// justified the wait said sixty four files of the dearest shape measured is
+// about 340 MB, so nothing that matters is missed. Measured again with the
+// plansize probe, this time on containers rather than on plain formats:
+//
+//	zip, entries=10000, entry_format=pdf    74740758 B a file
+//	targz, the same                         74758716 B a file
+//	pdf, pages=5000                         25194908 B a file
+//	pdf, pages=1000                          5244543 B a file
+//
+// Five points from one file to sixteen for the first shape, linear to within
+// 0.05%. Twenty nine files of it come to 2.17 GB, which is past the ceiling
+// and was accepted without a reading, because twenty nine is under sixty four.
+// Sixty three files come to 4.71 GB. And the wait was worse than that number
+// says, because the count it waited on was the whole run's, added up across
+// targets: sixty four targets holding one file each took the reading after
+// SIXTY THREE files had been planned, and those then sat inside the baseline
+// for the rest of the run, however long it ran.
+//
+// What the waiting bought is measured rather than assumed, since the number
+// that justified it - "putting a collection on every plan took the guard
+// package from 124 s past its ten minute limit" - turns out not to describe
+// this. A reading here and a first reading at the first file, four runs of the
+// guard package interleaved on 2026-09-03: 277.9 s and 283.7 s without them
+// against 292.3 s and 306.1 s with, so about six percent. The ranges do not
+// overlap, which is the only reason a conclusion is drawn from four runs.
 func newPlanMemory(ceiling int64) *planMemory {
 	if ceiling <= 0 {
 		ceiling = core.MaxPlanBytes
 	}
-	return &planMemory{nextAt: planCheckFirst, ceiling: uint64(ceiling)}
-}
-
-// expect is told how many files a target is about to contribute, before any of
-// them are planned.
-//
-// This is where the baseline is taken, and it is taken only once the run is
-// known to be big enough to be worth measuring. Both readings then come from
-// the same method - collected first - which is the part that matters: a
-// baseline read without collecting counts whatever has not been swept yet, so
-// it can be HIGHER than a collected reading taken later, and the growth
-// between them comes out negative. That is not a small error in a number, it
-// is the check quietly answering "nothing to refuse" for every run.
-func (p *planMemory) expect(files int) {
-	p.expected += files
-	if !p.started && p.expected >= planCheckFirst {
-		p.baseline = heapInUse()
-		p.started = true
-	}
+	return &planMemory{baseline: heapInUse(), nextAt: 1, ceiling: uint64(ceiling)}
 }
 
 // account is called once per planned file. It returns an error only when the
 // plan has already passed the ceiling.
 func (p *planMemory) account(targetIndex, filesSoFar int) error {
-	if !p.started {
-		return nil
-	}
 	p.seen++
 	if p.seen < p.nextAt {
 		return nil
@@ -157,6 +166,11 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 // Two readings of a heap that has not been collected differ by whatever the
 // allocator happened to be carrying, which for this purpose is noise larger
 // than the thing being measured.
+//
+// It costs what a collection costs, which measured 4.9 ms against 0.023 ms for
+// the reading on its own - fifty rounds each, 2026-08-26. That is why the
+// schedule above exists: a run of ten thousand files takes a handful of these
+// rather than ten thousand.
 func heapInUse() uint64 {
 	runtime.GC()
 	var m runtime.MemStats

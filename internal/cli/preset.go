@@ -2,6 +2,7 @@
 package cli
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ type budget struct {
 	Formats []string `json:"formats"`
 }
 
-func budgetOf(e *preset.Expansion) (budget, error) {
+func budgetOf(ctx context.Context, e *preset.Expansion) (budget, error) {
 	rec, err := recipe.Parse(e.Source, e.Preset.ID)
 	if err != nil {
 		return budget{}, err
@@ -60,7 +61,7 @@ func budgetOf(e *preset.Expansion) (budget, error) {
 		targets = append(targets, engineTarget(t, t.Label))
 		seen[t.Format] = true
 	}
-	planned, err := engine.Plan(targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
+	planned, err := engine.PlanContext(ctx, targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
 	if err != nil {
 		return budget{}, err
 	}
@@ -338,13 +339,13 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
 }
 
-func presetCmd(args []string, out, errOut io.Writer) int {
+func presetCmd(ctx context.Context, args []string, out, errOut io.Writer) int {
 	if len(args) > 0 {
 		switch args[0] {
 		case "list":
 			return presetList(args[1:], out, errOut)
 		case "show":
-			return presetShow(args[1:], out, errOut)
+			return presetShow(ctx, args[1:], out, errOut)
 		case "eject":
 			return presetEject(args[1:], out, errOut)
 		}
@@ -483,7 +484,7 @@ Flags:
 	return ExitOK
 }
 
-func presetShow(args []string, out, errOut io.Writer) int {
+func presetShow(ctx context.Context, args []string, out, errOut io.Writer) int {
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg preset show - what a preset takes and what it would produce.
 
@@ -502,7 +503,7 @@ Usage:
 		return code
 	}
 
-	b, err := budgetOf(expanded)
+	b, err := budgetOf(ctx, expanded)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)
