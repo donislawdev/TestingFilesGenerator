@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"os"
@@ -538,9 +539,24 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 			picture := filepath.Join("testdata", "screens", sc.name+".png")
 			tree := filepath.Join("testdata", "screens", sc.name+".xml")
 			if writing {
-				writeImage(t, picture, got)
-				writeText(t, tree, markup)
-				t.Logf("wrote %s and %s", picture, tree)
+				// Each of the two files on its own, and only where what is
+				// stored no longer stands. Regenerating one screen used to
+				// rewrite all fifty files - see needsWriting for what that
+				// cost and how it was measured.
+				var wrote []string
+				if needsWriting(judgePicture(picture, got)) {
+					writeImage(t, picture, got)
+					wrote = append(wrote, picture)
+				}
+				if !storedTreeStands(tree, markup) {
+					writeText(t, tree, markup)
+					wrote = append(wrote, tree)
+				}
+				if len(wrote) == 0 {
+					t.Logf("left alone, both still stand: %s and %s", picture, tree)
+				} else {
+					t.Logf("wrote %s", strings.Join(wrote, " and "))
+				}
 				return
 			}
 			// The tree first, and that order is the whole reason it is kept.
@@ -559,6 +575,98 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 	}
 }
 
+// Regenerating the stored screens touches the ones that changed and no others.
+//
+// What this defends against happened, and it nearly shipped. Closing the
+// release of 0.3.0-rc1 needed one screen rewritten, the About screen, because
+// it draws the version. Regenerating rewrote all twenty five, and the other
+// twenty four grew by between 12.6% and 28.9% while their pixels stayed byte
+// identical - Go 1.27 encodes PNG less tightly than 1.26.7, which wrote them.
+// Twenty four pointless binary files went into the release commit, and what
+// took them back out was somebody reading the diff, because `git diff --stat`
+// says "Bin" and nothing goes red.
+//
+// The three cases are the whole of the decision, so this is the whole guard.
+func TestRegeneratingAScreenLeavesTheUnchangedOnesAlone(t *testing.T) {
+	dir := t.TempDir()
+	drawn := solidImage(8, 8, color.NRGBA{R: 10, G: 20, B: 30, A: 255})
+
+	missing := filepath.Join(dir, "never-stored.png")
+	if !needsWriting(judgePicture(missing, drawn)) {
+		t.Errorf("a screen with no stored picture was reported as not needing one.\n" +
+			"Reason: a new screen has nothing to be compared against, and skipping it would\n" +
+			"leave the guard with no reference on the next run.")
+	}
+
+	// The case that cost 402 kB. The stored file holds the same picture through
+	// a different encoder, which is what a compiler update leaves behind, and
+	// the guard accepts it - so regenerating has nothing to write.
+	reencoded := filepath.Join(dir, "same-picture-other-encoder.png")
+	writeBytes(t, reencoded, encodeAtCompression(t, drawn, png.NoCompression))
+	if same := encodePNG(t, drawn); bytes.Equal(same, mustRead(t, reencoded)) {
+		t.Fatal("this case needs a stored file whose BYTES differ from a fresh encode, " +
+			"and the two encoders produced the same bytes - the case is not being exercised")
+	}
+	if needsWriting(judgePicture(reencoded, drawn)) {
+		t.Errorf("a stored picture the guard still accepts was reported as needing rewriting.\n" +
+			"Reason: measured on 2026-09-03, this rewrote twenty four of twenty five screens with\n" +
+			"byte identical pixels after the move to Go 1.27, and 402 kB of that went into the\n" +
+			"0.3.0-rc1 release commit. Asking whether the bytes match instead of whether the guard\n" +
+			"accepts them brings all of it back on the first regeneration after a compiler update.")
+	}
+
+	moved := filepath.Join(dir, "moved-on.png")
+	writeBytes(t, moved, encodePNG(t, solidImage(8, 8, color.NRGBA{R: 200, G: 20, B: 30, A: 255})))
+	if !needsWriting(judgePicture(moved, drawn)) {
+		t.Errorf("a stored picture showing something else was reported as not needing writing.\n" +
+			"Reason: then regenerating would not regenerate, and the guard would go on comparing\n" +
+			"against a picture nobody can refresh.")
+	}
+
+	// The tree is stored beside the picture and asked separately, because a
+	// screen can be rebuilt into the same pixels out of different widgets.
+	storedXML := filepath.Join(dir, "tree.xml")
+	writeText(t, storedXML, "<canvas>one</canvas>")
+	if !storedTreeStands(storedXML, "<canvas>one</canvas>") {
+		t.Errorf("a stored tree holding exactly this markup was reported as no longer standing")
+	}
+	if storedTreeStands(storedXML, "<canvas>two</canvas>") {
+		t.Errorf("a stored tree holding different markup was reported as still standing")
+	}
+	if storedTreeStands(filepath.Join(dir, "no-tree.xml"), "<canvas>one</canvas>") {
+		t.Errorf("a tree that was never stored was reported as still standing.\n" +
+			"Reason: a new screen would then never get one written.")
+	}
+}
+
+// solidImage is a picture with nothing in it but one colour, which is all these
+// cases need - the decision under test is about encoders and equality, not
+// about what a screen looks like.
+func solidImage(w, h int, c color.NRGBA) *image.NRGBA {
+	img := image.NewNRGBA(image.Rect(0, 0, w, h))
+	draw.Draw(img, img.Bounds(), &image.Uniform{C: c}, image.Point{}, draw.Src)
+	return img
+}
+
+func encodeAtCompression(t *testing.T, img image.Image, level png.CompressionLevel) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	enc := png.Encoder{CompressionLevel: level}
+	if err := enc.Encode(&buf, img); err != nil {
+		t.Fatalf("%v", err)
+	}
+	return buf.Bytes()
+}
+
+func mustRead(t *testing.T, path string) []byte {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	return raw
+}
+
 // compareMarkup holds the widget tree against the stored one.
 //
 // Exact, on every system, with no tolerance anywhere - measured on 2026-08-18
@@ -567,14 +675,13 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 func compareMarkup(t *testing.T, name, reference, got string) {
 	t.Helper()
 
-	stored, err := os.ReadFile(reference)
+	want, err := storedTree(reference)
 	if err != nil {
 		t.Fatalf("there is no stored tree for the %s screen at %s.\n"+
 			"Reason: this guard compares the widget tree as well as the picture.\n"+
 			"What to do: run once with TFG_WRITE_SCREEN_REFERENCE=1 and read what it wrote before committing it.\n"+
 			"Underlying error: %v", name, reference, err)
 	}
-	want := strings.ReplaceAll(string(stored), "\r\n", "\n")
 	if want == got {
 		return
 	}
@@ -833,44 +940,35 @@ func explanationBeside(t *testing.T, o fyne.CanvasObject, label string) *parts.D
 func compareAgainstReference(t *testing.T, name, reference string, got image.Image) {
 	t.Helper()
 
-	stored, err := os.ReadFile(reference)
-	if err != nil {
-		t.Fatalf("there is no stored picture for the %s screen at %s.\n"+
+	v := judgePicture(reference, got)
+	if v.unusable {
+		t.Fatalf("there is no readable stored picture for the %s screen at %s.\n"+
 			"Reason: this guard compares against images kept in the repository.\n"+
 			"What to do: run it once with TFG_WRITE_SCREEN_REFERENCE=1 and look at what it wrote before committing it.\n"+
-			"Underlying error: %v", name, reference, err)
+			"Underlying error: %v", name, reference, v.err)
 	}
-	want, err := png.Decode(bytes.NewReader(stored))
-	if err != nil {
-		t.Fatalf("the stored picture %s could not be read as a PNG: %v", reference, err)
-	}
-
-	wantPix, gotPix := toNRGBA(want), toNRGBA(got)
-	if wantPix.Rect != gotPix.Rect {
+	if v.resized {
 		t.Fatalf("the %s screen rendered %v and the stored picture is %v.\n"+
 			"Reason: the window is being laid out at a different size than the reference was taken at.\n"+
 			"What to do: this guard renders at %dx%d, so a deliberate change of that constant needs the pictures regenerated.",
-			name, gotPix.Rect.Size(), wantPix.Rect.Size(), referenceWidth, referenceHeight)
+			name, v.got.Rect.Size(), v.want.Rect.Size(), referenceWidth, referenceHeight)
 	}
-	if bytes.Equal(wantPix.Pix, gotPix.Pix) {
+	if v.accepts {
+		if v.differing > 0 {
+			// Said out loud rather than passed in silence. If this number ever
+			// starts climbing, the tolerance is covering something it was not
+			// measured to cover, and nobody would see that from a green run.
+			t.Logf("%d pixels differ by at most %d of 255, which is inside the %d allowed on %s - treated as edge blending",
+				v.differing, v.worst, pixelTolerance(), runtime.GOARCH)
+		}
 		return
 	}
-
-	differing, worst, box := pixelDifference(wantPix, gotPix)
-	if worst <= pixelTolerance() {
-		// Said out loud rather than passed in silence. If this number ever
-		// starts climbing, the tolerance is covering something it was not
-		// measured to cover, and nobody would see that from a green run.
-		t.Logf("%d pixels differ by at most %d of 255, which is inside the %d allowed on %s - treated as edge blending",
-			differing, worst, pixelTolerance(), runtime.GOARCH)
-		return
-	}
-	dir := saveEvidence(t, name, wantPix, gotPix)
+	dir := saveEvidence(t, name, v.want, v.got)
 	t.Errorf("the %s screen no longer draws its stored picture.\n"+
 		"Reason: %d of %d pixels differ, by at most %d of 255 in one channel, inside %v.\n"+
 		"What to look at: %s holds the stored picture, what was rendered now, and the two subtracted.\n"+
 		"What to do: if the change was meant, regenerate with TFG_WRITE_SCREEN_REFERENCE=1 and commit the new pictures.",
-		name, differing, wantPix.Rect.Dx()*wantPix.Rect.Dy(), worst, box, dir)
+		name, v.differing, v.want.Rect.Dx()*v.want.Rect.Dy(), v.worst, v.box, dir)
 }
 
 // pixelDifference counts the pixels that differ, the largest distance any one
@@ -965,16 +1063,113 @@ func toNRGBA(img image.Image) *image.NRGBA {
 
 func writeImage(t *testing.T, path string, img image.Image) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatalf("%v", err)
-	}
+	writeBytes(t, path, encodePNG(t, img))
+}
+
+// encodePNG is the one place a picture becomes bytes, so a reference and the
+// bytes it is compared against cannot be produced by two different calls.
+func encodePNG(t *testing.T, img image.Image) []byte {
+	t.Helper()
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
 		t.Fatalf("%v", err)
 	}
-	if err := os.WriteFile(path, buf.Bytes(), 0o644); err != nil {
+	return buf.Bytes()
+}
+
+func writeBytes(t *testing.T, path string, content []byte) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatalf("%v", err)
 	}
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+// pictureVerdict is what a stored picture says about what was just rendered.
+//
+// It is one value rather than two calls because the comparison and the writing
+// have to answer out of the same judgement. A writer with its own idea of
+// "changed" drifts away from the guard, and then regenerating either rewrites
+// files the guard was happy with or leaves ones it was not.
+type pictureVerdict struct {
+	accepts   bool // the stored picture still stands for what was rendered
+	unusable  bool // missing, or not readable as a PNG
+	err       error
+	resized   bool
+	differing int
+	worst     int
+	box       image.Rectangle
+	want      *image.NRGBA
+	got       *image.NRGBA
+}
+
+// judgePicture is the single place that decides whether a stored picture still
+// stands. Both the comparison and TFG_WRITE_SCREEN_REFERENCE read it.
+func judgePicture(path string, got image.Image) pictureVerdict {
+	v := pictureVerdict{got: toNRGBA(got)}
+
+	stored, err := os.ReadFile(path)
+	if err != nil {
+		v.unusable, v.err = true, err
+		return v
+	}
+	want, err := png.Decode(bytes.NewReader(stored))
+	if err != nil {
+		v.unusable, v.err = true, err
+		return v
+	}
+	v.want = toNRGBA(want)
+
+	if v.want.Rect != v.got.Rect {
+		v.resized = true
+		return v
+	}
+	if bytes.Equal(v.want.Pix, v.got.Pix) {
+		v.accepts = true
+		return v
+	}
+	v.differing, v.worst, v.box = pixelDifference(v.want, v.got)
+	v.accepts = v.worst <= pixelTolerance()
+	return v
+}
+
+// needsWriting says whether regenerating has anything to write for one file.
+//
+// It exists because regenerating used to rewrite all twenty five screens
+// whether or not any of them had changed, and that is not a tidiness problem.
+// Measured on 2026-09-03, while closing the release of 0.3.0-rc1: one screen
+// legitimately changed, twenty four came back with byte identical pixels and
+// files between 12.6% and 28.9% larger, because Go 1.27 encodes PNG less
+// tightly than 1.26.7 did, which is what wrote them. Nobody reads a binary
+// diff and `git diff --stat` says only "Bin", so 402 kB of pure encoder churn
+// across twenty four files went into the release commit, and what took it back
+// out was somebody reading rather than anything red. See O180.
+//
+// The question is the guard's own, not "are these bytes identical". Byte
+// equality was written here first and measured wrong on the spot: it rewrites
+// every picture once on the first regeneration after a compiler update, which
+// is the exact churn this is here to stop. A stored picture the guard still
+// accepts is a stored picture that does not need replacing.
+func needsWriting(v pictureVerdict) bool { return !v.accepts }
+
+// storedTree reads a stored widget tree with the line endings a checkout on
+// another system may have given it. One place does this normalising, because
+// the comparison and the regenerating both have to mean the same by "the same
+// tree".
+func storedTree(path string) (string, error) {
+	stored, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.ReplaceAll(string(stored), "\r\n", "\n"), nil
+}
+
+// storedTreeStands says whether the stored tree still says what was just built.
+func storedTreeStands(path, markup string) bool {
+	want, err := storedTree(path)
+	return err == nil && want == markup
 }
 
 // writeText stores the widget tree with newlines the way the toolkit produced
