@@ -97,6 +97,85 @@ func TestAnOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
 	}
 }
 
+// A run too short to have been weighed is weighed.
+//
+// planMemory used to take its reference point only once a run had announced
+// sixty four files, and account returned at once until it had one - so a run of
+// sixty three files had no ceiling at all. The count it waited on was the whole
+// run's, added up across targets, which made it worse than that sounds: sixty
+// four targets holding one file each took the reference point after SIXTY THREE
+// files had already been planned, and those then sat inside the baseline for
+// the rest of the run, however long it ran.
+//
+// What makes that reachable rather than theoretical was measured on 2026-09-03
+// with tools/probes/plansize: a zip of ten thousand pdf entries costs 74 740
+// 758 B of plan a file, five points from one file to sixteen, linear to within
+// 0.05%. Twenty nine of those come to 2.17 GB against a ceiling of two, and
+// twenty nine is under sixty four.
+//
+// Asked here with ONE file, which is the sharpest way to put the rule: the
+// reference point exists before the first file rather than after the sixty
+// fourth. The ceiling is injected for the same reason as the guard above, and
+// the shape is a five thousand page pdf, measured at 25 194 908 B of plan - so
+// one file passes a 4 MB ceiling six times over, which is clear of the
+// megabytes of noise a heap reading carries in a process that has already run
+// four hundred other tests.
+func TestARunTooShortToHaveBeenWeighedIsWeighed(t *testing.T) {
+	targets := []engine.Target{{
+		ID:         "one",
+		Format:     "pdf",
+		Sizes:      engine.Uniform(1, 20<<20),
+		Properties: map[string]string{"pages": "5000"},
+	}}
+
+	_, err := engine.Plan(targets, engine.Options{
+		OutDir:       "out",
+		ManifestName: "manifest.json",
+		MaxPlanBytes: 4 << 20,
+	})
+	if err == nil {
+		t.Fatal("one file whose plan is six times the ceiling was accepted, so nothing weighed it")
+	}
+
+	said := err.Error()
+	for _, want := range []string{"plan", "ceiling"} {
+		if !strings.Contains(said, want) {
+			t.Errorf("the refusal does not mention %q: %s", want, said)
+		}
+	}
+	// Where the run had got to, which for a single file is the half of the
+	// sentence that says the check ran at all.
+	if !strings.Contains(said, "after 1 file") {
+		t.Errorf("the refusal does not say the plan was weighed at the first file: %s", said)
+	}
+}
+
+// The same shape one setting down still plans.
+//
+// Without this the guard above passes on a build that refuses every short run,
+// and a check nothing can turn green is worth as little as one nothing can turn
+// red.
+func TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
+	targets := []engine.Target{{
+		ID:         "one",
+		Format:     "pdf",
+		Sizes:      engine.Uniform(1, 3<<20),
+		Properties: map[string]string{"pages": "1000"},
+	}}
+
+	files, err := engine.Plan(targets, engine.Options{
+		OutDir:       "out",
+		ManifestName: "manifest.json",
+		// Zero means the real ceiling, which is what every caller passes.
+	})
+	if err != nil {
+		t.Fatalf("a single thousand page pdf was refused under the real ceiling: %v", err)
+	}
+	if len(files) != 1 {
+		t.Fatalf("planned %d files, expected 1", len(files))
+	}
+}
+
 // The ceiling this build works to is the one core states.
 //
 // Asked separately from the mechanism above, because that one runs against an

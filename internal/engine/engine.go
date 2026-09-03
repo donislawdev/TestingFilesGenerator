@@ -87,7 +87,7 @@ type Target struct {
 // here. A copy would be a place for the two to disagree, and the disagreement
 // would surface as a file that planning accepted and writing refused.
 func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
-	if _, err := desc.Generator.Plan(format.Request{
+	if _, err := planWithoutCrashing(desc, format.Request{
 		Bytes:      t.SizeMin,
 		Contains:   t.Contains,
 		Seed:       core.FileSeed(targetSeed, 0),
@@ -332,9 +332,9 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// space check as a negative requirement and satisfied it.
 	var totalFiles int
 
-	// Watches what the plan costs while it is being built. Started here rather
-	// than at the first file so that the baseline is taken before any of it
-	// exists.
+	// Watches what the plan costs while it is being built. Constructed here
+	// rather than at the first file because constructing it is what takes the
+	// reference point, and that has to happen before any of the plan exists.
 	pl.budget = newPlanMemory(opt.MaxPlanBytes)
 
 	// The manifest lands beside the files, so its name is a name too. A path
@@ -386,9 +386,6 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 
 		// Counted across every target, not per target. A ceiling on one target
 		// alone is one somebody reaches by writing the number out in pieces.
-		// The budget is told the size of the target before its files are
-		// planned, so its baseline is taken before any of them exist.
-		pl.budget.expect(len(t.Sizes))
 		totalFiles += len(t.Sizes)
 		if totalFiles > core.MaxFilesPerRun {
 			// Addressed to the target that took the total past the ceiling,
@@ -739,7 +736,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int
 	buffered := bufio.NewWriterSize(fh, 64<<10)
 	counter := &countingWriter{w: io.MultiWriter(buffered, h), report: report}
 
-	writeErr := f.Desc.Generator.Write(ctx, counter, f.Plan)
+	writeErr := writeWithoutCrashing(ctx, f, counter)
 	if writeErr == nil {
 		writeErr = buffered.Flush()
 	}
