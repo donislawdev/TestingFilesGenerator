@@ -182,26 +182,3 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   {{ template "downloadCta" . }}
 </section>
 
-<section class="section" id="scope">
-  <p class="eyebrow">Honest scope</p>
-  <h2>Where this is today</h2>
-  <p>
-    Version {{ .Facts.Version }}. A tool that oversells itself wastes your afternoon, so here is the
-    state of it.
-  </p>
-  <p>
-    <strong>Working end to end:</strong> {{ .Facts.FormatCount }} formats, recipes, presets, the desktop
-    window, <code>generate</code>, <code>validate</code>, <code>verify</code>, <code>cleanup</code>,
-    boundary sets, archive contents, size ranges, per format settings, manifests and every exit code.
-  </p>
-  <p>
-    <strong>Not there yet:</strong> five more formats are planned - <code>7z</code>, <code>tiff</code>,
-    <code>webp</code>, <code>mp3</code> and <code>mp4</code>. The preset catalogue has one entry so far.
-    Some recipe keys are recognised and refused with a message saying they are not built yet, rather
-    than being ignored quietly. The Linux downloads are unsigned.
-  </p>
-  <p>
-    Found a problem or want a format? The <a href="{{ .Facts.Issues }}">issue tracker</a> is open, and
-    so is the discussion about what gets built next.
-  </p>
-</section>
