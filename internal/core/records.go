@@ -153,6 +153,22 @@ func AppendFiller(dst []byte, words []string, n int64, separator func(i int) str
 		// which mistake it is beats a runtime panic with no name on it.
 		panic("core: AppendFiller was given no words to pad with")
 	}
+	if !wordsHaveBytes(words) {
+		// The same mistake spelled differently, and it ends worse. The loop
+		// below stops only by adding bytes, so a vocabulary that adds none
+		// spins without end and without growing - the one failure shape a size
+		// guard cannot see, because no file is ever produced to measure.
+		// FillRecords above names it in those words and refuses. This one did
+		// not, which made it a difference between two halves of one primitive
+		// rather than a hypothetical.
+		//
+		// The question is about the VOCABULARY rather than about each word,
+		// and that distinction is the whole of the check. One word with bytes
+		// in it ends the loop whatever the separator returns, because every
+		// cycle through the vocabulary appends it - so asking per iteration
+		// would refuse ["", "ab"], which pads perfectly well.
+		panic("core: AppendFiller was given words that are all empty, so it could never reach the length asked for")
+	}
 
 	start := len(dst)
 	for i := 0; int64(len(dst)-start) < n; i++ {
@@ -200,4 +216,18 @@ func WriteAll(w io.Writer, b []byte) error {
 		b = b[n:]
 	}
 	return nil
+}
+
+// wordsHaveBytes says whether a vocabulary can add anything at all.
+//
+// One word is enough, whatever the separator does with the rest, because the
+// loop in AppendFiller walks the vocabulary in a cycle and reaches that word
+// every time round.
+func wordsHaveBytes(words []string) bool {
+	for _, w := range words {
+		if w != "" {
+			return true
+		}
+	}
+	return false
 }

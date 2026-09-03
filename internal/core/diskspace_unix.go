@@ -20,8 +20,10 @@ func AvailableBytes(path string) (int64, error) {
 		return 0, err
 	}
 	// Blocks available to an unprivileged user, which is the number that
-	// matters to us rather than the total free on the device.
-	return int64(st.Bavail) * int64(st.Bsize), nil
+	// matters to us rather than the total free on the device. The arithmetic
+	// is next door because it is the half that can be wrong on its own, and a
+	// check written in here would be one nothing could ever reach.
+	return AvailableFrom(uint64(st.Bavail), uint64(st.Bsize)), nil
 }
 
 // existingAncestor walks up until it finds a directory that exists, because

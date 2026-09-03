@@ -34,7 +34,10 @@ func AvailableBytes(path string) (int64, error) {
 	if r == 0 {
 		return 0, e
 	}
-	return int64(freeForCaller), nil
+	// Already in bytes, so the block size is one - but through the same
+	// function as the other platform, because the conversion from unsigned is
+	// where both of them could hand back a negative.
+	return AvailableFrom(freeForCaller, 1), nil
 }
 
 // The handle is looked up once rather than on every call. It was built inside

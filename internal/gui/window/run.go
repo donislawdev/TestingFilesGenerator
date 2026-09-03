@@ -117,8 +117,22 @@ type runner struct {
 	// HoldBeforeFinishing for what it is for and why nothing else can do it.
 	hold func()
 
-	// stop ends the run in progress and waits for it, and is only ever touched
-	// on the interface thread.
+	// stop ends the run in progress and waits for the worker to finish, and is
+	// only ever touched on the interface thread.
+	//
+	// "Waits for the worker" is as far as it reaches, and the limit is worth
+	// writing down because G7 gets read out of this sentence. The worker closes
+	// the channel this waits on immediately after handing its last piece of
+	// work to fyne.Do, and fyne.Do QUEUES that work rather than running it -
+	// DoAndWait there would be the interface thread waiting on a worker that is
+	// waiting on the interface thread. So when stop returns, the worker is
+	// finished and the widget writes it asked for may still be in the toolkit's
+	// queue.
+	//
+	// What that buys is what G7 asks for: nothing of ours is still running and
+	// nothing more is going to the disk. What it does not buy is the screen
+	// having caught up - and Settled does not buy that either, because it waits
+	// on the same channel.
 	//
 	// It is deliberately left in place once a run has ended rather than
 	// cleared, and that is a threading decision rather than an oversight.
@@ -959,6 +973,13 @@ func (r *runner) holdBeforeFinishing() {
 // guards used "close the window" as their way of waiting for an answer. Now
 // closing really does cancel, which is the point of the change, and a guard
 // that closed the window to read the preview would be cancelling the preview.
+//
+// It waits on the same channel stop does and carries the same limit: the worker
+// is finished and its last fyne.Do may still be queued. Under the test driver
+// that distinction disappears, because there fyne.Do runs on the calling
+// goroutine, so the callback has already run by the time the channel closes -
+// which is why a guard may read the screen the moment this returns, and why the
+// limit is a production one rather than a test one.
 func (r *runner) Settled() {
 	if r.settled != nil {
 		<-r.settled
