@@ -54,7 +54,7 @@
     "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
     "ctaDownload": "Download",
     "ctaSource": "View the source",
-    "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning. The Linux ones are unsigned.",
+    "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning.",
     "colFormat": "Format",
     "colExtension": "Extension",
     "colSmallest": "Smallest file",

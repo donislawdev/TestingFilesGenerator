@@ -182,27 +182,3 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
   {{ template "downloadCta" . }}
 </section>
 
-<section class="section" id="scope">
-  <p class="eyebrow">Uczciwy zakres</p>
-  <h2>Gdzie to dziś jest</h2>
-  <p>
-    Wersja {{ .Facts.Version }}. Narzędzie, które się przechwala, kosztuje popołudnie, więc oto stan
-    faktyczny.
-  </p>
-  <p>
-    <strong>Działa od początku do końca:</strong> {{ .Facts.FormatCount }} formatów, przepisy, presety,
-    okno, <code>generate</code>, <code>validate</code>, <code>verify</code>, <code>cleanup</code>,
-    zestawy graniczne, zawartość archiwów, zakresy rozmiarów, ustawienia formatów, manifesty i wszystkie
-    kody wyjścia.
-  </p>
-  <p>
-    <strong>Czego jeszcze nie ma:</strong> pięciu zaplanowanych formatów - <code>7z</code>,
-    <code>tiff</code>, <code>webp</code>, <code>mp3</code> i <code>mp4</code>. Katalog presetów ma na
-    razie jedną pozycję. Część kluczy przepisu jest rozpoznawana i odrzucana komunikatem, że nie ma ich
-    w tej wersji, zamiast być po cichu ignorowana. Pliki dla Linuksa nie są podpisane.
-  </p>
-  <p>
-    Znalazłeś błąd albo potrzebujesz formatu? <a href="{{ .Facts.Issues }}">Zgłoszenia</a> są otwarte,
-    tak samo jak dyskusja o tym, co powstanie następne.
-  </p>
-</section>

@@ -54,7 +54,7 @@
     "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w dwudziestu formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",
     "ctaDownload": "Pobierz",
     "ctaSource": "Zobacz kod źródłowy",
-    "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Pliki dla Windows i macOS są podpisane i uruchamiają się bez ostrzeżenia. Pliki dla Linuksa nie są podpisane.",
+    "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Pliki dla Windows i macOS są podpisane i uruchamiają się bez ostrzeżenia.",
     "colFormat": "Format",
     "colExtension": "Rozszerzenie",
     "colSmallest": "Najmniejszy plik",

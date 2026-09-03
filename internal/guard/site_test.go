@@ -134,9 +134,16 @@ func factsFromTheProgram() site.Facts {
 		Presets:   ids,
 		Downloads: declaredDownloads(),
 		// Fixed on purpose. See the comment on the field.
-		Year:     2026,
-		Repo:     "https://github.com/donislawdev/TestingFilesGenerator",
-		Releases: "https://github.com/donislawdev/TestingFilesGenerator/releases/latest",
+		Year: 2026,
+		Repo: "https://github.com/donislawdev/TestingFilesGenerator",
+		// The list of releases rather than whichever one is newest, since
+		// 2026-09-03. "latest" skips a prerelease, so a page offering to
+		// download a version it had just named would hand over a different one
+		// the moment a release candidate existed - and nothing here compares
+		// the two, because this guard compares the site against the CODE. The
+		// button names no version now and leads to the list, which is true
+		// whatever is published.
+		Releases: "https://github.com/donislawdev/TestingFilesGenerator/releases",
 		Issues:   "https://github.com/donislawdev/TestingFilesGenerator/issues",
 		Support:  "https://donislawdev.com/support/",
 		Origin:   siteOrigin,
