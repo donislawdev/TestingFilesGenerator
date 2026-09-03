@@ -32,9 +32,12 @@ jobs:
   test:
     name: test on ${{ matrix.os }}
     # A hung job otherwise holds a runner until the GitHub default of six
-    # hours. Every number here is well above what the job takes today: the
-    # matrix runs in about a minute, the race detector took 148 s when it was
-    # measured, and fuzzing is given 5 minutes a target by its own loop.
+    # hours. Remeasured 2026-09-03, because the sentence here said "the matrix
+    # runs in about a minute" and had not been true for a long time: the test
+    # step alone takes 399 s on ubuntu, 476 s on windows and 491 s on macOS.
+    # The race detector took 148 s when it was measured and has its own job
+    # and its own numbers now, and fuzzing is given 5 minutes a target by its
+    # own loop.
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -244,7 +247,19 @@ jobs:
         shell: bash
 
       - name: test
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1
+        # The timeout is stated for the reason the race job and the coverage
+        # gate both state theirs: Go allows ten minutes PER PACKAGE by default,
+        # this job allows twenty for all of it, and internal/guard is one
+        # package holding almost every test there is. A run that went past the
+        # first without approaching the second would die as a stack trace out
+        # of whichever test happened to be running, which is what the coverage
+        # gate did on 2026-09-03.
+        #
+        # Measured that day, on the run that caught it: 399 s on ubuntu, 476 s
+        # on windows, 491 s on macOS. macOS therefore had 109 s of room under a
+        # limit nobody had chosen, and the same fleet was measured swinging by
+        # more than 25 percent between two runs of one branch.
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -timeout 18m
 
       - name: build the command line binary
         run: go build -tags "$(cat .github/build-tags)" ./cmd/tfg
