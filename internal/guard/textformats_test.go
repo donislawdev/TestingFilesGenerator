@@ -160,7 +160,7 @@ const (
 const minRecords = densitySize / maxValueBytes
 
 func TestEveryRowOfACSVHasTheSameColumns(t *testing.T) {
-	for _, size := range []int64{117, 118, 512, 4097, 32769, densitySize} {
+	for _, size := range []int64{115, 116, 512, 4097, 32769, densitySize} {
 		t.Run(sizeText(size), func(t *testing.T) {
 			body := generateBytes(t, "csv", size)
 			if int64(len(body)) != size {

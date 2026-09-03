@@ -32,9 +32,12 @@ jobs:
   test:
     name: test on ${{ matrix.os }}
     # A hung job otherwise holds a runner until the GitHub default of six
-    # hours. Every number here is well above what the job takes today: the
-    # matrix runs in about a minute, the race detector took 148 s when it was
-    # measured, and fuzzing is given 5 minutes a target by its own loop.
+    # hours. Remeasured 2026-09-03, because the sentence here said "the matrix
+    # runs in about a minute" and had not been true for a long time: the test
+    # step alone takes 399 s on ubuntu, 476 s on windows and 491 s on macOS.
+    # The race detector took 148 s when it was measured and has its own job
+    # and its own numbers now, and fuzzing is given 5 minutes a target by its
+    # own loop.
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -244,7 +247,19 @@ jobs:
         shell: bash
 
       - name: test
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1
+        # The timeout is stated for the reason the race job and the coverage
+        # gate both state theirs: Go allows ten minutes PER PACKAGE by default,
+        # this job allows twenty for all of it, and internal/guard is one
+        # package holding almost every test there is. A run that went past the
+        # first without approaching the second would die as a stack trace out
+        # of whichever test happened to be running, which is what the coverage
+        # gate did on 2026-09-03.
+        #
+        # Measured that day, on the run that caught it: 399 s on ubuntu, 476 s
+        # on windows, 491 s on macOS. macOS therefore had 109 s of room under a
+        # limit nobody had chosen, and the same fleet was measured swinging by
+        # more than 25 percent between two runs of one branch.
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -timeout 18m
 
       - name: build the command line binary
         run: go build -tags "$(cat .github/build-tags)" ./cmd/tfg
@@ -727,10 +742,31 @@ jobs:
         # package, and by default Go credits coverage only to the package
         # under test - which reports 0.0% and makes the gate meaningless.
         # Measured, not assumed.
+        #
+        # The timeout is stated rather than left to Go, since 2026-09-03, and
+        # for the same reason the race job above states its own. Go allows ten
+        # minutes PER PACKAGE by default while this job allows twenty for all of
+        # it, so internal/guard died on a limit nobody had chosen - a stack
+        # trace out of whichever test was running when the alarm went off,
+        # instead of a failure naming something.
+        #
+        # Measured on the runner rather than guessed. This step took 375 s and
+        # 457 s on two consecutive main runs of 2026-09-02 and 2026-09-03, which
+        # is 22 percent of variance on code that barely moved between them, and
+        # the default cuts in at 600 s. A branch adding eight seconds of
+        # coverage instrumented work then timed out. Eight seconds is not what
+        # went wrong: 457 against 600 was never a margin, and a limit that
+        # decides on how busy the runner is tells you nothing about the code.
+        #
+        # Atomic counters are the cost. Every statement in every internal
+        # package pays one, and this package renders twenty five screens and
+        # generates files for twenty four formats. Eighteen minutes sits under
+        # the job's own ceiling on purpose, so a genuinely stuck run still fails
+        # as a test with output rather than as a killed job without any.
         run: >
           go test -tags "$(cat .github/build-tags)" ./... -count=1 -covermode=atomic
           -coverpkg=./internal/...,./cmd/...
-          -coverprofile=coverage.out
+          -coverprofile=coverage.out -timeout 18m
 
       - name: gate
         # The threshold lives in exactly one place, .github/coverage-threshold.

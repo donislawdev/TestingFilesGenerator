@@ -51,7 +51,13 @@ jobs:
         # A release built from a red tree is the one kind of release that
         # cannot be taken back, because the binaries are already on somebody's
         # disk. This is the same command CI runs.
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1
+        #
+        # Including the timeout, and that is the point of saying so. Go allows
+        # ten minutes PER PACKAGE by default while this job allows thirty for
+        # all of it, and the suite measured 399 s to 491 s across the three
+        # systems on 2026-09-03. A release run dying on the default would look
+        # like a red tree and stop a release that was fine.
+        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -timeout 18m
 
       - name: what version the code says
         id: version

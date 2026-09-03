@@ -76,13 +76,13 @@ reference is below it.
 
 ## 📁 Formats it generates
 
-Twenty two, and every one is a **real file of that format** - it opens in the
+Twenty four, and every one is a **real file of that format** - it opens in the
 software that owns it, at the exact size you asked for:
 
 | group | formats |
 |---|---|
 | 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
-| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif` |
+| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
@@ -440,7 +440,7 @@ ignored quietly: `extends`, `with`, `policy`, `engine`, `defaults.fill`,
 
 ## 📁 Formats in detail
 
-The twenty two formats are listed near the top of this file. Each is produced at an
+The twenty four formats are listed near the top of this file. Each is produced at an
 exact size and checked against independent readers before it ships - a PNG is
 opened and its pixels compared, a DOCX is read back by three separate
 libraries, an archive is extracted.
@@ -460,14 +460,17 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `pdf` | `pages`, `page_size` |
 | `png`, `bmp`, `tiff`, `webp` | `width`, `height` |
 | `gif` | `width`, `height`, `frames` |
-| `jpg` | `width`, `height`, `quality` |
+| `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
-| `zip`, `targz` | `entries`, `entry_format`, `entry_size` |
+| `zip` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `password`, `encryption` |
+| `targz` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `entry_mode`, `entry_owner` |
 | `docx` | `paragraphs` |
 | `xlsx` | `rows`, `columns` |
 | `pptx` | `slides` |
-| `csv`, `json`, `xml`, `html`, `md`, `log`, `txt`, `svg` | none |
+| `csv` | `delimiter`, `line_ending`, `header`, `quote_style` |
+| `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
+| `json`, `xml`, `html`, `md`, `txt`, `svg` | none |
 
 ```
 tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85
@@ -684,7 +687,7 @@ a valid one of its format.
 
 Honest scope, because a tool that oversells itself wastes your afternoon.
 
-**Working end to end:** twenty two formats, recipes, presets, the desktop window,
+**Working end to end:** twenty four formats, recipes, presets, the desktop window,
 `generate`, `validate`, `verify`, `cleanup`, boundary sets, archive contents,
 size ranges, per format settings, manifests and every exit code above.
 

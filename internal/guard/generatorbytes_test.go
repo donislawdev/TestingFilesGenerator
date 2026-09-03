@@ -216,7 +216,18 @@ func goldenCases() map[string]engine.Target {
 		// longer address, and a terminator of two bytes instead of one.
 		"log_nginx_v6_crlf": {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8193), Label: true,
 			Properties: map[string]string{"entry_format": "nginx", "ip_version": "v6", "line_ending": "crlf"}},
-		"csv_8kib":  {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true},
+		"csv_8kib": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true},
+
+		// The two quote styles that are not the default. Each one is a
+		// different file rather than the same file punctuated differently:
+		// "all" wraps every field including the header, and "none" makes the
+		// description stop carrying the separator, because an unquoted field
+		// cannot hold one. Both change the floor as well as the bytes, which is
+		// why neither is covered by the case above.
+		"csv_8kib_quote_all": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"quote_style": "all"}},
+		"csv_8kib_quote_none": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"quote_style": "none"}},
 		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
 		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},
 		"html_8kib": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true},

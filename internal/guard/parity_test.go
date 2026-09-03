@@ -102,6 +102,7 @@ var reachableFromTheWindow = []string{
 	"property:csv.delimiter",
 	"property:csv.header",
 	"property:csv.line_ending",
+	"property:csv.quote_style",
 	"property:docx.paragraphs",
 	"property:pptx.slides",
 	"property:xlsx.columns",

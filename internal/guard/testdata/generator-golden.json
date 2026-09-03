@@ -30,7 +30,7 @@
     },
     "csv_8kib": {
       "bytes": 8192,
-      "sha256": "9c27e8266485816183ac867c69fe3ae797aeab185a2f5b38c99acdc957076998"
+      "sha256": "0fe75bae3e3b557c2047ca89cca103389dffd8e8b96c65b8c0cf2658605adb28"
     },
     "docx_32kib": {
       "bytes": 32768,
@@ -243,6 +243,14 @@
     "zip_with_three_pdfs": {
       "bytes": 65536,
       "sha256": "2f45c46662ab65d2f598d65446ba0476067fb5c6297dc497d580a0fcd1752fbe"
+    },
+    "csv_8kib_quote_all": {
+      "bytes": 8192,
+      "sha256": "6d863b984384d879fd9026f07855d816e70538cf208819b03cd734a2a682f739"
+    },
+    "csv_8kib_quote_none": {
+      "bytes": 8192,
+      "sha256": "d596eccde18c924fe0245b21523a6fc47c90f2d322131e0b5bcb03dc8a5d8b93"
     }
   },
   "remeasured": [
@@ -287,6 +295,15 @@
     {
       "on": "2026-09-01",
       "why": "The project moved from Go 1.26.7 to Go 1.27.0, and Go 1.27 changed compress/flate. Every format here that puts bytes through deflate produces different ones: docx, pptx and xlsx compress their parts, png compresses its image data, ico when it holds a png, and targz through gzip. Sizes are unchanged - every one of these files is the length it was, and the same sizes are reachable. At compression level zero the change is framing rather than algorithm: the block that closes the stream went from five bytes to two. Above level zero the algorithm itself moved, so the difference is larger and not constant. zip is absent from this list because its default is store, which puts nothing through deflate - ask for compression and it moves too. The tar.gz arithmetic that broke on this now MEASURES the framing rather than carrying it as a constant, so a later Go release moves the bytes again but does not stop the format from being produced."
+    },
+    {
+      "on": "2026-09-03",
+      "why": "csv learned quote_style, and its default value minimal changes the file. A description is quoted only when it carries the separator now, and the phrase builder draws three to seven words while dropping a separator every third one - so a three word description carries none and loses its quotes. Measured on a 4 kB table at seed 7 before the change: 9 of 44 rows. Sizes are unchanged and every size that worked still works, but the floor moved from 117 B to 115 B, because the shortest row has an empty description and an empty field carries no separator. The two cases beside it are the other two values, pinned from the first day they exist rather than after somebody notices they were not: all wraps every field including the header and floors at 139 B, none wraps nothing and makes the description stop carrying the separator, because an unquoted field cannot hold one. The owner decided this on 2026-09-02 and again on 2026-09-03: the release this belongs to closes with a major bump either way, so a clean RFC 4180 vocabulary costs nothing here and a fourth value outside it would have been carried forever.",
+      "files": [
+        "csv_8kib",
+        "csv_8kib_quote_all",
+        "csv_8kib_quote_none"
+      ]
     }
   ]
 }
