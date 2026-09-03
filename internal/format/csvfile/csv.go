@@ -42,9 +42,10 @@ const (
 	// drawn from below guarantees it.
 	amountWidth = 9
 
-	// closingQuote ends the description. What follows it is the row ending,
-	// which the dialect decides, so the two are no longer one constant.
-	closingQuote = `"`
+	// quoteMark wraps a field. It is the one character RFC 4180 gives a value
+	// for holding a separator inside it, and how many of them a row carries is
+	// what quote_style decides.
+	quoteMark = '"'
 
 	// maxRowDigits bounds the width of the row number. A row is at least one
 	// byte, so a file can never hold more rows than it has bytes, and a size is
@@ -54,21 +55,23 @@ const (
 	maxRowDigits = 19
 
 	// fixedBeforeEnding is every byte of a row except the row number, the name
-	// (which also forms the address), the description and the row ending. A
-	// constant expression, so it cannot drift away from the template above.
+	// (which also forms the address), the description, the quotes and the row
+	// ending. A constant expression, so it cannot drift away from the template
+	// above.
 	//
 	// The five separators count one byte each, which is a fact about the
 	// separators offered rather than an assumption: every one of them is a
 	// single byte, and dialect.go says so where they are declared.
 	fixedBeforeEnding = 5 /* separators */ + len(emailDomain) + amountWidth +
-		len(createdDate) + 1 /* the opening quote */ + len(closingQuote)
+		len(createdDate)
 )
 
-// fixedWidth is fixedBeforeEnding plus the row ending, which the dialect
-// decides. A CRLF row costs one byte more than an LF one, on every row, which
-// is why the minimum moves with this setting.
+// fixedWidth is fixedBeforeEnding plus the quotes and the row ending, both of
+// which the dialect decides. A CRLF row costs one byte more than an LF one on
+// every row, and quoting every field costs two bytes per column, which is why
+// the minimum moves with either setting.
 func fixedWidth(d dialect) int64 {
-	return int64(fixedBeforeEnding + len(d.eol))
+	return int64(fixedBeforeEnding + d.quotes.quoteBytes() + len(d.eol))
 }
 
 func init() {
@@ -100,8 +103,8 @@ func init() {
 		// name and the manifest carry it instead.
 		Label:  format.LabelExternalOnly,
 		Oracle: "python-csv",
-		// Quoting, column count and column types come later. Declaring none of
-		// them now makes a recipe asking for one fail loudly.
+		// Column count and column types come later. Declaring neither of them
+		// now makes a recipe asking for one fail loudly.
 		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -146,6 +149,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			"line_ending": d.lineEndingID,
 			"separator":   string(d.sep),
 			"header":      d.header,
+			"quote_style": d.quotes.id,
 			"columns":     len(columnNames),
 			// Stated even though it is always false here, so a test can assert
 			// on it without knowing which formats carry a label internally.
@@ -186,6 +190,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 type rows struct {
 	next int64
 	dia  dialect
+
+	// scratch holds the description while it is being asked whether it needs
+	// quotes. It cannot be written straight into the row, because the answer
+	// decides whether a quote goes in FRONT of it.
+	//
+	// Reused rather than allocated per row. A table of any size is millions of
+	// rows and the resource guard measures exactly that. It stays small: the
+	// closing row is the longest and is bounded by twice the shortest row.
+	scratch []byte
 }
 
 // Shortest is the smallest row this builder can close a file with: the widest
@@ -229,33 +242,100 @@ func (r *rows) append(dst []byte, rng *rand.Rand, want int64) []byte {
 	cents := rng.IntN(100)
 
 	sep := r.dia.sep
+	q := r.dia.quotes
 
+	dst = q.mark(dst)
 	dst = strconv.AppendInt(dst, r.next, 10)
+	dst = q.mark(dst)
 	dst = append(dst, sep)
+	dst = q.mark(dst)
 	dst = append(dst, name...)
+	dst = q.mark(dst)
 	dst = append(dst, sep)
+	dst = q.mark(dst)
 	dst = append(dst, name...)
 	dst = append(dst, emailDomain...)
+	dst = q.mark(dst)
 	dst = append(dst, sep)
+	dst = q.mark(dst)
 	dst = strconv.AppendInt(dst, int64(whole), 10)
 	dst = append(dst, '.')
 	if cents < 10 {
 		dst = append(dst, '0')
 	}
 	dst = strconv.AppendInt(dst, int64(cents), 10)
+	dst = q.mark(dst)
 	dst = append(dst, sep)
+	dst = q.mark(dst)
 	dst = append(dst, createdDate...)
-	dst = append(dst, sep, '"')
+	dst = q.mark(dst)
+	dst = append(dst, sep)
 
+	return r.appendDescription(dst, rng, want, int64(len(dst)-start))
+}
+
+// appendDescription writes the last field and ends the row.
+//
+// want below zero means a natural row, any other value is the exact length the
+// whole row must have. used is what the row has spent already, measured rather
+// than worked out beside the bytes.
+func (r *rows) appendDescription(dst []byte, rng *rand.Rand, want, used int64) []byte {
 	if want < 0 {
-		dst = appendPhrase(dst, rng, 3+rng.IntN(5), sep)
-	} else {
-		// Everything written so far, plus what still has to follow.
-		used := int64(len(dst)-start) + int64(len(closingQuote)) + int64(len(r.dia.eol))
-		dst = appendFiller(dst, want-used, sep)
+		r.scratch = appendPhrase(r.scratch[:0], rng, 3+rng.IntN(5),
+			r.dia.sep, r.dia.quotes.separatorsInDescription)
+		return r.closeRow(dst, r.scratch)
 	}
 
-	dst = append(dst, closingQuote...)
+	// What is left for the description AND its quotes together. Which of the
+	// two it is comes out of fill below.
+	r.scratch = r.fill(r.scratch[:0], want-used-int64(len(r.dia.eol)))
+	return r.closeRow(dst, r.scratch)
+}
+
+// fill builds the description of the closing row so the row lands on exactly
+// the length it was asked for.
+//
+// room is the description and its quotes together, and how it divides between
+// them is the whole of this function. With "all" the quotes are certain. With
+// "none" there are none. With "minimal" it depends on the description itself,
+// so the quoted length is built first and MEASURED: if it carries the
+// separator the quotes are earned and that is the answer, and if it does not,
+// the description is built to the full room with the separator withheld, which
+// leaves nothing for a quote to be needed for.
+//
+// Measured on 2026-09-03: the filler first carries a separator at 30 B of
+// description, so the second branch is reached by the two lengths either side
+// of that. It is a narrow band and it is the only place the two halves of this
+// setting could have disagreed.
+func (r *rows) fill(dst []byte, room int64) []byte {
+	q, sep := r.dia.quotes, r.dia.sep
+
+	if q.everyField {
+		return appendFiller(dst, room-2, sep, true)
+	}
+	if q.separatorsInDescription && room >= 2 {
+		dst = appendFiller(dst, room-2, sep, true)
+		if q.wraps(dst, sep) {
+			return dst
+		}
+		dst = dst[:0]
+	}
+	return appendFiller(dst, room, sep, false)
+}
+
+// closeRow puts the description into the row and ends it.
+//
+// It asks the setting whether these bytes carry quotes, and fill above asked
+// the same question to work the length out - one question, one answer, so the
+// arithmetic and the bytes cannot part company.
+func (r *rows) closeRow(dst, description []byte) []byte {
+	if r.dia.quotes.wraps(description, r.dia.sep) {
+		dst = append(dst, quoteMark)
+		dst = append(dst, description...)
+		dst = append(dst, quoteMark)
+	} else {
+		dst = append(dst, description...)
+	}
 	return append(dst, r.dia.eol...)
 }
 
@@ -268,10 +348,13 @@ func (r *rows) append(dst []byte, rng *rand.Rand, want int64) []byte {
 // needs no quoting, so a description that kept dropping commas would leave a
 // semicolon file never exercising the quoted path at all - the file would be
 // the right size, parse everywhere, and quietly test less than the comma one.
-func appendPhrase(dst []byte, rng *rand.Rand, n int, sep byte) []byte {
+//
+// carries is false only under quote_style none, where an unquoted field cannot
+// hold a separator without ending early.
+func appendPhrase(dst []byte, rng *rand.Rand, n int, sep byte, carries bool) []byte {
 	for i := 0; i < n; i++ {
 		if i > 0 {
-			if i%3 == 0 {
+			if carries && i%3 == 0 {
 				dst = append(dst, sep)
 			}
 			dst = append(dst, ' ')
@@ -291,11 +374,12 @@ func appendPhrase(dst []byte, rng *rand.Rand, n int, sep byte) []byte {
 // A separator every fourth word, unlike every other format here, and on
 // purpose: the description is a quoted field, so the padding is what makes a
 // long file keep exercising the quoting rather than turning into plain words.
-// It follows the dialect for the reason appendPhrase gives.
-func appendFiller(dst []byte, n int64, sep byte) []byte {
+// It follows the dialect for the reason appendPhrase gives, and it withholds
+// the separator for the reason appendPhrase gives too.
+func appendFiller(dst []byte, n int64, sep byte, carries bool) []byte {
 	both := string(sep) + " "
 	return core.AppendFiller(dst, words, n, func(i int) string {
-		if i%4 == 0 {
+		if carries && i%4 == 0 {
 			return both
 		}
 		return " "

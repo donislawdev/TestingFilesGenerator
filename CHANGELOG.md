@@ -16,6 +16,36 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **A generated `.csv` quotes only the fields that need it, so its bytes are
+  different.** Sizes are unchanged. Every size that worked before still works,
+  every reader that took these files still takes them, and the file is still
+  RFC 4180.
+
+  The description column used to be quoted on every row. It is quoted now only
+  when it carries the separator, which is the one thing that makes a quote
+  necessary. The description is three to seven words and drops a separator
+  every third one, so a short one carries none - measured on a 4 kB table,
+  **9 of its 44 rows** lost their quotes.
+
+  This arrives as a new setting, `quote_style`, which takes `minimal`, `all` or
+  `none`:
+
+  - `minimal` is the new default and is what a spreadsheet writes.
+  - `all` wraps every field on every row, the header included.
+  - `none` wraps nothing. It also stops the description carrying the separator,
+    because an unquoted field cannot hold one without ending early - so this
+    value changes what the file says and not only how it is punctuated.
+
+  **The smallest `.csv` is 115 B rather than 117**, because the shortest row
+  has an empty description and an empty field needs no quotes. With
+  `quote_style=all` the smallest is 139 B. `tfg formats` prints the current
+  numbers.
+
+  **A suite pinning `.csv` hashes will go red once and then stay green.** There
+  is no switch back to the old bytes: they were not any of the three styles RFC
+  4180 describes, and carrying a fourth name for them forever costs more than
+  the one red run.
+
 - **Six formats have different bytes, because the tool is built with Go 1.27
   now.** Sizes are unchanged. Every size that worked before still works, every
   reader that took these files still takes them, and the same sizes are

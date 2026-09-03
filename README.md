@@ -467,7 +467,8 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `docx` | `paragraphs` |
 | `xlsx` | `rows`, `columns` |
 | `pptx` | `slides` |
-| `csv`, `json`, `xml`, `html`, `md`, `log`, `txt`, `svg` | none |
+| `csv` | `delimiter`, `line_ending`, `header`, `quote_style` |
+| `json`, `xml`, `html`, `md`, `txt`, `svg` | none |
 
 ```
 tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85

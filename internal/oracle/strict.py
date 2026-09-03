@@ -289,6 +289,12 @@ def check_csv(data, settings=None):
     file uses the separator that was ordered is a question for a guard reading
     the manifest, not for this. Told, it can still catch the defect that
     matters here: a header and its rows disagreeing about the separator.
+
+    Quoting is judged as well as parsed, and that is a separate job from
+    reading the table. Every one of the three styles parses - a file that
+    quoted nothing and a file that quoted everything are both well formed RFC
+    4180 - so the shape of the table says nothing at all about whether the
+    style that was ordered is the style in the file.
     """
     FIELD_CEILING = 131072
 
@@ -296,6 +302,9 @@ def check_csv(data, settings=None):
     sep = CSV_DELIMITERS[settings.get("delimiter", "comma")]
     eol = CSV_LINE_ENDINGS[settings.get("line_ending", "lf")]
     has_header = settings.get("header", "true") == "true"
+    style = settings.get("quote_style", "minimal")
+    if style not in ("minimal", "all", "none"):
+        fail(f"quote_style {style!r} is not one of minimal, all, none")
 
     try:
         text = data.decode("utf-8")
@@ -306,7 +315,11 @@ def check_csv(data, settings=None):
         fail(f"the file does not end with {settings.get('line_ending', 'lf')}, "
              "so the last row is unterminated")
 
-    rows, field, row, quoted, i = [], [], [], False, 0
+    # Each field is kept with whether the RAW TEXT wrapped it in quotes, which
+    # is the only thing that survives parsing and the only thing quote_style is
+    # about. A parser that returned values alone could not tell the three
+    # styles apart at all.
+    rows, field, row, quoted, wrapped, i = [], [], [], False, False, 0
     while i < len(text):
         ch = text[i]
         if quoted:
@@ -323,13 +336,13 @@ def check_csv(data, settings=None):
         if ch == '"':
             if field:
                 fail(f"row {len(rows) + 1} opens a quote in the middle of a field")
-            quoted = True
+            quoted, wrapped = True, True
         elif ch == sep:
-            row.append("".join(field))
-            field = []
+            row.append(("".join(field), wrapped))
+            field, wrapped = [], False
         elif text.startswith(eol, i):
-            row.append("".join(field))
-            field = []
+            row.append(("".join(field), wrapped))
+            field, wrapped = [], False
             rows.append(row)
             row = []
             i += len(eol)
@@ -362,16 +375,41 @@ def check_csv(data, settings=None):
         fail(f"the first row has {columns} column(s), so nothing is separated by "
              f"the {settings.get('delimiter', 'comma')} this file is meant to use")
     declares = "the header" if has_header else "the first row"
+    quoted_fields = 0
     for number, r in enumerate(rows, start=1):
         if len(r) != columns:
             fail(f"row {number} has {len(r)} fields and {declares} declares {columns}")
-        for value in r:
+        for value, was_quoted in r:
+            quoted_fields += was_quoted
             if len(value.encode("utf-8")) > FIELD_CEILING:
                 fail(f"row {number} has a field of {len(value.encode('utf-8'))} B - "
                      f"the default Python reader refuses anything above {FIELD_CEILING} B")
+            check_quoting(style, number, value, was_quoted, sep)
 
     data = len(rows) - 1 if has_header else len(rows)
-    ok(f"{data} data rows, {columns} columns each")
+    ok(f"{data} data rows, {columns} columns each, {quoted_fields} quoted fields")
+
+
+def check_quoting(style, number, value, was_quoted, sep):
+    """One field against the quote_style the file was ordered in.
+
+    Only one direction is checkable under minimal, and that is a property of
+    CSV rather than a gap here: a field that carried a separator without quotes
+    would have been SPLIT before it reached this, so it arrives as two fields
+    of the wrong width and the check above catches it as a ragged row. What
+    cannot be caught that way is the opposite - a quote around a value that
+    never needed one - so that is what this asks.
+    """
+    needs = any(ch in value for ch in (sep, '"', chr(13), chr(10)))
+    if style == "all" and not was_quoted:
+        fail(f"row {number} has the bare field {value[:40]!r} and quote_style all "
+             "means every field carries quotes")
+    if style == "none" and was_quoted:
+        fail(f"row {number} quotes the field {value[:40]!r} and quote_style none "
+             "means no field does")
+    if style == "minimal" and was_quoted and not needs:
+        fail(f"row {number} quotes the field {value[:40]!r}, which holds no separator, "
+             "no quote and no line break - quote_style minimal quotes only what needs it")
 
 
 def check_json(data):
