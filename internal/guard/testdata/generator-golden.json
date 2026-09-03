@@ -251,6 +251,10 @@
     "csv_8kib_quote_none": {
       "bytes": 8192,
       "sha256": "d596eccde18c924fe0245b21523a6fc47c90f2d322131e0b5bcb03dc8a5d8b93"
+    },
+    "csv_8kib_seventeen_columns": {
+      "bytes": 8192,
+      "sha256": "23d2fc7e93456ed828159d7d5199faaed2129d164640e0743c5aaf37bb9b6143"
     }
   },
   "remeasured": [
@@ -303,6 +307,13 @@
         "csv_8kib",
         "csv_8kib_quote_all",
         "csv_8kib_quote_none"
+      ]
+    },
+    {
+      "on": "2026-09-03",
+      "why": "csv learned columns, and NOTHING here moved because of it. The three csv cases above are byte for byte what they were an hour earlier, which is the whole claim this setting makes: the default is the six columns this format has always written, so a table nobody asked to reshape is the table it was. The new case is the other half - a width of seventeen, pinned from the day it exists rather than after somebody notices it never was. It covers what a count cannot: every column carries its own value and its own separator, so reordering the columns while keeping their number would move these bytes and leave every size and width check green. The floor moves with the width and is measured, not pinned here: 36 B at two columns, 115 B at six, 5017 B at 256 and 709793 B at the ceiling of 32768.",
+      "files": [
+        "csv_8kib_seventeen_columns"
       ]
     }
   ]

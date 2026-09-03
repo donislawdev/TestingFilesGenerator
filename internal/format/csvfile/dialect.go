@@ -15,6 +15,8 @@ package csvfile
 
 import (
 	"bytes"
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -26,6 +28,37 @@ const (
 	LineEnding = "line_ending"
 	Header     = "header"
 	QuoteStyle = "quote_style"
+	Columns    = "columns"
+)
+
+const (
+	// minColumns is two, and it is a decision rather than a limit of the
+	// writer. A table of one column has no separator in it anywhere, so a file
+	// written with the wrong one is byte for byte a file written with the right
+	// one - our own structural check refuses such a file for exactly that
+	// reason, measured 2026-09-03. It would also leave the delimiter setting
+	// doing nothing at all, which this project treats as a refusal rather than
+	// a silence. And a single column of values is a txt file, which this tool
+	// already writes.
+	minColumns = 2
+
+	// defaultColumns is the six this format has always had. Leaving it alone
+	// produces the same bytes it always did.
+	defaultColumns = 6
+
+	// maxColumns is deliberately ABOVE the width of a spreadsheet, and that is
+	// the whole reason for the number.
+	//
+	// Measured 2026-09-03 with LibreOffice Calc 26.2.5.2 headless: a table of
+	// 16384 columns comes back whole, and one of 16385 comes back with 16384 -
+	// the last column is dropped without a word. 32768 columns came back as
+	// 16384 too, in three seconds, so the clamp is quiet and cheap rather than
+	// an error anybody would see.
+	//
+	// A tester needs to stand on BOTH sides of that line, because building the
+	// set around a boundary is what this tool is for. Stopping at 16384 would
+	// offer the last table that survives and not the first that does not.
+	maxColumns = 32768
 )
 
 // delimiters are the separators offered, by name rather than by character.
@@ -118,12 +151,13 @@ func (q quoting) wraps(description []byte, sep byte) bool {
 //
 // That row has an empty description, and an empty field carries no separator,
 // so minimal leaves it bare and pays nothing. Only "all" pays, and it pays for
-// every column.
-func (q quoting) quoteBytes() int {
+// every column - so the number of them is asked for rather than assumed to be
+// the six this format started with.
+func (q quoting) quoteBytes(columns int) int {
 	if !q.everyField {
 		return 0
 	}
-	return 2 * len(columnNames)
+	return 2 * columns
 }
 
 // mark writes the quote that wraps a plain field, which only "all" has.
@@ -146,6 +180,8 @@ type dialect struct {
 	header bool
 
 	quotes quoting
+
+	columns int
 }
 
 func defaultDialect() dialect {
@@ -156,10 +192,11 @@ func defaultDialect() dialect {
 		eol:          "\n",
 		header:       true,
 		quotes:       quoteStyles["minimal"],
+		columns:      defaultColumns,
 	}
 }
 
-// parseDialect reads the three settings.
+// parseDialect reads the five settings.
 //
 // A value that is not in the declared set has already been refused by the
 // registry, which checks it against the declaration for every format at once.
@@ -211,17 +248,70 @@ func parseDialect(props map[string]string) (dialect, error) {
 		d.quotes = q
 	}
 
+	n, err := columnsFrom(props, d.columns)
+	if err != nil {
+		return dialect{}, err
+	}
+	d.columns = n
+
 	return d, nil
+}
+
+// columnsFrom reads the one setting here that is a number rather than a word.
+//
+// Its own function because the four above are each three lines and this is
+// seven, and because parseDialect had reached the point where one more setting
+// took it past the branching the code shape guard allows. Splitting it was the
+// answer rather than raising that number, which is the rule this project keeps:
+// the crowd counter only goes down.
+func columnsFrom(props map[string]string, fallback int) (int, error) {
+	v, ok := props[Columns]
+	if !ok || v == "" {
+		return fallback, nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, badValue(Columns, v, "it has to be a whole number")
+	}
+	if n < minColumns || n > maxColumns {
+		return 0, badValue(Columns, v,
+			fmt.Sprintf("it has to be between %d and %d", minColumns, maxColumns))
+	}
+	return n, nil
 }
 
 func badValue(key, val, why string) error {
 	return &format.PropertyValueError{Format: "csv", Key: key, Value: val, Reason: why}
 }
 
-// columnNames are the columns this table has always had. The last one is the
-// description, which is the field the closing row stretches to reach an exact
-// length, so it stays last whatever else changes.
-var columnNames = []string{"id", "name", "email", "amount", "created", "description"}
+// baseColumns are the columns this table has always had, without the
+// description. It is last in every table and is not in this list for that
+// reason - it is the field the closing row stretches to reach an exact length,
+// so it stays last whatever else changes.
+var baseColumns = []string{"id", "name", "email", "amount", "created"}
+
+// columnNamesFor is the header of a table this wide.
+//
+// The leading names are taken from baseColumns in order and the description
+// closes the row, so asking for fewer columns drops them from the MIDDLE
+// rather than from either end. Six gives exactly the six this format has
+// always written, which is what keeps the default byte for byte what it was.
+//
+// Past those, the names say where they are rather than what they hold. Column
+// types - a name, an address, a telephone number - are a separate piece of
+// work with its own place in the backlog, and inventing half of it here would
+// be the harder half to take back.
+func columnNamesFor(columns int) []string {
+	out := make([]string, 0, columns)
+	for i := 0; i < columns-1; i++ {
+		if i < len(baseColumns) {
+			out = append(out, baseColumns[i])
+			continue
+		}
+		out = append(out, "field_"+strconv.Itoa(i+1))
+	}
+	return append(out, "description")
+}
 
 // headerLine is the first row, built from the dialect rather than written out,
 // so the separator in it cannot disagree with the separator in the rows below.
@@ -233,12 +323,13 @@ var columnNames = []string{"id", "name", "email", "amount", "created", "descript
 // well, so a header left bare would be the one row disagreeing with the
 // setting that produced it.
 func (d dialect) headerLine() string {
-	names := columnNames
+	names := columnNamesFor(d.columns)
 	if d.quotes.everyField {
-		names = make([]string, 0, len(columnNames))
-		for _, column := range columnNames {
-			names = append(names, string(quoteMark)+column+string(quoteMark))
+		quoted := make([]string, 0, len(names))
+		for _, column := range names {
+			quoted = append(quoted, string(quoteMark)+column+string(quoteMark))
 		}
+		names = quoted
 	}
 	return strings.Join(names, string(d.sep)) + d.eol
 }
@@ -275,6 +366,12 @@ func properties() []format.Property {
 			Name: QuoteStyle, Kind: format.PropertyChoice,
 			Choices: quoteStyleIDs, Default: "minimal",
 			Detail: "Which fields carry quotes. With none the description stops carrying separators as well, because an unquoted field cannot hold one.",
+		},
+		{
+			Name: Columns, Kind: format.PropertyInt,
+			Min: minColumns, Max: maxColumns, Unit: "columns",
+			Default: strconv.Itoa(defaultColumns),
+			Detail:  "How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word.",
 		},
 	}
 }

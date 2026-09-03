@@ -228,6 +228,14 @@ func goldenCases() map[string]engine.Target {
 			Properties: map[string]string{"quote_style": "all"}},
 		"csv_8kib_quote_none": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true,
 			Properties: map[string]string{"quote_style": "none"}},
+
+		// A width that is not the six this format started with. Every column
+		// carries its own value and its own separator, so this pins the whole
+		// row template rather than a count in a header - and it is the case
+		// that would move if somebody reordered the columns while keeping their
+		// number, which no size or count check would see.
+		"csv_8kib_seventeen_columns": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"columns": "17"}},
 		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
 		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},
 		"html_8kib": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true},

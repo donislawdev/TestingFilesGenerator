@@ -305,6 +305,12 @@ def check_csv(data, settings=None):
     style = settings.get("quote_style", "minimal")
     if style not in ("minimal", "all", "none"):
         fail(f"quote_style {style!r} is not one of minimal, all, none")
+    # How many columns there should be, when the caller knows. Told rather than
+    # counted, because counting can only ask whether the rows AGREE with each
+    # other - and a table that wrote five columns where six were ordered agrees
+    # with itself perfectly, at exactly the right size.
+    wanted = settings.get("columns")
+    wanted = int(wanted) if wanted is not None else None
 
     try:
         text = data.decode("utf-8")
@@ -371,6 +377,8 @@ def check_csv(data, settings=None):
         fail(f"the table holds {len(rows)} row(s), so there is no data to check")
 
     columns = len(rows[0])
+    if wanted is not None and columns != wanted:
+        fail(f"the first row has {columns} column(s) and {wanted} were ordered")
     if columns < 2:
         fail(f"the first row has {columns} column(s), so nothing is separated by "
              f"the {settings.get('delimiter', 'comma')} this file is meant to use")
