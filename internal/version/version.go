@@ -7,17 +7,25 @@ package version
 // Version is written into every manifest. A manifest without it cannot
 // explain a hash mismatch after an upgrade.
 //
-// Set to 0.1.0 by the owner on 2026-08-02 and raised to 0.2.0 by the owner on
-// 2026-08-28. It stopped being an internal number the day 0.1.0 was published:
-// this is what somebody compares their build against when a hash they stored
-// months ago does not match.
+// Set to 0.1.0 by the owner on 2026-08-02, raised to 0.2.0 on 2026-08-28 and
+// to 0.3.0-rc1 on 2026-09-03, every one of them by the owner. It stopped being
+// an internal number the day 0.1.0 was published: this is what somebody
+// compares their build against when a hash they stored months ago does not
+// match.
 //
-// A minor bump rather than a major one, and here that is a claim about other
-// people's CI rather than a habit - D11 and immutable rule 3. What changed
-// under Breaking is which names and sizes this tool AGREES to produce, not what
-// it writes once it agrees. The machine answer to that is the golden hashes in
-// internal/guard/testdata, which are byte for byte the ones 0.1.0 shipped with.
-const Version = "0.2.0"
+// 0.2.0 was a minor bump that moved no bytes. This one moves them, and before
+// 1.0 the minor is where that goes - D11 and immutable rule 3 ask for a bump,
+// not for a particular digit. Six formats have different bytes under Go 1.27,
+// a log advances through time, a GIF moves, and a CSV quotes only the fields
+// that need it. The changelog lists each one and says whether there is a way
+// back to the old bytes.
+//
+// The suffix is not decoration and it is not spelled freely. The release
+// workflow marks a release as a prerelease when the TAG NAME carries a hyphen,
+// so 0.3.0rc1 would have gone out as the latest stable release. The changelog
+// section has to be spelled the same way, because the workflow greps for a
+// heading naming exactly this string before it will build anything.
+const Version = "0.3.0-rc1"
 
 // LicenceNotice is what "tfg license" prints and what the window's about
 // screen shows.

@@ -39,8 +39,8 @@
 1 ICON "../../internal/gui/icon/chickpea.ico"
 
 1 VERSIONINFO
-FILEVERSION 0,2,0,0
-PRODUCTVERSION 0,2,0,0
+FILEVERSION 0,3,0,0
+PRODUCTVERSION 0,3,0,0
 FILEOS 0x40004L
 FILETYPE 0x1L
 BEGIN
@@ -50,12 +50,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "DonislawDev"
             VALUE "FileDescription", "Generates test files for QA, from the command line"
-            VALUE "FileVersion", "0.2.0"
+            VALUE "FileVersion", "0.3.0-rc1"
             VALUE "InternalName", "tfg"
             VALUE "LegalCopyright", "Copyright (C) 2026 DonislawDev. GNU GPL version 3."
             VALUE "OriginalFilename", "tfg.exe"
             VALUE "ProductName", "Testing Files Generator"
-            VALUE "ProductVersion", "0.2.0"
+            VALUE "ProductVersion", "0.3.0-rc1"
         END
     END
     BLOCK "VarFileInfo"
