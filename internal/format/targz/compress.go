@@ -199,11 +199,20 @@ func belowMinimum(target, floor int64) error {
 // reachable refuses a compressed archive whose size the contents already
 // exceed, using the STORED arithmetic.
 //
-// The stored number is the honest bound to check here even though the archive
-// will be compressed. Compression only ever makes the contents smaller, so an
-// archive that fits when stored fits when squeezed - and the stored number is
-// the one the plan can work out without compressing anything, which is what
-// keeps a preview cheap.
+// A cheap early refusal rather than a proof, and the sentence that used to
+// stand here claimed the second thing. It said "compression only ever makes the
+// contents smaller, so an archive that fits when stored fits when squeezed".
+// That is false, and it is the exact assumption zip fell over on: deflate GROWS
+// data that is already compressed. Measured on 2026-09-02 with two Office
+// documents inside a zip, a band 50 B wide at 2 MB where the space compression
+// freed came out negative and the file was written short of its size.
+//
+// What keeps this format to the byte is not this check. It is
+// settleCompressed, which measures the real stream and iterates until the
+// padding lands, and refuses when it cannot. This one answers only "even
+// stored, the contents already exceed the size asked for", which is worth
+// having because it is the answer a preview can give without compressing
+// anything.
 func reachable(m *memo, target int64, label string, groups []format.Content) error {
 	probe := *m
 	probe.squeeze = archive.Squeeze{}
