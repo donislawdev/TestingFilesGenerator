@@ -91,12 +91,18 @@ func flowDepth(src []byte) int {
 // the shape guard counts how many functions sit that deep as well as how deep
 // the deepest one is. Splitting is what that guard asks for and it costs
 // nothing here.
+// The default is not decoration. token.Type has thirty four members and a
+// switch on it without one is reported as incomplete, which is correct of the
+// linter and wrong about this function: everything that is not a bracket or a
+// brace leaves the nesting where it was, and listing thirty of them would say
+// less than one line saying so.
 func depthChange(t token.Type) int {
 	switch t {
 	case token.SequenceStartType, token.MappingStartType:
 		return 1
 	case token.SequenceEndType, token.MappingEndType:
 		return -1
+	default:
+		return 0
 	}
-	return 0
 }
