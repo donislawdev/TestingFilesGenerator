@@ -150,6 +150,26 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **`csv` takes `columns`, so a table can be as narrow or as wide as the thing
+  you are testing.** Two to 32768, and six by default - which is the six
+  columns this tool has always written, so a `.csv` you already generate does
+  not change by a byte.
+
+  Fewer than six drops them from the middle: `id` stays first and
+  `description` stays last, because that is the field stretched to reach the
+  exact size you asked for. More than six adds `field_7`, `field_8` and so on
+  in front of the description.
+
+  **Above 16384 columns a spreadsheet quietly keeps the first 16384 and drops
+  the rest.** Measured with LibreOffice Calc: 16384 comes back whole, 16385
+  comes back with one column missing and no warning anywhere. The ceiling here
+  is deliberately past that, so you can build the set either side of the line
+  rather than only the last file that survives it.
+
+  The smallest file moves with the setting, the way it already does for row
+  endings and quoting - 36 B at two columns, 115 B at six, 5017 B at 256.
+  `tfg formats csv` prints what a given table needs.
+
 - **A `targz` manifest says what its entries claim about themselves.** Two new
   keys on the file entry, `entry_mode` and `entry_owner`, written every run
   rather than only when you ask for them, so a harness never has to read a

@@ -53,25 +53,51 @@ const (
 	// Bounding it rather than guessing is what lets the closing row reach its
 	// length whatever row number it lands on.
 	maxRowDigits = 19
-
-	// fixedBeforeEnding is every byte of a row except the row number, the name
-	// (which also forms the address), the description, the quotes and the row
-	// ending. A constant expression, so it cannot drift away from the template
-	// above.
-	//
-	// The five separators count one byte each, which is a fact about the
-	// separators offered rather than an assumption: every one of them is a
-	// single byte, and dialect.go says so where they are declared.
-	fixedBeforeEnding = 5 /* separators */ + len(emailDomain) + amountWidth +
-		len(createdDate)
 )
 
-// fixedWidth is fixedBeforeEnding plus the quotes and the row ending, both of
-// which the dialect decides. A CRLF row costs one byte more than an LF one on
-// every row, and quoting every field costs two bytes per column, which is why
-// the minimum moves with either setting.
+// widestColumn is the most bytes the column at this position can take, for any
+// draw. The description is not here: it is always last and is empty in the row
+// the floor is made of.
+//
+// Measured rather than guessed only in the sense that every number in it is
+// read off the template above. The positions match columnNamesFor, and a
+// column past the ones this format started with holds a word.
+func widestColumn(at int) int {
+	switch at {
+	case 0:
+		return maxRowDigits
+	case 1:
+		return longestWord
+	case 2:
+		return longestWord + len(emailDomain)
+	case 3:
+		return amountWidth
+	case 4:
+		return len(createdDate)
+	default:
+		return longestWord
+	}
+}
+
+// fixedWidth is the whole row except the description: every leading column at
+// its widest, the separators between all of them, the quotes and the row
+// ending.
+//
+// Three settings move it. A CRLF row costs one byte more than an LF one on
+// every row, quoting every field costs two bytes a column, and the number of
+// columns moves every term at once - which is why the minimum moves with any
+// of the three.
+//
+// The separators count one byte each, which is a fact about the separators
+// offered rather than an assumption: every one of them is a single byte, and
+// dialect.go says so where they are declared.
 func fixedWidth(d dialect) int64 {
-	return int64(fixedBeforeEnding + d.quotes.quoteBytes() + len(d.eol))
+	total := int64(d.columns-1) /* separators */ + int64(len(d.eol)) +
+		int64(d.quotes.quoteBytes(d.columns))
+	for at := 0; at < d.columns-1; at++ {
+		total += int64(widestColumn(at))
+	}
+	return total
 }
 
 func init() {
@@ -150,7 +176,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			"separator":   string(d.sep),
 			"header":      d.header,
 			"quote_style": d.quotes.id,
-			"columns":     len(columnNames),
+			"columns":     d.columns,
 			// Stated even though it is always false here, so a test can assert
 			// on it without knowing which formats carry a label internally.
 			format.PropertyLabelEmbedded: false,
@@ -202,10 +228,10 @@ type rows struct {
 }
 
 // Shortest is the smallest row this builder can close a file with: the widest
-// row number, the longest name in both the name and the address, and an empty
-// description. It has to hold for every draw rather than for the lucky one.
+// row number, the longest word wherever a word goes, and an empty description.
+// It has to hold for every draw rather than for the lucky one.
 func (r *rows) Shortest() int64 {
-	return int64(maxRowDigits+2*longestWord) + fixedWidth(r.dia)
+	return fixedWidth(r.dia)
 }
 
 func (r *rows) Append(dst []byte, rng *rand.Rand) []byte {
@@ -244,34 +270,49 @@ func (r *rows) append(dst []byte, rng *rand.Rand, want int64) []byte {
 	sep := r.dia.sep
 	q := r.dia.quotes
 
-	dst = q.mark(dst)
-	dst = strconv.AppendInt(dst, r.next, 10)
-	dst = q.mark(dst)
-	dst = append(dst, sep)
-	dst = q.mark(dst)
-	dst = append(dst, name...)
-	dst = q.mark(dst)
-	dst = append(dst, sep)
-	dst = q.mark(dst)
-	dst = append(dst, name...)
-	dst = append(dst, emailDomain...)
-	dst = q.mark(dst)
-	dst = append(dst, sep)
-	dst = q.mark(dst)
-	dst = strconv.AppendInt(dst, int64(whole), 10)
-	dst = append(dst, '.')
-	if cents < 10 {
-		dst = append(dst, '0')
+	// Every column but the description, in the order columnNamesFor names
+	// them. The draws above happen once and outside this loop, which is what
+	// keeps a six column table byte for byte what it always was: a narrower
+	// table draws exactly the same values and writes fewer of them, and a wider
+	// one draws its extra words only when it reaches them.
+	for at := 0; at < r.dia.columns-1; at++ {
+		dst = q.mark(dst)
+		dst = r.appendValue(dst, rng, at, name, whole, cents)
+		dst = q.mark(dst)
+		dst = append(dst, sep)
 	}
-	dst = strconv.AppendInt(dst, int64(cents), 10)
-	dst = q.mark(dst)
-	dst = append(dst, sep)
-	dst = q.mark(dst)
-	dst = append(dst, createdDate...)
-	dst = q.mark(dst)
-	dst = append(dst, sep)
 
 	return r.appendDescription(dst, rng, want, int64(len(dst)-start))
+}
+
+// appendValue writes the value of the column at this position.
+//
+// The name is drawn once by the caller and used twice, in the name column and
+// inside the address, which is how this table has always read. The positions
+// match widestColumn above, and the two are the pair that has to stay in step -
+// a value wider than its column would make the closing row overshoot a length
+// it was handed.
+func (r *rows) appendValue(dst []byte, rng *rand.Rand, at int, name string, whole, cents int) []byte {
+	switch at {
+	case 0:
+		return strconv.AppendInt(dst, r.next, 10)
+	case 1:
+		return append(dst, name...)
+	case 2:
+		dst = append(dst, name...)
+		return append(dst, emailDomain...)
+	case 3:
+		dst = strconv.AppendInt(dst, int64(whole), 10)
+		dst = append(dst, '.')
+		if cents < 10 {
+			dst = append(dst, '0')
+		}
+		return strconv.AppendInt(dst, int64(cents), 10)
+	case 4:
+		return append(dst, createdDate...)
+	default:
+		return append(dst, words[rng.IntN(len(words))]...)
+	}
 }
 
 // appendDescription writes the last field and ends the row.

@@ -67,6 +67,27 @@ func writeCSV(t *testing.T, size int64, seed uint64, props map[string]string) []
 	return buf.Bytes()
 }
 
+// csvPlannedColumns is how many columns this dialect produces, asked of the
+// plan rather than counted in the guard. The plan is what the manifest carries,
+// so a guard reading it is reading the number a user would.
+func csvPlannedColumns(t *testing.T, props map[string]string) int {
+	t.Helper()
+	d, err := format.Get("csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := d.Generator.Plan(format.Request{Bytes: 8192, Seed: 1, Label: true, Properties: props})
+	if err != nil {
+		t.Fatalf("planning to read the column count with %v: %v", props, err)
+	}
+	n, ok := p.Properties["columns"].(int)
+	if !ok || n < 2 {
+		t.Fatalf("the plan reports columns as %v, and this guard counts separators against it",
+			p.Properties["columns"])
+	}
+	return n
+}
+
 // csvFloor is the smallest file this dialect will take, asked of the format
 // rather than worked out here. Repeating the arithmetic in the guard would only
 // prove the guard agrees with itself.
@@ -251,8 +272,11 @@ func csvDialectCase(t *testing.T, seen map[int64]bool, delim, eol, header, style
 // csvPaddingCarriesTheSeparator asks whether the padded row puts the separator
 // inside the quotes, which is the only reason that column is ever quoted.
 //
-// Asked by counting: a row has five separators between its six fields, so any
-// row carrying more than five has them inside the quotes.
+// Asked by counting: a row of N fields has N-1 separators between them, so any
+// row carrying more is holding some inside its quotes. The number is asked of
+// the registry rather than written as five - it WAS five until columns arrived
+// on 2026-09-03, and a guard carrying the old constant would have gone on
+// passing while counting the wrong thing.
 //
 // Over a BAND of sizes rather than one, and that is the whole reason this is a
 // function of its own. The closing row is whatever length was left over, and a
@@ -265,12 +289,16 @@ func csvDialectCase(t *testing.T, seen map[int64]bool, delim, eol, header, style
 func csvPaddingCarriesTheSeparator(t *testing.T, props map[string]string, sep, delim, style, eol string) {
 	t.Helper()
 	const band = 24
+	// How many separators hold the row together, as opposed to sitting inside a
+	// field. Read off the plan rather than assumed, so this keeps counting the
+	// right thing when a caller sets a width.
+	columns := csvPlannedColumns(t, props)
 	carried, widest := 0, 0
 	for size := int64(8192); size < 8192+band; size++ {
 		body := string(writeCSV(t, size, 9, props))
 		rows := strings.Split(strings.TrimSuffix(body, eol), eol)
 		last := rows[len(rows)-1]
-		if inside := strings.Count(last, sep) - 5; inside > 0 {
+		if inside := strings.Count(last, sep) - (columns - 1); inside > 0 {
 			carried++
 		}
 		if len(last) > widest {
@@ -280,8 +308,8 @@ func csvPaddingCarriesTheSeparator(t *testing.T, props map[string]string, sep, d
 
 	if style == "none" {
 		if carried != 0 {
-			t.Errorf("%d of %d closing rows carry a %s beyond the five that separate the fields, and "+
-				"quote_style none has no quotes to hide one in", carried, band, delim)
+			t.Errorf("%d of %d closing rows carry a %s beyond the %d that separate the fields, and "+
+				"quote_style none has no quotes to hide one in", carried, band, delim, columns-1)
 		}
 		return
 	}
@@ -403,13 +431,16 @@ func TestTheCSVManifestRecordsTheDialectAsFacts(t *testing.T) {
 		eol   string
 		head  bool
 		style string
+		cols  int
 	}{
-		{map[string]string{}, ",", "lf", true, "minimal"},
-		{map[string]string{"delimiter": "semicolon"}, ";", "lf", true, "minimal"},
-		{map[string]string{"delimiter": "tab", "line_ending": "crlf"}, "\t", "crlf", true, "minimal"},
-		{map[string]string{"delimiter": "pipe", "header": "false"}, "|", "lf", false, "minimal"},
-		{map[string]string{"quote_style": "all"}, ",", "lf", true, "all"},
-		{map[string]string{"quote_style": "none", "delimiter": "tab"}, "\t", "lf", true, "none"},
+		{map[string]string{}, ",", "lf", true, "minimal", 6},
+		{map[string]string{"delimiter": "semicolon"}, ";", "lf", true, "minimal", 6},
+		{map[string]string{"delimiter": "tab", "line_ending": "crlf"}, "\t", "crlf", true, "minimal", 6},
+		{map[string]string{"delimiter": "pipe", "header": "false"}, "|", "lf", false, "minimal", 6},
+		{map[string]string{"quote_style": "all"}, ",", "lf", true, "all", 6},
+		{map[string]string{"quote_style": "none", "delimiter": "tab"}, "\t", "lf", true, "none", 6},
+		{map[string]string{"columns": "2"}, ",", "lf", true, "minimal", 2},
+		{map[string]string{"columns": "41", "quote_style": "all"}, ",", "lf", true, "all", 41},
 	}
 	for _, c := range cases {
 		t.Run(fmt.Sprint(c.props), func(t *testing.T) {
@@ -431,6 +462,11 @@ func TestTheCSVManifestRecordsTheDialectAsFacts(t *testing.T) {
 			// spelling of it the way there is for the separator.
 			if got := p.Properties["quote_style"]; got != c.style {
 				t.Errorf("quote_style is %v, wanted %q", got, c.style)
+			}
+			// The width the run actually used, not the one this format started
+			// with. A script reading the manifest sizes its assertions off it.
+			if got := p.Properties["columns"]; got != c.cols {
+				t.Errorf("columns is %v, wanted %d", got, c.cols)
 			}
 			// And it stays JSON a script can read, rather than something that
 			// only looks right in a Go printout.
