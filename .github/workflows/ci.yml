@@ -727,10 +727,31 @@ jobs:
         # package, and by default Go credits coverage only to the package
         # under test - which reports 0.0% and makes the gate meaningless.
         # Measured, not assumed.
+        #
+        # The timeout is stated rather than left to Go, since 2026-09-03, and
+        # for the same reason the race job above states its own. Go allows ten
+        # minutes PER PACKAGE by default while this job allows twenty for all of
+        # it, so internal/guard died on a limit nobody had chosen - a stack
+        # trace out of whichever test was running when the alarm went off,
+        # instead of a failure naming something.
+        #
+        # Measured on the runner rather than guessed. This step took 375 s and
+        # 457 s on two consecutive main runs of 2026-09-02 and 2026-09-03, which
+        # is 22 percent of variance on code that barely moved between them, and
+        # the default cuts in at 600 s. A branch adding eight seconds of
+        # coverage instrumented work then timed out. Eight seconds is not what
+        # went wrong: 457 against 600 was never a margin, and a limit that
+        # decides on how busy the runner is tells you nothing about the code.
+        #
+        # Atomic counters are the cost. Every statement in every internal
+        # package pays one, and this package renders twenty five screens and
+        # generates files for twenty four formats. Eighteen minutes sits under
+        # the job's own ceiling on purpose, so a genuinely stuck run still fails
+        # as a test with output rather than as a killed job without any.
         run: >
           go test -tags "$(cat .github/build-tags)" ./... -count=1 -covermode=atomic
           -coverpkg=./internal/...,./cmd/...
-          -coverprofile=coverage.out
+          -coverprofile=coverage.out -timeout 18m
 
       - name: gate
         # The threshold lives in exactly one place, .github/coverage-threshold.
