@@ -75,15 +75,28 @@ func (e *TooDeepError) Error() string {
 func flowDepth(src []byte) int {
 	current, deepest := 0, 0
 	for _, t := range lexer.Tokenize(string(src)) {
-		switch t.Type {
-		case token.SequenceStartType, token.MappingStartType:
-			current++
-			if current > deepest {
-				deepest = current
-			}
-		case token.SequenceEndType, token.MappingEndType:
-			current--
+		current += depthChange(t.Type)
+		if current > deepest {
+			deepest = current
 		}
 	}
 	return deepest
+}
+
+// depthChange is what one token does to the nesting: a collection opening adds
+// a level, one closing takes it away, and anything else leaves it where it was.
+//
+// A function of its own rather than a switch inside the loop above, because
+// together they nested three deep - the loop, the switch, the comparison - and
+// the shape guard counts how many functions sit that deep as well as how deep
+// the deepest one is. Splitting is what that guard asks for and it costs
+// nothing here.
+func depthChange(t token.Type) int {
+	switch t {
+	case token.SequenceStartType, token.MappingStartType:
+		return 1
+	case token.SequenceEndType, token.MappingEndType:
+		return -1
+	}
+	return 0
 }
