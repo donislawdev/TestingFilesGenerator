@@ -1,0 +1,224 @@
+# Binaries on demand, built from whatever branch you pick.
+#
+# What it is for. Somebody reports a bug, the fix lands on a branch, and they
+# want to try it before there is a release. Clicking Run workflow here builds
+# that branch and leaves the binaries on the run page for fourteen days.
+#
+# What it is NOT. Not a release and it must never be mistaken for one. These
+# binaries are UNSIGNED - no code signing certificate on Windows, no Apple
+# notarisation, no provenance attestation, no bill of materials. Windows
+# SmartScreen and macOS Gatekeeper will both object, and that is correct
+# behaviour rather than a fault to work around. Releases are made by release.yml
+# from a tag, signed on two machines, and published by a person.
+#
+# Three things are deliberately different from a release, so that an archive
+# from here cannot be passed off as one:
+#
+#   - The name carries the COMMIT, not the version. internal/version is a const
+#     and cannot be stamped at link time, so a build from a fix branch says
+#     0.3.0-rc1 inside whatever it really is. The file name is the only place
+#     that can tell the truth about which code this is, so it says the commit.
+#   - Every archive carries UNOFFICIAL-BUILD.txt, which says the same in words
+#     for whoever unpacks it a month later with no memory of where it came from.
+#   - It has read only permissions and no publishing step at all, so it cannot
+#     put anything on a release page even by accident.
+#
+# The test suite is deliberately NOT run first, decided by the owner: the whole
+# point is a binary in two minutes, the branch has its own CI on its own pull
+# request, and the note inside names the commit so anybody can go and read what
+# CI said about it.
+name: Build on demand
+
+run-name: "dev build (${{ inputs.what }}) from ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      what:
+        description: "Which binaries to build"
+        type: choice
+        default: cli
+        options:
+          - cli
+          - gui
+          - both
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.27.0"
+  # Fourteen days rather than the default ninety. These are throwaway builds
+  # handed to one person, and an unsigned binary should not sit for a quarter of
+  # a year behind a link somebody can pass on as if it were official.
+  KEEP_DAYS: "14"
+
+jobs:
+  cli:
+    name: command line binaries
+    if: inputs.what == 'cli' || inputs.what == 'both'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Same as the release: no C and no toolkit in the command line binary, so
+      # one runner cross compiles every target.
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: build and package every target
+        run: |
+          set -euo pipefail
+          short="$(git rev-parse --short HEAD)"
+          mkdir -p dist
+
+          # darwin is what the compiler is told, macos is what a person reading
+          # a download recognises. Same rename as the release makes.
+          friendly() {
+            case "$1" in
+              darwin) echo "macos" ;;
+              *) echo "$1" ;;
+            esac
+          }
+
+          # The same platforms the release builds, and a guard holds the two
+          # lists together - a fix nobody can get for their machine is not a fix.
+          for target in \
+            windows/amd64 windows/arm64 \
+            linux/amd64 linux/arm64 \
+            darwin/arm64
+          do
+            os="${target%/*}"
+            arch="${target#*/}"
+            label="$(friendly "$os")"
+
+            work="$(mktemp -d)"
+            binary="tfg"
+            if [ "$os" = "windows" ]; then
+              binary="tfg.exe"
+            fi
+
+            GOOS="$os" GOARCH="$arch" go build -tags "$(cat .github/build-tags)" -trimpath -o "${work}/${binary}" ./cmd/tfg
+
+            cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
+            .github/scripts/unofficial_note.sh "${work}/UNOFFICIAL-BUILD.txt" "${short}"
+
+            base="tfg_dev-${short}_${label}_${arch}"
+            if [ "$os" = "windows" ]; then
+              (cd "${work}" && zip -q -r "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
+            else
+              tar -czf "dist/${base}.tar.gz" -C "${work}" .
+            fi
+            echo "packaged ${base}"
+          done
+
+          ls -l dist
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: unofficial-cli
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  gui:
+    name: window binary on ${{ matrix.os }}
+    if: inputs.what == 'gui' || inputs.what == 'both'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      # One system failing should not throw away the binaries that did build.
+      # Somebody waiting for a Windows build does not care that the Mac runner
+      # was busy.
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+    env:
+      # The window reaches OpenGL through C, so this one cannot be cross
+      # compiled the way the command line binary is.
+      CGO_ENABLED: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: graphics and windowing headers
+        if: runner.os == 'Linux'
+        # Taken from the toolkit's own CI. No GitHub runner carries these by
+        # default, and without them the toolkit's app package does not compile.
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgl1-mesa-dev \
+            libwayland-dev \
+            libx11-dev \
+            libxkbcommon-dev \
+            xorg-dev
+
+      - name: build and package
+        run: |
+          set -euo pipefail
+          short="$(git rev-parse --short HEAD)"
+          os="$(go env GOOS)"
+          arch="$(go env GOARCH)"
+          label="$os"
+          if [ "$os" = "darwin" ]; then
+            label="macos"
+          fi
+          work="$(mktemp -d)"
+          mkdir -p dist
+
+          if [ "$os" = "windows" ]; then
+            # The linker flags come from the file and nowhere else, so a build
+            # from here and a release cannot drift. Without them Windows hangs a
+            # black console window behind the program.
+            go build -tags "$(cat .github/build-tags)" -trimpath -ldflags="$(cat .github/gui-ldflags)" \
+              -o "${work}/tfg-gui.exe" ./cmd/tfg-gui
+          else
+            go build -tags "$(cat .github/build-tags)" -trimpath -o "${work}/tfg-gui" ./cmd/tfg-gui
+          fi
+
+          # A bundle on macOS even though nothing here is signed. Without one
+          # the Finder has no icon to draw and the program behaves like a
+          # terminal tool, which makes it useless for the person most likely to
+          # be reporting a window bug in the first place.
+          if [ "$os" = "darwin" ]; then
+            .github/scripts/make_app_bundle.sh \
+              "${work}" "tfg-gui" "com.donislawdev.tfg-gui" "dev-${short}"
+          fi
+
+          cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
+          .github/scripts/unofficial_note.sh "${work}/UNOFFICIAL-BUILD.txt" "${short}"
+
+          base="tfg-gui_dev-${short}_${label}_${arch}"
+          if [ "$os" = "windows" ]; then
+            (cd "${work}" && 7z a -tzip -bso0 "${GITHUB_WORKSPACE}/dist/${base}.zip" .)
+          else
+            tar -czf "dist/${base}.tar.gz" -C "${work}" .
+          fi
+          echo "packaged ${base}"
+          ls -l dist
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: unofficial-gui-${{ matrix.os }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
