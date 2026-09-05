@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"runtime"
+	"runtime/metrics"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -61,9 +62,19 @@ const (
 // not nought, and this is where it lives.
 type planMemory struct {
 	baseline uint64
-	seen     int
-	nextAt   int
-	ceiling  uint64
+	// allocsBaseline is the running total of bytes this process has ever
+	// allocated, taken beside the baseline above.
+	//
+	// It is what makes the cheap question in account possible, and the reason
+	// it works is an inequality rather than an estimate: every byte the live
+	// heap grows by has to have been allocated, so the growth this guard cares
+	// about can never exceed the total allocated since the baseline. Under the
+	// ceiling on that total means under the ceiling full stop, and no
+	// collection has to be paid for to find out.
+	allocsBaseline uint64
+	seen           int
+	nextAt         int
+	ceiling        uint64
 }
 
 // newPlanMemory takes the reference point, and it is taken here because here
@@ -108,14 +119,48 @@ func newPlanMemory(ceiling int64) *planMemory {
 	if ceiling <= 0 {
 		ceiling = core.MaxPlanBytes
 	}
-	return &planMemory{baseline: heapInUse(), nextAt: 1, ceiling: uint64(ceiling)}
+	return &planMemory{
+		baseline:       heapInUse(),
+		allocsBaseline: allocatedSoFar(),
+		nextAt:         1,
+		ceiling:        uint64(ceiling),
+	}
 }
 
 // account is called once per planned file. It returns an error only when the
 // plan has already passed the ceiling.
+//
+// The cheap question is asked first and it is the one nearly every run gets to
+// stop at. Until 2026-09-05 there was no cheap question: every reading was a
+// forced collection, so a run of one file of one kilobyte paid for TWO of them
+// - measured with GODEBUG=gctrace=1, exactly two on every run however small.
+// The cost is 519 us against 251 ns for the counter, and it grows with the live
+// heap, which is precisely the run this guard exists for.
+//
+// What the counter cannot do is answer the question this refuses on. It counts
+// everything ever allocated, including what has already been thrown away, so it
+// says "no" with certainty and "maybe" otherwise. The certain half is enough,
+// because it is the half every real run lands in: MaxPlanBytes is two
+// gigabytes and planning ten thousand files allocates tens of megabytes.
+//
+// /gc/heap/live:bytes was the obvious other candidate and it is the wrong one.
+// It reports the live heap as of the LAST COLLECTION, so a burst of allocation
+// between two collections is invisible to it - which would turn a refusal into
+// silence exactly when the plan is growing fastest. The counter has no such
+// gap.
 func (p *planMemory) account(targetIndex, filesSoFar int) error {
 	p.seen++
 	if p.seen < p.nextAt {
+		return nil
+	}
+
+	if allocated := allocatedSoFar() - p.allocsBaseline; allocated <= p.ceiling {
+		// Bring the next reading forward to land inside the headroom that is
+		// left, for the reason written out below - and on this figure rather
+		// than on the swept one, which makes the step SHORTER than it needs to
+		// be rather than longer, since what has been allocated is never less
+		// than what is still held.
+		p.nextAt = p.seen + stepFor(p.ceiling, allocated, p.seen)
 		return nil
 	}
 
@@ -130,22 +175,7 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 	}
 	used := grown - p.baseline
 	if used <= p.ceiling {
-		// Bring the next reading forward to land inside the headroom that is
-		// left, so an expensive file cannot carry the plan far past the
-		// ceiling between two readings. Half the headroom rather than all of
-		// it, because the average is an average - a run whose later files are
-		// dearer than its earlier ones would otherwise step straight over.
-		perFile := used / uint64(p.seen)
-		step := planCheckEvery
-		if perFile > 0 {
-			if room := int((p.ceiling - used) / perFile / 2); room < step {
-				step = room
-			}
-		}
-		if step < 1 {
-			step = 1
-		}
-		p.nextAt = p.seen + step
+		p.nextAt = p.seen + stepFor(p.ceiling, used, p.seen)
 		return nil
 	}
 
@@ -158,6 +188,43 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 		Because: core.PlanTooLargeWhy,
 		Remedy:  core.PlanTooLargeFix,
 	}
+}
+
+// stepFor is how many more files may go by before the next reading.
+//
+// It brings the reading forward to land inside the headroom that is left, so
+// an expensive file cannot carry the plan far past the ceiling between two of
+// them. Half the headroom rather than all of it, because the average is an
+// average - a run whose later files are dearer than its earlier ones would
+// otherwise step straight over.
+//
+// One function rather than the same arithmetic twice, since 2026-09-05 there
+// are two readings it has to serve: the cheap counter and the swept heap. They
+// disagree about the number they are given and agree about what to do with it.
+func stepFor(ceiling, used uint64, seen int) int {
+	step := planCheckEvery
+	if perFile := used / uint64(seen); perFile > 0 {
+		if room := int((ceiling - used) / perFile / 2); room < step {
+			step = room
+		}
+	}
+	if step < 1 {
+		step = 1
+	}
+	return step
+}
+
+// allocatedSoFar is every byte this process has ever allocated, thrown away or
+// not.
+//
+// Cumulative and exact - unlike the live heap, it does not wait for a
+// collection to catch up, so a burst of allocation is visible the moment it
+// happens. Measured 2026-09-05: 251 ns a call against 519 us for a forced
+// collection and its reading.
+func allocatedSoFar() uint64 {
+	sample := [1]metrics.Sample{{Name: "/gc/heap/allocs:bytes"}}
+	metrics.Read(sample[:])
+	return sample[0].Value.Uint64()
 }
 
 // heapInUse is the live heap, after a collection so that the number is about

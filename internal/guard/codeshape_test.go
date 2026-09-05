@@ -39,7 +39,9 @@ const (
 	// how big a target was, because the budget stopped needing to be told - it
 	// takes its reference point when it is built. A ratchet goes down when work
 	// makes it lowerable.
-	longestFile = 502
+	// Lowered from 502 on 2026-09-05: preflight and the questions it asks about
+	// names moved into their own file. The ratchet only tightens.
+	longestFile = 457
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

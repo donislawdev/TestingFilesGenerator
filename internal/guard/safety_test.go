@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -172,5 +173,119 @@ func TestAFreshRunIntoAnEmptyDirectoryStillWorks(t *testing.T) {
 	}
 	if res.Manifest.Summary.Materialized != 3 {
 		t.Errorf("produced %d files, expected 3", res.Manifest.Summary.Materialized)
+	}
+}
+
+// A name is taken by whatever holds it, including a link that points nowhere.
+//
+// Until 2026-09-05 preflight asked os.Stat whether the path existed, and
+// os.Stat follows a link - so a link pointing at nothing answered "no name
+// here" and the run replaced the entry without a word. It reads one listing of
+// the directory now, and a directory ENTRY is what a taken name is, whatever
+// it points at.
+//
+// That difference is why the change is not only about speed. Replacing a link
+// somebody put there loses their work exactly as replacing a file does, and it
+// happened on the quiet path rather than the loud one.
+func TestANameTakenByALinkPointingNowhereIsStillTaken(t *testing.T) {
+	dir := t.TempDir()
+	dangling := filepath.Join(dir, "files_0001.txt")
+	if err := os.Symlink(filepath.Join(dir, "nothing-is-here"), dangling); err != nil {
+		t.Skipf("this system will not create a link here, so the case cannot be built: %v", err)
+	}
+
+	// Asserted rather than assumed, because the whole case is a name that IS
+	// there and that os.Stat cannot see. A fixture that quietly resolved would
+	// leave this guard green about the old behaviour (O118).
+	if _, err := os.Stat(dangling); err == nil {
+		t.Fatal("the link resolves, so this is not the state being guarded")
+	}
+	if _, err := os.Lstat(dangling); err != nil {
+		t.Fatalf("there is no entry at all, so there is nothing for a run to collide with: %v", err)
+	}
+
+	opt := engine.Options{OutDir: dir, Seed: 7741, Command: "test"}
+	planned, err := engine.Plan([]engine.Target{txtTarget("files", 1, 4096)}, opt)
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+
+	_, runErr := engine.Run(context.Background(), planned, opt)
+	if runErr == nil {
+		t.Fatal("the run went ahead over a name somebody else's link was holding")
+	}
+	var collision *engine.CollisionError
+	if !errors.As(runErr, &collision) {
+		t.Errorf("refused with %T, expected a CollisionError so the caller answers with the right exit code", runErr)
+	}
+}
+
+// A directory that cannot be LISTED is still asked about every name, one at a
+// time.
+//
+// The listing that made preflight cheap has an answer it cannot give: a
+// directory with permission to write and none to read. Both systems allow that
+// combination, and a run into one has always worked. Reading nothing there and
+// calling it empty would let the run write over whatever is inside - the one
+// failure here that running again cannot undo - so a listing that fails means
+// "ask file by file" rather than "there is nothing there".
+//
+// Without this the fallback is a branch nothing can turn red, and this project
+// has removed seven of those.
+func TestADirectoryThatCannotBeListedIsStillAskedAboutEveryName(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// The same reason environment_test.go gives for the sibling of this
+		// guard: os.Chmod on Windows moves the read only bit and nothing else,
+		// and denying a listing needs an ACL, which is not something a test
+		// should be installing.
+		t.Skip("a directory that refuses a listing needs an ACL on Windows")
+	}
+
+	dir := t.TempDir()
+	out := filepath.Join(dir, "writeonly")
+	if err := os.Mkdir(out, 0o755); err != nil {
+		t.Fatalf("making the directory: %v", err)
+	}
+	const precious = "work that took an afternoon"
+	victim := filepath.Join(out, "files_0001.txt")
+	if err := os.WriteFile(victim, []byte(precious), 0o644); err != nil {
+		t.Fatalf("preparing the file: %v", err)
+	}
+	if err := os.Chmod(out, 0o300); err != nil {
+		t.Fatalf("taking the read permission away: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(out, 0o755) })
+
+	// Asserted rather than assumed. Root ignores the permission bits, so on a
+	// container running as root this state does not exist and the guard would
+	// otherwise pass while testing the fast path twice.
+	if _, err := os.ReadDir(out); err == nil {
+		t.Skip("this process can list a directory with no read permission, so the fallback cannot be reached")
+	}
+
+	opt := engine.Options{OutDir: out, Seed: 7741, Command: "test"}
+	planned, err := engine.Plan([]engine.Target{txtTarget("files", 1, 4096)}, opt)
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+
+	_, runErr := engine.Run(context.Background(), planned, opt)
+	if runErr == nil {
+		t.Fatal("a run into a directory it could not list went ahead over what was inside")
+	}
+	var collision *engine.CollisionError
+	if !errors.As(runErr, &collision) {
+		t.Errorf("refused with %T, expected a CollisionError", runErr)
+	}
+
+	if err := os.Chmod(out, 0o755); err != nil {
+		t.Fatalf("putting the permission back to read the file: %v", err)
+	}
+	after, err := os.ReadFile(victim)
+	if err != nil {
+		t.Fatalf("reading the file back: %v", err)
+	}
+	if string(after) != precious {
+		t.Error("the existing file was destroyed - this is the one failure that cannot be undone by running again")
 	}
 }

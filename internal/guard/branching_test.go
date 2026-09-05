@@ -45,7 +45,9 @@ const (
 	// either, and one handles neither. Flattening it in TIFF alone would make
 	// two functions that answer the same question look different, which costs
 	// more than the depth does.
-	crowdedDepthFunctions = 52
+	// Lowered from 52 on 2026-09-05: splitting preflight out took one function
+	// out of the band. The ratchet only tightens.
+	crowdedDepthFunctions = 51
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.
