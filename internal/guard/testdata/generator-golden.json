@@ -164,8 +164,8 @@
     },
     "targz_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "e0ea316d5fd0d3dee866a551660cd7626fc1902d5d36dfdb2e1ca8e240395e13",
-      "measured_on": "2026-09-01"
+      "sha256": "34dae598e18f6ab8f0abf07358353b014feb7b6e1f831dc6b0f3e0f84c4e6b1a",
+      "measured_on": "2026-09-06"
     },
     "targz_with_three_pdfs": {
       "bytes": 65536,
@@ -198,6 +198,11 @@
     "wav_32kib": {
       "bytes": 32768,
       "sha256": "7f1de29ead6fd51cad8675133054f77f760c9f867cc26351260e5340e5201b3a"
+    },
+    "wav_with_the_padding_chunk": {
+      "bytes": 102400,
+      "sha256": "55f453ce6cc46a6d856d62825327169683283b22b98b0a4e06effe3a3aaafffe",
+      "measured_on": "2026-09-06"
     },
     "webp_64kib": {
       "bytes": 65536,
@@ -234,15 +239,18 @@
     },
     "zip_16kib": {
       "bytes": 16384,
-      "sha256": "480b35575b9cec5bcdcdf02d066f4ad8b4b967969aecbeb2e49d7a451a14fdaf"
+      "sha256": "4e02a3eb7c2cad250ec98d4b03e1393b503c344cda1fc1d16c0a3296d9eed9a5",
+      "measured_on": "2026-09-06"
     },
     "zip_past_the_comment_limit": {
       "bytes": 262144,
-      "sha256": "fae918bc961420dd675dd9a90005d319c93856d56b5c3f9aeeb1150baf41a6df"
+      "sha256": "19f8a63a28a0cd930caa95300bc4b70b164d35befde65bc919a3a9dbbbc37e7e",
+      "measured_on": "2026-09-06"
     },
     "zip_with_three_pdfs": {
       "bytes": 65536,
-      "sha256": "2f45c46662ab65d2f598d65446ba0476067fb5c6297dc497d580a0fcd1752fbe"
+      "sha256": "fa73baa3d6fa5a3cdd9ee024c027c0b34e95664d2a99c3b6c15deea10a2a3751",
+      "measured_on": "2026-09-06"
     },
     "csv_8kib_quote_all": {
       "bytes": 8192,
@@ -314,6 +322,17 @@
       "why": "csv learned columns, and NOTHING here moved because of it. The three csv cases above are byte for byte what they were an hour earlier, which is the whole claim this setting makes: the default is the six columns this format has always written, so a table nobody asked to reshape is the table it was. The new case is the other half - a width of seventeen, pinned from the day it exists rather than after somebody notices it never was. It covers what a count cannot: every column carries its own value and its own separator, so reordering the columns while keeping their number would move these bytes and leave every size and width check green. The floor moves with the width and is measured, not pinned here: 36 B at two columns, 115 B at six, 5017 B at 256 and 709793 B at the ceiling of 32768.",
       "files": [
         "csv_8kib_seventeen_columns"
+      ]
+    },
+    {
+      "on": "2026-09-06",
+      "why": "The three formats whose filler drew one byte per RNG call - zip, targz and wav - now draw eight, which is where their padding bytes come from and so is a breaking change under D11. Measured 2026-09-06, interleaved with the order reversed and the exit code checked on every run: zip 64 MB 2.81x, targz 64 MB 2.74-3.32x, ranges disjoint in both. The filler loop itself goes from 182 MB/s to 2499 MB/s over 64 MiB. Ten further packages moved onto the same core.FillRandomBE/LE and did NOT move a byte - checked across 24 formats by 5 sizes by 2 seeds, twenty formats identical. wav gains no speed at all and the owner took it anyway for uniformity: its padding is audio modulo the frame size, which is two bytes, so only two bytes of a WAV differ. That is also why wav_with_the_padding_chunk had to be added - wav_32kib lands on a size the audio fills exactly and never reaches the filler, so the path had no golden value at all.",
+      "files": [
+        "targz_past_the_comment_limit",
+        "wav_with_the_padding_chunk",
+        "zip_16kib",
+        "zip_past_the_comment_limit",
+        "zip_with_three_pdfs"
       ]
     }
   ]

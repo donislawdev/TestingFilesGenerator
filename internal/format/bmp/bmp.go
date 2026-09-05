@@ -372,11 +372,7 @@ func writeGap(ctx context.Context, w io.Writer, seed uint64, n int64) error {
 			take = remaining
 		}
 		chunk := buf[:take]
-		for i := 0; i < len(chunk); i += 8 {
-			var eight [8]byte
-			binary.BigEndian.PutUint64(eight[:], rng.Uint64())
-			copy(chunk[i:], eight[:])
-		}
+		core.FillRandomBE(chunk, rng)
 		if _, err := w.Write(chunk); err != nil {
 			return err
 		}

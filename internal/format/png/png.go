@@ -470,11 +470,7 @@ func writePaddingChunk(ctx context.Context, w io.Writer, kind string, seed uint6
 			size = remaining
 		}
 		chunk := buf[:size]
-		for i := 0; i < len(chunk); i += 8 {
-			var eight [8]byte
-			binary.BigEndian.PutUint64(eight[:], rng.Uint64())
-			copy(chunk[i:], eight[:])
-		}
+		core.FillRandomBE(chunk, rng)
 
 		crc.Write(chunk)
 		if _, err := w.Write(chunk); err != nil {

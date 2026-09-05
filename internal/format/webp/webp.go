@@ -37,7 +37,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"math/rand/v2"
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -433,7 +432,7 @@ func writeFiller(ctx context.Context, w io.Writer, name string, seed uint64, siz
 			return ctx.Err()
 		default:
 		}
-		fillBytes(buf[:n], rng)
+		core.FillRandomLE(buf[:n], rng)
 		if err := writeAll(w, buf[:n]); err != nil {
 			return err
 		}
@@ -447,17 +446,8 @@ func writeFiller(ctx context.Context, w io.Writer, name string, seed uint64, siz
 
 func filler(seed uint64, size int64) []byte {
 	out := make([]byte, size)
-	fillBytes(out, core.NewRand(seed))
+	core.FillRandomLE(out, core.NewRand(seed))
 	return out
-}
-
-func fillBytes(b []byte, rng *rand.Rand) {
-	for i := 0; i < len(b); i += 8 {
-		v := rng.Uint64()
-		for j := 0; j < 8 && i+j < len(b); j++ {
-			b[i+j] = byte(v >> (8 * uint(j)))
-		}
-	}
 }
 
 func writeUint32(w io.Writer, v uint32) error {

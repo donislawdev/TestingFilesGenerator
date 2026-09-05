@@ -543,14 +543,7 @@ func writeComments(ctx context.Context, w io.Writer, seed uint64, segments int, 
 				size = remaining
 			}
 			chunk := buf[:size]
-			for j := 0; j < len(chunk); j += 8 {
-				var eight [8]byte
-				v := rng.Uint64()
-				for k := 0; k < 8; k++ {
-					eight[k] = byte(v >> (8 * k))
-				}
-				copy(chunk[j:], eight[:])
-			}
+			core.FillRandomLE(chunk, rng)
 			if _, err := w.Write(chunk); err != nil {
 				return err
 			}

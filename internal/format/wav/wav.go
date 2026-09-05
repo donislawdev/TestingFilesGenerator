@@ -481,9 +481,7 @@ func fill(ctx context.Context, w io.Writer, seed uint64, n int64) error {
 			size = remaining
 		}
 		chunk := buf[:size]
-		for i := range chunk {
-			chunk[i] = byte(rng.UintN(256))
-		}
+		core.FillRandomBE(chunk, rng)
 		if err := writeAll(w, chunk); err != nil {
 			return err
 		}

@@ -14,6 +14,29 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- **ZIP, TAR.GZ and WAV files have different bytes.** The padding these three
+  formats write is now drawn from the random generator eight bytes at a time
+  instead of one byte at a time. For a ZIP or a TAR.GZ that padding is almost
+  the whole file, so almost every byte changes.
+
+  Nothing a reader can see is different. The size is the same to the byte, the
+  structure is the same, the same tools open the same files. What changes is the
+  content of the padding, so a hash you recorded from an earlier version will
+  not match one you generate now.
+
+  This is what makes large archives faster to produce. Measured on 64 MB files,
+  runs interleaved: ZIP 2.8 times faster, TAR.GZ 2.7 to 3.3 times faster.
+
+  WAV is on this list for consistency rather than for speed. Its padding is at
+  most a few bytes per file, so only those bytes differ and the time to produce
+  one is unchanged.
+
+  Every other format keeps exactly the bytes it had. Twelve of them share the
+  same new code and were checked against their recorded hashes and across every
+  format at five sizes and two seeds.
+
 ### Changed
 
 - **`verify` and `cleanup` read the files over several threads, so checking a
