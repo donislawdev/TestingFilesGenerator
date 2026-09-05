@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"runtime/debug"
 	"strings"
 	"testing"
 
@@ -206,4 +207,51 @@ func asAddressed(err error, target *interface{ AboutSetting() string }) bool {
 		return true
 	}
 	return false
+}
+
+// The cheap question the ceiling asks first is about ALLOCATION, not about the
+// last collection, and the difference only shows when the collector is idle.
+//
+// Since 2026-09-05 account reads /gc/heap/allocs:bytes before it forces a
+// collection, because that costs 251 ns against 519 us and a run of one file
+// used to pay for two collections however small it was. What makes the
+// shortcut safe is an inequality rather than an estimate: the live heap cannot
+// have grown by more than has been allocated, so under the ceiling on the
+// total is under the ceiling full stop.
+//
+// /gc/heap/live:bytes was the other candidate - the report that asked for this
+// named it - and it is unsound here. It reports the heap as of the LAST
+// COLLECTION, so a plan growing between two of them is invisible.
+//
+// Measured on 2026-09-05: swapping the metric leaves all four guards above
+// GREEN, because twenty five megabytes of allocation makes the collector run on
+// its own and the lagging reading catches up by luck. Turning the collector off
+// takes the luck away - the live reading then never moves at all, a build
+// asking that question accepts a plan of any size, and this is the only thing
+// here that would say so.
+func TestThePlanCeilingAsksAboutAllocationRatherThanTheLastCollection(t *testing.T) {
+	was := debug.SetGCPercent(-1)
+	t.Cleanup(func() { debug.SetGCPercent(was) })
+
+	// The shape the short run guard uses, which is one file measured at
+	// 25 194 908 B of plan against a ceiling of four megabytes.
+	targets := []engine.Target{{
+		ID:         "one",
+		Format:     "pdf",
+		Sizes:      engine.Uniform(1, 20<<20),
+		Properties: map[string]string{"pages": "5000"},
+	}}
+
+	_, err := engine.Plan(targets, engine.Options{
+		OutDir:       "out",
+		ManifestName: "manifest.json",
+		MaxPlanBytes: 4 << 20,
+	})
+	if err == nil {
+		t.Fatal("with the collector switched off a plan six times the ceiling was accepted, " +
+			"so the cheap reading is answering about the last collection rather than about what was allocated")
+	}
+	if !strings.Contains(err.Error(), "ceiling") {
+		t.Errorf("the refusal does not mention the ceiling: %s", err)
+	}
 }

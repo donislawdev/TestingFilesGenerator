@@ -75,7 +75,7 @@ func widthFor(n int) int {
 //     own sake: if a refusal could arrive here, stopping the other goroutines
 //     would mean a LOWER index never got asked, and the same manifest would
 //     name a different file on different days.
-func inOrder[T any](ctx context.Context, n int, one func(i int) T) ([]T, error) {
+func inOrder[T any](ctx context.Context, n int, one func(i int, scratch []byte) T) ([]T, error) {
 	out := make([]T, n)
 	done := make([]bool, n)
 
@@ -111,7 +111,20 @@ func inOrder[T any](ctx context.Context, n int, one func(i int) T) ([]T, error) 
 // out and done are written at indices no other goroutine will take, because
 // the counter hands each index out exactly once. They are the only things
 // written at all.
-func drain[T any](ctx context.Context, next *atomic.Int64, out []T, done []bool, one func(i int) T) {
+func drain[T any](ctx context.Context, next *atomic.Int64, out []T, done []bool, one func(i int, scratch []byte) T) {
+	// One buffer per goroutine, handed to every item that goroutine answers.
+	//
+	// Per worker rather than per item, because a run of a hundred thousand
+	// files would otherwise allocate a hundred thousand of these. And per
+	// worker rather than one shared, because two goroutines reading files into
+	// the same bytes is the data race this whole file is written to avoid.
+	//
+	// The size is measured rather than picked. Hashing a 256 MB file, median of
+	// five: io.Copy 199 ms, 64 KiB 182 ms, 256 KiB 161 ms, 1 MiB 162 ms, 4 MiB
+	// 160 ms. The win is all in by a quarter of a megabyte and nothing above it
+	// is distinguishable, so sixteen workers cost four megabytes rather than
+	// sixty four.
+	scratch := make([]byte, hashScratch)
 	for {
 		i := int(next.Add(1)) - 1
 		// Cancellation is asked per item rather than per pass, so a Ctrl+C
@@ -120,7 +133,7 @@ func drain[T any](ctx context.Context, next *atomic.Int64, out []T, done []bool,
 		if i >= len(out) || ctx.Err() != nil {
 			return
 		}
-		out[i] = one(i)
+		out[i] = one(i, scratch)
 		done[i] = true
 	}
 }

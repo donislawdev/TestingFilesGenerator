@@ -24,7 +24,15 @@ import (
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
 func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
-	var out []child
+	// Sized up front, because the total is known before the walk starts: it is
+	// what the groups add up to. Growing by append instead reallocates and
+	// copies the whole slice fourteen times on the way to ten thousand entries,
+	// which is the ceiling this format declares.
+	total := 0
+	for _, g := range groups {
+		total += g.Count
+	}
+	out := make([]child, 0, total)
 	index := 0
 	// Numbering runs per format rather than per group, so two groups of the
 	// same format do not both start at 0001 and collide inside the archive.

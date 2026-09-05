@@ -79,14 +79,14 @@ func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate
 
 	// In order, because this list is what cleanup removes from and what it
 	// printed to a person beforehand.
-	return inOrder(ctx, len(claimed), func(i int) Candidate {
-		return look(claimed[i], full[i])
+	return inOrder(ctx, len(claimed), func(i int, scratch []byte) Candidate {
+		return look(claimed[i], full[i], scratch)
 	})
 }
 
 // look is what one claimed file comes to for cleanup: whether it may be
 // removed, and if not, why not in the words a person needs.
-func look(f manifest.File, full string) Candidate {
+func look(f manifest.File, full string, scratch []byte) Candidate {
 	info, err := os.Stat(full)
 	if errors.Is(err, fs.ErrNotExist) {
 		return Candidate{Path: f.Path, Disposition: Absent}
@@ -101,7 +101,7 @@ func look(f manifest.File, full string) Candidate {
 		return Candidate{Path: f.Path, Disposition: Changed,
 			Detail: fmt.Sprintf("it is %d B and the manifest recorded %d B", info.Size(), f.Bytes)}
 	}
-	sum, err := hashFile(full)
+	sum, err := hashFile(full, scratch)
 	if err != nil {
 		return Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()}
 	}

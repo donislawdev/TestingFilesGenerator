@@ -29,6 +29,27 @@ because it turns other people's test suites red.
   Small runs are unaffected either way. A handful of files was already
   instant and still is.
 
+- **Starting a run of many files no longer spends most of its time deciding
+  whether it may start.** Before writing anything, `tfg` checks that it is not
+  about to write over something of yours. That check asked the filesystem two
+  questions for every file it planned. It reads the folder once instead.
+
+  Measured on a run of 100 000 files: `--dry-run` went from 15.7-19.7 seconds to
+  0.49-0.56 seconds. The check was 97% of it.
+
+- **A name held by a shortcut that points at nothing now counts as taken.** The
+  check followed the shortcut, found nothing at the other end, and replaced it
+  without a word. It asks what the folder holds now, so anything already sitting
+  under a name your run wants is refused, whatever it points at.
+
+### Fixed
+
+- **`verify` and `cleanup` read each file in larger pieces**, which takes about
+  a fifth off the time spent hashing.
+
+- **Every run used to pause twice to tidy memory**, however small it was. It
+  pauses once. Nothing about what a run produces changes.
+
 ## [0.3.0-rc1] - 2026-09-03
 
 ### Breaking
