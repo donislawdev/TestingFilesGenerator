@@ -202,51 +202,36 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 	folded := make(map[string]string, len(claimed))
 	for _, f := range claimed {
 		folded[core.FoldName(comparablePath(f.Path))] = f.Path
+		seen[comparablePath(f.Path)] = true
 	}
 
-	for _, f := range claimed {
-		if err := ctx.Err(); err != nil {
-			return diffs, err
-		}
-		seen[comparablePath(f.Path)] = true
+	// Every path is resolved here, on one goroutine, in order, before a single
+	// byte is read - and that is a correctness requirement rather than a step
+	// that happens to come first.
+	//
+	// A path that leaves the directory refuses the WHOLE pass. If that refusal
+	// could arrive from a worker, stopping the others would mean a lower index
+	// never got asked, so the same manifest would name a different file on
+	// different days. Settled in order, the first one that refuses is the first
+	// one there is.
+	full, err := claimedPaths(boundary, claimed)
+	if err != nil {
+		return nil, err
+	}
 
-		// The raw path, never the compared one. Cleaning resolves a parent step
-		// against the text of the path rather than against the disk, and the
-		// two differ exactly where a link sits in the middle - which is the
-		// case core.Boundary exists for.
-		full, err := resolved(boundary, f)
-		if err != nil {
-			return nil, err
+	found, stopped := inOrder(ctx, len(claimed), func(i int) Difference {
+		return compare(claimed[i], full[i])
+	})
+	for _, d := range found {
+		if d.Kind != "" {
+			diffs = append(diffs, d)
 		}
-		info, statErr := os.Stat(full)
-		if statErr != nil {
-			diffs = append(diffs, Difference{Kind: Missing, Path: f.Path})
-			continue
-		}
-
-		// Size first. It is free, it catches the common failure, and it names
-		// the cause more precisely than a hash mismatch would.
-		if info.Size() != f.Bytes {
-			diffs = append(diffs, Difference{
-				Kind: WrongSize, Path: f.Path,
-				Want: fmt.Sprintf("%d B", f.Bytes),
-				Got:  fmt.Sprintf("%d B", info.Size()),
-			})
-			continue
-		}
-
-		sum, hashErr := hashFile(full)
-		if hashErr != nil {
-			diffs = append(diffs, Difference{Kind: Unreadable, Path: f.Path, Got: hashErr.Error()})
-			continue
-		}
-		if sum != f.Hashes.SHA256 {
-			diffs = append(diffs, Difference{
-				Kind: WrongHash, Path: f.Path,
-				Want: f.Hashes.SHA256,
-				Got:  sum,
-			})
-		}
+	}
+	if stopped != nil {
+		// Left unsorted and the walk below left undone, which is what the
+		// sequential version did. A cancelled pass reports what it compared,
+		// and the files it never reached are not absent - nobody looked.
+		return diffs, stopped
 	}
 
 	// Not asked again here. This loop walks a slice already in memory, the walk
@@ -376,6 +361,65 @@ func walk(ctx context.Context, dir string) ([]string, error) {
 		return nil, err
 	}
 	return out, nil
+}
+
+// claimedPaths is where each claimed file sits on the disk, in the order the
+// manifest gives them, refusing on the first one that leaves the directory.
+//
+// Shared by Verify and Inspect because both have to refuse the same manifest
+// for the same reason, and because both then hand the answers to workers that
+// must not be able to refuse anything themselves. See parallel.go.
+func claimedPaths(b core.Boundary, files []manifest.File) ([]string, error) {
+	full := make([]string, len(files))
+	for i, f := range files {
+		// The raw path, never the compared one. Cleaning resolves a parent step
+		// against the text of the path rather than against the disk, and the
+		// two differ exactly where a link sits in the middle - which is the
+		// case core.Boundary exists for.
+		p, err := resolved(b, f)
+		if err != nil {
+			return nil, err
+		}
+		full[i] = p
+	}
+	return full, nil
+}
+
+// compare is what one claimed file comes to: the difference it shows, or the
+// zero Difference when what is on the disk is what the manifest describes.
+//
+// Kind is a string, so its zero value is not one of the kinds and can mean
+// agreement on its own. No sentinel anybody has to remember, and no pointer
+// per file - a run of ten thousand would allocate ten thousand of them to say
+// "nothing to report" ten thousand times.
+func compare(f manifest.File, full string) Difference {
+	info, statErr := os.Stat(full)
+	if statErr != nil {
+		return Difference{Kind: Missing, Path: f.Path}
+	}
+
+	// Size first. It is free, it catches the common failure, and it names the
+	// cause more precisely than a hash mismatch would.
+	if info.Size() != f.Bytes {
+		return Difference{
+			Kind: WrongSize, Path: f.Path,
+			Want: fmt.Sprintf("%d B", f.Bytes),
+			Got:  fmt.Sprintf("%d B", info.Size()),
+		}
+	}
+
+	sum, hashErr := hashFile(full)
+	if hashErr != nil {
+		return Difference{Kind: Unreadable, Path: f.Path, Got: hashErr.Error()}
+	}
+	if sum != f.Hashes.SHA256 {
+		return Difference{
+			Kind: WrongHash, Path: f.Path,
+			Want: f.Hashes.SHA256,
+			Got:  sum,
+		}
+	}
+	return Difference{}
 }
 
 // hashFile streams the file rather than reading it in. A run of this tool

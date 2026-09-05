@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -37,6 +38,22 @@ var mayBeConcurrent = map[string]string{
 	// invariant G7 exists to hold. Added 2026-08-05 with the first generate
 	// window, and the owner was told.
 	"internal/gui/window/run.go": "the run happens beside the window, and closing the window waits for it",
+	// Hashing the files a manifest claims is the work verify and cleanup are
+	// made of, and it is embarrassingly parallel. Added 2026-09-05 and the
+	// owner decided it: O116 turned the same idea down on 2026-08-20 on a
+	// measurement of 3000 files of 1 kB, where the whole of verify is about a
+	// second. Measured again on the corpora this tool exists to produce -
+	// 6.1 GB in files of 64 MB - tfg verify goes from 4.28-4.30 s to
+	// 0.54-0.56 s, the hashing itself is 9.33x at sixteen workers, and 1.58x
+	// even when the corpus is larger than memory and the disk is the limit.
+	// Numbers and the two instrument mistakes made getting them:
+	// docs/PERFORMANCE-REVIEW-2026-09-05.md.
+	//
+	// Kept to one file on purpose. Everything that could refuse a whole pass
+	// is settled before the goroutines start, so a worker answers about one
+	// file and cannot fail - which is what makes the order of the answers, and
+	// the file a refusal names, the same on every run.
+	"internal/audit/parallel.go": "hashing the claimed files runs beside itself, and nothing else in the package does",
 }
 
 // Waiting on cancellation is not the same thing as running in parallel. Every
@@ -138,4 +155,75 @@ func onlyCancellation(s *ast.SelectStmt) bool {
 		}
 	}
 	return true
+}
+
+// TestTheRaceDetectorIsRunForEveryFileThatDeclaresConcurrency ties the map
+// above to the list in .github/workflows/ci.yml that decides whether the race
+// detector job runs at all.
+//
+// Why there are two lists. The detector does not run on every push - it was
+// measured at 10m31s on 2026-08-20 and given its own job with its own trigger.
+// That trigger is a literal list of file names inside the workflow, and it is a
+// second copy of the map above.
+//
+// The workflow used to claim the two could not drift, on the reasoning that a
+// file growing a goroutine reddens the map guard before it gets that far. That
+// is true only while the file is MISSING from the map. Adding it - which is
+// exactly what the map guard's own message tells somebody to do - turns that
+// guard green and leaves this question to nobody. So the list could fall behind
+// precisely when it mattered: concurrency living in a file the detector is
+// never run for, with the job reporting "skipped" and looking like a decision.
+//
+// Found on 2026-09-05 while adding internal/audit/parallel.go, by walking into
+// it. This is the mechanism rather than the warning.
+//
+// A file watched but not declared is fine and is not reported. go.mod is
+// exactly that: a toolchain or dependency change can alter what the detector
+// sees without one of our own lines moving.
+func TestTheRaceDetectorIsRunForEveryFileThatDeclaresConcurrency(t *testing.T) {
+	path := filepath.Join(repoRoot(t), ".github", "workflows", "ci.yml")
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %s: %v", path, err)
+	}
+
+	// Asserted rather than assumed. A guard that quietly finds nothing to
+	// compare is green about a question it never asked - and this whole test
+	// exists because a claim about drift went unchecked.
+	const marker = "watched='"
+	start := strings.Index(string(body), marker)
+	if start < 0 {
+		t.Fatalf("%s no longer sets %s, so nothing states which files the race detector runs for",
+			path, strings.TrimSuffix(marker, "='"))
+	}
+	rest := string(body)[start+len(marker):]
+	end := strings.Index(rest, "'")
+	if end < 0 {
+		t.Fatalf("the %s list in %s is never closed", strings.TrimSuffix(marker, "='"), path)
+	}
+	watched := strings.Fields(rest[:end])
+	if len(watched) == 0 {
+		t.Fatalf("the race detector trigger in %s watches nothing at all", path)
+	}
+
+	listed := make(map[string]bool, len(watched))
+	for _, f := range watched {
+		listed[f] = true
+	}
+
+	var missing []string
+	for file := range mayBeConcurrent {
+		if !listed[file] {
+			missing = append(missing, file)
+		}
+	}
+	sort.Strings(missing)
+
+	if len(missing) > 0 {
+		t.Errorf("%d file(s) declare concurrency and the race detector is not run for them:\n  %s\n\n"+
+			"The detector is the only thing in this project that sees a data race. A file that may run\n"+
+			"beside itself and is not on the trigger list gets a job that reports \"skipped\", which reads\n"+
+			"like a decision rather than a gap. Add it to the watched list in %s.",
+			len(missing), strings.Join(missing, "\n  "), path)
+	}
 }

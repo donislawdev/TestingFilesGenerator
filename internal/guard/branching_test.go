@@ -34,7 +34,9 @@ const (
 	crowdingArguments  = 7
 	crowdingDepth      = 3
 
-	crowdedComplexity = 5
+	// Lowered from 5 on 2026-09-05: splitting the verify loop into compare and
+	// claimedPaths took one function out of the band. The ratchet only tightens.
+	crowdedComplexity = 4
 	crowdedArguments  = 5
 	// 53 until 2026-08-29, when TIFF arrived. The function that took it to 54
 	// is tiff.chooseSize, and it is the same shape as bmp.chooseSize because

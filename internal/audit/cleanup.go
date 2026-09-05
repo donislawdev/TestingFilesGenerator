@@ -62,51 +62,54 @@ func (c Candidate) Removable(force bool) bool {
 // does, and CLI.md section 9 rules out asking them interactively.
 func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate, error) {
 	boundary := core.NewBoundary(dir)
+	claimed := Claimed(m)
 
-	var out []Candidate
-	for _, f := range Claimed(m) {
-		if err := ctx.Err(); err != nil {
-			return out, err
-		}
-		full, err := resolved(boundary, f)
-		if err != nil {
-			// Nothing is inspected and nothing is offered. A list that points
-			// outside the directory is not a list this tool acts on, and the
-			// preview is where somebody decides - so it must not show the entry
-			// as something it would remove.
-			return nil, err
-		}
-
-		info, err := os.Stat(full)
-		if errors.Is(err, fs.ErrNotExist) {
-			out = append(out, Candidate{Path: f.Path, Disposition: Absent})
-			continue
-		}
-		if err != nil {
-			out = append(out, Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()})
-			continue
-		}
-
-		// Size before hash, so a file of obviously the wrong length does not
-		// cost a read of however many gigabytes it is.
-		if info.Size() != f.Bytes {
-			out = append(out, Candidate{Path: f.Path, Disposition: Changed,
-				Detail: fmt.Sprintf("it is %d B and the manifest recorded %d B", info.Size(), f.Bytes)})
-			continue
-		}
-		sum, err := hashFile(full)
-		if err != nil {
-			out = append(out, Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()})
-			continue
-		}
-		if sum != f.Hashes.SHA256 {
-			out = append(out, Candidate{Path: f.Path, Disposition: Changed,
-				Detail: "its content is not the content this run wrote"})
-			continue
-		}
-		out = append(out, Candidate{Path: f.Path, Disposition: Ready})
+	// Nothing is inspected and nothing is offered when one of these points
+	// outside the directory. A list that points outside is not a list this tool
+	// acts on, and the preview is where somebody decides - so it must not show
+	// the entry as something it would remove.
+	//
+	// Resolved before anything is read and on one goroutine, for the reason
+	// written out at claimedPaths and at parallel.go: a refusal that could
+	// arrive from a worker would name whichever file lost the race.
+	full, err := claimedPaths(boundary, claimed)
+	if err != nil {
+		return nil, err
 	}
-	return out, ctx.Err()
+
+	// In order, because this list is what cleanup removes from and what it
+	// printed to a person beforehand.
+	return inOrder(ctx, len(claimed), func(i int) Candidate {
+		return look(claimed[i], full[i])
+	})
+}
+
+// look is what one claimed file comes to for cleanup: whether it may be
+// removed, and if not, why not in the words a person needs.
+func look(f manifest.File, full string) Candidate {
+	info, err := os.Stat(full)
+	if errors.Is(err, fs.ErrNotExist) {
+		return Candidate{Path: f.Path, Disposition: Absent}
+	}
+	if err != nil {
+		return Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()}
+	}
+
+	// Size before hash, so a file of obviously the wrong length does not cost
+	// a read of however many gigabytes it is.
+	if info.Size() != f.Bytes {
+		return Candidate{Path: f.Path, Disposition: Changed,
+			Detail: fmt.Sprintf("it is %d B and the manifest recorded %d B", info.Size(), f.Bytes)}
+	}
+	sum, err := hashFile(full)
+	if err != nil {
+		return Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()}
+	}
+	if sum != f.Hashes.SHA256 {
+		return Candidate{Path: f.Path, Disposition: Changed,
+			Detail: "its content is not the content this run wrote"}
+	}
+	return Candidate{Path: f.Path, Disposition: Ready}
 }
 
 // Outcome is what happened to one file.

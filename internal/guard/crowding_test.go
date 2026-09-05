@@ -43,7 +43,9 @@ const (
 	// becomes a rubber band. Like the ceilings
 	// themselves these only go down. Raising one to turn a run green is the
 	// same act as editing a golden value for the same reason.
-	crowdedFunctions = 10
+	// Lowered from 10 on 2026-09-05: audit.Verify dropped under sixty lines
+	// when the per file work moved into compare. The ratchet only tightens.
+	crowdedFunctions = 9
 	crowdedFiles     = 2
 )
 

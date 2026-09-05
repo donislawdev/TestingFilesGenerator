@@ -575,9 +575,20 @@ jobs:
       - name: did anything concurrent change
         id: look
         # The three files concurrency is allowed to live in are not a guess.
-        # They are the map in internal/guard/concurrency_test.go, and a fourth
-        # file growing a goroutine turns that guard red before it gets here - so
-        # this list cannot quietly fall behind the tree.
+        # They are the map in internal/guard/concurrency_test.go.
+        #
+        # This used to say the map guard was enough to keep the two in step: "a
+        # fourth file growing a goroutine turns that guard red before it gets
+        # here, so this list cannot quietly fall behind the tree". That was not
+        # true, and adding the fourth file on 2026-09-05 is what showed it. The
+        # map guard is red only while the new file is NOT in the map. The moment
+        # somebody adds it there - which is what the guard's own message tells
+        # them to do - it goes green, and nothing at all asks whether this line
+        # was updated too. The list could then fall behind exactly when it
+        # mattered: concurrency living in a file the detector is not run for.
+        #
+        # TestTheRaceDetectorIsRunForEveryFileThatDeclaresConcurrency now reads
+        # this line and compares it against the map, so the two cannot drift.
         #
         # go.mod is watched as well. A toolchain or dependency change can alter
         # what the detector sees even when none of our own lines moved.
@@ -589,7 +600,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go cmd/tfg/main.go internal/gui/window/run.go go.mod'
+          watched='internal/format/registry.go cmd/tfg/main.go internal/gui/window/run.go internal/audit/parallel.go go.mod'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because
