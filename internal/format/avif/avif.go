@@ -515,20 +515,11 @@ func writeFiller(ctx context.Context, w io.Writer, buf []byte, rng *rand.Rand, s
 			return ctx.Err()
 		default:
 		}
-		fillBytes(buf[:n], rng)
+		core.FillRandomLE(buf[:n], rng)
 		if _, err := w.Write(buf[:n]); err != nil {
 			return err
 		}
 		left -= n
 	}
 	return nil
-}
-
-func fillBytes(b []byte, rng *rand.Rand) {
-	for i := 0; i < len(b); i += 8 {
-		v := rng.Uint64()
-		for j := 0; j < 8 && i+j < len(b); j++ {
-			b[i+j] = byte(v >> (8 * uint(j)))
-		}
-	}
 }

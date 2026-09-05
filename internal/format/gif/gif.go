@@ -358,11 +358,7 @@ func writeComment(ctx context.Context, w io.Writer, seed uint64, blocks, payload
 		}
 		buf[0] = byte(size)
 		chunk := buf[1 : 1+size]
-		for j := 0; j < len(chunk); j += 8 {
-			var eight [8]byte
-			putUint64(eight[:], rng.Uint64())
-			copy(chunk[j:], eight[:])
-		}
+		core.FillRandomBE(chunk, rng)
 		if _, err := w.Write(buf[:1+size]); err != nil {
 			return err
 		}
@@ -370,17 +366,6 @@ func writeComment(ctx context.Context, w io.Writer, seed uint64, blocks, payload
 
 	_, err := w.Write([]byte{0x00})
 	return err
-}
-
-func putUint64(b []byte, v uint64) {
-	b[0] = byte(v >> 56)
-	b[1] = byte(v >> 48)
-	b[2] = byte(v >> 40)
-	b[3] = byte(v >> 32)
-	b[4] = byte(v >> 24)
-	b[5] = byte(v >> 16)
-	b[6] = byte(v >> 8)
-	b[7] = byte(v)
 }
 
 // sizeLadder is tried from the largest down when the recipe names no picture

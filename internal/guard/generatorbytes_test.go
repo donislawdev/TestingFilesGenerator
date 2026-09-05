@@ -191,6 +191,17 @@ func goldenCases() map[string]engine.Target {
 		"jpg_192kib_many_segments": {ID: "g", Format: "jpg", Sizes: engine.Uniform(1, 196608), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64", "quality": "90"}},
 		"wav_32kib": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 32768), Label: true},
+
+		// WAV only pads when the audio does not land on the size exactly, and
+		// the padding is audio modulo the frame size - two bytes here, never a
+		// frame's worth. wav_32kib happens to be a size the audio fills
+		// exactly, so it walks past the filler without touching it, and until
+		// 2026-09-06 no case pinned that path at all.
+		//
+		// Found by measurement rather than by reading: making the filler emit a
+		// constant moved 33 of the 54 cases and not one of them was a WAV.
+		"wav_with_the_padding_chunk": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 102400), Label: true},
+
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},
 		"log_8kib":  {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true},
