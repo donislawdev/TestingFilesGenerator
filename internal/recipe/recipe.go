@@ -188,7 +188,7 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// cost is and no amount of it can be given back afterwards. See limits.go
 	// for the two shapes this and the budget below answer, and why one number
 	// cannot answer both.
-	if depth := flowDepth(src); depth > MaxFlowDepth {
+	if depth := nestingDepth(src); depth > MaxNestingDepth {
 		return nil, &TooDeepError{Name: name, Depth: depth}
 	}
 
