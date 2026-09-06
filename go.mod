@@ -1,15 +1,38 @@
 module github.com/donislawdev/TestingFilesGenerator
 
 // The compiler takes part in producing bytes, so its version is part of the
-// byte stability contract (D11). This line is a minimum - the exact version
-// used for tests and releases is pinned in the CI workflow, and the guard
-// test in internal/guard reports any drift it causes. See docs/STACK.md.
-go 1.26.5
+// byte stability contract (D11). This line is the floor: the oldest compiler
+// the module admits, and the only one of the two below it that the compiler
+// itself enforces.
+//
+// It is held equal to the toolchain line rather than left lower, and that is
+// the whole point of it. A floor below the pin is a hole, because the toolchain
+// line is consulted only when GOTOOLCHAIN allows a switch. Measured on
+// 2026-09-06 with the floor at 1.26.5: GOTOOLCHAIN=go1.26.8 built this module,
+// the binary answered 0.3.0-rc1, wrote 0.3.0-rc1 into every manifest, and
+// produced different bytes for png, docx and targz. Same source, same version
+// number, different files - which is the failure D11 exists to prevent.
+//
+// The cost is stated rather than hidden: nobody on Go 1.26 can build this from
+// source any more. That was the owner's decision on 2026-09-06, on the argument
+// that the alternative was not a working build but a build that lies about
+// which version it is. Kept honest by TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo,
+// which also holds the sentence in README.md against this number. See
+// docs/STACK.md.
+go 1.27.0
 
-// What we actually build with, which is not the same statement as the line
-// above. That one is a floor for anybody compiling this. This one says which
-// toolchain produces our binaries, and Go fetches it rather than asking anyone
-// to install it.
+// How the line above got to the number it carries. There used to be a separate
+// "toolchain" directive here saying which compiler produces our binaries, and
+// it is gone rather than forgotten: measured on 2026-09-06, Go refuses to build
+// a module whose toolchain directive is not newer than its go directive, and
+// once the floor was raised to meet the pin the two were the same number. The
+// build says "updates to go.mod needed" until the directive is taken out. The
+// comment is kept because the directive was never the valuable part - these
+// four decisions and what each of them cost were.
+//
+// What now carries the pin instead is GO_VERSION in the three CI workflows, and
+// TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo holds all of those
+// against this line and against README.md.
 //
 // Raised to 1.26.6 on 2026-08-13 because govulncheck reported five standard
 // library vulnerabilities reachable from the window binary under 1.26.5 - among
@@ -44,22 +67,21 @@ go 1.26.5
 // closes a level zero stream went from five bytes to two. It measures the
 // framing now, so the next release moves the bytes again but does not stop the
 // format from being written.
-toolchain go1.27.0
-
-require github.com/goccy/go-yaml v1.19.2
-
-require (
-	github.com/gen2brain/gav1d v0.2.5
-	github.com/gen2brain/jxl v0.2.0
-	golang.org/x/text v0.41.0
-)
-
-require github.com/FyshOS/fancyfs v0.0.1 // indirect
 
 require (
 	fyne.io/fyne/v2 v2.8.1
+	github.com/gen2brain/gav1d v0.2.5
+	github.com/gen2brain/jxl v0.2.0
+	github.com/goccy/go-yaml v1.19.2
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	golang.org/x/image v0.45.0
+	golang.org/x/text v0.41.0
+)
+
+require (
 	fyne.io/systray v1.12.3-0.20260810170012-af4e8e793ec4 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
+	github.com/FyshOS/fancyfs v0.0.1 // indirect
 	github.com/anthonynsimon/bild v0.14.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -79,14 +101,12 @@ require (
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
-	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rymdport/portal v0.4.2 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/yuin/goldmark v1.8.2 // indirect
-	golang.org/x/image v0.45.0
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -149,6 +149,19 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Building from source now needs Go 1.27.0.** It used to say 1.26.5, and that
+  sentence was true of compiling and false of the product. Go 1.27 changed
+  `compress/flate`, so a copy built on 1.26 answers the same version number,
+  writes that number into every manifest, and produces different bytes for PNG,
+  DOCX and TAR.GZ than the release of that name. The compiler now refuses that
+  build instead of producing one that quietly disagrees with everybody else's.
+
+  If you are pinned to Go 1.26 you can no longer build from source. The
+  downloadable binaries are unaffected, and so is `go install`.
+
+  A manifest already records which Go produced it, under `tool.go`, so two runs
+  that disagree can be told apart after the fact as well.
+
 - **The `encryption` setting now says that a locked archive is a fixture rather
   than protection.** Nothing about the files changes - the sentence `tfg formats
   zip` prints, and the one the window shows beside the field, gained the two
