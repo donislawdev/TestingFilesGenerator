@@ -169,7 +169,7 @@ Linux has no equivalent to sign them with.
 **With Go installed:**
 
 ```
-go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
+go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
 ```
 
 **From source.** Needs Go 1.26.5 or newer, and nothing else:
@@ -177,10 +177,16 @@ go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
 ```
 git clone https://github.com/donislawdev/TestingFilesGenerator
 cd TestingFilesGenerator
-go build ./cmd/tfg
+go build -tags "$(cat .github/build-tags)" ./cmd/tfg
 ```
 
-The desktop window is a second binary, `go build ./cmd/tfg-gui`. It draws
+**The tag is not optional.** The AVIF encoder has an assembly path that reads
+past the end of a buffer and takes the process down on some picture sizes, and
+the tag turns it off. Building without it does not compile, and says so. The
+files it produces are the same either way.
+
+The desktop window is a second binary,
+`go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui`. It draws
 through OpenGL and reaches it through C, so that one needs a C compiler and is
 built natively on each system. Built without one it still compiles, and says on
 start that it has no window in it and that everything is on the command line.

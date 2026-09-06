@@ -65,7 +65,7 @@ jobs:
         # cannot drift from what a manifest will record.
         run: |
           set -euo pipefail
-          version="$(go run ./cmd/tfg version)"
+          version="$(go run -tags "$(cat .github/build-tags)" ./cmd/tfg version)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "the code says $version"
 
@@ -380,7 +380,7 @@ jobs:
           # window archives and the command line ones, because a dot sorts
           # before an underscore. With it, the four files a person uses to check
           # a download sit together at the end, under the things they check.
-          go run ./internal/legal/cmd/sbom \
+          go run -tags "$(cat .github/build-tags)" ./internal/legal/cmd/sbom \
             -seed "${GITHUB_REF_NAME}" \
             -o "incoming/verify-tfg_${version}.spdx.json"
           echo "SBOM=incoming/verify-tfg_${version}.spdx.json" >> "$GITHUB_ENV"
