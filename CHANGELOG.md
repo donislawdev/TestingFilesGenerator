@@ -16,6 +16,25 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **WAV files asking for 24 or 32 bit audio have slightly different bytes.** A
+  steady tone repeats, so it is now worked out once for a single cycle and read
+  back for the rest of the file instead of being calculated again for every
+  sample.
+
+  Reading it back is not quite identical to calculating it - the two answers
+  differ far below the step between one sample value and the next. At the
+  default 16 bit depth that difference never reaches the file, and 16 bit WAVs
+  are byte for byte what they were. At 24 and 32 bits it does reach the file, in
+  roughly one sample in twenty thousand.
+
+  Nothing audible changes, and neither the size nor the structure of the file
+  changes. If you record hashes of 24 or 32 bit WAVs, they will not match.
+
+  This is what makes producing a WAV cheaper. Measured on a 256 MB file, runs
+  interleaved: **2.0 times less processor time and 1.7 times less wall clock.**
+  `silence`, `noise` and `sweep` are untouched - a sweep never repeats, so there
+  is nothing to read back.
+
 - **ZIP, TAR.GZ and WAV files have different bytes.** The padding these three
   formats write is now drawn from the random generator eight bytes at a time
   instead of one byte at a time. For a ZIP or a TAR.GZ that padding is almost
