@@ -116,6 +116,40 @@ func IsPartialName(name string) bool {
 	return strings.Contains(name, PartialMarker)
 }
 
+// WritingMarker is what a file being REPLACED is called while it is filled.
+//
+// A different job from PartialMarker, and the two are not interchangeable. That
+// one marks a file this run is producing, under a name nobody held before. This
+// one marks the half written copy of a file that already exists and belongs to
+// somebody - the manifest being rewritten over an earlier one, or the recipe
+// that "recipe fmt -w" is formatting in place. The full name is
+// "<final>.tfg-writing", with no process id, because the name is claimed
+// exclusively rather than made unique.
+//
+// Declared here beside PartialMarker on 2026-09-06, and the argument for it is
+// the one already written above: two parts of the tool have to agree on the
+// spelling, the writing side and the reading side. Until that day this marker
+// had TWO spellings and no reader at all - an unexported constant in
+// core/replace.go and a bare literal in manifest.go - so verify reported our
+// own half written manifest as "extra", the word that means somebody else put
+// it here. That is exactly the failure the comment on PartialMarker describes
+// as fixed in 2026-08-03, arriving a second time through the other marker.
+const WritingMarker = ".tfg-writing"
+
+// IsWritingName says whether a file name is one of ours, left behind by a
+// replacement that did not finish.
+//
+// A suffix rather than a contained string, which is the difference from
+// IsPartialName: that one has a process id after it, this one ends the name.
+//
+// Reaching one of these needs the process to die between the create and the
+// rename, because every error path in the writers removes it. That is a hard
+// kill, a CI timeout that outruns the grace period, or power loss - the same
+// conditions PartialMarker exists for.
+func IsWritingName(name string) bool {
+	return strings.HasSuffix(name, WritingMarker)
+}
+
 // AddSizes adds one file size to a running total and says when the total has
 // left the range it is measured in.
 //
