@@ -165,7 +165,10 @@ func TestTheWorkflowRunsTheLinterAndVerifiesItsConfiguration(t *testing.T) {
 	// workflow that happens to end the same way.
 	runs := false
 	for _, line := range strings.Split(text, "\n") {
-		if strings.Contains(line, tool+"@") && strings.Contains(line, "run ./...") {
+		// "run" and the package pattern rather than the two side by side. Build
+		// tags landed between them on 2026-09-06, and a guard that reads a line
+		// as a literal string reports the flag as a missing job.
+		if strings.Contains(line, tool+"@") && strings.Contains(line, " run ") && strings.Contains(line, "./...") {
 			runs = true
 		}
 	}

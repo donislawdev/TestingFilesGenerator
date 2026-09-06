@@ -114,7 +114,11 @@ func TestTheReleaseMakesItsDocumentAndHandsItOver(t *testing.T) {
 	all := script.String()
 
 	for what, want := range map[string]string{
-		"the bill of materials is generated":           "go run ./internal/legal/cmd/sbom",
+		// The package rather than the whole command line. Build tags were added
+		// in front of it on 2026-09-06 and this guard asked for a literal that no
+		// longer existed, which is a guard describing the shape of a line rather
+		// than what the job has to do.
+		"the bill of materials is generated":           "./internal/legal/cmd/sbom",
 		"it is written where the build is handed over": "-o \"incoming/verify-tfg_${version}.spdx.json\"",
 		"the statement travels with the build":         "build.provenance.sigstore.json",
 	} {
