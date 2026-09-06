@@ -339,7 +339,7 @@ jobs:
         # what makes it worth having: a scanner that lists every advisory
         # touching the module graph produces noise, and noise gets switched off.
         # Measured before switching it on, 2026-08-02: no vulnerabilities found.
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 ./...
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 -tags "$(cat .github/build-tags)" ./...
 
   staticcheck:
     name: staticcheck
@@ -382,7 +382,7 @@ jobs:
         # both of them the word "Pillow" at the start of an error string, which
         # is the name of the library that refused the image rather than a
         # sentence. Zero findings with the config in place.
-        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.1 ./...
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.1 -tags "$(cat .github/build-tags)" ./...
 
   lint:
     name: linters
@@ -426,7 +426,7 @@ jobs:
         # .golangci.yml. Measured before switching this on: zero findings from
         # ineffassign and one from misspell, which turned out to be a comment
         # written in the wrong language rather than a typo.
-        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 run ./...
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 run --build-tags "$(cat .github/build-tags)" ./...
 
   semgrep:
     name: semgrep
@@ -538,7 +538,7 @@ jobs:
         # versions read from the build. Not from a scan: measured 2026-08-27,
         # syft reading the window binary names every module with an exact
         # version and attaches a licence to one of thirty.
-        run: go run ./internal/legal/cmd/sbom -seed "${GITHUB_SHA}" -o ours.spdx.json
+        run: go run -tags "$(cat .github/build-tags)" ./internal/legal/cmd/sbom -seed "${GITHUB_SHA}" -o ours.spdx.json
 
       - name: scan the binaries
         # Pinned by commit like every other action here. The scan is evidence,

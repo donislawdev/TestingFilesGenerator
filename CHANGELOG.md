@@ -58,6 +58,25 @@ because it turns other people's test suites red.
 
 ### Security
 
+- **Building the program yourself now needs the build tag, and says so if you
+  leave it out.** The AVIF encoder has an assembly path that reads past the end
+  of a buffer and takes the process down on some picture sizes. Every workflow
+  here has passed the tag that turns it off since the encoder arrived - and
+  none of the three ways `README.md` offered for building it yourself did, so
+  `go install`, a distribution package and a build from a checkout all got the
+  path this project describes as reading outside its buffer.
+
+  A build without the tag now stops at the compiler with a message naming it,
+  rather than producing a binary that works until it meets the wrong picture
+  size. Install with:
+
+  ```
+  go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
+  ```
+
+  The files the program produces are the same either way, so nothing you have
+  generated changes.
+
 - **A recipe that nests lists deeply is refused before it is read, whichever way
   it is written.** The check that already refused deeply nested brackets counted
   only brackets, and the same nesting written as `- - - - x` costs two bytes a

@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -30,7 +31,11 @@ import (
 // measured across the whole size ladder, so D11 is untouched. Encoding a
 // 320x240 picture goes from about 6 ms to about 10 ms, which is still several
 // times faster than the road this project turned down.
-const buildTagsFile = "../../.github/build-tags"
+const buildTagsFile = "../../" + buildTagsFileName
+
+// buildTagsFileName is the same file as a person types it, which is what
+// belongs in a message telling somebody what to do about it.
+const buildTagsFileName = ".github/build-tags"
 
 func buildTags() string {
 	raw, err := os.ReadFile(buildTagsFile)
@@ -96,7 +101,22 @@ func TestEveryWorkflowCommandThatBuildsUsPassesTheBuildTags(t *testing.T) {
 }
 
 // compilesOurCode says whether a workflow line runs the compiler over this
-// module. Lines that fetch and run somebody else's tool are not ours to tag.
+// module.
+//
+// It used to say that lines fetching and running somebody else's tool are not
+// ours to tag, and that sentence hid three jobs. A tool fetched with "go run"
+// and then pointed at ./... loads and type checks our packages exactly as the
+// compiler does, and the tag selects different files inside two of our
+// dependencies - so govulncheck was doing its reachability analysis through a
+// build we do not ship, and staticcheck and golangci-lint were reading files no
+// released binary contains and not reading the ones it does. Found by an
+// outside review on 2026-09-05 and confirmed here.
+//
+// So "go run" is two commands wearing one name. Running a tool to read a
+// configuration file - "golangci-lint config verify" - never opens a package
+// and needs no tag. Running one over our packages does, and so does running one
+// of our own commands. Both of those say so by naming a package pattern of
+// ours, which is what the last line asks.
 func compilesOurCode(line string) bool {
 	trimmed := strings.TrimSpace(line)
 	if strings.HasPrefix(trimmed, "#") {
@@ -107,7 +127,74 @@ func compilesOurCode(line string) bool {
 			return true
 		}
 	}
-	return false
+	return strings.Contains(trimmed, "go run") && strings.Contains(trimmed, "./")
+}
+
+// A build without the tags does not compile, and says which tags.
+//
+// Everything above keeps the tag on the commands this project runs. None of it
+// reaches somebody who builds the program themselves, and until 2026-09-06
+// README.md offered three ways to do that and not one carried the tag. So
+// "go install ...@latest", a distribution packager and a contributor running
+// from a checkout all got the AVX2 path that reads past the end of a buffer -
+// while every workflow here was careful not to.
+//
+// The refusal is at build time on purpose. The alternative is a binary that
+// works until it meets a picture size that takes the process down, which is the
+// same defect arriving months later and somewhere nobody can act on it.
+//
+// Asked of the compiler rather than of the source, because what matters is that
+// the build FAILS. A guard reading internal/format/avif for a build constraint
+// would stay green against a file that had stopped failing.
+func TestABuildWithoutTheBuildTagsRefusesAndSaysWhy(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "untagged.bin")
+	cmd := exec.Command("go", "build", "-o", out, "./cmd/tfg")
+	cmd.Dir = filepath.Join("..", "..")
+	combined, err := cmd.CombinedOutput()
+	if err == nil {
+		t.Fatal("cmd/tfg built with no build tags at all.\n" +
+			"Without them the AVIF encoder's AVX2 path reads past the end of a buffer and takes " +
+			"the process down on some picture sizes, so a build that gets that far is a build " +
+			"somebody will run. internal/format/avif is where the refusal lives.")
+	}
+	said := string(combined)
+	if !strings.Contains(said, "build tags") {
+		t.Errorf("the build failed without the tags, which is right, but what it said does not "+
+			"name build tags:\n%s\nSomebody meeting this has to be able to act on it.", said)
+	}
+}
+
+// The install instructions carry the tags the build needs.
+//
+// One file names the tags and everything else reads it, which works for the
+// commands this project runs and cannot work for a command somebody types
+// before they have the repository. So README.md carries the tag itself, and
+// this is what keeps that copy honest.
+func TestTheInstallInstructionsCarryTheBuildTags(t *testing.T) {
+	tags := buildTags()
+	raw, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatalf("reading README.md: %v", err)
+	}
+
+	checked := 0
+	for i, line := range strings.Split(string(raw), "\n") {
+		if !strings.Contains(line, "go install") && !strings.Contains(line, "go build ") {
+			continue
+		}
+		checked++
+		if strings.Contains(line, buildTagsFileName) || strings.Contains(line, "-tags "+tags) {
+			continue
+		}
+		t.Errorf("README.md line %d tells somebody to build without the build tags:\n  %s\n"+
+			"What to do: add -tags %q to it, or read them from %s where the command is run "+
+			"inside a checkout. Without them the AVIF encoder reads past the end of a buffer.",
+			i+1, strings.TrimSpace(line), tags, buildTagsFileName)
+	}
+	if checked == 0 {
+		t.Fatal("no line of README.md was recognised as an install or build command, so this " +
+			"guard checked nothing")
+	}
 }
 
 // The size that crashed, encoded here so a build that lost the tag says so
