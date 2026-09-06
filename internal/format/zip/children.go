@@ -24,6 +24,10 @@ import (
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
 func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
+	// The directory chain depends only on the depth, so it is built once here
+	// rather than once per entry.
+	prefix := layout.Prefix()
+
 	// Sized up front, because the total is known before the walk starts: it is
 	// what the groups add up to. Growing by append instead reallocates and
 	// copies the whole slice fourteen times on the way to ten thousand entries,
@@ -54,7 +58,7 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 			}
 			numbered[g.Format]++
 			out = append(out, child{
-				name: layout.Path(fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension)),
+				name: prefix + fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
 				desc: desc,
 				plan: cp,
 			})

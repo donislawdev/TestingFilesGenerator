@@ -274,6 +274,8 @@ type entryWriter struct {
 	out io.Writer
 	ctr *counter
 	mac hash
+	// buf is reused across writes. See Write.
+	buf []byte
 }
 
 // hash is the part of hash.Hash this uses. Named so the field above reads as
@@ -284,7 +286,14 @@ type hash interface {
 }
 
 func (e *entryWriter) Write(p []byte) (int, error) {
-	out := make([]byte, len(p))
+	// A scratch buffer that lives as long as the entry rather than one per
+	// call. It cannot be done in place: p belongs to the caller, and the zip
+	// writer hands the same slice on elsewhere, so scrambling it here would
+	// corrupt what somebody else is about to read.
+	if cap(e.buf) < len(p) {
+		e.buf = make([]byte, len(p))
+	}
+	out := e.buf[:len(p)]
 	e.ctr.xor(out, p)
 	if _, err := e.mac.Write(out); err != nil {
 		return 0, err
