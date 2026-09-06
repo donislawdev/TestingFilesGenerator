@@ -118,10 +118,16 @@ type memo struct {
 	width, height int
 	seed          uint64
 	label         string
-	// body is the exact number of bytes the encoded picture takes before the
-	// closing chunk. Worked out during planning so that a size this format
-	// cannot reach is refused before any file exists.
-	body int64
+	// body is the number of bytes the encoded picture takes before the closing
+	// chunk. Worked out during planning so that a size this format cannot
+	// reach is refused before any file exists.
+	//
+	// bodyKnown says whether it was worked out at all. For a request far above
+	// what the largest rung can encode to, the answer cannot change which
+	// picture is chosen, so planning skips the encoding and the writer - which
+	// has to encode anyway - fills both fields in. See ladderCeiling.
+	body      int64
+	bodyKnown bool
 	// padData is how many bytes of padding the chunk carries. A negative
 	// value means no chunk at all, which happens when the picture lands
 	// exactly on the requested size.
@@ -184,6 +190,14 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	bare := body + iendSize
 
 	switch {
+	case !m.bodyKnown:
+		// The fast path in chooseSize already established that this request is
+		// far above the largest rung and that one chunk can carry the padding,
+		// so all three refusals below are unreachable and the only number still
+		// missing is how much padding there is. The writer settles that once it
+		// has encoded, which it has to do anyway.
+		m.withPad = true
+
 	case r.Bytes == bare:
 		// The picture lands exactly on the requested size. No padding chunk.
 		m.withPad = false
@@ -263,7 +277,21 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return err
 	}
 
-	if holder.written != m.body {
+	if !m.bodyKnown {
+		// Planning skipped the encoding because the request was far above the
+		// largest rung, so this is where the exact size arrives. The padding is
+		// whatever is left, which is the same arithmetic planning would have
+		// done with the same number.
+		m.body = holder.written
+		m.padData = p.Bytes - m.body - iendSize - chunkOverhead
+		if m.padData < 0 || m.padData > maxChunkData {
+			// Unreachable unless ladderCeiling is wrong, and then it is better
+			// to say so than to write a file of the wrong length.
+			return fmt.Errorf(
+				"png: the picture encoded to %d B, which leaves %d B of padding for a %d B file - ladderCeiling is wrong",
+				m.body, m.padData, p.Bytes)
+		}
+	} else if holder.written != m.body {
 		return fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body)
 	}
 	if string(holder.tail[4:8]) != "IEND" {
@@ -279,6 +307,22 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	_, err := w.Write(holder.tail)
 	return err
 }
+
+// ladderCeiling is the most the largest rung has ever been seen to encode to,
+// with room to spare. It is only ever used to decide that a request is far
+// enough above the ladder that no search is needed, so being generous costs a
+// few sizes their fast path and being wrong costs nothing silently - a picture
+// larger than this simply leaves less padding, and the writer would refuse
+// rather than produce a wrong file.
+//
+// Measured 2026-09-06 over ten seeds with the label both on and off: 5456 B at
+// the smallest and 5808 B at the largest, a spread of 352 B. The gradient
+// compresses about 210 to 1, so the number is nowhere near the 1229280 B that
+// an incompressible 640x480 picture would take.
+//
+// TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes sweeps it rather than
+// trusting this comment.
+const ladderCeiling = 16384
 
 // sizeLadder is tried from the largest down when the recipe names no picture
 // size. The first rung that leaves room for the padding chunk wins, so a
@@ -321,8 +365,33 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err != nil {
 			return memo{}, err
 		}
-		m.body = body
+		m.body, m.bodyKnown = body, true
 		return m, nil
+	}
+
+	// Planning does not have to encode the picture to know which rung wins.
+	//
+	// The ladder is walked from the largest rung down and the first one that
+	// fits is taken, so for any request comfortably above what the largest rung
+	// encodes to, the answer is the largest rung and encoding only confirms it.
+	// That confirmation was 38 to 53% of a PNG run - a whole encode, thrown
+	// away, so that the writer could do it again (P7 in the 2026-09-05
+	// performance review).
+	//
+	// This is a fast path and NOT a change of answer. It fires only where the
+	// rung is already settled, so the bytes are the ones the slow path below
+	// produces. Everything near a rung boundary still encodes and still gets
+	// the exact number.
+	//
+	// The second condition keeps the refusal above the chunk limit exact.
+	// Padding is r.Bytes minus the picture and the overheads, so it is largest
+	// when the picture is smallest, and a picture is never smaller than
+	// nothing. Bounding it that way costs a fallback to the slow path for a
+	// sliver of sizes just under two gigabytes and keeps the refusal honest.
+	if r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&
+		r.Bytes-iendSize-chunkOverhead <= maxChunkData {
+		rung := sizeLadder[0]
+		return memo{width: rung[0], height: rung[1], seed: r.Seed, label: label}, nil
 	}
 
 	var smallest memo
@@ -332,7 +401,7 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err != nil {
 			return memo{}, err
 		}
-		m.body = body
+		m.body, m.bodyKnown = body, true
 		smallest = m
 
 		bare := body + iendSize
