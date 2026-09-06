@@ -105,7 +105,10 @@ func buildCommandLine(t *testing.T) string {
 	if os.Getenv("GOOS") == "windows" || filepath.Separator == '\\' {
 		binary += ".exe"
 	}
-	build := exec.Command("go", "build", "-trimpath", "-o", binary, "../../cmd/tfg")
+	// With the tags. Without them this build stopped compiling on 2026-09-06,
+	// and the failure arrived as a SKIP rather than as a red guard - which is
+	// the silent shape this project has paid for before.
+	build := exec.Command("go", "build", "-tags", buildTags(), "-trimpath", "-o", binary, "../../cmd/tfg")
 	build.Env = append(os.Environ(), "CGO_ENABLED=0")
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Skipf("building the command line binary is not possible here: %v\n%s", err, out)

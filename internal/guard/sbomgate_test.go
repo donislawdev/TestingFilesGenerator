@@ -149,7 +149,10 @@ func TestTheWorkflowScansBothBinariesAndReadsTheReport(t *testing.T) {
 	for _, want := range []string{
 		"-trimpath -o dist/tfg ./cmd/tfg",
 		"-trimpath -o dist/tfg-gui ./cmd/tfg-gui",
-		"go run ./internal/legal/cmd/sbom",
+		// The package rather than the whole line: build tags went in front of it
+		// on 2026-09-06, and a guard reading a literal reports a flag as a missing
+		// job.
+		"./internal/legal/cmd/sbom",
 		"python .github/scripts/sbom_gate.py scan.json ours.spdx.json",
 	} {
 		if !strings.Contains(workflow, want) {
