@@ -77,6 +77,20 @@ because it turns other people's test suites red.
   in front of the picture, so it has to know how large the picture is before it
   starts.
 
+- **A recipe is parsed once instead of twice.** Reading a recipe checked it
+  for a stray second document and then handed the whole file to the decoder,
+  which parsed it again from scratch. The decoder now works from what was
+  already parsed.
+
+  Measured on the largest recipe the size limit allows, 900 kB and 20 000
+  targets: `validate` went from 839 ms to 754 ms. An ordinary recipe of a few
+  kilobytes was already instant. Where it shows is the batch screen, which
+  re-reads the recipe on every keystroke.
+
+  **Every refusal says exactly what it said before** - 48 malformed recipes
+  through two commands, compared character for character including the exit
+  code.
+
 - **A password protected archive allocates once per entry instead of once per
   block written.** Producing a 128 MB locked `.zip` used to make the collector
   run 48 times. It runs 6. The files are identical and the wall clock barely
