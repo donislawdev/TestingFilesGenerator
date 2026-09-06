@@ -172,7 +172,7 @@ Linux has no equivalent to sign them with.
 go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
 ```
 
-**From source.** Needs Go 1.26.5 or newer, and nothing else:
+**From source.** Needs Go 1.27.0 or newer, and nothing else:
 
 ```
 git clone https://github.com/donislawdev/TestingFilesGenerator
