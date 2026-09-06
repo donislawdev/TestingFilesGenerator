@@ -82,6 +82,8 @@ func (c *pkware) encrypt(p byte) byte {
 type zipCryptoWriter struct {
 	out io.Writer
 	c   *pkware
+	// buf is reused across writes. See Write.
+	buf []byte
 }
 
 // newZipCryptoWriter starts an entry, writing the twelve byte header before
@@ -111,7 +113,12 @@ func (l Lock) newZipCryptoWriter(w io.Writer, seed uint64, index int, crc uint32
 }
 
 func (z *zipCryptoWriter) Write(p []byte) (int, error) {
-	out := make([]byte, len(p))
+	// Reused across writes, and not done in place for the reason written out
+	// on entryWriter.Write: p belongs to the caller.
+	if cap(z.buf) < len(p) {
+		z.buf = make([]byte, len(p))
+	}
+	out := z.buf[:len(p)]
 	for i := range p {
 		out[i] = z.c.encrypt(p[i])
 	}

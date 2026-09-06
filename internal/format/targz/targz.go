@@ -252,6 +252,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
 func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
+	// The directory chain depends only on the depth, so it is built once here
+	// rather than once per entry.
+	prefix := layout.Prefix()
 	var out []child
 	index := 0
 	// Numbering runs per format rather than per group, so two groups of the
@@ -273,7 +276,7 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 			}
 			numbered[g.Format]++
 			out = append(out, child{
-				name: layout.Path(fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension)),
+				name: prefix + fmt.Sprintf("%s_%04d%s", g.Format, numbered[g.Format], desc.Extension),
 				desc: desc,
 				plan: cp,
 			})

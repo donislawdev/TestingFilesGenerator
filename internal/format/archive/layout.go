@@ -1,7 +1,6 @@
 package archive
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -59,18 +58,22 @@ const (
 	// format rather than trusting this paragraph.
 	maxDepth = 50
 
-	// dirSegment numbers the levels so a path reads as what it is. Two digits
-	// because maxDepth is two digits, and a fixed width so every segment is
-	// the same size and the arithmetic above stays a multiplication.
-	dirSegment = "d%02d/"
-
-	// dirSegmentBytes is what one segment comes to once rendered - "d00/" is
-	// four bytes where the format string above is six. Written out rather than
-	// taken as len(dirSegment), which is the bug the depth guard caught the
-	// first time it ran: the arithmetic said every path was 2 bytes per level
-	// longer than it is, which would have understated the ceiling rather than
-	// overstating it, so nothing would have failed until somebody widened the
-	// segment. A guard compares this against a really rendered path.
+	// A level is written as "d00/": the letter, the number padded to two
+	// digits because maxDepth is two digits, and the separator. A fixed width
+	// is what keeps the arithmetic above a multiplication rather than a walk.
+	//
+	// It used to be a "d%02d/" format string rendered through fmt, and that
+	// cost more than everything else about naming an entry put together -
+	// measured 2026-09-06 at depth 50 over 10 000 entries, 82.2 ms against
+	// 30.6 ms once the verb went. Prefix writes the four bytes out by hand.
+	//
+	// dirSegmentBytes is what one level comes to. It was written out rather
+	// than taken as the length of that format string, which is the bug the
+	// depth guard caught the first time it ran: six bytes rather than four
+	// said every path was 2 bytes per level longer than it is, which
+	// understates the ceiling instead of overstating it, so nothing would have
+	// failed until somebody widened the segment. A guard still compares this
+	// against a really rendered path.
 	dirSegmentBytes = 4
 )
 
@@ -87,15 +90,38 @@ type Layout struct {
 // The empty name gives the directory chain itself with its trailing slash,
 // which is what both containers want a directory entry to be called.
 func (l Layout) Path(name string) string {
+	return l.Prefix() + name
+}
+
+// Prefix is the directory chain on its own, with nothing on the end.
+//
+// It depends on Depth and on nothing else, so a caller naming thousands of
+// entries works it out once rather than once per entry. Measured 2026-09-06 at
+// depth 50 over 10 000 entries: a median of 82.2 ms rebuilding it every time
+// against 1.08 ms building it once, ranges disjoint.
+//
+// The default depth is zero and a flat archive spends nothing here either way,
+// so this is a ceiling rather than a typical run - which is worth saying,
+// because the number above reads like a saving every user gets.
+//
+// Rendered by hand rather than through fmt: the format verb is what made the
+// old version expensive, and a two digit number with a floor of two is small
+// enough to write out. "d%02d/" pads to two and lets a third digit through,
+// which is what the branch below does.
+func (l Layout) Prefix() string {
 	if l.Depth <= 0 {
-		return name
+		return ""
 	}
 	var b strings.Builder
-	b.Grow(l.Depth*len(dirSegment) + len(name))
+	b.Grow(l.Depth * dirSegmentBytes)
 	for i := 0; i < l.Depth; i++ {
-		fmt.Fprintf(&b, dirSegment, i)
+		b.WriteByte('d')
+		if i < 10 {
+			b.WriteByte('0')
+		}
+		b.WriteString(strconv.Itoa(i))
+		b.WriteByte('/')
 	}
-	b.WriteString(name)
 	return b.String()
 }
 

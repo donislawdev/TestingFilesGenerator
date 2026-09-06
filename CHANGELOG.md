@@ -77,6 +77,17 @@ because it turns other people's test suites red.
   in front of the picture, so it has to know how large the picture is before it
   starts.
 
+- **A password protected archive allocates once per entry instead of once per
+  block written.** Producing a 128 MB locked `.zip` used to make the collector
+  run 48 times. It runs 6. The files are identical and the wall clock barely
+  moves, so this is headroom rather than a speed-up you will notice.
+
+- **Nesting files deep inside an archive costs almost nothing to name.** The
+  directory chain in front of every entry was rebuilt for each one, though it
+  depends only on the depth. At the deepest setting with 10 000 entries that was
+  82 ms of naming, and it is now close to nothing. Archives left flat, which is
+  the default, never paid it either way.
+
 - **`verify` and `cleanup` read the files over several threads, so checking a
   large run is several times faster.** Nothing about what they report changes -
   the same differences, in the same order, with the same exit codes.
