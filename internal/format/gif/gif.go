@@ -159,6 +159,11 @@ type memo struct {
 	label         string
 	// body is the encoded picture up to but not including the trailer.
 	body int64
+	// bodyKnown says whether planning worked that out. For a request far
+	// above what the largest rung encodes to, the answer cannot change which
+	// picture is chosen, so planning skips the encoding and the writer fills
+	// this in. See ladderCeiling.
+	bodyKnown bool
 	// payload is how many bytes of filler the comment carries, and blocks how
 	// many sub blocks carry them. Both zero means no comment at all.
 	payload int64
@@ -209,8 +214,14 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		},
 	}
 
-	if err := settlePadding(&m, r.Bytes, bare); err != nil {
-		return format.Plan{}, err
+	// With the body unknown the padding cannot be settled yet, and it does not
+	// need to be: the fast path in chooseSize already established there is room
+	// for a comment carrying whatever is left. The writer settles it once it
+	// has encoded, which it has to do anyway.
+	if m.bodyKnown {
+		if err := settlePadding(&m, r.Bytes, bare); err != nil {
+			return format.Plan{}, err
+		}
 	}
 
 	labelled := r.Label && imagelabel.Fits(w, len(label))
@@ -312,7 +323,17 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if err := encode(holder, m); err != nil {
 		return err
 	}
-	if holder.written != m.body {
+	if !m.bodyKnown {
+		// Planning skipped the encoding, so this is where the exact size
+		// arrives and the padding gets settled - the same arithmetic planning
+		// would have done with the same number.
+		m.body = holder.written
+		if err := settlePadding(&m, p.Bytes, m.body+trailerSize); err != nil {
+			// Unreachable unless ladderCeiling is wrong, and then saying so
+			// beats writing a file of the wrong length.
+			return fmt.Errorf("gif: %w - ladderCeiling is wrong", err)
+		}
+	} else if holder.written != m.body {
 		return fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.written, m.body)
 	}
 	if holder.tail[0] != 0x3B {
@@ -368,6 +389,21 @@ func writeComment(ctx context.Context, w io.Writer, seed uint64, blocks, payload
 	return err
 }
 
+// ladderCeiling is the most the largest rung has ever been seen to encode to,
+// with room to spare. It only ever decides that a request is far enough above
+// the ladder that no search is needed, so being generous costs a few sizes
+// their fast path and being wrong costs nothing silently - the writer refuses
+// rather than producing a file of the wrong length.
+//
+// Measured 2026-09-06 at 640x480 over three seeds, the label both on and off,
+// and one, three, ten and sixty frames: 54518 B at the smallest and 64020 B at
+// the largest. Frames barely move it, about 150 B each, which is why this is
+// one number rather than a function of the frame count.
+//
+// TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes sweeps it rather than
+// trusting this comment.
+const ladderCeiling = 98304
+
 // sizeLadder is tried from the largest down when the recipe names no picture
 // size, exactly as PNG does. The first rung that leaves a reachable remainder
 // wins, so a small file gets a small picture instead of being refused.
@@ -402,8 +438,23 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err != nil {
 			return memo{}, err
 		}
-		m.body = body
+		m.body, m.bodyKnown = body, true
 		return m, nil
+	}
+
+	// Planning does not have to encode the picture to know which rung wins.
+	// The ladder is walked largest first, so for a request comfortably above
+	// what the largest rung encodes to, that rung is the answer and encoding
+	// only confirms it - at the cost of a whole encode thrown away so the
+	// writer can do it again (P7 in the 2026-09-05 performance review).
+	//
+	// A fast path, not a change of answer: it fires only where the rung is
+	// already settled, and the margin also guarantees the comment can carry
+	// whatever is left, so none of the refusals in settlePadding are reachable
+	// from here.
+	if r.Bytes >= ladderCeiling+trailerSize+smallestCarryingComment {
+		rung := sizeLadder[0]
+		return memo{width: rung[0], height: rung[1], frames: frames, seed: r.Seed, label: label}, nil
 	}
 
 	var smallest memo
@@ -413,7 +464,7 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err != nil {
 			return memo{}, err
 		}
-		m.body = body
+		m.body, m.bodyKnown = body, true
 		smallest = m
 
 		bare := body + trailerSize

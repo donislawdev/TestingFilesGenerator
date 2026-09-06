@@ -39,6 +39,25 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Producing `.png` and `.gif` files is about twice as cheap.** Working out
+  what a file will contain used to draw the whole picture and compress it, only
+  to throw the result away and do it again when the file was actually written.
+  It now does that once.
+
+  Measured on 300 files of 200 kB: `.png` takes **2.0 times less processor time
+  and 1.8 times less wall clock**. For `.gif`, 1.8 and 1.6.
+
+  **The files are byte for byte identical.** This changes only how the work is
+  ordered, and it was checked that way - across sizes either side of every step
+  in the picture ladder, for several seeds, with the label on and off.
+
+  A preview (`--dry-run`) of a large run gets the bigger share of this, since
+  previewing was almost entirely the work now removed.
+
+  `.jpg` is unchanged and cannot get the same treatment: it writes its padding
+  in front of the picture, so it has to know how large the picture is before it
+  starts.
+
 - **`verify` and `cleanup` read the files over several threads, so checking a
   large run is several times faster.** Nothing about what they report changes -
   the same differences, in the same order, with the same exit codes.
