@@ -204,6 +204,16 @@
       "sha256": "55f453ce6cc46a6d856d62825327169683283b22b98b0a4e06effe3a3aaafffe",
       "measured_on": "2026-09-06"
     },
+    "wav_past_one_cycle": {
+      "bytes": 1048576,
+      "sha256": "fff46cab5eb2db05221acf54d1e8e6e5c65c2323be3268e0e296eff7a16e6ecc",
+      "measured_on": "2026-09-06"
+    },
+    "wav_32bit_past_one_cycle": {
+      "bytes": 2097152,
+      "sha256": "2e637d6ef2e3229ed66b39f2258944738c4e7552ee00f42058268672d93b7f4a",
+      "measured_on": "2026-09-06"
+    },
     "webp_64kib": {
       "bytes": 65536,
       "sha256": "de9034bd6315f0a51fd8fe1b99adfa5719597f7c3d7cdaba1d3b8624754bf89e",
@@ -333,6 +343,14 @@
         "zip_16kib",
         "zip_past_the_comment_limit",
         "zip_with_three_pdfs"
+      ]
+    },
+    {
+      "on": "2026-09-06",
+      "why": "The steady tone is worked out for one cycle and then read back instead of being recomputed, which is 2.03x less CPU and 1.70x less wall clock on a 256 MB file, ranges disjoint on both. Reading the table back is not bit for bit what recomputing gives, because float64(frame)/float64(rate) rounds differently from float64(frame%period)/float64(rate) - but the gap is far below the step between sample values at sixteen bits. Measured: at the default depth NOTHING moves (40 combinations of seed, size, rate and channels), and at 24 and 32 bits it does (25 of 30 combinations). Both new cases exist because no case pinned either side: everything else is shorter than one cycle, and no golden case set bit_depth at all. wav_past_one_cycle pins that the default depth stays as it was and is NOT a repin. wav_32bit_past_one_cycle is the only witness to the change, at two megabytes because 512 KiB differs in zero bytes and would have looked like coverage.",
+      "files": [
+        "wav_32bit_past_one_cycle",
+        "wav_past_one_cycle"
       ]
     }
   ]

@@ -202,6 +202,30 @@ func goldenCases() map[string]engine.Target {
 		// constant moved 33 of the 54 cases and not one of them was a WAV.
 		"wav_with_the_padding_chunk": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 102400), Label: true},
 
+		// Both sides of the tone table of 2026-09-06, which works one cycle of
+		// the sine out and then reads it back rather than asking again.
+		//
+		// Reading it back is not bit for bit what recomputing gives, but at
+		// sixteen bits the difference lands far below the step between one
+		// sample value and the next, so the file comes out identical. This case
+		// is here to keep it that way, at a length where the tone has wrapped
+		// many times over. Measured, not proved: forty combinations of seed,
+		// size, rate and channel count, none of which moved a byte.
+		"wav_past_one_cycle": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 1048576), Label: true},
+
+		// At thirty two bits the step between sample values is small enough to
+		// show the difference, so this file DID change and is the only pinned
+		// witness to it. No golden case set bit_depth at all before this one.
+		//
+		// The size is two megabytes because smaller ones do not witness
+		// anything, and the first version of this case picked one of those.
+		// Measured at the pinned seed, where the cycle is 14700 frames:
+		// 512 KiB differs in 0 bytes, 1 MiB in 38, 2 MiB in 250, 4 MiB in 1048.
+		// A case sitting at 512 KiB would have been green whatever the tone
+		// table did, and would have looked like coverage.
+		"wav_32bit_past_one_cycle": {ID: "g", Format: "wav", Sizes: engine.Uniform(1, 2097152), Label: true,
+			Properties: map[string]string{"bit_depth": "32"}},
+
 		"zip_16kib": {ID: "g", Format: "zip", Sizes: engine.Uniform(1, 16384), Label: true},
 		"md_8kib":   {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true},
 		"log_8kib":  {ID: "g", Format: "log", Sizes: engine.Uniform(1, 8192), Label: true},

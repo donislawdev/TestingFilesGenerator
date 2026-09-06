@@ -365,11 +365,8 @@ func (m memo) writeSamples(ctx context.Context, w io.Writer) error {
 		return nil
 	}
 	bytesPerSample := m.bits / 8
-	rng := core.NewRand(m.seed)
 	buf := make([]byte, 0, writeChunk+16)
-
-	// A fixed pitch, nudged by the seed so two seeds sound different.
-	base := 220.0 + float64(m.seed%880)
+	signal := newSampler(m)
 
 	var written int64
 	for frame := int64(0); frame < m.frames; frame++ {
@@ -381,18 +378,7 @@ func (m memo) writeSamples(ctx context.Context, w io.Writer) error {
 			}
 		}
 
-		t := float64(frame) / float64(m.rate)
-		var v float64
-		switch m.content {
-		case "silence":
-			v = 0
-		case "noise":
-			v = rng.Float64()*2 - 1
-		case "sweep":
-			v = math.Sin(2 * math.Pi * (base + base*t) * t)
-		default:
-			v = math.Sin(2 * math.Pi * base * t)
-		}
+		v := signal.next(frame)
 
 		for c := 0; c < m.channels; c++ {
 			buf = appendSample(buf, v, bytesPerSample)
