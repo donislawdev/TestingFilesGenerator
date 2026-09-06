@@ -300,17 +300,107 @@ func (m *Manifest) Add(f File) {
 	}
 }
 
+// noteExamples is how many file names a grouped note shows before it stops
+// listing and starts counting.
+//
+// Three rather than one, because one name reads as if one file were special
+// when the note is about a whole target, and three shows the shape of the
+// naming without becoming a list.
+const noteExamples = 3
+
 // Notes gathers every note in the run, so a caller can report them without
 // walking the entries itself.
+//
+// GROUPED BY WHAT THE NOTE SAYS, not one line per file, and that is the whole
+// point of it. Measured on 2026-09-06: a run of 25 000 one byte text files
+// emitted 25 001 "note:" lines on stderr, one per file, every one of them the
+// same sentence about the label not fitting. The advice was per file for a
+// decision that is per target.
+//
+// The line that matters was buried under them. A run whose manifest will be
+// too big for this build to read back says so first, in a "note:" line
+// typographically identical to the 25 000 that follow it - and that one is the
+// only thing standing between somebody and a directory neither verify nor
+// cleanup can ever read. See echoManifestReach in cli/generate.go.
+//
+// The same reasoning was already applied to the progress bar, which is
+// throttled to 10 Hz and silent when stderr is not a terminal, on the grounds
+// that "thousands of redrawn lines in a CI log are worse than no bar"
+// (cli/progress.go). Notes had not had it applied to them.
+//
+// The stored notes do not change. This is a view for a reader - every entry
+// keeps its own note in the manifest, where a machine reads it and nothing
+// scrolls.
+//
+// Names are not sorted here and the count is kept rather than the names, so a
+// million entry run no longer sorts a million strings to print sixteen lines.
 func (m *Manifest) Notes() []string {
-	var out []string
+	groups := noteGroups{byDetail: map[string]*noteGroup{}}
 	for _, f := range m.Files {
 		for _, n := range f.Notes {
-			out = append(out, fmt.Sprintf("%s: %s", f.Name, n.Detail))
+			groups.add(n.Detail, f.Name)
 		}
 	}
-	sort.Strings(out)
+	sort.Strings(groups.order)
+
+	out := make([]string, 0, len(groups.order))
+	for _, detail := range groups.order {
+		out = append(out, groups.byDetail[detail].line(detail))
+	}
 	return out
+}
+
+// noteGroup is one sentence and the files that carry it.
+//
+// The names are kept only up to noteExamples and the rest is a count, so a
+// million entry run holds a handful of strings rather than a million.
+type noteGroup struct {
+	count int
+	first []string
+}
+
+// noteGroups collects them, keeping the order the details were first seen in.
+type noteGroups struct {
+	byDetail map[string]*noteGroup
+	order    []string
+}
+
+// add records one note against the file that carries it.
+//
+// The first few names are taken in the order the manifest lists them rather
+// than sorted, which is what makes this cheap AND deterministic: the manifest's
+// own order is fixed, guarded by auditorder_test.go, so the same recipe names
+// the same few files every time.
+func (n *noteGroups) add(detail, name string) {
+	g := n.byDetail[detail]
+	if g == nil {
+		g = &noteGroup{}
+		n.byDetail[detail] = g
+		n.order = append(n.order, detail)
+	}
+	g.count++
+	if len(g.first) < noteExamples {
+		g.first = append(g.first, name)
+	}
+}
+
+// line renders one group for a person to read.
+//
+// A group of one keeps the shape it always had - the file name in front - so
+// the common case of one file with something to say about it does not get worse
+// to make the large case better.
+func (g *noteGroup) line(detail string) string {
+	if g.count == 1 {
+		return fmt.Sprintf("%s: %s", g.first[0], detail)
+	}
+	named := strings.Join(g.first, ", ")
+	if hidden := g.count - len(g.first); hidden > 0 {
+		return fmt.Sprintf("%s: %s Named: %s. %s not named here.",
+			core.Count(g.count, "file", "files"), detail, named,
+			core.Count(hidden, "file", "files"))
+	}
+	return fmt.Sprintf("%s: %s Named: %s.",
+		core.Count(g.count, "file", "files"), detail, named)
 }
 
 // Encode renders the manifest as JSON.
