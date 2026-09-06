@@ -58,6 +58,39 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Files are written over several threads, so a run of many files is several
+  times faster.** They used to be written one after another.
+
+  Nothing about what you get changes. The files are byte for byte identical,
+  the manifest lists them in the same order, `verify` and `cleanup` behave
+  exactly as before, and every refusal says what it said.
+
+  Measured on an eight core machine, variants interleaved and their order
+  reversed between repetitions. 240 `.png` files of 200 kB went from 2.03 to
+  0.44 seconds, which is **4.6 times faster**. 80 `.zip` files of 2 MB, 2.9
+  times. 240 `.docx` files of 200 kB, 2.0 times. Two thousand `.txt` files of
+  4 kB, 1.4 times - with files that small the time goes into what a run does
+  once rather than into writing them.
+
+  A single file is unchanged whatever its size, and the measurement says so
+  rather than the reasoning: at one 20 MB `.png` the two ranges overlap, so no
+  difference is claimed. There is nothing to write beside a single file.
+
+  The gain follows the number of cores you have and the kind of file. Work the
+  processor does - drawing a picture, compressing an archive - scales best. A
+  run held up by the disk gains less. A handful of files was already quick and
+  is unaffected.
+
+  **One thing changes if you stop a run part way.** Ctrl+C used to leave behind
+  the files finished so far, which were always a consecutive run of them.
+  Several threads means one file can be cut off while a later one is already
+  finished, so what survives can have a gap in it. The manifest names exactly
+  what is on the disk either way, which is what `verify` and `cleanup` work
+  from, so neither is affected.
+
+  The progress bar counts the whole run rather than one file at a time, so its
+  file counter can move by more than one between redraws.
+
 - **Producing `.png` and `.gif` files is about twice as cheap.** Working out
   what a file will contain used to draw the whole picture and compress it, only
   to throw the result away and do it again when the file was actually written.

@@ -54,6 +54,27 @@ var mayBeConcurrent = map[string]string{
 	// file and cannot fail - which is what makes the order of the answers, and
 	// the file a refusal names, the same on every run.
 	"internal/audit/parallel.go": "hashing the claimed files runs beside itself, and nothing else in the package does",
+	// Writing the files IS the run. Measured 2026-09-06, after P7 stopped
+	// planning from encoding the picture twice: planning 300 PNGs is 51 ms and
+	// writing them is 2741 ms, so the write loop is 98% of it and the plan is
+	// 2%. Over goroutines in one process, png 200 kB x240 goes 2.05x at two,
+	// 3.03x at four, 4.19x at eight and 5.51x at sixteen, and zip 2 MB x80
+	// reaches 3.87x at eight - measured with tools/probes/writeparallel, which
+	// also answered the question that had to come first: a shared heap costs
+	// nothing, 563.0 MB at one goroutine against 562.8 MB at sixteen.
+	//
+	// Added 2026-09-06 and THE OWNER DECIDED IT, with two things put to them
+	// rather than assumed. Where the pool lives: here rather than shared with
+	// internal/audit, because the two need opposite behaviour when a run is
+	// stopped - audit a contiguous prefix, this every file that finished - and
+	// a shared helper would carry a flag switching the one property each of
+	// them rests on. And what a stopped run records: every finished file, hole
+	// or no hole, because a finished file with no manifest entry is a file
+	// untouchable rule 7 leaves nothing able to remove.
+	//
+	// Numbers, the instrument, and the two mistakes made getting them:
+	// docs/PERFORMANCE-REVIEW-2026-09-05.md section 14.
+	"internal/engine/parallel.go": "the planned files are written beside each other, and nothing else in the package does",
 }
 
 // Waiting on cancellation is not the same thing as running in parallel. Every
