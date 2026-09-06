@@ -147,6 +147,22 @@ func compilesOurCode(line string) bool {
 // the build FAILS. A guard reading internal/format/avif for a build constraint
 // would stay green against a file that had stopped failing.
 func TestABuildWithoutTheBuildTagsRefusesAndSaysWhy(t *testing.T) {
+	// Asked before building, and this one cannot use the "an error means skip"
+	// shape the other ten callers of the toolchain use, because here an error
+	// is the ANSWER. A missing compiler and a compiler that refused both arrive
+	// as err != nil, so without this the test reads "the build failed, which is
+	// right" about a machine that never ran a build, and then reports that the
+	// message does not name build tags - with the message empty.
+	//
+	// Measured on 2026-09-06: that is exactly what it did in the container
+	// tools/linux-check.py uses, which has no Go in it by design. It was the
+	// only test of the suite to fail there, and it blamed the refusal rather
+	// than the environment. Same idiom and same reason as
+	// TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty.
+	if _, err := exec.LookPath("go"); err != nil {
+		t.Skipf("no Go toolchain here, so no build can be refused: %v", err)
+	}
+
 	out := filepath.Join(t.TempDir(), "untagged.bin")
 	cmd := exec.Command("go", "build", "-o", out, "./cmd/tfg")
 	cmd.Dir = filepath.Join("..", "..")
