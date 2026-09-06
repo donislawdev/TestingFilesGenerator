@@ -86,7 +86,10 @@ func TestTheWindowBinaryStartsWithoutAConsole(t *testing.T) {
 
 			built := filepath.Join(t.TempDir(), binary.name)
 
-			args := []string{"build"}
+			// With the tags, because a build without them does not compile at all
+			// since 2026-09-06 - and because the header this reads belongs to the
+			// binary this project ships rather than to some other build of it.
+			args := []string{"build", "-tags", buildTags()}
 			if binary.ldflags != "" {
 				args = append(args, "-ldflags="+binary.ldflags)
 			}
