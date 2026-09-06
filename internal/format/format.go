@@ -166,6 +166,21 @@ type Property struct {
 	// Detail is one sentence for a person, and it is what tfg formats prints
 	// and what a window shows beside the field.
 	Detail string
+
+	// Secret marks a value that is a credential rather than a description of
+	// the file, and there is exactly one of them today: the password an
+	// archive is locked with.
+	//
+	// It does NOT mean the value is hidden. A locked fixture whose password is
+	// not written down is worth nothing, so the manifest records it on purpose
+	// and says so in that property's own Detail. What this flag decides is
+	// everything AROUND that one deliberate place: the recorded command line
+	// does not repeat it, and the manifest that carries it is written for its
+	// owner rather than for everyone on the machine.
+	//
+	// Declared here rather than known by the places that care, because a
+	// second secret property added later would otherwise have to find them.
+	Secret bool
 }
 
 // JointLimit is a rule binding two settings that neither of them can state

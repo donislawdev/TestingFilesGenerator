@@ -155,7 +155,8 @@ var axes = map[string]format.Property{
 	},
 	Password: {
 		Name: Password, Kind: format.PropertyText,
-		Shape: "the password, in plain text",
+		Secret: true,
+		Shape:  "the password, in plain text",
 		// No default, and that is the point. A box somebody types in arrives
 		// empty from a window, so leaving it alone is how "no password" is
 		// said - see the pair rule in readLock.

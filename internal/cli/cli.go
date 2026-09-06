@@ -12,10 +12,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
@@ -279,10 +281,46 @@ func (p propertyFlag) Set(v string) error {
 func args2(args []string) []string {
 	out := make([]string, 0, len(args)+1)
 	out = append(out, "generate")
+	secrets := format.SecretProperties()
+	afterSet := false
 	for _, a := range args {
-		out = append(out, quoteArg(a))
+		out = append(out, quoteArg(withoutSecret(a, afterSet, secrets)))
+		afterSet = a == "--set" || a == "-set"
 	}
 	return out
+}
+
+// redactedValue stands in the recorded command where a credential was typed.
+const redactedValue = "***"
+
+// withoutSecret is the argument with a credential taken out of it, or the
+// argument unchanged.
+//
+// The manifest records the password of a locked archive on purpose, under that
+// file's own properties, and archive.go says why: a locked fixture whose
+// password is not written down is worth nothing. This is about the OTHER place
+// it used to appear. run.command is the line people copy - into a bug report,
+// into a README, into a commit beside a fixture set - and it read like
+// metadata rather than like fixture data, so it was not treated with the same
+// care. The two places were one accident apart.
+//
+// Both shapes are handled because the flag package takes both: "--set" with
+// "password=x" as the next argument, and "--set=password=x" as one. A single
+// dash is the same flag to that package, so it is the same flag here.
+func withoutSecret(arg string, afterSet bool, secrets []string) string {
+	prefix, rest := "", arg
+	if !afterSet {
+		var found bool
+		if prefix, rest, found = strings.Cut(arg, "="); !found || (prefix != "--set" && prefix != "-set") {
+			return arg
+		}
+		prefix += "="
+	}
+	name, _, ok := strings.Cut(rest, "=")
+	if !ok || !slices.Contains(secrets, name) {
+		return arg
+	}
+	return prefix + name + "=" + redactedValue
 }
 
 func quoteArg(a string) string {
