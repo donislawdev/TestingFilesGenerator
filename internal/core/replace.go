@@ -1,6 +1,9 @@
 package core
 
-import "os"
+import (
+	"errors"
+	"os"
+)
 
 // writingSuffix marks the half written copy while it is being filled.
 //
@@ -47,7 +50,14 @@ func ReplaceFile(path string, content []byte) error {
 
 	tmp := path + writingSuffix
 	if err := writeWhole(tmp, content, mode); err != nil {
-		_ = os.Remove(tmp)
+		// Only what this call created is taken away. A refusal from CreateNew
+		// means the name was already somebody's - a leftover from an
+		// interrupted run, or something planted there - and untouchable rule 7
+		// is that this tool does not remove what it did not write.
+		var taken *NameTakenError
+		if !errors.As(err, &taken) {
+			_ = os.Remove(tmp)
+		}
 		return err
 	}
 	if err := os.Rename(tmp, path); err != nil {
@@ -83,13 +93,20 @@ func modeToKeep(path string) (os.FileMode, error) {
 
 // writeWhole fills the copy and makes sure it carries the mode it was given.
 //
-// The mode is set explicitly rather than left to the create call, for two
-// reasons that both bite quietly: a create only applies its mode when the file
-// is new, so a leftover copy from an interrupted run would keep whatever it
-// had, and the process umask takes bits away from a create and not from a
-// chmod.
+// The mode is set explicitly rather than left to the create call, because the
+// process umask takes bits away from a create and not from a chmod.
+//
+// A second reason stood here until 2026-09-06 and it went with the create it
+// described: a create only applies its mode when the file is new, so a leftover
+// copy from an interrupted run used to keep whatever mode it had. CreateNew
+// refuses a name something is already holding, so there is no leftover to
+// inherit a mode from - there is a refusal naming the file instead. That
+// changed because this name is beside a file in somebody's repository, and a
+// create that is not exclusive wrote through a link planted at it. Measured on
+// 2026-09-06: "recipe fmt -w" put the recipe on a file outside the directory
+// and left the recipe itself as a link, exit 0.
 func writeWhole(path string, content []byte, mode os.FileMode) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	f, err := CreateNew(path, mode)
 	if err != nil {
 		return err
 	}

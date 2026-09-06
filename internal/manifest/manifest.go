@@ -599,7 +599,12 @@ func (m *Manifest) Save(path string) error {
 // half applied.
 func (m *Manifest) writeOver(path string) error {
 	tmp := path + ".tfg-writing"
-	f, err := os.Create(tmp)
+	// Claimed rather than created, and core.CreateNew says why: this name sits
+	// in a directory the run does not own, nothing else in the tool checks it,
+	// and a create that is not exclusive follows whatever is at the name.
+	// Measured on 2026-09-06 - a link here put the manifest on a file outside
+	// the output directory and the run still exited 0.
+	f, err := core.CreateNew(tmp, 0o666)
 	if err != nil {
 		return err
 	}
@@ -638,40 +643,20 @@ func (m *Manifest) writeOver(path string) error {
 
 // claimName creates the file only if nobody else holds the name.
 //
-// O_EXCL is the way to ask that question, because creating the file and finding
-// out whether it existed are then one operation nobody can get between.
+// How that question is settled, and why creating the file is the only way to
+// ask it, is in core.CreateNew - together with the measurement of what Windows
+// answers when the path runs through a reparse point.
 //
-// It is not reliable everywhere, and that was measured rather than read.
-// On Windows, Go opens with the flag that stops a create from following a link,
-// and CREATE_NEW then reports ERROR_ALREADY_EXISTS for a file that is not there
-// whenever any part of the path is a reparse point - a symbolic link or a
-// junction. Measured on 2026-08-03 against a directory made three ways:
+// It moved there on 2026-09-06. This function had the better half of the answer
+// and asked os.Stat, which follows a link: a link pointing at nothing answered
+// "there is nothing here" and the create went through it. The temporary name
+// beside this one had no half of the answer at all. One rule spelled in two
+// places is one rule with a hole in it, so now there is one place.
 //
-//	plain directory      O_EXCL succeeds
-//	symbolic link        O_EXCL says "The file exists" and nothing is there
-//	junction             the same
-//
-// It is Go rather than the system: the same create through the same link
-// succeeds from .NET. A directory reached through a link is an ordinary setup -
-// a redirected workspace, a mounted scratch disk - so taking the answer at face
-// value made "tfg generate --out" fail with exit code 5 for those users. That
-// was introduced on 2026-08-03 and found the same day by the guard that
-// generates into a linked directory.
-//
-// So a refusal is believed only when something really is there. Where O_EXCL
-// works this is exactly O_EXCL. Where it lies, this falls back to what the tool
-// did before, which leaves the same narrow window two runs starting together
-// could meet - see O43.
+// What was measured here stays true of the fallback: it leaves the narrow
+// window two runs starting together could meet - see O43.
 func claimName(path string) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
-	if err == nil {
-		return f.Close()
-	}
-	if _, statErr := os.Stat(path); statErr == nil {
-		// Something is genuinely there. This is the refusal that matters.
-		return err
-	}
-	f, err = os.Create(path)
+	f, err := core.CreateNew(path, 0o644)
 	if err != nil {
 		return err
 	}

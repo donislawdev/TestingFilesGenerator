@@ -6,13 +6,17 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
 	"sync/atomic"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // This file is the only place in internal/engine that runs anything beside
@@ -289,12 +293,11 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	// files that want the same name and this name is built from that one.
 	tmp := tempPathFor(outDir, f.Name)
 
-	// os.Create, and O_EXCL was tried here and taken back out on 2026-08-25.
+	// Claimed rather than created, and core.CreateNew carries the measurement
+	// that settles how.
 	//
-	// The idea was sound: the check in preflight answers "this name is free"
-	// a few hundred lines before the write, and O_EXCL would have the
-	// filesystem answer it at the moment of writing instead. What it costs on
-	// Windows is not sound. Measured with a probe, a file created in a
+	// O_EXCL on its own was tried here and taken back out on 2026-08-25, for a
+	// reason that has not changed. Measured with a probe, a file created in a
 	// directory reached through a symbolic link:
 	//
 	//   os.Create                 works
@@ -302,17 +305,28 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	//
 	// about a file that does not exist. Go asks for the reparse point rather
 	// than what it points at when O_EXCL is set, so every file of a run whose
-	// output directory is a link fails - and this tool supports exactly that
+	// output directory is a link failed - and this tool supports exactly that
 	// on purpose, because people keep fixtures on a mounted workspace or a
 	// scratch disk. Two guards said so within a minute of the change.
 	//
-	// The window O_EXCL would have closed is a real one and it is small:
-	// preflight refuses every name that is taken before the run starts, so
-	// what is left is somebody else creating our temporary name, with our
-	// process id in it, during the run. Trading a supported way of pointing
-	// the tool at a directory for that is the wrong way round.
-	fh, err := os.Create(tmp)
+	// What came back on 2026-09-06 is not that flag on its own. It is the
+	// pair: create exclusively, and believe the refusal only when os.Lstat
+	// says something is really there. The supported setup keeps working, and
+	// the window this file used to leave open closes with it.
+	//
+	// That window is small and it was the last one of its kind: preflight
+	// refuses every name that is taken before the run starts, so what was left
+	// is somebody creating our temporary name - with our process id in it -
+	// during the run, and a create that follows links putting the bytes
+	// wherever it pointed. Owner's call on 2026-09-06, after the same class
+	// was found unguarded in two other places. See core.CreateNew.
+	fh, err := core.CreateNew(tmp, 0o666)
 	if err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			// In our own words. The fault is the one preflight names, arriving
+			// later than preflight can look.
+			return "", &CollisionError{Path: tmp}
+		}
 		return "", err
 	}
 
