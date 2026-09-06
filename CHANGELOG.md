@@ -149,6 +149,27 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Notes are reported once per thing they say, not once per file.** A run of
+  25 000 one-byte text files used to print 25 001 `note:` lines, every one of
+  them the same sentence about the label not fitting. It now prints one, with
+  the count and the first three names:
+
+  ```
+  note: 25000 files: The label needs 32 B and the file is 1 B, so this file
+  carries no label. Its name and the manifest still identify it. Named:
+  files_0001.txt, files_0002.txt, files_0003.txt. 24997 files not named here.
+  ```
+
+  A note about a single file still leads with that file's name, unchanged.
+
+  The reason this matters beyond tidiness: a run whose manifest will be too big
+  for this build to read back warns you first, in a line that looked exactly
+  like the 25 000 that followed it. That warning is the only thing standing
+  between you and a directory that `verify` and `cleanup` can never read.
+
+  **Nothing in the manifest changes.** Every entry still carries its own note,
+  where a machine reads it and nothing scrolls.
+
 - **Building from source now needs Go 1.27.0.** It used to say 1.26.5, and that
   sentence was true of compiling and false of the product. Go 1.27 changed
   `compress/flate`, so a copy built on 1.26 answers the same version number,
