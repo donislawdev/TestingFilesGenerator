@@ -34,14 +34,20 @@ const (
 	// that counted comments would be a limit on explaining. Measured before
 	// choosing: comments and blanks run 17 to 45 lines in the longest
 	// functions, so counting them would have punished the wrong thing.
-	longestFunction = 79
+	// Lowered from 79 on 2026-09-06: engine.Run stopped being the longest
+	// function in the tree when the writing went into parallel.go and what was
+	// left was the checks a run does once. The ratchet only tightens.
+	longestFunction = 75
 	// 503 until 2026-09-03. engine.go lost the line that told the plan budget
 	// how big a target was, because the budget stopped needing to be told - it
 	// takes its reference point when it is built. A ratchet goes down when work
 	// makes it lowerable.
 	// Lowered from 502 on 2026-09-05: preflight and the questions it asks about
 	// names moved into their own file. The ratchet only tightens.
-	longestFile = 457
+	// Lowered from 457 on 2026-09-06: writing a file moved out of engine.go
+	// into parallel.go, beside the goroutines that do it. The longest file in
+	// the tree is somewhere else now.
+	longestFile = 433
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

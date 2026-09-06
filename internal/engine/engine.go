@@ -1,13 +1,11 @@
 package engine
 
 import (
-	"bufio"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -162,11 +160,25 @@ type Options struct {
 	// OnProgress is called as the run advances. Nil means silence, which is
 	// what every caller that has nobody to show it to should pass.
 	//
-	// Called from the same goroutine doing the work, so there is no
-	// concurrency here to get wrong. Called often - once per write inside a
-	// file, not only once per finished file - so rate limiting what actually
-	// reaches a screen belongs to the caller. Without the writes inside a
-	// file, one 5 GB file would report once, at the end.
+	// NEVER TWO AT ONCE, though not always from the same goroutine. Until
+	// 2026-09-06 this promised the stronger thing - "from the same goroutine
+	// doing the work" - and both callers were built on it: the command line bar
+	// moves last and printed without a lock, and the window's throttle reads
+	// and writes a timestamp without one. The files are written over several
+	// goroutines now, so the engine serialises these calls instead. The lock
+	// gives happens-before, so both callers stay correct unchanged. What a
+	// caller may NOT do is assume the goroutine, which is why the sentence is
+	// here rather than only in the commit that changed it.
+	//
+	// Called often - once per write inside a file, not only once per finished
+	// file - so rate limiting what actually reaches a screen belongs to the
+	// caller. Without the writes inside a file, one 5 GB file would report
+	// once, at the end.
+	//
+	// With several files in flight the byte count is the whole run's, so it
+	// moves while any writer moves rather than tracking one file. It still
+	// falls back when a file fails, exactly as it did before, because a file
+	// that failed counts for nothing.
 	OnProgress func(Progress)
 }
 
@@ -443,6 +455,12 @@ type Progress struct {
 //
 // A manifest is returned even when the run is cut short, otherwise cleanup
 // has nothing to work with.
+//
+// The writing itself happens over several goroutines, and everything about
+// that lives in parallel.go - including why, and what it measured. What stays
+// here is everything a run does exactly once: the checks that decide whether
+// it may start at all, and the reading back of the answers in the order the
+// plan lists them.
 func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {
 	m := manifest.New(
 		"testing-files-generator", version.Version,
@@ -516,133 +534,58 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		}
 	}()
 
-	totalBytes := TotalBytes(files)
-	var bytesDone int64
+	// The files are written over several goroutines. Everything that runs
+	// beside anything else lives in parallel.go, including the measurements
+	// that put it there.
+	written := writeAll(ctx, files, opt.OutDir, newProgressGate(files, opt.OnProgress))
 
-	for i, f := range files {
-		select {
-		case <-ctx.Done():
-			// Stop starting new files. What is already finished stays, and
-			// the manifest describes exactly that.
-			m.Run.Complete = false
-			return res, ctx.Err()
+	// Read back in the order the plan lists, on this goroutine alone. Two
+	// things rest on that and neither is tidiness:
+	//
+	//   - the manifest keeps the order it has always had, which is the order
+	//     cleanup prints to a person before deleting from it,
+	//   - a run stopped part way names the LOWEST cancelled file rather than
+	//     whichever writer happened to notice first, so the same interruption
+	//     reports the same thing on every machine.
+	var stopped error
+	for i, r := range written {
+		switch {
+		case r.ok:
+			m.Add(entryFor(files[i], r.sha, true, nil))
+		case r.err == nil:
+			// Never started. A cancelled run leaves these behind and they are
+			// neither a success nor a failure, so they get no entry - which is
+			// what the sequential loop did by never reaching them.
+		case errors.Is(r.err, context.Canceled) || errors.Is(r.err, context.DeadlineExceeded):
+			// A writer stopped half way through wrote nothing that survived,
+			// so there is nothing to record about it either.
+			if stopped == nil {
+				stopped = r.err
+			}
 		default:
-		}
-
-		// Built per file rather than once, because it closes over how far the
-		// run had got before this file started. Left nil when nobody is
-		// listening, so a run without progress allocates nothing for it.
-		var report func(int64)
-		if opt.OnProgress != nil {
-			report = func(inFile int64) {
-				opt.OnProgress(Progress{
-					FilesDone: i, FilesTotal: len(files),
-					BytesDone: bytesDone + inFile, BytesTotal: totalBytes,
-				})
-			}
-		}
-
-		sum, err := writeOne(ctx, f, opt.OutDir, report)
-		if err == nil {
-			// Only what reached the disk. Counting a file that failed would
-			// have the bar claim bytes nobody can find, and on a run where
-			// several fail the total would arrive before the files do.
-			bytesDone += f.Plan.Bytes
-		}
-		if opt.OnProgress != nil {
-			opt.OnProgress(Progress{
-				FilesDone: i + 1, FilesTotal: len(files),
-				BytesDone: bytesDone, BytesTotal: totalBytes,
-			})
-		}
-		if err != nil {
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				m.Run.Complete = false
-				return res, err
-			}
 			// One file failing does not end the run. Nine thousand good
 			// files are worth keeping, and the entry says what went wrong.
 			res.Failures++
-			m.Add(entryFor(f, "", false, err))
-			continue
+			m.Add(entryFor(files[i], "", false, r.err))
 		}
-		m.Add(entryFor(f, sum, true, nil))
+	}
+
+	// A stopped run keeps every file that FINISHED, which may leave a hole
+	// where a writer was cut off. The sequential loop could only ever leave a
+	// contiguous prefix, so this is the one thing a person can observe that
+	// changed - decided by the owner on 2026-09-06, and the alternative is
+	// worse in a way untouchable rule 7 names: a finished file with no entry
+	// in the manifest is a file no command of this tool can remove.
+	if stopped == nil && ctx.Err() != nil {
+		stopped = ctx.Err()
+	}
+	if stopped != nil {
+		m.Run.Complete = false
+		return res, stopped
 	}
 
 	m.Run.Complete = true
 	return res, nil
-}
-
-func writeOne(ctx context.Context, f PlannedFile, outDir string, report func(int64)) (string, error) {
-	final := filepath.Join(outDir, f.Name)
-	// The process id is in the name because two runs writing into one directory
-	// used to meet on it. Measured on 2026-08-03: two runs of the same target
-	// collided on the temporary file, one of them reported two files it could
-	// not produce, and the bytes of the other had already gone through the same
-	// handle. The name never survives the run, so nothing about it has to be
-	// repeatable - and the file it becomes is settled by the plan, not by this.
-	tmp := tempPathFor(outDir, f.Name)
-
-	// os.Create, and O_EXCL was tried here and taken back out on 2026-08-25.
-	//
-	// The idea was sound: the check in preflight answers "this name is free"
-	// a few hundred lines before the write, and O_EXCL would have the
-	// filesystem answer it at the moment of writing instead. What it costs on
-	// Windows is not sound. Measured with a probe, a file created in a
-	// directory reached through a symbolic link:
-	//
-	//   os.Create                 works
-	//   O_CREATE|O_EXCL|O_WRONLY  fails with "The file exists"
-	//
-	// about a file that does not exist. Go asks for the reparse point rather
-	// than what it points at when O_EXCL is set, so every file of a run whose
-	// output directory is a link fails - and this tool supports exactly that
-	// on purpose, because people keep fixtures on a mounted workspace or a
-	// scratch disk. Two guards said so within a minute of the change.
-	//
-	// The window O_EXCL would have closed is a real one and it is small:
-	// preflight refuses every name that is taken before the run starts, so
-	// what is left is somebody else creating our temporary name, with our
-	// process id in it, during the run. Trading a supported way of pointing
-	// the tool at a directory for that is the wrong way round.
-	fh, err := os.Create(tmp)
-	if err != nil {
-		return "", err
-	}
-
-	h := sha256.New()
-	buffered := bufio.NewWriterSize(fh, 64<<10)
-	counter := &countingWriter{w: io.MultiWriter(buffered, h), report: report}
-
-	writeErr := writeWithoutCrashing(ctx, f, counter)
-	if writeErr == nil {
-		writeErr = buffered.Flush()
-	}
-	closeErr := fh.Close()
-
-	if writeErr != nil {
-		_ = os.Remove(tmp)
-		return "", writeErr
-	}
-	if closeErr != nil {
-		_ = os.Remove(tmp)
-		return "", closeErr
-	}
-
-	// The size is the promise. A generator that missed it by a byte is a bug
-	// worth catching here rather than in someone's test suite, so the file
-	// never reaches its final name.
-	if counter.n != f.Plan.Bytes {
-		_ = os.Remove(tmp)
-		return "", fmt.Errorf("generator for %s produced %d B where the plan said %d B",
-			f.Desc.ID, counter.n, f.Plan.Bytes)
-	}
-
-	if err := os.Rename(tmp, final); err != nil {
-		_ = os.Remove(tmp)
-		return "", err
-	}
-	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 func entryFor(f PlannedFile, sha string, materialized bool, failure error) manifest.File {
@@ -926,23 +869,4 @@ func describeForbidden(r rune) string {
 func runID(seed int64) string {
 	h := sha256.Sum256([]byte(fmt.Sprintf("run:%d", seed)))
 	return "run_" + hex.EncodeToString(h[:5])
-}
-
-type countingWriter struct {
-	w io.Writer
-	n int64
-	// report, when set, is called with the running total for this file. It is
-	// what gives progress inside a single large file rather than only between
-	// files - the case where silence is worst, because one 5 GB file is one
-	// callback if you only count finished files.
-	report func(int64)
-}
-
-func (c *countingWriter) Write(p []byte) (int, error) {
-	n, err := c.w.Write(p)
-	c.n += int64(n)
-	if c.report != nil {
-		c.report(c.n)
-	}
-	return n, err
 }

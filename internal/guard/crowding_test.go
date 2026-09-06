@@ -45,8 +45,10 @@ const (
 	// same act as editing a golden value for the same reason.
 	// Lowered from 10 on 2026-09-05: audit.Verify dropped under sixty lines
 	// when the per file work moved into compare. The ratchet only tightens.
+	// Lowered from 2 on 2026-09-06: engine.go dropped out of the crowded band
+	// when writing a file moved into parallel.go.
 	crowdedFunctions = 9
-	crowdedFiles     = 2
+	crowdedFiles     = 1
 )
 
 func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {
