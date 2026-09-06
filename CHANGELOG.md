@@ -58,6 +58,16 @@ because it turns other people's test suites red.
 
 ### Security
 
+- **On Windows, the desktop window loads the library it uses for dark menus from
+  the system directory rather than by name.** Asking for `uxtheme.dll` by name
+  goes through the standard Windows search order, and the directory the program
+  was started from comes before the system one in that order - so a file of that
+  name left beside a downloaded `tfg-gui.exe` would have been loaded into the
+  program and run.
+
+  Nothing about the window changes. The menu is still dark, which was checked by
+  asking Windows on a real machine rather than by reading the code.
+
 - **The password of a locked archive is no longer repeated in the recorded
   command line.** It appeared twice in the manifest: under the file's own
   `properties`, where it is written on purpose because a locked fixture nobody

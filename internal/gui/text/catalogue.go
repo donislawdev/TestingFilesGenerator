@@ -51,6 +51,25 @@ var builtIn embed.FS
 // resolved rather than the newest, because moving it would move a dependency of
 // the toolkit and that is a question about byte stability rather than about
 // translations. See docs/STACK.md.
+// WRITTEN ONCE, BEFORE ANY SCREEN EXISTS, AND NEVER AGAIN. That is what makes a
+// plain variable enough here, and it is a constraint rather than an accident:
+// Load writes it, say, sayf and sayN read it on every string the window draws,
+// and there is no lock between them.
+//
+// LoadBuiltIn is called from one place, in run before the first screen is
+// built, and a guard holds it there. The moment something calls Load a second
+// time - a language switch is the obvious one, and LoadBuiltIn's own comment
+// names it as its own piece of work - this becomes a write racing every read on
+// the interface thread. The race detector will not necessarily say so either,
+// because fyne.Do runs on the calling goroutine under the test driver, which is
+// exactly the condition that hides threading defects in this tree.
+//
+// An atomic pointer would make the write safe and would be a defence nothing in
+// this build can redden, which is a shape this project takes out rather than
+// keeps - seven such pieces have gone. So the constraint is mechanical instead:
+// the guard fails when a second caller appears, and whoever adds the language
+// switch starts from this sentence rather than discovering it. Raised by an
+// outside review on 2026-09-05.
 var localiser *i18n.Localizer
 
 // sayf is say for a sentence that has values in it.

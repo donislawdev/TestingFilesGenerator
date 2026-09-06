@@ -22,10 +22,13 @@ import (
 //
 //   - An endpoint written into the code. A string is not an import, so a URL
 //     sitting in a constant is invisible to both guards beside this one.
-//   - A library loaded by name. internal/gui reaches uxtheme.dll through
-//     syscall.NewLazyDLL and calls into it by ordinal, which is a documented and
-//     wanted thing - and it is also the exact shape that would load wininet.dll
-//     instead. This is Go's version of ctypes.windll.
+//   - A library loaded by name. internal/gui reaches uxtheme.dll and calls into
+//     it by ordinal, which is a documented and wanted thing - and it is also the
+//     exact shape that would load wininet.dll instead. This is Go's version of
+//     ctypes.windll. Since 2026-09-06 that load names an absolute path under the
+//     system directory rather than a bare file name, so the library's name moved
+//     into a helper of ours and the scan follows it there - see
+//     libraryLoadCalls.
 //   - A socket opened under the import graph. syscall is legitimately imported
 //     in eight shipped files for disk space, signals and dark menus, so banning
 //     it is not available. Naming the socket shaped calls is.
@@ -226,7 +229,44 @@ func telemetryFindings(src, rel string) []telemetryFinding {
 		}
 		return true
 	})
-	return found
+	return withoutRegisteredPathLoads(found, rel)
+}
+
+// librariesLoadedByPath are the files allowed to name a library with something
+// other than a literal, and why.
+//
+// A computed name is normally the worst answer this guard can get - it cannot
+// read what is being loaded, so it cannot vouch for it. There is one case where
+// it is the SAFER answer and this is it: uxtheme.dll is not a KnownDLL, so
+// naming it plainly goes through the standard search order and the directory the
+// program was started from comes first in that order. Building an absolute path
+// under the system directory is what closes that, and an absolute path is by
+// definition not a literal.
+//
+// Measured on 2026-09-06: the KnownDLLs registry key holds thirty seven entries,
+// kernel32.dll is one of them and uxtheme.dll is not.
+//
+// The file is named rather than the shape, because the shape is exactly what
+// this guard cannot tell apart.
+var librariesLoadedByPath = map[string]string{
+	"internal/gui/darkmenus_windows.go": "the dark window menu, loaded from an absolute path under the system directory " +
+		"because uxtheme.dll is not a KnownDLL - see systemLibraryPath there",
+}
+
+// withoutRegisteredPathLoads drops the one finding a registered file is allowed
+// to raise, and leaves every other finding from that file alone.
+func withoutRegisteredPathLoads(found []telemetryFinding, rel string) []telemetryFinding {
+	if _, granted := librariesLoadedByPath[rel]; !granted {
+		return found
+	}
+	kept := make([]telemetryFinding, 0, len(found))
+	for _, f := range found {
+		if f.kind == "library" && f.detail == computedLibraryName {
+			continue
+		}
+		kept = append(kept, f)
+	}
+	return kept
 }
 
 // lowLevelLocalNames maps the name a file uses for a low level package back to
@@ -307,15 +347,15 @@ func urlFinding(lit *ast.BasicLit, rel string) []telemetryFinding {
 // callFindings reports a call that loads a library, opens a socket or starts a
 // program.
 func callFindings(call *ast.CallExpr, local map[string]bool) []telemetryFinding {
+	if libraryLoadCalls[libraryCallName(call)] {
+		return libraryFinding(call)
+	}
+
 	sel, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok {
 		return nil
 	}
 	name := sel.Sel.Name
-
-	if name == "NewLazyDLL" || name == "NewLazySystemDLL" || name == "LoadDLL" || name == "LoadLibrary" {
-		return libraryFinding(call)
-	}
 
 	// A call on a name the file resolved to a low level package. The receiver
 	// has to be that name, so an ordinary method called Send on our own type is
@@ -333,6 +373,45 @@ func callFindings(call *ast.CallExpr, local map[string]bool) []telemetryFinding 
 	return nil
 }
 
+// computedLibraryName is what this guard says about a load whose argument it
+// cannot read. Spelled once, because the check that raises it and the registry
+// that forgives it in one named file have to mean the same string.
+const computedLibraryName = "a library named by something other than a literal"
+
+// libraryLoadCalls are the calls that name a library, whoever owns them.
+//
+// The four from syscall are the obvious half. systemLibraryPath is ours and it
+// is here for a reason worth writing down: on 2026-09-06 the window stopped
+// asking for uxtheme.dll by bare name - which goes through the standard search
+// order - and started building an absolute path under the system directory
+// instead. That moved the library's NAME out of the syscall call and into a
+// helper of our own, where every check in this file would have walked straight
+// past it. A guard that gets safer code and stops looking is worse than the
+// code it was guarding.
+//
+// One set rather than the two lists that used to say this, which were four
+// names written twice.
+var libraryLoadCalls = map[string]bool{
+	"NewLazyDLL": true, "NewLazySystemDLL": true, "LoadDLL": true, "LoadLibrary": true,
+	"systemLibraryPath": true,
+}
+
+// libraryCallName is the name of the function a call names, whether it is
+// written as a package selector or as a plain function of ours.
+//
+// Not the calledName in interfacethread_test.go, which answers the empty string
+// for a marshalling selector - that is right for the question it asks and would
+// silently drop calls from this one.
+func libraryCallName(call *ast.CallExpr) string {
+	switch fn := call.Fun.(type) {
+	case *ast.SelectorExpr:
+		return fn.Sel.Name
+	case *ast.Ident:
+		return fn.Name
+	}
+	return ""
+}
+
 // libraryFinding reads the library a load call names, and reports it when the
 // name is computed rather than written down - a library nobody can read here is
 // a library this guard cannot vouch for.
@@ -342,7 +421,7 @@ func libraryFinding(call *ast.CallExpr) []telemetryFinding {
 	}
 	lit, ok := call.Args[0].(*ast.BasicLit)
 	if !ok || lit.Kind != token.STRING {
-		return []telemetryFinding{{kind: "library", detail: "a library named by something other than a literal"}}
+		return []telemetryFinding{{kind: "library", detail: computedLibraryName}}
 	}
 	name, err := strconv.Unquote(lit.Value)
 	if err != nil {
@@ -452,13 +531,7 @@ func collectUses(src, rel string, urls, libraries map[string]bool) {
 
 // loadedLibrary reads the literal name out of a library load call.
 func loadedLibrary(call *ast.CallExpr) (string, bool) {
-	sel, ok := call.Fun.(*ast.SelectorExpr)
-	if !ok || len(call.Args) == 0 {
-		return "", false
-	}
-	switch sel.Sel.Name {
-	case "NewLazyDLL", "NewLazySystemDLL", "LoadDLL", "LoadLibrary":
-	default:
+	if len(call.Args) == 0 || !libraryLoadCalls[libraryCallName(call)] {
 		return "", false
 	}
 	lit, ok := call.Args[0].(*ast.BasicLit)

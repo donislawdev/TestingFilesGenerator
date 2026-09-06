@@ -49,6 +49,29 @@ func AvailableBytes(path string) (int64, error) {
 // already in the graph as an indirect one, so promoting it would not add a
 // download - but it would put it inside the command line binary, which does not
 // link it today, and that is untouchable rule 11 rather than tidying.
+// NewLazyDLL goes through the standard search order, which has historically
+// included the directory the program was started from, and an outside review on
+// 2026-09-05 asked for NewLazySystemDLL instead - which asks for System32 and
+// nothing else. Two measurements settle why it stays as it is.
+//
+// THAT FUNCTION IS NOT IN THE STANDARD LIBRARY. The review said it was.
+// Measured on 2026-09-06: syscall offers LoadDLL, LoadLibrary and NewLazyDLL
+// and no System variant, no LoadLibraryEx and no LOAD_LIBRARY_SEARCH_ constants
+// - the compiler says "undefined: syscall.NewLazySystemDLL". The System form
+// lives in golang.org/x/sys/windows, and putting that inside the command line
+// binary is the thing the paragraph above turns down under untouchable rule 11.
+//
+// AND THIS LOOKUP NEVER CONSULTS THE SEARCH ORDER. kernel32.dll is a KnownDLL:
+// measured in the registry on this machine, HKLM\SYSTEM\CurrentControlSet\
+// Control\Session Manager\KnownDLLs holds 37 entries and one of them is
+// "*kernel32 = kernel32.dll". A KnownDLL is already mapped, so the loader hands
+// back the module that is there and there is nothing to put in front of it.
+//
+// What the review was right about is the next call rather than this one, and
+// that part is now mechanical instead of remembered: a guard allows this form
+// only for names on the KnownDLLs list, so a second NewProc pointed at an
+// ordinary library is a failure with a sentence rather than a pattern inherited
+// from the line above it.
 var (
 	kernel32    = syscall.NewLazyDLL("kernel32.dll")
 	getDiskFree = kernel32.NewProc("GetDiskFreeSpaceExW")
