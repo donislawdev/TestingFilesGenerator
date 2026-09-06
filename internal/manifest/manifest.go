@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -591,6 +592,69 @@ func (m *Manifest) Save(path string) error {
 	return nil
 }
 
+// secretProperties are the property names whose value is a credential rather
+// than a description of a file.
+//
+// A copy of what the format registry declares, and deliberately a copy. This
+// package records what a run produced and knows nothing about formats - asking
+// the registry here would tie the record to it, and the registry can be empty
+// in a process that never registered anything, which would answer "no secrets"
+// quietly. So the fact is written twice and a guard compares the two, which is
+// the same arrangement the licence notices and the registry already have.
+var secretProperties = []string{"password"}
+
+// SecretProperties is what this package treats as a credential.
+//
+// Exported for the guard that compares it with what the format registry
+// declares, which is the mechanism that makes the copy above safe. A second
+// secret property added to a format and not added here would otherwise be
+// recorded in a file everybody on the machine can read, and nothing would say
+// so.
+func SecretProperties() []string { return slices.Clone(secretProperties) }
+
+// mode is how the manifest file is written.
+//
+// 0644 for the ordinary case, on purpose and against the usual advice:
+// .golangci.yml turns gosec's file permission rules off here because this tool
+// exists to produce files somebody else's CI will read, and 0600 on a fixture
+// would be a defect in the product rather than a fix.
+//
+// A manifest carrying a password is the one file that argument does not cover.
+// The password is written there deliberately - a locked fixture nobody can open
+// checks nothing - but deliberate is not the same as readable by every account
+// on the machine.
+//
+// Windows has no permission bits and Go maps only the owner write bit onto its
+// read only attribute, so this changes nothing there. It is the systems where
+// other people have accounts that it is for.
+func (m *Manifest) mode() os.FileMode {
+	for _, f := range m.Files {
+		if holdsACredential(f.Properties) {
+			return 0o600
+		}
+	}
+	return 0o666
+}
+
+// holdsACredential says whether these properties carry a value that is a
+// credential rather than a description of the file.
+//
+// An empty value is not one. That is how a window says "no password": a box
+// nobody typed in arrives as an empty string, and a manifest tightened for a
+// password that is not there would be a mode nobody asked for.
+//
+// Split out of mode above rather than written inside it, because the two loops
+// and the test nest three deep together and the shape guard counts how many
+// functions sit that deep.
+func holdsACredential(props map[string]any) bool {
+	for _, name := range secretProperties {
+		if value, ok := props[name]; ok && value != "" && value != nil {
+			return true
+		}
+	}
+	return false
+}
+
 // writeOver puts the manifest under a name this run already owns.
 //
 // Split out of Save so that every way of failing gives the name back, rather
@@ -604,7 +668,11 @@ func (m *Manifest) writeOver(path string) error {
 	// and a create that is not exclusive follows whatever is at the name.
 	// Measured on 2026-09-06 - a link here put the manifest on a file outside
 	// the output directory and the run still exited 0.
-	f, err := core.CreateNew(tmp, 0o666)
+	//
+	// The mode is the temporary file's, because the rename below moves the file
+	// and its mode with it. So this is where a manifest carrying a password
+	// stops being readable by every account on the machine.
+	f, err := core.CreateNew(tmp, m.mode())
 	if err != nil {
 		return err
 	}

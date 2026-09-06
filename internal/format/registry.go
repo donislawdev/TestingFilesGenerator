@@ -118,6 +118,45 @@ func All() []Descriptor {
 	return out
 }
 
+// SecretProperties are the names of every property any registered format
+// declares as a credential, sorted.
+//
+// A name rather than a format and a name, because the places that ask are
+// looking at a value somebody typed - "--set password=..." on a command line
+// carries no format with it, and a recipe can name several. One name being
+// secret anywhere is enough for those places to treat it as secret, which errs
+// in the direction that cannot leak.
+func SecretProperties() []string {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	seen := map[string]struct{}{}
+	for _, d := range registry {
+		collectSecrets(d.Properties, seen)
+	}
+	names := make([]string, 0, len(seen))
+	for name := range seen {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// collectSecrets adds the names of the secret properties in props to into.
+//
+// A function of its own rather than the inner loop of the one above, for the
+// reason written beside the same split in internal/recipe: together they nest
+// three deep - the loop over formats, the loop over properties, the test - and
+// the shape guard counts how many functions sit that deep as well as how deep
+// the deepest one is.
+func collectSecrets(props []Property, into map[string]struct{}) {
+	for _, p := range props {
+		if p.Secret {
+			into[p.Name] = struct{}{}
+		}
+	}
+}
+
 // IDs returns the registered format ids, sorted.
 func IDs() []string {
 	mu.RLock()

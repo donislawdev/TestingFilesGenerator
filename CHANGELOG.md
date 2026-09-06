@@ -58,6 +58,26 @@ because it turns other people's test suites red.
 
 ### Security
 
+- **The password of a locked archive is no longer repeated in the recorded
+  command line.** It appeared twice in the manifest: under the file's own
+  `properties`, where it is written on purpose because a locked fixture nobody
+  can open checks nothing, and again inside `run.command`, which records the
+  whole command line as typed.
+
+  The second one was a side effect. `run.command` is the line people copy - into
+  a bug report, into a README, into a commit beside a set of fixtures - and it
+  reads like metadata rather than like fixture data, so it was not treated with
+  the same care. It now reads `--set password=***`. The deliberate copy is
+  untouched, so nothing that opens these archives changes.
+
+  **If you compare `run.command` between runs, that string is different now.**
+
+  A manifest that carries a password is also written `0600` rather than `0644`,
+  so it is readable by its owner rather than by every account on the machine.
+  Every other manifest, and every generated file, keeps the mode it had - this
+  tool exists to produce files somebody else's CI will read. Windows has no
+  permission bits, so nothing changes there.
+
 - **Building the program yourself now needs the build tag, and says so if you
   leave it out.** The AVIF encoder has an assembly path that reads past the end
   of a buffer and takes the process down on some picture sizes. Every workflow
