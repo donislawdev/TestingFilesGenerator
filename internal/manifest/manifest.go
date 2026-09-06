@@ -662,7 +662,11 @@ func holdsACredential(props map[string]any) bool {
 // "the claim goes when the write does", and a rule spelled once cannot be
 // half applied.
 func (m *Manifest) writeOver(path string) error {
-	tmp := path + ".tfg-writing"
+	// The marker comes from core rather than being spelled here. It was a bare
+	// literal until 2026-09-06, which is how verify came to report our own half
+	// written manifest as "extra" - the reading side recognised the other
+	// marker and had never been told about this one.
+	tmp := path + core.WritingMarker
 	// Claimed rather than created, and core.CreateNew says why: this name sits
 	// in a directory the run does not own, nothing else in the tool checks it,
 	// and a create that is not exclusive follows whatever is at the name.

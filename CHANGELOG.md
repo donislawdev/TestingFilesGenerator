@@ -278,6 +278,21 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **`verify` no longer calls a half-written manifest a file it knows nothing
+  about.** A run killed outright can leave `<manifest>.tfg-writing` behind.
+  `verify` reported it as `extra`, the word it uses for a file somebody else put
+  in the directory, so the reader was told their fixtures were polluted by
+  something the tool had written itself.
+
+  It is now reported as a leftover, with the sentence that case needs: the run
+  was saving the list of what it produced, so the directory may hold finished
+  files that nothing lists - and `cleanup` cannot remove those, because it
+  removes only what a manifest names. That is the one case worth looking at
+  rather than just deleting.
+
+  Half-written files from the same run were already reported this way. This was
+  the second marker, and nothing on the reading side had been told about it.
+
 - **`verify` and `cleanup` read each file in larger pieces**, which takes about
   a fifth off the time spent hashing.
 

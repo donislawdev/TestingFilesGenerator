@@ -95,6 +95,18 @@ func (d Difference) String() string {
 	case Unreadable:
 		return fmt.Sprintf("unreadable %s - %s", d.Path, d.Got)
 	case Leftover:
+		// Two markers reach this, and one sentence cannot serve both. The
+		// first is a file that was being produced, so nothing is lost. The
+		// second is a RECORD that was being saved, so the useful thing to say
+		// is that the directory may hold files nothing lists - which is the
+		// one case where a person has to look rather than just delete.
+		if core.IsWritingName(filepath.Base(d.Path)) {
+			return fmt.Sprintf(
+				"leftover  %s\n            a run's record that was not finished being saved, from a run that was "+
+					"stopped before it could tidy up. The directory may hold files that nothing lists, and cleanup "+
+					"cannot remove those - check what is here against what you expected before deleting this by hand",
+				d.Path)
+		}
 		return fmt.Sprintf(
 			"leftover  %s\n            an unfinished file from a run that was stopped before it could tidy up. "+
 				"Nothing described by this manifest is missing because of it. "+
@@ -250,7 +262,12 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		kind := Extra
 		want := ""
 		switch {
-		case core.IsPartialName(filepath.Base(p)):
+		case core.IsPartialName(filepath.Base(p)), core.IsWritingName(filepath.Base(p)):
+			// Both markers, because both name a file this tool started and did
+			// not finish. Only the first was recognised until 2026-09-06, so a
+			// half written manifest was reported as "extra" - the word that
+			// means somebody else put it here. They get different sentences in
+			// String, because what a reader should do about them differs.
 			kind = Leftover
 		default:
 			// One file under two spellings reads as a polluted directory

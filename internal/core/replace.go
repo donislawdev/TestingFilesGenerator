@@ -10,7 +10,11 @@ import (
 // Beside the target rather than in the system temporary directory, because a
 // rename across volumes is not one operation and the whole point of this is to
 // have one.
-const writingSuffix = ".tfg-writing"
+//
+// Reads WritingMarker rather than spelling it again. It was spelled again here
+// until 2026-09-06, and a second copy of it sat in manifest.go as a bare
+// literal, so nothing on the reading side knew either of them.
+const writingSuffix = WritingMarker
 
 // ReplaceFile puts new content in place of a file somebody else owns.
 //
