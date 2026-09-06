@@ -56,6 +56,32 @@ because it turns other people's test suites red.
   same new code and were checked against their recorded hashes and across every
   format at five sizes and two seeds.
 
+### Security
+
+- **A file is never written under a name something else already holds.** Every
+  file this tool writes goes to a temporary name first and is renamed into
+  place. Three of those temporary names were created in a way that follows a
+  link, so a link left at one of them by somebody else sent the bytes wherever
+  it pointed - outside the directory you gave - and the run still reported
+  success.
+
+  Reproduced against the previous build. A link at the manifest's temporary name
+  put the manifest onto a file outside the output directory and exited 0, after
+  which `verify` called that run a match and `cleanup` reported it removed. The
+  same shape made `recipe fmt -w` write your recipe onto somebody else's file
+  and leave your recipe itself as a link. On Windows none of this needs a
+  privilege, because a hard link is enough.
+
+  Every one of those names is now claimed rather than created, and a name
+  something else holds is a refusal that says which name and what to do.
+  Pointing `--out` at a directory reached through a link keeps working, which is
+  the setup this was measured against.
+
+  **What changes for an ordinary run: nothing.** The one case you can meet
+  without somebody working against you is a leftover `.tfg-writing` file from a
+  run that was killed part way through. That used to be written over in silence.
+  It is now a refusal naming the file, so remove it and run again.
+
 ### Changed
 
 - **Files are written over several threads, so a run of many files is several
