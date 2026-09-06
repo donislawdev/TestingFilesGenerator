@@ -139,6 +139,17 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The `encryption` setting now says that a locked archive is a fixture rather
+  than protection.** Nothing about the files changes - the sentence `tfg formats
+  zip` prints, and the one the window shows beside the field, gained the two
+  facts that were missing: the key is worked out from the run seed, so the same
+  recipe gives the same archive on every machine, and the password is written
+  into the manifest beside the file.
+
+  Both are deliberate and both are what makes these archives useful for testing
+  a reader. `aes-256` means something else everywhere else it is written, which
+  is why it is now said out loud. `README.md` says it too.
+
 - **Files are written over several threads, so a run of many files is several
   times faster.** They used to be written one after another.
 

@@ -50,11 +50,15 @@ the files a manifest lists and nothing else.
 
 **It writes only inside the output directory.** A file name is a name rather than a
 path, and the manifest name too. Paths that would leave the directory, including
-through a symbolic link, are refused.
+through a symbolic link, are refused. Every file is written under a temporary name
+first, and those names are claimed rather than created - so a link left at one of
+them by somebody else is a refusal rather than a way out of the directory.
 
-**The released binaries are not signed.** Signing is not set up, the release notes
-say so, and your operating system will warn you. Verify a download against
-`verify-SHA256SUMS.txt` from the same release.
+**The Windows and macOS downloads are signed**, and the macOS ones are notarised by
+Apple, so they start without a warning about an unknown developer. **The Linux ones
+are not signed**, because desktop Linux has no equivalent to sign them with. Verify
+any download against `verify-SHA256SUMS.txt` from the same release, and the build
+provenance attestation published with it.
 
 ### In scope
 
@@ -74,9 +78,10 @@ say so, and your operating system will warn you. Verify a download against
 
 ## Secrets and permissions in this repository
 
-**There are no repository secrets.** Measured on 2026-08-27: zero. Every workflow
-runs on the per-job token GitHub issues for the run, and nothing else is stored
-here.
+**There are no repository secrets.** Measured again on 2026-09-06: zero. Every
+workflow runs on the per-job token GitHub issues for the run, and nothing else is
+stored here. Signing happens on the owner's machine, against a key on a card, so
+the release workflow never holds one either.
 
 **Access is scoped per workflow.** The main suite, the dependency review and the
 release workflow all declare `contents: read` at the top, and the single job that

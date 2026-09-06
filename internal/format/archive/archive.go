@@ -188,7 +188,10 @@ var axes = map[string]format.Property{
 		Default: NoEncryption,
 		Detail: "How the archive is locked. AES is the WinZip scheme, and some readers cannot open it " +
 			"at all. ZipCrypto is the old one every reader opens and nothing modern trusts, and some " +
-			"of them hand back the encrypted bytes without saying so.",
+			"of them hand back the encrypted bytes without saying so. " +
+			"A locked archive from this tool is a fixture rather than protection - the key is worked out " +
+			"from the run seed, so the same recipe gives the same archive on any machine, and the password " +
+			"is written into the manifest beside it.",
 	},
 }
 

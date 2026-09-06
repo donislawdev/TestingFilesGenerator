@@ -486,6 +486,12 @@ tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set 
 wrong size.** The message names the format, the smallest it can be, the reason
 for that floor and what to do instead. `tfg formats` lists every floor.
 
+**A locked archive is a fixture, not protection.** `password` and `encryption`
+produce an archive that real readers open with a password, which is what makes it
+useful for testing one. It offers no confidentiality: the key is worked out from
+the run seed so that the same recipe gives the same archive on every machine, and
+the password is written into the manifest beside the file so a test can open it.
+
 ## 🧾 The manifest
 
 Written next to the files at the end of every run, including a run that was
