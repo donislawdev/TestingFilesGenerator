@@ -60,7 +60,9 @@ var notWords = map[string]string{
 	`"files"`:        "the group name a fresh screen starts at, and a recipe value",
 	`"tfg-gui"`:      "recorded in the manifest as the command that ran, a contract value",
 	`"chickpea.png"`: "the name the toolkit files the icon resource under, never shown",
-	`"preset"`:       "the key the preset field is registered under, not a label",
+	`"GetSystemDirectoryW"`: "the Windows entry point that says where the system keeps its own " +
+		"libraries, asked for by name because that is how the loader takes it",
+	`"preset"`: "the key the preset field is registered under, not a label",
 	`"outputDirectory"`: "the name the window files the last output directory under, never shown. " +
 		"Translating a storage key would lose what was kept the day somebody changed language",
 	`"windowWidth"`:  "the name the window files its width under, never shown",

@@ -2,7 +2,11 @@
 
 package gui
 
-import "syscall"
+import (
+	"path/filepath"
+	"syscall"
+	"unsafe"
+)
 
 // Asking Windows to draw this process's own menus dark.
 //
@@ -54,14 +58,30 @@ const (
 // telling anybody about at runtime: the menu stays the colour it already was,
 // which is exactly where this program was before any of this existed.
 func PreferDarkMenus() bool {
-	uxtheme := syscall.NewLazyDLL("uxtheme.dll")
-	if err := uxtheme.Load(); err != nil {
+	// By absolute path, and that is not tidiness. uxtheme.dll is NOT a
+	// KnownDLL - measured in the registry on 2026-09-06, thirty seven entries
+	// and it is not among them - so asking for it by name goes through the
+	// standard search order, and the directory the program was started from
+	// comes before System32 in that order. A file of that name left beside a
+	// downloaded tfg-gui.exe would be loaded into this process and run.
+	//
+	// The comment below used to say uxtheme is already loaded by any process
+	// that draws a window, which would make the lookup return the module that
+	// is there rather than search for one. That is probably true and it is an
+	// assumption rather than a measurement, and it is not one worth resting on
+	// when the answer costs a path join.
+	path, err := systemLibraryPath("uxtheme.dll")
+	if err != nil {
+		return false
+	}
+	uxtheme, err := syscall.LoadDLL(path)
+	if err != nil {
 		return false
 	}
 	// Deliberately not freed. The setting is process wide and outlives this
-	// call, uxtheme is already loaded by any process that draws a window, and
-	// unloading a library the toolkit is using to draw would be a far worse
-	// thing to get wrong than a handle held for the life of the program.
+	// call, the toolkit is drawing with this library too, and unloading one it
+	// is using would be a far worse thing to get wrong than a handle held for
+	// the life of the program.
 	//
 	// Looked up through kernel32 rather than through a helper that takes an
 	// ordinal, because the standard library has no such helper and the one that
@@ -73,10 +93,41 @@ func PreferDarkMenus() bool {
 	// than a pointer when the high word is zero, which is what MAKEINTRESOURCE
 	// builds. 135 fits in the low word.
 	getProcAddress := syscall.NewLazyDLL("kernel32.dll").NewProc("GetProcAddress")
-	addr, _, _ := getProcAddress.Call(uxtheme.Handle(), uintptr(uxthemeSetPreferredAppMode))
+	addr, _, _ := getProcAddress.Call(uintptr(uxtheme.Handle), uintptr(uxthemeSetPreferredAppMode))
 	if addr == 0 {
 		return false
 	}
 	_, _, _ = syscall.SyscallN(addr, uintptr(preferredAppModeForceDark))
 	return true
+}
+
+// systemLibraryPath is where Windows keeps its own libraries, with name on the
+// end of it.
+//
+// Asked of the system rather than built from the SystemRoot environment
+// variable, because an environment is something a parent process chooses and
+// this exists to stop a library being loaded from somewhere somebody else
+// chose.
+//
+// kernel32 is looked up by name here and that is safe where uxtheme was not:
+// it is a KnownDLL, so it is already mapped and the loader hands back the
+// module that is there without consulting any search order. Measured in the
+// registry on 2026-09-06 - kernel32.dll is on that list and uxtheme.dll is not.
+//
+// syscall has neither NewLazySystemDLL nor LoadLibraryEx nor the
+// LOAD_LIBRARY_SEARCH_ constants - measured the same day, the compiler calls
+// each of them undefined - and the module that does have them is one this
+// project does not depend on directly. So the directory is asked for and the
+// path is joined, which needs nothing that is not already here.
+func systemLibraryPath(name string) (string, error) {
+	getSystemDirectory := syscall.NewLazyDLL("kernel32.dll").NewProc("GetSystemDirectoryW")
+	buf := make([]uint16, syscall.MAX_PATH)
+	n, _, err := getSystemDirectory.Call(uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
+	// Nought is the failure, and a count larger than the buffer means it did
+	// not fit - neither answer is a directory, and guessing one would put this
+	// back where it started.
+	if n == 0 || int(n) > len(buf) {
+		return "", err
+	}
+	return filepath.Join(syscall.UTF16ToString(buf[:n]), name), nil
 }
