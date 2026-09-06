@@ -86,4 +86,56 @@ func TestAHostileRecipeCannotHangTheReader(t *testing.T) {
 			t.Fatalf("a value holding brackets was refused as if they nested: %v", err)
 		}
 	})
+
+	t.Run("the same nesting written in block style is refused too", func(t *testing.T) {
+		// "- - - - x" is four nested sequences in eight bytes and holds not one
+		// bracket, so the limit that counted brackets walked straight past it.
+		// Measured on 2026-09-06 against the shipped binary, before this was
+		// counted: 500 kB of it took 88 seconds and ended in "fatal error: out
+		// of memory" with 41 kB of Go stack on standard error, and 1 MB - the
+		// most the size limit allows - left with exit 1 and no output at all.
+		// After: 756 ms and this refusal.
+		src := []byte(strings.Repeat("- ", 20000) + "x")
+		_, err := recipe.Parse(src, "blockbomb.yaml")
+		var deep *recipe.TooDeepError
+		if !errors.As(err, &deep) {
+			t.Fatalf("a block style bomb was answered with %v, expected a refusal about its depth", err)
+		}
+	})
+
+	t.Run("a long list at one level is not nesting", func(t *testing.T) {
+		// Every dash in the same column is the next entry of one sequence
+		// rather than a sequence inside the last one. Anything counting dashes
+		// instead of nesting refuses this at the thirty third target, which is
+		// an ordinary recipe.
+		var b strings.Builder
+		b.WriteString("version: 1\nseed: 7\noutput:\n  dir: out\ntargets:\n")
+		for i := 0; i < 200; i++ {
+			b.WriteString("  - id: t")
+			b.WriteString(strconv.Itoa(i))
+			b.WriteString("\n    format: txt\n    size: 100\n")
+		}
+		if _, err := recipe.Parse([]byte(b.String()), "long.yaml"); err != nil {
+			t.Fatalf("a recipe with 200 targets in one list was refused: %v", err)
+		}
+	})
+
+	t.Run("a list inside a list is two, not two hundred", func(t *testing.T) {
+		// The deepest shape this tool actually produces: targets, and an
+		// archive declaring what it contains. Two levels, whatever the length
+		// of either list.
+		var b strings.Builder
+		b.WriteString("version: 1\nseed: 7\noutput:\n  dir: out\ntargets:\n")
+		for i := 0; i < 50; i++ {
+			b.WriteString("  - id: a")
+			b.WriteString(strconv.Itoa(i))
+			b.WriteString("\n    format: zip\n    contains:\n")
+			for j := 0; j < 20; j++ {
+				b.WriteString("      - format: txt\n        count: 1\n        size: 8kb\n")
+			}
+		}
+		if _, err := recipe.Parse([]byte(b.String()), "nested.yaml"); err != nil {
+			t.Fatalf("an archive declaring its contents was refused: %v", err)
+		}
+	})
 }

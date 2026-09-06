@@ -146,9 +146,11 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &recipeTooLarge) {
 		return ExitRecipe, true
 	}
-	// Same class, one more shape: a recipe whose brackets nest far enough to
-	// exhaust this machine. A fact about the document rather than a fault of
-	// ours, so it ends the way a recipe that will not parse does.
+	// Same class, one more shape: a recipe whose collections nest far enough to
+	// exhaust this machine - in either style, since 2026-09-06, because block
+	// lists reach the same depth in two bytes a level and carry no bracket. A
+	// fact about the document rather than a fault of ours, so it ends the way a
+	// recipe that will not parse does.
 	var recipeTooDeep *recipe.TooDeepError
 	if errors.As(err, &recipeTooDeep) {
 		return ExitRecipe, true

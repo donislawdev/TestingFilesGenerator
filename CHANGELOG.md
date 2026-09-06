@@ -58,6 +58,22 @@ because it turns other people's test suites red.
 
 ### Security
 
+- **A recipe that nests lists deeply is refused before it is read, whichever way
+  it is written.** The check that already refused deeply nested brackets counted
+  only brackets, and the same nesting written as `- - - - x` costs two bytes a
+  level and carries none.
+
+  Measured against the previous build. A 500 kB recipe of nothing but dashes ran
+  for 88 seconds and ended in `fatal error: out of memory` with a page of Go
+  internals on standard error, leaving with the exit code a mistyped flag gets.
+  At 1 MB - the largest recipe the size limit allows - it ran for 70 seconds and
+  said nothing at all. The same file is now refused in under a second, with a
+  message naming the depth and the limit.
+
+  The limit counts how deeply lists and mappings nest, in either style, and it
+  is 32. An ordinary recipe reaches one, and an archive declaring what it
+  contains reaches two.
+
 - **A file is never written under a name something else already holds.** Every
   file this tool writes goes to a temporary name first and is renamed into
   place. Three of those temporary names were created in a way that follows a
