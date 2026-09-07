@@ -7,6 +7,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // What a run tells the person while it goes and when it ends.
@@ -29,6 +30,37 @@ func previewText(planned []engine.PlannedFile, outDir string) string {
 		line += text.PreviewFreeSpace(outDir, core.HumanBytes(free))
 	}
 	return line
+}
+
+// manifestReachNote is the window's half of the warning the command line prints
+// before the first byte.
+//
+// Observation O184: the command line has said this since 2026-08-26 and the
+// window said nothing at all, so a person generating 25 000 files from a window
+// was left with a directory that neither Verify nor Clean up can read - and the
+// manifest is the only authority over what may be removed. A parity gap in
+// quality rather than in what the engine can do, which is the kind D1 is
+// easiest to lose.
+//
+// Read off the document rather than worked out here, and off the SAME predicate
+// the command line uses, which is what manifest.TooLargeToReadBack exists for.
+// The two surfaces cannot come to different conclusions about one run.
+//
+// A preview reaches this too. engine.Run with DryRun adds an entry for every
+// planned file, so the document a preview produces is the document the run
+// would produce, minus the bytes on the disk. That is why one shape serves
+// both, and why the window can answer before anything is written even though it
+// cannot say a word in the middle of a run.
+func manifestReachNote(res *engine.Result) []string {
+	if res == nil || res.Manifest == nil {
+		return nil
+	}
+	size, over := res.Manifest.ReadBackReach()
+	if !over {
+		return nil
+	}
+	return []string{text.ManifestTooLargeToRead(
+		core.HumanBytes(size), core.HumanBytes(manifest.MaxBytes))}
 }
 
 // progressText is the line under the bar. Bytes rather than files, because one

@@ -664,25 +664,30 @@ func (r *runner) onPreview() {
 			// Do rather than DoAndWait, for the same reason startRun gives: the
 			// interface thread must never be left waiting on a worker.
 			r.holdBeforeFinishing()
-			fyne.Do(func() { r.previewFinished(nil, opt, planErr) })
+			fyne.Do(func() { r.previewFinished(nil, nil, opt, planErr) })
 			close(done)
 			return
 		}
-		_, runErr := engine.Run(ctx, planned, opt)
+		res, runErr := engine.Run(ctx, planned, opt)
 		r.holdBeforeFinishing()
-		fyne.Do(func() { r.previewFinished(planned, opt, runErr) })
+		fyne.Do(func() { r.previewFinished(res, planned, opt, runErr) })
 		close(done)
 	}()
 }
 
 // previewFinished is the end of a preview, back on the interface thread.
-func (r *runner) previewFinished(planned []engine.PlannedFile, opt engine.Options, runErr error) {
+//
+// The result is carried across as well as the plan, and that is what lets a
+// preview warn about a record too big to read back. A dry run builds the whole
+// document - see manifestReachNote - so the answer is there for the asking
+// rather than something the window would have to work out for itself.
+func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFile, opt engine.Options, runErr error) {
 	r.setBusy(false, false)
 	if runErr != nil {
 		r.refuse(runErr)
 		return
 	}
-	r.say(previewText(planned, opt.OutDir))
+	r.say(append([]string{previewText(planned, opt.OutDir)}, manifestReachNote(res)...)...)
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -837,7 +842,14 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
 	// and not only in the manifest - "the manifest says which ones" is an
 	// answer in a terminal and an instruction to open a file with ten thousand
 	// entries in a window.
-	r.say(append([]string{outcomeText(res, runErr)}, notesOf(res)...)...)
+	//
+	// The warning about a record too big to read back comes SECOND, ahead of
+	// the per file notes, and that order is the same lesson the command line
+	// learned on 2026-09-06: it is the one line standing between somebody and a
+	// directory nothing in this toolset can ever clean up, and it was being
+	// buried under notes about a label that did not fit.
+	said := append([]string{outcomeText(res, runErr)}, manifestReachNote(res)...)
+	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
 	r.offerTheFolder(res)
 }
