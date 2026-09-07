@@ -299,6 +299,16 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The About screen now shows the support address, so the Donate button is no
+  longer the only way to reach it.** Pressing Donate asks your desktop to open
+  the page. On a machine with no browser registered that quietly does nothing,
+  which was the intended behaviour - a message about a button somebody pressed
+  out of curiosity is worse than none - except that the address itself appeared
+  on no screen at all, so there was nothing to fall back to.
+
+  It is on the About screen now, under Support, on a line of its own so it can
+  be copied in one go.
+
 - **A manifest too big for this build to read back now says so in the report a
   script reads.** A run of 25 000 files writes a manifest of about 25.9 MB
   against a 16 MB reading limit, so `tfg verify` and `tfg cleanup` both refuse

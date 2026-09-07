@@ -30,9 +30,22 @@ import (
 // threshold picked out of the air is a guess, and a guess written into a gate
 // is a guess nobody can argue with later.
 const (
-	// What counts as crowding. Three quarters of the ceiling is far enough from
-	// it that ordinary code does not trip the count, and close enough that
-	// something arriving there is on its way.
+	// What counts as crowding, as a NUMBER OF LINES rather than a share of the
+	// ceiling. Three quarters of the ceiling is where each of these started, and
+	// that is far enough from it that ordinary code does not trip the count and
+	// close enough that something arriving there is on its way.
+	//
+	// A starting point rather than a live ratio, and the difference is the whole
+	// point of these two numbers being absolute. The ceilings have come down
+	// since - 550 to 433 and 80 to 75 - and these have not followed, so the
+	// bands are tighter than three quarters today and the counts below were
+	// re-measured each time. That is the safe direction and it is deliberate.
+	//
+	// Do not "restore" the ratio. It was measured on 2026-08-27 and refused:
+	// re-deriving the band from a lowered ceiling moves it from 413 to 378,
+	// which pulls in seven files that did nothing and forces the cap from 2 to
+	// 9 - a cap going UP, which is the one direction these numbers may not go.
+	// A band that reshapes itself under the thing it is watching says nothing.
 	crowdingFileLines     = 413
 	crowdingFunctionLines = 60
 

@@ -87,6 +87,20 @@ func About(h Host) fyne.CanvasObject {
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
 		parts.Section(text.SectionLicence(), parts.Prose(version.LicenceNotice)),
+		// The support address, in words, on the one screen somebody reads when
+		// they are deciding what this program costs them.
+		//
+		// It is here because the Donate button cannot always work and says so:
+		// handing an address to the desktop fails on a machine with no browser
+		// registered, and that refusal is swallowed on purpose, because there is
+		// no useful thing to say to somebody who pressed a button out of
+		// curiosity. That decision only holds while the address is READABLE
+		// somewhere, and until 2026-09-07 it was not - the constant had exactly
+		// one use in the whole tree, as the button's destination, so a person
+		// whose desktop did nothing had nowhere to go. The comment beside
+		// OpenLink said this screen carried it. This is that screen carrying it.
+		parts.Section(text.SectionSupport(),
+			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
 	}
 	sections = append(sections, carried()...)
 	page := parts.Screen(text.HeadingAbout(version.Version), sections...)

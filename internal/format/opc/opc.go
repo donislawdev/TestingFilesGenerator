@@ -220,22 +220,6 @@ func Settle(parts []Part, shape Shape, want int64) (Package, error) {
 	}
 }
 
-// Size is what a settled package will weigh. Padding is counted rather than
-// written, so asking about a package of many gigabytes costs nothing.
-func Size(p Package) (int64, error) {
-	payload := p.Filler
-	if payload > 0 {
-		p.Filler = 0
-	} else {
-		payload = 0
-	}
-	n, err := size(p)
-	if err != nil {
-		return 0, err
-	}
-	return n + payload, nil
-}
-
 func size(p Package) (int64, error) {
 	c := &counter{}
 	if err := write(context.Background(), c, p, false); err != nil {
