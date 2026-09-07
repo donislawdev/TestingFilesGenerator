@@ -56,6 +56,33 @@ because it turns other people's test suites red.
   same new code and were checked against their recorded hashes and across every
   format at five sizes and two seeds.
 
+### Added
+
+- **Text and Markdown files can be written in UTF-16, with or without a byte
+  order mark.** Two new settings on `txt` and `md`: `encoding`, which takes
+  `utf-8`, `utf-16le` or `utf-16be`, and `bom`, which is `true` or `false`.
+  Both default to what these formats have always produced, so a recipe that
+  says nothing gets the same bytes it got before.
+
+  ```
+  tfg generate --format txt --size 4kb --set encoding=utf-16le --set bom=true
+  ```
+
+  **In UTF-16 an odd number of bytes is refused.** Every character takes two
+  bytes, so only an even size can be a whole file, and asking for 4001 B gets
+  an error naming 4000 B and 4002 B rather than a file that is one byte out.
+  Three readers were measured on a UTF-16 file cut to an odd length: Python,
+  Node and .NET all reject it when asked strictly, and all three repair it in
+  silence otherwise, which is why this is an error and not a rounded size.
+
+  The self describing label costs twice as much in UTF-16, so it needs a file
+  of at least 66 B rather than 33 B to fit. Below that the file is still
+  produced and the manifest says the label was left out.
+
+  Single byte encodings such as Windows-1252 are deliberately not offered. The
+  generated text is English, so a file written in one would be byte for byte
+  the same file as UTF-8 - a setting that changes nothing.
+
 ### Security
 
 - **On Windows, the desktop window loads the library it uses for dark menus from

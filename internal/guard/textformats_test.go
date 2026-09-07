@@ -506,6 +506,17 @@ func TestEveryFormatIsClassifiedAsTextOrBinary(t *testing.T) {
 // refuses with "generated content is English only so far" - and which M5
 // describes. The guard goes in before the code that needs it, which is how the
 // first four guards in this project were built.
+//
+// AT DEFAULT SETTINGS, and since 2026-09-07 that qualifier is load bearing
+// rather than pedantic. TXT and MD can be asked for UTF-16, and a UTF-16 file
+// is NOT valid UTF-8 - so the sentence this guard's name makes stopped being
+// true of the tool on the day the encoding setting landed. It stayed true of
+// what this guard actually does, because generateBytes plans with no
+// properties, and a guard that quietly narrows to the case it can still pass
+// is the failure this project keeps finding. Said out loud instead: the claim
+// here is the DEFAULT path. Every other encoding is held to the encoding it
+// declares, by TestATextFileIsTheEncodingItDeclares and by a structural
+// checker that is told which one to expect.
 func TestEveryTextFormatIsValidUTF8(t *testing.T) {
 	for _, id := range textFormats {
 		d, err := format.Get(id)

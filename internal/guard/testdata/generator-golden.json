@@ -273,6 +273,26 @@
     "csv_8kib_seventeen_columns": {
       "bytes": 8192,
       "sha256": "23d2fc7e93456ed828159d7d5199faaed2129d164640e0743c5aaf37bb9b6143"
+    },
+    "txt_4kib_utf8_bom": {
+      "bytes": 4096,
+      "sha256": "6c131f93605a96b665fc20516e780db972257ed891732f62bec5b8b338c31f46"
+    },
+    "txt_4kib_utf16le_bom": {
+      "bytes": 4096,
+      "sha256": "758a5729627bbf17d4cf6157171e495290e023bb23d0b902cbeb40ff44e4f173"
+    },
+    "txt_4kib_utf16be": {
+      "bytes": 4096,
+      "sha256": "2fd51842c2457a1464a21c4ed62c90b58904cf04711e9069e528dfd1774b4211"
+    },
+    "md_8kib_utf16le_bom": {
+      "bytes": 8192,
+      "sha256": "60156c7f1d936b102cdf8ae100479fcf1a1a6f0fc8b585888d3bdb8ee27eec8a"
+    },
+    "md_8kib_utf16be": {
+      "bytes": 8192,
+      "sha256": "a2d0cc69cb609277b97ae7bf7e11505fa26f3eb3214e8e62c1eba07e6de7bc24"
     }
   },
   "remeasured": [
