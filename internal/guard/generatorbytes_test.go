@@ -272,6 +272,13 @@ func goldenCases() map[string]engine.Target {
 		"csv_8kib_seventeen_columns": {ID: "g", Format: "csv", Sizes: engine.Uniform(1, 8192), Label: true,
 			Properties: map[string]string{"columns": "17"}},
 		"json_8kib": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true},
+
+		// The two layouts that are not the default. Whitespace is the whole of
+		// what changes, and whitespace is exactly what a hash sees.
+		"json_8kib_minified": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"formatting": "minified"}},
+		"json_8kib_indented": {ID: "g", Format: "json", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"formatting": "indented"}},
 		"xml_8kib":  {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: true},
 		"html_8kib": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true},
 		"svg_8kib":  {ID: "g", Format: "svg", Sizes: engine.Uniform(1, 8192), Label: true},

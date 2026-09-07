@@ -293,6 +293,14 @@
     "md_8kib_utf16be": {
       "bytes": 8192,
       "sha256": "a2d0cc69cb609277b97ae7bf7e11505fa26f3eb3214e8e62c1eba07e6de7bc24"
+    },
+    "json_8kib_minified": {
+      "bytes": 8192,
+      "sha256": "59b4b6d4056adfcd5b914c39b3998a6ed0583992be1c850e9fac083c37a39f7c"
+    },
+    "json_8kib_indented": {
+      "bytes": 8192,
+      "sha256": "9b00c22a11836d66cbf653275bb943b299d6864d391cff8ca13fa8ac7bdcc8c9"
     }
   },
   "remeasured": [
