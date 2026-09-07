@@ -83,6 +83,21 @@ because it turns other people's test suites red.
   generated text is English, so a file written in one would be byte for byte
   the same file as UTF-8 - a setting that changes nothing.
 
+- **JSON documents can be minified or indented.** A `formatting` setting on
+  `json` taking `record-per-line`, `minified` or `indented`. It defaults to the
+  one record per line this format has always written, so a recipe that says
+  nothing gets the same bytes.
+
+  ```
+  tfg generate --format json --size 1mb --set formatting=minified
+  ```
+
+  Every reader accepts all three, which is the point: what changes is
+  everything around the parser. A minified document of any size is one single
+  line and ends without a newline, and an indented one holds roughly a third
+  fewer records in the same number of bytes. The smallest document each layout
+  can produce differs too, and asking for less names the layout it is about.
+
 ### Security
 
 - **On Windows, the desktop window loads the library it uses for dark menus from

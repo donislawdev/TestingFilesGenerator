@@ -38,10 +38,6 @@ import (
 const (
 	generatorVersion = "1"
 
-	// The document is an array with one record per line. Minified on one line
-	// and indented forms come later as a property.
-	prologue = "[\n"
-
 	emailDomain = "@example.com"
 
 	// Fixed widths, so the parts that are not the note stay predictable.
@@ -54,35 +50,13 @@ const (
 	// be asked for.
 	maxIDDigits = 19
 
-	// The literal parts of a record, named so the arithmetic below is a
-	// constant expression rather than a number somebody has to keep in step.
-	openID   = `{"id":`
-	openName = `,"name":"`
-	openMail = `","email":"`
-	openAmt  = `","amount":`
-	openAct  = `,"active":`
-	nullPart = `,"retired":null`
-	openTags = `,"tags":["`
-	tagSep   = `","`
-	openAddr = `"],"address":{"city":"`
-	openZip  = `","zip":"`
-	openNote = `"},"note":"`
-	closeRec = `"}`
-
-	// A record either has another one after it or closes the array.
-	tailMore = closeRec + ",\n"
-	tailLast = closeRec + "\n]\n"
-
 	// widestBool is "false", the longer of the two.
 	widestBool = 5
-
-	// fixedWidth is every literal byte of a closing record - everything except
-	// the record number, the name, the two tags, the city and the note.
-	fixedWidth = len(openID) + len(openName) + len(openMail) + len(emailDomain) +
-		len(openAmt) + amountWidth + len(openAct) + widestBool + len(nullPart) +
-		len(openTags) + len(tagSep) + len(openAddr) + len(openZip) + zipWidth +
-		len(openNote) + len(tailLast)
 )
+
+// The literal parts of a record live on the style, because there are three
+// layouts of them and the arithmetic has to measure whichever one is in use.
+// See style.go.
 
 func init() {
 	format.Register(format.Descriptor{
@@ -95,7 +69,12 @@ func init() {
 		// by naming a byte count - that is a shape request, and it arrives with
 		// the record count property. The minimum here is the array and one whole
 		// record.
-		MinBytes: minimumBytes(),
+		//
+		// The DEFAULT layout's minimum, the way CSV declares its default
+		// dialect's. Every other layout answers for itself, through the same
+		// refusal, and SmallestAccepted asks the generator rather than reading
+		// this number.
+		MinBytes: minimumBytes(defaultStyle()),
 
 		Padding: format.PaddingChannel{
 			Name:     "the note value of the last record",
@@ -107,9 +86,10 @@ func init() {
 		// structure under test. The file name and the manifest carry it instead.
 		Label:  format.LabelExternalOnly,
 		Oracle: "node-json",
-		// Nesting depth, key counts, value types, indentation and NDJSON come
-		// later. Declaring none now makes a recipe asking for them fail loudly.
-		Properties:       nil,
+		// Nesting depth, key counts, value types and NDJSON come later.
+		// Declaring only what is here makes a recipe asking for them fail
+		// loudly rather than quietly producing something else.
+		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -117,17 +97,27 @@ func init() {
 
 type generator struct{}
 
-type memo struct{ seed uint64 }
+type memo struct {
+	seed uint64
+	s    style
+}
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	min := minimumBytes()
+	s, err := parseStyle(r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	min := minimumBytes(s)
 	if r.Bytes < min {
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "JSON",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a document holds whole records and one record with every value type needs that much",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Reason: fmt.Sprintf(
+				"a document holds whole records, and one %s record with every value type needs that much",
+				s.name),
+			Hint: fmt.Sprintf("Ask for %d B or more.", min),
 		}
 	}
 
@@ -136,15 +126,15 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":   "utf-8",
-			"formatting": "record-per-line",
-			"root":       "array",
-			"depth":      3,
+			"encoding": "utf-8",
+			Formatting: s.name,
+			"root":     "array",
+			"depth":    3,
 			// Stated even though it is always false here, so a test can assert
 			// on it without knowing which formats carry a label internally.
 			format.PropertyLabelEmbedded: false,
 		},
-		Memo: memo{seed: r.Seed},
+		Memo: memo{seed: r.Seed, s: s},
 	}, nil
 }
 
@@ -154,24 +144,28 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return fmt.Errorf("json: the plan was not produced by this generator")
 	}
 
-	if err := core.WriteAll(w, []byte(prologue)); err != nil {
+	if err := core.WriteAll(w, []byte(m.s.prologue)); err != nil {
 		return err
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(prologue)), &records{})
+	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(m.s.prologue)), &records{s: m.s})
 }
 
 // records builds the objects inside the array. It carries the record number, so
-// the id counts up the way a real export does.
-type records struct{ next int64 }
+// the id counts up the way a real export does, and the layout the document is
+// being written in.
+type records struct {
+	next int64
+	s    style
+}
 
 // Shortest is the smallest record this builder can close a document with: the
 // widest record number, the longest word in all five places a word appears, the
 // longer of the two booleans, and an empty note. It has to hold for every draw
 // rather than for the lucky one.
 func (r *records) Shortest() int64 {
-	return int64(maxIDDigits + 5*longestWord + fixedWidth)
+	return int64(maxIDDigits + 5*longestWord + r.s.fixed())
 }
 
 func (r *records) Append(dst []byte, rng *rand.Rand) []byte {
@@ -211,47 +205,47 @@ func (r *records) append(dst []byte, rng *rand.Rand, want int64) []byte {
 	city := words[rng.IntN(len(words))]
 	zip := 10000 + rng.IntN(90000)
 
-	dst = append(dst, openID...)
+	dst = append(dst, r.s.openID...)
 	dst = strconv.AppendInt(dst, r.next, 10)
-	dst = append(dst, openName...)
+	dst = append(dst, r.s.openName...)
 	dst = append(dst, name...)
-	dst = append(dst, openMail...)
+	dst = append(dst, r.s.openMail...)
 	dst = append(dst, name...)
 	dst = append(dst, emailDomain...)
-	dst = append(dst, openAmt...)
+	dst = append(dst, r.s.openAmt...)
 	dst = strconv.AppendInt(dst, int64(whole), 10)
 	dst = append(dst, '.')
 	if cents < 10 {
 		dst = append(dst, '0')
 	}
 	dst = strconv.AppendInt(dst, int64(cents), 10)
-	dst = append(dst, openAct...)
+	dst = append(dst, r.s.openAct...)
 	if active {
 		dst = append(dst, "true"...)
 	} else {
 		dst = append(dst, "false"...)
 	}
-	dst = append(dst, nullPart...)
-	dst = append(dst, openTags...)
+	dst = append(dst, r.s.nullPart...)
+	dst = append(dst, r.s.openTags...)
 	dst = append(dst, tagA...)
-	dst = append(dst, tagSep...)
+	dst = append(dst, r.s.tagSep...)
 	dst = append(dst, tagB...)
-	dst = append(dst, openAddr...)
+	dst = append(dst, r.s.openAddr...)
 	dst = append(dst, city...)
-	dst = append(dst, openZip...)
+	dst = append(dst, r.s.openZip...)
 	dst = strconv.AppendInt(dst, int64(zip), 10)
-	dst = append(dst, openNote...)
+	dst = append(dst, r.s.openNote...)
 
 	if want < 0 {
 		dst = appendPhrase(dst, rng, 3+rng.IntN(5))
-		return append(dst, tailMore...)
+		return append(dst, r.s.tailMore...)
 	}
 
 	// Everything written so far, plus the bytes that close the record and the
 	// array.
-	used := int64(len(dst)-start) + int64(len(tailLast))
+	used := int64(len(dst)-start) + int64(len(r.s.tailLast))
 	dst = appendFiller(dst, want-used)
-	return append(dst, tailLast...)
+	return append(dst, r.s.tailLast...)
 }
 
 // appendPhrase writes a readable note. Words and single spaces only - a JSON
@@ -281,9 +275,9 @@ func appendFiller(dst []byte, n int64) []byte {
 // minimumBytes is the opening bracket and one whole record, computed rather
 // than written down so it cannot drift away from the template the way a number
 // in a document would.
-func minimumBytes() int64 {
-	var r records
-	return int64(len(prologue)) + r.Shortest()
+func minimumBytes(s style) int64 {
+	r := records{s: s}
+	return int64(len(s.prologue)) + r.Shortest()
 }
 
 // longestWord is the widest draw, because the minimum has to hold for every

@@ -420,13 +420,20 @@ def check_quoting(style, number, value, was_quoted, sep):
              "no quote and no line break - quote_style minimal quotes only what needs it")
 
 
-def check_json(data):
-    """The document is an array of records, each on its own line.
+def check_json(data, settings=None):
+    """The document is an array of records, laid out the way it was ordered.
 
     Parsing is CPython's json here and V8's parser in the reference tool beside
     it, which are two implementations in two languages. What this adds is the
     shape: that the file is records rather than one enormous value, and that it
     is laid out the way the manifest says it is.
+
+    The layout is TOLD rather than worked out, for the reason the CSV dialect
+    is told. Until 2026-09-07 there was only one layout and this checked it by
+    name - "the manifest says one record per line" - which would have called a
+    minified document broken the moment minified became something a person can
+    ask for. A checker that guessed instead would agree with any layout it was
+    handed, including the one nobody ordered.
 
     The value types come from the format document, not from what the generator
     happens to emit. A generator that quietly stopped writing booleans would be
@@ -449,10 +456,28 @@ def check_json(data):
     if not doc:
         fail("the array is empty")
 
-    # The manifest states one record per line, so the line count has to match.
-    lines = text.rstrip("\n").split("\n")
-    if len(lines) != len(doc) + 2:
-        fail(f"{len(doc)} records over {len(lines)} lines - the manifest says one record per line")
+    # Each layout has its own arithmetic of lines, and every one of them is
+    # something a truncated or mis-indented record breaks.
+    layout = (settings or {}).get("formatting", "record-per-line")
+    newlines = text.count("\n")
+    if layout == "minified":
+        if newlines:
+            fail(f"minified was ordered and the document holds {newlines} newline(s)")
+        if text.endswith("\n"):
+            fail("minified was ordered and the document ends with a newline")
+    elif layout == "indented":
+        body = newlines - 2
+        if body <= 0 or body % len(doc):
+            fail(f"{len(doc)} indented records over {newlines} lines, "
+                 f"which is not a whole number of lines each")
+        per = body // len(doc)
+        if per < 5:
+            fail(f"an indented record takes {per} line(s), which is not opened out at all")
+    elif layout == "record-per-line":
+        if newlines != len(doc) + 2:
+            fail(f"{len(doc)} records over {newlines} lines - one record per line was ordered")
+    else:
+        fail(f"the json check was told formatting={layout!r}, which is not a layout this tool writes")
 
     kinds = set()
     keys = None
@@ -1655,7 +1680,7 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:
