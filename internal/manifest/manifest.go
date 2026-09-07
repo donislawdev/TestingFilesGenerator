@@ -38,6 +38,16 @@ type Manifest struct {
 
 	Summary Summary `json:"summary"`
 	Files   []File  `json:"files"`
+
+	// notedFiles is how many entries carry a note, which the size estimate
+	// needs and no reader does.
+	//
+	// Unexported, so it is not written and not read back. A manifest decoded
+	// from disk carries the ANSWER in Summary.TooLargeToReadBack rather than
+	// the working needed to reach it, which is what a reader wants and is also
+	// what keeps the two from disagreeing - a decoded manifest has no Add
+	// calls to count.
+	notedFiles int
 }
 
 // Tool records what produced these bytes. Without it a hash mismatch after an
@@ -142,6 +152,36 @@ type Summary struct {
 	// The cheapest form of the question O97 is about - a person checking by
 	// eye, or a script asserting a shape, does not have to walk the entries.
 	ByTarget map[string]int `json:"by_target"`
+
+	// TooLargeToReadBack says this build would refuse to read this document
+	// back, so "tfg verify" and "tfg cleanup" cannot work from it.
+	//
+	// The run itself succeeds and its files are correct. What is gone is the
+	// only authority over what may be deleted - untouchable rule 7 makes the
+	// manifest that authority, so a manifest this build will not read is a set
+	// of files nothing in this toolset can remove. Measured on 2026-08-26 and
+	// again on 2026-09-06: 25 000 files write about 25.9 MB against a ceiling
+	// of 16 MB, generate exits 0, and verify and cleanup both exit 5.
+	//
+	// The owner decided on 2026-08-26 that this is a note rather than a
+	// refusal, because refusing would take away something the tool does. What
+	// was missing was that nobody was told, and the telling was prose on
+	// stderr - measured on 2026-09-06 as one line among 25 003, and ABSENT
+	// ENTIRELY from the machine readable report. A tool that plugs into CI has
+	// to be able to say this to a script.
+	//
+	// Not an exit code, and that was decided rather than skipped. Exit 8 means
+	// "run finished, but not everything was produced" (docs/CLI.md), and here
+	// everything was produced - res.Failures is nought, so the sentence would
+	// read "0 files could not be produced" and point at a manifest that cannot
+	// be read. Exit codes are a frozen contract and redefining one is a major
+	// version, not a stopgap.
+	//
+	// Absent rather than false on an ordinary run, so every manifest already
+	// written stays byte for byte what it was. An added field, which
+	// docs/MANIFEST.md section 10 allows without moving manifest_version -
+	// the same shape as tool.go, added for review item S1.
+	TooLargeToReadBack bool `json:"too_large_to_read_back,omitempty"`
 }
 
 // File is one entry.
@@ -298,6 +338,14 @@ func (m *Manifest) Add(f File) {
 	if _, ok := m.Tool.Generators[f.Format]; !ok && f.Generator.Version != "" {
 		m.Tool.Generators[f.Format] = f.Generator.Version
 	}
+	// Kept in step here for the reason the comment above this function gives:
+	// counting anywhere else is a second place for the two to disagree. The
+	// estimate is arithmetic over the counts, so recomputing it per file costs
+	// nothing and is always right about the document as it stands.
+	if len(f.Notes) > 0 {
+		m.notedFiles++
+	}
+	_, m.Summary.TooLargeToReadBack = TooLargeToReadBack(len(m.Files), m.notedFiles)
 }
 
 // noteExamples is how many file names a grouped note shows before it stops

@@ -299,6 +299,21 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A manifest too big for this build to read back now says so in the report a
+  script reads.** A run of 25 000 files writes a manifest of about 25.9 MB
+  against a 16 MB reading limit, so `tfg verify` and `tfg cleanup` both refuse
+  it - and the manifest is the only authority over what may be deleted. The run
+  still ends `0`, because the files are correct and complete.
+
+  Until now the only warning was a sentence on standard error. `--json` carried
+  no trace of it, so a CI job had no way to learn that the directory it had just
+  filled could never be verified or cleaned up by this build. The manifest now
+  carries `summary.too_large_to_read_back`.
+
+  The field is **absent** on an ordinary run rather than `false`, so every
+  manifest already written is byte for byte what it was, and
+  `manifest_version` stays `1.0`.
+
 - **A stopped run says what happened and what survived, instead of `context
   canceled`.** Pressing Ctrl+C, or a CI job running out of time, printed six
   characters of Go vocabulary and left you to work out whether the directory was
