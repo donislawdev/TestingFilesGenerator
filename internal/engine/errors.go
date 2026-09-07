@@ -152,7 +152,7 @@ const (
 // Inventing a position for it would put a message about the whole run under
 // one batch of twenty, which is worse than leaving it at the foot of the form
 // where a message about the run belongs.
-func atTarget(position int, err error) error {
+func atTarget(position int, t *Target, err error) error {
 	var about interface{ AboutSetting() string }
 	if !errors.As(err, &about) || about.AboutSetting() == "" {
 		return err
@@ -162,6 +162,15 @@ func atTarget(position int, err error) error {
 	// through more than one of these.
 	if core.AddressNamesATarget(setting) {
 		return err
+	}
+	// A refusal about a size belongs to the key that carried the number. The
+	// format cannot know which one that was - it is handed a count of bytes and
+	// answers about bytes - so the substitution happens here, where the target
+	// is in hand. Without it a recipe written with "size-range" is refused at
+	// "targets[1].size", which is a box that is not on the screen and not in
+	// the file. Measured on 2026-09-06.
+	if setting == core.SettingSize && t != nil && t.SizeIsRange {
+		setting = core.SettingSizeRange
 	}
 	return &addressedError{err: err, at: core.TargetAddress(position, setting)}
 }

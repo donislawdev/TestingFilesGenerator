@@ -84,6 +84,20 @@ func articleFor(name string) string {
 // than either surface's own word for the same thing.
 const SettingSize = "size"
 
+// SettingSizeRange is the recipe key a refusal about a RANGE of sizes is about.
+//
+// A target that draws its sizes from a range has no "size" key at all, so an
+// address naming one sends somebody to a box that is not on their screen and
+// not in their file. Measured on 2026-09-06: a recipe carrying "size-range:
+// 143-200" was refused with "at": "targets[1].size", naming a setting the
+// person had not written.
+//
+// The refusal itself comes from the format, which knows only that a number of
+// bytes is out of reach and cannot know which key carried that number. So the
+// substitution happens where the target is in hand - see atTarget in the
+// engine.
+const SettingSizeRange = "size-range"
+
 // SettingErrorf is a refusal that names the setting it is about through a slot,
 // so each surface reads it in its own words.
 //

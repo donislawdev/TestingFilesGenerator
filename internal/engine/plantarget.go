@@ -44,12 +44,12 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 			Properties:       t.Properties,
 		})
 		if err != nil {
-			return atTarget(position, err)
+			return atTarget(position, t, err)
 		}
 
 		name, err := renderName(t, desc, idx)
 		if err != nil {
-			return atTarget(position, err)
+			return atTarget(position, t, err)
 		}
 		// Two files heading for one name means one of them would be
 		// destroyed by the other, and the manifest would still describe

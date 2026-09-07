@@ -322,8 +322,8 @@ const (
 	KeyID             = "id"
 	KeyFormat         = "format"
 	KeyCount          = "count"
-	KeySize           = "size"
-	KeySizeRange      = "size-range"
+	KeySize           = core.SettingSize
+	KeySizeRange      = core.SettingSizeRange
 	KeyBoundary       = "boundary"
 	KeyName           = "name"
 	KeyGroup          = "group"
