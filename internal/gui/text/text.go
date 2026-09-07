@@ -96,6 +96,23 @@ func PreviewCost(count int, formats []string, total string) string {
 		say("PreviewNothingWritten", "nothing written yet")
 }
 
+// ManifestTooLargeToRead is said when a run will write a record this build
+// cannot read back.
+//
+// The command line has printed this since 2026-08-26 and the window said
+// nothing at all, which is the parity gap observation O184 names. A person who
+// generates 25 000 files from a window gets a directory that tfg verify and
+// tfg cleanup both refuse - and the manifest is the only authority over what
+// may be deleted, so nothing in this toolset can ever remove those files.
+//
+// A note rather than a refusal, which is the owner's decision from that day and
+// is unchanged here. The run works. What was missing was that nobody was told.
+func ManifestTooLargeToRead(size, limit string) string {
+	return sayf("ManifestTooLargeToRead",
+		"this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable.",
+		map[string]any{"Size": size, "Limit": limit})
+}
+
 // PreviewFreeSpace follows PreviewCost when the disk could be measured. It is
 // a separate fact because a disk we cannot read has to say nothing at all
 // rather than invent a number.

@@ -299,6 +299,22 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The window now warns when a run's record will be too big for this build to
+  read back.** The command line has said this since the ceiling was measured.
+  The window said nothing at all, so somebody who generated 25 000 files from it
+  was left with a directory that `tfg verify` and `tfg cleanup` both refuse -
+  and the manifest is the only authority over what may be removed, so those
+  files could never be cleaned up by this tool again.
+
+  It appears in two places, because the window cannot speak in the middle of a
+  run: under Preview, which is the window's answer to `--dry-run`, and again
+  when a run finishes. The second is the one that matters, since Preview is a
+  button somebody may never press. It comes straight after the line saying what
+  the run did, ahead of any other note.
+
+  The run itself still works and is still not refused. What was missing was that
+  nobody was told.
+
 - **`tfg verify` no longer calls another run's files "extra".** A directory is
   allowed to hold more than one run - that is what `output.manifest` is for -
   and verifying one of them reported every file the other had written as a file

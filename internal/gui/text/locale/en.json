@@ -248,6 +248,10 @@
     "description": "Shown in the window. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",
     "other": "the files were written and the manifest could not be saved to {{.Path}}"
   },
+  "ManifestTooLargeToRead": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Size}}, {{.Limit}}.",
+    "other": "this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable."
+  },
   "NotAWholeNumber": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Field}}, {{.Value}}.",
     "other": "{{.Field}} is {{.Value}}, which is not a whole number. Write the digits out, such as 1 or 500"

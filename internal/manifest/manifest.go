@@ -527,6 +527,26 @@ func TooLargeToReadBack(entries, withNotes int) (int64, bool) {
 	return n, n > MaxBytes
 }
 
+// ReadBackReach is what this document will weigh and whether this build would
+// refuse to read it.
+//
+// The same question TooLargeToReadBack answers, asked of a manifest that
+// exists rather than of a plan that has not run. It is here because the two
+// callers had nowhere else to get the count of entries carrying a note from -
+// that is kept while entries are added, so working it out again would mean
+// walking every file a second time and getting it subtly wrong when a failed
+// entry gains a note of its own.
+//
+// The window needs this and the command line does not. The command line says
+// its piece BEFORE the first byte, from the plan, where no manifest exists yet.
+// A window cannot say anything in the middle of a run - a widget touched from a
+// worker is a race, and two of those were found on CI - so it says it when the
+// run ends, off the document the run actually produced. Both go through
+// TooLargeToReadBack, which is where that answer is settled for both surfaces.
+func (m *Manifest) ReadBackReach() (int64, bool) {
+	return TooLargeToReadBack(len(m.Files), m.notedFiles)
+}
+
 // TooLargeError is returned for a manifest past MaxBytes.
 type TooLargeError struct {
 	Path  string
