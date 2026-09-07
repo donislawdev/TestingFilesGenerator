@@ -150,6 +150,44 @@ func IsWritingName(name string) bool {
 	return strings.HasSuffix(name, WritingMarker)
 }
 
+// RunLockName is the name a run holds for as long as it is writing into a
+// directory.
+//
+// The third of these, and the only one that is a whole name rather than a
+// suffix on somebody else's: it belongs to the run, not to a file. A run takes
+// it exclusively before the first byte and gives it back when it ends, so a
+// second run starting into the same directory is refused rather than allowed
+// to write over what the first one is producing.
+//
+// Why it had to exist, measured on 2026-09-07 with two runs started on the
+// same wall clock instant, eight times: twice both runs ended 0, each said it
+// had produced sixty files, and sixty files were on the disk - every one of
+// the first run's belonging to the second. Five times the runs ended 8, and
+// that was luck rather than a defence: Windows refuses to rename onto a file
+// another process holds open, which is not something Linux does.
+//
+// The protection this restores already existed and was keyed to the wrong
+// thing. A run claims its manifest name for its whole length, so two runs
+// writing manifest.json into one directory have always been refused - measured
+// the same day, four times out of four. output.manifest was the one way out of
+// that, and it was never meant to be a way out of this.
+//
+// Declared here beside the other two for the reason written above them: two
+// parts of the tool have to agree on the spelling. The engine writes it, and
+// verify has to recognise one that outlived its run rather than call it a file
+// somebody else put there.
+const RunLockName = ".tfg-run-lock"
+
+// IsRunLockName says whether a name is that lock.
+//
+// A whole name rather than a suffix, so this is equality rather than a search.
+// Written as a function anyway, because every reader of the other two markers
+// asks through one and a reader that compares the constant itself is a reader
+// that will not be found when the spelling changes.
+func IsRunLockName(name string) bool {
+	return name == RunLockName
+}
+
 // AddSizes adds one file size to a running total and says when the total has
 // left the range it is measured in.
 //

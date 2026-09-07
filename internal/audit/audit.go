@@ -95,6 +95,18 @@ func (d Difference) String() string {
 	case Unreadable:
 		return fmt.Sprintf("unreadable %s - %s", d.Path, d.Got)
 	case Leftover:
+		// The lock a run holds while it writes into a directory, and it is the
+		// one of these that may belong to something still going on. So the
+		// sentence says both endings rather than asserting the run is dead:
+		// verify cannot tell, and telling somebody to delete the mark a live
+		// run is holding would let a second run in behind it.
+		if core.IsRunLockName(filepath.Base(d.Path)) {
+			return fmt.Sprintf(
+				"leftover  %s\n            the mark a run holds while it writes into this directory. If a run is going "+
+					"on it will remove this itself when it ends. If none is, it was killed before it could tidy up - "+
+					"no files were lost, but no new run will start here until this is deleted by hand",
+				d.Path)
+		}
 		// Two markers reach this, and one sentence cannot serve both. The
 		// first is a file that was being produced, so nothing is lost. The
 		// second is a RECORD that was being saved, so the useful thing to say
@@ -262,12 +274,17 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		kind := Extra
 		want := ""
 		switch {
-		case core.IsPartialName(filepath.Base(p)), core.IsWritingName(filepath.Base(p)):
-			// Both markers, because both name a file this tool started and did
-			// not finish. Only the first was recognised until 2026-09-06, so a
-			// half written manifest was reported as "extra" - the word that
-			// means somebody else put it here. They get different sentences in
-			// String, because what a reader should do about them differs.
+		case core.IsPartialName(filepath.Base(p)),
+			core.IsWritingName(filepath.Base(p)),
+			core.IsRunLockName(filepath.Base(p)):
+			// All three markers, because each names something this tool put
+			// here and did not take away. Only the first was recognised until
+			// 2026-09-06, so a half written manifest was reported as "extra" -
+			// the word that means somebody else put it here - and the third
+			// arrived with the run lock on 2026-09-07. They get different
+			// sentences in String, because what a reader should do about them
+			// differs, and about the lock it differs most: it is the only one
+			// that may belong to a run that is still going.
 			kind = Leftover
 		default:
 			// One file under two spellings reads as a polluted directory

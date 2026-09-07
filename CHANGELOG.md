@@ -299,6 +299,33 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Two runs writing into one directory can no longer write over each other's
+  files.** A run holds the directory it is writing into for as long as it is
+  writing. A second run that starts meanwhile is refused before it writes a
+  byte, with exit code `5` and a message saying so.
+
+  That protection was already there and was attached to the wrong thing. A run
+  takes its manifest name at the start and keeps it until it ends, so two runs
+  both writing `manifest.json` into one directory have always been refused. A
+  recipe that points `output.manifest` at a name of its own had nothing holding
+  it. Measured with two runs started on the same instant, eight times: twice
+  both ended `0`, both reported sixty files produced, and sixty files existed -
+  every one of the first run's replaced by the second run's, without either run
+  saying anything. `tfg verify` against the first manifest then reported sixty
+  changed files for a run that had been told it succeeded.
+
+  What holds the directory is a file called `.tfg-run-lock`. The run removes it
+  when it ends, including when you stop it with Ctrl+C. A run killed outright
+  cannot remove it, so it stays behind and the next run into that directory is
+  refused until you delete it - the refusal names the file and says exactly
+  that. `tfg verify` also names it, as a leftover of ours rather than as a file
+  somebody else put there, and `tfg cleanup` will not remove it, because it
+  removes only what a manifest lists.
+
+  The cost is worth stating plainly: two runs can no longer fill one directory
+  at the same time, even when the files they write have different names. For
+  every run that does not set `output.manifest` that was already true.
+
 - **The About screen now shows the support address, so the Donate button is no
   longer the only way to reach it.** Pressing Donate asks your desktop to open
   the page. On a machine with no browser registered that quietly does nothing,
