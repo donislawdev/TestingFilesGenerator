@@ -1558,17 +1558,104 @@ AVIF_MEANING = {
 }
 
 
+def decode_declared(kind, data, settings):
+    """Decode the file in the encoding it was TOLD the file claims.
+
+    Told rather than sniffed, for the reason the CSV dialect is told: a checker
+    that guessed would decode a UTF-16 file as UTF-16 whatever was ordered and
+    agree with a file written in the wrong one. Sniffing is genuinely ambiguous
+    here as well - a UTF-16 file with no mark in front of it is a legal file
+    that looks like nothing in particular.
+
+    Python's own codecs do the decoding, and that is the point: the bytes are
+    judged by an implementation that is neither our code nor our language.
+    Strict on purpose. Measured on three readers on 2026-09-07, every lenient
+    path replaces a broken character with U+FFFD and reports success, so a
+    lenient decode here would bless the one defect worth catching.
+    """
+    settings = settings or {}
+    name = settings.get("encoding", "utf-8")
+    marks = {"utf-8": b"\xef\xbb\xbf", "utf-16le": b"\xff\xfe", "utf-16be": b"\xfe\xff"}
+    names = {"utf-8": "utf-8", "utf-16le": "utf-16-le", "utf-16be": "utf-16-be"}
+    if name not in names:
+        fail(f"the {kind} check was told encoding={name!r}, which is not one this tool writes")
+
+    wants_mark = settings.get("bom", "false") == "true"
+    mark = marks[name]
+    has_mark = data.startswith(mark)
+    if wants_mark and not has_mark:
+        fail(f"a {name} byte order mark was ordered and the file does not open with one")
+    if not wants_mark and has_mark:
+        fail(f"no byte order mark was ordered and the file opens with one")
+    body = data[len(mark):] if wants_mark else data
+
+    if name != "utf-8" and len(body) % 2:
+        fail(f"{name} stores two bytes for every character and the file holds "
+             f"{len(body)} of them, so the last character is cut in half")
+    try:
+        text = body.decode(names[name])
+    except UnicodeDecodeError as exc:
+        fail(f"the file does not decode as {name}: {exc}")
+
+    # Decoding is not enough, and this is the half that says why. Read a
+    # UTF-16BE file as little endian and every pair of bytes is still a valid
+    # character - 0x74 0x00 becomes U+7400 rather than "t" - so a strict decode
+    # blesses a file with its byte order the wrong way round. The prose these
+    # formats write is words, spaces and newlines, so anything outside that
+    # means the bytes were read in an order nobody ordered, or landed somewhere
+    # they were never meant to.
+    stray = sorted({c for c in text if c != "\n" and not (" " <= c <= "~")})
+    if stray:
+        shown = [hex(ord(c)) for c in stray[:6]]
+        fail(f"the text holds {len(stray)} character(s) that are not printable ASCII: {shown}")
+    return text
+
+
+def check_txt(data, settings=None):
+    """Text, in the encoding it claims, and nothing in it that is not text.
+
+    There was nothing here to check against until a text file could declare an
+    encoding, which is why TXT and MD carried one layer where every other
+    format carries two. A file saying it is UTF-16LE with a mark in front is a
+    claim somebody else's decoder can settle, so from 2026-09-07 they carry two.
+
+    The character check is the second half and it is not about encoding at all:
+    this prose is words, spaces and newlines, so a control character in the
+    decoded text means bytes landed somewhere they were never meant to - and
+    both the size check and the determinism check would call that file correct.
+    """
+    text = decode_declared("txt", data, settings)
+    ok(f"{len(text)} characters, decoded strictly")
+
+
+def check_md(data, settings=None):
+    """The document decodes, and every fenced block is closed.
+
+    The fence count is the structural half. This generator writes code fences
+    in pairs and takes a block whole or not at all, so an odd number of them
+    means a block was cut in half - which renders as one enormous code block
+    swallowing the rest of the document, at exactly the size that was ordered
+    and with a stable hash. Nothing else here would see it.
+    """
+    text = decode_declared("md", data, settings)
+    fences = text.count("```")
+    if fences % 2:
+        fail(f"the document holds {fences} code fences, so one block is never closed")
+    ok(f"{len(text)} characters, {fences // 2} fenced block(s), decoded strictly")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
           "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
-          "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx}
+          "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
+          "txt": check_txt, "md": check_md}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv"}
+TAKES_SETTINGS = {"csv", "txt", "md"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:

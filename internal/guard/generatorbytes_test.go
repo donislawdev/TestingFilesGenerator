@@ -286,6 +286,21 @@ func goldenCases() map[string]engine.Target {
 		// pinned in both positions.
 		"txt_4kib_no_label": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: false},
 
+		// The encodings, one case per path rather than one per format: both
+		// byte orders, a mark present and a mark absent, in both formats. The
+		// default path is pinned by txt_4kib and md_8kib above, and it is the
+		// pin that says the setting arrived without moving anybody's hashes.
+		"txt_4kib_utf8_bom": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: true,
+			Properties: map[string]string{"encoding": "utf-8", "bom": "true"}},
+		"txt_4kib_utf16le_bom": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: true,
+			Properties: map[string]string{"encoding": "utf-16le", "bom": "true"}},
+		"txt_4kib_utf16be": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: true,
+			Properties: map[string]string{"encoding": "utf-16be"}},
+		"md_8kib_utf16le_bom": {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"encoding": "utf-16le", "bom": "true"}},
+		"md_8kib_utf16be": {ID: "g", Format: "md", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"encoding": "utf-16be"}},
+
 		// An archive holding real files of another format. This is the path
 		// "contains" rewrites, and the one case where a refactor could change
 		// the bytes of every archive anybody has generated.

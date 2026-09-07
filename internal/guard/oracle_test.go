@@ -33,18 +33,6 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 	)
 
 	for _, d := range format.All() {
-		if d.Oracle == format.OracleNone {
-			noTool = append(noTool, d.ID)
-			continue
-		}
-
-		checker, known := oracle.For(d.Oracle)
-		if !known {
-			t.Errorf("%s declares the oracle %q and nothing implements it - a declaration nobody honours is worse than none",
-				d.ID, d.Oracle)
-			continue
-		}
-
 		// A size big enough to be a realistic file rather than a corner case.
 		size := d.MinBytes + 300*1024
 		plan, err := d.Generator.Plan(format.Request{Bytes: size, Seed: 7741, Label: true})
@@ -66,17 +54,34 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 			t.Fatalf("%s: closing failed: %v", d.ID, closeErr)
 		}
 
-		res := checker.Check(path)
-		switch {
-		case !res.Available:
-			skipped = append(skipped, d.ID+" ("+checker.Name+" is not installed)")
-		case res.Err != nil:
-			checked++
-			t.Errorf("%s: %v\n  the file is the right size and repeatable, and %s still rejects it",
-				d.ID, res.Err, checker.Name)
+		// The first layer, for the formats that name a reader.
+		//
+		// A format naming none used to skip the REST of this loop along with
+		// it, so the structural check below never ran for it. That sat unseen
+		// while the only two formats without a reader were also the only two
+		// without a checker - and it would have made the checkers TXT and MD
+		// gained on 2026-09-07 dead on arrival, silently, with this guard
+		// green and reporting them as covered. Found by running it and reading
+		// the log, not by reading the code.
+		switch checker, known := oracle.For(d.Oracle); {
+		case d.Oracle == format.OracleNone:
+			noTool = append(noTool, d.ID)
+		case !known:
+			t.Errorf("%s declares the oracle %q and nothing implements it - a declaration nobody honours is worse than none",
+				d.ID, d.Oracle)
 		default:
-			checked++
-			t.Logf("%s: %s accepted it - %s", d.ID, checker.Name, firstLine(res.Output))
+			res := checker.Check(path)
+			switch {
+			case !res.Available:
+				skipped = append(skipped, d.ID+" ("+checker.Name+" is not installed)")
+			case res.Err != nil:
+				checked++
+				t.Errorf("%s: %v\n  the file is the right size and repeatable, and %s still rejects it",
+					d.ID, res.Err, checker.Name)
+			default:
+				checked++
+				t.Logf("%s: %s accepted it - %s", d.ID, checker.Name, firstLine(res.Output))
+			}
 		}
 
 		// The tolerant readers answer "would a viewer accept this". The
@@ -117,17 +122,26 @@ func TestEveryFormatSurvivesItsReferenceTool(t *testing.T) {
 
 // structurallyChecked is the formats the second layer covers, written down.
 //
-// TXT and MD are absent on purpose and that is the whole reason this list
-// exists rather than being derived: for those two there is no specification to
-// check against beyond "these are the bytes we meant", so they have one layer
-// and it is honest to say so.
+// TXT and MD were absent on purpose until 2026-09-07, and the reason they gave
+// is worth keeping because it stopped being true rather than being wrong: for
+// those two there was no specification to check against beyond "these are the
+// bytes we meant", so they carried one layer and said so.
+//
+// Declaring an encoding is what changed it. A file that says it is UTF-16LE
+// with a mark in front of it makes a claim somebody else's decoder can settle,
+// and three of them settled it - Python, V8 and .NET all reject a UTF-16 file
+// cut to an odd length, and all three repair it in silence when asked
+// leniently. So the list still exists rather than being derived, and it is now
+// every format answering true.
 //
 // Without this, dropping a format from oracle.StrictKnows removes its
 // structural check and every test stays green - the loop above simply skips it.
 // A guard that can be switched off in silence is the failure this project keeps
 // finding, so the list is stated and compared rather than trusted.
-// Every registered format is named here, and the two that answer false are the
-// point of that rule rather than an exception to it.
+// Every registered format is named here. The map keeps its shape rather than
+// becoming a list, because a format that answers false is a state this project
+// has been in and can be in again - a new format arrives before its checker
+// does, and saying so out loud is the whole job of this list.
 //
 // It held only the trues until 2026-08-25, and an outside review found what
 // that let through: a format added to neither this list nor oracle.StrictKnows
@@ -146,9 +160,9 @@ var structurallyChecked = map[string]bool{
 	"bmp": true, "gif": true, "ico": true, "jpg": true, "tiff": true, "webp": true,
 	"avif": true, "jxl": true,
 	"docx": true, "xlsx": true, "pptx": true,
-	// Nothing to check against beyond "these are the bytes we meant", so they
-	// have one layer and it is honest to say so out loud.
-	"txt": false, "md": false,
+	// Since 2026-09-07, when a text file gained something to be checked
+	// against: the encoding it declares.
+	"txt": true, "md": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

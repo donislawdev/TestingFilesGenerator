@@ -393,7 +393,12 @@ func Strict(formatID, path string, settings ...string) Result {
 func StrictKnows(formatID string) bool {
 	switch formatID {
 	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",
-		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "jxl", "docx", "xlsx", "pptx":
+		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "jxl", "docx", "xlsx", "pptx",
+		// The two text formats joined on 2026-09-07, when they gained an
+		// encoding. Before that there was nothing here to check against
+		// beyond "these are the bytes we meant" - a claim about UTF-16 is a
+		// claim somebody else's decoder can settle.
+		"txt", "md":
 		return true
 	}
 	return false

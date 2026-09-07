@@ -21,6 +21,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 )
 
 // The padding channel is the content, measured 2026-08-01 like the rest of the
@@ -55,12 +56,15 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:  format.LabelVisible,
+		Label: format.LabelVisible,
+		// No reference tool, for the reason TXT gives: a reader is handed a
+		// path and would have to guess the encoding. The structural check is
+		// the layer that can be told.
 		Oracle: format.OracleNone,
 		// Heading depth, table size and which elements appear come later.
-		// Declaring none now is what makes a recipe asking for them fail
-		// loudly rather than quietly producing something else.
-		Properties:       nil,
+		// Declaring only what is here is what makes a recipe asking for them
+		// fail loudly rather than quietly producing something else.
+		Properties:       textenc.Properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -71,6 +75,11 @@ type generator struct{}
 type memo struct {
 	labelLine string // includes the trailing blank line, empty when absent
 	seed      uint64
+	codec     textenc.Codec
+	// source is the ASCII content this file holds, counted in characters
+	// rather than in file bytes - see the same field on TXT. It is what lets
+	// the block loop below stay the loop it was.
+	source int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -84,30 +93,41 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	}
 
+	codec, err := textenc.Parse("md", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+	if err := codec.Check("MD", r.Bytes); err != nil {
+		return format.Plan{}, err
+	}
+
 	p := format.Plan{
 		Bytes:       r.Bytes,
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":    "utf-8",
-			"line_ending": "lf",
-			"flavour":     "commonmark",
+			textenc.Setting:    codec.Name(),
+			textenc.SettingBOM: codec.HasBOM(),
+			"line_ending":      "lf",
+			"flavour":          "commonmark",
 		},
 	}
 
-	m := memo{seed: r.Seed}
+	m := memo{seed: r.Seed, codec: codec, source: codec.Source(r.Bytes)}
 	if r.Label {
 		// A plain line followed by a blank one is a paragraph, which renders
 		// visibly and cannot break the document wherever it sits.
 		line := core.Label("md", r.Bytes, r.Seed) + "\n\n"
-		if int64(len(line)) <= r.Bytes {
+		if int64(len(line)) <= m.source {
 			m.labelLine = line
 		} else {
+			// What the label COSTS here, not how long it reads - the two
+			// differ by a factor of two in UTF-16.
 			p.Notes = append(p.Notes, format.Note{
 				Code: "label_omitted",
 				Detail: fmt.Sprintf(
 					"The label needs %d B and the file is %d B, so this file carries no label. Its name and the manifest still identify it.",
-					len(line), r.Bytes),
+					codec.Cost(int64(len(line))), r.Bytes),
 			})
 		}
 	}
@@ -123,7 +143,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return fmt.Errorf("md: the plan was not produced by this generator")
 	}
 
-	remaining := p.Bytes
+	// The mark is bytes rather than text, so it goes out as itself, and
+	// everything after it goes through the encoder.
+	if err := writeAll(w, m.codec.Preamble()); err != nil {
+		return err
+	}
+	w = m.codec.Writer(w)
+
+	remaining := m.source
 	if m.labelLine != "" {
 		if err := writeAll(w, []byte(m.labelLine)); err != nil {
 			return err
