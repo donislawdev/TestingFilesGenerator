@@ -30,7 +30,7 @@ import (
 // writer as an argument, which is the whole point - the caller decides where
 // the words go. This guard refuses the console reached DIRECTLY, by name.
 //
-// 🔴 Read from the syntax tree rather than by searching the text, and that is a
+// Read from the syntax tree rather than by searching the text, and that is a
 // measurement rather than caution. internal/oracle holds Python scripts inside
 // Go raw strings and they call print() thirty times over. A text scan reports
 // every one of them, and the honest fix for a guard that shouts at correct code

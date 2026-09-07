@@ -83,7 +83,7 @@ type typeSize struct {
 // guard measuring a different tree from its neighbours would be a fourth axis
 // answering about a fourth codebase.
 //
-// 🔴 What build constraints do to this number, measured 2026-09-07 rather than
+// What build constraints do to this number, measured 2026-09-07 rather than
 // assumed, because a pinned count that moves with the environment is the shape
 // this project has in its own table of environmental noise. build.ImportDir
 // applies the constraints of the machine it runs on, so a type behind a tag is
