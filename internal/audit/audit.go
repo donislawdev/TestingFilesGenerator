@@ -53,6 +53,29 @@ const (
 	// authority over what may be removed and a file that never finished never
 	// reached it. So the only useful thing is to say plainly what it is.
 	Leftover Kind = "leftover"
+	// AnotherRun is a file in the directory that a DIFFERENT run's manifest,
+	// sitting in the same directory, claims - or that manifest itself.
+	//
+	// Reported apart from Extra for the reason Leftover and Respelled are, and
+	// it is the third time that reason has come up. Extra means somebody else
+	// put it here and the question is whose. This one has an answer to that
+	// question, written down in the same directory: the neighbouring record
+	// names it, and Want carries the name of that record.
+	//
+	// A directory is allowed to hold more than one run. output.manifest exists
+	// so that a second run can record itself beside the first rather than being
+	// refused, and calling the result a mismatch made that unusable in the
+	// place it is for - a CI job cannot have a check that is red whenever it
+	// worked. Measured on 2026-09-07: two runs into one directory with names
+	// that do not collide, both ending 0, and verify then reported three
+	// differences against one manifest and four against the other, every one of
+	// them the other run's work.
+	//
+	// It does not make the directory a mismatch, and it is still printed. That
+	// pair is the whole design: attribution rather than suppression, so a
+	// manifest somebody drops into a directory can claim a file out loud and
+	// cannot hide one.
+	AnotherRun Kind = "another-run"
 	// Respelled is the file this manifest describes, stored under a spelling
 	// the filesystem treats as the same name.
 	//
@@ -124,6 +147,21 @@ func (d Difference) String() string {
 				"Nothing described by this manifest is missing because of it. "+
 				"cleanup will not remove it, because it removes only what the manifest lists - delete it by hand",
 			d.Path)
+	case AnotherRun:
+		// Two sentences, because the file is either the neighbour's record or
+		// one of the files it lists, and what a reader does about them differs.
+		// Naming the record in the second is the point: "somebody else's" is
+		// only useful when it says which somebody.
+		if d.Want == "" {
+			return fmt.Sprintf(
+				"another-run %s\n            the record of another run that wrote into this directory. Nothing "+
+					"described by this manifest is affected by it. Verify it on its own to check the files it lists",
+				d.Path)
+		}
+		return fmt.Sprintf(
+			"another-run %s\n            written by the run that %s records, not by this one. Nothing described by "+
+				"this manifest is missing because of it, and cleanup will not remove it - run cleanup on %s to remove it",
+			d.Path, d.Want, d.Want)
 	case Respelled:
 		return fmt.Sprintf(
 			"respelled %s\n            the manifest calls this file %s. The letters differ only in a way this "+
@@ -262,6 +300,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 	// above asks before it, and Verify ends on ctx.Err() - so a check would be a
 	// branch no test could ever redden, which this project removes rather than
 	// keeps.
+	var unclaimed []string
 	for _, p := range present {
 		// Not normalised on this side, and that was measured rather than
 		// decided. walk builds these with filepath.Rel, which returns a clean
@@ -270,32 +309,13 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		if seen[p] || filepath.Base(p) == skip {
 			continue
 		}
-		// Ours or somebody else's, and the reader needs to be told which.
-		kind := Extra
-		want := ""
-		switch {
-		case core.IsPartialName(filepath.Base(p)),
-			core.IsWritingName(filepath.Base(p)),
-			core.IsRunLockName(filepath.Base(p)):
-			// All three markers, because each names something this tool put
-			// here and did not take away. Only the first was recognised until
-			// 2026-09-06, so a half written manifest was reported as "extra" -
-			// the word that means somebody else put it here - and the third
-			// arrived with the run lock on 2026-09-07. They get different
-			// sentences in String, because what a reader should do about them
-			// differs, and about the lock it differs most: it is the only one
-			// that may belong to a run that is still going.
-			kind = Leftover
-		default:
-			// One file under two spellings reads as a polluted directory
-			// otherwise, and on a filesystem that ignores the difference it
-			// arrives on its own, without the "missing" that would give it
-			// away - os.Stat found the entry under the name the manifest
-			// gives. Measured on 2026-08-27.
-			if claimedAs, ok := folded[core.FoldName(p)]; ok {
-				kind, want = Respelled, claimedAs
-			}
-		}
+		unclaimed = append(unclaimed, p)
+	}
+	// Read before the loop rather than inside it, because a file the FIRST
+	// neighbour lists may sit before that neighbour's own record in the walk.
+	neighbours := findNeighbours(ctx, dir, unclaimed)
+	for _, p := range unclaimed {
+		kind, want := nameFor(p, folded, neighbours)
 		diffs = append(diffs, Difference{Kind: kind, Path: p, Want: want})
 	}
 
@@ -306,6 +326,48 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		return diffs[i].Kind < diffs[j].Kind
 	})
 	return diffs, ctx.Err()
+}
+
+// nameFor says what a file the manifest does not claim actually is.
+//
+// Ours or somebody else's, and the reader needs to be told which. Extra is the
+// last answer rather than the first, and three of the four ahead of it were put
+// there by a report that had used the word about a file that was not anybody
+// else's.
+//
+// Lifted out of the walk on 2026-09-07 when the fourth answer arrived. The loop
+// it came from had a switch inside it and a chain inside that, and one more
+// branch would have made the question harder to read than the answer.
+func nameFor(p string, folded map[string]string, neighbours neighbourClaims) (Kind, string) {
+	base := filepath.Base(p)
+	// All three markers, because each names something this tool put here and
+	// did not take away. Only the first was recognised until 2026-09-06, so a
+	// half written manifest was reported as "extra" - the word that means
+	// somebody else put it here - and the third arrived with the run lock on
+	// 2026-09-07. They get different sentences in String, because what a reader
+	// should do about them differs, and about the lock it differs most: it is
+	// the only one that may belong to a run that is still going.
+	if core.IsPartialName(base) || core.IsWritingName(base) || core.IsRunLockName(base) {
+		return Leftover, ""
+	}
+	// One file under two spellings reads as a polluted directory otherwise, and
+	// on a filesystem that ignores the difference it arrives on its own,
+	// without the "missing" that would give it away - os.Stat found the entry
+	// under the name the manifest gives. Measured on 2026-08-27.
+	//
+	// Asked before the neighbours are, because this one is about a file THIS
+	// manifest describes. A neighbour that happens to list the same name does
+	// not make the spelling somebody else's problem.
+	if claimedAs, ok := folded[core.FoldName(p)]; ok {
+		return Respelled, claimedAs
+	}
+	if neighbours.records[p] {
+		return AnotherRun, ""
+	}
+	if by, ok := neighbours.claimedBy[p]; ok {
+		return AnotherRun, by
+	}
+	return Extra, ""
 }
 
 // comparablePath is the spelling two paths are matched under when one comes

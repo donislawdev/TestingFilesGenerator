@@ -299,6 +299,31 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **`tfg verify` no longer calls another run's files "extra".** A directory is
+  allowed to hold more than one run - that is what `output.manifest` is for -
+  and verifying one of them reported every file the other had written as a file
+  nobody asked for, then called the directory a mismatch. Measured with two runs
+  into one directory whose file names do not collide, both ending `0`: three
+  differences against one manifest and four against the other, every one of them
+  the neighbour's work.
+
+  They are reported as `another-run` now, each one naming the record that lists
+  it, and they no longer make the directory a mismatch. `tfg verify` on a shared
+  directory ends `0`, and `matched` in `--json` is `true`. A real disagreement
+  is unaffected - a missing or changed file is still a mismatch and still exits
+  `7`.
+
+  **Nothing is hidden.** Every file is still in the report: one entry each in
+  `--json`, and in the prose one line per neighbouring record rather than one
+  per file. A directory holding a neighbour's ten thousand files used to print
+  ten thousand and one lines and exit `7`. It now prints one line and exits `0`.
+
+  Two limits worth knowing. A neighbour's record is recognised only when its
+  name ends in `.json`, because opening every unlisted file was measured and was
+  too expensive - a record under another name is reported the way it was before.
+  And a file that no manifest in the directory lists is still `extra`, so
+  leaving a manifest in a directory does not account for everything in it.
+
 - **Two runs writing into one directory can no longer write over each other's
   files.** A run holds the directory it is writing into for as long as it is
   writing. A second run that starts meanwhile is refused before it writes a

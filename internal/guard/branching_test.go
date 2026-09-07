@@ -18,7 +18,12 @@ import (
 // signatures the day it went in - and a ratchet that arrives red gets raised
 // to make it pass, which is how a ratchet becomes a rubber band.
 const (
-	worstComplexity = 22 // internal/recipe/target.go rawTarget.resolveSize
+	// The number has not moved. Who holds it has: the guard's own log named
+	// internal/recipe/target.go rawTarget.resolveSize until 2026-09-07, and
+	// names internal/engine/engine.go Run since the run lock went in there.
+	// Written down because a comment naming the wrong function sends the next
+	// reader to flatten something that is not the one at the ceiling.
+	worstComplexity = 22 // internal/engine/engine.go Run
 	mostArguments   = 9  // internal/cli/cleanup.go applyCleanup
 
 	// Where each axis counts as on its way to the ceiling. Three quarters for
