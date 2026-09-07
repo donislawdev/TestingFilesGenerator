@@ -3,6 +3,7 @@ package guard
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,4 +106,105 @@ func runCLI(t *testing.T, args ...string) string {
 	var out, errOut bytes.Buffer
 	cli.Run(context.Background(), args, &out, &errOut)
 	return out.String() + errOut.String()
+}
+
+// And it says so where a script can read it, not only in prose.
+//
+// The note above is correct, printed first, and was the whole of the answer
+// until 2026-09-06. Two measurements say why that was not enough. On stderr it
+// was one line among 25 003, carrying the same "note:" prefix as 25 000
+// repetitions of a sentence about labels - grouped since, so it is now one of
+// two. And in the machine readable report it was ABSENT ENTIRELY: a run of
+// 25 000 files answered exit 0 with a clean --json and no trace of the warning
+// anywhere in it.
+//
+// This tool plugs into CI. A fact that only a person reading prose can learn is
+// a fact a pipeline cannot act on, and the thing it cannot act on here is that
+// the directory it just filled can never be verified or cleaned up by this
+// build - untouchable rule 7 makes the manifest the only authority over what
+// may be deleted.
+//
+// NOT AN EXIT CODE, and that was decided rather than skipped. docs/CLI.md
+// defines 8 as "run finished, but not everything was produced", and here
+// everything was produced. The sentence would read "0 files could not be
+// produced" and point at a manifest nothing can read. Exit codes are a frozen
+// contract.
+func TestAManifestTooBigToReadBackSaysSoInTheReportAScriptReads(t *testing.T) {
+	over := int(manifest.MaxBytes/manifest.BytesPerEntry) + 1000
+
+	// Asked of the estimator first, so a build whose ceiling moved above this
+	// count fails here rather than passing the whole test by never being over
+	// it at all.
+	if _, tooBig := manifest.TooLargeToReadBack(over, 0); !tooBig {
+		t.Fatalf("%d entries was not judged too large, so this proved nothing", over)
+	}
+
+	// stdout only. The summary line goes to the error stream, and a reader that
+	// took both would be parsing JSON with a sentence stuck to the end of it.
+	code, said, errOut := run(t, "generate", "--format", "txt", "--size", "200b",
+		"--count", itoa(over), "--dry-run", "--json", "--out", t.TempDir())
+	if code != cli.ExitOK {
+		t.Fatalf("the run ended with %d, so there is no report to read:\n%s", code, errOut)
+	}
+
+	// Read out of the document a consumer receives rather than off the struct.
+	// Decoding into manifest.Summary would pass by construction the moment the
+	// type changed, which is the trap manifestShape in recipe_test.go exists
+	// against.
+	var report struct {
+		Summary map[string]any `json:"summary"`
+	}
+	if err := json.Unmarshal([]byte(said), &report); err != nil {
+		t.Fatalf("the report is not readable as JSON: %v\n%s", err, firstLines(said, 4))
+	}
+	flag, present := report.Summary["too_large_to_read_back"]
+	if !present {
+		t.Fatalf("the report carries no too_large_to_read_back at all, so a script has "+
+			"no way to learn that this run cannot be verified or cleaned up:\nsummary: %v",
+			report.Summary)
+	}
+	if flag != true {
+		t.Errorf("too_large_to_read_back is %v on a run that is over the ceiling", flag)
+	}
+}
+
+// An ordinary run does not carry the field at all.
+//
+// The sharp half. A build writing "too_large_to_read_back": false into every
+// manifest would satisfy the guard above and change the bytes of every document
+// this tool has ever written, for a fact that is almost never worth saying. It
+// is absent rather than false, which is what keeps existing manifests byte for
+// byte what they were - the same choice recipe_hash, overrides and preset made.
+func TestAnOrdinaryRunSaysNothingAboutTheCeilingInItsReport(t *testing.T) {
+	code, said, errOut := run(t, "generate", "--format", "txt", "--size", "200b",
+		"--count", "20", "--dry-run", "--json", "--out", t.TempDir())
+	if code != cli.ExitOK {
+		t.Fatalf("the run ended with %d, so there is no report to read:\n%s", code, errOut)
+	}
+
+	var report struct {
+		Summary map[string]any `json:"summary"`
+	}
+	if err := json.Unmarshal([]byte(said), &report); err != nil {
+		t.Fatalf("the report is not readable as JSON: %v\n%s", err, firstLines(said, 4))
+	}
+	// Asserted rather than assumed, so an empty summary cannot pass this by
+	// having no keys at all.
+	if len(report.Summary) == 0 {
+		t.Fatal("the report carries no summary, so this guard checked nothing")
+	}
+	if _, present := report.Summary["too_large_to_read_back"]; present {
+		t.Errorf("an ordinary run carries too_large_to_read_back in its manifest.\n" +
+			"Absent rather than false is what keeps every manifest already written " +
+			"byte for byte what it was.")
+	}
+}
+
+// firstLines trims a long document down for a failure message.
+func firstLines(s string, n int) string {
+	lines := strings.Split(s, "\n")
+	if len(lines) > n {
+		lines = lines[:n]
+	}
+	return strings.Join(lines, "\n")
 }
