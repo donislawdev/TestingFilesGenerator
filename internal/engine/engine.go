@@ -78,8 +78,31 @@ type Target struct {
 // container was told to hold - would otherwise fail on some runs and not
 // others, depending on what came out of the seed. A tool whose whole promise
 // is that the same seed gives the same run cannot have an error that appears
-// and disappears. So the low end is planned first and the range either works
-// for every file or for none.
+// and disappears.
+//
+// THE LOW END IS NOT THE WHOLE ANSWER, and this comment claimed it was
+// until 2026-09-06. It said the range "either works for every file or for
+// none", and the code does not provide that. The check here is sufficient only
+// if a format's reachable sizes are one unbroken interval starting at its
+// minimum, and for four of them they are not: PNG has an unreachable band of
+// eleven byte counts immediately above every picture's encoded size, because
+// the smallest padding chunk costs twelve bytes, and the OPC three declare the
+// same shape between the comment capacity and the smallest extra part.
+//
+// So a size DRAWN into such a band is refused later, by the per file plan, and
+// whether that happens depends on the count. Measured on 2026-09-06, one 64x64
+// PNG recipe at one seed with size-range 143-200: counts 1 and 2 are accepted,
+// counts 3, 5, 8, 12, 20 and 40 are refused. The low end moves with the seed
+// too - 144, 143, 144 B at seeds 1, 2 and 3 - so judging file 0's band says
+// nothing about file 2's.
+//
+// The bytes are stable under a raised count and that was verified, so rule 2
+// holds for CONTENT. What is not stable is whether the run happens at all.
+// Closing that needs the format to declare its unreachable bands so the whole
+// interval can be judged before anything is drawn, which is a change to
+// format.Descriptor and the owner's call. Until then the refusal at least
+// names the key the recipe carries - see atTarget - rather than pointing at a
+// "size" setting a range target does not have.
 //
 // The judge is the generator itself rather than a second copy of its rules
 // here. A copy would be a place for the two to disagree, and the disagreement
@@ -392,7 +415,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 		// deliberately leaves alone.
 		desc, err := settleTarget(t, opt, seen)
 		if err != nil {
-			return nil, atTarget(i+1, err)
+			return nil, atTarget(i+1, t, err)
 		}
 		targetSeed := core.TargetSeed(opt.Seed, t.ID)
 

@@ -299,6 +299,15 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A refusal about a size now names the setting you actually wrote.** A target
+  using `size-range` was refused at `targets[1].size`, a key that recipe does
+  not have, so `validate --json` sent a script - and the window sent a person -
+  to a box that was not there. It now reads `targets[1].size-range`. Targets
+  using `size` are unchanged.
+
+  The wording of every refusal is byte for byte what it was. Only the address
+  moved.
+
 - **`verify` no longer calls a half-written manifest a file it knows nothing
   about.** A run killed outright can leave `<manifest>.tfg-writing` behind.
   `verify` reported it as `extra`, the word it uses for a file somebody else put

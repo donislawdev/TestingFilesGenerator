@@ -1,8 +1,11 @@
 package guard
 
 import (
+	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -319,5 +322,93 @@ targets:
 	}
 	if len(distinct) < 2 {
 		t.Errorf("all six archives came out the same size, so nothing is being drawn")
+	}
+}
+
+// A refusal about a size names the key the recipe actually carries.
+//
+// The format is handed a count of bytes and answers about bytes, so every size
+// refusal it produces says "size" - the only size key it knows. A target that
+// draws from a range has no "size" key at all. Measured on 2026-09-06: a recipe
+// carrying "size-range: 143-200" was refused at "targets[1].size", sending
+// somebody to a box that was neither on their screen nor in their file.
+//
+// NOT COVERED BY TestEveryRecipeRefusalSaysWhichSettingItIsAbout, and that was
+// checked rather than assumed. Its table has a "size-range" case already, but
+// that refusal comes from the recipe READER, which knows which key it was
+// reading. This one comes from underneath, and the table's runner never reaches
+// it - the two cases were tried there first and the recipe came back valid,
+// because nothing in that path plans a file.
+//
+// The pair matters more than either half. A build that answered "size-range"
+// for every size refusal would pass the first case and misaddress every
+// ordinary target in the tree.
+func TestASizeRefusalIsAddressedToTheKeyTheRecipeCarries(t *testing.T) {
+	cases := []struct {
+		name string
+		src  string
+		want string
+	}{
+		{
+			name: "a range the format cannot deliver",
+			src: `version: 1
+targets:
+  - id: a
+    format: pdf
+    count: 40
+    size-range: 10-8kb
+`,
+			want: "targets[1].size-range",
+		},
+		{
+			name: "a plain size the format cannot deliver",
+			src: `version: 1
+targets:
+  - id: a
+    format: pdf
+    count: 1
+    size: 10
+`,
+			want: "targets[1].size",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir := t.TempDir()
+			path := writeRecipe(t, dir, c.src)
+
+			var out, errOut bytes.Buffer
+			if code := cli.Run(context.Background(),
+				[]string{"validate", path, "--json"}, &out, &errOut); code == cli.ExitOK {
+				t.Fatalf("this recipe was meant to be refused and validate was happy with it:\n%s",
+					out.String())
+			}
+
+			var report struct {
+				Problems []struct {
+					What string `json:"what"`
+					At   string `json:"at"`
+				} `json:"problems"`
+			}
+			if err := json.Unmarshal(errOut.Bytes(), &report); err != nil {
+				t.Fatalf("the report is not readable as JSON: %v\n%s", err, errOut.String())
+			}
+			// Asserted rather than assumed. A report with no problems in it
+			// would pass the loop below by never entering it.
+			if len(report.Problems) == 0 {
+				t.Fatalf("the report carries no problems at all:\n%s", errOut.String())
+			}
+
+			for _, pr := range report.Problems {
+				if pr.At == c.want {
+					continue
+				}
+				t.Errorf("the refusal %q is addressed to %q and belongs at %q.\n"+
+					"What to do: a refusal about a size carries the key that held the number, "+
+					"so a window can mark the box somebody can actually change.",
+					pr.What, pr.At, c.want)
+			}
+		})
 	}
 }
