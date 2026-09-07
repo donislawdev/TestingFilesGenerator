@@ -208,6 +208,29 @@ func (e *SpaceError) Error() string {
 		e.Needed, e.Path, e.Available)
 }
 
+// RunInProgressError is refusing to start because another run holds this
+// directory.
+//
+// Its own type rather than a third state on CollisionError, because it is a
+// different fault with a different remedy. A collision is a name that is taken
+// and the answer is to move that file or write somewhere else. This is a run
+// that has not finished, and the answer is usually to wait.
+//
+// The last sentence is there because a run killed outright cannot give the
+// name back, and a person who is told only "another run is writing here" about
+// a machine where nothing is running has been given a dead end. It names the
+// file so that clearing it is one command rather than a hunt.
+type RunInProgressError struct {
+	Path string
+	Dir  string
+}
+
+func (e *RunInProgressError) Error() string {
+	return fmt.Sprintf(
+		"another run is already writing into %s, so this one will not start. Two runs writing into one directory can write over each other's files without either of them saying so. Wait for it to finish, or generate into a different directory. If nothing is running, that run was killed before it could tidy up - remove %s and try again",
+		e.Dir, e.Path)
+}
+
 // CollisionError is refusing to write over something that is already there.
 //
 // This tool runs in directories that belong to the user. Overwriting without

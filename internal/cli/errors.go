@@ -274,6 +274,14 @@ func classifyReading(err error) (int, bool) {
 	if errors.As(err, &collision) {
 		return ExitIO, true
 	}
+	// A directory somebody else's run is holding. The same code as a name that
+	// is taken, because it is the same kind of answer - the disk would not have
+	// this run - and the frozen table has one row for that. What differs is the
+	// sentence, and that lives on the error.
+	var inProgress *engine.RunInProgressError
+	if errors.As(err, &inProgress) {
+		return ExitIO, true
+	}
 	// A manifest we cannot read is a reading failure, not a bug in the tool.
 	// Falling through to RUNTIME would tell CI to file a report against us for
 	// a file somebody handed in.

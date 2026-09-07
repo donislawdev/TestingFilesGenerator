@@ -54,6 +54,22 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 			Remedy: "Point the output directory at a directory, or at one that does not exist yet and it will be created"}
 	}
 
+	// Whether anybody else is writing here comes before every other question
+	// about a name, and the order is the message rather than tidiness. A run in
+	// flight has already claimed its manifest name, so without this check a
+	// second run into the same directory was told "manifest.json already exists
+	// ... it is the only record of what an earlier run wrote" - a sentence
+	// about a run that finished, said about one that is still going, which
+	// sends somebody looking through a directory rather than waiting a minute.
+	//
+	// Asked here rather than only at the claim below because a dry run stops
+	// before the claim. A preview that says a run would succeed, while another
+	// run is filling the directory it would write into, is answering a question
+	// nobody asked.
+	if path := RunLockPath(opt.OutDir); exists(path) {
+		return &RunInProgressError{Path: path, Dir: opt.OutDir}
+	}
+
 	// The manifest is checked with the files it would describe, and leaving it
 	// out cost exactly what it protects. A second run into the same directory
 	// wrote a fresh manifest over the old one, so every file the old one listed
@@ -204,4 +220,18 @@ func manifestNameOf(opt Options) string {
 // of a fault waiting for a fourth screen rather than of a safe piece of code.
 func ManifestPath(opt Options) string {
 	return filepath.Join(opt.OutDir, manifestNameOf(opt))
+}
+
+// RunLockPath is the name a run holds while it writes into a directory.
+//
+// Exported for the same reason ManifestPath is: more than one part of the tool
+// has to mean the same file. The check above asks whether it is taken, the run
+// takes it, and a guard has to be able to put one there and watch a second run
+// refuse.
+//
+// It does not depend on the manifest name, and that independence is the whole
+// point. Two runs pointing output.manifest at different files are two runs
+// writing into one directory, which is the case the manifest claim cannot see.
+func RunLockPath(outDir string) string {
+	return filepath.Join(outDir, core.RunLockName)
 }
