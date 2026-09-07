@@ -288,10 +288,6 @@
     "description": "Shown in the window.",
     "other": "Nothing was written. Check the settings marked above."
   },
-  "SectionBatches": {
-    "description": "The heading over a group of fields.",
-    "other": "Batches"
-  },
   "SectionCarriedCode": {
     "description": "The heading over a group of fields.",
     "other": "Third party code compiled in"
@@ -323,6 +319,10 @@
   "SectionSettings": {
     "description": "The heading over a group of fields.",
     "other": "Settings"
+  },
+  "SectionSupport": {
+    "description": "The heading over a group of fields.",
+    "other": "Support"
   },
   "SettingKey": {
     "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
@@ -375,10 +375,6 @@
   "WorkingOutTheCost": {
     "description": "Shown in the window.",
     "other": "Working out what this would cost..."
-  },
-  "WritingFiles": {
-    "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
-    "other": "Writing {{.Files}}..."
   },
   "WritingTo": {
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",

@@ -56,6 +56,7 @@ func SectionOutput() string        { return say("SectionOutput", "Output") }
 func SectionPreset() string        { return say("SectionPreset", "The question") }
 func SectionSettings() string      { return say("SectionSettings", "Settings") }
 func SectionLicence() string       { return say("SectionLicence", "Licence") }
+func SectionSupport() string       { return say("SectionSupport", "Support") }
 
 // The two headings over what this binary carries that somebody else wrote.
 //
@@ -280,9 +281,8 @@ func TooManyFiles(count int64, reason error) string {
 // difference between the two screens is how many batches, not how advanced
 // the person is. "Advanced" would have said the other screen is for
 // beginners, which is not true of anybody generating one batch of files.
-func HeadingRecipe() string  { return say("HeadingRecipe", "Run several batches together") }
-func TabRecipe() string      { return say("TabRecipe", "Several batches") }
-func SectionBatches() string { return say("SectionBatches", "Batches") }
+func HeadingRecipe() string { return say("HeadingRecipe", "Run several batches together") }
+func TabRecipe() string     { return say("TabRecipe", "Several batches") }
 
 // BatchHeading names one batch in the list, counted the way the refusals count.
 //

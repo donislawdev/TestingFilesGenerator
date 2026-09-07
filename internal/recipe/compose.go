@@ -308,6 +308,17 @@ func firstControl(value string) (rune, bool) {
 // name for a given box: both sides can agree and both be wrong. That is what
 // TestEveryRefusalAboutABatchMarksThatBatchsBox is for, and the two together are
 // what make the pairing safe rather than merely consistent.
+//
+// Eleven of these have no caller today and every one of them stays. This is a
+// VOCABULARY rather than a list of things in use: it names the keys the recipe
+// schema has, and half a vocabulary is the "format added halfway" shape that
+// the exhaustive linter is switched on to catch one axis over. Five of the
+// eleven - locale, policy, engine, extends, with - name settings this build
+// refuses out loud with "not in this build yet", so a set holding only the keys
+// that happen to have a consumer would be missing exactly the ones a refusal
+// has to be able to name. Measured 2026-09-07 by tools/probes/guardonly, which
+// is where the eleven came from, and written here so the next scan does not
+// reach for the delete.
 const (
 	KeyTargets  = core.KeyTargets
 	KeyVersion  = "version"

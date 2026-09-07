@@ -115,12 +115,6 @@ func WritingTo(dir string) string {
 	return sayf("WritingTo", "Files will go to {{.Directory}}", map[string]any{"Directory": dir})
 }
 
-// WritingFiles is the line under the bar at the moment a run starts, before
-// the first progress report arrives.
-func WritingFiles(count int) string {
-	return sayf("WritingFiles", "Writing {{.Files}}...", map[string]any{"Files": files(count)})
-}
-
 // WorkingOutTheCost is what a preview says while it is going.
 //
 // A preview does disk work - it asks how much room there is and whether any of

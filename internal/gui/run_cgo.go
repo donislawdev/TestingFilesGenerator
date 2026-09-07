@@ -158,6 +158,14 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 // somebody whose desktop has no browser registered, no screen to say it on that
 // would not be a modal about a button they pressed by curiosity, and no harm
 // done - the address is in the About screen for anybody who wants to type it.
+//
+// That last clause was FALSE until 2026-09-07 and is the reason this paragraph
+// is worth reading twice. text.SupportURL had exactly one use in the whole
+// tree, as this button's destination, so it was on no screen at all and a
+// person whose desktop did nothing had nowhere to go. The decision to stay
+// quiet was sound and rested on a fallback that did not exist. The About screen
+// carries the address now, in its Support section, which is what makes the
+// sentence above true rather than merely reasonable.
 func (d desktop) OpenLink(address string) {
 	parsed, err := url.Parse(address)
 	if err != nil {

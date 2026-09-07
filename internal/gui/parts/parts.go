@@ -491,10 +491,6 @@ const (
 	GapSection = 14
 )
 
-// SectionGap is the older name for GapSection, kept because that is the name
-// the recipe screen and the guards were written against.
-const SectionGap = GapSection
-
 // Column stacks its children with one fixed gap, whatever the theme's padding
 // is.
 //

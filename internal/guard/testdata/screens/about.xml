@@ -25,8 +25,8 @@
 						<container size="1088x1250">
 							<container size="1088x1250">
 								<widget size="1088x1200" type="*widget.Scroll">
-									<container size="1088x1437">
-										<container pos="134,0" size="820x1437">
+									<container size="1088x1578">
+										<container pos="134,0" size="820x1578">
 											<container size="820x39">
 												<widget pos="6,0" size="808x39" type="*widget.Label">
 													<widget size="808x39" type="*widget.RichText">
@@ -73,7 +73,29 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,523" size="820x678">
+											<container pos="0,523" size="820x127">
+												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x127"/>
+												<container size="820x127">
+													<container pos="6,6" size="808x115">
+														<widget size="808x35" type="*widget.Label">
+															<widget size="808x35" type="*widget.RichText">
+																<text bold pos="6,6" size="67x23" textSize="17">Support</text>
+															</widget>
+														</widget>
+														<widget pos="0,44" size="808x31" type="*widget.Label">
+															<widget size="808x31" type="*widget.RichText">
+																<text pos="6,6" size="728x19">Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it.</text>
+															</widget>
+														</widget>
+														<widget pos="0,84" size="808x31" type="*widget.Label">
+															<widget size="808x31" type="*widget.RichText">
+																<text pos="6,6" size="223x19">https://donislawdev.com/support/</text>
+															</widget>
+														</widget>
+													</container>
+												</container>
+											</container>
+											<container pos="0,665" size="820x678">
 												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x678"/>
 												<container size="820x678">
 													<container pos="6,6" size="808x666">
@@ -121,7 +143,7 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,1216" size="820x220">
+											<container pos="0,1357" size="820x220">
 												<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x220"/>
 												<container size="820x220">
 													<container pos="6,6" size="808x208">
@@ -151,8 +173,8 @@
 										<linearGradient pos="0,-8" size="1088x8"/>
 									</widget>
 									<widget pos="1082,0" size="6x1200" type="*widget.scrollBarArea">
-										<widget pos="3,0" size="3x1001" type="*widget.scrollBar">
-											<rectangle fillColor="scrollbar" radius="3" size="3x1001"/>
+										<widget pos="3,0" size="3x912" type="*widget.scrollBar">
+											<rectangle fillColor="scrollbar" radius="3" size="3x912"/>
 										</widget>
 									</widget>
 								</widget>
