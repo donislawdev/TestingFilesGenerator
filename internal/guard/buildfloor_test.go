@@ -36,9 +36,10 @@ import (
 // directive came out. So the pin now lives in GO_VERSION in the workflows, and
 // this holds the floor against every one of them.
 //
-// The third copy is the one a person reads before they have the repository.
-// README.md states the minimum in prose, and prose is the copy that rots, so it
-// is held here too. Same arrangement as the build tags in
+// The remaining copies are the ones a person reads before they have the
+// repository. README.md states the minimum in prose, CONTRIBUTING.md states it
+// again since 2026-09-07, and prose is the copy that rots - so both are held
+// here. Same arrangement as the build tags in
 // TestTheInstallInstructionsCarryTheBuildTags and for the same reason: one file
 // holds the fact, everything inside a checkout reads it, and the copies that
 // have to live outside get a guard instead.
@@ -48,7 +49,7 @@ import (
 // strings is precisely where this class of defect hides. Two strings either
 // match or they do not, and that is checkable without a comparison anybody has
 // to be right about.
-func TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo(t *testing.T) {
+func TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo(t *testing.T) {
 	root := repoRoot(t)
 	floor := goModFloor(t, root)
 
@@ -76,13 +77,19 @@ func TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo(t *testing.T) {
 			"floor. That is where the pin lives now that go.mod has no toolchain directive.")
 	}
 
-	stated, at, text := readmeMinimumGo(t, root)
-	if stated != floor {
-		t.Errorf("README.md line %d tells somebody they need Go %s and go.mod admits Go %s:\n"+
+	// Every document that states the requirement, not only the shop window.
+	// CONTRIBUTING.md states it too since 2026-09-07, and a second copy of a
+	// number is a second thing to keep in step.
+	for _, name := range filesThatTellSomebodyHowToBuild {
+		stated, at, text := minimumGoIn(t, root, name)
+		if stated == floor {
+			continue
+		}
+		t.Errorf("%s line %d tells somebody they need Go %s and go.mod admits Go %s:\n"+
 			"  %s\n"+
 			"What to do: make the sentence name %s. It is read before anybody has the "+
 			"repository, so it is the one copy nothing else can correct.",
-			at, stated, floor, strings.TrimSpace(text), floor)
+			name, at, stated, floor, strings.TrimSpace(text), floor)
 	}
 }
 
@@ -123,17 +130,17 @@ func workflowFiles(t *testing.T, root string) []string {
 	return found
 }
 
-// readmeMinimumGo returns the version README.md names as the minimum, the line
-// it sits on and that line's text.
+// minimumGoIn returns the version a document names as the minimum, the line it
+// sits on and that line's text.
 //
 // Matched on the sentence rather than on a position, because a position moves
 // the first time somebody adds a paragraph above it.
-func readmeMinimumGo(t *testing.T, root string) (string, int, string) {
+func minimumGoIn(t *testing.T, root, name string) (string, int, string) {
 	t.Helper()
 
-	raw, err := os.ReadFile(filepath.Join(root, "README.md"))
+	raw, err := os.ReadFile(filepath.Join(root, name))
 	if err != nil {
-		t.Fatalf("reading README.md: %v", err)
+		t.Fatalf("reading %s: %v", name, err)
 	}
 
 	want := regexp.MustCompile(`Needs Go ([0-9][0-9.]*)`)
@@ -146,15 +153,15 @@ func readmeMinimumGo(t *testing.T, root string) (string, int, string) {
 		// A second sentence naming a version is two answers to one question,
 		// and the guard would then check whichever came last.
 		if found != "" {
-			t.Fatalf("README.md names a minimum Go version twice, on lines %d and %d, so "+
-				"there is no single sentence to hold against go.mod", at, i+1)
+			t.Fatalf("%s names a minimum Go version twice, on lines %d and %d, so "+
+				"there is no single sentence to hold against go.mod", name, at, i+1)
 		}
 		found, at, text = m[1], i+1, line
 	}
 	if found == "" {
-		t.Fatal(`README.md has no "Needs Go <version>" sentence, so this guard checked ` +
-			"nothing. It is the only statement of the requirement somebody sees before " +
-			"they clone.")
+		t.Fatalf(`%s has no "Needs Go <version>" sentence, so this guard checked `+
+			"nothing. It is a statement of the requirement somebody sees before "+
+			"they clone.", name)
 	}
 	return found, at, text
 }

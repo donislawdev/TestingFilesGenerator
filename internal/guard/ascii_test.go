@@ -50,6 +50,10 @@ func asciiRequired(rel string) bool {
 var englishFiles = []string{
 	"README.md",
 	"CHANGELOG.md",
+	// Added 2026-09-07 with the file itself. It is repository text somebody
+	// reads before they have a checkout, which is the same criterion as the two
+	// above - the place, not the reader.
+	"CONTRIBUTING.md",
 	// The notices that travel with a release binary. Added 2026-08-04 with the
 	// file itself: it is repository text a user reads, so it belongs here by
 	// the same criterion as the two above. The licence texts it quotes sit in
