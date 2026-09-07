@@ -126,12 +126,12 @@ func (c Codec) Preamble() []byte {
 	}
 }
 
-// Width is how many bytes one ASCII character costs in this encoding.
+// width is how many bytes one ASCII character costs in this encoding.
 //
 // The generators build their content as ASCII and this is what turns that
 // into a byte count. It holds because the vocabulary and the label are ASCII,
 // which a guard checks rather than this file assuming.
-func (c Codec) Width() int64 {
+func (c Codec) width() int64 {
 	if c.wide {
 		return 2
 	}
@@ -140,11 +140,11 @@ func (c Codec) Width() int64 {
 
 // Source is how many ASCII bytes of content fit in a file of this size.
 func (c Codec) Source(fileBytes int64) int64 {
-	return (fileBytes - int64(len(c.Preamble()))) / c.Width()
+	return (fileBytes - int64(len(c.Preamble()))) / c.width()
 }
 
 // Cost is what that many ASCII bytes take up once encoded.
-func (c Codec) Cost(sourceBytes int64) int64 { return sourceBytes * c.Width() }
+func (c Codec) Cost(sourceBytes int64) int64 { return sourceBytes * c.width() }
 
 // Check refuses a size this encoding cannot write exactly, in the four parts
 // every refusal in this tool carries.
@@ -179,7 +179,7 @@ func (c Codec) Check(formatName string, requested int64) error {
 // fits says whether a file of exactly this many bytes can be written, and
 // names the next size that can when it cannot.
 func (c Codec) fits(fileBytes int64) (next int64, ok bool) {
-	if (fileBytes-int64(len(c.Preamble())))%c.Width() == 0 {
+	if (fileBytes-int64(len(c.Preamble())))%c.width() == 0 {
 		return fileBytes, true
 	}
 	return fileBytes + 1, false
