@@ -711,6 +711,10 @@ Found a problem or want a format? The
 [issue tracker](https://github.com/donislawdev/TestingFilesGenerator/issues) is
 open, and so is the discussion about what gets built next.
 
+Want to help? [CONTRIBUTING.md](CONTRIBUTING.md) says what a change has to
+satisfy before it can go in, and how to translate the window into another
+language without writing any Go.
+
 ## 🔒 Everything inside a generated file is made up
 
 The contents are synthesised from a seed. Names, addresses, e-mail addresses, IP

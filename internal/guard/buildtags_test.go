@@ -180,21 +180,42 @@ func TestABuildWithoutTheBuildTagsRefusesAndSaysWhy(t *testing.T) {
 	}
 }
 
-// The install instructions carry the tags the build needs.
+// filesThatTellSomebodyHowToBuild are the ones carrying a build command a
+// person types before they have a checkout.
 //
-// One file names the tags and everything else reads it, which works for the
-// commands this project runs and cannot work for a command somebody types
-// before they have the repository. So README.md carries the tag itself, and
-// this is what keeps that copy honest.
+// Everything this project runs reads the tags from one file. That cannot work
+// for a command somebody copies out of a document on the web, so these carry
+// the tag themselves - and a copy is a thing to keep honest, which is what the
+// two guards below are for.
+//
+// CONTRIBUTING.md joined on 2026-09-07 with the file itself. A guide telling
+// somebody to build without the tag hands them a binary whose AVIF encoder
+// reads past the end of a buffer, and the guide is the first thing a
+// contributor follows.
+var filesThatTellSomebodyHowToBuild = []string{"README.md", "CONTRIBUTING.md"}
+
+// The install instructions carry the tags the build needs.
 func TestTheInstallInstructionsCarryTheBuildTags(t *testing.T) {
 	tags := buildTags()
-	raw, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
-	if err != nil {
-		t.Fatalf("reading README.md: %v", err)
-	}
-
 	checked := 0
-	for i, line := range strings.Split(string(raw), "\n") {
+	for _, name := range filesThatTellSomebodyHowToBuild {
+		raw, err := os.ReadFile(filepath.Join("..", "..", name))
+		if err != nil {
+			t.Fatalf("reading %s: %v", name, err)
+		}
+		checked += tagsOnEveryBuildLine(t, name, string(raw), tags)
+	}
+	if checked == 0 {
+		t.Fatal("no line of those files was recognised as an install or build command, so this " +
+			"guard checked nothing")
+	}
+}
+
+// tagsOnEveryBuildLine checks one document and says how many commands it read.
+func tagsOnEveryBuildLine(t *testing.T, name, body, tags string) int {
+	t.Helper()
+	checked := 0
+	for i, line := range strings.Split(body, "\n") {
 		if !strings.Contains(line, "go install") && !strings.Contains(line, "go build ") {
 			continue
 		}
@@ -202,15 +223,12 @@ func TestTheInstallInstructionsCarryTheBuildTags(t *testing.T) {
 		if strings.Contains(line, buildTagsFileName) || strings.Contains(line, "-tags "+tags) {
 			continue
 		}
-		t.Errorf("README.md line %d tells somebody to build without the build tags:\n  %s\n"+
+		t.Errorf("%s line %d tells somebody to build without the build tags:\n  %s\n"+
 			"What to do: add -tags %q to it, or read them from %s where the command is run "+
 			"inside a checkout. Without them the AVIF encoder reads past the end of a buffer.",
-			i+1, strings.TrimSpace(line), tags, buildTagsFileName)
+			name, i+1, strings.TrimSpace(line), tags, buildTagsFileName)
 	}
-	if checked == 0 {
-		t.Fatal("no line of README.md was recognised as an install or build command, so this " +
-			"guard checked nothing")
-	}
+	return checked
 }
 
 // The size that crashed, encoded here so a build that lost the tag says so

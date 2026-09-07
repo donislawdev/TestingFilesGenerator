@@ -50,7 +50,14 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("walking .github: %v", err)
 	}
-	files = append(files, filepath.Join(root, "SECURITY.md"))
+	// SECURITY.md and CONTRIBUTING.md sit beside .github rather than in it, and
+	// both point somebody somewhere. The contributing guide arrived on
+	// 2026-09-07 carrying four links to this repository, which is exactly the
+	// shape this guard exists for: these files get written by copying one from
+	// another project, and a link left pointing at the old one reads perfectly.
+	files = append(files,
+		filepath.Join(root, "SECURITY.md"),
+		filepath.Join(root, "CONTRIBUTING.md"))
 
 	checked := 0
 	for _, p := range files {
