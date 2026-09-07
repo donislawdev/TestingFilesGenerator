@@ -299,6 +299,24 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A stopped run says what happened and what survived, instead of `context
+  canceled`.** Pressing Ctrl+C, or a CI job running out of time, printed six
+  characters of Go vocabulary and left you to work out whether the directory was
+  safe to reuse. It now reads:
+
+  ```
+  tfg: stopped before it finished. 897 files written, and the manifest describes
+  exactly those.
+  manifest: /out/manifest.json
+  ```
+
+  So `tfg cleanup` can take exactly those away again. The window has said this
+  since it had a progress bar - only the command line was silent about it.
+
+  Exit codes are unchanged: `130` for a cancel, `143` for a signal that says
+  time is up. A run whose deadline ran out says that rather than that it was
+  cancelled.
+
 - **A refusal about a size now names the setting you actually wrote.** A target
   using `size-range` was refused at `targets[1].size`, a key that recipe does
   not have, so `validate --json` sent a script - and the window sent a person -

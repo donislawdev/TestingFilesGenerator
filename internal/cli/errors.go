@@ -37,6 +37,33 @@ func describeError(err error) string {
 		return ""
 	}
 
+	// The two ways a run is stopped from outside get our own sentence, because
+	// theirs is "context canceled" - six characters of Go runtime vocabulary
+	// printed to somebody who asked the tool to stop and now wants to know what
+	// is on their disk. Written up as O175 on 2026-09-02 and left open, with
+	// the note that the four part shape of a refusal (D6) does not apply here:
+	// a stop is not a fault to correct, it is the answer to what was asked for.
+	//
+	// ONE SENTENCE FOR CANCELLATION RATHER THAN TWO, and that is a decision
+	// rather than an omission. Ctrl+C and SIGTERM both arrive here as
+	// context.Canceled - the signal itself is known only in cmd/tfg/main.go,
+	// deliberately, because signal.NotifyContext does not say which signal
+	// arrived and the exit code table tells them apart. Telling them apart in
+	// the WORDS as well would mean plumbing the signal into cli.Run, whose
+	// signature the whole guard suite is written against. The exit code already
+	// carries the distinction - 130 against 143 - and that is the channel a
+	// script reads. A person who pressed Ctrl+C does not need to be told so.
+	//
+	// A deadline is different and costs nothing, because the error itself says
+	// so. Nothing on the command line sets one today, so this is reachable only
+	// through a caller that does.
+	if errors.Is(err, context.Canceled) {
+		return "stopped before it finished."
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return "stopped before it finished, because the time allowed for it ran out."
+	}
+
 	var errno syscall.Errno
 	if !errors.As(err, &errno) {
 		return err.Error()

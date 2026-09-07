@@ -419,7 +419,7 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	}
 
 	if runErr != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", describeError(runErr))
+		fmt.Fprintf(errOut, "tfg: %s%s\n", describeError(runErr), whatSurvived(runErr, res))
 		// A run that was refused before it wrote anything gets no manifest.
 		// Writing one would replace the record of whatever was already in the
 		// directory, and that record is the only thing cleanup can work from.
@@ -457,6 +457,54 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		return ExitPartial
 	}
 	return ExitOK
+}
+
+// whatSurvived says what a stopped run left behind, for the sentence above.
+//
+// The window has said this since it had a progress bar - "Stopped after N
+// files. The manifest describes exactly those." The command line said "context
+// canceled" and left the reader to work out whether the directory was safe to
+// reuse. Same run, same facts, and only one surface was saying them.
+//
+// Only for a stop, and only for a run that got past its preflight. A run
+// refused before it wrote anything has nothing to describe, and a run that
+// failed for its own reason already says what went wrong in its own words -
+// adding a count to either would be answering a question nobody asked.
+//
+// The claim it makes is the one the manifest keeps: every file that reached the
+// disk has an entry, hole allowed. That is the row of the regression surface
+// about a stopped run naming what it produced, and it is what makes "tfg
+// cleanup" able to take them away again.
+//
+// PROVEN BY RUNNING IT, NOT BY A GUARD, and that is worth knowing before
+// trusting it. Measured on 2026-09-06 in a Linux container against a real
+// signal, because a signal cannot be delivered to this process from the shell
+// on the machine this was written on:
+//
+//	SIGINT  into 3000 files  exit 130  "897 files written"  897 on disk
+//	SIGTERM into 3000 files  exit 143  "755 files written"  755 on disk
+//
+// A guard reaches the sentence but not the count. The command line plans before
+// it runs, and planning honours the context, so a run started with a finished
+// context returns from PlanContext and never arrives here - res is nil and the
+// count is never built. Landing between the two needs a cancel timed to arrive
+// after planning and before the last file, which is a clock, and a guard built
+// on a clock goes red on a busy machine rather than on a defect.
+//
+// So !res.Started is not reddenable from this surface today. It stays because
+// the state it refuses is reachable in the engine - Run sets Manifest at
+// construction and Started only after preflight, so a stop returned between
+// those two would otherwise print "0 files written, and the manifest describes
+// exactly those" about a run that wrote nothing and saved no manifest. That is
+// an invented fact rather than a missing one, which is the half of untouchable
+// rule 5 that costs trust.
+func whatSurvived(runErr error, res *engine.Result) string {
+	stopped := errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded)
+	if !stopped || res == nil || !res.Started || res.Manifest == nil {
+		return ""
+	}
+	return fmt.Sprintf(" %s written, and the manifest describes exactly those.",
+		core.Count(len(res.Manifest.Files), "file", "files"))
 }
 
 // defaultManifestName is where the manifest lands when nothing says otherwise.
