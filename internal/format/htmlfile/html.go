@@ -56,9 +56,63 @@ const (
 
 	tailLast = paraClose + bodyClose
 
-	// fixedWidth is every literal byte of the closing record.
-	fixedWidth = len(paraOpen) + len(tailLast)
+	// tailFragment is what a fragment's closing record ends with. A fragment
+	// closes its last paragraph and stops, because it has no body and no
+	// document to close.
+	tailFragment = paraClose
 )
+
+// The shape of the file: a whole page, or only the blocks that would sit in one.
+const (
+	settingStructure  = "structure"
+	structureDocument = "document"
+	structureFragment = "fragment"
+)
+
+// structureOf reads the setting.
+//
+// A value outside the declared set has already been refused by the registry,
+// which checks every format against its declaration in one place. This branch
+// stays for the same reason the CSV dialect and the text encoding keep theirs:
+// this function is callable directly, a guard is such a caller, and a generator
+// that trusts its input is one registry change away from writing a file nobody
+// ordered.
+func structureOf(props map[string]string) (string, error) {
+	v, ok := props[settingStructure]
+	if !ok || v == "" {
+		return structureDocument, nil
+	}
+	switch v {
+	case structureDocument, structureFragment:
+		return v, nil
+	}
+	return "", &format.PropertyValueError{
+		Format: "html", Key: settingStructure, Value: v,
+		Reason: "it has to be " + structureDocument + " or " + structureFragment,
+	}
+}
+
+// prologueFor is the skeleton down to the body, empty for a fragment.
+func prologueFor(shape string) string {
+	if shape == structureFragment {
+		return ""
+	}
+	return prologue
+}
+
+// blocksFor is the body builder for one shape.
+//
+// The shape has to reach the BUILDER and not only the prologue, and that is the
+// part of this easy to miss: the bytes that close the body and the document sit
+// in the last RECORD rather than in a footer. A change that swapped only the
+// prologue would end a fragment with </body></html> - the right size,
+// deterministic, and nonsense.
+func blocksFor(shape string) blocks {
+	if shape == structureFragment {
+		return blocks{tail: tailFragment}
+	}
+	return blocks{tail: tailLast}
+}
 
 func init() {
 	format.Register(format.Descriptor{
@@ -82,10 +136,16 @@ func init() {
 		// than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "python-html",
-		// Fragment mode, element counts, inline CSS and JS, images, forms and
-		// the "every HTML5 tag" variant come later. Declaring none now makes a
-		// recipe asking for them fail loudly.
-		Properties:       nil,
+		// Element counts, inline CSS and JS, images, forms and the "every HTML5
+		// tag" variant come later. Declaring only what is here is what makes a
+		// recipe asking for them fail loudly instead of quietly producing
+		// something else.
+		Properties: []format.Property{{
+			Name: settingStructure, Kind: format.PropertyChoice,
+			Choices: []string{structureDocument, structureFragment},
+			Default: structureDocument,
+			Detail:  "Whether the file is a whole page or only the blocks that would sit inside one. A fragment has no doctype, no html element and no body, which is what a content field or the body of an email really holds. It is far smaller, so the smallest fragment sits well below the smallest page.",
+		}},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -97,18 +157,35 @@ type memo struct {
 	head      string // the whole skeleton down to <body>, title included
 	labelLine string // the visible heading, empty when absent
 	seed      uint64
+	shape     string
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	min := minimumBytes()
+	shape, err := structureOf(r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	min := minimumFor(shape)
 	if r.Bytes < min {
+		reason := "a page holds a head, a body and whole blocks, and one of each needs that much"
+		if shape == structureFragment {
+			reason = "a fragment holds whole blocks, and one of them needs that much"
+		}
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "HTML",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a page holds a head, a body and whole blocks, and one of each needs that much",
+			Reason:    reason,
 			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
 		}
+	}
+
+	// A fragment has no doctype, and saying it has one would be the manifest
+	// describing a file that is not there.
+	doctype := "html"
+	if shape == structureFragment {
+		doctype = "none"
 	}
 
 	p := format.Plan{
@@ -116,36 +193,57 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":    "utf-8",
-			"line_ending": "lf",
-			"doctype":     "html",
-			"language":    "en",
+			"encoding":       "utf-8",
+			"line_ending":    "lf",
+			"doctype":        doctype,
+			"language":       "en",
+			settingStructure: shape,
 		},
 	}
 
-	m := memo{seed: r.Seed, head: prologue}
+	m := memo{seed: r.Seed, head: prologueFor(shape), shape: shape}
 	if r.Label {
-		// The title and the heading say the same thing, which is what a page
-		// does - one for the tab and one for the reader.
-		label := core.Label("html", r.Bytes, r.Seed)
-		withTitle := strings.Replace(prologue, emptyTitle, "<title>"+label+"</title>", 1)
-		heading := "<h1>" + label + "</h1>\n"
-		if int64(len(withTitle)-len(prologue)+len(heading))+minimumBytes() <= r.Bytes {
-			m.head = withTitle
-			m.labelLine = heading
-		} else {
-			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label needs %d B and this file has no room for it beside a whole block. Its name and the manifest still identify it.",
-					len(heading)),
-			})
+		var note *format.Note
+		m.head, m.labelLine, note = labelledHead(shape, r, min)
+		if note != nil {
+			p.Notes = append(p.Notes, *note)
 		}
 	}
 
 	p.Properties[format.PropertyLabelEmbedded] = m.labelLine != ""
 	p.Memo = m
 	return p, nil
+}
+
+// labelledHead works out what a labelled file carries: the head, the visible
+// heading, and a note instead of both when there is no room beside a whole
+// block.
+//
+// Split out of Plan when that function reached the crowding threshold. The line
+// is what a part does rather than how long it is: this answers "does the label
+// fit and what does it cost", and Plan answers "is this request askable at all".
+func labelledHead(shape string, r format.Request, min int64) (head, heading string, note *format.Note) {
+	label := core.Label("html", r.Bytes, r.Seed)
+	heading = "<h1>" + label + "</h1>\n"
+
+	head, extra := prologueFor(shape), int64(0)
+	if shape == structureDocument {
+		// The title and the heading say the same thing, which is what a page
+		// does - one for the tab and one for the reader. A fragment has no head
+		// to put a title in, so it carries only the heading, and the label is
+		// still visible because a heading is.
+		head = strings.Replace(prologue, emptyTitle, "<title>"+label+"</title>", 1)
+		extra = int64(len(head) - len(prologue))
+	}
+	if extra+int64(len(heading))+min <= r.Bytes {
+		return head, heading, nil
+	}
+	return prologueFor(shape), "", &format.Note{
+		Code: "label_omitted",
+		Detail: fmt.Sprintf(
+			"The label needs %d B and this file has no room for it beside a whole block. Its name and the manifest still identify it.",
+			len(heading)),
+	}
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
@@ -160,7 +258,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), blocks{})
+	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), blocksFor(m.shape))
 }
 
 // blocks builds the body. A natural record is one complete block element and
@@ -169,11 +267,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 // Whole blocks only, for the same reason Markdown writes whole blocks: a table
 // or a list cut in the middle still renders, and it says something other than
 // it meant.
-type blocks struct{}
+type blocks struct {
+	// tail is what the closing record ends with, which is the only thing the
+	// shape of the file changes down here.
+	tail string
+}
 
-// Shortest is the smallest closing record: an empty paragraph plus the bytes
-// that close the body and the document.
-func (blocks) Shortest() int64 { return int64(fixedWidth) }
+// Shortest is the smallest closing record: an empty paragraph plus whatever
+// this shape closes after it.
+func (b blocks) Shortest() int64 { return int64(len(paraOpen) + len(b.tail)) }
 
 func (blocks) Append(dst []byte, rng *rand.Rand) []byte {
 	switch rng.IntN(5) {
@@ -221,12 +323,12 @@ func (blocks) Append(dst []byte, rng *rand.Rand) []byte {
 // next, so throwing one away leaves no trace to undo.
 func (blocks) Discard() {}
 
-func (blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
+func (b blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
 	dst = append(dst, paraOpen...)
-	used := int64(len(dst)-start) + int64(len(tailLast))
+	used := int64(len(dst)-start) + int64(len(b.tail))
 	dst = appendFiller(dst, n-used)
-	return append(dst, tailLast...)
+	return append(dst, b.tail...)
 }
 
 func appendPhrase(dst []byte, rng *rand.Rand, n int) []byte {
@@ -249,11 +351,14 @@ func appendFiller(dst []byte, n int64) []byte {
 	return core.AppendFiller(dst, words, n, nil)
 }
 
-// minimumBytes is the skeleton and one whole block, computed rather than
-// written down so it cannot drift away from the template.
-func minimumBytes() int64 {
-	var b blocks
-	return int64(len(prologue)) + b.Shortest()
+// minimumBytes is the smallest whole page, which is what the registry declares.
+// Every shape answers for its own, the way the JSON layouts do.
+func minimumBytes() int64 { return minimumFor(structureDocument) }
+
+// minimumFor is the skeleton of one shape and one whole block, computed rather
+// than written down so it cannot drift away from the template.
+func minimumFor(shape string) int64 {
+	return int64(len(prologueFor(shape))) + blocksFor(shape).Shortest()
 }
 
 // words is the filler vocabulary. English by default, like the rest of the text
