@@ -655,8 +655,8 @@ def check_svg(data):
     ok(f"{shapes} drawable shapes out of {elements} elements")
 
 
-def check_html(data):
-    """Balanced, complete and with real blocks in the body.
+def check_html(data, settings):
+    """Balanced, the shape that was ordered, and with real blocks in it.
 
     HTML is the weakest format in this project for checking, and that is a
     property of the format rather than of this machine. A parser is required to
@@ -675,10 +675,33 @@ def check_html(data):
     except UnicodeDecodeError as exc:
         fail(f"not valid UTF-8: {exc}")
 
-    if not text.lower().startswith("<!doctype html>"):
-        fail("the document does not open with an HTML5 doctype")
-    if not text.rstrip().endswith("</html>"):
-        fail("the document does not end with a closing html tag")
+    # TOLD which shape to expect, never sniffed, and this is the same lesson the
+    # JSON layouts taught: a checker that worked it out from the file would
+    # agree with a fragment produced where a page was ordered, and with a page
+    # produced where a fragment was. Those are the two defects this setting is
+    # able to cause, so guessing here would leave nothing to catch them.
+    shape = (settings or {}).get("structure", "document")
+    if shape not in ("document", "fragment"):
+        fail(f"the html check was told structure={shape!r}, which is not one this tool writes")
+
+    opens = text.lower().startswith("<!doctype html>")
+    closes = text.rstrip().endswith("</html>")
+    if shape == "document":
+        if not opens:
+            fail("the document does not open with an HTML5 doctype")
+        if not closes:
+            fail("the document does not end with a closing html tag")
+    else:
+        # A fragment is what a content field or the body of an email holds. The
+        # skeleton being ABSENT is the whole of what was ordered, so its
+        # presence is the failure rather than a curiosity.
+        if opens:
+            fail("a fragment was ordered and the file opens with a doctype, so it is a whole page")
+        if closes:
+            fail("a fragment was ordered and the file ends with a closing html tag")
+        for tag in ("<html", "<head", "<body"):
+            if tag in text.lower():
+                fail(f"a fragment was ordered and the file holds {tag}>, which belongs to a whole page")
 
     entity = re.compile(r"&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]+|#x[0-9a-fA-F]+);")
     tag = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>")
@@ -709,8 +732,8 @@ def check_html(data):
     if stack:
         fail(f"the document ends with {', '.join('<' + s + '>' for s in stack)} still open")
     if blocks == 0:
-        fail("the body holds no block elements, so the page renders as nothing")
-    ok(f"{blocks} blocks, all tags balanced")
+        fail("there are no block elements, so this renders as nothing")
+    ok(f"{blocks} blocks, all tags balanced, shape is {shape}")
 
 
 def gzip_header_end(data):
@@ -1703,7 +1726,7 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:

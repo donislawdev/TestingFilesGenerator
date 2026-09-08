@@ -58,6 +58,22 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **HTML files can be a fragment instead of a whole page.** A new setting on
+  `html`: `structure`, which takes `document` or `fragment`. It defaults to the
+  whole page these files have always been, so a recipe that says nothing gets
+  the same bytes it got before.
+
+  A fragment is the same blocks without the skeleton - no doctype, no `html`
+  element, no head and no body. It is what a content field, an email body or a
+  partial render really holds, and it is what a system under test is handed when
+  something else owns the page around it.
+
+  Two things follow from carrying less. The smallest fragment is 8 B rather than
+  118 B, because there is no skeleton to pay for. And the label, which a page
+  carries twice - once in the title for the tab and once in a heading for the
+  reader - rides in the heading alone, since a fragment has no head to put a
+  title in. It is still visible.
+
 - **XML documents can be written in UTF-16.** Two new settings on `xml`:
   `encoding`, which takes `utf-8`, `utf-16le` or `utf-16be`, and `bom`, which
   says whether the file opens with a byte order mark. Both default to what

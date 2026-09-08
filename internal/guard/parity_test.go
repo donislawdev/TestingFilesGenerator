@@ -112,6 +112,7 @@ var reachableFromTheWindow = []string{
 	"property:gif.frames",
 	"property:gif.height",
 	"property:gif.width",
+	"property:html.structure",
 	"property:ico.embed",
 	"property:ico.height",
 	"property:ico.width",

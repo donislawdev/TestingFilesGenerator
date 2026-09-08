@@ -479,7 +479,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
 | `svg` | `width`, `height` |
-| `html` | none |
+| `html` | `structure` |
 
 ```
 tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85
