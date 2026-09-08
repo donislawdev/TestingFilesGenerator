@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"sync/atomic"
 	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -27,7 +28,24 @@ import (
 // This is put in place AFTER planning, on one PlannedFile, so it never enters
 // the registry and no other file sees it. Every step of the engine below
 // planning is the one that ships.
-type heldOpenGenerator struct{}
+type heldOpenGenerator struct{ entered atomic.Bool }
+
+// Started says whether this generator was ever reached.
+//
+// It exists because there are TWO roads to the hole and the guard could not
+// tell them apart. drain asks ctx.Err() AFTER taking an index, so the writer
+// holding index zero can be descheduled in between, come back to a cancelled
+// context and return without ever writing - leaving the same hole for a
+// different reason. A file that never started is not a file cut off half way,
+// and the second road proves less than the first.
+//
+// Measured 2026-09-08 with tools/probes/stoprace before this was added: never
+// entered 0 times in 50 idle runs and 0 in 25 starved ones, so the second road
+// is one the construction allows and the machine does not take. This assertion
+// is therefore a net rather than a patch - it turns "measured once, did not
+// happen" into "cannot happen unnoticed", which matters because the sizes and
+// the cancellation condition above it are both things a later change can move.
+func (g *heldOpenGenerator) Started() bool { return g.entered.Load() }
 
 // heldOpenDeadline is a safety net and not the mechanism.
 //
@@ -53,7 +71,8 @@ func (*heldOpenGenerator) Plan(format.Request) (format.Plan, error) {
 // so the engine sees the same thing it would see from any format that was cut
 // off - the temporary file is removed, no entry claims the file, and the index
 // stays empty.
-func (*heldOpenGenerator) Write(ctx context.Context, _ io.Writer, _ format.Plan) error {
+func (g *heldOpenGenerator) Write(ctx context.Context, _ io.Writer, _ format.Plan) error {
+	g.entered.Store(true)
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

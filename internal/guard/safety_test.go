@@ -263,7 +263,8 @@ func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 	// renamed into place while this one is still owed - which is the only
 	// shape a sequential loop could not produce, and the shape this guard
 	// exists to be about.
-	planned[0].Desc.Generator = &heldOpenGenerator{}
+	held := &heldOpenGenerator{}
+	planned[0].Desc.Generator = held
 
 	res, runErr := engine.Run(ctx, planned, opt)
 	if runErr == nil {
@@ -314,6 +315,16 @@ func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 		t.Fatalf("%s was held open for the whole run and it is on the disk anyway, so "+
 			"the survivors are a prefix and nothing here was cut off half way - which "+
 			"is not the case this guard is about", planned[0].Name)
+	}
+	// The fourth of these, and the one that says WHICH ROAD the hole came by.
+	// Without it a run where index zero was never begun reads exactly like a
+	// run where it was cut off half way: same hole, same manifest, weaker
+	// proof. See heldOpenGenerator.Started for the measurement.
+	if !held.Started() {
+		t.Fatalf("%s never reached its generator, so it was never begun rather than cut "+
+			"off half way. The hole is there and this guard is not the one that proves "+
+			"it - drain asks about cancellation after taking an index, and this writer "+
+			"lost the processor in between", planned[0].Name)
 	}
 
 	for name := range onDisk {
