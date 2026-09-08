@@ -122,7 +122,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/logfile":    {"internal/format"},
 	"internal/format/csvfile":    {"internal/format"},
 	"internal/format/jsonfile":   {"internal/format"},
-	"internal/format/xmlfile":    {"internal/format"},
+	"internal/format/xmlfile":    {"internal/format", "internal/format/textenc"},
 	"internal/format/htmlfile":   {"internal/format"},
 	"internal/format/svgfile":    {"internal/format"},
 	"internal/format/bmp":        {"internal/format", "internal/format/imagelabel"},

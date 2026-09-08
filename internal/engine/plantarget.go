@@ -47,6 +47,21 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 			return atTarget(position, t, err)
 		}
 
+		// A size drawn from the range that this format cannot write was moved
+		// to the nearest one it can. Silence is banned, so it is said here.
+		//
+		// The wording carries NO number on purpose. Notes are grouped by their
+		// text, so a number would make every file its own line - 25 000 of them
+		// on a big run, which is what buried the one note that mattered before
+		// grouping arrived. Which files moved is still exact in the manifest,
+		// because the note sits on each of their entries.
+		if idx < len(t.SizeMoved) && t.SizeMoved[idx] {
+			p.Notes = append(p.Notes, format.Note{
+				Code:   "size_moved",
+				Detail: "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for.",
+			})
+		}
+
 		name, err := renderName(t, desc, idx)
 		if err != nil {
 			return atTarget(position, t, err)

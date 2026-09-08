@@ -51,6 +51,15 @@ type Target struct {
 	SizeIsRange bool
 	SizeMin     int64
 	SizeMax     int64
+	// SizeMoved marks the files whose drawn size was not one the format can
+	// write, so the nearest writable one was used instead. Empty for a target
+	// that is not a range.
+	//
+	// Kept so the move can be REPORTED rather than done quietly. Silence is
+	// banned, and a person who asked for a spread and got one size back should
+	// not have to find that out by reading a manifest they had no reason to
+	// open.
+	SizeMoved []bool
 	// BoundaryLimit is the limit a boundary set was built around, zero when
 	// this target is not one. The three files name themselves from it.
 	//
@@ -68,71 +77,6 @@ type Target struct {
 	// manifest, so a test can assert about a whole class at once.
 	Group      string
 	Properties map[string]string
-}
-
-// drawSizes settles the size of every file of a range target.
-//
-// Judged at the low end before a single size is drawn, and that order is the
-// point rather than an optimisation. A range whose low end the format cannot
-// deliver - below the minimum of the format, or too small to hold what the
-// container was told to hold - would otherwise fail on some runs and not
-// others, depending on what came out of the seed. A tool whose whole promise
-// is that the same seed gives the same run cannot have an error that appears
-// and disappears.
-//
-// THE LOW END IS NOT THE WHOLE ANSWER, and this comment claimed it was
-// until 2026-09-06. It said the range "either works for every file or for
-// none", and the code does not provide that. The check here is sufficient only
-// if a format's reachable sizes are one unbroken interval starting at its
-// minimum, and for four of them they are not: PNG has an unreachable band of
-// eleven byte counts immediately above every picture's encoded size, because
-// the smallest padding chunk costs twelve bytes, and the OPC three declare the
-// same shape between the comment capacity and the smallest extra part.
-//
-// So a size DRAWN into such a band is refused later, by the per file plan, and
-// whether that happens depends on the count. Measured on 2026-09-06, one 64x64
-// PNG recipe at one seed with size-range 143-200: counts 1 and 2 are accepted,
-// counts 3, 5, 8, 12, 20 and 40 are refused. The low end moves with the seed
-// too - 144, 143, 144 B at seeds 1, 2 and 3 - so judging file 0's band says
-// nothing about file 2's.
-//
-// The bytes are stable under a raised count and that was verified, so rule 2
-// holds for CONTENT. What is not stable is whether the run happens at all.
-// Closing that needs the format to declare its unreachable bands so the whole
-// interval can be judged before anything is drawn, which is a change to
-// format.Descriptor and the owner's call. Until then the refusal at least
-// names the key the recipe carries - see atTarget - rather than pointing at a
-// "size" setting a range target does not have.
-//
-// The judge is the generator itself rather than a second copy of its rules
-// here. A copy would be a place for the two to disagree, and the disagreement
-// would surface as a file that planning accepted and writing refused.
-func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
-	if _, err := planWithoutCrashing(desc, format.Request{
-		Bytes:      t.SizeMin,
-		Contains:   t.Contains,
-		Seed:       core.FileSeed(targetSeed, 0),
-		Label:      t.Label,
-		Properties: t.Properties,
-	}); err != nil {
-		return err
-	}
-
-	span := uint64(t.SizeMax - t.SizeMin)
-	for i := range t.Sizes {
-		if span == 0 {
-			// Both ends the same is legal and means identical files. Drawing
-			// from a range of one is not wrong, it just reads worse.
-			t.Sizes[i] = t.SizeMin
-			continue
-		}
-		// Per index, never from a running stream. Raising a count then leaves
-		// the sizes of the earlier files alone, which is rule 2 and the reason
-		// core.SizeSeed takes an index at all.
-		r := core.NewRand(core.SizeSeed(targetSeed, i))
-		t.Sizes[i] = t.SizeMin + int64(r.Uint64N(span+1))
-	}
-	return nil
 }
 
 // Uniform is n files of the same size, which is what most targets ask for.

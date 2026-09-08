@@ -18,6 +18,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 )
 
 // Measured on 2026-08-01, a comment holds arbitrary bytes to 1 MiB both in the
@@ -41,9 +42,13 @@ import (
 const (
 	generatorVersion = "1"
 
-	declaration = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
-	rootOpen    = "<records>\n"
-	rootClose   = "</records>\n"
+	// The declaration names the encoding the bytes are really in, so the two
+	// move together. UTF-16LE and UTF-16BE share one spelling because the byte
+	// order mark is what tells them apart, and one is always written.
+	declarationUTF8  = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
+	declarationUTF16 = `<?xml version="1.0" encoding="UTF-16"?>` + "\n"
+	rootOpen         = "<records>\n"
+	rootClose        = "</records>\n"
 
 	emailDomain = "@example.com"
 	createdDate = "2026-08-01"
@@ -102,8 +107,9 @@ func init() {
 		Label:  format.LabelInternal,
 		Oracle: "python-xml",
 		// Depth, element counts, namespaces, CDATA and an internal DTD come
-		// later. Declaring none now makes a recipe asking for them fail loudly.
-		Properties:       nil,
+		// later. Declaring only what is here is what makes a recipe asking for
+		// them fail loudly instead of quietly producing something else.
+		Properties:       textenc.Properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -114,10 +120,24 @@ type generator struct{}
 type memo struct {
 	comment string // includes the trailing newline, empty when absent
 	seed    uint64
+	codec   textenc.Codec
+	// source is how many characters of ASCII the document holds, which is the
+	// ordered size less the mark and divided by the width of a character.
+	// Everything below counts in these rather than in file bytes, so the
+	// filling loop is the loop it always was.
+	source int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	min := minimumBytes()
+	codec, err := textenc.Parse("xml", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
+	if err := checkMark(codec); err != nil {
+		return format.Plan{}, err
+	}
+
+	min := minimumFor(codec)
 	if r.Bytes < min {
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "XML",
@@ -127,35 +147,43 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
 		}
 	}
+	// Half of all sizes are unreachable in UTF-16, and a refusal has to name
+	// the nearest reachable one in both directions rather than say no.
+	if err := codec.Check("XML", r.Bytes); err != nil {
+		return format.Plan{}, err
+	}
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":    "utf-8",
-			"line_ending": "lf",
-			"root":        "records",
-			"declaration": true,
+			textenc.Setting:    codec.Name(),
+			textenc.SettingBOM: codec.HasBOM(),
+			"line_ending":      "lf",
+			"root":             "records",
+			"declaration":      true,
 		},
 	}
 
-	m := memo{seed: r.Seed}
+	m := memo{seed: r.Seed, codec: codec, source: codec.Source(r.Bytes)}
 	if r.Label {
 		// A comment carries the label without touching the content, and it can
 		// sit anywhere after the declaration. The label text uses spaced
 		// hyphens and never a double one, which a comment may not contain.
 		line := "<!-- " + core.Label("xml", r.Bytes, r.Seed) + " -->\n"
 		// It has to leave room for a whole document beside it, or the file would
-		// be a comment and an empty root.
-		if int64(len(line))+minimumBytes() <= r.Bytes {
+		// be a comment and an empty root. The number is what the comment COSTS
+		// in this encoding, not how long it is to read - in UTF-16 those differ
+		// by a factor of two, and a note off by half is worse than no note.
+		if codec.Cost(int64(len(line)))+min <= r.Bytes {
 			m.comment = line
 		} else {
 			p.Notes = append(p.Notes, format.Note{
 				Code: "label_omitted",
 				Detail: fmt.Sprintf(
 					"The label comment needs %d B and this file has no room for it beside a whole record. Its name and the manifest still identify it.",
-					len(line)),
+					codec.Cost(int64(len(line)))),
 			})
 		}
 	}
@@ -171,13 +199,20 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return fmt.Errorf("xml: the plan was not produced by this generator")
 	}
 
-	head := declaration + m.comment + rootOpen
+	// The mark is bytes rather than text, so it goes out as itself. Everything
+	// after it is characters, so it goes through the encoder.
+	if err := core.WriteAll(w, m.codec.Preamble()); err != nil {
+		return err
+	}
+	w = m.codec.Writer(w)
+
+	head := declarationFor(m.codec) + m.comment + rootOpen
 	if err := core.WriteAll(w, []byte(head)); err != nil {
 		return err
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), &records{})
+	return core.FillRecords(ctx, w, rng, m.source-int64(len(head)), &records{})
 }
 
 // records builds the record elements. It carries the record number, so the id
@@ -297,12 +332,50 @@ func appendFiller(dst []byte, n int64) []byte {
 	return core.AppendFiller(dst, words, n, nil)
 }
 
-// minimumBytes is the declaration, the root element and one whole record,
-// computed rather than written down so it cannot drift away from the template
-// the way a number in a document would.
-func minimumBytes() int64 {
+// declarationFor is the opening line for one encoding. It has to name what the
+// bytes really are: a declaration that disagrees with them is the one defect an
+// outside reader catches on its own - expat refuses it in both directions,
+// measured 2026-09-08 - so this is the single place the two are kept in step.
+func declarationFor(c textenc.Codec) string {
+	if c.Name() == textenc.UTF8 {
+		return declarationUTF8
+	}
+	return declarationUTF16
+}
+
+// checkMark refuses UTF-16 without a byte order mark.
+//
+// The specification requires one for a UTF-16 entity and this format is
+// declared at full fidelity, so writing a document without it would be a breach
+// nothing here would notice: expat ACCEPTS such a file and reads it correctly,
+// measured 2026-09-08, so the oracle cannot go red on it. A file that breaks
+// the specification on purpose belongs to the chaos lab, which does not exist.
+func checkMark(c textenc.Codec) error {
+	if c.Name() == textenc.UTF8 || c.HasBOM() {
+		return nil
+	}
+	return &format.PropertyValueError{
+		Format: "xml",
+		Key:    textenc.SettingBOM,
+		Value:  "false",
+		Reason: "XML in " + c.Name() + " has to open with a byte order mark, so this needs bom=true or encoding=" + textenc.UTF8,
+	}
+}
+
+// minimumBytes is the smallest file in the default encoding, which is the one
+// the registry declares.
+func minimumBytes() int64 { return minimumFor(textenc.Default()) }
+
+// minimumFor is the declaration, the root element and one whole record in one
+// encoding, computed rather than written down so it cannot drift away from the
+// template the way a number in a document would.
+//
+// Every encoding answers for its own minimum and the registry declares only the
+// default one, which is what JSON settled on when its layouts did the same.
+func minimumFor(c textenc.Codec) int64 {
 	var r records
-	return int64(len(declaration)+len(rootOpen)) + r.Shortest()
+	source := int64(len(declarationFor(c))+len(rootOpen)) + r.Shortest()
+	return c.Cost(source) + int64(len(c.Preamble()))
 }
 
 // longestWord and longestVendor are the widest draws, because the minimum has

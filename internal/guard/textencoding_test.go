@@ -34,7 +34,42 @@ import (
 // encodedFormats is the formats that take an encoding, named rather than
 // derived - so a third one arriving without being added here is a gap somebody
 // has to notice rather than a loop that quietly gets shorter.
-var encodedFormats = []string{"txt", "md"}
+var encodedFormats = []string{"txt", "md", "xml"}
+
+// markRequired is the formats where a wide encoding has to carry a byte order
+// mark, so the two cases without one are refused rather than written.
+//
+// XML is here for a measured reason rather than a tidy one. Its specification
+// requires a mark on a UTF-16 entity, and - the half that decided it - our
+// oracle cannot go red on a document that lacks one: expat ACCEPTS such a file
+// and reads it correctly, measured 2026-09-08 in both directions. A file
+// nothing here could check is a file this tool does not write. The refusal
+// itself is proven by TestXMLRefusesAWideEncodingWithoutAMark, so this map is
+// a declared behaviour rather than a way of skipping cases.
+var markRequired = map[string]bool{"xml": true}
+
+// refusedBy says whether this format turns this combination down by design.
+func (c encodingCase) refusedBy(id string) bool {
+	return markRequired[id] && c.width == 2 && !c.bom
+}
+
+// labelLine is how one format writes a label, which the note's arithmetic
+// depends on and no format exposes. A format missing from here stops the check
+// rather than silently measuring an empty wrapper.
+func labelLine(t *testing.T, id string, size int64, seed uint64) string {
+	t.Helper()
+	body := core.Label(id, size, seed)
+	switch id {
+	case "txt":
+		return body + "\n"
+	case "md":
+		return body + "\n\n"
+	case "xml":
+		return "<!-- " + body + " -->\n"
+	}
+	t.Fatalf("%s takes an encoding and this check does not know how it wraps a label", id)
+	return ""
+}
 
 type encodingCase struct {
 	encoding string
@@ -105,7 +140,7 @@ func writeEncoded(t *testing.T, id string, size int64, props map[string]string) 
 // one question this has to answer.
 func TestATextFileIsTheEncodingItDeclares(t *testing.T) {
 	dir := t.TempDir()
-	checked, skipped := 0, 0
+	checked, skipped, refused := 0, 0, 0
 
 	for _, id := range encodedFormats {
 		d, err := format.Get(id)
@@ -113,6 +148,10 @@ func TestATextFileIsTheEncodingItDeclares(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, c := range encodingCases() {
+			if c.refusedBy(id) {
+				refused++
+				continue
+			}
 			smallest := d.SmallestAccepted(format.Request{Seed: 7741, Label: true, Properties: c.props()})
 			if c.width == 2 && smallest%2 != 0 {
 				t.Errorf("%s %v: the smallest size it accepts is %d, which a two byte encoding cannot write",
@@ -152,7 +191,10 @@ func TestATextFileIsTheEncodingItDeclares(t *testing.T) {
 	if checked == 0 {
 		t.Errorf("nothing was decoded by anything outside this package - %d case(s) skipped", skipped)
 	}
-	t.Logf("%d file(s) decoded strictly by Python, %d skipped", checked, skipped)
+	// The count is here so a format quietly declaring every combination
+	// refused would show up as nothing being checked rather than as a pass.
+	t.Logf("%d file(s) decoded strictly by Python, %d skipped, %d combination(s) refused by design",
+		checked, skipped, refused)
 }
 
 // TestAWideEncodingRefusesAnOddSizeAndNamesOneItCanWrite is the refusal, and
@@ -162,15 +204,22 @@ func TestATextFileIsTheEncodingItDeclares(t *testing.T) {
 // ENCODING rather than about the number. Without that half, a generator that
 // refused every odd size in every encoding would pass this.
 func TestAWideEncodingRefusesAnOddSizeAndNamesOneItCanWrite(t *testing.T) {
-	odd := []int64{4001, 65, 1235}
-
 	for _, id := range encodedFormats {
 		d, err := format.Get(id)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, c := range encodingCases() {
-			for _, size := range odd {
+			if c.refusedBy(id) {
+				continue
+			}
+			// The odd sizes are taken from the floor rather than written down.
+			// A format with a minimum of its own - XML holds a declaration, a
+			// root and one whole record - would refuse a small fixed number for
+			// being too SMALL, and the refusal under test would never be the
+			// one that fired. A wide floor is even, so each of these is odd.
+			base := d.SmallestAccepted(format.Request{Seed: 7741, Label: true, Properties: c.props()})
+			for _, size := range []int64{base + 1, base + 235, base + 4001} {
 				_, err := d.Generator.Plan(format.Request{
 					Bytes: size, Seed: 7741, Label: true, Properties: c.props()})
 
@@ -220,7 +269,12 @@ func TestAWideEncodingRefusesAnOddSizeAndNamesOneItCanWrite(t *testing.T) {
 // before the setting existed.
 func TestTheDefaultEncodingIsTheBytesTheseFormatsAlwaysWrote(t *testing.T) {
 	for _, id := range encodedFormats {
-		for _, size := range []int64{0, 33, 4096} {
+		d, err := format.Get(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		floor := d.SmallestAccepted(format.Request{Seed: 7741, Label: true})
+		for _, size := range []int64{floor, floor + 1, floor + 4096} {
 			silent := writeEncoded(t, id, size, nil)
 			spoken := writeEncoded(t, id, size, map[string]string{
 				textenc.Setting: textenc.UTF8, textenc.SettingBOM: "false"})
@@ -241,26 +295,61 @@ func TestTheDefaultEncodingIsTheBytesTheseFormatsAlwaysWrote(t *testing.T) {
 // out by a factor of two is worse than no note: it tells somebody to ask for
 // 66 B when the file needs 132.
 func TestALabelThatWillNotFitSaysWhatItWouldCost(t *testing.T) {
-	const size = int64(64) // below the label's cost in a wide encoding, even
-	tails := map[string]string{"txt": "\n", "md": "\n\n"}
-
 	for _, id := range encodedFormats {
 		d, err := format.Get(id)
 		if err != nil {
 			t.Fatal(err)
 		}
-		props := map[string]string{textenc.Setting: textenc.UTF16LE}
+		props := map[string]string{textenc.Setting: textenc.UTF16LE, textenc.SettingBOM: "true"}
+		floor := d.SmallestAccepted(format.Request{Seed: 7741, Label: true, Properties: props})
+
+		// The size has to sit in a window or half of this check discriminates
+		// nothing: at least as long as the label READS, and below twice that.
+		// Inside it the label fits the file and does not fit what the file
+		// HOLDS, which is the whole difference between the two comparisons a
+		// generator could make - and a mutation swapping them is in the set.
+		//
+		// Taking the floor alone was wrong and the mutation run said so rather
+		// than the reading: TXT and MD sit on a floor of almost nothing, so the
+		// floor lands BELOW the window and both comparisons agree there.
+		//
+		// XML is the other way round. Its smallest document is a declaration, a
+		// root and a whole record - about six times its label - so the window is
+		// under its floor and unreachable. There the floor is the size and only
+		// the cost half of this check applies, which is honest: XML asks a
+		// different question of its own fit, and its own mutation covers it.
+		reads := int64(len(labelLine(t, id, floor, 7741)))
+		size := floor
+		if size < reads {
+			size = reads + 2
+		}
+		if size%2 != 0 {
+			size++
+		}
 		p, err := d.Generator.Plan(format.Request{
 			Bytes: size, Seed: 7741, Label: true, Properties: props})
 		if err != nil {
 			t.Fatalf("%s: planning %d B in utf-16le: %v", id, size, err)
 		}
 
-		line := core.Label(id, size, 7741) + tails[id]
+		line := labelLine(t, id, size, 7741)
 		wide, narrow := int64(len(line))*2, int64(len(line))
-		if wide <= size {
-			t.Fatalf("%s: the label costs %d B at %d B, so this case no longer sits below the threshold",
-				id, wide, size)
+
+		// The control, and it replaces a precondition that stopped meaning
+		// anything. Comparing the label with the file size only works while a
+		// format has no floor of its own - XML's floor is six times its label,
+		// so that comparison would have called this case broken. What has to be
+		// true is that a threshold EXISTS: given room, the note goes away.
+		roomy := size + wide*2
+		if roomy%2 != 0 {
+			roomy++
+		}
+		if q, err := d.Generator.Plan(format.Request{
+			Bytes: roomy, Seed: 7741, Label: true, Properties: props}); err != nil {
+			t.Fatalf("%s: planning %d B in utf-16le: %v", id, roomy, err)
+		} else if noteWithCode(q.Notes, "label_omitted") != nil {
+			t.Fatalf("%s: %d B has room for a %d B label and the note fired anyway, so this is not measuring a threshold",
+				id, roomy, wide)
 		}
 
 		note := noteWithCode(p.Notes, "label_omitted")

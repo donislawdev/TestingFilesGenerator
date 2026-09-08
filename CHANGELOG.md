@@ -58,6 +58,25 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **XML documents can be written in UTF-16.** Two new settings on `xml`:
+  `encoding`, which takes `utf-8`, `utf-16le` or `utf-16be`, and `bom`, which
+  says whether the file opens with a byte order mark. Both default to what
+  these documents have always been, so a recipe that says nothing gets the same
+  bytes it got before.
+
+  The declaration at the top of the file names the encoding the bytes are
+  really in, so a reader is never told one thing and handed another.
+
+  Two things are worth knowing before you use it. A UTF-16 file stores two
+  bytes for every character, so it always has an even number of them and an odd
+  size is refused - the refusal names the nearest size above and below that it
+  can write. And the smallest XML file grows from 264 B to 532 B, because the
+  declaration, the root element and one whole record all cost twice as much.
+
+  `encoding=utf-16le` and `encoding=utf-16be` need `bom=true`. The XML
+  specification requires a mark on a UTF-16 document, and asking for one
+  without it is refused rather than written.
+
 - **SVG drawings can be any size you ask for.** Two new settings on `svg`:
   `width` and `height`, both a whole number of pixels from 1 to 20000. They
   default to the 800 by 600 these drawings have always been, so a recipe that
@@ -374,6 +393,29 @@ because it turns other people's test suites red.
   under a name your run wants is refused, whatever it points at.
 
 ### Fixed
+
+- **A size range no longer fails on sizes the format cannot write.** Some
+  formats cannot produce every byte count. A file written in UTF-16 always has
+  an even number of bytes, so half of any range was unreachable, and a picture
+  cannot use the handful of byte counts just above its encoded size, because the
+  smallest padding it can add costs more than that.
+
+  Until now a size drawn onto one of those was refused, and the whole run
+  stopped. Whether that happened depended on the seed and the number of files,
+  so the same recipe worked one day and not the next.
+
+  A range asks for some size between two ends rather than for a number, so a
+  drawn size the format cannot write is now moved to the nearest one it can,
+  inside the range that was asked for. Files that moved carry a `size_moved`
+  note in the manifest, and the run says so once.
+
+  Two things are deliberately unchanged. A range that starts below what the
+  format can produce at all is still refused, naming the smallest size it can
+  write, because that is a recipe worth correcting rather than a run worth
+  quietly filling with identical files. And `--size 1001` still refuses, because
+  that named a number.
+
+  Runs that worked before are byte for byte what they were.
 
 - **The window now warns when a run's record will be too big for this build to
   read back.** The command line has said this since the ceiling was measured.
