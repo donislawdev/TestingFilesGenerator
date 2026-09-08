@@ -37,46 +37,148 @@ import (
 const (
 	generatorVersion = "1"
 
-	width  = 800
-	height = 600
+	defaultWidth  = 800
+	defaultHeight = 600
 
-	// textBand is the strip along the bottom edge that shapes stay out of, so
+	// The range the two dimensions accept.
+	//
+	// The upper end is the same number the nine picture formats use, and that
+	// is deliberate rather than lazy: somebody who has learnt "width up to
+	// 20000" for PNG does not learn a second number here. What is NOT carried
+	// over is their joint ceiling of 40 megapixels, because the reason for it
+	// does not exist here - a picture format holds the raster in memory while
+	// it encodes, and this one writes text.
+	//
+	// Measured 2026-09-08, a document of this shape rendered headless by
+	// Inkscape 1.4.4 and read back with Pillow:
+	//
+	//	  10000x8000       80 Mpx     5.3 s      339 kB
+	//	  20000x20000     400 Mpx    25.6 s      1.6 MB
+	//	  32000x32000    1024 Mpx    43.6 s      4.1 MB
+	//	  65536x65536    4295 Mpx   165.3 s       17 MB
+	//
+	// So the renderer does not set this ceiling - it never broke. The line
+	// worth crossing belongs to a reader instead: Pillow refuses an image over
+	// PIL.Image.MAX_IMAGE_PIXELS, measured at 89478485 px, as a decompression
+	// bomb. 20000 per axis reaches 400 Mpx, four and a half times over that
+	// line, so a set can hold files on both sides of it. That is how the CSV
+	// column ceiling was chosen too - above the point where a real reader
+	// starts to say no, not as high as the arithmetic allows.
+	minDimension = 1
+	maxDimension = 20000
+
+	// TextBand is the strip along the bottom edge that shapes stay out of, so
 	// the two lines of text below it are read against plain background.
 	//
 	// Without it about one shape in ten landed on the label - measured on a
 	// small and a large file, 11.0% and 10.3% - and the label is the one thing
 	// in the file that says what the file is. A drawing is still a drawing with
 	// a margin. A label with a circle through it is not a label.
-	textBand   = 56
-	drawHeight = height - textBand
+	TextBand = 56
+
+	// Width and Height name the two settings. Exported so that a guard presses
+	// the key this format actually declares rather than a string spelled twice,
+	// which is the same reason jsonfile exports the name of its layout setting.
+	Width  = "width"
+	Height = "height"
 
 	declaration = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
-	rootOpen    = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">` + "\n"
 	rootClose   = "</svg>\n"
 
-	// The closing record is a text element, so the drawing ends with something
-	// that can be stretched to any length without changing what it is.
-	//
-	// It gets its own baseline. Sharing one with the identity label meant the
-	// closing text, written last, painted straight over it - the label was
-	// there in the bytes and unreadable on screen. Nothing caught that: the
-	// size was exact, the file parsed, and a renderer still drew a full page of
-	// shapes.
-	textOpen  = `<text x="16" y="` + textY + `" font-size="13" fill="#333333">`
-	textY     = "566"
 	textClose = "</text>\n"
 
-	// labelOpen carries the identity label along the bottom edge. It is the
-	// same width as textOpen, so the smallest file this format can produce does
-	// not move.
-	labelOpen = `<text x="16" y="` + labelY + `" font-size="13" fill="#333333">`
-	labelY    = "584"
-
 	tailLast = textClose + rootClose
-
-	// fixedWidth is every literal byte of the closing record.
-	fixedWidth = len(textOpen) + len(tailLast)
 )
+
+// rootOpen is the opening tag for a drawing of these dimensions.
+//
+// It used to be a constant with 800 and 600 written into it, which is why the
+// minimum below was a constant too. Both now depend on the dimensions asked
+// for: "width=\"20000\"" is three bytes longer than "width=\"800\"", and the
+// baseline of a text element near the bottom edge of a tall drawing is a
+// longer number as well.
+func rootOpen(w, h int) string {
+	return fmt.Sprintf(
+		`<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">`+"\n",
+		w, h, w, h)
+}
+
+// textOpen opens the closing record: a text element, so the drawing ends with
+// something that can be stretched to any length without changing what it is.
+//
+// It gets its own baseline. Sharing one with the identity label meant the
+// closing text, written last, painted straight over it - the label was there
+// in the bytes and unreadable on screen. Nothing caught that: the size was
+// exact, the file parsed, and a renderer still drew a full page of shapes.
+func textOpen(h int) string {
+	return fmt.Sprintf(`<text x="16" y="%d" font-size="13" fill="#333333">`, h-34)
+}
+
+// labelOpen carries the identity label along the bottom edge, on the other
+// baseline of the two.
+func labelOpen(h int) string {
+	return fmt.Sprintf(`<text x="16" y="%d" font-size="13" fill="#333333">`, h-16)
+}
+
+// labelFits says whether the band along the bottom has room to show the label.
+//
+// Below this the file is still produced and still named - it simply carries no
+// visible label, and says so. That is the same answer the picture formats give
+// for a drawing too small to write on, and reusing their sentence is the point:
+// a second wording for one situation is a second thing to keep true.
+func labelFits(h int) bool { return h > TextBand }
+
+// drawHeightFor is the strip shapes are drawn in.
+//
+// At least one row, always. A drawing shorter than the text band has no room
+// for the band, and the band is a courtesy to the label rather than a
+// structural part of the document.
+func drawHeightFor(h int) int {
+	if d := h - TextBand; d > 0 {
+		return d
+	}
+	return 1
+}
+
+// span keeps an argument to IntN positive.
+//
+// The shape code below assumes a margin of up to eighty units, which was safe
+// for as long as the canvas was a constant 800 by 600. It is not safe now:
+// measured 2026-09-08 by running it, IntN(0) and IntN(-30) both panic with
+// "invalid argument to IntN", so "--set width=50" would have been a panic on a
+// value that looks entirely legal. A generator panic costs one file rather
+// than the process - there is a guard for that - but a panic is not an answer
+// to a legal setting.
+//
+// At 800 by 600 every argument is already positive, so this changes no byte of
+// any file this tool has produced.
+func span(n int) int {
+	if n < 1 {
+		return 1
+	}
+	return n
+}
+
+// fit keeps a shape's lower edge out of the text band on any canvas.
+//
+// Arithmetic, not caution: at the default dimensions this can never bind. The
+// widest rect starts at 719 and reaches 798 of 800, the tallest at 463 and
+// reaches 542 of 544, and the largest circle and ellipse both reach 542 as
+// well. Two units of slack on every axis, so the clamp is inert at 800 by 600
+// and the stored hashes prove it.
+//
+// room is always at least one, so this never returns a shape of no size. Each
+// caller subtracts a coordinate drawn from span(drawHeight-margin) from
+// drawHeight: above the margin that leaves the margin itself, and at or below
+// it span returns one, the coordinate is nought and the room is the whole
+// drawing. There is no third case.
+//
+// That claim was a guarded branch here until it was measured. A panic put in
+// its place did not fire once across the whole canvas sweep, so the branch was
+// a defence nothing could turn red - the eighth of its kind removed from this
+// codebase. It is written down instead, which is what a claim nothing can
+// contradict is worth.
+func fit(extent, room int) int { return min(extent, room) }
 
 func init() {
 	format.Register(format.Descriptor{
@@ -89,7 +191,16 @@ func init() {
 		// rectangle. That is a shape request rather than a byte count, and it
 		// arrives with the shape count property. The minimum here is the
 		// declaration, the root and one whole record.
-		MinBytes: minimumBytes(),
+		//
+		// It is the minimum at the DEFAULT dimensions, and only that. Larger
+		// numbers in the root element and in a text baseline make a longer
+		// document, so the floor moves with the settings - the same shape as
+		// the JSON layouts, where the registry states the default layout's
+		// minimum and each of the others answers for its own. Nobody has to
+		// keep a second number in step: Plan refuses with the figure for the
+		// dimensions actually asked for, and Descriptor.SmallestAccepted asks
+		// Plan rather than reading anything declared here.
+		MinBytes: minimumBytes(defaultWidth, defaultHeight),
 
 		Padding: format.PaddingChannel{
 			Name:     "the text of the closing label",
@@ -101,10 +212,25 @@ func init() {
 		// rather than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "inkscape",
-		// Dimensions, shape counts, gradients, fonts, embedded rasters and SMIL
-		// come later. Declaring none now makes a recipe asking for them fail
-		// loudly.
-		Properties:       nil,
+		// Shape counts, gradients, fonts, embedded rasters and SMIL come
+		// later. Declaring none of them makes a recipe asking for one fail
+		// loudly rather than quietly.
+		Properties: []format.Property{
+			{
+				Name: Width, Kind: format.PropertyInt,
+				Min: minDimension, Max: maxDimension, Unit: "pixels",
+				Default: strconv.Itoa(defaultWidth),
+				Detail: "How wide the drawing says it is. Nothing is drawn into pixels here, " +
+					"so a large number costs a few bytes in the file and a great deal of memory in whatever opens it.",
+			},
+			{
+				Name: Height, Kind: format.PropertyInt,
+				Min: minDimension, Max: maxDimension, Unit: "pixels",
+				Default: strconv.Itoa(defaultHeight),
+				Detail: "How tall the drawing says it is. The label sits along the bottom edge, " +
+					"so a drawing shorter than that strip carries no visible label.",
+			},
+		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -115,10 +241,48 @@ type generator struct{}
 type memo struct {
 	labelLine string // includes the trailing newline, empty when absent
 	seed      uint64
+	width     int
+	height    int
+}
+
+// dimension reads one of the two size settings.
+//
+// The registry has already refused anything outside the declared range by the
+// time a run reaches here, so the bounds below are a backstop for a caller
+// that reaches the generator directly - the same belt the page count of PDF
+// wears, and for the same reason.
+func dimension(props map[string]string, name string, fallback int) (int, error) {
+	raw, ok := props[name]
+	if !ok || raw == "" {
+		return fallback, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil {
+		return 0, &format.PropertyValueError{
+			Format: "svg", Key: name, Value: raw,
+			Reason: "it has to be a whole number of pixels",
+		}
+	}
+	if n < minDimension || n > maxDimension {
+		return 0, &format.PropertyValueError{
+			Format: "svg", Key: name, Value: raw,
+			Reason: fmt.Sprintf("it has to be between %d and %d", minDimension, maxDimension),
+		}
+	}
+	return n, nil
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	min := minimumBytes()
+	w, err := dimension(r.Properties, Width, defaultWidth)
+	if err != nil {
+		return format.Plan{}, err
+	}
+	h, err := dimension(r.Properties, Height, defaultHeight)
+	if err != nil {
+		return format.Plan{}, err
+	}
+
+	min := minimumBytes(w, h)
 	if r.Bytes < min {
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "SVG",
@@ -136,18 +300,28 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Properties: map[string]any{
 			"encoding":    "utf-8",
 			"line_ending": "lf",
-			"width":       width,
-			"height":      height,
-			"view_box":    "0 0 800 600",
+			Width:         w,
+			Height:        h,
+			"view_box":    fmt.Sprintf("0 0 %d %d", w, h),
 		},
 	}
 
-	m := memo{seed: r.Seed}
+	m := memo{seed: r.Seed, width: w, height: h}
 	if r.Label {
-		line := labelOpen + core.Label("svg", r.Bytes, r.Seed) + textClose
-		if int64(len(line))+minimumBytes() <= r.Bytes {
+		switch line := labelOpen(h) + core.Label("svg", r.Bytes, r.Seed) + textClose; {
+		case !labelFits(h):
+			// Room on the page rather than room in the byte count, so it is a
+			// separate sentence from the one below. Both leave the file named
+			// by its own name and by the manifest.
+			p.Notes = append(p.Notes, format.Note{
+				Code: "label_omitted",
+				Detail: fmt.Sprintf(
+					"The drawing is %d px tall and the label needs the %d px strip along the bottom, so this file carries no visible label. Its name and the manifest still identify it.",
+					h, TextBand),
+			})
+		case int64(len(line))+min <= r.Bytes:
 			m.labelLine = line
-		} else {
+		default:
 			p.Notes = append(p.Notes, format.Note{
 				Code: "label_omitted",
 				Detail: fmt.Sprintf(
@@ -168,24 +342,37 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return fmt.Errorf("svg: the plan was not produced by this generator")
 	}
 
-	head := declaration + rootOpen + m.labelLine
+	head := declaration + rootOpen(m.width, m.height) + m.labelLine
 	if err := core.WriteAll(w, []byte(head)); err != nil {
 		return err
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), shapes{})
+	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), shapesFor(m.width, m.height))
 }
 
 // shapes builds the drawing. A natural record is one shape, and the closing
 // record is a text label stretched to land the byte count.
-type shapes struct{}
+//
+// It carries the canvas rather than reading package constants, because the
+// canvas is a setting now. Nothing else changed about what it draws.
+type shapes struct {
+	width      int
+	drawHeight int
+	// open is the closing record's opening tag, whose baseline depends on how
+	// tall the drawing is.
+	open string
+}
+
+func shapesFor(w, h int) shapes {
+	return shapes{width: w, drawHeight: drawHeightFor(h), open: textOpen(h)}
+}
 
 // Shortest is the smallest closing record: the label element with no text at
 // all, plus the bytes that close the root.
-func (shapes) Shortest() int64 { return int64(fixedWidth) }
+func (s shapes) Shortest() int64 { return int64(len(s.open) + len(tailLast)) }
 
-func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
+func (s shapes) Append(dst []byte, rng *rand.Rand) []byte {
 	// A line is drawn with a stroke and a closed shape is filled. Each branch
 	// says which it wants, because a shape painted the wrong way is invisible
 	// and the size never notices.
@@ -193,39 +380,43 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 
 	switch rng.IntN(4) {
 	case 0:
+		x := rng.IntN(span(s.width - 80))
 		dst = append(dst, `<rect x="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(width-80)), 10)
+		dst = strconv.AppendInt(dst, int64(x), 10)
+		y := rng.IntN(span(s.drawHeight - 80))
 		dst = append(dst, `" y="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-80)), 10)
+		dst = strconv.AppendInt(dst, int64(y), 10)
 		dst = append(dst, `" width="`...)
 		dst = strconv.AppendInt(dst, int64(20+rng.IntN(60)), 10)
 		dst = append(dst, `" height="`...)
-		dst = strconv.AppendInt(dst, int64(20+rng.IntN(60)), 10)
+		dst = strconv.AppendInt(dst, int64(fit(20+rng.IntN(60), s.drawHeight-y)), 10)
 	case 1:
 		dst = append(dst, `<circle cx="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.width))), 10)
+		cy := rng.IntN(span(s.drawHeight - 45))
 		dst = append(dst, `" cy="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-45)), 10)
+		dst = strconv.AppendInt(dst, int64(cy), 10)
 		dst = append(dst, `" r="`...)
-		dst = strconv.AppendInt(dst, int64(5+rng.IntN(40)), 10)
+		dst = strconv.AppendInt(dst, int64(fit(5+rng.IntN(40), s.drawHeight-cy)), 10)
 	case 2:
 		dst = append(dst, `<ellipse cx="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.width))), 10)
 		dst = append(dst, `" cy="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight-60)), 10)
+		cy := rng.IntN(span(s.drawHeight - 60))
+		dst = strconv.AppendInt(dst, int64(cy), 10)
 		dst = append(dst, `" rx="`...)
 		dst = strconv.AppendInt(dst, int64(10+rng.IntN(50)), 10)
 		dst = append(dst, `" ry="`...)
-		dst = strconv.AppendInt(dst, int64(10+rng.IntN(50)), 10)
+		dst = strconv.AppendInt(dst, int64(fit(10+rng.IntN(50), s.drawHeight-cy)), 10)
 	default:
 		dst = append(dst, `<line x1="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.width))), 10)
 		dst = append(dst, `" y1="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.drawHeight))), 10)
 		dst = append(dst, `" x2="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(width)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.width))), 10)
 		dst = append(dst, `" y2="`...)
-		dst = strconv.AppendInt(dst, int64(rng.IntN(drawHeight)), 10)
+		dst = strconv.AppendInt(dst, int64(rng.IntN(span(s.drawHeight))), 10)
 		dst = append(dst, `" stroke-width="2`...)
 		paint = "stroke"
 	}
@@ -241,9 +432,9 @@ func (shapes) Append(dst []byte, rng *rand.Rand) []byte {
 // next, so throwing one away leaves no trace to undo.
 func (shapes) Discard() {}
 
-func (shapes) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
+func (s shapes) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
-	dst = append(dst, textOpen...)
+	dst = append(dst, s.open...)
 	used := int64(len(dst)-start) + int64(len(tailLast))
 	dst = appendFiller(dst, n-used)
 	return append(dst, tailLast...)
@@ -288,9 +479,9 @@ func appendFiller(dst []byte, n int64) []byte {
 // This was invisible because the reference tool only ever saw one size per
 // format, MinBytes plus 300 KB. The renderer that catches exactly this failure
 // existed and was never pointed at the bottom of the range.
-func minimumBytes() int64 {
-	var s shapes
-	return int64(len(declaration)+len(rootOpen)) + s.Shortest() + 1
+func minimumBytes(w, h int) int64 {
+	s := shapesFor(w, h)
+	return int64(len(declaration)+len(rootOpen(w, h))) + s.Shortest() + 1
 }
 
 var colours = []string{

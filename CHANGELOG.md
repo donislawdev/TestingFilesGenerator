@@ -58,6 +58,26 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **SVG drawings can be any size you ask for.** Two new settings on `svg`:
+  `width` and `height`, both a whole number of pixels from 1 to 20000. They
+  default to the 800 by 600 these drawings have always been, so a recipe that
+  says nothing gets the same bytes it got before.
+
+  ```
+  tfg generate --format svg --size 20kb --set width=1920 --set height=1080
+  ```
+
+  There is no joint limit on the two, unlike the picture formats, because
+  nothing is drawn into pixels here - the file only says how big it is. That
+  makes a small file that claims to be enormous, which is the point: a 3 kB
+  drawing declaring 20000 by 20000 asks whether whatever opens it has a limit
+  on picture size and not only on file size. Pillow, for one, refuses to open
+  the result.
+
+  A drawing shorter than 57 pixels has no room for the label along its bottom
+  edge. It is still produced and still named, and the run says which files
+  those were.
+
 - **Text and Markdown files can be written in UTF-16, with or without a byte
   order mark.** Two new settings on `txt` and `md`: `encoding`, which takes
   `utf-8`, `utf-16le` or `utf-16be`, and `bom`, which is `true` or `false`.
