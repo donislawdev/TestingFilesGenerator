@@ -14,10 +14,10 @@ import (
 	"image/color"
 	stdpng "image/png"
 	"io"
-	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
@@ -53,7 +53,6 @@ const (
 	defaultWidth  = 640
 	defaultHeight = 480
 
-	minDimension = 1
 	maxDimension = 20000
 
 	// The picture is built in memory as one buffer and encoded twice, once
@@ -91,16 +90,10 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			{
-				Name: "width", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
-			{
-				Name: "height", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 		},
 		JointLimits: []format.JointLimit{{
 			Of: "width", By: "height", Max: maxPixels,
@@ -344,11 +337,11 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	_, hSet := r.Properties["height"]
 
 	if wSet || hSet {
-		w, err := dimension(r.Properties, "width", defaultWidth)
+		w, err := imagedim.Value("png", imagedim.SettingWidth, r.Properties, maxDimension, defaultWidth)
 		if err != nil {
 			return memo{}, err
 		}
-		h, err := dimension(r.Properties, "height", defaultHeight)
+		h, err := imagedim.Value("png", imagedim.SettingHeight, r.Properties, maxDimension, defaultHeight)
 		if err != nil {
 			return memo{}, err
 		}
@@ -412,21 +405,6 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	// Nothing fitted, not even one pixel. The caller turns this into the
 	// error that names the minimum.
 	return smallest, nil
-}
-
-func dimension(props map[string]string, key string, fallback int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("png: %s must be a whole number of pixels, got %q", key, raw)
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, fmt.Errorf("png: %s must be between %d and %d pixels, got %d", key, minDimension, maxDimension, n)
-	}
-	return n, nil
 }
 
 // picture builds the image. Deterministic from the seed, and compressible, so

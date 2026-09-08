@@ -39,6 +39,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
@@ -123,16 +124,10 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			{
-				Name: "width", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
-			{
-				Name: "height", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 			{
 				Name: "frames", Kind: format.PropertyInt,
 				Min: minFrames, Max: maxFrames,
@@ -422,11 +417,11 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	}
 
 	if wSet || hSet {
-		w, err := dimension(r.Properties, "width", 640)
+		w, err := imagedim.Value("gif", imagedim.SettingWidth, r.Properties, maxDimension, 640)
 		if err != nil {
 			return memo{}, err
 		}
-		h, err := dimension(r.Properties, "height", 480)
+		h, err := imagedim.Value("gif", imagedim.SettingHeight, r.Properties, maxDimension, 480)
 		if err != nil {
 			return memo{}, err
 		}
@@ -473,21 +468,6 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		}
 	}
 	return smallest, nil
-}
-
-func dimension(props map[string]string, key string, fallback int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("gif: %s must be a whole number of pixels, got %q", key, raw)
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, fmt.Errorf("gif: %s must be between %d and %d pixels, got %d", key, minDimension, maxDimension, n)
-	}
-	return n, nil
 }
 
 func encodedBodySize(m memo) (int64, error) {

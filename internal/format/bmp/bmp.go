@@ -18,10 +18,10 @@ import (
 	"image"
 	"image/color"
 	"io"
-	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
@@ -85,16 +85,10 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			{
-				Name: "width", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, the picture is sized to fill the bytes you asked for.",
-			},
-			{
-				Name: "height", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, the picture is sized to fill the bytes you asked for.",
-			},
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
+				Detail: "How wide the picture is. Left out, the picture is sized to fill the bytes you asked for."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
+				Detail: "How tall the picture is. Left out, the picture is sized to fill the bytes you asked for."}),
 		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -195,11 +189,11 @@ func chooseSize(r format.Request) (int, int, error) {
 	_, hSet := r.Properties["height"]
 
 	if wSet || hSet {
-		w, err := dimension(r.Properties, "width", 0)
+		w, err := imagedim.Value("bmp", imagedim.SettingWidth, r.Properties, maxDimension, 0)
 		if err != nil {
 			return 0, 0, err
 		}
-		h, err := dimension(r.Properties, "height", 0)
+		h, err := imagedim.Value("bmp", imagedim.SettingHeight, r.Properties, maxDimension, 0)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -282,21 +276,6 @@ func isqrt(n uint64) uint64 {
 		y = (x + n/x) / 2
 	}
 	return x
-}
-
-func dimension(props map[string]string, key string, fallback int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("bmp: %s must be a whole number of pixels, got %q", key, raw)
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, fmt.Errorf("bmp: %s must be between %d and %d pixels, got %d", key, minDimension, maxDimension, n)
-	}
-	return n, nil
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

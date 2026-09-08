@@ -48,6 +48,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 )
 
 const (
@@ -125,16 +126,10 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			{
-				Name: "width", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
-			{
-				Name: "height", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.",
-			},
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
+				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
+				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 			{
 				Name: "quality", Kind: format.PropertyInt,
 				Min: minQuality, Max: maxQuality, Default: strconv.Itoa(defaultQuality),
@@ -345,11 +340,11 @@ func measuredSize(r format.Request, label string, q int) (memo, error) {
 
 // namedSize handles a recipe that asked for a picture of its own size.
 func namedSize(r format.Request, label string, q int) (memo, error) {
-	w, err := dimension(r.Properties, "width", sizeLadder[0].width)
+	w, err := imagedim.Value("avif", imagedim.SettingWidth, r.Properties, maxDimension, sizeLadder[0].width)
 	if err != nil {
 		return memo{}, err
 	}
-	h, err := dimension(r.Properties, "height", sizeLadder[0].height)
+	h, err := imagedim.Value("avif", imagedim.SettingHeight, r.Properties, maxDimension, sizeLadder[0].height)
 	if err != nil {
 		return memo{}, err
 	}
@@ -387,21 +382,6 @@ func checkJointLimits(w, h int) error {
 		}
 	}
 	return nil
-}
-
-func dimension(props map[string]string, key string, fallback int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("avif: %s must be a whole number of pixels, got %q", key, raw)
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, fmt.Errorf("avif: %s must be between %d and %d pixels, got %d", key, minDimension, maxDimension, n)
-	}
-	return n, nil
 }
 
 func quality(props map[string]string) (int, error) {
