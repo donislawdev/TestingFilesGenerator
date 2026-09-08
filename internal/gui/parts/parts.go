@@ -155,20 +155,47 @@ const ReportWidth = 400
 // they read the form is an answer they have to go looking for. It is also why
 // the action bar stopped carrying these lines: a bar that grows a message
 // grows, and a bar that grows moves the form under it.
-// The LAST child is given whatever height is left over, and the rest are
-// stacked above it at their own. That is what stops this window carrying a
-// third of its height in nothing: a form is as tall as its questions and a
-// report is as tall as it needs to be, so without something willing to grow
-// the column ends wherever its content ends and the rest of the window is
-// blank. The report is the one that should grow, because it is the one that
-// gets taller when a run starts talking.
+// Every child keeps its own height and the room left under them stays the page
+// behind, which is the owner's decision of 2026-09-08.
+//
+// It said the opposite until that day, and the reasoning is worth keeping
+// because it was the right worry answered the wrong way round. It ran: a form
+// is as tall as its questions, so without something willing to grow, the column
+// ends where its content ends and the rest of the window is blank - therefore
+// give the last child the leftover. What that actually bought was the same
+// blank drawn as a PANEL, with a fill, a radius and a heading on it. Measured
+// on 2026-09-08 at 1120x760: the report panel came out 414 px tall around 28 px
+// of words, so it was 93 per cent empty, and at the size the owner's window
+// remembers it was 1179 px around the same one sentence.
+//
+// A panel is a promise that something is inside it. Empty background promises
+// nothing, so it reads as a margin - and the same emptiness reads as a defect
+// the moment a border is drawn round it. The blank was never the problem worth
+// solving. The answer to a thin report is to give the report something to say,
+// which is what ReportSection carries now.
 func ReportColumn(children ...fyne.CanvasObject) fyne.CanvasObject {
+	return reportColumn(Stacked(children...))
+}
+
+// ReportColumnFilling is ReportColumn for a column whose last child is a scroll.
+//
+// A scroll asks for almost no height of its own - that is what makes it a
+// scroll - so a column that handed it its MinSize would draw a few pixels of
+// list and nothing else. It has to be TOLD a height, and the leftover is the
+// only honest one. About is the single screen shaped that way, and it is the
+// one place where filling the column is what the content wants rather than
+// something done to hide a gap.
+func ReportColumnFilling(children ...fyne.CanvasObject) fyne.CanvasObject {
+	return reportColumn(container.New(fillLast{}, children...))
+}
+
+// reportColumn is the width and the margins both of them share.
+func reportColumn(stack fyne.CanvasObject) fyne.CanvasObject {
 	// The gap on the left is the one between the two columns. The one on the
 	// right is the window's own edge, and they are the same step because a
 	// column that hugged the window frame on one side and stood clear of the
 	// form on the other would read as pushed rather than placed.
-	return container.New(reportWidth{},
-		Inset(container.New(fillLast{}, children...), GapColumn, 0, GapColumn, 0))
+	return container.New(reportWidth{}, Inset(stack, GapColumn, 0, GapColumn, 0))
 }
 
 // fillLast stacks its children a section apart and hands the last one the rest.
@@ -490,22 +517,30 @@ func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // with the form bought nothing and spent 78 px of margin saying so. Pass nil
 // on a screen that has none.
 func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
-	// The padding goes inside the column as well as around the bar, and that is
+	// The padding goes inside the row as well as around the bar, and that is
 	// what puts the bar's own words on the same left edge as the form's.
 	//
-	// Measured on 2026-08-20: the outer padding here is cancelled by the
-	// centring. A section is 820 px wide with its padding INSIDE it, so its
-	// fields start 6 px in from its edge - while this column is centred within
-	// what the padding left over, which puts it back at the section's edge
-	// rather than at its content. The status line and every field name on the
-	// screen above it were 6 px apart, which is the distance that reads as a
-	// mistake rather than as an indent.
-	column := container.New(readableWidth{}, Indented(container.NewVBox(content...)))
+	// Full width since 2026-09-08, where it was capped at ColumnWidth and
+	// centred before. That cap was the reason the run buttons never reached the
+	// edge they were moved to: actions() pushes them with a greedy spacer, and
+	// a spacer only ever reaches the end of the thing it is IN. Measured at
+	// 1120 px on 2026-09-08, before this changed - the last of them ended at
+	// 964, which is 156 px short of the window and reads as a group that
+	// drifted rather than one that was placed.
+	//
+	// It also stopped being a choice the moment readableWidth stopped centring.
+	// Left aligned at 820 the same group would have ended at 832, so the bar
+	// had to say what it wanted rather than borrow the form's answer. What the
+	// form and the bar share is the left edge, and Indented is the whole of it.
+	column := Indented(container.NewVBox(content...))
 	standing := fyne.CanvasObject(column)
 	if rail != nil {
-		// Laid over the column rather than beside it. Sharing the row, the rail
-		// would take width from one side only and the buttons the column
-		// centres would sit off centre by half of it.
+		// Laid over the row rather than in it. Sharing the row would work now
+		// that the buttons are pushed to the far edge, and it did NOT while
+		// they were centred - a rail taking width from one side moved them by
+		// half of it. Kept overlaid because the rail's job is to sit at the
+		// left edge whatever the row does, and an overlay says that in one
+		// line rather than depending on how the row happens to lay out.
 		//
 		// The vertical box is what keeps the rail one row tall. Handed straight
 		// to a stack it would be resized to the whole bar, and a Donate button
@@ -661,14 +696,28 @@ func (f fixedWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 }
 
 // readableWidth gives its one child the lesser of the space offered and
-// ColumnWidth, centred. A VBox stretches its children to whatever it is
+// ColumnWidth, at the left. A VBox stretches its children to whatever it is
 // given, which is the whole window, and that is the entire defect.
 //
-// Centred rather than left aligned, changed on 2026-08-12. Held at the left it
-// traded one kind of waste for another: at 1100 px the form ended at 822 and
-// left 278 px of nothing down the right hand side, and maximised it left three
-// thousand. Space split either side reads as a margin, and the same space all
-// on one side reads as a column that failed to fill the window.
+// It centred from 2026-08-12 until 2026-09-08, and the reason was good for the
+// window it was written in. Held at the left back then it traded one kind of
+// waste for another: the form was the ONLY thing on the screen, so at 1100 px
+// it ended at 822 and left 278 px of nothing down one side, and maximised it
+// left three thousand. Space split either side reads as a margin, and the same
+// space all on one side reads as a column that failed to fill the window.
+//
+// The two column layout took the premise away. The form is no longer alone -
+// a report column is pinned to the right edge - so half the space is already
+// spoken for and centring in what is left puts a margin on the LEFT with
+// nothing to answer it. Measured on 2026-09-08 at 1520 px wide: the form ran
+// from 160 to 968 while the tab strip and the window's own edge started at 8,
+// so the screen title sat 152 px in from the tabs above it and every field
+// under it came with it. That is not a margin, it is a column that came
+// unstuck from its own screen.
+//
+// Left, and the leftover gathers between the two columns where it reads as the
+// gap it is. The cap is untouched: a form too wide cannot be read, and that
+// was never the part that was wrong.
 type readableWidth struct{}
 
 func (readableWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -688,7 +737,7 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	}
 	width := fyne.Min(size.Width, ColumnWidth)
 	objects[0].Resize(fyne.NewSize(width, size.Height))
-	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
+	objects[0].Move(fyne.NewPos(0, 0))
 }
 
 // The vertical scale. Three steps, and the ratio between them is the point

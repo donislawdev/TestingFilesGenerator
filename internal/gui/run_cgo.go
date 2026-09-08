@@ -88,10 +88,27 @@ func (d desktop) Remembered() window.Remembered { return stored{fyne.CurrentApp(
 // handles a preference key. The keys are here and nowhere else.
 type stored struct{ prefs fyne.Preferences }
 
+// The two size keys carry the layout they were written for, and that suffix is
+// the whole of the "forget it once" the owner asked for on 2026-09-08.
+//
+// A size remembered for the one column window is not a size for this one. The
+// form lost 621 px when Output moved into the report column, so somebody who
+// had dragged the window tall enough for the old form came back to a window
+// that opened at that height around a form less than half of it - and a
+// remembered size beats every default, so a new OpenSize would never have
+// reached them at all.
+//
+// Renamed rather than deleted, which is untouchable rule 7 read literally: this
+// program does not remove things from a file it did not create. The old pair
+// stays in preferences.json, unread, costing two numbers. The next layout that
+// moves this much bumps the suffix again.
+//
+// Both keys move together or neither does. Split, the window would come back
+// with a remembered width and a default height, which is a shape nobody chose.
 const (
 	keyDirectory = "outputDirectory"
-	keyWidth     = "windowWidth"
-	keyHeight    = "windowHeight"
+	keyWidth     = "windowWidth.2"
+	keyHeight    = "windowHeight.2"
 )
 
 func (s stored) Directory() string          { return s.prefs.String(keyDirectory) }

@@ -411,35 +411,33 @@
 											<container size="1088x44">
 												<container pos="6,6" size="1076x32">
 													<container size="1076x32">
-														<container pos="128,0" size="820x32">
-															<container pos="6,0" size="808x32">
-																<container size="808x32">
-																	<spacer size="531x32"/>
-																	<widget pos="531,0" size="66x32" type="*widget.Button">
-																		<rectangle fillColor="button" radius="5" size="66x32"/>
-																		<rectangle size="66x32"/>
-																		<widget pos="6,7" size="54x16" type="*widget.RichText">
-																			<text alignment="center" bold size="54x16">Preview</text>
-																		</widget>
+														<container pos="6,0" size="1064x32">
+															<container size="1064x32">
+																<spacer size="787x32"/>
+																<widget pos="787,0" size="66x32" type="*widget.Button">
+																	<rectangle fillColor="button" radius="5" size="66x32"/>
+																	<rectangle size="66x32"/>
+																	<widget pos="6,7" size="54x16" type="*widget.RichText">
+																		<text alignment="center" bold size="54x16">Preview</text>
 																	</widget>
-																	<widget pos="604,0" size="47x32" type="*widget.Label">
-																		<widget size="47x32" type="*widget.RichText">
-																			<text color="disabled" pos="6,6" size="35x14" textSize="12">Ctrl+P</text>
-																		</widget>
+																</widget>
+																<widget pos="860,0" size="47x32" type="*widget.Label">
+																	<widget size="47x32" type="*widget.RichText">
+																		<text color="disabled" pos="6,6" size="35x14" textSize="12">Ctrl+P</text>
 																	</widget>
-																	<widget pos="657,0" size="74x32" type="*widget.Button">
-																		<rectangle fillColor="hyperlink" radius="5" size="74x32"/>
-																		<rectangle size="74x32"/>
-																		<widget pos="6,7" size="62x16" type="*widget.RichText">
-																			<text alignment="center" bold color="foregroundOnError" size="62x16">Generate</text>
-																		</widget>
+																</widget>
+																<widget pos="913,0" size="74x32" type="*widget.Button">
+																	<rectangle fillColor="hyperlink" radius="5" size="74x32"/>
+																	<rectangle size="74x32"/>
+																	<widget pos="6,7" size="62x16" type="*widget.RichText">
+																		<text alignment="center" bold color="foregroundOnError" size="62x16">Generate</text>
 																	</widget>
-																	<widget pos="738,0" size="69x32" type="*widget.Label">
-																		<widget size="69x32" type="*widget.RichText">
-																			<text color="disabled" pos="6,6" size="57x14" textSize="12">Ctrl+Enter</text>
-																		</widget>
+																</widget>
+																<widget pos="994,0" size="69x32" type="*widget.Label">
+																	<widget size="69x32" type="*widget.RichText">
+																		<text color="disabled" pos="6,6" size="57x14" textSize="12">Ctrl+Enter</text>
 																	</widget>
-																</container>
+																</widget>
 															</container>
 														</container>
 													</container>
@@ -616,10 +614,10 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,245" size="372x954">
-														<rectangle fillColor="rgba(48,48,54,255)" radius="10" size="372x954"/>
-														<container size="372x954">
-															<container pos="6,6" size="360x942">
+													<container pos="0,245" size="372x92">
+														<rectangle fillColor="rgba(48,48,54,255)" radius="10" size="372x92"/>
+														<container size="372x92">
+															<container pos="6,6" size="360x80">
 																<widget size="360x28" type="*widget.Label">
 																	<widget size="360x28" type="*widget.RichText">
 																		<text bold pos="6,6" size="55x16">This run</text>

@@ -191,6 +191,31 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window opens at 1120 by 760 and forgets the size it remembered once.**
+  It opened at 1000 by 1000, which was measured for the older single column
+  layout where the form carried the output directory and needed 958 px of
+  height. Moving that directory into the column on the right took the form down
+  to 337 px, so the window had been opening with about 563 px of empty space
+  below the form.
+
+  A size you had dragged the window to is remembered, and a remembered size wins
+  over any default - so this release ignores the one it had stored for you, once.
+  The next size you leave the window at is kept as before. Nothing is removed
+  from the settings file.
+
+- **The form lines up with the left edge of the window instead of sitting in the
+  middle of it.** With the report column pinned to the right, centring the form
+  in what was left put a margin on the left with nothing to answer it - at
+  1520 px wide the form started 152 px in from the tabs above it.
+
+- **The buttons that start a run reach the right edge of the window.** They were
+  pushed to the right of the form's own column, which left them 156 px short of
+  the edge in a 1120 px window.
+
+- **The panel on the right is as tall as what it has to say.** It used to take
+  whatever height was left over and draw it as a panel, so at 1120 by 760 it was
+  a 414 px box around one sentence.
+
 - **Byte counts are grouped in threes, in the window and on the command line.**
   A total used to print as `2516582400 B`. It now prints as `2 516 582 400 B`.
 
