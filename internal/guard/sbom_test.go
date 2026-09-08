@@ -2,6 +2,8 @@ package guard
 
 import (
 	"encoding/json"
+	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"testing"
@@ -167,6 +169,16 @@ func sbomInput(t *testing.T) legal.Document {
 	t.Helper()
 	window, _ := shipped(t, "../../cmd/tfg-gui")
 	command, _ := shipped(t, "../../cmd/tfg")
+	// The packages of our own module go in beside the modules, because an asset
+	// this repository embeds itself is attached by package rather than by
+	// module - see legal.embeddedItems. Both binaries link this module and only
+	// one of them links the package holding the text faces.
+	//
+	// The notices are asked the module question and are not given these: a
+	// package path in the map they read is a module with no row in their table,
+	// which is what they said the first time this was put in the shared helper.
+	addOurPackages(t, window, "../../cmd/tfg-gui")
+	addOurPackages(t, command, "../../cmd/tfg")
 	if len(window) < 5 || len(command) < 2 {
 		t.Skipf("the build reported %d and %d modules, too few to be the real sets", len(window), len(command))
 	}
@@ -180,6 +192,28 @@ func sbomInput(t *testing.T) legal.Document {
 			{Name: "tfg", Modules: command, GoVersion: runtime.Version()},
 			{Name: "tfg-gui", Modules: window, GoVersion: runtime.Version()},
 		},
+	}
+}
+
+// addOurPackages puts the import paths of this repository's own packages into a
+// map that otherwise holds modules.
+//
+// One query rather than three systems, because what is being asked is which
+// packages of ours a target links - and that does not vary by system here: the
+// one package this matters for holds bytes and no build constraints.
+func addOurPackages(t *testing.T, into map[string]string, target string) {
+	t.Helper()
+	cmd := exec.Command("go", "list", "-deps", "-f", "{{.ImportPath}}", target)
+	cmd.Env = append(os.Environ(), "CGO_ENABLED=1")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Skipf("go list is not available here: %v", err)
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		path := strings.TrimSpace(line)
+		if strings.Contains(path, "donislawdev") {
+			into[path] = ""
+		}
 	}
 }
 

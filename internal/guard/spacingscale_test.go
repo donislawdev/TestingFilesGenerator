@@ -114,12 +114,28 @@ func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
 func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
-	generate := tabContent(t, content, text.TabOneTarget())
 
-	gaps := sectionGaps(t, generate)
+	// The two distances are read off two screens, and that is a change of
+	// 2026-09-08 rather than a shortcut. Output moved to the pinned column that
+	// day, so the generate screen's scrolling part holds ONE panel and has no
+	// gap between two sections to measure at all. The preset screen still
+	// stacks two in its scroll.
+	//
+	// Reading them apart is safe here because the sibling guard above asserts
+	// the SAME gap on every screen - so a distance taken from one of them is a
+	// statement about all of them, and if it ever stops being, that guard is
+	// the one that says so.
+	preset := tabContent(t, content, text.TabPresets())
+	gaps := sectionGaps(t, preset)
 	if len(gaps) == 0 {
-		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
+		t.Fatal("the preset screen shows fewer than two sections, so there is no gap to measure")
 	}
+
+	// The generate tab is opened AFTER the preset one has been read, because
+	// selecting a tab is what lays it out - a tab nobody is on has every widget
+	// at the origin with no size. In the other order this asked about a control
+	// that had not been laid out yet, and said so.
+	generate := tabContent(t, content, text.TabOneTarget())
 	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
 	for _, gap := range gaps {
 		if gap <= between {
@@ -181,7 +197,8 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 		if ok {
 			return
 		}
-		label, is := o.(*widget.Label)
+		label := asLabel(o)
+		is := label != nil
 		if !is || label.Text != words {
 			return
 		}

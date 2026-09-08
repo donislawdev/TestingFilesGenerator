@@ -185,15 +185,20 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// The sheet goes over the whole screen rather than inside the scroll,
 	// because a scroll clips what it draws - an explanation opened near the
 	// foot of the form would be cut off at the edge of the viewport.
+	// Built in this order and held in locals rather than composed inline,
+	// because every one of these calls REGISTERS its boxes as it builds them
+	// and Go evaluates arguments left to right. Inline, the border's right hand
+	// slot would be built before its middle, so the output boxes would be
+	// registered before the ones they stand beside on the screen - and the walks
+	// that read that list would report a screen nobody sees.
+	form := parts.Screen(text.HeadingGenerate(), g.settingsSection()...)
+	report := g.reportColumn()
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
-			g.actions(), g.progress(), g.problem.Object()),
-		nil, nil,
-		(g.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingGenerate(),
-			g.settingsSection()...,
-		)))),
+		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...), g.actions()),
+		nil,
+		report,
+		g.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
 	))
 	// Everything built above belongs to the screen whatever format is chosen.
 	// What a format declares comes after this mark and is replaced with it.
@@ -294,6 +299,42 @@ func entry(text, placeholder string) *parts.Entry {
 // apart here against 23 px on the preset screen, which is the same relationship
 // drawn two ways. Worse than uneven: 7 px is less than the padding inside a
 // panel, so Output read as glued to the panel above it.
+// reportColumn is the pinned column beside the form.
+//
+// It holds the two things that are not questions: where the files land, and
+// what the run has to say. Both used to be somewhere else and both were in the
+// wrong place for the same reason.
+//
+// Output was the second panel of the form. It is not a setting about the files
+// - it is where they go - and it sat under a form that scrolls, so on a screen
+// with a format declaring settings it went off the bottom.
+//
+// The bar and the status line were in the action bar. Measured on 2026-09-08
+// before this changed: the last field on this screen ended 392 px above the
+// bar, so the window carried a third of its height in nothing while the one
+// sentence a person was waiting for was pinned to the floor, as far from the
+// form as it could get. A bar that carries a message also grows when the
+// message arrives, which is what TestTheFormDoesNotMoveWhenARunStarts was
+// written to hold shut - and a bar that cannot grow holds it by construction.
+func (g *Generate) reportColumn() fyne.CanvasObject {
+	return parts.ReportColumn(
+		g.outputSection(),
+		parts.ReportSection(text.SectionThisRun(), g.progress(), g.problem.Object()),
+	)
+}
+
+// outputSection is where the files go, and what marks them.
+func (g *Generate) outputSection() fyne.CanvasObject {
+	add := g.fields.Add
+	return parts.Section(text.SectionOutput(),
+		add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
+			chooserFor(g.host, g.outDir)),
+		add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
+			parts.Numeric(g.seed)),
+		g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
+	)
+}
+
 func (g *Generate) settingsSection() []fyne.CanvasObject {
 	// Every field goes through the same call and every one of them can be told
 	// it was the box that was refused - O73, and since 2026-08-12 without the
@@ -328,15 +369,6 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
-		),
-		parts.Section(text.SectionOutput(),
-			add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
-				chooserFor(g.host, g.outDir)),
-			g.fields.Row(
-				add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
-					parts.Numeric(g.seed)),
-				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
-			),
 		),
 	}
 }

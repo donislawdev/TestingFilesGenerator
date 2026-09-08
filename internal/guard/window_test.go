@@ -548,6 +548,13 @@ func textIn(o fyne.CanvasObject) string {
 		case *widget.Label:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
+		case *parts.RunStatus:
+			// The line a run talks on. It embeds a label rather than being one,
+			// so a case for *widget.Label does not reach it - and this reader is
+			// what a dozen guards use to ask what the window is saying. Without
+			// this they report a window that has gone silent about its own run.
+			b.WriteString(v.Text)
+			b.WriteString("\n")
 		case *widget.Button:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
@@ -757,7 +764,7 @@ func detailButtonIn(row *fyne.Container) *parts.DetailButton {
 }
 
 func headingOf(o fyne.CanvasObject) *widget.Label {
-	if label, ok := o.(*widget.Label); ok {
+	if label := asLabel(o); label != nil {
 		return label
 	}
 	row, ok := o.(*fyne.Container)

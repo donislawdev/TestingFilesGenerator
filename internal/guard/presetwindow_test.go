@@ -10,7 +10,6 @@ import (
 
 	"fyne.io/fyne/v2"
 
-	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
@@ -392,7 +391,7 @@ func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 		// somebody joins them back into a sentence.
 		labels := map[string]bool{}
 		walk(content, func(obj fyne.CanvasObject) {
-			if l, ok := obj.(*widget.Label); ok {
+			if l := asLabel(obj); l != nil {
 				labels[l.Text] = true
 			}
 		})

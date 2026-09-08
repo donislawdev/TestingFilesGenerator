@@ -6,6 +6,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/typeface"
 )
 
 // The palette, computed before the first widget existed and wired on
@@ -30,6 +32,29 @@ import (
 // the guard measures, which is the whole point of having a palette rather than
 // colours at call sites.
 const ColorNamePanel fyne.ThemeColorName = "panel"
+
+// ColorNamePanelRaised is the surface for a panel that reports rather than asks.
+//
+// One panel on each screen says what the run will come to - how many files, how
+// many bytes, where they go, and what the engine said when it was asked. It
+// holds no boxes at all, and it stands beside one that is nothing but boxes, so
+// the two have to be told apart at a glance rather than by reading them.
+//
+// The value is a measurement and the ordering is the point. In L*: page 11.26,
+// panel 17.17, this 20.08, a box 23.69. It sits between the panel it must
+// differ from and the box it must not be mistaken for, roughly halfway to each,
+// so neither gap collapses. The obvious lighter choice, #34343A at 21.91, was
+// rejected on the second number rather than the first: it is 4.75 clear of the
+// panel but only 1.78 from a box, and a box on the panel NEXT TO IT would then
+// read as the same surface.
+//
+// The light variant mirrors the relationship rather than the number, because
+// there the stack runs the other way - page 100.00, panel 96.21, this 94.12,
+// box 91.72.
+//
+// This is the decoration role from docs/UX.md section 8.1, which carries no
+// threshold, so what is guarded is the ORDER and not a distance.
+const ColorNamePanelRaised fyne.ThemeColorName = "panel-raised"
 
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
@@ -208,6 +233,7 @@ var (
 		// divider is.
 		theme.ColorNameSeparator: hex(0x45, 0x45, 0x49),
 		ColorNamePanel:           hex(0x2A, 0x2A, 0x2D),
+		ColorNamePanelRaised:     hex(0x30, 0x30, 0x36),
 
 		// What is written ON one of those colours, which is a different
 		// question from what they contrast with. Section 8 computed them as
@@ -266,6 +292,7 @@ var (
 		// palette.
 		theme.ColorNameSeparator: hex(0xD6, 0xD6, 0xD9),
 		ColorNamePanel:           hex(0xF4, 0xF4, 0xF5),
+		ColorNamePanelRaised:     hex(0xEE, 0xEE, 0xEF),
 
 		// The other way round here, for the same reason: these are dark enough
 		// to read on a white page, so what is written on them is white.
@@ -326,11 +353,11 @@ func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.C
 func (o ours) Size(name fyne.ThemeSizeName) float32 {
 	switch name {
 	case theme.SizeNameSubHeadingText:
-		return 20 // the screen title
+		return 18 // the screen title
 	case theme.SizeNameHeadingText:
-		return 17 // a section title, drawn by the card
+		return 14 // a section title
 	case theme.SizeNameCaptionText:
-		return 12 // an explanation under a field, at 11 it was hard work
+		return 12 // a field name, and an explanation under a control
 	case theme.SizeNamePadding:
 		return 6 // room between things, the toolkit's 4 was tight
 	case theme.SizeNameInnerPadding:
@@ -353,10 +380,48 @@ func (o ours) Size(name fyne.ThemeSizeName) float32 {
 		// toolkit's 8 was measured as too loose there as well.
 		return 6
 	case theme.SizeNameCardRadius:
-		return 8
+		return 10
+	case theme.SizeNameInputRadius:
+		// A box is rounded less than the panel it sits on, so the two edges
+		// read as two things rather than one nested shape. 6 against 10.
+		return 6
 	}
 	return o.Theme.Size(name)
 }
+
+// Font is the letters this program is written in. See internal/gui/typeface.
+//
+// Two faces and four styles, which is all fyne.TextStyle offers in v2.8.1 -
+// measured in the pinned source rather than assumed, because a type ramp built
+// on Medium and SemiBold and Bold is a ramp this toolkit cannot address.
+//
+// Monospace and Symbol fall through to the toolkit's own. Symbol is how the
+// toolkit draws the marks inside its controls, and monospace is what every
+// number this window reports is set in - a count of bytes lines up under
+// another count of bytes only if the digits are one width, and Fyne exposes no
+// OpenType features, so tabular figures cannot be switched on in Inter. The
+// face that has them by construction is the one already in the binary.
+//
+// Italic answers with the upright face on purpose. docs/UX.md section 8.5 bans
+// italic outright, citing what it costs a reader with dyslexia, so there is no
+// italic to return and a call that asks for one gets text that can be read.
+func (o ours) Font(style fyne.TextStyle) fyne.Resource {
+	switch {
+	case style.Monospace, style.Symbol:
+		return o.Theme.Font(style)
+	case style.Bold:
+		return interSemiBold
+	}
+	return interRegular
+}
+
+// The faces as toolkit resources, made once. A StaticResource is a name and a
+// slice, and the painter caches by name, so building these per call would ask
+// it to shape the same face under the same name over and over.
+var (
+	interRegular  = &fyne.StaticResource{StaticName: "Inter-Regular.ttf", StaticContent: typeface.Regular}
+	interSemiBold = &fyne.StaticResource{StaticName: "Inter-SemiBold.ttf", StaticContent: typeface.SemiBold}
+)
 
 // Theme is the look of this tool, for the app to install and for a probe or a
 // guard to render with. A picture taken under a different theme is a picture

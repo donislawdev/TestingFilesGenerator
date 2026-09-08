@@ -40,7 +40,21 @@ func newByteCount() *ByteCount {
 	// it wants it.
 	c.SizeName = theme.SizeNameCaptionText
 	c.Importance = widget.LowImportance
-	c.Alignment = fyne.TextAlignTrailing
+	// The monospace face, and leading rather than trailing, since 2026-09-08.
+	//
+	// The two go together. It used to be pushed to the far edge of the column,
+	// where being aligned to that edge is what made it look placed rather than
+	// stranded - and at 215 px from the box it describes it was stranded
+	// anyway. It follows the explanation button now, so it aligns like anything
+	// else on the line.
+	//
+	// Monospace is what stops it reading as more of the label. A count of bytes
+	// is a measurement, the face says so, and the digits line up with every
+	// other number this window reports. Fyne exposes no OpenType features, so
+	// tabular figures cannot be turned on in the face the rest of the window
+	// uses - this is the one that has them by construction.
+	c.TextStyle = fyne.TextStyle{Monospace: true}
+	c.Alignment = fyne.TextAlignLeading
 	return c
 }
 

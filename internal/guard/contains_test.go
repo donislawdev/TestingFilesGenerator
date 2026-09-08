@@ -4,11 +4,11 @@ import (
 	stdzip "archive/zip"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // onlyArchive is the single .zip the run produced. Failing when there is not
@@ -56,7 +56,13 @@ func archiveMembers(t *testing.T, path string) ([]string, []int64) {
 	return names, sizes
 }
 
-func sizeText(n int64) string { return strconv.FormatInt(n, 10) }
+// sizeText is a byte count as the command line writes it.
+//
+// Through core rather than strconv since 2026-09-08, when the digits were
+// grouped. Written out here it would be a second opinion about how a number is
+// spelt, and this guard is about whether the dry run predicted the right NUMBER
+// - not about how many spaces are in it.
+func sizeText(n int64) string { return core.ExactBytes(n) }
 
 // "an archive holds real files of other formats" is the feature docs/
 // MVP-FORMATS.md 5.7 calls the key one, and the difference between this tool

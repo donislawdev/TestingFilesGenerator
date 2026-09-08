@@ -351,10 +351,16 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 		if errors.Is(err, core.ErrBoundaryTooSmall) {
 			// A number somebody typed, so this is USAGE rather than a problem
 			// with a document. The end above it keeps the code it had.
+			// Ungrouped, unlike every other count this program prints, and the
+			// exception is deliberate: this echoes back the number somebody
+			// typed after --boundary. A message that quotes your input and
+			// respells it on the way is a message you have to translate before
+			// you can compare it with what you wrote.
 			fmt.Fprintf(errOut, "tfg: --boundary %d B is too small - %s\n", limit, err)
 			return nil, 0, 0, 0, ExitUsage
 		}
 		if err != nil {
+			// Ungrouped for the same reason as the line above it.
 			fmt.Fprintf(errOut, "tfg: --boundary %d B is too large - %s\n", limit, err)
 			return nil, 0, 0, 0, ExitRecipe
 		}
@@ -387,9 +393,9 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	// Echo the exact byte count. The exact number is the point of this tool,
 	// and it is what any other tool will show when the user goes to check the
 	// file.
-	fmt.Fprintf(errOut, "%s in %s, %d B total\n",
+	fmt.Fprintf(errOut, "%s in %s, %s total\n",
 		core.Count(len(planned), "file", "files"), core.Count(len(targets), "target", "targets"),
-		engine.TotalBytes(planned))
+		core.ExactBytes(engine.TotalBytes(planned)))
 
 	echoBoundaries(targets, planned, errOut)
 	echoManifestReach(planned, errOut)
@@ -530,10 +536,10 @@ func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOu
 		if t.BoundaryLimit <= 0 {
 			continue
 		}
-		fmt.Fprintf(errOut, "boundary %q around %d B:\n", t.ID, t.BoundaryLimit)
+		fmt.Fprintf(errOut, "boundary %q around %s:\n", t.ID, core.ExactBytes(t.BoundaryLimit))
 		for _, f := range planned {
 			if f.Target == t {
-				fmt.Fprintf(errOut, "  %-26s %d B\n", f.Name, f.Plan.Bytes)
+				fmt.Fprintf(errOut, "  %-26s %s\n", f.Name, core.ExactBytes(f.Plan.Bytes))
 			}
 		}
 

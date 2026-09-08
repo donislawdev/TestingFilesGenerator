@@ -164,7 +164,7 @@ func sayingUnder(t *testing.T, o fyne.CanvasObject, label string) string {
 		}
 		var red []string
 		walk(block, func(inner fyne.CanvasObject) {
-			if l, is := inner.(*widget.Label); is && l.Importance == widget.DangerImportance && l.Text != "" {
+			if l := asLabel(inner); l != nil && l.Importance == widget.DangerImportance && l.Text != "" {
 				red = append(red, l.Text)
 			}
 		})

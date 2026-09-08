@@ -42,11 +42,17 @@ func Open(h Host) {
 	// hardest for. It also loses its Back button: a tab is its own way out.
 	// Every screen goes back to the ordinary theme, because the strip they hang
 	// under is drawn quieter and a theme reaches everything below it.
+	//
+	// Every screen is held to a smallest width, and it is done here rather than
+	// on each screen because a window has ONE smallest size whichever tab is in
+	// front. See parts.AtLeastWide for why the layout has to produce it: this
+	// toolkit takes the limit it gives the window manager from the content, and
+	// a form inside a scroll asks for almost nothing.
 	tabs := container.NewAppTabs(
-		container.NewTabItem(text.TabOneTarget(), parts.AtFullStrength(gen.Object())),
-		container.NewTabItem(text.TabPresets(), parts.AtFullStrength(pre.Object())),
-		container.NewTabItem(text.TabRecipe(), parts.AtFullStrength(rec.Object())),
-		container.NewTabItem(text.TabAbout(), parts.AtFullStrength(About(h))),
+		container.NewTabItem(text.TabOneTarget(), parts.AtLeastWide(parts.AtFullStrength(gen.Object()), parts.FloorWidth)),
+		container.NewTabItem(text.TabPresets(), parts.AtLeastWide(parts.AtFullStrength(pre.Object()), parts.FloorWidth)),
+		container.NewTabItem(text.TabRecipe(), parts.AtLeastWide(parts.AtFullStrength(rec.Object()), parts.FloorWidth)),
+		container.NewTabItem(text.TabAbout(), parts.AtLeastWide(parts.AtFullStrength(About(h)), parts.FloorWidth)),
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a

@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 )
 
@@ -54,7 +56,15 @@ func TestASizeIsWrittenTheWayAPersonWritesIt(t *testing.T) {
 			if code != cli.ExitOK {
 				t.Fatalf("the size %q was refused: exit %d\n%s", size, code, errOut)
 			}
-			if !strings.Contains(errOut, want+" B total") {
+			// Through the function that prints it, since the digits were
+			// grouped on 2026-09-08. What this guard is about is whether the
+			// size PARSED to the right number - the spelling of that number
+			// belongs to core and has its own guard.
+			n, convErr := strconv.ParseInt(want, 10, 64)
+			if convErr != nil {
+				t.Fatalf("the wanted size %q in this table is not a number: %v", want, convErr)
+			}
+			if !strings.Contains(errOut, core.ExactBytes(n)+" total") {
 				t.Errorf("the size %q came to something other than %s B:\n%s", size, want, errOut)
 			}
 		})

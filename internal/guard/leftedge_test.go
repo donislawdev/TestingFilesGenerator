@@ -108,30 +108,40 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 	}
 }
 
-// The bar's own words stand on the same edge as the form's.
+// What a run says stands on the same edge as the boxes beside it.
 //
-// Named apart from the screens above because it is the one that was wrong for
-// a reason nobody could see: the action bar does have padding, and the column
-// inside it is centred in what the padding left - so the padding moved the
-// bar's edge and not its content. A guard reading the code would have found
-// the padding and stopped there.
-func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
+// It used to be about the action bar, and that was the version of this question
+// that existed while the run's messages were pinned to the foot of the window.
+// It was worth naming apart from the screens above because it was wrong for a
+// reason nobody could see: the bar does have padding, and the column inside it
+// is centred in what the padding left, so the padding moved the bar's edge and
+// not its content. A guard reading the code would have found the padding and
+// stopped there.
+//
+// The messages moved into the pinned column on 2026-09-08, so the bar has no
+// words of its own left to line up and the question moved with them. It is the
+// same question: what a run says is read straight after what is in the boxes
+// above it, and two left edges a few pixels apart read as an assembly rather
+// than a layout. The neighbour is now the Output box in the same column rather
+// than a field on the other side of the window - lining a pinned column up with
+// a scrolling one would be asserting that two columns are one.
+func TestWhatARunSaysStandsOnTheSameEdgeAsItsColumn(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 	generate := tabContent(t, content, text.TabOneTarget())
 
-	field, ok := labelBox(generate, text.FieldFormat())
+	field, ok := labelBox(generate, text.FieldOutputDir())
 	if !ok {
-		t.Fatal("the generate screen has no Format field")
+		t.Fatal("the generate screen has no output directory field, so this guard read the wrong tree")
 	}
-	// What the bar says at rest, before anything has been pressed.
+	// What the run says at rest, before anything has been pressed.
 	status, ok := labelBox(generate, text.WritingTo(destinationShownAtRest(t, generate)))
 	if !ok {
-		t.Skip("the bar is not naming a destination at rest, so there is nothing on it to line up")
+		t.Skip("nothing is naming a destination at rest, so there is nothing to line up")
 	}
 	if off := status.X - field.X; off > 1 || off < -1 {
-		t.Errorf("a field name starts at %.1f px and the bar's own line at %.1f px, %.1f px apart",
-			field.X, status.X, off)
+		t.Errorf("a field name in the pinned column starts at %.1f px and what the run says at "+
+			"%.1f px, %.1f px apart", field.X, status.X, off)
 	}
 }
 

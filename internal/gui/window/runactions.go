@@ -7,6 +7,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // The buttons that start, stop and follow a run.
@@ -47,7 +49,10 @@ func (r *runner) PressGenerate() { pressIfLive(r.generateBtn) }
 
 func (r *runner) PressPreview() { pressIfLive(r.previewBtn) }
 
-func (r *runner) PressCancel() { pressIfLive(r.cancelBtn) }
+// Through the button inside, because what pressIfLive asks about is the state
+// of the control somebody could click - the key name beside it has no state of
+// its own to be wrong about.
+func (r *runner) PressCancel() { pressIfLive(r.cancelBtn.Button) }
 
 // pressIfLive presses a button somebody could have pressed.
 //
@@ -62,21 +67,32 @@ func pressIfLive(b *widget.Button) {
 }
 
 func (r *runner) actions() fyne.CanvasObject {
-	// Centred, on the owner's decision of 2026-08-19, which reverses the one of
-	// 2026-08-18 that put them at the right edge. Both were reports from
-	// looking at the built window, and the reasoning for the first is kept
-	// above rather than deleted because it was not wrong - it was a choice, and
-	// this is a different one.
+	// At the right edge, on the owner's decision of 2026-09-08, which reverses
+	// the one of 2026-08-19 and restores the one of 2026-08-18. All three were
+	// reports from looking at the built window and none was wrong - they were
+	// choices, and this is the current one. What decided it this time was the
+	// two column body arriving: the middle of a bar has no relationship to the
+	// column somebody just finished typing in, and the right edge is the end of
+	// the reading path on every desktop this ships to.
 	//
-	// A spacer at each end rather than one, because a single greedy spacer only
-	// pushes: it can put the group at one end or the other and never in the
-	// middle.
+	// The comment above this function has said "RIGHT edge" since 2026-08-18
+	// and was false for three weeks, because the reversal changed the code and
+	// left the prose. Nothing guards prose. It is true again now.
+	//
+	// One greedy spacer rather than two. A spacer pushes, so one in front puts
+	// the whole group at the far end - which is the thing wanted here, and the
+	// pair was only ever needed to hold the group in the middle.
 	//
 	// Everything that is not one of these buttons went to the bar's rail on
 	// 2026-08-19 - see parts.ActionBar. It used to be laid over this row, which
 	// kept it inside the form's column and so a margin away from the edge.
-	return container.NewHBox(
-		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn, r.openBtn, layout.NewSpacer())
+	row := []fyne.CanvasObject{
+		layout.NewSpacer(),
+		r.previewBtn, parts.ShortcutHint(text.ShortcutPreview()),
+		r.generateBtn, parts.ShortcutHint(text.ShortcutGenerate()),
+	}
+	row = append(row, r.cancelBtn.Objects()...)
+	return container.NewHBox(append(row, r.openBtn)...)
 }
 
 // offerTheFolder shows the way to the files, once there are some.

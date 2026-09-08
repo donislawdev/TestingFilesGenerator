@@ -139,6 +139,67 @@ func Note(content string) fyne.CanvasObject {
 	return label
 }
 
+// ShortcutHint is the key that works on the button beside it.
+//
+// The shortcuts went in on 2026-08-25 and nothing on the screen has ever said
+// they exist - Ctrl+Enter runs, Ctrl+P previews, Escape stops. A menu bar would
+// have listed them and was turned down by the owner that day, because it would
+// have changed the look of the window right after an audit of the look, so the
+// window kept a feature only its author knew about.
+//
+// Beside the button rather than inside it. A key name set into a button's own
+// label makes the button wider than its word, and these three sit in a row
+// where width is the thing being spent.
+//
+// The same rank as a note under a field - quiet, small - because that is what
+// it is: something the eye should skip until it wants it. It is not wrapped,
+// since a key name that wrapped would be worse than one that was missing.
+func ShortcutHint(key string) fyne.CanvasObject {
+	label := widget.NewLabel(key)
+	label.Importance = widget.LowImportance
+	label.SizeName = theme.SizeNameCaptionText
+	return label
+}
+
+// ShortcutButton is a button and the key that presses it, kept together.
+//
+// It exists because of a ceiling rather than because of a design. Cancel is
+// hidden while nothing is running, so its key name has to be hidden with it -
+// and holding the two as separate fields put the runner at 23 fields against a
+// ceiling of 22. That ceiling is a ratchet and the rule with it is to move
+// state out rather than raise the number, so the pair became one thing.
+//
+// It turned out to be the better shape anyway. A button and the key that
+// presses it are one control in every way that matters: they appear together,
+// they go away together, and anywhere else in this window they would have to
+// be remembered to be kept in step by hand.
+type ShortcutButton struct {
+	*widget.Button
+	hint fyne.CanvasObject
+}
+
+// NewShortcutButton pairs a button with the key that presses it.
+func NewShortcutButton(button *widget.Button, key string) *ShortcutButton {
+	return &ShortcutButton{Button: button, hint: ShortcutHint(key)}
+}
+
+// Objects are the two things to put in a row, in reading order.
+func (s *ShortcutButton) Objects() []fyne.CanvasObject {
+	return []fyne.CanvasObject{s.Button, s.hint}
+}
+
+// Show and Hide move the pair together. Anything else about the button - enable,
+// disable, press - is the button's own and reaches it through the embedding.
+func (s *ShortcutButton) Show() {
+	s.Button.Show()
+	s.hint.Show()
+}
+
+func (s *ShortcutButton) Hide() {
+	s.Button.Hide()
+	s.hint.Hide()
+}
+
 // ErrorArea is where a refusal is shown, and it is sized for a real one.
 //
 // G9 is a requirement on the layout rather than on the wording: a refusal in

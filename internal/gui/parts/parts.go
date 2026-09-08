@@ -44,9 +44,26 @@ func Prose(text string) fyne.CanvasObject {
 }
 
 // Heading is the name of one field, above its control.
+//
+// Quieter and smaller than what it names, since 2026-09-08, and that inversion
+// is the single cheapest thing in this rebuild: it changes every screen at once
+// and costs one function.
+//
+// It was bold and the same size as the value in the box under it, so a screen
+// carried twice as much strong text as it had content - the name of a field
+// competing with the answer somebody typed into it. A name is chrome and a
+// value is the thing being read, and now they are drawn that way round. The
+// rank is carried by size AND colour together rather than by weight, because
+// fyne.TextStyle in v2.8.1 offers two weights and a four rank ramp cannot be
+// built out of them - see the theme's Font.
+//
+// Still a plain widget.Label, and still the FIRST thing in its row. Every walk
+// in this project finds a control by finding the label before it, so the type
+// and the position are load bearing in a way the styling is not.
 func Heading(text string) fyne.CanvasObject {
 	label := widget.NewLabel(text)
-	label.TextStyle = fyne.TextStyle{Bold: true}
+	label.SizeName = theme.SizeNameCaptionText
+	label.Importance = widget.LowImportance
 	return label
 }
 
@@ -83,6 +100,214 @@ func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
 	body = append(body, sectionTitle(title))
 	body = append(body, content...)
 	return container.NewStack(panelSurface(), container.NewPadded(Column(GapField, body...)))
+}
+
+// ReportSection is a panel that tells rather than asks.
+//
+// One per screen, and it holds no boxes at all: what the run will come to,
+// where the files go, how far a run has got and what the engine said when it
+// was turned down. Everything in it is read.
+//
+// A surface of its own rather than the section colour, because it stands beside
+// a panel that is nothing but boxes and the two have to be told apart before
+// they are read. See ColorNamePanelRaised for the measurement and for why the
+// obvious lighter value was rejected.
+func ReportSection(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
+	body := make([]fyne.CanvasObject, 0, len(content)+1)
+	body = append(body, sectionTitle(title))
+	body = append(body, content...)
+	return container.NewStack(raisedSurface(), container.NewPadded(Column(GapField, body...)))
+}
+
+// raisedSurface is what a report panel stands on. See panelSurface.
+func raisedSurface() *canvas.Rectangle {
+	rect := canvas.NewRectangle(PaletteColour(ColorNamePanelRaised, theme.VariantDark))
+	rect.CornerRadius = Theme().Size(theme.SizeNameCardRadius)
+	return rect
+}
+
+// ReportWidth is how wide the column beside the form is drawn.
+//
+// Fixed rather than shared out, and that is what gives this window a smallest
+// size at all. A border layout hands its edge slot exactly the width that slot
+// asks for and gives the rest to the middle, so the form absorbs every change
+// in window width and this column never moves - which is the behaviour wanted,
+// since a run's report is the same five lines whatever the window is doing.
+//
+// The consequence is the useful part: the window cannot be made narrower than
+// the form's own smallest width plus this. Fyne has no SetMinSize on a window -
+// checked in the pinned source, v2.8.1 - and takes the limit it hands the
+// window manager from the content's MinSize, so a floor is something a layout
+// produces rather than something anybody declares. That makes it exactly the
+// kind of number O118 is about: nothing states it, so nothing notices when a
+// layout change quietly lowers it. TestTheWindowCannotBeMadeTooNarrowToUse
+// asserts it instead.
+//
+// 400 comes from the longest thing in the column, which is a path. Below about
+// 340 a Windows path under a user directory wraps to four lines and the panel
+// stops being a summary.
+const ReportWidth = 400
+
+// ReportColumn is the pinned column beside the form.
+//
+// Outside the scroll on purpose. What it holds is the answer to the button
+// somebody is about to press, and an answer that scrolls out of sight while
+// they read the form is an answer they have to go looking for. It is also why
+// the action bar stopped carrying these lines: a bar that grows a message
+// grows, and a bar that grows moves the form under it.
+// The LAST child is given whatever height is left over, and the rest are
+// stacked above it at their own. That is what stops this window carrying a
+// third of its height in nothing: a form is as tall as its questions and a
+// report is as tall as it needs to be, so without something willing to grow
+// the column ends wherever its content ends and the rest of the window is
+// blank. The report is the one that should grow, because it is the one that
+// gets taller when a run starts talking.
+func ReportColumn(children ...fyne.CanvasObject) fyne.CanvasObject {
+	// The gap on the left is the one between the two columns. The one on the
+	// right is the window's own edge, and they are the same step because a
+	// column that hugged the window frame on one side and stood clear of the
+	// form on the other would read as pushed rather than placed.
+	return container.New(reportWidth{},
+		Inset(container.New(fillLast{}, children...), GapColumn, 0, GapColumn, 0))
+}
+
+// fillLast stacks its children a section apart and hands the last one the rest.
+type fillLast struct{}
+
+func (fillLast) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for i, o := range objects {
+		child := o.MinSize()
+		size.Width = fyne.Max(size.Width, child.Width)
+		size.Height += child.Height
+		if i > 0 {
+			size.Height += GapSection
+		}
+	}
+	return size
+}
+
+func (fillLast) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	if len(objects) == 0 {
+		return
+	}
+	y := float32(0)
+	for _, o := range objects[:len(objects)-1] {
+		height := o.MinSize().Height
+		o.Resize(fyne.NewSize(size.Width, height))
+		o.Move(fyne.NewPos(0, y))
+		y += height + GapSection
+	}
+	last := objects[len(objects)-1]
+	// Never below its own minimum. A window short enough to squeeze this would
+	// otherwise draw a panel with its content hanging out of the bottom, and
+	// the height a window will be given is not something this can refuse.
+	height := fyne.Max(size.Height-y, last.MinSize().Height)
+	last.Resize(fyne.NewSize(size.Width, height))
+	last.Move(fyne.NewPos(0, y))
+}
+
+// GapColumn is the space between the form and the column beside it.
+//
+// The same step as the space between two panels. They are the same kind of
+// distance - one group of things has ended and another has begun - and the
+// scale in this package has five steps precisely so that a sixth is not
+// invented for every new relationship.
+const GapColumn = GapSection
+
+// FloorWidth is the narrowest this window is any use at.
+//
+// Two columns, a path in one of them and boxes in the other, and below about
+// this the path in the report column wraps to four lines and the panel stops
+// being a summary. A judgement recorded as one - see
+// docs/GUI-REDESIGN-2026-09-08.md - rather than a threshold from anywhere.
+const FloorWidth = 1000
+
+// AtLeastWide refuses to be laid out narrower than the window needs.
+//
+// It exists because a scroll reports a small minimum however tall or wide its
+// contents are, which is what a scroll is FOR - so with the form inside one,
+// the whole window asked for about 660 px at its smallest and could be dragged
+// there. Measured on 2026-09-08 before this: 832, 659, 820 and 730 px on the
+// four screens, all well under what two columns need.
+//
+// Fyne has no SetMinSize on a window and takes the limit it hands the window
+// manager from the content's MinSize - internal/driver/glfw/window_desktop.go
+// line 297, read in the pinned source. So a floor is something a layout
+// produces, and this is the layout that produces it.
+//
+// It raises the minimum and nothing else. Given more it lays the child out in
+// everything it was given, so a wide window is unaffected.
+func AtLeastWide(o fyne.CanvasObject, width float32) fyne.CanvasObject {
+	return container.New(&atLeastWide{width: width}, o)
+}
+
+type atLeastWide struct{ width float32 }
+
+func (a *atLeastWide) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize())
+	}
+	size.Width = fyne.Max(size.Width, a.width)
+	return size
+}
+
+func (a *atLeastWide) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(size)
+		o.Move(fyne.NewPos(0, 0))
+	}
+}
+
+// Inset puts space around something, on the sides asked for.
+//
+// container.NewPadded exists and pads all four sides by the theme's padding,
+// which is 6 here. The two columns of this window need more than that between
+// them and none at all where they meet the window's own edge, and a layout that
+// can only say one number cannot say that.
+func Inset(o fyne.CanvasObject, left, top, right, bottom float32) fyne.CanvasObject {
+	return container.New(&inset{left: left, top: top, right: right, bottom: bottom}, o)
+}
+
+type inset struct{ left, top, right, bottom float32 }
+
+func (i *inset) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize())
+	}
+	return fyne.NewSize(size.Width+i.left+i.right, size.Height+i.top+i.bottom)
+}
+
+func (i *inset) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(size.Width-i.left-i.right, size.Height-i.top-i.bottom))
+		o.Move(fyne.NewPos(i.left, i.top))
+	}
+}
+
+// reportWidth asks for ReportWidth and lays its child out in whatever it gets.
+//
+// It asks rather than insists. Handed less than it wanted the child still fills
+// the space, because a column that drew itself 400 px wide in a 300 px slot
+// would paint over the form.
+type reportWidth struct{}
+
+func (reportWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize())
+	}
+	size.Width = ReportWidth
+	return size
+}
+
+func (reportWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(size)
+		o.Move(fyne.NewPos(0, 0))
+	}
 }
 
 // FieldColumn stacks fields the way a section stacks them, for the boxes a screen
@@ -225,7 +450,14 @@ func Divider() fyne.CanvasObject {
 type dividerLayout struct{}
 
 func (dividerLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	return fyne.NewSize(1+theme.Padding()*4, 0)
+	// Widened on 2026-09-08, and the guard behind it is what asked. The run
+	// buttons gained the key that presses each of them, so the gap between two
+	// controls that DO belong together went from about 12 px to about 60 - and
+	// this room stayed where it was, which left the two least related buttons
+	// in the window drawn tighter than a pair. The rule was never a number: it
+	// is that separating has to be wider than belonging together, so when the
+	// one moves this moves with it.
+	return fyne.NewSize(1+theme.Padding()*10, 0)
 }
 
 func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {

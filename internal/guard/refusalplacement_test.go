@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 
 	"fyne.io/fyne/v2/widget"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -153,7 +154,7 @@ func sawItOnce(t *testing.T, content fyne.CanvasObject, label, refusal string) {
 	// screenshot of the top of the screen.
 	seen := 0
 	walk(content, func(obj fyne.CanvasObject) {
-		if l, is := obj.(*widget.Label); is && strings.Contains(l.Text, refusal) {
+		if l := asLabel(obj); l != nil && strings.Contains(l.Text, refusal) {
 			seen++
 		}
 	})
@@ -215,9 +216,46 @@ func underSomethingHidden(root fyne.CanvasObject) map[fyne.CanvasObject]bool {
 func allText(o fyne.CanvasObject) string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Text != "" {
-			out = append(out, l.Text)
+		if s := wordsOn(obj); s != "" {
+			out = append(out, s)
 		}
 	})
 	return strings.Join(out, "\n")
+}
+
+// wordsOn is what one object says, whatever kind of label it is.
+//
+// A type assertion on *widget.Label misses every type in parts that EMBEDS one,
+// and that is not a hypothetical: parts.RunStatus arrived on 2026-09-08 and
+// eleven guards immediately reported that the window had stopped saying what a
+// run was doing. It had not. They had stopped being able to hear it.
+//
+// parts.ByteCount and parts.RequiredMark embed a label too and are deliberately
+// NOT here. They were invisible to this before the change as well, so adding
+// them now would alter what a dozen guards read while nothing about them is
+// being worked on - and the star in particular would start appearing in the
+// middle of sentences these guards compare. Written down rather than fixed
+// quietly: this reads labels and the two of them are still missing.
+func wordsOn(obj fyne.CanvasObject) string {
+	if l := asLabel(obj); l != nil {
+		return l.Text
+	}
+	return ""
+}
+
+// asLabel is the label inside an object, or nil if it is not one.
+//
+// It hands back the EMBEDDED widget.Label rather than a copy of its text, so a
+// caller can go on to ask about importance, wrapping or where it ended up. That
+// works because ExtendBaseWidget leaves one BaseWidget in the object, so the
+// embedded label reports the size and position the outer widget was laid out
+// at - the two are the same struct, not two views of it.
+func asLabel(obj fyne.CanvasObject) *widget.Label {
+	switch it := obj.(type) {
+	case *widget.Label:
+		return it
+	case *parts.RunStatus:
+		return &it.Label
+	}
+	return nil
 }

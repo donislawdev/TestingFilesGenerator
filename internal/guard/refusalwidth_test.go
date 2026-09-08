@@ -110,7 +110,8 @@ func TestARefusalNamesTheBoxTheWayTheScreenNamesIt(t *testing.T) {
 func refusalLabelSaying(o fyne.CanvasObject, words string) *widget.Label {
 	var found *widget.Label
 	walk(o, func(obj fyne.CanvasObject) {
-		label, is := obj.(*widget.Label)
+		label := asLabel(obj)
+		is := label != nil
 		if !is || found != nil {
 			return
 		}

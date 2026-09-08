@@ -137,7 +137,7 @@ func linkedOn(target, goos string) (map[string]string, error) {
 	//nolint:gosec // the command is the go tool and the target is one of the
 	// two literals in describeBinaries - nothing here comes from outside.
 	cmd := exec.Command("go", "list", "-deps", "-f",
-		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}", target)
+		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}|{{.ImportPath}}{{end}}", target)
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=1", "GOOS="+goos)
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
@@ -146,11 +146,24 @@ func linkedOn(target, goos string) (map[string]string, error) {
 	}
 	versions := map[string]string{}
 	for _, line := range strings.Split(string(out), "\n") {
-		path, moduleVersion, found := strings.Cut(strings.TrimSpace(line), "@")
-		if !found || strings.Contains(path, "donislawdev") {
+		module, rest, found := strings.Cut(strings.TrimSpace(line), "@")
+		if !found {
 			continue
 		}
-		versions[path] = moduleVersion
+		moduleVersion, importPath, _ := strings.Cut(rest, "|")
+		if strings.Contains(module, "donislawdev") {
+			// Our own module is not a component and is never listed as one -
+			// carriedBy drops any path the registry does not know. What goes in
+			// is the PACKAGE path, and it goes in because module is too coarse
+			// a question for an asset this repository embeds itself: both
+			// binaries link this module and only one of them links the package
+			// holding the faces. Keyed by module, a font that ships in the
+			// window would be documented as shipping in the command line too,
+			// and there is a guard whose whole job is that not happening.
+			versions[importPath] = ""
+			continue
+		}
+		versions[module] = moduleVersion
 	}
 	return versions, nil
 }

@@ -104,7 +104,8 @@ func TestWhereTheFilesGoIsSaidOutsideTheScrollingPart(t *testing.T) {
 func labelSaying(o fyne.CanvasObject, want string) *widget.Label {
 	var found *widget.Label
 	walk(o, func(obj fyne.CanvasObject) {
-		label, ok := obj.(*widget.Label)
+		label := asLabel(obj)
+		ok := label != nil
 		if ok && found == nil && label.Text == want {
 			found = label
 		}

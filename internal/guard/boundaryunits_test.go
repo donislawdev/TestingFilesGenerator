@@ -77,7 +77,11 @@ func TestABoundaryRunSaysTheNumberItBuiltAround(t *testing.T) {
 	// The three file lines carry the byte count as well, so asking whether the
 	// number appears at all left this green when the announcement lost it -
 	// which the mutation runner said out loud on 2026-08-18.
-	if !strings.Contains(errOut, `boundary "files" around 15728640 B`) {
+	// The count is asked of the same function that prints it, since the digits
+	// were grouped on 2026-09-08. This guard is about whether the announcement
+	// carries the NUMBER, not about how it is spelt - and a literal here would
+	// have to be respelt by hand every time that spelling changes.
+	if !strings.Contains(errOut, `boundary "files" around `+core.ExactBytes(15728640)) {
 		t.Errorf("the run built a set around 15728640 B and never says so.\n"+
 			"Reason: 15mb can be read two ways, and printing the byte count is what lets somebody\n"+
 			"whose system meant 15000000 see it before a byte is written.\nWhat it said:\n%s", out)

@@ -38,7 +38,6 @@ var notThroughTheCatalogue = map[string]string{
 	"HeadingAbout":            "the same name again, at the top of the About screen. Same reason.",
 	"CatalogueNotLoaded":      "the sentence saying the catalogue could not be read. It cannot come from the catalogue - that is what it is about - so this one is English wherever it appears, and it is written to a terminal rather than to the window.",
 	"NoWindowInThisBuild":     "written to standard error by a window binary with no window in it, so it is terminal text and D9 keeps the terminal English forever.",
-	"ExactBytes":              "the byte symbol, which follows what the command line prints rather than the language of the window - the comment above it says so. Translating one and not the other would make two numbers on one screen disagree about their unit.",
 	"PlaceholderNameTemplate": "an example of a file name template, so it is a value somebody could type rather than a sentence. Translating it would produce an example that does not work.",
 	"SupportURL":              "an address.",
 }

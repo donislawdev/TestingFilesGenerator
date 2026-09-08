@@ -180,13 +180,20 @@ func moduleItem(path, version string, reviewed map[string]Module) Item {
 	return Item{Name: displayName(path), Version: version, SPDX: m.SPDX, Copyright: m.Copyright}
 }
 
-// embeddedItems are the registry entries whose module is in this build. A font
-// travels with the package that embeds it, so the question of whether it ships
-// is the question of whether its module was linked.
+// embeddedItems are the registry entries this build actually links.
+//
+// By module for anything arriving inside somebody else's code: a font travels
+// with the package that embeds it, and that package travels with its module.
+//
+// By PACKAGE as well, since 2026-09-08, for the assets this repository embeds
+// itself. Both binaries link this module and only one of them links the package
+// holding the text faces, so a module sized answer would document the window's
+// font as shipping in the command line - which is exactly what
+// TestTheSBOMKeepsTheTwoBinariesApart exists to catch.
 func embeddedItems(linked map[string]bool) []Item {
 	var items []Item
 	for _, asset := range assets {
-		if !linked[asset.Module] {
+		if !linked[asset.Module] && !linked[asset.Package] {
 			continue
 		}
 		items = append(items, Item{

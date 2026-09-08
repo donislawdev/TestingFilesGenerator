@@ -79,7 +79,11 @@ type runner struct {
 
 	previewBtn  *widget.Button
 	generateBtn *widget.Button
-	cancelBtn   *widget.Button
+	// cancelBtn carries the key that presses it, because the two are hidden and
+	// shown together - see parts.ShortcutButton. Preview and Generate are on the
+	// bar whatever is happening, so their hints are built in place and left
+	// alone, and only this one has to be kept in step.
+	cancelBtn *parts.ShortcutButton
 	// openBtn shows the directory a finished run wrote into.
 	//
 	// It appears when there is something to open and goes away the moment the
@@ -97,7 +101,7 @@ type runner struct {
 	wroteInto string
 
 	bar     *parts.Progress
-	status  *widget.Label
+	status  *parts.RunStatus
 	problem *parts.ErrorArea
 
 	// fields is every box on the screen, by the setting the engine names it by.
@@ -554,10 +558,8 @@ func newRunner() *runner {
 	// screen twice.
 	r.bar.Hide()
 
-	r.status = widget.NewLabel("")
-	r.status.Wrapping = fyne.TextWrapWord
 	// Nothing to say yet, so nothing takes up room. See say.
-	r.status.Hide()
+	r.status = parts.NewRunStatus()
 	r.problem = parts.NewErrorArea()
 
 	r.previewBtn = widget.NewButton(text.ButtonPreview(), r.onPreview)
@@ -578,7 +580,8 @@ func newRunner() *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	r.cancelBtn = widget.NewButton(text.ButtonCancel(), r.onCancel)
+	r.cancelBtn = parts.NewShortcutButton(
+		widget.NewButton(text.ButtonCancel(), r.onCancel), text.ShortcutCancel())
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 

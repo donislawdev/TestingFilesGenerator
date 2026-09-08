@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -212,7 +211,8 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 
 	spoke := false
 	walk(content, func(obj fyne.CanvasObject) {
-		label, ok := obj.(*widget.Label)
+		label := asLabel(obj)
+		ok := label != nil
 		if !ok || label.Text == "" || !label.Visible() {
 			return
 		}

@@ -1,8 +1,9 @@
 package text
 
 import (
-	"strconv"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Headings, one per screen. They name what the screen is for rather than what
@@ -53,10 +54,18 @@ func ButtonChoose() string { return say("ButtonChoose", "Choose...") }
 // the field label cannot say.
 func SectionConfiguration() string { return say("SectionConfiguration", "File configuration") }
 func SectionOutput() string        { return say("SectionOutput", "Output") }
-func SectionPreset() string        { return say("SectionPreset", "The question") }
-func SectionSettings() string      { return say("SectionSettings", "Settings") }
-func SectionLicence() string       { return say("SectionLicence", "Licence") }
-func SectionSupport() string       { return say("SectionSupport", "Support") }
+
+// SectionThisRun names the panel that reports rather than asks.
+//
+// "This run" rather than "Status" or "Summary". It says which run is being
+// described - the one the settings on the left add up to, not the last one -
+// and that distinction is the whole reason the panel is worth having: the
+// window can now answer "what am I about to do" before anything is pressed.
+func SectionThisRun() string  { return say("SectionThisRun", "This run") }
+func SectionPreset() string   { return say("SectionPreset", "The question") }
+func SectionSettings() string { return say("SectionSettings", "Settings") }
+func SectionLicence() string  { return say("SectionLicence", "Licence") }
+func SectionSupport() string  { return say("SectionSupport", "Support") }
 
 // The two headings over what this binary carries that somebody else wrote.
 //
@@ -508,8 +517,15 @@ func OneExplanation(line, detail string) string {
 // "B" rather than "bytes" because that is what the command line prints - one
 // vocabulary for one thing across both surfaces - and it sidesteps the plural
 // a number always drags behind it.
+//
+// The counting out moved to core on 2026-09-08, when the digits were grouped.
+// That sentence about one vocabulary across both surfaces was true and was
+// held up by nothing: the command line had its own "%d B" in four places, so
+// grouping here alone would have made one product spell one number two ways.
+// This is now the same function both surfaces call, and it is not translated,
+// because there is no word in it.
 func ExactBytes(n int64) string {
-	return strconv.FormatInt(n, 10) + " B"
+	return core.ExactBytes(n)
 }
 
 // RefusedBeforeWriting is what the foot of the form says when a press was

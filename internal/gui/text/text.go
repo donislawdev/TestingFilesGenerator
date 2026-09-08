@@ -52,6 +52,19 @@ func ButtonGenerate() string { return say("ButtonGenerate", "Generate") }
 func ButtonOpenFolder() string { return say("ButtonOpenFolder", "Open folder") }
 func ButtonCancel() string     { return say("ButtonCancel", "Cancel") }
 
+// The keys that press those buttons without the mouse.
+//
+// They have worked since 2026-08-25 and the window has never said so. A menu
+// bar would have listed them and was turned down the same day, so nothing did.
+//
+// Through here rather than written at the widget for the reason every word is:
+// a literal in internal/gui is what the text guard looks for. They are also
+// genuinely translatable - a keyboard sold in one country does not always carry
+// the same word on the same key, and "Ctrl" is not what every desktop calls it.
+func ShortcutPreview() string  { return say("ShortcutPreview", "Ctrl+P") }
+func ShortcutGenerate() string { return say("ShortcutGenerate", "Ctrl+Enter") }
+func ShortcutCancel() string   { return say("ShortcutCancel", "Esc") }
+
 // files is a count with its noun, in the right number.
 //
 // The doc above this package has described "file(s)" as a dodge since the day

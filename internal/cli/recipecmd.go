@@ -94,8 +94,9 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		}, ExitOK)
 	}
 
-	fmt.Fprintf(out, "%s is valid: %s, %s, %d B total\n%s\n",
-		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"), engine.TotalBytes(planned), hash)
+	fmt.Fprintf(out, "%s is valid: %s, %s, %s total\n%s\n",
+		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"),
+		core.ExactBytes(engine.TotalBytes(planned)), hash)
 	return ExitOK
 }
 

@@ -323,7 +323,8 @@ func errorShown(t *testing.T, o fyne.CanvasObject) string {
 	t.Helper()
 	var found string
 	walk(o, func(obj fyne.CanvasObject) {
-		label, ok := obj.(*widget.Label)
+		label := asLabel(obj)
+		ok := label != nil
 		if ok && label.Importance == widget.DangerImportance && label.Text != "" {
 			found = label.Text
 		}

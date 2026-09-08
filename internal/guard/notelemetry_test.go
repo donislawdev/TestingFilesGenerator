@@ -151,7 +151,13 @@ var allowedURLs = map[string]string{
 	"internal/format/svgfile/svg.go|http://www.w3.org/2000/svg":                                        "SVG namespace, written into the image",
 	"internal/legal/spdx.go|https://github.com/donislawdev/TestingFilesGenerator":                      "this project, named in the bill of materials it writes",
 	"internal/legal/modules.go|https://github.com/nicksnyder":                                          "part of a third party copyright line, copied into the notices we ship",
-	"internal/version/version.go|https://www.gnu.org/licenses/gpl-3.0.html":                            "where the GPL text is, named by the licence notice this tool prints",
+	// The closing bracket is part of the key on purpose. The copyright line
+	// reads "... Authors (https://github.com/rsms/inter)" and the scan takes
+	// everything up to whitespace, so what it finds ends with the bracket - and
+	// a key spelled without it would name a literal that is not in the file.
+	"internal/legal/assets.go|https://github.com/rsms/inter)": "part of the Inter copyright line, which the OFL requires to travel " +
+		"verbatim with the font - trimming it to keep an address out of the source would be editing somebody's copyright notice",
+	"internal/version/version.go|https://www.gnu.org/licenses/gpl-3.0.html": "where the GPL text is, named by the licence notice this tool prints",
 	"internal/gui/text/screens.go|https://donislawdev.com/support/": "the support page, handed to the system browser on a click - " +
 		"untouchable rule 8 permits this and permits nothing else like it",
 }

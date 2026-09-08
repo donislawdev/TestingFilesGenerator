@@ -36,13 +36,18 @@ func newRequiredMark() *RequiredMark {
 	m := &RequiredMark{}
 	m.ExtendBaseWidget(m)
 	m.Text = text.RequiredMark
-	// Bold, because it stands beside a bold name and a light star next to heavy
-	// words reads as a smudge rather than as a mark.
-	m.TextStyle = fyne.TextStyle{Bold: true}
-	// The palette's error colour, asked for by role rather than by value. The
-	// same name ErrorArea uses, so a field's mark and a field's refusal cannot
-	// come apart.
-	m.Importance = widget.DangerImportance
+	m.SizeName = theme.SizeNameCaptionText
+	// Quiet rather than red, since 2026-09-08, and this is a correction with a
+	// count behind it: five of these stood on the generate screen at rest, in
+	// the SAME red a refusal uses, so the screen showed error colour before
+	// anything was wrong. A reader who has learnt that red means "this one is
+	// broken" has to unlearn it on every fresh screen.
+	//
+	// What made the swap safe is that the meaning was never in the colour. UX1
+	// says colour is never the only carrier, so the mark was already a shape -
+	// a star that the fields beside it do not have - and the shape is untouched.
+	// The red now appears only where something is actually refused.
+	m.Importance = widget.LowImportance
 	return m
 }
 
@@ -65,9 +70,20 @@ func headingRow(label string, detail Detail, required bool, trailing fyne.Canvas
 	if detail.Text != "" && detail.on != nil {
 		row = append(row, newDetailButton(detail))
 	}
-	// Last, and laid out against the far edge rather than after the button -
-	// see headingLine. It belongs to the box below rather than to the name, so
-	// crowding it against the name would make it read as part of the name.
+	// Last on the line, following the button.
+	//
+	// It was pushed to the FAR edge of the column until 2026-09-08, on the
+	// reasoning that a count describing the box underneath would read as part of
+	// the label if it stood next to it, and that the empty half of the column
+	// was there to be used. That was true of a column 820 px wide. It stopped
+	// being true when the form moved into a column of about 660 with two fields
+	// to a row: measured off the stored screen, "1 B" sat 215 px from the box it
+	// describes, which is the same defect this project had already fixed once
+	// when a menu's arrow stood 746 px from its value.
+	//
+	// What keeps it from reading as part of the name now is not distance but
+	// shape - it is set in the monospace face, so it reads as a measurement
+	// beside words rather than as more words. See ByteCount.
 	if trailing != nil {
 		row = append(row, trailing)
 	}
@@ -148,17 +164,6 @@ func (h headingLine) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 		// what a horizontal box does - and matching it is what keeps a field
 		// with no star laid out to the pixel as it was.
 		o.Resize(fyne.NewSize(width, size.Height))
-
-		// A count of bytes is pushed to the far edge instead of following the
-		// name. It describes the box underneath rather than the words beside
-		// it, and the whole point of putting it on this line was the empty half
-		// of the column - laid out next to the name it would sit in the middle
-		// of nothing, and read as part of the label.
-		if _, trailing := o.(*ByteCount); trailing {
-			o.Resize(fyne.NewSize(size.Width-x, size.Height))
-			o.Move(fyne.NewPos(x, 0))
-			continue
-		}
 
 		if !first {
 			x += gapBefore(o)

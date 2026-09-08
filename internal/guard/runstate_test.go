@@ -85,22 +85,34 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 	// scrolls to was already on the screen. Nothing was broken and this guard
 	// went red honestly - it had stopped reaching the state it exists for,
 	// which is the same shape as observation O118.
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 500))
+	w.Resize(fyne.NewSize(window.OpenSize.Width, 300))
 	content.Refresh()
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 501))
+	w.Resize(fyne.NewSize(window.OpenSize.Width, 301))
 	content.Refresh()
 	if room, form := scroll.Size().Height, scroll.Content.MinSize().Height; form <= room {
 		t.Fatalf("the form is %.0f px in %.0f px of room, so nothing has to scroll and this guard "+
 			"would pass without asking its question", form, room)
 	}
 
-	// The seed sits in the last section, which is the part off the bottom of
-	// this window - the whole case this is about.
-	seed := entryUnder(t, content, text.FieldSeed())
-	if seed == nil {
-		t.Fatal("there is no seed box, so this guard read the wrong tree")
+	// The size is off the bottom of a window this short, which is the whole
+	// case this is about.
+	//
+	// It was the seed until 2026-09-08. The seed moved to the report column
+	// with the rest of Output, and that column does not scroll - so a guard
+	// aimed at it would have been asking whether a thing that cannot move
+	// moved. The box has to be one that really is down there.
+	//
+	// A value that is not a size rather than a name template this build cannot
+	// read, and the difference is where the refusal comes from: a bad size is
+	// turned down while the run is being settled, before any worker starts, so
+	// the answer is on the screen by the time the press returns. A template is
+	// refused by the engine, which answers from a worker, and this guard does
+	// not wait for one.
+	wrong := entryUnder(t, content, text.FieldSize())
+	if wrong == nil {
+		t.Fatal("there is no size box, so this guard read the wrong tree")
 	}
-	seed.SetText("not a number")
+	wrong.SetText("not a size")
 
 	press(t, content, "Generate")
 
@@ -109,7 +121,7 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 			"still wherever it was - %.0f px of form in %.0f px of room.",
 			scroll.Content.MinSize().Height, scroll.Size().Height)
 	}
-	if focused := w.Canvas().Focused(); focused != seed {
+	if focused := w.Canvas().Focused(); focused != wrong {
 		t.Errorf("the keyboard went to %T rather than to the box the refusal is about", focused)
 	}
 	if shown := textIn(content); !strings.Contains(shown, text.RefusedBeforeWriting()) {

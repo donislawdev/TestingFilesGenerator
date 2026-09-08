@@ -191,6 +191,41 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Byte counts are grouped in threes, in the window and on the command line.**
+  A total used to print as `2516582400 B`. It now prints as `2 516 582 400 B`.
+
+  Grouped with a space rather than a comma because a comma means a thousands
+  mark in some countries and a decimal point in others, and this tool is read in
+  both. Machine output is untouched: `--json` and the manifest carry numbers
+  rather than sentences, so nothing that parses them sees any of this.
+
+  If you have a script reading a byte count out of the human output, it needs to
+  take the spaces out. Two of ours did, and both said the tool had broken rather
+  than that they had.
+
+- **The window has been rebuilt.** Same four screens, same settings, same
+  results - a different shape.
+
+  The form is on the left and everything about where the files go is on the
+  right, in a column that does not scroll away. It carries what the run has to
+  say, so the answer to a press stays next to the numbers it is about instead of
+  being pinned to the bottom of the window. On the batch screen that column also
+  shows the manifest name and the seed, which used to be below every batch.
+
+  Preview and Generate moved from the middle of the bar to its right hand end,
+  and each now shows the key that presses it - `Ctrl+P` and `Ctrl+Enter`, with
+  `Esc` on Cancel. Those keys have worked since 0.3.0-rc1 and nothing said so.
+
+  The lettering is Inter. Field names are smaller and quieter than the values in
+  them, section titles are smaller than they were, and every measured number -
+  a byte count, a total, a speed - is set in a monospaced face so digits line up.
+  The star marking a setting a run cannot do without is no longer red, so red on
+  a screen now means something was actually refused. The window opens 1120 by
+  760 and cannot be made narrower than its two columns need.
+
+  `About` is two columns as well, with the licence on the left and everything
+  the binary carries in a list on the right that scrolls on its own.
+
 - **Notes are reported once per thing they say, not once per file.** A run of
   25 000 one-byte text files used to print 25 001 `note:` lines, every one of
   them the same sentence about the label not fitting. It now prints one, with

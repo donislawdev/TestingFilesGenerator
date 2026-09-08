@@ -9,6 +9,36 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// RunStatus is the line a run talks on.
+//
+// A type of its own for the reason DetailButton and RequiredMark are: guards
+// and probes find things in this window by walking the tree, and until
+// 2026-09-08 this one was found by SHAPE - a plain label standing beside a
+// progress track. That held while the pair was alone in the action bar. The
+// moment it moved into a panel with a title, the panel's title was also a plain
+// label beside the same track, and four guards began reading the words "This
+// run" and reporting that a finished run had not gone green.
+//
+// They were not wrong about what they saw. Recognising a thing by its place
+// among its neighbours breaks the first time somebody puts a neighbour next to
+// it, and this project has that lesson written down twice already. A name
+// cannot be stood next to.
+type RunStatus struct {
+	widget.Label
+}
+
+// NewRunStatus makes the line, hidden, with nothing on it.
+//
+// Hidden rather than empty, because a hidden widget costs no height here - so a
+// screen at rest is not carrying a blank row waiting to be spoken into.
+func NewRunStatus() *RunStatus {
+	s := &RunStatus{}
+	s.ExtendBaseWidget(s)
+	s.Wrapping = fyne.TextWrapWord
+	s.Hide()
+	return s
+}
+
 // Progress is how far along a run is, drawn as a groove that fills.
 //
 // A control of our own rather than the toolkit's, and it is the track that

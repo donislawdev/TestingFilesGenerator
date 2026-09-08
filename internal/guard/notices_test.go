@@ -338,7 +338,7 @@ func shipped(t *testing.T, target string) (map[string]string, map[string]string)
 func builtVersions(t *testing.T, target, goos string) map[string]string {
 	t.Helper()
 	cmd := exec.Command("go", "list", "-deps", "-f",
-		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}", target)
+		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}|{{.ImportPath}}{{end}}", target)
 	cmd.Env = append(os.Environ(), "GOOS="+goos, "CGO_ENABLED=1")
 	out, err := cmd.Output()
 	if err != nil {
@@ -346,12 +346,12 @@ func builtVersions(t *testing.T, target, goos string) map[string]string {
 	}
 	versions := map[string]string{}
 	for _, line := range strings.Split(string(out), "\n") {
-		line = strings.TrimSpace(line)
-		path, version, found := strings.Cut(line, "@")
-		if !found || strings.Contains(path, "donislawdev") {
+		module, rest, found := strings.Cut(strings.TrimSpace(line), "@")
+		if !found || strings.Contains(module, "donislawdev") {
 			continue
 		}
-		versions[path] = version
+		version, _, _ := strings.Cut(rest, "|")
+		versions[module] = version
 	}
 	return versions
 }

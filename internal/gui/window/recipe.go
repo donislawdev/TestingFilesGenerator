@@ -189,12 +189,22 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.addBtn = widget.NewButton(text.ButtonAddBatch(), r.addBatch)
 	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
 
+	// The batches scroll on the left and where they go is pinned on the right.
+	// This screen is the one that most needs it: ten batches is eight screens
+	// of form, and until now the output box and every word the run said were
+	// below all of them.
+	form := parts.Screen(text.HeadingRecipe(), r.batchBox)
+	report := parts.ReportColumn(
+		r.outBox,
+		parts.ReportSection(text.SectionThisRun(), r.progress(), r.problem.Object()),
+	)
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
-			r.actions(), r.progress(), r.problem.Object()),
-		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox)))),
+			r.actions()),
+		nil,
+		report,
+		r.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings

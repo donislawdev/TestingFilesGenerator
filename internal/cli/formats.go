@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
@@ -109,8 +110,8 @@ func entryFor(d format.Descriptor) formatEntry {
 // list and ignore the argument, ending with 0 - so there was no way to ask what
 // a format accepts, and the silence looked like an answer.
 func describeOne(d format.Descriptor, out io.Writer) {
-	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %d B\n",
-		d.ID, d.Fidelity, d.Determinism, smallestAccepted(d))
+	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %s\n",
+		d.ID, d.Fidelity, d.Determinism, core.ExactBytes(smallestAccepted(d)))
 	fmt.Fprintf(out, "  extension  %s\n", d.Extension)
 	fmt.Fprintf(out, "  padding    %s\n", d.Padding.Name)
 	fmt.Fprintf(out, "  label      %s\n", d.Label)

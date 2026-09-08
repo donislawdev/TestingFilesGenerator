@@ -102,8 +102,26 @@ func About(h Host) fyne.CanvasObject {
 		parts.Section(text.SectionSupport(),
 			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
 	}
-	sections = append(sections, carried()...)
 	page := parts.Screen(text.HeadingAbout(version.Version), sections...)
+
+	// What the binary carries moves into the column beside the page, on the
+	// same layout the three work screens use.
+	//
+	// Measured on the stored screen before this changed: three labels of 355,
+	// 622 and 164 px, so 1141 px of unbroken text in a window 1060 px tall,
+	// and the whole of it inside one scroll under the licence. Reading who
+	// wrote what meant scrolling past the licence every time.
+	//
+	// It is the same split as everywhere else, which is the point rather than a
+	// coincidence: what this program IS on the left, and what it carries on the
+	// right. Nothing here is a form, so this is the one screen where the right
+	// hand column holds no boxes at all.
+	// Scrolled, unlike the report panel on the work screens. What stands there
+	// is five lines about one run and is meant to be taken in at a glance. This
+	// is a list of everything the binary carries - thirty odd modules and seven
+	// fonts - and a list that cannot be read to the end is the one kind of
+	// notice that fails at its only job.
+	beside := parts.ReportColumn(container.NewVScroll(parts.Stacked(carried()...)))
 
 	// The same bar the work screens carry, holding only the Donate button.
 	//
@@ -119,7 +137,8 @@ func About(h Host) fyne.CanvasObject {
 	// the list of what the binary carries now, and a licence notice that cannot
 	// be read to the end is the one kind of notice that fails at its only job.
 	return container.NewBorder(
-		nil, parts.ActionBar(rail(donateButton(h))), nil, nil, container.NewVScroll(page))
+		nil, parts.ActionBar(rail(donateButton(h))), nil, beside,
+		container.NewVScroll(parts.Inset(page, parts.GapColumn, 0, 0, 0)))
 }
 
 // carried is what this binary contains that somebody else wrote, read out of

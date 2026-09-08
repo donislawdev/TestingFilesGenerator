@@ -328,6 +328,10 @@
     "description": "The heading over a group of fields.",
     "other": "Support"
   },
+  "SectionThisRun": {
+    "description": "The heading over a group of fields.",
+    "other": "This run"
+  },
   "SettingKey": {
     "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
     "other": "Written as {{.Key}} in a recipe."
@@ -335,6 +339,18 @@
   "SettingsFor": {
     "description": "Shown in the window. Carries one value, {{.Format}}, which has to stay spelled exactly that way.",
     "other": "Settings for {{.Format}}"
+  },
+  "ShortcutCancel": {
+    "description": "Shown in the window.",
+    "other": "Esc"
+  },
+  "ShortcutGenerate": {
+    "description": "Shown in the window.",
+    "other": "Ctrl+Enter"
+  },
+  "ShortcutPreview": {
+    "description": "Shown in the window.",
+    "other": "Ctrl+P"
   },
   "SizeWayBoundary": {
     "description": "Shown in the window.",

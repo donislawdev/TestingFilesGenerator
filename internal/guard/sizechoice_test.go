@@ -188,7 +188,7 @@ func shownText(o fyne.CanvasObject) string {
 	var all []*widget.Label
 	var hidden []fyne.CanvasObject
 	walk(o, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Text != "" {
+		if l := asLabel(obj); l != nil && l.Text != "" {
 			all = append(all, l)
 		}
 		if obj != nil && !obj.Visible() {
@@ -202,7 +202,7 @@ func shownText(o fyne.CanvasObject) string {
 	}
 	for _, root := range hidden {
 		walk(root, func(obj fyne.CanvasObject) {
-			if l, ok := obj.(*widget.Label); ok {
+			if l := asLabel(obj); l != nil {
 				delete(out, l)
 			}
 		})
@@ -221,7 +221,7 @@ func shownText(o fyne.CanvasObject) string {
 func anyRefusal(o fyne.CanvasObject) string {
 	var said []string
 	walk(o, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Importance == widget.DangerImportance && l.Text != "" {
+		if l := asLabel(obj); l != nil && l.Importance == widget.DangerImportance && l.Text != "" {
 			said = append(said, l.Text)
 		}
 	})

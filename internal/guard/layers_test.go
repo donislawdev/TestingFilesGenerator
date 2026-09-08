@@ -71,12 +71,13 @@ var layer = map[string]int{
 	"internal/engine": 3,
 	"internal/audit":  3,
 
-	"internal/cli":        4,
-	"internal/gui":        4,
-	"internal/gui/parts":  4,
-	"internal/gui/icon":   4,
-	"internal/gui/text":   4,
-	"internal/gui/window": 4,
+	"internal/cli":          4,
+	"internal/gui":          4,
+	"internal/gui/parts":    4,
+	"internal/gui/icon":     4,
+	"internal/gui/typeface": 4,
+	"internal/gui/text":     4,
+	"internal/gui/window":   4,
 
 	"cmd/tfg":     5,
 	"cmd/tfg-gui": 5,
@@ -149,11 +150,19 @@ var sameLayerAllowed = map[string][]string{
 	// which is where the golden images sit - an image of a whole screen
 	// changes with every layout change and stops being looked at.
 	"internal/gui/window": {"internal/gui/parts", "internal/gui/text"},
-	// The sentences the window shows. It imports nothing of ours - a text
-	// package that reached for the engine to word a message would put half a
-	// message here and half where the engine says it, which is how two
-	// wordings for one thing start.
-	"internal/gui/parts": {"internal/gui/text"},
+	// The sentences the window shows, and the letters it shows them in.
+	//
+	// The text package reaches no further sideways than this - a text package
+	// that asked the engine to word a message would put half a message here and
+	// half where the engine says it, which is how two wordings for one thing
+	// start. It does reach DOWN to core, for counting a number out in bytes,
+	// and that is the opposite move: one function, both surfaces, so the window
+	// and the command line cannot spell one number two ways.
+	//
+	// The typeface package joined on 2026-09-08. It holds bytes and imports
+	// nothing, so it cannot carry a rule anywhere - which is the whole reason
+	// the faces are not sitting in this package.
+	"internal/gui/parts": {"internal/gui/text", "internal/gui/typeface"},
 	// And the package that opens a real window reaches all three. It is the
 	// only one that touches the toolkit's app package, so it is the only one
 	// that needs a C compiler.

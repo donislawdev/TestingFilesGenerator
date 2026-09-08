@@ -604,6 +604,7 @@ the font files themselves.
 |---|---|---|---|
 | Noto Sans, four styles | `fyne.io/fyne/v2/theme` | OFL-1.1 | Copyright 2015 Google Inc. All Rights Reserved. |
 | Inter, symbols only | `fyne.io/fyne/v2/theme` | OFL-1.1 | (c) 2020 The Inter Project Authors |
+| Inter, text faces, two weights | this repository, `internal/gui/typeface` | OFL-1.1 | Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter) |
 | DejaVu Sans Mono for Powerline | `fyne.io/fyne/v2/theme` | Bitstream-Vera | (c) 2003 Bitstream, Inc. DejaVu changes are in the public domain |
 | EmojiOne Color | `fyne.io/fyne/v2/theme` | MIT, and read the note below | Copyright 2016 Adobe Systems Incorporated |
 | Fyne icon set, 96 drawings and one image | `fyne.io/fyne/v2/theme` | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
@@ -633,7 +634,8 @@ and only those were replaced by their plain equivalents.
 
 ### SIL Open Font License 1.1
 
-Applies to Noto Sans and to Inter.
+Applies to Noto Sans, to the Inter symbols the toolkit carries, and to the two
+Inter text faces this repository embeds itself.
 
 ```
 ------------------------------

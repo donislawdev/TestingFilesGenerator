@@ -34,13 +34,24 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 			fields := map[string]bool{}
 			atAbsolute(screen, func(o fyne.CanvasObject, _ fyne.Position) {
 				label, is := o.(*widget.Label)
-				if !is || label.Text == "" || !label.TextStyle.Bold {
+				if !is || label.Text == "" {
 					return
 				}
-				switch label.SizeName {
-				case theme.SizeNameHeadingText:
+				// A section title is heavy and at the heading rank. A field
+				// name is light and at the caption rank, which it became on
+				// 2026-09-08 - and until this was changed with it, this guard
+				// looked for a BOLD label and found no field names at all. It
+				// went green on every screen while asking nothing, which is
+				// O118 exactly: it had stopped reaching the state it guards.
+				//
+				// The line explaining a field is drawn at the same rank and in
+				// the same colour, and what tells the two apart is that an
+				// explanation wraps and a name does not.
+				switch {
+				case label.TextStyle.Bold && label.SizeName == theme.SizeNameHeadingText:
 					sections[label.Text] = true
-				case "", theme.SizeNameText:
+				case !label.TextStyle.Bold && label.SizeName == theme.SizeNameCaptionText &&
+					label.Wrapping == fyne.TextWrapOff:
 					fields[label.Text] = true
 				}
 			})

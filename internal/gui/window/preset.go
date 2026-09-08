@@ -89,26 +89,34 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// The same shape as the other screen, so the window is one interface rather
 	// than two. What the preset is and what it finds go in the card with the
 	// chooser, because they are the answer to the question that card asks.
+	// Built into locals in the order the boxes are meant to be registered in.
+	// See the note on the same assembly in generate.go - a border evaluates its
+	// arguments left to right, so composing this inline would register the
+	// output boxes before the ones above them on the screen.
+	form := parts.Screen(
+		text.HeadingPreset(),
+		parts.Section(text.SectionPreset(),
+			p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
+				p.tips.Say(text.DetailPreset()), p.pick),
+			p.about,
+		),
+		parts.Section(text.SectionSettings(), p.paramBox),
+	)
+	report := parts.ReportColumn(
+		parts.Section(text.SectionOutput(),
+			p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
+				p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir)),
+			p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
+				p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
+		),
+		parts.ReportSection(text.SectionThisRun(), p.progress(), p.problem.Object()),
+	)
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
-			p.actions(), p.progress(), p.problem.Object()),
-		nil, nil,
-		(p.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingPreset(),
-			parts.Section(text.SectionPreset(),
-				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
-					p.tips.Say(text.DetailPreset()), p.pick),
-				p.about,
-			),
-			parts.Section(text.SectionSettings(), p.paramBox),
-			parts.Section(text.SectionOutput(),
-				p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
-					p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir)),
-				p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
-					p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
-			),
-		)))),
+		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...), p.actions()),
+		nil,
+		report,
+		p.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
 	))
 
 	// Everything built above belongs to the screen whatever preset is chosen.

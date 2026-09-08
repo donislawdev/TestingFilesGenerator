@@ -35,6 +35,15 @@ var assets = []Asset{
 		Note:      "Symbols only. Inter is a trademark of Rasmus Andersson. Neither licence file declares a Reserved Font Name, so the identifier is OFL-1.1 rather than OFL-1.1-RFN - checked in the files, not assumed.",
 	},
 	{
+		Name:      "Inter, text faces",
+		Package:   "github.com/donislawdev/TestingFilesGenerator/internal/gui/typeface",
+		Module:    "github.com/donislawdev/TestingFilesGenerator",
+		Files:     []string{"Inter-Regular.ttf", "Inter-SemiBold.ttf", "LICENCE-Inter.txt"},
+		SPDX:      "OFL-1.1",
+		Copyright: "Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)",
+		Note:      "The words on every screen, in two weights, embedded by this repository rather than arriving inside another module - the first asset here of which that is true. Static Regular and SemiBold from release v4.1, unmodified and not subset, so the bytes can be compared against the upstream release and no Reserved Font Name question arises. The copyright line was read from LICENCE-Inter.txt at that tag. The licence text travels beside the faces as well as in the notices, because the OFL asks for it and a file somebody unzips without is an obligation unmet by accident.",
+	},
+	{
 		Name:      "DejaVu Sans Mono for Powerline",
 		Package:   "fyne.io/fyne/v2/theme",
 		Module:    "fyne.io/fyne/v2",

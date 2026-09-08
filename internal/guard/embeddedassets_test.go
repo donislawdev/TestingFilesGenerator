@@ -145,11 +145,38 @@ func TestEveryEmbeddedAssetIsNamedInTheNotices(t *testing.T) {
 
 // embeddedFiles asks one platform's build which files each package embeds.
 //
+// ourOwnWork is what this module embeds that nobody else wrote.
+//
+// Keyed by package and file rather than by file alone, so a name reused
+// somewhere else in the tree does not inherit an excuse it was never given.
+//
+// Every entry carries its reason, and a short list of reasons is the point: the
+// moment this needs an entry that reads "a font", or "a picture somebody sent
+// us", the answer is a registry entry and a notice rather than a line here.
+var ourOwnWork = map[string]bool{
+	// The application icon, drawn from shapes by tools/appicon.py. There is no
+	// artwork anybody else made in this repository - see docs/LICENSING.md.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon|chickpea.png": true,
+	// The English wording of the window, written here and generated from the
+	// code that says it.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text|locale/en.json": true,
+}
+
 // CGO_ENABLED is set rather than inherited, for the reason written beside the
 // notices guard: the toolkit hides its real dependencies behind cgo build
 // constraints, so a shell with cgo off reports a tree with almost nothing in
-// it. Our own module is skipped - its embedded files are our own work, and the
-// question here is what somebody else's code brings along.
+// it.
+//
+// Our own module is NO LONGER skipped, and that changed on 2026-09-08 because
+// its premise stopped being true. It used to be skipped on the grounds that
+// what this module embeds is its own work, which held for an icon and a
+// catalogue of sentences - and then a third party font was embedded here rather
+// than arriving inside somebody else's module, and the licence obliging its
+// notice to travel with it applied to bytes no guard was looking at.
+//
+// So the skip became a list. What is genuinely ours is named in ourOwnWork with
+// a reason, and everything else this module embeds has to be in the registry
+// like anything from anywhere else.
 func embeddedFiles(t *testing.T, target, goos string) map[string][]string {
 	t.Helper()
 	cmd := exec.Command("go", "list", "-deps", "-f",
@@ -163,10 +190,19 @@ func embeddedFiles(t *testing.T, target, goos string) map[string][]string {
 	found := map[string][]string{}
 	for _, line := range strings.Split(string(out), "\n") {
 		parts := strings.SplitN(strings.TrimSpace(line), "|", 3)
-		if len(parts) != 3 || strings.Contains(parts[0], "donislawdev") {
+		if len(parts) != 3 {
 			continue
 		}
-		found[parts[1]] = strings.Fields(parts[2])
+		var carried []string
+		for _, file := range strings.Fields(parts[2]) {
+			if ourOwnWork[parts[1]+"|"+file] {
+				continue
+			}
+			carried = append(carried, file)
+		}
+		if len(carried) > 0 {
+			found[parts[1]] = carried
+		}
 	}
 	return found
 }
