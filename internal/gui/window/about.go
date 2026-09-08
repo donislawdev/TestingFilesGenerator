@@ -43,16 +43,27 @@ import (
 // shortfall stayed on after the shortfall turned into a surplus - which is what
 // a measured number does when the thing it measured moves.
 //
-// 1120x760 is the size the whole layout was drawn for, and the owner's decision
-// of 2026-09-08. The ceiling on the height is somebody else's screen rather
-// than taste: a window taller than the screen it opens on cannot be reached at
-// the bottom at all, which is worse than one that scrolls, and this toolkit
-// offers no portable way to ask how big the screen is - checked in the driver
-// interface on 2026-08-19, and again in v2.8.1, there is none. So the number
-// has to be safe rather than clever, and 760 clears a 1366x768 laptop.
+// It was 1120x760 for one afternoon, while the window had two columns. The
+// owner asked for one column back the same day, and one column is a different
+// shape: everything that stood beside the form now stands under it, so the form
+// is taller and needs none of the width. Measured with the probe right after
+// the change - 864 px for Single batch, 1008 for Presets, 847 for Several
+// batches, against the 660 px a 760 tall window hands the scroll.
 //
-// All three forms fit it now, which the one column window never managed.
-var OpenSize = fyne.NewSize(1120, 760)
+// 900 wide is ColumnWidth plus a margin either side. Anything more is margin
+// and nothing else, because the column will not grow past 820 - a line of text
+// wider than that stops being readable, which is the whole reason for the cap.
+//
+// 1000 tall is the ceiling rather than the fit, and the ceiling is somebody
+// else's screen rather than taste: a window taller than the screen it opens on
+// cannot be reached at the bottom at all, which is worse than one that scrolls,
+// and this toolkit offers no portable way to ask how big the screen is -
+// checked in the driver interface on 2026-08-19, and again in v2.8.1, there is
+// none. A 1080p screen leaves about 1040 px once the taskbar has taken its
+// share. So Single batch and Several batches fit, and Presets still scrolls by
+// about 50 px - it carries a list whose length is the preset's rather than
+// ours, and a window sized for the longest one would be sized for nothing else.
+var OpenSize = fyne.NewSize(900, 1000)
 
 // About is what the licence screen says.
 //
@@ -114,7 +125,7 @@ func About(h Host) fyne.CanvasObject {
 	// is a list of everything the binary carries - thirty odd modules and seven
 	// fonts - and a list that cannot be read to the end is the one kind of
 	// notice that fails at its only job.
-	beside := parts.ReportColumnFilling(container.NewVScroll(parts.Stacked(carried()...)))
+	beside := parts.ReportColumn(container.NewVScroll(parts.Stacked(carried()...)))
 
 	// The same bar the work screens carry, holding only the Donate button.
 	//

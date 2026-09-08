@@ -191,14 +191,13 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// slot would be built before its middle, so the output boxes would be
 	// registered before the ones they stand beside on the screen - and the walks
 	// that read that list would report a screen nobody sees.
-	form := parts.Screen(text.HeadingGenerate(), g.settingsSection()...)
-	report := g.reportColumn()
+	form := parts.Screen(text.HeadingGenerate(), g.downTheColumn()...)
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...), g.actions()),
 		nil,
-		report,
-		g.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
+		nil,
+		g.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, parts.GapColumn, 0))),
 	))
 	// Everything built above belongs to the screen whatever format is chosen.
 	// What a format declares comes after this mark and is replaced with it.
@@ -319,8 +318,8 @@ func entry(text, placeholder string) *parts.Entry {
 // form as it could get. A bar that carries a message also grows when the
 // message arrives, which is what TestTheFormDoesNotMoveWhenARunStarts was
 // written to hold shut - and a bar that cannot grow holds it by construction.
-func (g *Generate) reportColumn() fyne.CanvasObject {
-	return parts.ReportColumn(
+func (g *Generate) downTheColumn() []fyne.CanvasObject {
+	return append(g.settingsSection(),
 		g.outputSection(),
 		parts.ReportSection(text.SectionThisRun(), g.runPanel()...),
 	)

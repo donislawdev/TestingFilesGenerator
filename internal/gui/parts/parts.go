@@ -216,23 +216,19 @@ const ReportWidth = 400
 // the moment a border is drawn round it. The blank was never the problem worth
 // solving. The answer to a thin report is to give the report something to say,
 // which is what ReportSection carries now.
-func ReportColumn(children ...fyne.CanvasObject) fyne.CanvasObject {
-	return reportColumn(Stacked(children...))
-}
-
-// ReportColumnFilling is ReportColumn for a column whose last child is a scroll.
+// The last child is given the height left over, which About needs and no other
+// screen has: a scroll asks for almost no height of its own - that is what makes
+// it a scroll - so a column handing it its MinSize would draw a few pixels of
+// list and nothing else.
 //
-// A scroll asks for almost no height of its own - that is what makes it a
-// scroll - so a column that handed it its MinSize would draw a few pixels of
-// list and nothing else. It has to be TOLD a height, and the leftover is the
-// only honest one. About is the single screen shaped that way, and it is the
-// one place where filling the column is what the content wants rather than
-// something done to hide a gap.
-func ReportColumnFilling(children ...fyne.CanvasObject) fyne.CanvasObject {
+// It is About's alone since 2026-09-08, when the work screens went back to one
+// column on the owner's decision. There the report is a panel among panels and
+// is as tall as what it says, the way every other panel in this window is.
+func ReportColumn(children ...fyne.CanvasObject) fyne.CanvasObject {
 	return reportColumn(container.New(fillLast{}, children...))
 }
 
-// reportColumn is the width and the margins both of them share.
+// reportColumn is the width and the margins the column stands in.
 func reportColumn(stack fyne.CanvasObject) fyne.CanvasObject {
 	// The gap on the left is the one between the two columns. The one on the
 	// right is the window's own edge, and they are the same step because a
@@ -739,28 +735,21 @@ func (f fixedWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 }
 
 // readableWidth gives its one child the lesser of the space offered and
-// ColumnWidth, at the left. A VBox stretches its children to whatever it is
-// given, which is the whole window, and that is the entire defect.
+// ColumnWidth, centred. A VBox stretches its children to whatever it is given,
+// which is the whole window, and that is the entire defect.
 //
-// It centred from 2026-08-12 until 2026-09-08, and the reason was good for the
-// window it was written in. Held at the left back then it traded one kind of
-// waste for another: the form was the ONLY thing on the screen, so at 1100 px
-// it ended at 822 and left 278 px of nothing down one side, and maximised it
-// left three thousand. Space split either side reads as a margin, and the same
-// space all on one side reads as a column that failed to fill the window.
+// Centred rather than left aligned, decided 2026-08-12 and decided again on
+// 2026-09-08 after a day spent the other way round. Held at the left the column
+// trades one kind of waste for another: it is the ONLY thing on the screen, so
+// at 1100 px it ends at 822 and leaves 278 px of nothing down one side, and
+// maximised it leaves three thousand. Space split either side reads as a
+// margin, and the same space all on one side reads as a column that failed to
+// fill the window.
 //
-// The two column layout took the premise away. The form is no longer alone -
-// a report column is pinned to the right edge - so half the space is already
-// spoken for and centring in what is left puts a margin on the LEFT with
-// nothing to answer it. Measured on 2026-09-08 at 1520 px wide: the form ran
-// from 160 to 968 while the tab strip and the window's own edge started at 8,
-// so the screen title sat 152 px in from the tabs above it and every field
-// under it came with it. That is not a margin, it is a column that came
-// unstuck from its own screen.
-//
-// Left, and the leftover gathers between the two columns where it reads as the
-// gap it is. The cap is untouched: a form too wide cannot be read, and that
-// was never the part that was wrong.
+// It went left for one day, while a report column was pinned to the right edge
+// and centring in what remained put a margin on the LEFT with nothing to answer
+// it. That layout is gone - the owner asked for one column back - so the reason
+// went with it.
 type readableWidth struct{}
 
 func (readableWidth) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -780,7 +769,7 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	}
 	width := fyne.Min(size.Width, ColumnWidth)
 	objects[0].Resize(fyne.NewSize(width, size.Height))
-	objects[0].Move(fyne.NewPos(0, 0))
+	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
 }
 
 // The vertical scale. Three steps, and the ratio between them is the point

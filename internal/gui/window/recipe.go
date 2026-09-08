@@ -193,18 +193,15 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// This screen is the one that most needs it: ten batches is eight screens
 	// of form, and until now the output box and every word the run said were
 	// below all of them.
-	form := parts.Screen(text.HeadingRecipe(), r.batchBox)
-	report := parts.ReportColumn(
-		r.outBox,
-		parts.ReportSection(text.SectionThisRun(), r.runPanel()...),
-	)
+	form := parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox,
+		parts.ReportSection(text.SectionThisRun(), r.runPanel()...))
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
 			r.actions()),
 		nil,
-		report,
-		r.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
+		nil,
+		r.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, parts.GapColumn, 0))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings

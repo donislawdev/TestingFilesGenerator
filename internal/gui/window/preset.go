@@ -102,7 +102,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		),
 		parts.Section(text.SectionSettings(), p.paramBox),
 	)
-	report := parts.ReportColumn(
+	beneath := []fyne.CanvasObject{
 		parts.Section(text.SectionOutput(),
 			p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
 				p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir)),
@@ -110,13 +110,15 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 				p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 		),
 		parts.ReportSection(text.SectionThisRun(), p.runPanel()...),
-	)
+	}
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
 		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...), p.actions()),
 		nil,
-		report,
-		p.keepScroll(container.NewVScroll(parts.Inset(form, parts.GapColumn, 0, 0, 0))),
+		nil,
+		p.keepScroll(container.NewVScroll(parts.Inset(
+			parts.Stacked(form, parts.Stacked(beneath...)),
+			parts.GapColumn, 0, parts.GapColumn, 0))),
 	))
 
 	// Everything built above belongs to the screen whatever preset is chosen.
