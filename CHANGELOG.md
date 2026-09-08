@@ -246,6 +246,21 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A spreadsheet can now be built wider than a spreadsheet can open.** The
+  `columns` setting of `xlsx` used to stop at 64. It now reaches 32768, which is
+  the ceiling `csv` already had.
+
+  The number matters because of where a reader stops. Excel and LibreOffice
+  Calc both hold 16384 columns. Measured with Calc: a sheet of 16384 columns
+  opens whole, and a sheet of 16385 opens as 16384 - the last column is dropped
+  and nothing is said about it. At a ceiling of 64 there was no way to build a
+  file that asks a spreadsheet about its own limit, which is the kind of file
+  this tool exists to produce.
+
+  `rows` times `columns` still cannot pass 2 million cells, so a sheet 16385
+  columns wide holds up to 122 rows. Nothing about a sheet of 64 columns or
+  fewer changes, and the default is still one column.
+
 - **Byte counts are grouped in threes.** A total used to print as
   `2516582400 B`. It now prints as `2 516 582 400 B`, in every message that
   names a number of bytes - `tfg formats`, the summary a run prints, what a

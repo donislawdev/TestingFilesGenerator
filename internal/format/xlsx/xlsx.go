@@ -39,9 +39,23 @@ const (
 	maxRows = 200_000
 
 	minColumns = 1
-	// Sixteen thousand three hundred and eighty four is the format's own limit.
-	// This one is the width a person would actually look at.
-	maxColumns = 64
+	// maxColumns is deliberately ABOVE the width of a spreadsheet, and that is
+	// the whole reason for the number. It is the same ceiling CSV carries, for
+	// the same question asked of the same reader.
+	//
+	// It said 64 until 2026-09-08, with the reason "the width a person would
+	// actually look at". That reason describes a document somebody reads, and
+	// this tool writes fixtures somebody tests with - a ceiling belongs to the
+	// reader under test, not to our own comfort. At 64 there was no way to
+	// build a sheet that asks Excel about its own limit at all.
+	//
+	// Measured 2026-09-08 with LibreOffice Calc 26.2.5.2 headless, on
+	// workbooks built outside this tool because this tool could not build
+	// them: 16384 columns come back whole, and 16385 come back as 16384 with
+	// the last column dropped, exit 0 and not one word on either stream. That
+	// silent loss is the thing a tester needs a fixture for, and standing on
+	// both sides of the line is what a boundary set is.
+	maxColumns = 32768
 
 	// The sheet is held in memory while the package is built, so the pair is
 	// bounded as well as each side.
@@ -75,7 +89,7 @@ func init() {
 				Name: "columns", Kind: format.PropertyInt,
 				Min: minColumns, Max: maxColumns, Unit: "columns",
 				Default: "1",
-				Detail:  "How many columns each row has.",
+				Detail:  "How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word.",
 			},
 		},
 		JointLimits: []format.JointLimit{{
