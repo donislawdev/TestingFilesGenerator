@@ -187,17 +187,51 @@ func TestAnInterruptedRunLeavesNoPartialFileAndStillWritesAManifest(t *testing.T
 // cut off half way, what the run left behind was a prefix after all, and the
 // mutation that puts the prefix behaviour back could not redden anything.
 // A guard that names the defect and cannot meet it is the shape this project
-// has recorded twice. So the plan below is built to guarantee the hole: the
-// FIRST file is sixteen times the size of the rest, so a later one always
-// finishes first, the cancellation always lands while file one is still being
-// written, and index one is always missing from what survives.
+// has recorded twice.
+//
+// The second version bought the hole with SIZE: the first file was sixteen
+// times the size of the rest, so a smaller one was expected to always finish
+// first. That version was flaky, roughly one run in four inside a full suite,
+// and the fix is not a bigger first file. Measured on 2026-09-08 with
+// tools/probes/stoprace, fifty runs per condition:
+//
+//	idle machine                 0 failures in 50, and the big file had 165 ms
+//	                             of margin it never came close to using
+//	heavy disk writing beside it  0 failures in 25
+//	CPU starved, 24 busy loops    14 failures in 25
+//
+// So the flakiness was never about how fast the disk is. Size buys margin in
+// WORK, and what decides which writer finishes first is which writer gets a
+// processor. Starve the machine and the time to the first finished file goes
+// from 11 ms to 5.8 s, three orders of magnitude, at which point sixteen times
+// the work means nothing at all. A full suite runs packages beside each other
+// and builds binaries in sub processes, so a starved machine is the normal
+// condition rather than the exotic one.
+//
+// This version does not race. The file at index zero is given a generator that
+// writes nothing and returns only once the run is cancelled, so it can never
+// finish no matter who gets a processor. Descriptor is a value and every
+// planned file carries its own copy, so this replaces the generator for that
+// one file and leaves the other thirty one writing real bytes through the real
+// registry. Every step of the engine below Plan is the one that ships.
 func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 	dir := t.TempDir()
 
 	// Raised so several writers exist wherever this runs, because with one
 	// writer a stopped run leaves a prefix and the hole this guard is about
-	// cannot occur.
+	// cannot occur. It is also what keeps the blocked file below from being a
+	// deadlock: somebody other than the blocked writer has to finish a file,
+	// or the cancellation this guard waits for is never sent.
+	//
+	// Asserted rather than assumed. The pool is min(GOMAXPROCS, files), so a
+	// build that ever answered one here would hang instead of failing, and
+	// this guard has already been bitten once by a condition it took for
+	// granted.
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(8))
+	if n := runtime.GOMAXPROCS(0); n < 2 {
+		t.Fatalf("this guard needs at least two writers and GOMAXPROCS is %d, so the "+
+			"file held open below would wait for a cancellation nobody can send", n)
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -214,18 +248,22 @@ func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 			}
 		},
 	}
-	// One big file and thirty one small ones, and the order is the whole
-	// point. Every writer starts at once, one of the small ones finishes long
-	// before the big one can, and the cancellation that follows cuts the big
-	// one off - leaving a finished file at a HIGHER index than one that never
-	// finished, which is the only shape a sequential loop could not produce.
-	sizes := append([]int64{32 << 20}, engine.Uniform(31, 2<<20)...)
+	// Thirty two files of one size. The asymmetry that used to live here was
+	// in the sizes and it is now in the generator, which is the whole of the
+	// fix - see the note above the function.
 	planned, err := engine.Plan([]engine.Target{{
-		ID: "files", Format: "txt", Sizes: sizes,
+		ID: "files", Format: "txt", Sizes: engine.Uniform(32, 512<<10),
 	}}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)
 	}
+
+	// Index zero is held open for the length of the run. Its writer reaches
+	// the generator, writes nothing and waits, so a file at a HIGHER index is
+	// renamed into place while this one is still owed - which is the only
+	// shape a sequential loop could not produce, and the shape this guard
+	// exists to be about.
+	planned[0].Desc.Generator = &heldOpenGenerator{}
 
 	res, runErr := engine.Run(ctx, planned, opt)
 	if runErr == nil {
@@ -273,9 +311,9 @@ func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 			"was never stopped part way", len(planned))
 	}
 	if onDisk[planned[0].Name] {
-		t.Fatalf("%s is the biggest file in the run and it finished anyway, so nothing "+
-			"here was cut off half way and the survivors are a prefix - which is not the "+
-			"case this guard is about", planned[0].Name)
+		t.Fatalf("%s was held open for the whole run and it is on the disk anyway, so "+
+			"the survivors are a prefix and nothing here was cut off half way - which "+
+			"is not the case this guard is about", planned[0].Name)
 	}
 
 	for name := range onDisk {
