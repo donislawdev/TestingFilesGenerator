@@ -17,6 +17,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 )
 
 // Measured on 2026-08-01, a comment holds arbitrary bytes to 1 MiB both after
@@ -79,8 +80,12 @@ const (
 	// Width and Height name the two settings. Exported so that a guard presses
 	// the key this format actually declares rather than a string spelled twice,
 	// which is the same reason jsonfile exports the name of its layout setting.
-	Width  = "width"
-	Height = "height"
+	//
+	// Taken from the package the picture formats share rather than spelled
+	// again here, so that a drawing and a photograph cannot end up naming the
+	// same setting differently.
+	Width  = imagedim.SettingWidth
+	Height = imagedim.SettingHeight
 
 	declaration = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 	rootClose   = "</svg>\n"
@@ -216,20 +221,14 @@ func init() {
 		// later. Declaring none of them makes a recipe asking for one fail
 		// loudly rather than quietly.
 		Properties: []format.Property{
-			{
-				Name: Width, Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
 				Default: strconv.Itoa(defaultWidth),
 				Detail: "How wide the drawing says it is. Nothing is drawn into pixels here, " +
-					"so a large number costs a few bytes in the file and a great deal of memory in whatever opens it.",
-			},
-			{
-				Name: Height, Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
+					"so a large number costs a few bytes in the file and a great deal of memory in whatever opens it."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
 				Default: strconv.Itoa(defaultHeight),
 				Detail: "How tall the drawing says it is. The label sits along the bottom edge, " +
-					"so a drawing shorter than that strip carries no visible label.",
-			},
+					"so a drawing shorter than that strip carries no visible label."}),
 		},
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -245,39 +244,12 @@ type memo struct {
 	height    int
 }
 
-// dimension reads one of the two size settings.
-//
-// The registry has already refused anything outside the declared range by the
-// time a run reaches here, so the bounds below are a backstop for a caller
-// that reaches the generator directly - the same belt the page count of PDF
-// wears, and for the same reason.
-func dimension(props map[string]string, name string, fallback int) (int, error) {
-	raw, ok := props[name]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, &format.PropertyValueError{
-			Format: "svg", Key: name, Value: raw,
-			Reason: "it has to be a whole number of pixels",
-		}
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, &format.PropertyValueError{
-			Format: "svg", Key: name, Value: raw,
-			Reason: fmt.Sprintf("it has to be between %d and %d", minDimension, maxDimension),
-		}
-	}
-	return n, nil
-}
-
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	w, err := dimension(r.Properties, Width, defaultWidth)
+	w, err := imagedim.Value("svg", Width, r.Properties, maxDimension, defaultWidth)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	h, err := dimension(r.Properties, Height, defaultHeight)
+	h, err := imagedim.Value("svg", Height, r.Properties, maxDimension, defaultHeight)
 	if err != nil {
 		return format.Plan{}, err
 	}

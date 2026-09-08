@@ -19,10 +19,10 @@ import (
 	"image/color"
 	stdpng "image/png"
 	"io"
-	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
@@ -77,16 +77,10 @@ func init() {
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
 		Properties: []format.Property{
-			{
-				Name: "width", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How wide the icon is. Left out, the largest standard icon size that fits is used.",
-			},
-			{
-				Name: "height", Kind: format.PropertyInt,
-				Min: minDimension, Max: maxDimension, Unit: "pixels",
-				Detail: "How tall the icon is. Left out, the largest standard icon size that fits is used.",
-			},
+			imagedim.Width(imagedim.Side{Largest: maxDimension,
+				Detail: "How wide the icon is. Left out, the largest standard icon size that fits is used."}),
+			imagedim.Height(imagedim.Side{Largest: maxDimension,
+				Detail: "How tall the icon is. Left out, the largest standard icon size that fits is used."}),
 			{
 				Name: "embed", Kind: format.PropertyChoice,
 				Choices: []string{embedBMP, embedPNG},
@@ -221,11 +215,11 @@ func chooseSize(r format.Request, label, embed string) (int, int, error) {
 	_, hSet := r.Properties["height"]
 
 	if wSet || hSet {
-		w, err := dimension(r.Properties, "width", maxDimension)
+		w, err := imagedim.Value("ico", imagedim.SettingWidth, r.Properties, maxDimension, maxDimension)
 		if err != nil {
 			return 0, 0, err
 		}
-		h, err := dimension(r.Properties, "height", maxDimension)
+		h, err := imagedim.Value("ico", imagedim.SettingHeight, r.Properties, maxDimension, maxDimension)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -243,21 +237,6 @@ func chooseSize(r format.Request, label, embed string) (int, int, error) {
 		}
 	}
 	return smallest, smallest, nil
-}
-
-func dimension(props map[string]string, key string, fallback int) (int, error) {
-	raw, ok := props[key]
-	if !ok || raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("ico: %s must be a whole number of pixels, got %q", key, raw)
-	}
-	if n < minDimension || n > maxDimension {
-		return 0, fmt.Errorf("ico: %s must be between %d and %d pixels, got %d - an icon stores each side in a single byte", key, minDimension, maxDimension, n)
-	}
-	return n, nil
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
