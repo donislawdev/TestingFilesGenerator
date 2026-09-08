@@ -48,11 +48,17 @@ func smallestPrinted(t *testing.T, id string) int64 {
 		t.Fatalf("formats %s does not print a minimum on its first line: %q", id, first)
 	}
 	rest := first[i+len(marker):]
-	end := strings.IndexByte(rest, ' ')
+	// Read up to the unit rather than up to the first space, and take the
+	// spaces out of what is left. The digits are grouped in threes as of
+	// 2026-09-08, so the count itself now CONTAINS spaces - and this guard read
+	// "1 220 B" as one byte and then reported that the tool refuses the minimum
+	// it advertises. It was right about what it saw and wrong about what it
+	// meant, which is what a parser splitting on the wrong thing always is.
+	end := strings.Index(rest, " B")
 	if end < 0 {
 		t.Fatalf("the minimum is not followed by a unit: %q", first)
 	}
-	n, err := strconv.ParseInt(rest[:end], 10, 64)
+	n, err := strconv.ParseInt(strings.ReplaceAll(rest[:end], " ", ""), 10, 64)
 	if err != nil {
 		t.Fatalf("the minimum is not a number: %q", first)
 	}

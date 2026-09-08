@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -20,7 +22,10 @@ import (
 func HumanBytes(n int64) string {
 	const unit = 1024
 	if n < unit {
-		return fmt.Sprintf("%d B", n)
+		// Through ExactBytes rather than its own %d, so the two never spell one
+		// number two ways. Below 1024 there is nothing to group, which is
+		// exactly why this is easy to get wrong and leave wrong.
+		return ExactBytes(n)
 	}
 	div, exp := int64(unit), 0
 	for n/div >= unit && exp < 3 {
@@ -28,6 +33,55 @@ func HumanBytes(n int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "KMGT"[exp])
+}
+
+// ExactBytes writes a count out in full, grouped in threes, with its unit.
+//
+// The exact number is the point of this tool and it can never be replaced by a
+// rounded one - but eleven digits in a row is a number nobody reads, and both
+// surfaces printed it that way. "2516582400 B" was measured on the window's run
+// panel and on four lines of the command line, and the owner's report of it was
+// that the bytes are welcome and unreadable, which are both true at once.
+//
+// Grouped with a space rather than a comma, and that is the one choice here
+// worth writing down. A comma is the thousands mark in English and the decimal
+// mark for most of Europe, so "2,516" is either two and a half thousand or two
+// and a half depending on who is reading - and the people who read this run it
+// in every country. A space means the same thing everywhere.
+//
+// Machine output is untouched on purpose. Nothing in a manifest or under --json
+// goes through here, because a number there is a number and not a sentence.
+func ExactBytes(n int64) string {
+	return groupedInThrees(strconv.FormatInt(n, 10)) + " B"
+}
+
+// groupedInThrees puts a space every three digits, counting from the right.
+//
+// Written out rather than reached for in a library because the one in the
+// standard library is about money: golang.org/x/text/message formats to a
+// LOCALE, and a locale is exactly what this must not have - the window and the
+// command line have to say the same thing on a Polish desktop and an American
+// one, and docs/UX.md has the surfaces agreeing as a rule rather than a hope.
+func groupedInThrees(digits string) string {
+	sign := ""
+	if strings.HasPrefix(digits, "-") {
+		sign, digits = "-", digits[1:]
+	}
+	if len(digits) <= 3 {
+		return sign + digits
+	}
+	lead := len(digits) % 3
+	if lead == 0 {
+		lead = 3
+	}
+	var out strings.Builder
+	out.Grow(len(digits) + (len(digits)-1)/3)
+	out.WriteString(digits[:lead])
+	for i := lead; i < len(digits); i += 3 {
+		out.WriteByte(' ')
+		out.WriteString(digits[i : i+3])
+	}
+	return sign + out.String()
 }
 
 // Percent divides before multiplying where it has to, so a very large run does

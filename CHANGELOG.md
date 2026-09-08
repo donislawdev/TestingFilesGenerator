@@ -191,6 +191,20 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Byte counts are grouped in threes.** A total used to print as
+  `2516582400 B`. It now prints as `2 516 582 400 B`, in every message that
+  names a number of bytes - `tfg formats`, the summary a run prints, what a
+  preset says its budget is, and what `tfg validate` reports.
+
+  Grouped with a space rather than a comma, because a comma is a thousands mark
+  in some countries and a decimal point in others, and this tool is read in
+  both.
+
+  Machine output is untouched. `--json` and the manifest carry numbers rather
+  than sentences, so nothing that parses those sees any of this. If you have a
+  script reading a byte count out of the human output, it needs to take the
+  spaces out.
+
 - **Notes are reported once per thing they say, not once per file.** A run of
   25 000 one-byte text files used to print 25 001 `note:` lines, every one of
   them the same sentence about the label not fitting. It now prints one, with
