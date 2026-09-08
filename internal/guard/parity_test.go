@@ -133,6 +133,13 @@ var reachableFromTheWindow = []string{
 	"property:pdf.pages",
 	"property:png.height",
 	"property:png.width",
+	// SVG names its dimensions the same way the nine picture formats do, on
+	// purpose - the window draws all eleven with one piece of code, and a
+	// person who has learnt "width" once has learnt it here too. What SVG does
+	// not carry over is their joint megapixel ceiling, because it writes text
+	// rather than holding a raster while it encodes.
+	"property:svg.height",
+	"property:svg.width",
 	"property:targz.compression",
 	"property:targz.depth",
 	"property:targz.directory_entries",

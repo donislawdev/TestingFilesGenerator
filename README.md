@@ -478,7 +478,8 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
 | `txt`, `md` | `encoding`, `bom` |
 | `json` | `formatting` |
-| `xml`, `html`, `svg` | none |
+| `svg` | `width`, `height` |
+| `xml`, `html` | none |
 
 ```
 tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85
