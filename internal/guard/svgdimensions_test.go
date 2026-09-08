@@ -24,6 +24,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -92,7 +93,7 @@ func TestASvgCanvasSmallerThanItsOwnMarginsStillDraws(t *testing.T) {
 			dec := xml.NewDecoder(bytes.NewReader(doc))
 			for {
 				_, err := dec.Token()
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if err != nil {
