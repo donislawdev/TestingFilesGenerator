@@ -172,7 +172,9 @@ func sawItOnce(t *testing.T, content fyne.CanvasObject, label, refusal string) {
 // row rather than first in the field.
 func fieldBox(o fyne.CanvasObject, label string) *fyne.Container {
 	var found *fyne.Container
-	walk(o, func(obj fyne.CanvasObject) {
+	// Outside the report for the same reason controlUnder is: a reported fact
+	// is a name beside a value and so is a field, and this asks by name.
+	walkOutsideTheReport(o, func(obj fyne.CanvasObject) {
 		box, ok := obj.(*fyne.Container)
 		if !ok || len(box.Objects) < 2 || isHeadingExtra(box.Objects[1]) {
 			return

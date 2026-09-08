@@ -116,7 +116,50 @@ func ReportSection(title string, content ...fyne.CanvasObject) fyne.CanvasObject
 	body := make([]fyne.CanvasObject, 0, len(content)+1)
 	body = append(body, sectionTitle(title))
 	body = append(body, content...)
-	return container.NewStack(raisedSurface(), container.NewPadded(Column(GapField, body...)))
+	return container.New(reportPanel{},
+		container.NewStack(raisedSurface(), container.NewPadded(Column(GapField, body...))))
+}
+
+// reportPanel marks the region that reports, so that a walk looking for the
+// form's fields can tell it from one.
+//
+// It became necessary the day this panel grew lines of its own. A field is a
+// name beside a control and a reported fact is a name beside a value, which is
+// the same shape - so a guard that finds a field by looking for its name found
+// the report line instead, and answered "the format field is a Label" about a
+// screen whose format field is a menu. Twenty four guards said it at once.
+//
+// The panel already promised this in words: ReportSection "holds no boxes at
+// all". IsReport is that sentence made askable, so the promise is kept by
+// something other than everybody remembering it.
+type reportPanel struct{}
+
+func (reportPanel) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) == 0 {
+		return fyne.Size{}
+	}
+	return objects[0].MinSize()
+}
+
+func (reportPanel) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(size)
+		o.Move(fyne.NewPos(0, 0))
+	}
+}
+
+// IsReport says whether this is the panel that reports rather than asks.
+//
+// For anything walking a screen in search of the form. What is inside here is
+// read and never typed into, so a walk that treats it as part of the form is
+// reading the answer where it should be reading the question.
+func IsReport(o fyne.CanvasObject) bool {
+	box, ok := o.(*fyne.Container)
+	if !ok {
+		return false
+	}
+	_, is := box.Layout.(reportPanel)
+	return is
 }
 
 // raisedSurface is what a report panel stands on. See panelSurface.

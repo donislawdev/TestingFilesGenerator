@@ -405,36 +405,58 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 // window uses. A walker that only knew about containers would stop at the
 // scroll the generate screen sits in and report an empty screen.
 func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
-	if o == nil {
+	walkPast(o, nil, visit)
+}
+
+// walkOutsideTheReport visits a screen without the panel that reports.
+//
+// A field is a name beside a control, and a reported fact is a name beside a
+// value. Those are the same shape, so a search for a field by its name finds a
+// report line just as readily - and on 2026-09-08 twenty four guards said "the
+// format field is a Label" about screens whose format field is a menu, because
+// the panel had grown a line reading "Format" beside the format it would use.
+//
+// The panel says which it is rather than this guessing from the shape. See
+// parts.IsReport, and ReportSection, which promised in words that it holds no
+// boxes at all long before anything could ask.
+func walkOutsideTheReport(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+	walkPast(o, parts.IsReport, visit)
+}
+
+// walkPast is the recursion both of the above share, with a subtree it will
+// not enter.
+func walkPast(o fyne.CanvasObject, skip func(fyne.CanvasObject) bool, visit func(fyne.CanvasObject)) {
+	if o == nil || (skip != nil && skip(o)) {
 		return
 	}
 	visit(o)
+	walkInto := func(child fyne.CanvasObject) { walkPast(child, skip, visit) }
 	switch v := o.(type) {
 	case *fyne.Container:
 		for _, child := range v.Objects {
-			walk(child, visit)
+			walkInto(child)
 		}
 	case *container.Scroll:
-		walk(v.Content, visit)
+		walkInto(v.Content)
 	case *widget.Card:
 		// A card is a widget rather than a container, so nothing below it is
 		// reachable without this - and every field moved inside one on
 		// 2026-08-11. The first symptom was a nil type assertion in a guard
 		// that had been passing for weeks.
-		walk(v.Content, visit)
+		walkInto(v.Content)
 	case *container.AppTabs:
 		// Every tab, including the ones not on show. A guard that only saw the
 		// selected one could not ask whether a screen it is not looking at
 		// still holds what it should - and the close intercept has to reach a
 		// run on the tab nobody is watching.
 		for _, item := range v.Items {
-			walk(item.Content, visit)
+			walkInto(item.Content)
 		}
 	case *widget.PopUp:
 		// A field's longer explanation opens in one of these.
-		walk(v.Content, visit)
+		walkInto(v.Content)
 	default:
-		walkUnknown(o, visit)
+		walkUnknown(o, skip, visit)
 	}
 }
 
@@ -458,7 +480,7 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 // recursion into anything else - so a widget that holds children some other way
 // is still missed, and the switch above is still where a case belongs when
 // somebody notices.
-func walkUnknown(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+func walkUnknown(o fyne.CanvasObject, skip func(fyne.CanvasObject) bool, visit func(fyne.CanvasObject)) {
 	value := reflect.ValueOf(o)
 	if value.Kind() != reflect.Ptr || value.IsNil() {
 		return
@@ -472,7 +494,12 @@ func walkUnknown(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		return
 	}
 	if child, ok := field.Interface().(fyne.CanvasObject); ok && child != nil {
-		walk(child, visit)
+		// The skip travels through here as well, and forgetting that is how the
+		// first version of walkOutsideTheReport did nothing at all. Every screen
+		// is wrapped in a widget this switch does not name, so the walk reached
+		// the report panel through THIS branch - and a prune dropped on the way
+		// down is a prune that never happens.
+		walkPast(child, skip, visit)
 	}
 }
 
@@ -615,7 +642,7 @@ func buttonNames(o fyne.CanvasObject) []string {
 // different box.
 func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 	var found fyne.CanvasObject
-	walk(o, func(obj fyne.CanvasObject) {
+	walkOutsideTheReport(o, func(obj fyne.CanvasObject) {
 		box, ok := obj.(*fyne.Container)
 		if !ok || len(box.Objects) < 2 {
 			return

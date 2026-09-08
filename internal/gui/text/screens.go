@@ -61,7 +61,25 @@ func SectionOutput() string        { return say("SectionOutput", "Output") }
 // described - the one the settings on the left add up to, not the last one -
 // and that distinction is the whole reason the panel is worth having: the
 // window can now answer "what am I about to do" before anything is pressed.
-func SectionThisRun() string  { return say("SectionThisRun", "This run") }
+func SectionThisRun() string { return say("SectionThisRun", "This run") }
+
+// The names of the lines inside that panel.
+//
+// Each one is the quiet half of a pair whose other half is a number the engine
+// worked out. They are nouns rather than sentences because they stand in a
+// column and are read down it - "Files" beside "1" says what a sentence would
+// have needed eight words for.
+//
+// FactEachFile rather than "Size", which is what the box on the left is called.
+// The two are the same number when every file in a batch is the same size and
+// are not the same question, so giving them one name would have said they were.
+func FactBatches() string    { return say("FactBatches", "Batches") }
+func FactFiles() string      { return say("FactFiles", "Files") }
+func FactFormat() string     { return say("FactFormat", "Format") }
+func FactEachFile() string   { return say("FactEachFile", "Each file") }
+func FactTotal() string      { return say("FactTotal", "Total") }
+func FactFreeOnDisk() string { return say("FactFreeOnDisk", "Free on disk") }
+
 func SectionPreset() string   { return say("SectionPreset", "The question") }
 func SectionSettings() string { return say("SectionSettings", "Settings") }
 func SectionLicence() string  { return say("SectionLicence", "Licence") }

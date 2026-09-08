@@ -196,7 +196,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	form := parts.Screen(text.HeadingRecipe(), r.batchBox)
 	report := parts.ReportColumn(
 		r.outBox,
-		parts.ReportSection(text.SectionThisRun(), r.progress(), r.problem.Object()),
+		parts.ReportSection(text.SectionThisRun(), r.runPanel()...),
 	)
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
@@ -216,6 +216,9 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// Said last, once the box it reads exists.
 	r.runner.destination = r.OutDir
 	r.runner.sayDestination()
+	// And what those settings come to, so the panel is not blank on a screen
+	// nobody has typed in yet.
+	r.runner.sayFirst()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have

@@ -67,8 +67,12 @@ var notWords = map[string]string{
 		"Translating a storage key would lose what was kept the day somebody changed language",
 	`"windowWidth"`:  "the name the window files its width under, never shown",
 	`"windowHeight"`: "the name the window files its height under, never shown",
-	`"file"`:         "the scheme of a local address, which is a protocol name rather than prose",
-	`"."`:            "the working directory, when the system will not say which one it is",
+	`"windowWidth.2"`: "the same storage key, carrying the layout it was written for. " +
+		"Renamed on 2026-09-08 so a size remembered for the one column form is not " +
+		"restored into the two column one - see run_cgo.go",
+	`"windowHeight.2"`: "the height half of that pair, and it moves with the width or not at all",
+	`"file"`:           "the scheme of a local address, which is a protocol name rather than prose",
+	`"."`:              "the working directory, when the system will not say which one it is",
 	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +
 		"prose, and translating it would move where somebody's files land",
 	`". "`:                 "what joins two sentences the declaration already carries",

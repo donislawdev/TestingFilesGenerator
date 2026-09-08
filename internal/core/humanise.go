@@ -52,7 +52,18 @@ func HumanBytes(n int64) string {
 // Machine output is untouched on purpose. Nothing in a manifest or under --json
 // goes through here, because a number there is a number and not a sentence.
 func ExactBytes(n int64) string {
-	return groupedInThrees(strconv.FormatInt(n, 10)) + " B"
+	return Grouped(n) + " B"
+}
+
+// Grouped is a plain number, spaced the same way a byte count is.
+//
+// It is the same spelling without the unit, for the counts that are not bytes -
+// how many files a run comes to, most of all, which reaches five digits on the
+// sets this tool is built for. Split out of ExactBytes on 2026-09-08 rather
+// than written again beside it, because two functions putting spaces into
+// numbers is two functions that can come to disagree about where.
+func Grouped(n int64) string {
+	return groupedInThrees(strconv.FormatInt(n, 10))
 }
 
 // groupedInThrees puts a space every three digits, counting from the right.

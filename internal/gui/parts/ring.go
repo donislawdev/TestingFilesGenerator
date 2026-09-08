@@ -110,6 +110,16 @@ func WithRing(control fyne.CanvasObject) (fyne.CanvasObject, *Ring) {
 // kept in step. Everything else keeps whatever the toolkit does for it - a box
 // to type in already draws its own border in the primary colour.
 func wireRing(control fyne.CanvasObject, ring *Ring) {
+	// Through a theme wrapper first, because it says nothing about what the
+	// control IS. Menu puts one round a chooser to take its fill off, and the
+	// first version of that left this looking at the wrapper - so the menu was
+	// never handed its ring, drew no edge at rest, and came out as a word with
+	// an arrow beside it and no boundary at all. Nothing went red: a ring
+	// nobody wired has no state to draw and so has nothing to be wrong about.
+	if over, wrapped := control.(*container.ThemeOverride); wrapped {
+		wireRing(over.Content, ring)
+		return
+	}
 	if r, ok := control.(ringed); ok {
 		r.useRing(ring)
 	}
@@ -241,7 +251,38 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 //
 // So a menu is now as wide as its longest value plus its arrow, which is the
 // sentence ShapedFor has carried since 2026-08-20 without anything doing it.
-func Menu(c *Chooser) fyne.CanvasObject { return Sized(menuWidth(c), c) }
+func Menu(c *Chooser) fyne.CanvasObject {
+	return Sized(menuWidth(c), container.NewThemeOverride(c, unfilled{Theme()}))
+}
+
+// unfilled takes the fill off a control, leaving its edge.
+//
+// The owner's decision B of 2026-09-08. A menu and a box to type in shared
+// ColorNameInputBackground to the byte and the same corner radius, so the only
+// things telling them apart were an arrow and a width - and the toolkit gives
+// no other way to say it, because widget.Select reads that one colour name
+// (fyne v2.8.0 widget/select.go line 437, read in the pinned module). A theme
+// for the subtree is the mechanism, the same one QuietUnlessChosen uses.
+//
+// Shape rather than shade, which is UX1: a control you type in has a fill and a
+// control you press has an outline, and that difference survives somebody who
+// cannot separate two greys 1.2 apart.
+//
+// Measured before it went in, because the edge is now the whole of what marks
+// this control: #55555C on the panel #2A2A2D is 1.93:1. Low, and it is what the
+// edge has always been - the fill it replaces was 1.23:1 against the same
+// panel, so nothing on that menu was ever above 2. Raising the edge to the 3:1
+// a boundary is usually held to needs about #7A7A82, which would make every
+// menu louder than every box beside it. Left as decided and written down here
+// rather than changed quietly.
+type unfilled struct{ fyne.Theme }
+
+func (u unfilled) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNameInputBackground {
+		return color.Transparent
+	}
+	return u.Theme.Color(name, variant)
+}
 
 // menuWidth is the room a chooser needs to show any of its values.
 //

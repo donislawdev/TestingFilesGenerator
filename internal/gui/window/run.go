@@ -103,6 +103,10 @@ type runner struct {
 	bar     *parts.Progress
 	status  *parts.RunStatus
 	problem *parts.ErrorArea
+	// facts is what the panel says about the run the form adds up to, kept
+	// here rather than on each screen because all three screens report the
+	// same six things and a copy per screen is three copies to keep in step.
+	facts *runFacts
 
 	// fields is every box on the screen, by the setting the engine names it by.
 	// A refusal that says which setting it is about lands under that box
@@ -412,10 +416,15 @@ func (r *runner) recheck(setting string) {
 	// the parts of it this cannot see, because a format minimum and a name
 	// already taken are the engine's answers rather than settle's.
 	r.fields.Clear(setting)
+	// Settled before the blank check rather than after it, so that the panel
+	// beside the form answers for an empty box too - by going quiet. It used to
+	// return here, which left the last good numbers standing beside a form that
+	// no longer describes them.
+	targets, _, err := r.settle()
+	r.showTheRun(targets, err)
 	if r.fields.Blank(setting) {
 		return
 	}
-	_, _, err := r.settle()
 	for _, one := range spread(err) {
 		var about interface{ AboutSetting() string }
 		if errors.As(one, &about) && r.placeOf(about.AboutSetting()) == setting {
@@ -423,6 +432,46 @@ func (r *runner) recheck(setting string) {
 			return
 		}
 	}
+}
+
+// runPanel is everything the panel beside the form holds, in reading order:
+// what the run comes to, then what it has to say about itself.
+//
+// The facts come first because they are true before anything is pressed, and
+// the run's own line last because for most of a window's life there is nothing
+// on it. A panel that led with an empty line would open by saying nothing.
+func (r *runner) runPanel() []fyne.CanvasObject {
+	return append(r.facts.objects(), r.progress(), r.problem.Object())
+}
+
+// sayFirst fills the panel before anybody has typed.
+//
+// Without it the window opens with a panel that answers nothing until a
+// keystroke, which is the state this whole change is about - the screen already
+// holds a format, a count and a size, so it can already say what they come to.
+func (r *runner) sayFirst() {
+	if r.settle == nil {
+		return
+	}
+	targets, _, err := r.settle()
+	r.showTheRun(targets, err)
+}
+
+// showTheRun puts what the form adds up to into the panel beside it.
+//
+// Silence on a refusal, and that is the point rather than a shortcut. A form
+// that will not settle does not describe a run, so numbers left standing beside
+// it would be describing one nobody asked for - the same rule ByteCount follows
+// for a box holding something that is not a size.
+func (r *runner) showTheRun(targets []engine.Target, err error) {
+	if r.facts == nil {
+		return
+	}
+	if err != nil {
+		r.facts.Nothing()
+		return
+	}
+	r.facts.From(targets)
 }
 
 // clearProblems empties every place a refusal can appear, not just the last one
@@ -561,6 +610,9 @@ func newRunner() *runner {
 	// Nothing to say yet, so nothing takes up room. See say.
 	r.status = parts.NewRunStatus()
 	r.problem = parts.NewErrorArea()
+	// Every line off the screen until the form settles into something. See
+	// runFacts, and showTheRun for when it is asked.
+	r.facts = newRunFacts()
 
 	r.previewBtn = widget.NewButton(text.ButtonPreview(), r.onPreview)
 	r.generateBtn = widget.NewButton(text.ButtonGenerate(), r.onGenerate)
@@ -690,6 +742,11 @@ func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFil
 		r.refuse(runErr)
 		return
 	}
+	// The two numbers only a plan can give. Asked of the engine and of the
+	// disk, not worked out here - engine.TotalBytes adds the plan up, and a
+	// disk that will not answer says nothing rather than a guess.
+	free, err := core.AvailableBytes(opt.OutDir)
+	r.facts.Previewed(engine.TotalBytes(planned), free, err == nil)
 	r.say(append([]string{previewText(planned, opt.OutDir)}, manifestReachNote(res)...)...)
 }
 

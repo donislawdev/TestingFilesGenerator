@@ -109,7 +109,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 			p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
 				p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 		),
-		parts.ReportSection(text.SectionThisRun(), p.progress(), p.problem.Object()),
+		parts.ReportSection(text.SectionThisRun(), p.runPanel()...),
 	)
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
@@ -130,6 +130,9 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// Said last, once the box it reads exists.
 	p.runner.destination = p.OutDir
 	p.runner.sayDestination()
+	// And what those settings come to, so the panel is not blank on a screen
+	// nobody has typed in yet.
+	p.runner.sayFirst()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have

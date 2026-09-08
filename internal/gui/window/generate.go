@@ -212,6 +212,9 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// Said last, once the box it reads exists.
 	g.runner.destination = g.OutDir
 	g.runner.sayDestination()
+	// And what those settings come to, so the panel is not blank on a screen
+	// nobody has typed in yet.
+	g.runner.sayFirst()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
@@ -319,7 +322,7 @@ func entry(text, placeholder string) *parts.Entry {
 func (g *Generate) reportColumn() fyne.CanvasObject {
 	return parts.ReportColumn(
 		g.outputSection(),
-		parts.ReportSection(text.SectionThisRun(), g.progress(), g.problem.Object()),
+		parts.ReportSection(text.SectionThisRun(), g.runPanel()...),
 	)
 }
 

@@ -111,6 +111,30 @@
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
   },
+  "FactBatches": {
+    "description": "Shown in the window.",
+    "other": "Batches"
+  },
+  "FactEachFile": {
+    "description": "Shown in the window.",
+    "other": "Each file"
+  },
+  "FactFiles": {
+    "description": "Shown in the window.",
+    "other": "Files"
+  },
+  "FactFormat": {
+    "description": "Shown in the window.",
+    "other": "Format"
+  },
+  "FactFreeOnDisk": {
+    "description": "Shown in the window.",
+    "other": "Free on disk"
+  },
+  "FactTotal": {
+    "description": "Shown in the window.",
+    "other": "Total"
+  },
   "FieldBoundary": {
     "description": "The name above a box somebody fills in.",
     "other": "Limit to test"
