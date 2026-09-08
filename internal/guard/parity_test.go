@@ -129,6 +129,8 @@ var reachableFromTheWindow = []string{
 	"property:log.timestamps",
 	"property:md.bom",
 	"property:md.encoding",
+	"property:xml.bom",
+	"property:xml.encoding",
 	"property:pdf.page_size",
 	"property:pdf.pages",
 	"property:png.height",

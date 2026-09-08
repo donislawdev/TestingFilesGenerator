@@ -511,7 +511,7 @@ def check_json(data, settings=None):
     ok(f"{len(doc)} records, keys {sorted(keys)}")
 
 
-def scan_xml(data):
+def scan_xml(text):
     """Well formed, checked by hand against the XML specification.
 
     Deliberately not expat. That is the reference tool beside this one, so
@@ -522,12 +522,11 @@ def scan_xml(data):
     never contains a double hyphen, and text where every ampersand starts a real
     entity reference. A raw ampersand is the classic way a generated document
     stops being well formed while staying exactly the right size.
-    """
-    try:
-        text = data.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        fail(f"not valid UTF-8: {exc}")
 
+    Takes text rather than bytes since XML gained an encoding on 2026-09-08. A
+    scanner that decoded as UTF-8 itself would refuse every UTF-16 document, and
+    the caller is the one that knows which encoding was ordered.
+    """
     if not text.startswith("<?xml "):
         fail("the document does not open with an XML declaration")
 
@@ -598,11 +597,32 @@ def scan_xml(data):
     return elements, seen
 
 
-def check_xml(data):
-    elements, _ = scan_xml(data)
+def check_xml(data, settings):
+    """Well formed, and the declaration agrees with the bytes.
+
+    The second half arrived with the encoding setting on 2026-09-08 and it is
+    the one thing that change can get wrong: a document announcing UTF-8 while
+    holding UTF-16 is the classic parser trap. Expat refuses it - measured in
+    both directions - but expat is told nothing, so it can only compare a file
+    with itself. This layer is TOLD what was ordered, which is the difference
+    between "the file is self consistent" and "the file is what was asked for".
+    """
+    settings = settings or {}
+    ordered = settings.get("encoding", "utf-8")
+    text = decode_declared("xml", data, settings)
+
+    want = "UTF-16" if ordered.startswith("utf-16") else "UTF-8"
+    opening = re.match(r'<\?xml version="1\.0" encoding="([^"]*)"\?>', text)
+    if not opening:
+        fail("the document does not open with an XML declaration naming an encoding")
+    if opening.group(1) != want:
+        fail(f"the bytes are {ordered} and the declaration says {opening.group(1)!r}, "
+             f"so a reader is told one thing and handed another")
+
+    elements, _ = scan_xml(text)
     if elements < 2:
         fail(f"the document holds {elements} element(s), so there is nothing below the root")
-    ok(f"{elements} elements, all balanced")
+    ok(f"{elements} elements, all balanced, declaration agrees with the bytes")
 
 
 def check_svg(data):
@@ -615,9 +635,12 @@ def check_svg(data):
     shape, and a generator that quietly stopped emitting them would be the right
     size and would still open.
     """
-    elements, seen = scan_xml(data)
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+    elements, seen = scan_xml(text)
 
-    text = data.decode("utf-8")
     if "<svg" not in text:
         fail("there is no svg root element")
     if 'xmlns="http://www.w3.org/2000/svg"' not in text:
@@ -1680,7 +1703,7 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:
