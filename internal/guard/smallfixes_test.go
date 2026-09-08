@@ -40,11 +40,16 @@ func TestASizeIsWrittenTheWayAPersonWritesIt(t *testing.T) {
 
 	// The decimal point stays. 1.5gib is a real thing people write, and the
 	// fix must not reach it.
+	// Written out grouped, the way the command line prints them since
+	// 2026-09-08, rather than asked of core.ExactBytes. This is a guard over
+	// what a PERSON reads, so the spelling is half of what it pins - and a
+	// guard built from the same function the program prints with cannot tell
+	// the two apart.
 	accepted := map[string]string{
-		"1.5gib":  "1610612736",
-		"10mb":    "10485760",
-		"1048576": "1048576",
-		"700kB":   "716800",
+		"1.5gib":  "1 610 612 736",
+		"10mb":    "10 485 760",
+		"1048576": "1 048 576",
+		"700kB":   "716 800",
 		"0":       "0",
 	}
 	for size, want := range accepted {

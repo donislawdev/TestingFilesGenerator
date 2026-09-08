@@ -4,11 +4,11 @@ import (
 	stdzip "archive/zip"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // onlyArchive is the single .zip the run produced. Failing when there is not
@@ -56,7 +56,14 @@ func archiveMembers(t *testing.T, path string) ([]string, []int64) {
 	return names, sizes
 }
 
-func sizeText(n int64) string { return strconv.FormatInt(n, 10) }
+// sizeText is a number of bytes as the command line writes it.
+//
+// It carries the unit as well as the digits, and both halves are load bearing.
+// The digits are grouped in threes since 2026-09-08, so a guard holding
+// strconv.FormatInt found nothing at all in a report saying "36 415 B" - and
+// the bare digits it used to look for could match INSIDE a longer number,
+// which "36415" in "136415" does.
+func sizeText(n int64) string { return core.ExactBytes(n) }
 
 // "an archive holds real files of other formats" is the feature docs/
 // MVP-FORMATS.md 5.7 calls the key one, and the difference between this tool

@@ -77,7 +77,7 @@ func TestABoundaryRunSaysTheNumberItBuiltAround(t *testing.T) {
 	// The three file lines carry the byte count as well, so asking whether the
 	// number appears at all left this green when the announcement lost it -
 	// which the mutation runner said out loud on 2026-08-18.
-	if !strings.Contains(errOut, `boundary "files" around 15728640 B`) {
+	if !strings.Contains(errOut, `boundary "files" around 15 728 640 B`) {
 		t.Errorf("the run built a set around 15728640 B and never says so.\n"+
 			"Reason: 15mb can be read two ways, and printing the byte count is what lets somebody\n"+
 			"whose system meant 15000000 see it before a byte is written.\nWhat it said:\n%s", out)
