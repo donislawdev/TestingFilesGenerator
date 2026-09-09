@@ -172,9 +172,13 @@ Flags:
 	if err := fs.Parse(rest); err != nil {
 		return ExitUsage
 	}
-	wanted := leading
-	if wanted == "" && fs.NArg() == 1 {
-		wanted = fs.Arg(0)
+	// Two names used to describe the first and say nothing about the second,
+	// ending with zero: measured 2026-09-09, "tfg formats png svg" printed the
+	// card for png and ignored svg, so a script asking about the wrong thing
+	// got a confident answer about something else. O196.
+	wanted, ok := atMostOneName(leading, fs, errOut)
+	if !ok {
+		return ExitUsage
 	}
 
 	if wanted != "" {

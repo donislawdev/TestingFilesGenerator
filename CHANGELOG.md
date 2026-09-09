@@ -306,6 +306,25 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Two commands now refuse a name they cannot answer about, instead of
+  quietly answering about a different one.**
+
+  ```
+  tfg formats png svg          described png and said nothing about svg, ending with 0
+  tfg preset list some-name    printed the whole list and ignored the name, ending with 0
+  ```
+
+  Both now end with 2 and name the word they could not use. A script that
+  asked about the wrong thing was getting a confident answer about something
+  else, which is worse than being told no.
+
+  `tfg preset list` takes no name at all, so anything after it was always a
+  mistake - most likely somebody reaching for `tfg preset show`.
+  The refusal says so.
+
+  Nothing changes when you pass the right number of names, and no generated
+  file moves a byte.
+
 - **A spreadsheet can now be built wider than a spreadsheet can open.** The
   `columns` setting of `xlsx` used to stop at 64. It now reaches 32768, which is
   the ceiling `csv` already had.

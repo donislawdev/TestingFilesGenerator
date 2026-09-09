@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -29,27 +30,70 @@ import (
 // flag names. A list would need a line adding every time a flag is, which is
 // the kind of guard somebody forgets to extend - and the defect is the dashes,
 // not which word follows them.
+// packagesBelowTheSurfaces is every package the layer map puts under the
+// command line and the window, as a path from this directory.
+//
+// Derived rather than written out, and that is the whole of O197. The list
+// here used to name seven directories by hand, and internal/damage arrived on
+// 2026-09-08 without joining it - a package on layer 2, under BOTH surfaces,
+// whose refusals the window and the command line both show. Measured when the
+// gap was found: zero flag spellings in it, so the hole was empty. It was still
+// a hole, and the next package below the surfaces would have fallen in it too.
+//
+// The layer map is the right source rather than a walk of internal, because
+// TestLayeringHoldsForEveryPackage already refuses a package that is neither on
+// the ladder nor declared test only. So this covers a package added tomorrow
+// with nothing to remember, and it leaves out the two test only packages on
+// purpose: internal/oracle carries the flags of other people's programs in raw
+// strings - inkscape and ffprobe are called with real command lines - and
+// measured on 2026-09-09 it holds three of them. A walk of internal would
+// redden on those, which is how a guard gets switched off inside a week.
+func packagesBelowTheSurfaces(t *testing.T) []string {
+	t.Helper()
+
+	// The surfaces are layer 4. Anything above them is a binary, anything
+	// below is what both of them show.
+	const surfaces = 4
+
+	var out []string
+	for pkg, n := range layer {
+		if n >= surfaces {
+			continue
+		}
+		rest, inside := strings.CutPrefix(pkg, "internal/")
+		if !inside {
+			// Nothing below the surfaces lives outside internal today.
+			// Saying so rather than silently skipping it, because a
+			// package that did would go unscanned and look scanned.
+			t.Errorf("%s sits below the surfaces and outside internal, so this guard does not know where to read it", pkg)
+			continue
+		}
+		out = append(out, filepath.Join("..", rest))
+	}
+	if len(out) == 0 {
+		t.Fatal("the layer map put no package below the surfaces, so this guard would read nothing")
+	}
+	sort.Strings(out)
+	return out
+}
+
 func TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling(t *testing.T) {
 	// A dash pair followed by a letter. "|---|---|" in generated markdown is
 	// three dashes and does not match, and neither does a range or an em dash
 	// written as two.
 	flagLike := regexp.MustCompile(`--[a-z]`)
 
-	dirs := []string{
-		"../engine", "../core", "../preset", "../recipe", "../manifest",
-		"../audit", "../format",
-	}
+	dirs := packagesBelowTheSurfaces(t)
 	scanned, found := 0, 0
 	for _, dir := range dirs {
 		matches, err := filepath.Glob(filepath.Join(dir, "*.go"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		nested, err := filepath.Glob(filepath.Join(dir, "*", "*.go"))
-		if err != nil {
-			t.Fatal(err)
+		if len(matches) == 0 {
+			t.Errorf("%s is on the ladder and holds no Go file, so the layer map names a package that is not there", dir)
 		}
-		for _, path := range append(matches, nested...) {
+		for _, path := range matches {
 			if strings.HasSuffix(path, "_test.go") {
 				continue
 			}
