@@ -20,8 +20,6 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
-	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
-	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
 // Exit codes are a frozen contract. Changing what one means is a breaking
@@ -71,52 +69,16 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return ExitUsage
 	}
 
-	switch args[0] {
-	case "generate":
-		return generate(ctx, args[1:], out, errOut)
-	case "validate":
-		return validate(ctx, args[1:], out, errOut)
-	case "verify":
-		return verify(ctx, args[1:], out, errOut)
-	case "cleanup":
-		return cleanup(ctx, args[1:], out, errOut)
-	case "recipe":
-		return recipeCmd(args[1:], out, errOut)
-	case "preset":
-		return presetCmd(ctx, args[1:], out, errOut)
-	case "formats":
-		return formats(args[1:], out, errOut)
-	case "damage":
-		return damageCmd(args[1:], out, errOut)
-	case "--version", "version":
-		fmt.Fprintln(out, version.Version)
-		return ExitOK
-	case "--license", "--licence", "license", "licence":
-		// Both spellings. The tool writes British English and half the people
-		// who reach for this will type the American one, and being right about
-		// spelling at the cost of answering is not a trade worth making.
-		//
-		// An answer, so it goes to out and ends with zero, the same as version.
-		fmt.Fprint(out, version.LicenceNotice)
-		// And then what this particular binary actually carries. The notice
-		// above points at a file, which is no help to somebody holding only
-		// the binary - a download of the window is one file and the notices
-		// are not in it. The list is read out of the build's own record, so
-		// it describes the binary being asked rather than the source tree it
-		// came from: the command line answers with two libraries, the window
-		// with twenty-seven and the fonts they bring.
-		printCarried(out, legal.CarriedHere())
-		return ExitOK
-	case "--help", "-h", "help":
-		// Asking is not a mistake, so the answer goes where answers go and
-		// "tfg --help | less" works.
-		usage(out)
-		return ExitOK
-	default:
-		fmt.Fprintf(errOut, "tfg: unknown command %q.\n\n", args[0])
-		usage(errOut)
-		return ExitUsage
+	// One list rather than a switch beside a help text, since 2026-09-09. See
+	// the comment on the command type in commands.go for what that cost.
+	for _, c := range commands() {
+		if c.matches(args[0]) {
+			return c.Run(ctx, args[1:], out, errOut)
+		}
 	}
+	fmt.Fprintf(errOut, "tfg: unknown command %q.\n\n", args[0])
+	usage(errOut)
+	return ExitUsage
 }
 
 // helpRequested reports whether these arguments explicitly ask for help.
@@ -141,29 +103,6 @@ func helpRequested(args []string) bool {
 	}
 	return false
 }
-
-func usage(w io.Writer) {
-	fmt.Fprint(w, `tfg - generate test files and know how the system under test should react.
-
-Commands:
-  generate    produce files, from a recipe or from flags
-  validate    check a recipe and write nothing
-  verify      check a directory against a manifest
-  cleanup     remove the files a manifest lists
-  recipe fmt  print a recipe in its settled shape
-  preset      build a set of files from a named test question
-  formats     list the formats this build supports
-  damage      list the ways this build can break a file on purpose
-  version     print the tool version
-  license     print the licence and what it means for generated files
-
-Run "tfg <command> --help" for the flags of one command.
-`)
-}
-
-// The licence notice this command prints lives in internal/version, on the
-// bottom layer, because the window shows the same text and the two surfaces
-// cannot import each other. See version.LicenceNotice.
 
 // defaultManifestName mirrors the engine, which has to know the name to keep
 // a run from writing over an earlier one's record.

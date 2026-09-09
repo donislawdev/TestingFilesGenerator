@@ -1,10 +1,9 @@
 package guard
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"strconv"
 	"strings"
 	"testing"
@@ -271,9 +270,9 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 // exceptions would have had nine entries against ten commands, and a ratchet
 // that is mostly excuse teaches its reader to skip it.
 func TestEveryCommandTakingItsOwnArgumentsIsWatchedForHelp(t *testing.T) {
-	dispatched := commandsInTheDispatch(t)
+	dispatched := commandsTakingTheirOwnArguments(t)
 	if len(dispatched) == 0 {
-		t.Fatal("no dispatching case was found, so this guard would pass against any tree")
+		t.Fatal("not one verb refused an unknown flag, so this guard would pass against any tree")
 	}
 
 	watched := map[string]bool{}
@@ -289,56 +288,28 @@ func TestEveryCommandTakingItsOwnArgumentsIsWatchedForHelp(t *testing.T) {
 	t.Logf("%d command(s) take their own arguments", len(dispatched))
 }
 
-// commandsInTheDispatch reads the verbs of cli.Run that hand on their
-// arguments, by asking the source rather than by running anything.
-func commandsInTheDispatch(t *testing.T) []string {
+// commandsTakingTheirOwnArguments is every verb whose own flag set reads what
+// follows it, found by ASKING each one rather than by reading the source.
+//
+// It read the dispatch out of cli.go with go/ast until 2026-09-09, and the
+// switch it parsed no longer exists - the verbs live in one declaration now,
+// which is what O201 was about. Rewriting the parser to walk that declaration
+// instead would have kept a reader of syntax where a measurement will do.
+//
+// The measurement is an unknown flag. A command with its own flag set refuses
+// it with ExitUsage, and one that ignores what follows answers normally -
+// measured 2026-09-09 across all eleven verbs, splitting them eight to three
+// with no exception to write down. That is the same split the parser produced,
+// arrived at by watching behaviour instead of shape.
+func commandsTakingTheirOwnArguments(t *testing.T) []string {
 	t.Helper()
-	file, err := parser.ParseFile(token.NewFileSet(), "../cli/cli.go", nil, 0)
-	if err != nil {
-		t.Fatalf("reading the dispatch: %v", err)
-	}
-
 	var out []string
-	ast.Inspect(file, func(n ast.Node) bool {
-		clause, ok := n.(*ast.CaseClause)
-		if !ok {
-			return true
+	for _, c := range cli.Commands() {
+		var stdout, stderr bytes.Buffer
+		code := cli.Run(context.Background(), []string{c.Verb, "--nosuchflag"}, &stdout, &stderr)
+		if code == cli.ExitUsage {
+			out = append(out, c.Verb)
 		}
-		if !handsOnItsArguments(clause) {
-			return true
-		}
-		for _, expr := range clause.List {
-			lit, ok := expr.(*ast.BasicLit)
-			if !ok || lit.Kind != token.STRING {
-				continue
-			}
-			name, err := strconv.Unquote(lit.Value)
-			if err != nil || strings.HasPrefix(name, "-") {
-				continue
-			}
-			out = append(out, name)
-		}
-		return true
-	})
-	return out
-}
-
-// handsOnItsArguments reports whether this case passes args[1:] to something,
-// which is what having flags of its own looks like from the outside.
-func handsOnItsArguments(clause *ast.CaseClause) bool {
-	found := false
-	for _, stmt := range clause.Body {
-		ast.Inspect(stmt, func(n ast.Node) bool {
-			slice, ok := n.(*ast.SliceExpr)
-			if !ok {
-				return true
-			}
-			ident, ok := slice.X.(*ast.Ident)
-			if ok && ident.Name == "args" && slice.High == nil {
-				found = true
-			}
-			return true
-		})
 	}
-	return found
+	return out
 }

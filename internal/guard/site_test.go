@@ -2,11 +2,9 @@ package guard
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -90,59 +88,6 @@ func exitCodesInOrder() []int {
 		cli.ExitInterrupted,
 		cli.ExitTerminated,
 	}
-}
-
-// commandsTheToolPrints is the command names out of tfg --help, which is the
-// text the page is a copy of.
-//
-// Asked of the help rather than of the router beside it on purpose: the help
-// is what a visitor compares the page against, so agreeing with anything else
-// would prove the wrong thing.
-func commandsTheToolPrints(t *testing.T) []string {
-	t.Helper()
-	var out, errOut bytes.Buffer
-	if code := cli.Run(context.Background(), []string{"--help"}, &out, &errOut); code != cli.ExitOK {
-		t.Fatalf("tfg --help ended with %d rather than %d, so there is no list to compare against",
-			code, cli.ExitOK)
-	}
-	names, err := commandNamesIn(out.String())
-	if err != nil {
-		t.Fatalf("reading the command block out of tfg --help: %v", err)
-	}
-	return names
-}
-
-// commandNamesIn takes the names out of the Commands: block of a help text.
-//
-// Split on two spaces rather than on the first one, because "recipe fmt" is a
-// command whose name has a space in it - splitting on the first would name a
-// command the router does not have.
-//
-// Finding nothing is an error rather than an empty list, and that is the whole
-// reason this is a function of its own. A guard that quietly stopped finding
-// the block would compare the page against nothing and stay green while
-// proving it - which is the failure this file exists to make impossible.
-func commandNamesIn(help string) ([]string, error) {
-	const header = "Commands:"
-	_, rest, found := strings.Cut(help, header+"\n")
-	if !found {
-		return nil, fmt.Errorf("no %q line in the help text", header)
-	}
-	var names []string
-	for _, line := range strings.Split(rest, "\n") {
-		if !strings.HasPrefix(line, "  ") {
-			break
-		}
-		name, _, split := strings.Cut(strings.TrimPrefix(line, "  "), "  ")
-		if !split {
-			return nil, fmt.Errorf("the line %q under %s has no summary beside the name", line, header)
-		}
-		names = append(names, name)
-	}
-	if len(names) == 0 {
-		return nil, fmt.Errorf("the %s block is empty", header)
-	}
-	return names, nil
 }
 
 // factsFromTheProgram fills every number the pages may state.
@@ -462,6 +407,26 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 		for _, name := range facts.Commands {
 			if _, ok := lang.Commands[name]; !ok {
 				t.Errorf("the command %q has no summary in %s, so the page would list it blank", name, lang.Code)
+			}
+		}
+		// And the English page says what the program says, word for word.
+		//
+		// The rows above ask whether a summary EXISTS, which is all that can
+		// be asked of a translation - the Polish page describes the same
+		// command in Polish on purpose. English is the language the program
+		// itself writes in, so there the two are copies of one sentence and
+		// nothing was comparing them. Added 2026-09-09 with O201: the site
+		// gained its own copy of these sentences that morning, and a copy
+		// nobody checks is the defect this whole file exists for.
+		if lang.Code == "en" {
+			for _, c := range cli.Commands() {
+				if c.Summary == "" {
+					continue
+				}
+				if said := lang.Commands[c.Name]; said != c.Summary {
+					t.Errorf("tfg --help describes %q as %q and the English page says %q",
+						c.Name, c.Summary, said)
+				}
 			}
 		}
 		for name := range lang.Commands {
