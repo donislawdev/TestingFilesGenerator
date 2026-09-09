@@ -77,12 +77,18 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	// map: the order damages are applied in is part of what they mean.
 	// The names come from the registry rather than being typed here. The first
 	// version of this line ended "run tfg damage to see what there is" and
-	// there is no such command - a sentence in shipped help promising
+	// there was no such command - a sentence in shipped help promising
 	// something that does not exist, which is the class this project calls
 	// prose with an expiry date. Built from Names() it cannot say that again.
+	//
+	// The pointer is back on 2026-09-09 because the command now exists, and it
+	// carries what this line cannot: what each damage does to the bytes, what
+	// it takes and how small a file it can be given. The names stay beside it
+	// rather than being replaced by it, so the common case is answered without
+	// a second command.
 	fs.Var(&g.repeated.damage, "damage", "break the files on purpose, repeatable and applied in order: "+
 		"--damage zero-head, or --damage zero-head:bytes=16. This build has: "+
-		strings.Join(damage.Names(), ", "))
+		strings.Join(damage.Names(), ", ")+". Run \"tfg damage\" for what each one does")
 
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg generate - produce files.

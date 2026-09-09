@@ -106,6 +106,9 @@ func TestEveryEndingUsesACodeFromTheTable(t *testing.T) {
 		{"an unknown format", []string{"generate", "--format", "nope", "--size", "1kb", "--out", filepath.Join(dir, "e4")}, cli.ExitFormat},
 		{"writing over something", []string{"generate", "--format", "txt", "--size", "500", "--out", occupied}, cli.ExitIO},
 		{"listing the formats", []string{"formats"}, cli.ExitOK},
+		{"listing the damages", []string{"damage"}, cli.ExitOK},
+		{"a damage nobody registered", []string{"damage", "nope"}, cli.ExitUsage},
+		{"two damages at once", []string{"damage", "zero-head", "zero-head"}, cli.ExitUsage},
 		{"the version", []string{"version"}, cli.ExitOK},
 	}
 

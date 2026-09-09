@@ -86,6 +86,8 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return presetCmd(ctx, args[1:], out, errOut)
 	case "formats":
 		return formats(args[1:], out, errOut)
+	case "damage":
+		return damageCmd(args[1:], out, errOut)
 	case "--version", "version":
 		fmt.Fprintln(out, version.Version)
 		return ExitOK
@@ -151,6 +153,7 @@ Commands:
   recipe fmt  print a recipe in its settled shape
   preset      build a set of files from a named test question
   formats     list the formats this build supports
+  damage      list the ways this build can break a file on purpose
   version     print the tool version
   license     print the licence and what it means for generated files
 
