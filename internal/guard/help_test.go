@@ -36,6 +36,7 @@ var commandsTakingHelp = [][]string{
 	{"verify"},
 	{"cleanup"},
 	{"formats"},
+	{"damage"},
 	{"recipe", "fmt"},
 	{"preset"},
 	{"preset", "list"},

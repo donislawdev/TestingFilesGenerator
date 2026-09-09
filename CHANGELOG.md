@@ -58,6 +58,28 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A new command says what this build can break: `tfg damage`.**
+
+  ```
+  tfg damage                  every damage, and what each one does to the bytes
+  tfg damage zero-head        what one of them takes
+  tfg damage --json           the same, for a script
+  ```
+
+  The window already drew the settings of a chosen damage. The command line named
+  them and stopped there, so the only way to learn that `zero-head` takes `bytes`,
+  and that `bytes` runs from 4 to 4096, was to type a wrong value and read the
+  refusal.
+
+  Each one is listed with the smallest file it can be given. That number follows
+  the settings - for `zero-head` it is the number of bytes you asked it to zero - so
+  the column is measured with the defaults and says so.
+
+  Asking about a damage that does not exist ends with 2, the code that means the
+  invocation was mistyped, and it is the same code `--damage` already gave for the
+  same mistake. Asking about two at once is refused rather than answered about the
+  first.
+
 - **Files can be broken on purpose.** A target takes `damage`, and the files it
   produces are ones a reader refuses:
 

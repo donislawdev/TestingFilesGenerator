@@ -238,6 +238,7 @@ tfg cleanup     remove the files a manifest lists
 tfg recipe fmt  print a recipe in its settled shape
 tfg preset      build a set of files from a named test question
 tfg formats     list the formats this build supports
+tfg damage      list the ways this build can break a file on purpose
 tfg version     print the tool version
 tfg license     print the licence and what it means for generated files
 ```
@@ -325,6 +326,29 @@ tfg preset eject <id> > my.yaml       the recipe it stands for, to edit
 tfg formats [--json]     every format, with fidelity, determinism and smallest size
 tfg formats <id>         what a single format accepts
 ```
+
+### `tfg damage`
+
+```
+tfg damage [--json]      every damage, with the smallest file it takes and its settings
+tfg damage <id>          what one damage does to the bytes, and what it takes
+```
+
+A damaged file comes out **exactly** the size you asked for and is one a reader
+refuses, so the manifest records it as expected to be rejected. That is the third
+question an upload validator asks - does it open - and until damage arrived every
+file this tool wrote was well formed by definition.
+
+Use them with `tfg generate --damage <id>`, repeatable and applied in the order
+given, or with the `damage` key of a target in a recipe:
+
+```
+tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16
+```
+
+The smallest file a damage can be given follows its settings, so the column is
+measured with the defaults. Ask for less and the run is refused before anything is
+written, naming a size that would work.
 
 ## 📜 Recipes
 
