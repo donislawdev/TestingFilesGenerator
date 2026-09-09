@@ -234,6 +234,23 @@ type File struct {
 
 	LabelEmbedded bool `json:"label_embedded"`
 
+	// Damage is what was deliberately broken about this file, in the order it
+	// was applied.
+	//
+	// Left out entirely for a file nothing damaged, rather than written as an
+	// empty list, so a consumer can tell "not damaged" from "damaged with
+	// nothing" - and so every manifest written before this existed stays byte
+	// for byte what it was.
+	//
+	// The order is part of it. Two damages applied the other way round are
+	// different bytes, and D11 promises those bytes do not move, so a record
+	// that lost the order would describe a file that cannot be rebuilt from it.
+	//
+	// Adding the field does not move manifest_version, the same way the
+	// toolchain field did not: a reader of schema 1.0 that does not know this
+	// key ignores it, and no key it does know has changed meaning.
+	Damage []Damage `json:"damage,omitempty"`
+
 	// Notes are the things that must not be swallowed - a label that did not
 	// fit, a fidelity level lowered on the fly, a file that failed.
 	Notes []Note `json:"notes,omitempty"`
@@ -242,6 +259,17 @@ type File struct {
 	// worth keeping.
 	Failed bool   `json:"failed,omitempty"`
 	Error  string `json:"error,omitempty"`
+}
+
+// Damage is one thing broken about a file, with the settings it was given.
+//
+// The settings are recorded as they were resolved rather than as they were
+// written, defaults included, because a consumer asking "what was done to this
+// file" should not have to know what the default was in the build that wrote
+// it.
+type Damage struct {
+	Type     string            `json:"type"`
+	Settings map[string]string `json:"settings,omitempty"`
 }
 
 // Hashes identify the bytes.

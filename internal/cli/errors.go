@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -200,6 +201,21 @@ func classifyRequest(err error) (int, bool) {
 	var unknownPreset *preset.UnknownPresetError
 	if errors.As(err, &unknownPreset) {
 		return ExitUsage, true
+	}
+	// A damage this build does not know is a typo in the invocation, the same
+	// class as an unknown preset - a recipe naming one is refused while the
+	// recipe is read, so anything reaching here came off the command line.
+	var unknownDamage *damage.UnknownError
+	if errors.As(err, &unknownDamage) {
+		return ExitUsage, true
+	}
+	// A file smaller than the damage it was given is the same class as a size
+	// below a format's minimum: the request is well formed and nothing here can
+	// deliver it. It gets the same code for that reason rather than by
+	// resemblance.
+	var tooSmall *damage.TooSmallError
+	if errors.As(err, &tooSmall) {
+		return ExitFormat, true
 	}
 	if code, ok := classifyFormat(err); ok {
 		return code, true

@@ -58,6 +58,44 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Files can be broken on purpose.** A target takes `damage`, and the files it
+  produces are ones a reader refuses:
+
+  ```yaml
+  targets:
+    - id: broken-uploads
+      format: png
+      size: 20kb
+      count: 10
+      damage: [zero-head]
+  ```
+
+  or from the command line, repeatable and applied in the order given:
+
+  ```
+  tfg generate --format png --size 20kb --damage zero-head:bytes=16
+  ```
+
+  Until now every file this tool wrote was well formed, so the third question
+  an upload validator asks - "does it open" - was one nothing here could put to
+  it.
+
+  The file still comes out **exactly** the size you asked for. What changes is
+  the content, and the manifest records what was done to it and says the file
+  is expected to be rejected.
+
+  There is one damage in this release, `zero-head`, which overwrites the
+  opening bytes with zeros. It was chosen because all twenty four formats have
+  something that refuses the result - measured, not assumed - and because it
+  does not change the length. `tfg formats` is unchanged and no existing file
+  moves a byte: a run that does not ask for damage goes down the path it always
+  did.
+
+  Two things it refuses rather than doing quietly. A file smaller than the
+  damage is refused before anything is written, naming a size that would work.
+  And a damage that would leave the bytes untouched stops the run, because a
+  whole file described as broken is worse than no file at all.
+
 - **HTML files can be a fragment instead of a whole page.** A new setting on
   `html`: `structure`, which takes `document` or `fragment`. It defaults to the
   whole page these files have always been, so a recipe that says nothing gets

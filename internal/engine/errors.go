@@ -169,7 +169,7 @@ func atTarget(position int, t *Target, err error) error {
 	// is in hand. Without it a recipe written with "size-range" is refused at
 	// "targets[1].size", which is a box that is not on the screen and not in
 	// the file. Measured on 2026-09-06.
-	if setting == core.SettingSize && t != nil && t.SizeIsRange {
+	if setting == core.SettingSize && t != nil && t.Range.Used {
 		setting = core.SettingSizeRange
 	}
 	return &addressedError{err: err, at: core.TargetAddress(position, setting)}

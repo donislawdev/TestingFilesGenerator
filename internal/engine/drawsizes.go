@@ -119,31 +119,31 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 	// UTF-16, the band above a PNG's encoded picture - is a different thing:
 	// nobody can be expected to enumerate those, and snapping inside the range
 	// is the answer.
-	floor, err := firstWritable(desc, first, 0, t.SizeMax)
+	floor, err := firstWritable(desc, first, 0, t.Range.Max)
 	if err != nil {
 		// The floor is above the whole range, so nothing in it is writable.
 		return err
 	}
-	if t.SizeMin < floor {
+	if t.Range.Min < floor {
 		// Asked again at the low end so the format words its own refusal, with
 		// the number the person actually wrote.
-		first.Bytes = t.SizeMin
+		first.Bytes = t.Range.Min
 		if _, err := planWithoutCrashing(desc, first); err != nil {
 			return err
 		}
 	}
 
-	span := uint64(t.SizeMax - t.SizeMin)
+	span := uint64(t.Range.Max - t.Range.Min)
 	t.SizeMoved = make([]bool, len(t.Sizes))
 
 	for i := range t.Sizes {
-		want := t.SizeMin
+		want := t.Range.Min
 		if span != 0 {
 			// Per index, never from a running stream. Raising a count then
 			// leaves the sizes of the earlier files alone, which is rule 2 and
 			// the reason core.SizeSeed takes an index at all.
 			r := core.NewRand(core.SizeSeed(targetSeed, i))
-			want = t.SizeMin + int64(r.Uint64N(span+1))
+			want = t.Range.Min + int64(r.Uint64N(span+1))
 		}
 
 		req := format.Request{
@@ -153,13 +153,13 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 			Properties: t.Properties,
 		}
 
-		got, err := firstWritable(desc, req, want, t.SizeMax)
-		if err != nil && want > t.SizeMin {
+		got, err := firstWritable(desc, req, want, t.Range.Max)
+		if err != nil && want > t.Range.Min {
 			// Nothing writable from the draw upwards. The bottom of the range
 			// can still hold something - a draw landing on the last odd number
 			// of a range has nowhere above it and plenty below - so the range is
 			// only empty once THAT fails too.
-			got, err = firstWritable(desc, req, t.SizeMin, t.SizeMax)
+			got, err = firstWritable(desc, req, t.Range.Min, t.Range.Max)
 		}
 		if err != nil {
 			return err

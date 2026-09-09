@@ -65,6 +65,16 @@ var reachableFromTheWindow = []string{
 	// menu.
 	"preset:size-boundaries.format",
 
+	// What to break about the files, drawn from the damage registry rather
+	// than listed in the window, with the parameters of whatever is chosen
+	// drawn by the same call that draws a format's settings.
+	//
+	// Pressed rather than looked at: TestARunFromTheWindowIsReallyDamaged sets
+	// the menu and a parameter, presses Generate and reads the BYTES back, so
+	// a window that drew the control and dropped the choice on the way to the
+	// engine would redden here rather than passing as a drawn box.
+	"recipe:targets.damage",
+
 	// Every format the registry holds, taken from the registry itself rather
 	// than listed in the window. TestTheWindowOffersEveryFormatTheRegistryHas.
 	"format:bmp",
@@ -219,15 +229,21 @@ var reachableFromTheWindow = []string{
 // parity, written down rather than estimated.
 //
 // Some entries are here for a second reason - the engine refuses them too, so
-// neither surface has them. extends, with, policy, engine, targets.mutations,
-// targets.fill, defaults.fill and output.split_threshold are all answered today
-// with "not in this build yet".
+// neither surface has them. extends, with, policy, engine, targets.fill,
+// defaults.fill and output.split_threshold are all answered today with "not in
+// this build yet".
 //
-// That is eight, and this sentence said seven until 2026-08-18: it had left out
-// output.split_threshold, which recipe.go has refused all along. Counted from
-// the code that does the refusing rather than from this list, which is the only
-// way it could have been found - a comment has no guard, and the number here
-// looked as settled as the ones a test prints.
+// That is seven, and it was eight until 2026-09-09: targets.mutations was
+// refused with a message pointing at a module that will never exist, and it is
+// now targets.damage, which both surfaces reach. It left this list rather than
+// moving down it, which is what this list is for - the distance to parity is
+// only allowed to shrink.
+//
+// The sentence said seven once before, until 2026-08-18, and was wrong: it had
+// left out output.split_threshold, which recipe.go has refused all along.
+// Counted from the code that does the refusing rather than from this list,
+// which is the only way it could have been found - a comment has no guard, and
+// the number here looked as settled as the ones a test prints.
 //
 // They stay on this list because a key nobody has built is still a
 // key the window cannot produce, and separating the two reasons would be a
@@ -241,7 +257,6 @@ var notYetReachable = []string{
 	"recipe:output.split_threshold",
 	"recipe:policy",
 	"recipe:targets.fill",
-	"recipe:targets.mutations",
 	"recipe:version",
 	"recipe:with",
 }

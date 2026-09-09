@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -37,7 +38,11 @@ type generateOpts struct {
 	clean          bool
 	dryRun         bool
 	asJSON         bool
-	props          propertyFlag
+	// The flags a person may write more than once, in one piece rather than
+	// two fields. They are one thing on the screen and one thing in a recipe -
+	// what was stated repeatedly - and grouping them is what moving state out
+	// means when a type is at the crowding band.
+	repeated repeatedFlags
 }
 
 func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.Writer)) {
@@ -65,8 +70,19 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	// Twenty five formats with a dozen properties each would give a surface
 	// nobody reads in --help, and this maps one to one onto the properties
 	// block of a recipe, so both surfaces speak the same words.
-	g.props = propertyFlag{}
-	fs.Var(&g.props, "set", "format property, repeatable: --set width=1920 --set height=1080")
+	g.repeated.props = propertyFlag{}
+	fs.Var(&g.repeated.props, "set", "format property, repeatable: --set width=1920 --set height=1080")
+
+	// Repeatable like --set, and for the same reason, but a list rather than a
+	// map: the order damages are applied in is part of what they mean.
+	// The names come from the registry rather than being typed here. The first
+	// version of this line ended "run tfg damage to see what there is" and
+	// there is no such command - a sentence in shipped help promising
+	// something that does not exist, which is the class this project calls
+	// prose with an expiry date. Built from Names() it cannot say that again.
+	fs.Var(&g.repeated.damage, "damage", "break the files on purpose, repeatable and applied in order: "+
+		"--damage zero-head, or --damage zero-head:bytes=16. This build has: "+
+		strings.Join(damage.Names(), ", "))
 
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg generate - produce files.
@@ -312,15 +328,14 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		ID:             g.id,
 		Format:         g.formatID,
 		Sizes:          sizes,
-		SizeIsRange:    g.sizeRange != "",
-		SizeMin:        rangeLow,
-		SizeMax:        rangeHigh,
+		Range:          engine.SizeRange{Used: g.sizeRange != "", Min: rangeLow, Max: rangeHigh},
 		BoundaryLimit:  boundaryLimit,
 		NameTmpl:       g.name,
 		Label:          !g.clean,
 		Expected:       g.expected,
 		ExpectedReason: g.expectedReason,
-		Properties:     g.props,
+		Properties:     g.repeated.props,
+		Damage:         g.repeated.damage.chain,
 	}}, ExitOK
 }
 
@@ -599,9 +614,7 @@ func engineTarget(t recipe.Target, label bool) engine.Target {
 		Sizes:            t.Sizes,
 		Contains:         contentsOf(t),
 		SizeFromContents: t.SizeFromContents,
-		SizeIsRange:      t.SizeIsRange,
-		SizeMin:          t.SizeMin,
-		SizeMax:          t.SizeMax,
+		Range:            engine.SizeRange(t.Range),
 		BoundaryLimit:    t.BoundaryLimit,
 		NameTmpl:         t.Name,
 		Label:            label,
@@ -609,6 +622,7 @@ func engineTarget(t recipe.Target, label bool) engine.Target {
 		ExpectedReason:   t.ExpectedReason,
 		Group:            t.Group,
 		Properties:       t.Properties,
+		Damage:           t.Damage,
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 	"sync/atomic"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 )
 
 // This file is the only place in internal/engine that runs anything beside
@@ -339,9 +340,41 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 		counter.report = p.advance
 	}
 
-	writeErr := writeWithoutCrashing(ctx, f, counter)
+	// Damage sits between the generator and the counter, and the order is the
+	// design rather than a convenience.
+	//
+	//   generator -> DAMAGE -> counter -> MultiWriter( buffered -> file, h )
+	//
+	// Three things fall out of it and none had to be built. The checksum
+	// describes the bytes that reached the disk, which is what stops the
+	// manifest describing a file other than the one beside it. The size check
+	// below counts the FINAL bytes, so a damage that changed the length
+	// against the plan is stopped by a guard that already existed. And
+	// progress counts what will really be there.
+	sink := io.Writer(counter)
+	var streams []damage.Stream
+	if f.Damaged() {
+		damaged, opened, err := f.Target.Damage.Open(counter)
+		if err != nil {
+			_ = fh.Close()
+			_ = os.Remove(tmp)
+			return "", err
+		}
+		sink, streams = damaged, opened
+	}
+
+	writeErr := writeWithoutCrashing(ctx, f, sink)
 	if writeErr == nil {
 		writeErr = buffered.Flush()
+	}
+	if writeErr == nil {
+		// Asked per damage rather than once at the end, because two damages
+		// can cancel each other out and a chain whose second member was idle
+		// would otherwise pass. A file nothing changed is a file every reader
+		// accepts while the manifest calls it broken.
+		if idle := f.Target.Damage.Idle(streams); idle != "" {
+			writeErr = &damage.NoChangeError{Damage: idle, File: f.Name}
+		}
 	}
 	closeErr := fh.Close()
 

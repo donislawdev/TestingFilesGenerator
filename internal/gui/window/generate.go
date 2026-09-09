@@ -7,8 +7,10 @@ import (
 	"fyne.io/fyne/v2/container"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 	// The formats register themselves when this package is pulled in, and
 	// without it the registry the menu is built from is empty.
 	//
@@ -119,6 +121,14 @@ type Generate struct {
 	// the settings of a PNG are not the settings of a WAV.
 	props   []parts.PropertyField
 	propBox *fyne.Container
+
+	// What to break about the files, in one piece rather than five fields.
+	//
+	// Grouped because the type ceiling is a real limit and the answer to it is
+	// to move state out rather than raise the number - and because these five
+	// are one thing: a menu, the fields whatever it chose declares, the box
+	// they sit in and whether that box is folded away.
+	damage damagePanel
 	// settings is the fold those fields are put in, and settingsFolded is
 	// whether it is away. The flag lives on the screen rather than in the fold
 	// because the fold is built again on every change of format - one that
@@ -261,6 +271,16 @@ func (g *Generate) buildFields() {
 		g.formatPick.SetSelected(ids[0])
 	}
 
+	// Every damage this build registered, asked of the registry rather than
+	// listed here - so a second one appears in this menu on the day it is
+	// registered. DamageNone leads, because a menu cannot be empty and "not
+	// damaged" is what this screen opens on: damage is the exception rather
+	// than the ordinary run.
+	g.damage.box = parts.FieldColumn()
+	g.damage.pick = parts.NewChooser(append([]string{text.DamageNone()}, damage.Names()...),
+		g.onDamageChosen)
+	g.damage.pick.SetSelected(text.DamageNone())
+
 	g.size = entry("10mb", "")
 	g.count = entry("1", "")
 	g.id = entry("files", "")
@@ -328,6 +348,12 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
+			// Damage sits under them rather than beside the format, because it
+			// is a question about the finished file rather than about which
+			// file to make.
+			add(recipe.KeyDamage, text.FieldDamage(), text.HintDamage(),
+				g.tips.Say(text.DetailDamage()), g.damage.pick),
+			g.damage.box,
 		),
 		parts.Section(text.SectionOutput(),
 			add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
@@ -358,6 +384,12 @@ func (g *Generate) onFormatChosen(id string) {
 	// put, under widgets no longer on the screen.
 	g.fields.KeepFirst(g.fixed)
 
+	// The damage parameters sit after the same mark, so they were just taken
+	// away too. Deferred rather than called at the end because this function
+	// has three ways out, and the one that returns early on an unknown format
+	// would otherwise leave the screen holding a menu with no fields under it.
+	defer g.rebuildDamageFields()
+
 	d, err := format.Get(id)
 	if err != nil {
 		// The registry filled this menu, so this cannot happen from a press. It
@@ -385,6 +417,98 @@ func (g *Generate) onFormatChosen(id string) {
 	g.settings.Set(!g.settingsFolded)
 	g.propBox.Add(g.settings.Object())
 	g.propBox.Refresh()
+}
+
+// onDamageChosen redraws the fields the chosen damage declares.
+//
+// A press only. The rebuild that follows a change of format goes through
+// rebuildDamageFields directly, because the format did not change what was
+// chosen here - it took the widgets away and they have to come back the same.
+
+// damagePanel is the damage half of the generate screen.
+//
+// The menu is built with the fields that are always here, because the chosen
+// format must not take it away. Its PARAMETERS are rebuilt whenever the format
+// is - they sit after the same mark, so a change of format takes them with it,
+// and rebuilding both from one place keeps one rule instead of two.
+type damagePanel struct {
+	pick  *parts.Chooser
+	props []parts.PropertyField
+	box   *fyne.Container
+	fold  *parts.Folding
+	// folded is whether the parameters are away, kept here rather than in the
+	// fold because the fold is built again on every rebuild and one that
+	// remembered nothing would spring open unasked.
+	folded bool
+}
+
+func (g *Generate) onDamageChosen(string) {
+	if !g.ready {
+		return
+	}
+	g.rebuildDamageFields()
+}
+
+// rebuildDamageFields draws the parameters of whatever damage is chosen.
+//
+// Nothing when the choice is none, which is what this screen opens on. The
+// fields come from parts.DeclaredFields, the same call the format settings and
+// the preset parameters go through - so a damage that gains a parameter gains
+// its field with no window code at all, which is what makes the registry
+// answer D1 rather than this screen answering it.
+func (g *Generate) rebuildDamageFields() {
+	g.damage.box.RemoveAll()
+	g.damage.props = nil
+	g.damage.fold = nil
+
+	id := g.damage.pick.Selected
+	if id == "" || id == text.DamageNone() {
+		g.damage.box.Refresh()
+		return
+	}
+
+	d, err := damage.Get(id)
+	if err != nil {
+		// The registry filled this menu, so a press cannot get here. A build
+		// where the two have come apart can, and saying so beats a screen with
+		// a damage chosen and no reason given.
+		g.refuse(err)
+		g.damage.box.Refresh()
+		return
+	}
+
+	fields, objects := parts.DeclaredFields(d.Parameters, g.fields, g.tips)
+	g.damage.props = fields
+	if len(objects) == 0 {
+		g.damage.box.Refresh()
+		return
+	}
+
+	g.damage.fold = parts.NewInnerFolding(text.DamageSettingsFor(d.ID), objects...)
+	g.damage.fold.OnChange = func(open bool) { g.damage.folded = !open }
+	g.damage.fold.Set(!g.damage.folded)
+	g.damage.box.Add(g.damage.fold.Object())
+	g.damage.box.Refresh()
+}
+
+// chosenDamage is what the screen asks the engine to break, or nothing.
+//
+// One entry rather than a list, and that is a limit of this screen rather than
+// of the engine: the chain carries as many as a recipe names, and this menu
+// offers one. The batch screen is where a list belongs, next to the other
+// things a recipe says and a single target does not.
+func (g *Generate) chosenDamage() damage.Chain {
+	id := g.damage.pick.Selected
+	if id == "" || id == text.DamageNone() {
+		return nil
+	}
+	values := damage.Values{}
+	for _, f := range g.damage.props {
+		if v := f.Value(); v != "" {
+			values[f.Name] = v
+		}
+	}
+	return damage.Chain{{ID: id, Values: values}}
 }
 
 // settingsSaid is what the folded settings section says about itself.
@@ -508,6 +632,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 		NameTmpl:   g.name.Text,
 		Label:      g.label.Checked,
 		Properties: g.properties(),
+		Damage:     g.chosenDamage(),
 	}}, engine.Options{
 		OutDir:       g.outDir.Text,
 		Seed:         seed,
