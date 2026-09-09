@@ -406,14 +406,55 @@ func StrictKnows(formatID string) bool {
 
 // strictScriptPath finds the checker next to this source file, so the tests
 // work wherever the repository is checked out.
+// strictScriptPath finds the checker script, and has to look twice.
+//
+// The first way works on the machine that compiled the binary: the script sits
+// beside this file, and runtime.Caller says where that is.
+//
+// The second way exists because that path is COMPILED IN, so a binary built
+// here and carried anywhere else looks for a directory that is not there.
+// Measured on 2026-09-09: the guard suite cross compiled on Windows and run in
+// a Linux container reported "0 file(s) decoded strictly by Python" with python
+// sitting in that container's PATH the whole time. Every structural check had
+// been quietly unavailable since the container runs began, and it took two
+// guards that refuse to pass on nothing to make it visible - an unavailable
+// checker is a skip, and a skip reads like a check that ran.
+//
+// So the second way asks the working directory instead and walks up looking for
+// the script at its place in the tree. A test binary runs from inside the tree
+// it tests, which is exactly the case the compiled in path cannot cover.
 func strictScriptPath() (string, bool) {
-	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
+	if _, thisFile, _, ok := runtime.Caller(0); ok {
+		p := filepath.Join(filepath.Dir(thisFile), "strict.py")
+		if _, err := os.Stat(p); err == nil {
+			return p, true
+		}
+	}
+	dir, err := os.Getwd()
+	if err != nil {
 		return "", false
 	}
-	p := filepath.Join(filepath.Dir(thisFile), "strict.py")
-	if _, err := os.Stat(p); err != nil {
-		return "", false
+	return StrictScriptUnder(dir)
+}
+
+// StrictScriptUnder walks up from dir looking for the checker script.
+//
+// Exported for the guard that holds it. The compiled in path above is chosen
+// first on any machine that built the binary, so a guard calling
+// strictScriptPath would prove that one and never reach this.
+func StrictScriptUnder(dir string) (string, bool) {
+	for {
+		p := filepath.Join(dir, "internal", "oracle", "strict.py")
+		if _, err := os.Stat(p); err == nil {
+			return p, true
+		}
+		up := filepath.Dir(dir)
+		if up == dir {
+			// The top of the disk. Whatever sits above this belongs to
+			// something else, so the answer is no rather than the first
+			// checker that happens to turn up outside the tree.
+			return "", false
+		}
+		dir = up
 	}
-	return p, true
 }
