@@ -57,7 +57,7 @@ func init() {
 		// Line endings and line length come later. Until they do, declaring
 		// only what is here is what makes a recipe asking for them fail loudly
 		// instead of quietly producing something else.
-		Properties:       textenc.Properties(),
+		Properties:       textenc.Axes(textenc.Setting, textenc.SettingBOM),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

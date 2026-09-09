@@ -109,7 +109,7 @@ func init() {
 		// Depth, element counts, namespaces, CDATA and an internal DTD come
 		// later. Declaring only what is here is what makes a recipe asking for
 		// them fail loudly instead of quietly producing something else.
-		Properties:       textenc.Properties(),
+		Properties:       textenc.Axes(textenc.Setting, textenc.SettingBOM),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
