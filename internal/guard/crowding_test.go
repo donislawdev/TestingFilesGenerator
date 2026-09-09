@@ -60,8 +60,10 @@ const (
 	// when the per file work moved into compare. The ratchet only tightens.
 	// Lowered from 2 on 2026-09-06: engine.go dropped out of the crowded band
 	// when writing a file moved into parallel.go.
+	// Lowered from 1 on 2026-09-09: preset.go split in two, so no file sits
+	// in the band under the file ceiling any more.
 	crowdedFunctions = 9
-	crowdedFiles     = 1
+	crowdedFiles     = 0
 )
 
 func TestNothingIsQuietlyCreepingTowardsTheCeiling(t *testing.T) {

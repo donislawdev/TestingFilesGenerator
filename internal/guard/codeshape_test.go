@@ -47,7 +47,10 @@ const (
 	// Lowered from 457 on 2026-09-06: writing a file moved out of engine.go
 	// into parallel.go, beside the goroutines that do it. The longest file in
 	// the tree is somewhere else now.
-	longestFile = 433
+	// Lowered from 433 on 2026-09-09: the tfg preset command moved out of
+	// preset.go into presetcmd.go, leaving the machinery behind generate
+	// --preset on its own. The longest file is engine.go again.
+	longestFile = 408
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to
