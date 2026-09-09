@@ -8,15 +8,7 @@
 <section class="section" id="commands">
   <h2>What commands are there?</h2>
   <p>Each one does a single thing:</p>
-  <pre><code>tfg generate    produce files, from a recipe or from flags
-tfg validate    check a recipe and write nothing
-tfg verify      check a directory against a manifest
-tfg cleanup     remove the files a manifest lists
-tfg recipe fmt  print a recipe in its settled shape
-tfg preset      build a set of files from a named test question
-tfg formats     list the formats this build supports
-tfg version     print the tool version
-tfg license     print the licence and what it means for generated files</code></pre>
+  {{ template "commandList" . }}
 </section>
 
 <section class="section" id="one-file">
@@ -41,12 +33,57 @@ tfg license     print the licence and what it means for generated files</code></
         <tr><td><code>--out &lt;dir&gt;</code></td><td>directory to write into</td></tr>
         <tr><td><code>--seed &lt;n&gt;</code></td><td>run seed. The same seed gives the same bytes</td></tr>
         <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>a format setting, repeatable</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>break the files on purpose, repeatable and applied in order. Run <code>tfg damage</code> for the list</td></tr>
         <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> or <code>unspecified</code></td></tr>
         <tr><td><code>--dry-run</code></td><td>count and show, write nothing at all</td></tr>
         <tr><td><code>--json</code></td><td>write the manifest to standard output</td></tr>
       </tbody>
     </table>
   </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>How do I make a file that is broken on purpose?</h2>
+  <p>
+    Every other file this tool writes is correct by construction, which answers two of the three
+    questions an upload validator asks. <code>--damage</code> answers the third one - does the file
+    open at all. The file is produced normally and then broken, so it still has the size you asked
+    for.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Settings go after a colon. The flag repeats, and the order you write them in is the order they
+    are applied. <code>tfg damage</code> lists what this build can do and what each one takes.
+  </p>
+  <p>In a recipe the key is a list, of names or of settings:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    A damaged file gets <code>expected: reject</code> in the manifest, with the damage recorded
+    beside it. Two things are refused before anything is written, because each would otherwise
+    put a file on disk that the manifest describes wrongly:
+  </p>
+  <ul>
+    <li>a file smaller than the damage needs, because it would come out unchanged</li>
+    <li>
+      <code>expected: accept</code> beside a damage, because nothing could meet it. Write
+      <code>sanitize</code> if the system under test is meant to repair the file, or
+      <code>unspecified</code> if that is the question you are asking
+    </li>
+  </ul>
+  <p>
+    A third one cannot be known in advance. If a damage runs and moves no byte, that file is
+    dropped rather than written - the run carries on, says which file it was, and ends with the
+    partial exit code.
+  </p>
 </section>
 
 <section class="section" id="recipes">

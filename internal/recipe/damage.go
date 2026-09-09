@@ -166,11 +166,17 @@ func reportDamageSetting(p *problems, at spot, bad error) {
 // value lives. Damage winning overwrites what somebody wrote, and the
 // regression surface says an expectation stated in a recipe reaches the
 // manifest unchanged. Owner's call on 2026-09-09.
+//
+// The condition itself is damage's rather than this file's, since 2026-09-09.
+// Asking it here as well as in the engine is what keeps this reported with the
+// address of the target and beside every other problem of the same recipe -
+// while the engine asking it is what covers the command line, which never
+// reads a recipe at all. One rule, two callers. See O199.
 func refuseImpossibleExpectation(p *problems, where spot, t Target) {
-	if len(t.Damage) == 0 || t.Expected != outcomeAccept {
+	refusal := t.Damage.ExpectationConflict(t.Expected)
+	if refusal == nil {
 		return
 	}
-	refusal := &damage.ExpectationConflictError{Outcome: t.Expected}
 	p.add(where.of(refusal.AboutSetting()),
 		fmt.Sprintf("%s: %s", where, refusal.What()),
 		refusal.Why(), refusal.Instead())

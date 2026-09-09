@@ -278,7 +278,7 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 	// After the draw, because a range arrives here carrying only a count and a
 	// damage floor has to be judged against the sizes that will really be
 	// written.
-	if err := checkDamageFloor(t); err != nil {
+	if err := checkDamage(t); err != nil {
 		return format.Descriptor{}, err
 	}
 	return desc, nil

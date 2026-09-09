@@ -262,6 +262,7 @@ tfg generate --format txt --size 1mb    settings come from the flags
 | `--out <dir>` | directory to write into. Default `.` |
 | `--seed <n>` | run seed. The same seed gives the same bytes |
 | `--set <k>=<v>` | a format setting, repeatable: `--set width=1920 --set height=1080` |
+| `--damage <name>` | break the files on purpose, repeatable and applied in order. Run `tfg damage` for the list |
 | `--expected <outcome>` | `accept`, `reject`, `sanitize` or `unspecified` |
 | `--expected-reason <r>` | why that outcome, from the closed list below |
 | `--preset <id>` | build the set a named test question calls for |
@@ -349,6 +350,11 @@ tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16
 The smallest file a damage can be given follows its settings, so the column is
 measured with the defaults. Ask for less and the run is refused before anything is
 written, naming a size that would work.
+
+Asking for `--expected accept` beside a damage is refused too, because nothing
+could meet it. Write `sanitize` if the system under test is meant to repair the
+file, or `unspecified` if that is the question you are asking - both of those,
+and `reject`, work as they always did.
 
 ## 📜 Recipes
 

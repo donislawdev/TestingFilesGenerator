@@ -217,6 +217,19 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &tooSmall) {
 		return ExitFormat, true
 	}
+	// Damaging a file and declaring it will be accepted is two flags that
+	// cancel each other, which is a fault in the invocation rather than a
+	// request no format can meet - the same conflict stands for all of them.
+	// A script reading ExitFormat goes looking for another format or another
+	// size, and neither of those is the fix. Owner's call on 2026-09-09.
+	//
+	// Anything arriving here came off the command line: a recipe declaring the
+	// same pair is refused while the recipe is read, with the address of the
+	// target and code 3 beside its other problems. O199.
+	var impossible *damage.ExpectationConflictError
+	if errors.As(err, &impossible) {
+		return ExitUsage, true
+	}
 	if code, ok := classifyFormat(err); ok {
 		return code, true
 	}

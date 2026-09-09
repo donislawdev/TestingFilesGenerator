@@ -97,6 +97,18 @@
   "presets": {
     "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?"
   },
+  "commands": {
+    "generate": "tworzy pliki, z przepisu albo z flag",
+    "validate": "sprawdza przepis i nic nie zapisuje",
+    "verify": "sprawdza katalog względem manifestu",
+    "cleanup": "usuwa pliki wypisane w manifeście",
+    "recipe fmt": "wypisuje przepis w postaci uporządkowanej",
+    "preset": "buduje zestaw plików z nazwanego pytania testowego",
+    "formats": "wypisuje formaty, które ta wersja obsługuje",
+    "damage": "wypisuje sposoby, którymi ta wersja umie celowo zepsuć plik",
+    "version": "wypisuje wersję narzędzia",
+    "license": "wypisuje licencję i to, co znaczy dla wygenerowanych plików"
+  },
   "terms": {
     "oracleNone": "nie dotyczy",
     "int": "dowolna liczba całkowita",

@@ -195,6 +195,11 @@
 </ul>
 {{- end -}}
 
+{{- define "commandList" -}}
+<pre><code>{{ range $i, $c := .CommandList }}{{ if $i }}
+{{ end }}tfg {{ $c.Name }}{{ $c.Pad }}{{ $c.Summary }}{{ end }}</code></pre>
+{{- end -}}
+
 {{- define "downloadCta" -}}
 <div class="cta">
   <a class="button primary" href="{{ .Facts.Releases }}">{{ .Word "ctaDownload" }}</a>

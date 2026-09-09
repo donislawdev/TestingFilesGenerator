@@ -14,6 +14,33 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Asking for damaged files and declaring they will be accepted is now refused
+  on the command line too.** A damaged file is one a reader was measured to
+  refuse, so `--expected accept` beside `--damage` asks for something nothing
+  can deliver.
+
+  A recipe saying the same thing has always been refused. The command line was
+  not: it wrote the files and recorded in the manifest that a deliberately
+  broken file should be accepted, which is the one place this tool must not say
+  something untrue. `tfg generate --damage zero-head --expected accept` now
+  ends with exit code `2` and writes nothing, and a recipe still ends with `3`
+  and names the target the problem is in.
+
+  Only `accept` is refused. `reject` is what damage already means, and
+  `sanitize` and `unspecified` are both real questions to ask about a broken
+  file - a system under test may be meant to repair it, or that may be the
+  point of the test - so all three still work, as does `--expected accept` on
+  files that are not damaged.
+
+- **The documentation website lists every command the tool has.** `tfg damage`
+  arrived in 0.3.0 and the page describing the commands still showed the other
+  nine, because that list was written out by hand. The page now takes the list
+  from the program itself, so a command added later cannot go missing from it,
+  and the site has a section explaining how to produce a file that is broken on
+  purpose.
+
 ## [0.3.0] - 2026-09-09
 
 ### Breaking

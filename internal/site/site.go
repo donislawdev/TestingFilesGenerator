@@ -77,6 +77,26 @@ type Preset struct {
 	Question string
 }
 
+// Command is one command the tool offers, described in the language being
+// rendered.
+//
+// The name comes from the program and the summary from the language file, the
+// same split as a preset and its question. It exists because the page listing
+// the commands was a hand copy of what tfg --help prints: on 2026-09-09 the
+// program had ten commands and the page had nine, and nothing could tell,
+// because Facts carried no list to compare against.
+//
+// Pad is the spaces between the name and the summary, worked out from the
+// longest name rather than written into the template. The block is inside a
+// <pre>, so the alignment is content: a number in the template would be a
+// fourth copy of "the longest command is ten characters" and would go stale
+// the day an eleventh arrives.
+type Command struct {
+	Name    string
+	Pad     string
+	Summary string
+}
+
 // Download says which architectures a system actually gets.
 //
 // Both lists are here because they differ, and a page that flattened them into
@@ -100,6 +120,12 @@ type Facts struct {
 	ExitCodes []int
 	Presets   []string
 	Downloads []Download
+
+	// Commands is what tfg --help prints, in the order it prints it, read out
+	// of that help rather than out of a list beside it. Taking it from the
+	// help is the point: it is the text a visitor is comparing the page
+	// against, so agreeing with anything else would prove the wrong thing.
+	Commands []string
 
 	// Year is fixed rather than taken from the clock. A footer that rendered
 	// the current year would make the committed pages differ from freshly
@@ -172,19 +198,22 @@ type Page struct {
 // Dir is the path prefix. It is empty for the language served at the root,
 // which is the one search engines are pointed at by x-default.
 //
-// Endings and Terms are the two places where a word has to exist for every
-// value the program can produce. Endings is keyed by the exit code written out
-// in decimal, Terms by the kind or unit exactly as the registry spells it.
+// Endings, Terms, Presets and Commands are the places where a word has to
+// exist for every value the program can produce, and a missing one is an error
+// rather than a gap left in English. Endings is keyed by the exit code written
+// out in decimal, Terms by the kind or unit exactly as the registry spells it,
+// Presets by the identifier, and Commands by the name tfg --help prints.
 type Language struct {
-	Code    string            `json:"code"`
-	Name    string            `json:"name"`
-	Dir     string            `json:"dir"`
-	Words   map[string]string `json:"words"`
-	Endings map[string]string `json:"endings"`
-	Terms   map[string]string `json:"terms"`
-	Presets map[string]string `json:"presets"`
-	Pages   []Page            `json:"pages"`
-	Faq     []QA              `json:"faq"`
+	Code     string            `json:"code"`
+	Name     string            `json:"name"`
+	Dir      string            `json:"dir"`
+	Words    map[string]string `json:"words"`
+	Endings  map[string]string `json:"endings"`
+	Terms    map[string]string `json:"terms"`
+	Presets  map[string]string `json:"presets"`
+	Commands map[string]string `json:"commands"`
+	Pages    []Page            `json:"pages"`
+	Faq      []QA              `json:"faq"`
 }
 
 // Site is everything needed to render.

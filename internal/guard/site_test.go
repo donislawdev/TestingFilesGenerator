@@ -2,13 +2,16 @@ package guard
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -89,8 +92,62 @@ func exitCodesInOrder() []int {
 	}
 }
 
+// commandsTheToolPrints is the command names out of tfg --help, which is the
+// text the page is a copy of.
+//
+// Asked of the help rather than of the router beside it on purpose: the help
+// is what a visitor compares the page against, so agreeing with anything else
+// would prove the wrong thing.
+func commandsTheToolPrints(t *testing.T) []string {
+	t.Helper()
+	var out, errOut bytes.Buffer
+	if code := cli.Run(context.Background(), []string{"--help"}, &out, &errOut); code != cli.ExitOK {
+		t.Fatalf("tfg --help ended with %d rather than %d, so there is no list to compare against",
+			code, cli.ExitOK)
+	}
+	names, err := commandNamesIn(out.String())
+	if err != nil {
+		t.Fatalf("reading the command block out of tfg --help: %v", err)
+	}
+	return names
+}
+
+// commandNamesIn takes the names out of the Commands: block of a help text.
+//
+// Split on two spaces rather than on the first one, because "recipe fmt" is a
+// command whose name has a space in it - splitting on the first would name a
+// command the router does not have.
+//
+// Finding nothing is an error rather than an empty list, and that is the whole
+// reason this is a function of its own. A guard that quietly stopped finding
+// the block would compare the page against nothing and stay green while
+// proving it - which is the failure this file exists to make impossible.
+func commandNamesIn(help string) ([]string, error) {
+	const header = "Commands:"
+	_, rest, found := strings.Cut(help, header+"\n")
+	if !found {
+		return nil, fmt.Errorf("no %q line in the help text", header)
+	}
+	var names []string
+	for _, line := range strings.Split(rest, "\n") {
+		if !strings.HasPrefix(line, "  ") {
+			break
+		}
+		name, _, split := strings.Cut(strings.TrimPrefix(line, "  "), "  ")
+		if !split {
+			return nil, fmt.Errorf("the line %q under %s has no summary beside the name", line, header)
+		}
+		names = append(names, name)
+	}
+	if len(names) == 0 {
+		return nil, fmt.Errorf("the %s block is empty", header)
+	}
+	return names, nil
+}
+
 // factsFromTheProgram fills every number the pages may state.
-func factsFromTheProgram() site.Facts {
+func factsFromTheProgram(t *testing.T) site.Facts {
+	t.Helper()
 	formats := make([]site.Format, 0, len(format.All()))
 	for _, d := range format.All() {
 		props := make([]site.Property, 0, len(d.Properties))
@@ -132,6 +189,7 @@ func factsFromTheProgram() site.Facts {
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
 		Presets:   ids,
+		Commands:  commandsTheToolPrints(t),
 		Downloads: declaredDownloads(),
 		// Fixed on purpose. See the comment on the field.
 		Year: 2026,
@@ -188,7 +246,7 @@ func siteUnderTest(t *testing.T) site.Site {
 	t.Helper()
 	root := webRoot(t)
 	return site.Site{
-		Facts:       factsFromTheProgram(),
+		Facts:       factsFromTheProgram(t),
 		Languages:   languagesOnDisk(t),
 		ContentDir:  filepath.Join(root, "content"),
 		TemplateDir: filepath.Join(root, "templates"),
@@ -385,7 +443,7 @@ func withoutYamlComments(in string) string {
 }
 
 func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
-	facts := factsFromTheProgram()
+	facts := factsFromTheProgram(t)
 	for _, lang := range languagesOnDisk(t) {
 		for _, code := range facts.ExitCodes {
 			if _, ok := lang.Endings[strconv.Itoa(code)]; !ok {
@@ -395,6 +453,20 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 		for _, id := range facts.Presets {
 			if _, ok := lang.Presets[id]; !ok {
 				t.Errorf("the preset %q has no question in %s", id, lang.Code)
+			}
+		}
+		// The other direction as well, which the rows above do not ask. A
+		// command dropped from the program leaves its summary behind in both
+		// language files, and the page would then be a list of what the tool
+		// used to have - the same defect as a missing one, read backwards.
+		for _, name := range facts.Commands {
+			if _, ok := lang.Commands[name]; !ok {
+				t.Errorf("the command %q has no summary in %s, so the page would list it blank", name, lang.Code)
+			}
+		}
+		for name := range lang.Commands {
+			if !slices.Contains(facts.Commands, name) {
+				t.Errorf("%s describes a command %q that tfg --help does not print", lang.Code, name)
 			}
 		}
 		for _, f := range facts.Formats {
