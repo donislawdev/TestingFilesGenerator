@@ -1,12 +1,16 @@
 package guard
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -310,6 +314,91 @@ targets:
 			t.Errorf("expected %s beside damage is a legitimate question and was refused: %v",
 				outcome, err)
 		}
+	}
+}
+
+// The command line refuses that pair as well, and writes nothing.
+//
+// The guard above asks recipe.Parse and only recipe.Parse, and that was enough
+// to be green through a build where this was broken. Measured on 2026-09-09 on
+// the 0.3.0 binary: the recipe was refused with code 3 while
+// --damage zero-head --expected accept ended with code 0 and left a manifest
+// on disk saying a deliberately damaged file should be accepted - the tool
+// lying in the one place its value lives. O199.
+//
+// Both halves are needed. Asking only the refusal would pass for a build that
+// refuses damage beside any expectation at all, and asking only that files are
+// written would pass for one that refuses nothing - so the second loop is the
+// wall detector and the first is the hole detector.
+//
+// The count of files is asked rather than the exit code alone: a refusal that
+// arrives after the writing has started is a refusal that came too late, and
+// the code by itself cannot tell those apart.
+func TestTheCommandLineRefusesDamageBesideAcceptToo(t *testing.T) {
+	run := func(t *testing.T, extra ...string) (int, string, int) {
+		t.Helper()
+		dir := t.TempDir()
+		var out, errOut bytes.Buffer
+		args := append([]string{
+			"generate", "--format", "txt", "--size", "100",
+			"--damage", damage.ZeroHead, "--out", dir,
+		}, extra...)
+		code := cli.Run(context.Background(), args, &out, &errOut)
+		written, err := os.ReadDir(dir)
+		if err != nil {
+			t.Fatalf("reading the output directory: %v", err)
+		}
+		return code, errOut.String(), len(written)
+	}
+
+	code, said, files := run(t, "--expected", damage.RuledOutExpectation)
+	if code != cli.ExitUsage {
+		t.Errorf("damage beside %q ended with %d, expected %d - two flags that cancel each other are a fault in the invocation\nstderr: %s",
+			damage.RuledOutExpectation, code, cli.ExitUsage, said)
+	}
+	if files != 0 {
+		t.Errorf("the run was refused and still left %d file(s) behind", files)
+	}
+	if !strings.Contains(said, damage.RuledOutExpectation) {
+		t.Errorf("the refusal does not name the word it turned down: %s", said)
+	}
+
+	// The other three are legitimate questions about a broken file, and a
+	// build refusing them would be a wall rather than this rule.
+	for _, outcome := range []string{"reject", "sanitize", "unspecified"} {
+		if code, said, _ := run(t, "--expected", outcome); code != cli.ExitOK {
+			t.Errorf("--expected %s beside damage ended with %d rather than %d: %s",
+				outcome, code, cli.ExitOK, said)
+		}
+	}
+	// And the expectation on its own is untouched. Every case above carries a
+	// damage, so a build that refused accept for every run whatsoever would
+	// look correct from all of them.
+	dir := t.TempDir()
+	var out, errOut bytes.Buffer
+	if code := cli.Run(context.Background(), []string{
+		"generate", "--format", "txt", "--size", "100",
+		"--expected", damage.RuledOutExpectation, "--out", dir,
+	}, &out, &errOut); code != cli.ExitOK {
+		t.Errorf("--expected %s with nothing damaged ended with %d rather than %d, which makes this a wall rather than a rule about damage: %s",
+			damage.RuledOutExpectation, code, cli.ExitOK, errOut.String())
+	}
+}
+
+// The outcome damage rules out is the one the manifest and the recipe know.
+//
+// Three spellings of one word live in three packages that cannot import each
+// other - damage sits beside manifest rather than under it - so this compares
+// them rather than leaving them to drift. A rename in one place turns this red
+// instead of quietly producing a build where nothing is ever refused.
+func TestTheOutcomeDamageRulesOutIsTheOneTheManifestKnows(t *testing.T) {
+	if damage.RuledOutExpectation != manifest.OutcomeAccept {
+		t.Errorf("damage rules out %q and the manifest calls it %q, so nothing would ever match",
+			damage.RuledOutExpectation, manifest.OutcomeAccept)
+	}
+	if !slices.Contains(recipe.Outcomes(), damage.RuledOutExpectation) {
+		t.Errorf("damage rules out %q and a recipe does not accept that word at all: %v",
+			damage.RuledOutExpectation, recipe.Outcomes())
 	}
 }
 

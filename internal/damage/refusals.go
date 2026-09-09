@@ -114,6 +114,52 @@ func (e *NoChangeError) Error() string {
 	return e.What() + ". " + e.Why()
 }
 
+// RuledOutExpectation is the one declared outcome a damaged file cannot have.
+//
+// It is spelled here rather than imported because internal/manifest sits
+// beside this package rather than under it, so the two cannot see each other.
+// TestTheOutcomeDamageRulesOutIsTheOneTheManifestKnows compares this against
+// manifest.OutcomeAccept and against the list a recipe accepts, which is what
+// stops three spellings of one word from drifting apart.
+const RuledOutExpectation = "accept"
+
+// ConflictsWithExpectation is the refusal a target earns by damaging its files
+// and declaring they will be accepted, or nil when there is no conflict.
+//
+// It lives here, on the chain, because it is a fact about damage rather than
+// about either surface - and both surfaces ask it. Measured on 2026-09-09 with
+// the check living in the recipe reader alone: a recipe was refused with code
+// 3 while the identical run off the command line ended with code 0 and wrote a
+// manifest saying a deliberately broken file should be accepted. The recipe
+// reader still asks first, so it keeps reporting this beside every other
+// problem of that recipe and with the address of the target - what changed is
+// that the engine asks too, so no surface can get past it. See O199.
+// Two shapes of one rule, and the pair is deliberate. The engine wants an
+// error to hand upwards, while the recipe reader wants the parts - What, Why
+// and Instead - to lay out beside the other problems of that recipe.
+//
+// Written as two functions rather than one returning the concrete type,
+// because that one would be the typed nil trap: a nil *ExpectationConflictError
+// placed in an error interface is NOT a nil error. Measured 2026-09-09 on a
+// four case program - "reject", "sanitize", "" and "accept" all came back
+// err != nil - so the engine would have refused EVERY target, damaged or not,
+// and the guard beside this one asserts exactly that it does not.
+func (c Chain) ConflictsWithExpectation(expected string) error {
+	if bad := c.ExpectationConflict(expected); bad != nil {
+		return bad
+	}
+	return nil
+}
+
+// ExpectationConflict is the same question answered with the refusal itself,
+// or nil. For a caller that needs the parts rather than an error.
+func (c Chain) ExpectationConflict(expected string) *ExpectationConflictError {
+	if len(c) == 0 || expected != RuledOutExpectation {
+		return nil
+	}
+	return &ExpectationConflictError{Outcome: expected}
+}
+
 // ExpectationConflictError is a target that damages a file and expects it to
 // be accepted.
 //

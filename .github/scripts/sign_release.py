@@ -114,6 +114,22 @@ def powershell(script):
         capture_output=True, text=True)
     if out.returncode != 0:
         raise SystemExit("sign_release: powershell failed:\n%s" % out.stderr.strip())
+    # PowerShell errors are NON TERMINATING by default, so a script can print
+    # a page of complaints and still exit zero. Reading stderr only on a
+    # non-zero code therefore threw away the one sentence that said what went
+    # wrong, and left the caller looking at empty output with no reason for it.
+    #
+    # It cost an hour on 2026-09-09 signing v0.3.0: the certificate lookup came
+    # back empty and the script blamed a missing card, while the card was in
+    # the reader and readable. The complaint was there the whole time and
+    # nothing printed it. O200.
+    #
+    # A note rather than a failure, because a warning is not a refusal and the
+    # caller may have asked something that legitimately produces one.
+    if out.stderr.strip():
+        print("    powershell also said:")
+        for line in out.stderr.strip().splitlines():
+            print("      %s" % line)
     return out.stdout
 
 
@@ -170,17 +186,41 @@ def signing_thumbprint(pin):
     the only selector it takes, and the repository pins SHA-256 because that is
     the digest worth pinning. Resolving one to the other here means the two can
     never drift apart in a configuration file.
+
+    THE STORE IS OPENED THROUGH .NET RATHER THAN THROUGH THE Cert: DRIVE, and
+    that is a measurement rather than a preference. The drive is provided by
+    Microsoft.PowerShell.Security, which Windows PowerShell 5.1 only loads when
+    PSModulePath points at its own module directory - and a 5.1 launched from
+    inside pwsh 7 is handed pwsh's PSModulePath instead. Measured 2026-09-09 on
+    this machine, from a python started under pwsh:
+
+        Get-ChildItem Cert:\\CurrentUser\\My  ->  0, plus
+            "Cannot find drive. A drive with the name 'Cert' does not exist."
+        X509Store('My','CurrentUser')         ->  11
+
+    Both ended with code ZERO, because a PowerShell error is non terminating -
+    so the script saw empty output and reported a missing card while the card
+    was in the reader. It cost an hour signing v0.3.0 and the release went out
+    through Git Bash as a workaround. X509Store is in the runtime rather than
+    in a module, so it does not depend on which shell started which. O200.
     """
     script = (
         "$out = @(); "
-        "Get-ChildItem Cert:\\CurrentUser\\My, Cert:\\LocalMachine\\My "
-        "-ErrorAction SilentlyContinue | Where-Object { "
-        "  $_.Extensions.EnhancedKeyUsages.Value -contains '%s' } | ForEach-Object { "
-        "  $h = [System.Security.Cryptography.SHA256]::Create().ComputeHash($_.RawData); "
-        "  $out += [pscustomobject]@{ "
-        "    sha256 = (($h | ForEach-Object { $_.ToString('x2') }) -join ''); "
-        "    thumb = $_.Thumbprint; subject = $_.Subject; "
-        "    notAfter = $_.NotAfter.ToString('s') } "
+        "foreach ($where in 'CurrentUser', 'LocalMachine') { "
+        "  $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('My', $where); "
+        "  try { $store.Open('ReadOnly') } catch { continue }; "
+        "  foreach ($c in $store.Certificates) { "
+        "    $eku = @(); "
+        "    foreach ($x in $c.Extensions) { "
+        "      if ($x -is [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]) { "
+        "        foreach ($u in $x.EnhancedKeyUsages) { $eku += $u.Value } } }; "
+        "    if ($eku -notcontains '%s') { continue }; "
+        "    $h = [System.Security.Cryptography.SHA256]::Create().ComputeHash($c.RawData); "
+        "    $out += [pscustomobject]@{ "
+        "      sha256 = (($h | ForEach-Object { $_.ToString('x2') }) -join ''); "
+        "      thumb = $c.Thumbprint; subject = $c.Subject; "
+        "      notAfter = $c.NotAfter.ToString('s') } }; "
+        "  $store.Close() "
         "}; $out | ConvertTo-Json -Compress" % CODE_SIGNING_OID
     )
     entries = json.loads(powershell(script).strip() or "[]")

@@ -97,6 +97,18 @@
   "presets": {
     "size-boundaries": "Is a size limit enforced exactly where it is declared?"
   },
+  "commands": {
+    "generate": "produce files, from a recipe or from flags",
+    "validate": "check a recipe and write nothing",
+    "verify": "check a directory against a manifest",
+    "cleanup": "remove the files a manifest lists",
+    "recipe fmt": "print a recipe in its settled shape",
+    "preset": "build a set of files from a named test question",
+    "formats": "list the formats this build supports",
+    "damage": "list the ways this build can break a file on purpose",
+    "version": "print the tool version",
+    "license": "print the licence and what it means for generated files"
+  },
   "terms": {
     "oracleNone": "not applicable",
     "int": "any whole number",

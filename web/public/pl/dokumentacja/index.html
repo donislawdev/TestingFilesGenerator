@@ -91,6 +91,7 @@ tfg cleanup     usuwa pliki wypisane w manifeście
 tfg recipe fmt  wypisuje przepis w postaci uporządkowanej
 tfg preset      buduje zestaw plików z nazwanego pytania testowego
 tfg formats     wypisuje formaty, które ta wersja obsługuje
+tfg damage      wypisuje sposoby, którymi ta wersja umie celowo zepsuć plik
 tfg version     wypisuje wersję narzędzia
 tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</code></pre>
 </section>
@@ -117,12 +118,58 @@ tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</c
         <tr><td><code>--out &lt;katalog&gt;</code></td><td>katalog, do którego trafiają pliki</td></tr>
         <tr><td><code>--seed &lt;n&gt;</code></td><td>ziarno przebiegu. To samo ziarno daje te same bajty</td></tr>
         <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>ustawienie formatu, można powtarzać</td></tr>
+        <tr><td><code>--damage &lt;nazwa&gt;</code></td><td>celowo psuje pliki, można powtarzać, stosowane po kolei. Listę wypisuje <code>tfg damage</code></td></tr>
         <tr><td><code>--expected &lt;wynik&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> albo <code>unspecified</code></td></tr>
         <tr><td><code>--dry-run</code></td><td>policz i pokaż, nie zapisuj niczego</td></tr>
         <tr><td><code>--json</code></td><td>wypisz manifest na standardowe wyjście</td></tr>
       </tbody>
     </table>
   </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Jak zrobić plik celowo zepsuty?</h2>
+  <p>
+    Każdy inny plik, który to narzędzie zapisuje, jest poprawny z definicji, co odpowiada na dwa
+    z trzech pytań walidatora uploadu. <code>--damage</code> odpowiada na trzecie - czy plik w ogóle
+    się otwiera. Plik powstaje normalnie i dopiero potem zostaje zepsuty, więc dalej ma zamówiony
+    rozmiar.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Ustawienia idą po dwukropku. Flagę można powtarzać, a kolejność zapisu jest kolejnością
+    stosowania. <code>tfg damage</code> wypisuje, co ta wersja umie i co każde uszkodzenie
+    przyjmuje.
+  </p>
+  <p>W przepisie klucz jest listą, nazw albo ustawień:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Uszkodzony plik dostaje w manifeście <code>expected: reject</code>, a obok niego zapisane
+    uszkodzenie. Dwie rzeczy są odmawiane, zanim cokolwiek powstanie, bo każda zostawiłaby na
+    dysku plik, który manifest opisuje nieprawdziwie:
+  </p>
+  <ul>
+    <li>plik mniejszy niż potrzebuje uszkodzenie, bo wyszedłby nietknięty</li>
+    <li>
+      <code>expected: accept</code> obok uszkodzenia, bo nic nie mogłoby tego spełnić. Napisz
+      <code>sanitize</code>, jeśli system pod testem ma plik naprawić, albo
+      <code>unspecified</code>, jeśli właśnie o to pytasz
+    </li>
+  </ul>
+  <p>
+    Trzeciej rzeczy nie da się wiedzieć z góry. Jeśli uszkodzenie przebiegnie i nie ruszy ani
+    jednego bajtu, taki plik zostaje odrzucony zamiast zapisany - przebieg idzie dalej, mówi,
+    którego pliku to dotyczyło, i kończy się kodem częściowego wyniku.
+  </p>
 </section>
 
 <section class="section" id="recipes">

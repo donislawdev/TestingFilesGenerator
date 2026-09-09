@@ -69,6 +69,7 @@ func (l Language) expand(f Facts) (Language, error) {
 	out.Endings = everyValue(l.Endings)
 	out.Terms = everyValue(l.Terms)
 	out.Presets = everyValue(l.Presets)
+	out.Commands = everyValue(l.Commands)
 
 	out.Pages = make([]Page, len(l.Pages))
 	for i, p := range l.Pages {
@@ -146,6 +147,35 @@ func (v view) PresetList() ([]Preset, error) {
 			return nil, fmt.Errorf("the preset %q has no question written in %s", id, v.Lang.Code)
 		}
 		out = append(out, Preset{ID: id, Question: question})
+	}
+	return out, nil
+}
+
+// CommandList is every command tfg --help prints, in that order, summarised in
+// the language being rendered.
+//
+// The padding is worked out here rather than in the template. The block is
+// inside a <pre> where spaces are content, and the width follows the longest
+// name - so an eleventh command longer than the tenth widens the column by
+// itself instead of leaving a template to be remembered.
+func (v view) CommandList() ([]Command, error) {
+	widest := 0
+	for _, name := range v.Facts.Commands {
+		if len(name) > widest {
+			widest = len(name)
+		}
+	}
+	out := make([]Command, 0, len(v.Facts.Commands))
+	for _, name := range v.Facts.Commands {
+		summary, ok := v.Lang.Commands[name]
+		if !ok {
+			return nil, fmt.Errorf("the command %q has no summary written in %s", name, v.Lang.Code)
+		}
+		out = append(out, Command{
+			Name:    name,
+			Pad:     strings.Repeat(" ", widest-len(name)+2),
+			Summary: summary,
+		})
 	}
 	return out, nil
 }

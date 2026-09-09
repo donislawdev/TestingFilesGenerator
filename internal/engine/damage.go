@@ -13,6 +13,24 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
+// checkDamage is every refusal a damaged target can earn during planning.
+//
+// One entry rather than two calls side by side in engine.go, and that is the
+// same measurement this file was cut out for: adding the second call put
+// engine.go at 411 lines of code against a ceiling of 408, and the answer to a
+// ceiling is a cut rather than a larger number. These two belong together
+// anyway - both are "what makes this target impossible before a byte is
+// written", which is one subject.
+//
+// The floor first, because it names a number a person can act on. A target
+// earning both refusals gets that one.
+func checkDamage(t *Target) error {
+	if err := checkDamageFloor(t); err != nil {
+		return err
+	}
+	return checkDamageExpectation(t)
+}
+
 // checkDamageFloor refuses a file smaller than the damage it was given.
 //
 // Here rather than at the moment of writing, and that is the point: a file
@@ -44,6 +62,24 @@ func checkDamageFloor(t *Target) error {
 		}
 	}
 	return nil
+}
+
+// checkDamageExpectation refuses a target that breaks its files and declares
+// they will be accepted.
+//
+// Here as well as in the recipe reader, and that is the whole point of it. The
+// condition is one function on the chain, so this is a second CALLER rather
+// than a second copy - what it buys is that the command line reaches it, and
+// the command line never reads a recipe. Measured on 2026-09-09 before this
+// existed: the recipe was refused with code 3 while
+// --damage zero-head --expected accept ended with code 0 and wrote a manifest
+// claiming a deliberately broken file should be accepted. O199.
+//
+// The window cannot reach this today - damage sits on the generate screen and
+// the expectation on the recipe screen - and being here rather than in the
+// reader is what covers it on the day those two meet.
+func checkDamageExpectation(t *Target) error {
+	return t.Damage.ConflictsWithExpectation(t.Expected)
 }
 
 // damageFor records what was broken about this file, with the settings

@@ -119,6 +119,48 @@ func TestTheSigningScriptRefusesBeforeItSigns(t *testing.T) {
 	}
 }
 
+// The signing script asks the certificate store in a way that does not depend
+// on which shell started it, and never hides what PowerShell said.
+//
+// Both halves are one measurement from 2026-09-09, signing v0.3.0. Windows
+// PowerShell 5.1 launched from inside pwsh 7 is handed pwsh's PSModulePath, so
+// Microsoft.PowerShell.Security is not loaded and the Cert: drive it provides
+// does not exist. Measured from a python started under pwsh:
+//
+//	Get-ChildItem Cert:\CurrentUser\My  ->  0 and "Cannot find drive"
+//	X509Store('My','CurrentUser')       ->  11
+//
+// The error is NON TERMINATING, so the exit code was zero and the script -
+// which read stderr only on a non-zero code - saw empty output and announced a
+// missing card while the card was in the reader. The release went out through
+// Git Bash as a workaround and the hour spent on it is O200.
+//
+// Neither half is enough alone. Reading stderr without changing the lookup
+// leaves a script that explains its own failure every time, and changing the
+// lookup without reading stderr leaves the next non terminating error just as
+// invisible - the message a person needs would still be thrown away.
+func TestTheSigningScriptDoesNotDependOnWhichShellStartedIt(t *testing.T) {
+	script := signingScript(t)
+
+	// The .NET store is in the runtime rather than in a module, so it answers
+	// whatever PSModulePath says.
+	if !strings.Contains(script, "X509Store") {
+		t.Error("the script does not open the certificate store through .NET, so it answers differently depending on the shell that launched it")
+	}
+	// The drive is the half that goes missing. Named as a Windows path here so
+	// this cannot match the .NET call above.
+	for _, drive := range []string{`Cert:\CurrentUser`, `Cert:\LocalMachine`} {
+		if strings.Contains(script, drive) {
+			t.Errorf("the script reads %s, a drive that does not exist when Windows PowerShell is launched from pwsh - and its absence is reported with exit code zero", drive)
+		}
+	}
+	// A non-zero code is not the only way PowerShell says something is wrong,
+	// so the check that reads stderr must not be reached only through one.
+	if !strings.Contains(script, "out.stderr.strip():") {
+		t.Error("nothing prints what PowerShell said unless the exit code is non-zero, and a non terminating error leaves that code at zero")
+	}
+}
+
 // The workflow that speaks about signed bytes must not claim to have built them.
 func TestTheAttestationWorkflowDoesNotClaimToHaveBuiltAnything(t *testing.T) {
 	attest := workflowText(t, "attest-release.yml")
