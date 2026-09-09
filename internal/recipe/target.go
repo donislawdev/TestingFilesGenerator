@@ -39,8 +39,23 @@ type rawTarget struct {
 	Boundary  *scalar             `yaml:"boundary"`
 	SizeRange *scalar             `yaml:"size-range"`
 	Contains  []map[string]scalar `yaml:"contains"`
-	Mutations []map[string]any    `yaml:"mutations"`
-	Fill      *scalar             `yaml:"fill"`
+
+	// Damage is what to break about the files, in the order to break it.
+	//
+	// []any rather than a list of mappings, because an entry is a word or a
+	// mapping - the shape expected already has, for the same reason: the
+	// common case is one name and it should stay one word.
+	//
+	// It replaced a reserved key called mutations, which this build refused
+	// with a message pointing at a module that will never exist. The rename
+	// was free only because the key was always refused and the manifest field
+	// beside it was always empty, so nobody was standing on either. In this
+	// project a mutation is a change to the CODE that proves a guard works,
+	// with its own runner and its own chapter, and one word for two things is
+	// what GLOSSARY.md exists to prevent.
+	Damage []any `yaml:"damage"`
+
+	Fill *scalar `yaml:"fill"`
 }
 
 // DefaultCount is how many files a target produces when it does not say.
@@ -109,7 +124,9 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 		t.Label = *rt.Label
 	}
 
+	t.Damage = damages(p, where, rt.Damage)
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
+	refuseImpossibleExpectation(p, where, t)
 	if group, ok := oneValue(p, where.of("group"), where.String()+" {setting}", "group: invoices", rt.Group); ok {
 		t.Group = group
 	}
@@ -119,10 +136,6 @@ func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
 
 // refuseSections names the parts of a target this build cannot honour.
 func (rt rawTarget) refuseSections(p *problems, where spot) {
-	if rt.Mutations != nil {
-		p.notYetIn(where, "mutations", "damaged files arrive with the Chaos Lab",
-			"remove the section")
-	}
 	if rt.Fill != nil {
 		p.notYetIn(where, "fill", "the fill mode is not settable yet",
 			"remove the line - content is generated from the seed")
@@ -209,7 +222,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		if !ok {
 			break
 		}
-		t.SizeIsRange, t.SizeMin, t.SizeMax = true, low, high
+		t.Range.Used, t.Range.Min, t.Range.Max = true, low, high
 		// The values stay zero here and the engine replaces them. What this
 		// list carries at this point is the number of files, exactly as it
 		// does for contains.
@@ -309,7 +322,15 @@ func KnownReason(r string) bool { return reasons[r] }
 // command line twice, and the window was about to be the fifth copy. That is
 // exactly the argument written above Reasons - two copies of a closed list is
 // how the surfaces drift, which is D1 one level down.
-var outcomes = []string{"accept", "reject", "sanitize", "unspecified"}
+var outcomes = []string{outcomeAccept, "reject", "sanitize", "unspecified"}
+
+// outcomeAccept is the one outcome a damaged file cannot have.
+//
+// Named rather than typed twice, because the refusal in damage.go is about this
+// exact word. Below the list rather than above it: the paragraph over the list
+// documents the LIST, and a declaration slipped in between would quietly take
+// that paragraph for itself and leave the list with none.
+const outcomeAccept = "accept"
 
 // Outcomes is the closed list, for the surfaces that have to offer it.
 //

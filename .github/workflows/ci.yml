@@ -600,7 +600,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go cmd/tfg/main.go internal/gui/window/run.go internal/audit/parallel.go internal/engine/parallel.go go.mod'
+          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/audit/parallel.go internal/engine/parallel.go go.mod'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because

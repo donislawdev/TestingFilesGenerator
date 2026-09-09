@@ -9,6 +9,8 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 )
 
 // SchemaVersion is the recipe schema this build understands. It is versioned
@@ -77,22 +79,40 @@ type Target struct {
 	// the preset it came from.
 	Group      string
 	Properties map[string]string
+	// Damage is what to break about these files, in the order to break it.
+	//
+	// Empty for every target that does not ask, which is every target written
+	// before this existed - and that is what keeps D11 whole: a run with no
+	// damage goes through the same writer it always did.
+	Damage damage.Chain
 	// Contains is what a container holds, one entry per group.
 	Contains []Content
 	// SizeFromContents is set when contains was given without a size, so the
 	// container works the size out from what it holds.
 	SizeFromContents bool
-	// SizeMin and SizeMax hold the range when the target asked for one, and
-	// SizeIsRange says it did. The sizes themselves are not settled here.
+	// Range holds what a target asked for when it asked for one. The sizes
+	// themselves are not settled here.
+	//
+	// One field rather than three, for the reason engine.Target gives: the
+	// type stood at the crowding band, and these three were one statement all
+	// along - a minimum without the flag beside it says nothing.
 	//
 	// They cannot be. A range is drawn from the seed, and the --seed flag
 	// overrides the recipe after this package has finished reading it, so a
 	// size drawn at validation time would belong to a different run than the
 	// one the manifest describes. The engine draws them, which is still before
 	// anything reaches the disk, so AR10 holds and --dry-run stays exact.
-	SizeIsRange bool
-	SizeMin     int64
-	SizeMax     int64
+	Range SizeRange
+}
+
+// SizeRange is a size drawn per file rather than stated.
+//
+// Its own type here as well as in the engine rather than one shared between
+// them, because this package stays a description of a recipe and the engine
+// stays what runs one - the same reason Content exists twice.
+type SizeRange struct {
+	Used     bool
+	Min, Max int64
 }
 
 // Content is one group of files inside a container.

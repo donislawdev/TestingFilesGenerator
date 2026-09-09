@@ -69,6 +69,18 @@ var layer = map[string]int{
 	"internal/preset":   2,
 	"internal/manifest": 2,
 
+	// What a file can be broken with. Layer 2 rather than 1, beside the other
+	// pieces of the contract, because it imports internal/format cleanly
+	// downwards for format.Property - exactly as internal/preset does, and for
+	// the same reason: a damage parameter IS a format property, so it gets the
+	// validation, the one voice of refusal and the window's field for free.
+	//
+	// Layer 1 beside the formats was the other candidate and was turned down:
+	// damage transforms bytes, which makes it tempting, but it is not a
+	// generator and down there it would need a sideways edge to
+	// internal/format for the property type.
+	"internal/damage": 2,
+
 	"internal/engine": 3,
 	"internal/audit":  3,
 
@@ -145,6 +157,14 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/jxl":        {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/wav":        {"internal/format", "internal/format/imagelabel"},
 	"internal/preset":            {"internal/recipe"},
+
+	// A recipe checks the damages it names against the registry that holds
+	// them, the same way it checks a format against the format registry. It
+	// has to happen here rather than in the engine, because an invalid recipe
+	// writes no files at all and comes back with every problem it has - a name
+	// checked later would be a run that started before its recipe was known to
+	// be good.
+	"internal/recipe": {"internal/damage"},
 
 	// The window is composed of parts and the parts know nothing about
 	// windows. That direction is what lets a part be rendered on its own,

@@ -28,6 +28,12 @@ var mayBeConcurrent = map[string]string{
 	// The registry is read by every generator and written once at startup, so
 	// it carries the one lock in the tree.
 	"internal/format/registry.go": "the format registry is written at init and read by everything after",
+	// The same shape one axis over, and the same reason: written once when the
+	// package starts and read by planning, by the recipe reader, by both
+	// surfaces and by the guards. It holds the second lock in the tree because
+	// it is the second registry, not because anything here runs beside
+	// anything else.
+	"internal/damage/damage.go": "the damage registry is written at init and read by everything after",
 	// Signals arrive on a channel by definition, and the handler has to run
 	// beside the work it interrupts.
 	"cmd/tfg/main.go": "the interrupt handler has to run beside the work it stops",

@@ -55,9 +55,21 @@
     "description": "Shown where an archive says what it holds.",
     "other": "Files inside each archive"
   },
+  "DamageNone": {
+    "description": "Shown in the window.",
+    "other": "none"
+  },
+  "DamageSettingsFor": {
+    "description": "Shown in the window. Carries one value, {{.Damage}}, which has to stay spelled exactly that way.",
+    "other": "Settings for {{.Damage}}"
+  },
   "DetailBoundary": {
     "description": "The longer explanation behind the button beside a field name.",
     "other": "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
+  },
+  "DetailDamage": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "The files come out the size you asked for and no reader will accept them, which is what a validator has to reject. The manifest records what was broken and says the file is expected to be rejected."
   },
   "DetailDonate": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -118,6 +130,10 @@
   "FieldCount": {
     "description": "The name above a box somebody fills in.",
     "other": "How many files"
+  },
+  "FieldDamage": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Damage"
   },
   "FieldExpected": {
     "description": "The name above a box somebody fills in.",
@@ -191,6 +207,10 @@
   "HintBoundary": {
     "description": "The line under a field name, saying what the field does.",
     "other": "Three files: one byte under the limit, one on it, one over."
+  },
+  "HintDamage": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "Break the files on purpose."
   },
   "HintExpected": {
     "description": "The line under a field name, saying what the field does.",

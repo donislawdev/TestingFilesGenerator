@@ -109,7 +109,11 @@ var shapeCases = map[string]string{
 	"expected": skipShapeCase,
 	// properties is a mapping of names to values.
 	"properties": skipShapeCase,
-	"mutations":  skipShapeCase,
+	// damage takes a list, so a mapping really is a wrong shape for it - it
+	// gets a case rather than a skip. The entries inside it may be a word or a
+	// mapping, which is a different question and is asked by the guards in
+	// damagerefused_test.go.
+	"damage": "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    damage: {a: b}\noutput:\n  dir: ./o\n",
 
 	"version":                "version: {a: b}\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\noutput:\n  dir: ./o\n",
 	"seed":                   "version: 1\nseed: {a: b}\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\noutput:\n  dir: ./o\n",

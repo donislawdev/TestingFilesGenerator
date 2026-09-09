@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
@@ -40,17 +41,20 @@ type Target struct {
 	// from Contains. The entries in Sizes then only carry the count, and their
 	// value is not read.
 	SizeFromContents bool
-	// SizeIsRange says the sizes are drawn from SizeMin to SizeMax rather than
-	// stated, and Sizes arrives carrying only the count.
+	// Range says the sizes are drawn rather than stated, and Sizes then arrives
+	// carrying only the count.
+	//
+	// One field rather than three, because the type stood at the crowding band
+	// and the answer to that is to move state out rather than raise a number.
+	// They were one statement to begin with: a minimum without the flag beside
+	// it says nothing, and neither does a maximum.
 	//
 	// The draw happens here rather than in the recipe package because this is
 	// the first place that knows the seed the run will actually use - the
 	// --seed flag overrides the recipe, and a size drawn before that would
 	// belong to a different run than the manifest describes. It still happens
 	// during planning, so AR10 holds and a dry run reports exact numbers.
-	SizeIsRange bool
-	SizeMin     int64
-	SizeMax     int64
+	Range SizeRange
 	// SizeMoved marks the files whose drawn size was not one the format can
 	// write, so the nearest writable one was used instead. Empty for a target
 	// that is not a range.
@@ -77,6 +81,21 @@ type Target struct {
 	// manifest, so a test can assert about a whole class at once.
 	Group      string
 	Properties map[string]string
+	// Damage is what to break about these files, in the order to break it.
+	//
+	// Empty for every target that does not ask, and that emptiness is what
+	// keeps D11 whole: a run with no damage goes down the same write path it
+	// always did, byte for byte.
+	Damage damage.Chain
+}
+
+// SizeRange is a size drawn per file rather than stated.
+//
+// Used is what says a range was asked for at all. Min and Max mean nothing
+// without it, which is why they travel together.
+type SizeRange struct {
+	Used     bool
+	Min, Max int64
 }
 
 // Uniform is n files of the same size, which is what most targets ask for.
@@ -192,6 +211,11 @@ type PlannedFile struct {
 	Plan   format.Plan
 }
 
+// Damaged says whether this file is broken on purpose.
+func (f PlannedFile) Damaged() bool {
+	return f.Target != nil && len(f.Target.Damage) > 0
+}
+
 // settleTarget checks everything that has to be true about one target before
 // any of its files are planned, and settles the sizes of a range.
 //
@@ -245,10 +269,17 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 	// every generator already refuses and a guard walks sizes below the minimum
 	// for every registered format. It was removed rather than kept as defence
 	// nobody can verify.
-	if t.SizeIsRange {
+	if t.Range.Used {
 		if err := drawSizes(t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {
 			return format.Descriptor{}, err
 		}
+	}
+
+	// After the draw, because a range arrives here carrying only a count and a
+	// damage floor has to be judged against the sizes that will really be
+	// written.
+	if err := checkDamageFloor(t); err != nil {
+		return format.Descriptor{}, err
 	}
 	return desc, nil
 }
@@ -627,6 +658,7 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		Determinism:   string(f.Plan.Determinism),
 		Properties:    f.Plan.Properties,
 		LabelEmbedded: label,
+		Damage:        damageFor(f),
 		Notes:         notes,
 		Expected:      expectationFor(f),
 		Group:         f.Target.Group,
@@ -648,6 +680,24 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 func expectationFor(f PlannedFile) manifest.Expected {
 	switch f.Target.Expected {
 	case "":
+		// A damaged file is one a judge was measured to refuse, so reject is
+		// what it means rather than a guess - which is why this is allowed to
+		// state it with certainty where an ordinary file gets unspecified.
+		// Untouchable rule 5 forbids inventing an expectation, and this one is
+		// not invented: the witness rule says a damage with nothing able to
+		// refuse its result is a damage this tool does not offer.
+		//
+		// Only where nothing was declared. A recipe that states an expectation
+		// reaches the manifest unchanged, and the one statement that cannot be
+		// true beside damage - accept - is refused while reading the recipe
+		// rather than quietly replaced here.
+		if f.Damaged() {
+			return manifest.Expected{
+				Outcome:    manifest.OutcomeReject,
+				Reason:     "content_malformed",
+				Confidence: "certain",
+			}
+		}
 		return manifest.Expected{
 			Outcome:    manifest.OutcomeUnspecified,
 			Detail:     "No expectation was declared for this file.",

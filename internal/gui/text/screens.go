@@ -224,6 +224,31 @@ func PlaceholderLeftEmpty(declared string) string {
 // PlaceholderNotStated stays. It is a different thing: a menu with no declared
 // default, where nothing chosen really does mean nothing stated, and the
 // manifest really does record it as unspecified.
+// The damage field. A file broken on purpose is the one thing this tool makes
+// that is not well formed, so the words around it say what will happen rather
+// than what it is called.
+func FieldDamage() string { return say("FieldDamage", "Damage") }
+
+func HintDamage() string {
+	return say("HintDamage", "Break the files on purpose.")
+}
+
+func DetailDamage() string {
+	return say("DetailDamage", "The files come out the size you asked for and no reader will accept them, which is what a validator has to reject. The manifest records what was broken and says the file is expected to be rejected.")
+}
+
+// DamageNone is the entry that means no damage, and it is what the menu opens
+// on. A menu cannot be empty, so "not damaged" has to be one of its values.
+func DamageNone() string { return say("DamageNone", "none") }
+
+// DamageSettingsFor heads the block of fields a chosen damage declares.
+//
+// A function rather than a constant with the name glued on, for the reason
+// SettingsFor gives below.
+func DamageSettingsFor(damageID string) string {
+	return sayf("DamageSettingsFor", "Settings for {{.Damage}}", map[string]any{"Damage": damageID})
+}
+
 // SettingsFor heads the block of fields a chosen format declares.
 //
 // A function rather than a constant with the id glued on: languages do not

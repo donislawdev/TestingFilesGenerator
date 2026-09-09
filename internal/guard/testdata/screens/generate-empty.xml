@@ -35,10 +35,10 @@
 														</widget>
 													</widget>
 												</container>
-												<container pos="0,53" size="820x336">
-													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x336"/>
-													<container size="820x336">
-														<container pos="6,6" size="808x324">
+												<container pos="0,53" size="820x412">
+													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x412"/>
+													<container size="820x412">
+														<container pos="6,6" size="808x400">
 															<widget size="808x35" type="*widget.Label">
 																<widget size="808x35" type="*widget.RichText">
 																	<text bold pos="6,6" size="150x23" textSize="17">File configuration</text>
@@ -242,10 +242,43 @@
 																	</container>
 																</container>
 															</container>
+															<container pos="0,333" size="808x58">
+																<container size="808x58">
+																	<container size="808x32">
+																		<widget size="70x32" type="*widget.Label">
+																			<widget size="70x32" type="*widget.RichText">
+																				<text bold pos="6,6" size="58x19">Damage</text>
+																			</widget>
+																		</widget>
+																		<widget pos="76,0" size="32x32" type="*parts.DetailButton">
+																			<rectangle radius="5" size="32x32"/>
+																			<rectangle size="32x32"/>
+																			<image fillMode="contain" pos="6,6" rsc="infoIcon" size="iconInlineSize" themed="foreground"/>
+																		</widget>
+																	</container>
+																	<container pos="0,33" size="808x25">
+																		<container size="140x25">
+																			<widget size="140x25" type="*parts.Chooser">
+																				<rectangle fillColor="inputBackground" radius="5" size="140x25"/>
+																				<rectangle size="0x0"/>
+																				<widget pos="6,3" size="108x19" type="*widget.RichText">
+																					<text size="33x19">none</text>
+																				</widget>
+																				<widget pos="114,2" size="20x20" type="*widget.Icon">
+																					<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
+																				</widget>
+																			</widget>
+																			<rectangle radius="5" size="140x25" strokeColor="inputBorder" strokeWidth="1"/>
+																		</container>
+																	</container>
+																</container>
+															</container>
+															<container pos="0,400" size="808x0">
+															</container>
 														</container>
 													</container>
 												</container>
-												<container pos="0,403" size="820x194">
+												<container pos="0,479" size="820x194">
 													<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x194"/>
 													<container size="820x194">
 														<container pos="6,6" size="808x182">

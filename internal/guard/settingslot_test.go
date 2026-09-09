@@ -185,8 +185,10 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"entries": "an", "bit_depth": "a", "sample_rate": "a", "channels": "a",
 		"paragraphs": "a", "rows": "a", "columns": "a", "slides": "a",
 		"depth": "a", "colours": "a", "records": "a", "lines": "a",
+		"damage": "a", "bytes": "a",
 		// Labels, which is what a window shows.
 		"Batch name": "a", "How many files": "a", "File names": "a", "Size": "a",
+		"Damage": "a",
 		"Format": "a", "Seed": "a", "Output directory": "an", "Kind of case": "a",
 		"Around a limit": "an", "Size range": "a", "Expected outcome": "an",
 		"Limit to test": "a", "One size": "a", "A range": "a",

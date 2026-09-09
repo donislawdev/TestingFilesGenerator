@@ -16,6 +16,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -266,6 +267,70 @@ func (p propertyFlag) Set(v string) error {
 	}
 	p[key] = value
 	return nil
+}
+
+// repeatedFlags are the flags a person may write more than once.
+//
+// One piece rather than two fields on the options struct, because the type was
+// at the crowding band and the answer to that is to move state out. They belong
+// together anyway: both map onto a block of a recipe rather than onto a single
+// line of one.
+type repeatedFlags struct {
+	props  propertyFlag
+	damage damageFlag
+}
+
+// damageFlag collects repeated --damage entries, in the order they were given.
+//
+// A list rather than a map, which is the difference from --set beside it:
+// order is part of what a chain of damages means, and the same damage twice
+// with different settings is a legitimate thing to ask for. --set refuses a
+// repeat because one of two values would be lost silently, and here neither is.
+//
+// The settings ride after a colon so one entry stays one argument:
+//
+//	--damage zero-head
+//	--damage zero-head:bytes=16
+//	--damage zero-head:bytes=16,other=2
+type damageFlag struct{ chain damage.Chain }
+
+func (d *damageFlag) String() string { return d.chain.String() }
+
+func (d *damageFlag) Set(v string) error {
+	id, settings, hasSettings := strings.Cut(v, ":")
+	if id == "" {
+		return fmt.Errorf("expected the name of a damage, got %q", v)
+	}
+	values, err := damageSettings(id, settings, hasSettings)
+	if err != nil {
+		return err
+	}
+	d.chain = append(d.chain, damage.Spec{ID: id, Values: values})
+	return nil
+}
+
+// damageSettings reads the name=value pairs after the colon.
+//
+// Its own function rather than a block inside Set, because the shape gates
+// count how deep a reader has to follow and this was the third level.
+func damageSettings(id, settings string, stated bool) (damage.Values, error) {
+	values := damage.Values{}
+	if !stated {
+		return values, nil
+	}
+	for _, pair := range strings.Split(settings, ",") {
+		key, value, found := strings.Cut(pair, "=")
+		if !found || key == "" {
+			return nil, fmt.Errorf("expected name=value after the colon, got %q", pair)
+		}
+		if _, exists := values[key]; exists {
+			// The same reason --set gives: one of the two would be lost and
+			// nobody would know which.
+			return nil, fmt.Errorf("%s is set more than once on %s", key, id)
+		}
+		values[key] = value
+	}
+	return values, nil
 }
 
 // args2 rebuilds the command as it would have to be typed to run again.
