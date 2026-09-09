@@ -64,7 +64,7 @@ func init() {
 		// Heading depth, table size and which elements appear come later.
 		// Declaring only what is here is what makes a recipe asking for them
 		// fail loudly rather than quietly producing something else.
-		Properties:       textenc.Properties(),
+		Properties:       textenc.Axes(textenc.Setting, textenc.SettingBOM),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

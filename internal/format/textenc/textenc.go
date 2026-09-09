@@ -1,9 +1,15 @@
 // Package textenc is the character encoding the text formats share.
 //
-// It lives here rather than inside one of them because TXT and MD ask the same
-// question and have to answer it in the same words. A copy in each is how
+// It lives here rather than inside one of them because TXT, MD and XML ask the
+// same question and have to answer it in the same words. A copy in each is how
 // thirteen packages ended up carrying four different versions of one filler
 // loop, and the same rule applies to a setting a person reads.
+//
+// Sharing the declaration is not the same as being held to it, and until
+// 2026-09-09 only the first was true here. A format that simply did not call
+// this package could declare the same setting any way it liked, which is the
+// gap Axes and TestEveryTextFormatDeclaresTheEncodingSettingsAsTheyAreDeclared
+// Once close between them.
 //
 // What it holds is arithmetic as much as bytes. A file written in UTF-16 is a
 // whole number of sixteen bit units, so its length is always even - which
@@ -18,6 +24,7 @@ package textenc
 import (
 	"fmt"
 	"io"
+	"sort"
 	"unicode/utf16"
 	"unicode/utf8"
 
@@ -253,19 +260,67 @@ func appendUnit(dst []byte, u uint16, big bool) []byte {
 	return append(dst, byte(u), byte(u>>8))
 }
 
-// Properties is the declaration both text formats hand to the registry, so
-// the two cannot describe the same setting differently.
-func Properties() []format.Property {
-	return []format.Property{
-		{
-			Name: Setting, Kind: format.PropertyChoice,
-			Choices: []string{UTF16BE, UTF16LE, UTF8}, Default: UTF8,
-			Detail: "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused.",
-		},
-		{
-			Name: SettingBOM, Kind: format.PropertyBool,
-			Default: "false",
-			Detail:  "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.",
-		},
+// axes is the declaration of every setting a text format may take, by key.
+//
+// One copy, so two text formats cannot offer the same setting with a different
+// set of values, a different default or a different sentence beside it. That
+// is not tidiness waiting for a problem: measured on 2026-09-09 by giving md a
+// declaration of its own that agreed on kind, unit and default and offered one
+// encoding fewer, eleven guards stayed green while txt and xml wrote utf-16be
+// and md refused it.
+//
+// The default is the one field here that is untouchable rule 3 rather than
+// consistency. Every one of these formats has always written UTF-8 with no
+// mark, so a format defaulting to anything else moves its own bytes.
+var axes = map[string]format.Property{
+	Setting: {
+		Name: Setting, Kind: format.PropertyChoice,
+		Choices: []string{UTF16BE, UTF16LE, UTF8}, Default: UTF8,
+		Detail: "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused.",
+	},
+	SettingBOM: {
+		Name: SettingBOM, Kind: format.PropertyBool,
+		Default: "false",
+		Detail:  "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.",
+	},
+}
+
+// Names is every text encoding setting this build declares, in a stable order.
+//
+// It exists for the guard that compares what a text format offers against what
+// this package says the setting is, so an axis added tomorrow is covered
+// without a line changing in that guard.
+func Names() []string {
+	out := make([]string, 0, len(axes))
+	for n := range axes {
+		out = append(out, n)
 	}
+	sort.Strings(out)
+	return out
+}
+
+// Axes is the declarations for the settings named, in the order given.
+//
+// A format lists what it takes rather than receiving all of it, and the three
+// that exist today all take both. The narrowing is here because the fourth is
+// already named and cannot: an HTML document has to be UTF-8 by its own
+// specification, so the only encoding axis it could carry is the mark - and
+// without this it would have to write that declaration out by hand, which is
+// exactly the drift the guard above exists to refuse. The choice is by NAME
+// rather than by value, because no text format wants a narrower set of
+// encodings and building for one that might is guessing at a shape.
+//
+// An unknown name panics rather than being skipped, for the reason archive
+// gives: this is called from init, the caller is a programmer, and a silently
+// dropped axis is a setting that vanishes from both surfaces with nothing said.
+func Axes(names ...string) []format.Property {
+	out := make([]format.Property, 0, len(names))
+	for _, n := range names {
+		p, ok := axes[n]
+		if !ok {
+			panic(fmt.Sprintf("textenc: %q is not a text encoding setting this build declares", n))
+		}
+		out = append(out, p)
+	}
+	return out
 }

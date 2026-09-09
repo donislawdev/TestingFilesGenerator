@@ -29,6 +29,16 @@ import (
 //
 // What it does NOT claim is that a person can reach these. A person cannot, and
 // the guards on the declaration are what prove the sentence they do get.
+//
+// That sentence was measured on 2026-09-09 and it holds, but only just, and the
+// reason is worth carrying: a person reaches this backstop the moment a
+// declaration DRIFTS from what imagedim would build. Given a width starting at
+// zero, bmp printed "whole number of pixels from 0 to 20000" and this function
+// is what refused width=0, with wording contradicting the print - and ten
+// guards stayed green. The door was closed the same day by
+// TestEveryPictureFormatDeclaresItsSidesAsTheImageDimensionPackageWould, so
+// "a person cannot" is true because something now holds it true rather than
+// because nothing had tried.
 func TestThePictureSideBackstopRefusesWhatTheDeclarationWould(t *testing.T) {
 	const largest = 256
 
