@@ -974,6 +974,18 @@ because it turns other people's test suites red.
   somebody else put there, and `tfg cleanup` will not remove it, because it
   removes only what a manifest lists.
 
+  Taking the name at the start has a second effect, on a run nothing else is
+  competing with. A run that filled the disk part way through used to lose its
+  manifest as well, because the manifest asked for its name after the last file
+  and by then there was no room left for it. Such a run ended with exit code
+  `5`, printed the files it had not produced, and said that clearing the
+  directory was a job by hand. The name is now taken before the first file, so
+  the manifest is written whatever happens to the disk afterwards, `tfg cleanup`
+  can remove what the run left, and the run ends with the partial exit code `8`
+  instead. Measured in a container with room for twelve names: 0.2.0 and
+  0.3.0-rc1 both ended `5` and wrote no manifest, and this release ends `8` and
+  writes one.
+
   The cost is worth stating plainly: two runs can no longer fill one directory
   at the same time, even when the files they write have different names. For
   every run that does not set `output.manifest` that was already true.
