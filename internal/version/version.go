@@ -7,25 +7,32 @@ package version
 // Version is written into every manifest. A manifest without it cannot
 // explain a hash mismatch after an upgrade.
 //
-// Set to 0.1.0 by the owner on 2026-08-02, raised to 0.2.0 on 2026-08-28 and
-// to 0.3.0-rc1 on 2026-09-03, every one of them by the owner. It stopped being
-// an internal number the day 0.1.0 was published: this is what somebody
-// compares their build against when a hash they stored months ago does not
-// match.
+// Set to 0.1.0 by the owner on 2026-08-02, raised to 0.2.0 on 2026-08-28, to
+// 0.3.0-rc1 on 2026-09-03 and to 0.3.0 on 2026-09-09, every one of them by the
+// owner. It stopped being an internal number the day 0.1.0 was published: this
+// is what somebody compares their build against when a hash they stored months
+// ago does not match.
 //
 // 0.2.0 was a minor bump that moved no bytes. This one moves them, and before
 // 1.0 the minor is where that goes - D11 and immutable rule 3 ask for a bump,
 // not for a particular digit. Six formats have different bytes under Go 1.27,
-// a log advances through time, a GIF moves, and a CSV quotes only the fields
-// that need it. The changelog lists each one and says whether there is a way
-// back to the old bytes.
+// a log advances through time, a GIF moves, a CSV quotes only the fields that
+// need it, and the padding of a ZIP, a TAR.GZ and a WAV is drawn eight bytes
+// at a time instead of one. The changelog lists each one and says whether
+// there is a way back to the old bytes.
 //
-// The suffix is not decoration and it is not spelled freely. The release
+// The absence of a suffix is a decision rather than tidying up. The release
 // workflow marks a release as a prerelease when the TAG NAME carries a hyphen,
-// so 0.3.0rc1 would have gone out as the latest stable release. The changelog
-// section has to be spelled the same way, because the workflow greps for a
-// heading naming exactly this string before it will build anything.
-const Version = "0.3.0-rc1"
+// which is what kept 0.3.0-rc1 off the front page and out of "latest" while it
+// was the newest tag. Dropping the suffix is what puts this build there, and
+// 0.3.0rc1 would have gone out as the latest stable release by accident.
+//
+// The changelog section has to be spelled the same way as this string, because
+// the workflow greps for a heading naming exactly it before it will build
+// anything. The entries that shipped as 0.3.0-rc1 were folded into the 0.3.0
+// section on 2026-09-09 for the same reason the version has one place: someone
+// upgrading from 0.2.0 needs one list of what changed, not two.
+const Version = "0.3.0"
 
 // LicenceNotice is what "tfg license" prints and what the window's about
 // screen shows.
