@@ -527,7 +527,7 @@ interrupted. One entry per file:
 ```json
 {
   "manifest_version": "1.0",
-  "tool": { "name": "testing-files-generator", "version": "0.2.0" },
+  "tool": { "name": "testing-files-generator", "version": "0.3.0" },
   "run": {
     "id": "run_b359aa8d94",
     "seed": 0,

@@ -14,6 +14,8 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-09
+
 ### Breaking
 
 - **WAV files asking for 24 or 32 bit audio have slightly different bytes.** A
@@ -55,6 +57,138 @@ because it turns other people's test suites red.
   Every other format keeps exactly the bytes it had. Twelve of them share the
   same new code and were checked against their recorded hashes and across every
   format at five sizes and two seeds.
+
+- **A generated `.csv` quotes only the fields that need it, so its bytes are
+  different.** Sizes are unchanged. Every size that worked before still works,
+  every reader that took these files still takes them, and the file is still
+  RFC 4180.
+
+  The description column used to be quoted on every row. It is quoted now only
+  when it carries the separator, which is the one thing that makes a quote
+  necessary. The description is three to seven words and drops a separator
+  every third one, so a short one carries none - measured on a 4 kB table,
+  **9 of its 44 rows** lost their quotes.
+
+  This arrives as a new setting, `quote_style`, which takes `minimal`, `all` or
+  `none`:
+
+  - `minimal` is the new default and is what a spreadsheet writes.
+  - `all` wraps every field on every row, the header included.
+  - `none` wraps nothing. It also stops the description carrying the separator,
+    because an unquoted field cannot hold one without ending early - so this
+    value changes what the file says and not only how it is punctuated.
+
+  **The smallest `.csv` is 115 B rather than 117**, because the shortest row
+  has an empty description and an empty field needs no quotes. With
+  `quote_style=all` the smallest is 139 B. `tfg formats` prints the current
+  numbers.
+
+  **A suite pinning `.csv` hashes will go red once and then stay green.** There
+  is no switch back to the old bytes: they were not any of the three styles RFC
+  4180 describes, and carrying a fourth name for them forever costs more than
+  the one red run.
+
+- **Six formats have different bytes, because the tool is built with Go 1.27
+  now.** Sizes are unchanged. Every size that worked before still works, every
+  reader that took these files still takes them, and the same sizes are
+  reachable. What changed is the compressed data inside them.
+
+  Affected: `targz`, `png`, `docx`, `xlsx`, `pptx`, `ico` when it holds a png,
+  and `zip` when you ask for compression. `zip` left alone is untouched,
+  because its default stores rather than compresses. The other seventeen
+  formats are byte for byte what they were.
+
+  Go 1.27 changed `compress/flate`, which is what all of those run through.
+  Below the default compression level the change is only how a stream is
+  closed, and above it the compressor itself behaves differently.
+
+  Two minimums moved with it. The smallest `png` is **74 B** rather than 73,
+  and sizes 75 to 82 and 85 are the ones it cannot produce. The smallest
+  `targz` is **1049 B** rather than 1052, the next size up is 1051, and 1050 is
+  the one it cannot produce. `tfg formats` prints the current numbers.
+
+  **A suite pinning hashes for those formats will go red once and then stay
+  green.** There is no switch back: staying on the old compiler was not a
+  choice this tool can offer, since the compiler comes from whoever builds it.
+
+- **`.tar.gz` could not be produced at all under Go 1.27 until this release.**
+  Every size was refused with an error saying the generator produced three
+  bytes fewer than planned. The size of a `.tar.gz` is worked out rather than
+  measured - compressing twice to learn a length would make a preview cost what
+  the run costs - and that arithmetic carried a number that turned out to
+  describe one release of Go.
+
+  It measures that number now, at first use, and checks its own answer before
+  trusting it. A later Go release can move these bytes again, but it can no
+  longer stop the format from being written.
+
+- **A generated `.tar.gz` has different bytes, because a lot of them could
+  not be opened by a Go program.** Sizes are unchanged, every size that
+  worked before still works, and every reader that took these files still
+  takes them. What moved is where the padding sits inside the header.
+
+  The padding used to ride in the gzip header comment. Go's own
+  `compress/gzip` reads that field into a fixed buffer and refuses a comment
+  of 512 bytes or more, so **4134 of the 11 260 reachable sizes produced an
+  archive no Go program could open** - and the message it gives,
+  `gzip: invalid header`, reads like a corrupt file rather than like a field
+  the reader will not take. 7-Zip, GNU tar, bsdtar, Python and node all took
+  those files without a word, which is why it was not noticed sooner.
+
+  The padding now rides in the gzip extra field, which Go reads to the end
+  of. After the change: 11 260 sizes reachable, none unreachable, none
+  unreadable.
+
+  **There is no way back to the old bytes**, and that is the difference
+  between this and the other two entries here. The old bytes are the ones a
+  Go program cannot read, so keeping a switch for them would be keeping a
+  switch for the fault. A suite pinning `.tar.gz` hashes will go red once
+  and then stay green.
+
+- **A generated log now advances through time, so its bytes are different.**
+  Every entry used to carry the same instant. Ten thousand requests all landing
+  at one moment is not a log anybody can test a time window, a rate alert or a
+  rotation against, and it was obvious the moment you looked at a file.
+
+  Entries are now one second apart by default, and `rate` sets how many arrive
+  a second. The bytes of every log change, so a suite pinning their hashes will
+  go red.
+
+  **The way back is `--set timestamps=fixed`**, or `timestamps: fixed` on a
+  target in a recipe. That holds the clock still and writes the same bytes this
+  tool wrote before, to the byte - there is a pinned hash proving it.
+
+- **A generated GIF now moves, so its bytes are different.** A GIF is the one
+  picture format here that can hold more than one frame, and a still one told
+  you nothing about how the system under test treats an animation - whether it
+  keeps it, flattens it to the first frame, or re-encodes it. Every GIF now
+  carries a marker that travels across the picture in three frames, and the
+  manifest says `animated` and `frame_count` for each file.
+
+  Two things change with it. The smallest GIF this tool will write goes from
+  41 B to 114 B, because the number a format announces as its minimum has to be
+  a number a plain run accepts, and a plain run animates. And the bytes of every
+  GIF change, so a suite pinning their hashes will go red.
+
+  **The way back is `--set frames=1`**, or `frames: 1` on a target in a recipe.
+  That takes the plain encoder and writes the same bytes this tool wrote before,
+  to the byte - there is a pinned hash proving it.
+
+- **A setting value is spelled the way the format declares it.** `--set
+  page_size=A4` and `--set directory_entries=TRUE` used to be accepted and now
+  refuse with exit 4, naming the setting and the value. Write `a4` and `true`.
+
+  Nothing else changes: the bytes of every file are what they were, and a
+  recipe writing `header: true` is unaffected, because a YAML boolean arrives
+  as `true` either way. Only a value quoted into another case is refused.
+
+  It is a breaking change for a fourth of a reason and a fix for the rest. A
+  value the declaration did not contain used to pass the check and land on the
+  format, which then did one of four things with it: refuse in its own words,
+  understand it anyway, **quietly ignore it and produce the default file**, or
+  read it as something else entirely. `--set entry_owner=USER` on a `targz`
+  wrote an archive owned by nobody and reported success. Now nothing gets that
+  far.
 
 ### Added
 
@@ -212,6 +346,255 @@ because it turns other people's test suites red.
   line and ends without a newline, and an indented one holds roughly a third
   fewer records in the same number of bytes. The smallest document each layout
   can produce differs too, and asking for less names the layout it is about.
+
+- **`csv` takes `columns`, so a table can be as narrow or as wide as the thing
+  you are testing.** Two to 32768, and six by default - which is the six
+  columns this tool has always written, so a `.csv` you already generate does
+  not change by a byte.
+
+  Fewer than six drops them from the middle: `id` stays first and
+  `description` stays last, because that is the field stretched to reach the
+  exact size you asked for. More than six adds `field_7`, `field_8` and so on
+  in front of the description.
+
+  **Above 16384 columns a spreadsheet quietly keeps the first 16384 and drops
+  the rest.** Measured with LibreOffice Calc: 16384 comes back whole, 16385
+  comes back with one column missing and no warning anywhere. The ceiling here
+  is deliberately past that, so you can build the set either side of the line
+  rather than only the last file that survives it.
+
+  The smallest file moves with the setting, the way it already does for row
+  endings and quoting - 36 B at two columns, 115 B at six, 5017 B at 256.
+  `tfg formats csv` prints what a given table needs.
+
+- **A `targz` manifest says what its entries claim about themselves.** Two new
+  keys on the file entry, `entry_mode` and `entry_owner`, written every run
+  rather than only when you ask for them, so a harness never has to read a
+  missing key as "nobody owns this". The manifest schema version is unchanged.
+
+- **A CSV can be written in the dialect you were handed.** `--set
+  delimiter=semicolon`, `--set line_ending=crlf` and `--set header=false` on a
+  `csv`, separately or together. Separators are named rather than typed, so
+  `tab` and `pipe` need no escaping: the four are `comma`, `semicolon`, `tab`
+  and `pipe`.
+
+  These are the three ways a real CSV differs before its contents do. A
+  European spreadsheet exports with semicolons, anything written on Windows
+  ends its rows with CRLF, and a table dumped straight out of a database has no
+  header. All three are CSV and all three break a reader that assumed the other
+  thing.
+
+  The description column keeps carrying the separator, so a semicolon file
+  still exercises quoted fields rather than quietly testing less than a comma
+  one does.
+
+  Two things worth knowing. The smallest file changes with the dialect, because
+  a CRLF row is a byte longer and a header is a whole line - the tool tells you
+  the floor for the settings you gave it. And the manifest records the
+  separator as the character that is in the file, where the recipe names it as
+  a word.
+
+  The defaults are `comma`, `lf` and a header, which is what this tool has
+  always written, so **no existing file changes by a byte**.
+
+- **A log can be made quiet, or full of errors.** `--set level_mix=errors` on
+  a `log`, with `realistic`, `quiet`, `errors` and `debug` to choose from. It
+  decides which severities appear, the way `status_mix` already decides which
+  response codes do.
+
+  Only the `plain` and `json-lines` entry formats carry a severity at all. Ask
+  for a mix beside one of the other four and the tool says so and stops,
+  naming both settings, rather than accepting a setting that would do nothing.
+
+  One thing worth knowing before you pick `quiet`: it draws only `INFO`, which
+  is a shorter word than `ERROR`, so the smallest log it can write is one byte
+  smaller than the other mixes. The tool tells you the floor for the settings
+  you gave it.
+
+  The default is `realistic`, the mix these logs have always had, so **no
+  existing file changes by a byte**.
+
+- **An archive can compress what it holds.** `--set compression=best` on a
+  `zip` or a `targz`, with `none`, `fast`, `default` and `best` to choose from.
+
+  The archive still comes out **exactly the size you asked for**. What changes
+  is how much of it is your files and how much is padding: at `best` a
+  megabyte archive holding four 32 KB text files carries the same four files
+  deflated, and the padding entry grows to make up the difference. A reader
+  sees real deflated entries, which is what a tool under test has to cope with.
+
+  The default is `none`, which is what archives from this tool have always
+  been, so **no existing file changes by a byte**.
+
+  Two combinations are refused rather than half-supported, and the message
+  says which two settings to choose between. Compression with a size taken
+  **from the contents**: the archive's length would then be whatever the
+  contents compress to, which is only knowable by compressing them, and that
+  would make a preview cost as much as the run. Compression with a
+  **password**: a locked entry has to state its length before its data is
+  written, so a compressed one would have to be held in memory whole.
+
+  Compressing costs time at write, not at preview. A 10 MB archive takes about
+  25 ms at `fast` and 140 ms at `default`, against 8 ms stored, and a `.tar.gz`
+  pays that twice because gzip compresses the whole stream and the size has to
+  be measured before it can be hit.
+
+- **An archive can hold its files in directories.** `--set depth=3` puts every
+  file three levels down, and `--set directory_entries=true` also makes the
+  archive list the directories themselves. Both work on `zip` and on `targz`.
+
+  Two settings rather than one, because they are two questions. Depth is about
+  the paths inside. Directory entries are about whether the archive names the
+  directories at all - and extractors differ there: some create a directory
+  when they meet a path that needs one, and some create only what the archive
+  names. An archive is the one format where you can test both.
+
+  The default is flat, which is what archives from this tool have always been,
+  so **no existing file changes by a byte**. Asking for `directory_entries`
+  without a depth is refused rather than quietly ignored: a flat archive has no
+  directories to name, and the message says so and names both settings.
+
+  Depth goes up to 50. The limit is measured rather than picked: a `.tar.gz`
+  writes USTAR headers, which carry a path in a 155 byte prefix and a 100 byte
+  name split on a slash, and past a certain length no split works. Directories
+  cost 512 bytes each in a `.tar.gz` and about 76 plus the path in a `.zip`.
+  The size you order is still the size you get, to the byte.
+
+  The padding entry stays at the top of the archive rather than moving into the
+  directories, so you can always tell it apart from the files you asked for.
+
+- **A zip can be locked with ZipCrypto, the old scheme.** `--set encryption=zipcrypto`.
+
+  It is here for what it does to a reader rather than for what it protects. Measured: .NET's own `ZipFile` opens one of these, reports the entry at its true length, hands back a stream and fills it with the ENCRYPTED bytes - and never says the entry was encrypted at all. An application built on that library processes noise and calls it data. AES fails loudly in the same library, which is the safer defect and the less interesting one.
+
+  So this is the fixture for finding out whether something in a pipeline waves an encrypted archive through.
+
+  **It is not protection and it is not offered as any.** ZipCrypto has been broken for decades. Use `aes-256` when the point is that the contents are hard to read.
+
+- **A zip can be locked with a password.**
+
+      tfg generate --format zip --size 30kb --set entries=3 \
+        --set password=Secret123 --set encryption=aes-256
+
+  writes an archive of exactly 30720 B that 7-Zip opens with that password
+  and refuses without it. The methods are `aes-128`, `aes-192` and
+  `aes-256`.
+
+  **The password goes into the manifest in plain text.** A locked fixture
+  nobody can open is worth nothing, so the manifest records it exactly as
+  you typed it - that is the point rather than a leak. Do not use a password
+  you use anywhere else.
+
+  Both settings are needed together. A password with `encryption=none`, or
+  an encryption with no password, is refused rather than guessed at, and the
+  refusal names both of them.
+
+  **Limits worth knowing before you build a fixture.** Some readers cannot
+  open AES archives at all - .NET's own `ZipFile` lists the entries and then
+  fails on reading one. Nothing in this build writes the older ZipCrypto
+  scheme yet, so an archive meant for a reader that only speaks that is not
+  something this can make. And `tar.gz` cannot be locked at all - neither
+  tar nor gzip has any encryption in it, and asking for one there is refused
+  with that reason rather than ignored.
+
+- **A tar.gz can say what permissions its files have and who owns them.**
+  `--set entry_mode=755` and `--set entry_owner=root`. The modes are the
+  ones chmod takes, from `000` through `777`, and the owners are `unset`
+  (the default, and what this tool has always written), `root` and `user`.
+
+  The useful cases are the ones nobody makes by accident: `000` is a file
+  nothing can read after unpacking, `777` is one a scanner should have
+  something to say about, and an archive claiming root owns everything is
+  what a careless extractor turns into a privilege problem.
+
+  It changes no bytes unless you ask for it, and the size of the archive is
+  the same either way.
+
+- **A log can now be six shapes rather than one, and seven settings shape it.**
+  `tfg generate --format log --set entry_format=nginx` writes an nginx access
+  log. The others are `apache-combined` (the default, and what this format has
+  always written), `apache-common`, `syslog`, `plain` and `json-lines`.
+
+  Every template was taken from a real file rather than from a specification
+  remembered: a real nginx and a real Apache, and rsyslog on a real machine. Two
+  of them would have been wrong otherwise. An nginx line carries one more
+  quoted field than "combined" does, and Apache's own default is `common`, with
+  no referrer and no agent at all.
+
+  The rest of the settings: `timestamps` and `rate` for the clock, `methods` for
+  which verbs appear, `status_mix` for which response codes, `ip_version` to put
+  IPv6 addresses in front of a reader that may not expect them, and
+  `line_ending` for a log written by a Windows service.
+
+  **A setting that could not do anything is refused rather than ignored.**
+  Asking for `methods` beside `entry_format=syslog` is an error naming both,
+  because a syslog line carries no request - and a setting that silently does
+  nothing is worse than one that is not offered.
+
+  Every shape still hits the size to the byte, and every line is still a whole
+  entry. `tfg formats log` lists all of it.
+
+- **JPEG XL, the twenty fourth format.** One frame, 8 bit, RGB.
+  `tfg generate --format jxl --size 300kb` writes a JPEG XL picture in the
+  container the format defines for it. `width`, `height` and `quality` can be
+  set, and the picture goes up to 40 megapixels, so Full HD and 4K are both in
+  reach. Left alone, the picture is the largest of a fixed set that fits the
+  size asked for, up to 640x480 - the same as JPG and AVIF, so the picture
+  formats answer the same request with the same sized picture.
+
+  **Every size from its minimum of 147 B upwards is reachable, with no gaps.**
+  The padding travels in a `free` box, which is the box the container sets aside
+  for space that means nothing, and it takes any length at all.
+
+  The second format here whose pixels are coded by somebody else's encoder. It
+  is pinned, so raising it is a breaking change like any other, and it is pure
+  Go: no C compiler, no shared library and no socket. The files were read back
+  by two independent decoders, one of them libjxl, and both refuse a file that
+  has been truncated or corrupted.
+
+- **AVIF, the twenty third format.** One frame, 8 bit, 4:2:0.
+  `tfg generate --format avif --size 300kb` writes an AV1 picture in an ISO base
+  media container. `width`, `height` and `quality` can be set, and the picture
+  goes up to 40 megapixels, so Full HD and 4K are both in reach. Left alone, the
+  picture is the largest of a fixed set that fits the size asked for, up to
+  640x480 - the same as JPG.
+
+  **Every size from its minimum of 311 B upwards is reachable, with no gaps.**
+  The padding travels in a `free` box, which is the box the format sets aside
+  for space that means nothing, and it takes any length at all.
+
+  This is the first format here whose pixels are coded by somebody else's
+  encoder rather than by code in this repository. AV1 is too large to write by
+  hand for one format - the coefficient tables alone in the nearest
+  implementation are fourteen times the size of this project's whole WebP
+  encoder. The encoder is pinned, so raising it is a breaking change like any
+  other, and it is pure Go: no C compiler, no shared library and no socket.
+
+- **WEBP, the twenty second format.** Lossless, one frame, no alpha.
+  `tfg generate --format webp --size 300kb` writes a picture worth 300 kB rather
+  than a thumbnail followed by filler, because the encoder measures out three
+  bytes a pixel and the size is therefore arithmetic - the same shape as BMP and
+  TIFF. `width` and `height` can be set, and naming one lets the other be worked
+  out from the size. The smallest WEBP this produces is 148 B.
+
+  **Every size from that minimum upwards is reachable, with no gaps.** No other
+  format here manages that. A WebP is made of RIFF chunks and a chunk always
+  costs an even number of bytes, so the padding is in two parts: a private chunk
+  for the bulk, and up to seven bytes after it for the rest.
+
+  There is no lossy variant and no `quality`. Lossy WebP is VP8, which is a
+  different codec rather than a setting, and `tfg formats webp` says what this
+  build writes rather than implying more.
+
+- **`frames` on GIF**, from 1 to 60, default 3. How many frames the animation
+  has. Set it to 1 for a still picture.
+
+- **TIFF, the twenty first format.** Uncompressed, RGB, one page, little-endian.
+  `tfg generate --format tiff --size 300kb` writes a picture worth 300 kB rather
+  than a thumbnail followed by filler, because TIFF stores its pixels
+  uncompressed and the size is arithmetic - the same shape as BMP. `width` and
+  `height` can be set, and naming one lets the other be worked out from the
+  size. The smallest TIFF this produces is 183 B.
 
 ### Security
 
@@ -667,395 +1050,6 @@ because it turns other people's test suites red.
 
 - **Every run used to pause twice to tidy memory**, however small it was. It
   pauses once. Nothing about what a run produces changes.
-
-## [0.3.0-rc1] - 2026-09-03
-
-### Breaking
-
-- **A generated `.csv` quotes only the fields that need it, so its bytes are
-  different.** Sizes are unchanged. Every size that worked before still works,
-  every reader that took these files still takes them, and the file is still
-  RFC 4180.
-
-  The description column used to be quoted on every row. It is quoted now only
-  when it carries the separator, which is the one thing that makes a quote
-  necessary. The description is three to seven words and drops a separator
-  every third one, so a short one carries none - measured on a 4 kB table,
-  **9 of its 44 rows** lost their quotes.
-
-  This arrives as a new setting, `quote_style`, which takes `minimal`, `all` or
-  `none`:
-
-  - `minimal` is the new default and is what a spreadsheet writes.
-  - `all` wraps every field on every row, the header included.
-  - `none` wraps nothing. It also stops the description carrying the separator,
-    because an unquoted field cannot hold one without ending early - so this
-    value changes what the file says and not only how it is punctuated.
-
-  **The smallest `.csv` is 115 B rather than 117**, because the shortest row
-  has an empty description and an empty field needs no quotes. With
-  `quote_style=all` the smallest is 139 B. `tfg formats` prints the current
-  numbers.
-
-  **A suite pinning `.csv` hashes will go red once and then stay green.** There
-  is no switch back to the old bytes: they were not any of the three styles RFC
-  4180 describes, and carrying a fourth name for them forever costs more than
-  the one red run.
-
-- **Six formats have different bytes, because the tool is built with Go 1.27
-  now.** Sizes are unchanged. Every size that worked before still works, every
-  reader that took these files still takes them, and the same sizes are
-  reachable. What changed is the compressed data inside them.
-
-  Affected: `targz`, `png`, `docx`, `xlsx`, `pptx`, `ico` when it holds a png,
-  and `zip` when you ask for compression. `zip` left alone is untouched,
-  because its default stores rather than compresses. The other seventeen
-  formats are byte for byte what they were.
-
-  Go 1.27 changed `compress/flate`, which is what all of those run through.
-  Below the default compression level the change is only how a stream is
-  closed, and above it the compressor itself behaves differently.
-
-  Two minimums moved with it. The smallest `png` is **74 B** rather than 73,
-  and sizes 75 to 82 and 85 are the ones it cannot produce. The smallest
-  `targz` is **1049 B** rather than 1052, the next size up is 1051, and 1050 is
-  the one it cannot produce. `tfg formats` prints the current numbers.
-
-  **A suite pinning hashes for those formats will go red once and then stay
-  green.** There is no switch back: staying on the old compiler was not a
-  choice this tool can offer, since the compiler comes from whoever builds it.
-
-- **`.tar.gz` could not be produced at all under Go 1.27 until this release.**
-  Every size was refused with an error saying the generator produced three
-  bytes fewer than planned. The size of a `.tar.gz` is worked out rather than
-  measured - compressing twice to learn a length would make a preview cost what
-  the run costs - and that arithmetic carried a number that turned out to
-  describe one release of Go.
-
-  It measures that number now, at first use, and checks its own answer before
-  trusting it. A later Go release can move these bytes again, but it can no
-  longer stop the format from being written.
-
-- **A generated `.tar.gz` has different bytes, because a lot of them could
-  not be opened by a Go program.** Sizes are unchanged, every size that
-  worked before still works, and every reader that took these files still
-  takes them. What moved is where the padding sits inside the header.
-
-  The padding used to ride in the gzip header comment. Go's own
-  `compress/gzip` reads that field into a fixed buffer and refuses a comment
-  of 512 bytes or more, so **4134 of the 11 260 reachable sizes produced an
-  archive no Go program could open** - and the message it gives,
-  `gzip: invalid header`, reads like a corrupt file rather than like a field
-  the reader will not take. 7-Zip, GNU tar, bsdtar, Python and node all took
-  those files without a word, which is why it was not noticed sooner.
-
-  The padding now rides in the gzip extra field, which Go reads to the end
-  of. After the change: 11 260 sizes reachable, none unreachable, none
-  unreadable.
-
-  **There is no way back to the old bytes**, and that is the difference
-  between this and the other two entries here. The old bytes are the ones a
-  Go program cannot read, so keeping a switch for them would be keeping a
-  switch for the fault. A suite pinning `.tar.gz` hashes will go red once
-  and then stay green.
-
-- **A generated log now advances through time, so its bytes are different.**
-  Every entry used to carry the same instant. Ten thousand requests all landing
-  at one moment is not a log anybody can test a time window, a rate alert or a
-  rotation against, and it was obvious the moment you looked at a file.
-
-  Entries are now one second apart by default, and `rate` sets how many arrive
-  a second. The bytes of every log change, so a suite pinning their hashes will
-  go red.
-
-  **The way back is `--set timestamps=fixed`**, or `timestamps: fixed` on a
-  target in a recipe. That holds the clock still and writes the same bytes this
-  tool wrote before, to the byte - there is a pinned hash proving it.
-
-- **A generated GIF now moves, so its bytes are different.** A GIF is the one
-  picture format here that can hold more than one frame, and a still one told
-  you nothing about how the system under test treats an animation - whether it
-  keeps it, flattens it to the first frame, or re-encodes it. Every GIF now
-  carries a marker that travels across the picture in three frames, and the
-  manifest says `animated` and `frame_count` for each file.
-
-  Two things change with it. The smallest GIF this tool will write goes from
-  41 B to 114 B, because the number a format announces as its minimum has to be
-  a number a plain run accepts, and a plain run animates. And the bytes of every
-  GIF change, so a suite pinning their hashes will go red.
-
-  **The way back is `--set frames=1`**, or `frames: 1` on a target in a recipe.
-  That takes the plain encoder and writes the same bytes this tool wrote before,
-  to the byte - there is a pinned hash proving it.
-
-- **A setting value is spelled the way the format declares it.** `--set
-  page_size=A4` and `--set directory_entries=TRUE` used to be accepted and now
-  refuse with exit 4, naming the setting and the value. Write `a4` and `true`.
-
-  Nothing else changes: the bytes of every file are what they were, and a
-  recipe writing `header: true` is unaffected, because a YAML boolean arrives
-  as `true` either way. Only a value quoted into another case is refused.
-
-  It is a breaking change for a fourth of a reason and a fix for the rest. A
-  value the declaration did not contain used to pass the check and land on the
-  format, which then did one of four things with it: refuse in its own words,
-  understand it anyway, **quietly ignore it and produce the default file**, or
-  read it as something else entirely. `--set entry_owner=USER` on a `targz`
-  wrote an archive owned by nobody and reported success. Now nothing gets that
-  far.
-
-### Added
-
-- **`csv` takes `columns`, so a table can be as narrow or as wide as the thing
-  you are testing.** Two to 32768, and six by default - which is the six
-  columns this tool has always written, so a `.csv` you already generate does
-  not change by a byte.
-
-  Fewer than six drops them from the middle: `id` stays first and
-  `description` stays last, because that is the field stretched to reach the
-  exact size you asked for. More than six adds `field_7`, `field_8` and so on
-  in front of the description.
-
-  **Above 16384 columns a spreadsheet quietly keeps the first 16384 and drops
-  the rest.** Measured with LibreOffice Calc: 16384 comes back whole, 16385
-  comes back with one column missing and no warning anywhere. The ceiling here
-  is deliberately past that, so you can build the set either side of the line
-  rather than only the last file that survives it.
-
-  The smallest file moves with the setting, the way it already does for row
-  endings and quoting - 36 B at two columns, 115 B at six, 5017 B at 256.
-  `tfg formats csv` prints what a given table needs.
-
-- **A `targz` manifest says what its entries claim about themselves.** Two new
-  keys on the file entry, `entry_mode` and `entry_owner`, written every run
-  rather than only when you ask for them, so a harness never has to read a
-  missing key as "nobody owns this". The manifest schema version is unchanged.
-
-- **A CSV can be written in the dialect you were handed.** `--set
-  delimiter=semicolon`, `--set line_ending=crlf` and `--set header=false` on a
-  `csv`, separately or together. Separators are named rather than typed, so
-  `tab` and `pipe` need no escaping: the four are `comma`, `semicolon`, `tab`
-  and `pipe`.
-
-  These are the three ways a real CSV differs before its contents do. A
-  European spreadsheet exports with semicolons, anything written on Windows
-  ends its rows with CRLF, and a table dumped straight out of a database has no
-  header. All three are CSV and all three break a reader that assumed the other
-  thing.
-
-  The description column keeps carrying the separator, so a semicolon file
-  still exercises quoted fields rather than quietly testing less than a comma
-  one does.
-
-  Two things worth knowing. The smallest file changes with the dialect, because
-  a CRLF row is a byte longer and a header is a whole line - the tool tells you
-  the floor for the settings you gave it. And the manifest records the
-  separator as the character that is in the file, where the recipe names it as
-  a word.
-
-  The defaults are `comma`, `lf` and a header, which is what this tool has
-  always written, so **no existing file changes by a byte**.
-
-- **A log can be made quiet, or full of errors.** `--set level_mix=errors` on
-  a `log`, with `realistic`, `quiet`, `errors` and `debug` to choose from. It
-  decides which severities appear, the way `status_mix` already decides which
-  response codes do.
-
-  Only the `plain` and `json-lines` entry formats carry a severity at all. Ask
-  for a mix beside one of the other four and the tool says so and stops,
-  naming both settings, rather than accepting a setting that would do nothing.
-
-  One thing worth knowing before you pick `quiet`: it draws only `INFO`, which
-  is a shorter word than `ERROR`, so the smallest log it can write is one byte
-  smaller than the other mixes. The tool tells you the floor for the settings
-  you gave it.
-
-  The default is `realistic`, the mix these logs have always had, so **no
-  existing file changes by a byte**.
-
-- **An archive can compress what it holds.** `--set compression=best` on a
-  `zip` or a `targz`, with `none`, `fast`, `default` and `best` to choose from.
-
-  The archive still comes out **exactly the size you asked for**. What changes
-  is how much of it is your files and how much is padding: at `best` a
-  megabyte archive holding four 32 KB text files carries the same four files
-  deflated, and the padding entry grows to make up the difference. A reader
-  sees real deflated entries, which is what a tool under test has to cope with.
-
-  The default is `none`, which is what archives from this tool have always
-  been, so **no existing file changes by a byte**.
-
-  Two combinations are refused rather than half-supported, and the message
-  says which two settings to choose between. Compression with a size taken
-  **from the contents**: the archive's length would then be whatever the
-  contents compress to, which is only knowable by compressing them, and that
-  would make a preview cost as much as the run. Compression with a
-  **password**: a locked entry has to state its length before its data is
-  written, so a compressed one would have to be held in memory whole.
-
-  Compressing costs time at write, not at preview. A 10 MB archive takes about
-  25 ms at `fast` and 140 ms at `default`, against 8 ms stored, and a `.tar.gz`
-  pays that twice because gzip compresses the whole stream and the size has to
-  be measured before it can be hit.
-
-- **An archive can hold its files in directories.** `--set depth=3` puts every
-  file three levels down, and `--set directory_entries=true` also makes the
-  archive list the directories themselves. Both work on `zip` and on `targz`.
-
-  Two settings rather than one, because they are two questions. Depth is about
-  the paths inside. Directory entries are about whether the archive names the
-  directories at all - and extractors differ there: some create a directory
-  when they meet a path that needs one, and some create only what the archive
-  names. An archive is the one format where you can test both.
-
-  The default is flat, which is what archives from this tool have always been,
-  so **no existing file changes by a byte**. Asking for `directory_entries`
-  without a depth is refused rather than quietly ignored: a flat archive has no
-  directories to name, and the message says so and names both settings.
-
-  Depth goes up to 50. The limit is measured rather than picked: a `.tar.gz`
-  writes USTAR headers, which carry a path in a 155 byte prefix and a 100 byte
-  name split on a slash, and past a certain length no split works. Directories
-  cost 512 bytes each in a `.tar.gz` and about 76 plus the path in a `.zip`.
-  The size you order is still the size you get, to the byte.
-
-  The padding entry stays at the top of the archive rather than moving into the
-  directories, so you can always tell it apart from the files you asked for.
-
-- **A zip can be locked with ZipCrypto, the old scheme.** `--set encryption=zipcrypto`.
-
-  It is here for what it does to a reader rather than for what it protects. Measured: .NET's own `ZipFile` opens one of these, reports the entry at its true length, hands back a stream and fills it with the ENCRYPTED bytes - and never says the entry was encrypted at all. An application built on that library processes noise and calls it data. AES fails loudly in the same library, which is the safer defect and the less interesting one.
-
-  So this is the fixture for finding out whether something in a pipeline waves an encrypted archive through.
-
-  **It is not protection and it is not offered as any.** ZipCrypto has been broken for decades. Use `aes-256` when the point is that the contents are hard to read.
-
-- **A zip can be locked with a password.**
-
-      tfg generate --format zip --size 30kb --set entries=3 \
-        --set password=Secret123 --set encryption=aes-256
-
-  writes an archive of exactly 30720 B that 7-Zip opens with that password
-  and refuses without it. The methods are `aes-128`, `aes-192` and
-  `aes-256`.
-
-  **The password goes into the manifest in plain text.** A locked fixture
-  nobody can open is worth nothing, so the manifest records it exactly as
-  you typed it - that is the point rather than a leak. Do not use a password
-  you use anywhere else.
-
-  Both settings are needed together. A password with `encryption=none`, or
-  an encryption with no password, is refused rather than guessed at, and the
-  refusal names both of them.
-
-  **Limits worth knowing before you build a fixture.** Some readers cannot
-  open AES archives at all - .NET's own `ZipFile` lists the entries and then
-  fails on reading one. Nothing in this build writes the older ZipCrypto
-  scheme yet, so an archive meant for a reader that only speaks that is not
-  something this can make. And `tar.gz` cannot be locked at all - neither
-  tar nor gzip has any encryption in it, and asking for one there is refused
-  with that reason rather than ignored.
-
-- **A tar.gz can say what permissions its files have and who owns them.**
-  `--set entry_mode=755` and `--set entry_owner=root`. The modes are the
-  ones chmod takes, from `000` through `777`, and the owners are `unset`
-  (the default, and what this tool has always written), `root` and `user`.
-
-  The useful cases are the ones nobody makes by accident: `000` is a file
-  nothing can read after unpacking, `777` is one a scanner should have
-  something to say about, and an archive claiming root owns everything is
-  what a careless extractor turns into a privilege problem.
-
-  It changes no bytes unless you ask for it, and the size of the archive is
-  the same either way.
-
-- **A log can now be six shapes rather than one, and seven settings shape it.**
-  `tfg generate --format log --set entry_format=nginx` writes an nginx access
-  log. The others are `apache-combined` (the default, and what this format has
-  always written), `apache-common`, `syslog`, `plain` and `json-lines`.
-
-  Every template was taken from a real file rather than from a specification
-  remembered: a real nginx and a real Apache, and rsyslog on a real machine. Two
-  of them would have been wrong otherwise. An nginx line carries one more
-  quoted field than "combined" does, and Apache's own default is `common`, with
-  no referrer and no agent at all.
-
-  The rest of the settings: `timestamps` and `rate` for the clock, `methods` for
-  which verbs appear, `status_mix` for which response codes, `ip_version` to put
-  IPv6 addresses in front of a reader that may not expect them, and
-  `line_ending` for a log written by a Windows service.
-
-  **A setting that could not do anything is refused rather than ignored.**
-  Asking for `methods` beside `entry_format=syslog` is an error naming both,
-  because a syslog line carries no request - and a setting that silently does
-  nothing is worse than one that is not offered.
-
-  Every shape still hits the size to the byte, and every line is still a whole
-  entry. `tfg formats log` lists all of it.
-
-- **JPEG XL, the twenty fourth format.** One frame, 8 bit, RGB.
-  `tfg generate --format jxl --size 300kb` writes a JPEG XL picture in the
-  container the format defines for it. `width`, `height` and `quality` can be
-  set, and the picture goes up to 40 megapixels, so Full HD and 4K are both in
-  reach. Left alone, the picture is the largest of a fixed set that fits the
-  size asked for, up to 640x480 - the same as JPG and AVIF, so the picture
-  formats answer the same request with the same sized picture.
-
-  **Every size from its minimum of 147 B upwards is reachable, with no gaps.**
-  The padding travels in a `free` box, which is the box the container sets aside
-  for space that means nothing, and it takes any length at all.
-
-  The second format here whose pixels are coded by somebody else's encoder. It
-  is pinned, so raising it is a breaking change like any other, and it is pure
-  Go: no C compiler, no shared library and no socket. The files were read back
-  by two independent decoders, one of them libjxl, and both refuse a file that
-  has been truncated or corrupted.
-
-- **AVIF, the twenty third format.** One frame, 8 bit, 4:2:0.
-  `tfg generate --format avif --size 300kb` writes an AV1 picture in an ISO base
-  media container. `width`, `height` and `quality` can be set, and the picture
-  goes up to 40 megapixels, so Full HD and 4K are both in reach. Left alone, the
-  picture is the largest of a fixed set that fits the size asked for, up to
-  640x480 - the same as JPG.
-
-  **Every size from its minimum of 311 B upwards is reachable, with no gaps.**
-  The padding travels in a `free` box, which is the box the format sets aside
-  for space that means nothing, and it takes any length at all.
-
-  This is the first format here whose pixels are coded by somebody else's
-  encoder rather than by code in this repository. AV1 is too large to write by
-  hand for one format - the coefficient tables alone in the nearest
-  implementation are fourteen times the size of this project's whole WebP
-  encoder. The encoder is pinned, so raising it is a breaking change like any
-  other, and it is pure Go: no C compiler, no shared library and no socket.
-
-- **WEBP, the twenty second format.** Lossless, one frame, no alpha.
-  `tfg generate --format webp --size 300kb` writes a picture worth 300 kB rather
-  than a thumbnail followed by filler, because the encoder measures out three
-  bytes a pixel and the size is therefore arithmetic - the same shape as BMP and
-  TIFF. `width` and `height` can be set, and naming one lets the other be worked
-  out from the size. The smallest WEBP this produces is 148 B.
-
-  **Every size from that minimum upwards is reachable, with no gaps.** No other
-  format here manages that. A WebP is made of RIFF chunks and a chunk always
-  costs an even number of bytes, so the padding is in two parts: a private chunk
-  for the bulk, and up to seven bytes after it for the rest.
-
-  There is no lossy variant and no `quality`. Lossy WebP is VP8, which is a
-  different codec rather than a setting, and `tfg formats webp` says what this
-  build writes rather than implying more.
-
-- **`frames` on GIF**, from 1 to 60, default 3. How many frames the animation
-  has. Set it to 1 for a still picture.
-
-- **TIFF, the twenty first format.** Uncompressed, RGB, one page, little-endian.
-  `tfg generate --format tiff --size 300kb` writes a picture worth 300 kB rather
-  than a thumbnail followed by filler, because TIFF stores its pixels
-  uncompressed and the size is arithmetic - the same shape as BMP. `width` and
-  `height` can be set, and naming one lets the other be worked out from the
-  size. The smallest TIFF this produces is 183 B.
-
-### Fixed
 
 - **A run of a few files is now weighed against the memory ceiling too.** The
   ceiling that stops a run from planning more than it can hold only started
@@ -1675,7 +1669,7 @@ because it turns other people's test suites red.
 
 Initial release.
 
-[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0-rc1...HEAD
-[0.3.0-rc1]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...v0.3.0-rc1
+[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/donislawdev/TestingFilesGenerator/releases/tag/v0.1.0
