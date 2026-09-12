@@ -22,4 +22,4 @@
 # LGPL-2.1-or-later, stated by the wheel metadata as a License-Expression and
 # carried in full beside it. It analyses the tree and is never linked into
 # either binary.
-semgrep==1.176.0
+semgrep==1.176.1
