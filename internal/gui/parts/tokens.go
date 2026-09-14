@@ -127,6 +127,11 @@ const (
 	// number any of these fields accepts - the ceiling on files is seven digits
 	// and the largest size anybody types is eight.
 	NumericWidth = 140
+	// GlyphButton is the side of the small square button that holds one
+	// glyph - the mark beside a field's name that opens its explanation. The
+	// glyph itself is the toolkit's inline icon, 20, and the square keeps two
+	// pixels round it, which is what makes it a target and not a letter.
+	GlyphButton = 24
 	// DetailWidth is how wide the longer explanation gets when it opens.
 	// Narrower than the form on purpose: the column is 820 px because that is
 	// what the form needs, and the same width for a paragraph of prose is about

@@ -540,6 +540,7 @@ func (r *runner) sayDestination() {
 
 func newRunner() *runner {
 	r := &runner{fields: parts.NewFields(), resting: true}
+	r.fields.LabelColumn(labelColumn())
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)

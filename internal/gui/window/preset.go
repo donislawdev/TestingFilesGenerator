@@ -185,7 +185,7 @@ func (p *Preset) onPresetChosen(id string) {
 	// text and wrapped with it, and each item carried a full label's spacing -
 	// which left more room between the items than around the whole list.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Heading(text.PresetCatchesHeading()))
+		p.about.Add(parts.Subheading(text.PresetCatchesHeading()))
 		p.about.Add(parts.Bullets(chosen.Catches))
 	}
 	p.about.Refresh()

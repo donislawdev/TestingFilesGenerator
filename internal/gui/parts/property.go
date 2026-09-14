@@ -213,16 +213,13 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 // beside a size had to be written twice on the day it was added, which is what
 // made this obvious.
 //
-// The visible change today is none, and that is worth saying rather than
-// hiding: the one preset this build registers declares a single narrow
-// parameter, so there is no pair to make. What changes is that the fourth thing
-// added to a declared field arrives on all three screens instead of two.
+// One setting a row since 2026-09-14. Two narrow settings used to share a row,
+// and that was a way of using the width a name standing OVER its box left
+// empty beside it - with the name beside the box there is no such width, a
+// row is as tall as one box, and a form reads down one column of names.
 func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
 	fields := make([]PropertyField, 0, len(declared))
 	objects := make([]fyne.CanvasObject, 0, len(declared))
-
-	pair := PairNarrow(into.Row)
-	flush := func() { objects = append(objects, pair.rest()...) }
 
 	for _, p := range declared {
 		f := FromProperty(p)
@@ -242,16 +239,9 @@ func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]Pro
 		// The button is what makes that safe rather than a loss: this is a tool
 		// whose window and whose recipe file are two ways into one engine, so
 		// somebody who finds a setting here has to be able to write it down.
-		object := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(p),
-			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control))
-		if narrowOnAScreen(p) {
-			pair.add(object)
-			continue
-		}
-		flush()
-		objects = append(objects, object)
+		objects = append(objects, into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(p),
+			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control)))
 	}
-	flush()
 	return fields, objects
 }
 
@@ -301,50 +291,6 @@ func narrowOnAScreen(p format.Property) bool {
 		return false
 	}
 }
-
-// PairNarrow lays settings two to a row where both of them are narrow.
-//
-// Two boxes for a number stacked one above the other cost a row of height each
-// and leave two thirds of the panel empty beside them. Which ones are narrow is
-// the declared kind, so nothing here names a format - and both screens that
-// draw a format's settings go through this, which is the point. The width went
-// into one of them first and the other kept drawing full width boxes for a
-// commit, which is the shape D1 comes apart in.
-func PairNarrow(row func(...fyne.CanvasObject) fyne.CanvasObject) *Pairs {
-	return &Pairs{row: row}
-}
-
-// Pairs collects narrow fields until something wide arrives or the list ends.
-type Pairs struct {
-	row     func(...fyne.CanvasObject) fyne.CanvasObject
-	pending []fyne.CanvasObject
-}
-
-func (p *Pairs) add(object fyne.CanvasObject) { p.pending = append(p.pending, object) }
-
-// Add takes one narrow field, for a caller outside this package.
-func (p *Pairs) Add(object fyne.CanvasObject) { p.add(object) }
-
-func (p *Pairs) rest() []fyne.CanvasObject {
-	var out []fyne.CanvasObject
-	for len(p.pending) > 0 {
-		if len(p.pending) == 1 {
-			out = append(out, p.pending[0])
-			p.pending = nil
-			break
-		}
-		out = append(out, p.row(p.pending[0], p.pending[1]))
-		p.pending = p.pending[2:]
-	}
-	return out
-}
-
-// Rest is everything collected so far, in rows, for a caller outside this
-// package.
-func (p *Pairs) Rest() []fyne.CanvasObject { return p.rest() }
-
-// Narrow says whether a declared setting is one this would pair.
-func Narrow(p format.Property) bool { return narrowOnAScreen(p) }
 
 // PropertyDetail is what a property takes and what it is for, in that order.
 // What it takes comes first because that is what somebody looking at an empty

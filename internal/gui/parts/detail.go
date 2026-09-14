@@ -118,7 +118,12 @@ func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
 //
 // An icon rather than a word, because it sits on the same line as the field
 // name and a word there competes with it. Low importance so it recedes: it is
-// the quietest thing on the row until somebody wants it.
+// the quietest thing on the row until somebody wants it. Quiet in colour as
+// well, the grey a hint is drawn in, and no bigger than the glyph and the room
+// a finger needs: it was 32 px square until 2026-09-14, the tallest thing on
+// every line it stood on, so the name of a field stood 13 px above the middle
+// of its own row and thirty three of these were the loudest marks on a screen
+// at rest.
 //
 // It opens on HOVER, which is what anybody meeting a small letter i expects,
 // and a press toggles it. Both, deliberately: hovering is not something a
@@ -143,10 +148,18 @@ type DetailButton struct {
 func newDetailButton(detail Detail) *DetailButton {
 	b := &DetailButton{detail: detail}
 	b.ExtendBaseWidget(b)
-	b.Icon = theme.InfoIcon()
+	b.Icon = theme.NewColoredResource(theme.InfoIcon(), theme.ColorNamePlaceHolder)
 	b.Importance = widget.LowImportance
 	b.OnTapped = b.toggle
 	return b
+}
+
+// MinSize is the glyph's room rather than a button's. The toolkit's button
+// keeps its inner padding all round the icon, and that padding is the room
+// inside a box to type in, which is the wrong thing for a mark beside a name
+// to be as tall as.
+func (b *DetailButton) MinSize() fyne.Size {
+	return fyne.NewSquareSize(GlyphButton)
 }
 
 // Explanation is what this button holds, for a guard to read without opening it.

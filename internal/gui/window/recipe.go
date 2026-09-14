@@ -381,11 +381,9 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 			// the line under the label, so it has to exist even when there is
 			// nothing further to add.
 			r.tips.Say(""), b.formatPick),
-		r.fields.Row(
-			add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
-				r.tips.Say(text.DetailTargetID()), b.id),
-			add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
-		),
+		add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
+			r.tips.Say(text.DetailTargetID()), b.id),
+		add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
 		// One way of saying how big, chosen from three, since 2026-08-25.
 		//
 		// They were three boxes side by side with a sentence above them saying
@@ -468,16 +466,16 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		}
 		return addContents
 	}
-	rows := []fyne.CanvasObject{parts.Heading(text.ContentsHeading())}
+	rows := []fyne.CanvasObject{parts.Subheading(text.ContentsHeading())}
 	for j, c := range b.contents {
 		at := func(setting string) string {
 			return recipe.ContentAddress(index+1, j+1, setting)
 		}
 		entry := j
 		rows = append(rows, r.fields.Row(
-			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
-			r.fields.Add(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
-			r.fields.Add(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
+			r.fields.AddCell(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
+			r.fields.AddCell(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
+			r.fields.AddCell(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
 			// Not a field, so the row would hand it a whole column and the
 			// height of a label and a control together - see parts.BesideFields
 			// for the numbers that came off this very button.
@@ -523,12 +521,10 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	return parts.Section(text.SectionOutput(),
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
 			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir)),
-		r.fields.Row(
-			r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
-				r.tips.Say(text.DetailManifest()), r.manifest),
-			r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
-				r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
-		),
+		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
+			r.tips.Say(text.DetailManifest()), r.manifest),
+		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
+			r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
 		r.fields.AddToggle(recipe.KeyDefaultsLabel, text.FieldLabel(), "",
 			r.tips.Say(text.DetailLabel()), r.label),
 	)

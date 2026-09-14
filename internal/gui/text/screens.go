@@ -1,7 +1,6 @@
 package text
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -516,25 +515,6 @@ func OneExplanation(line, detail string) string {
 		return line
 	}
 	return line + " " + detail
-}
-
-// ExactBytes says what a size somebody typed comes to, counted out.
-//
-// It exists because "10mb" is two different numbers depending on who is
-// reading. This tool counts in 1024s - RECIPE.md section 9, settled and not
-// reopened - and everything downstream of the box agrees, but nothing on the
-// screen said so, so a person testing a limit their system declares in
-// millions had no way to see the difference until the files were on disk.
-//
-// It states the number rather than arguing the units. Saying "MiB" would be
-// answering a question nobody asked with a spelling most of the world does not
-// use, and it would still need the count for anyone checking a limit.
-//
-// "B" rather than "bytes" because that is what the command line prints - one
-// vocabulary for one thing across both surfaces - and it sidesteps the plural
-// a number always drags behind it.
-func ExactBytes(n int64) string {
-	return strconv.FormatInt(n, 10) + " B"
 }
 
 // RefusedBeforeWriting is what the foot of the form says when a press was

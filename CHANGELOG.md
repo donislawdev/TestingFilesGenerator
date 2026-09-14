@@ -14,6 +14,24 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Changed
+
+- **The window lays every form out as a grid.** A field is one row now: its
+  name in a column of names, its box beside it, and every box on a screen
+  starting on the same edge. Until now the name stood over the box, so each
+  field cost two rows, and the small button that opens a field's explanation
+  was the tallest thing on the name's line - the name of a box floated 13 px
+  above the box's middle. Names are regular weight, the one bold thing on a
+  screen is the title of a section, and the count of bytes a size comes to
+  stands right after the size box instead of at the far end of the line.
+
+  Underneath it, every distance in the window is one of six steps and every
+  number about the look lives in one file, so the gaps between things are the
+  ones somebody chose. The settings a format declares stand one to a row -
+  two of them no longer share a line - and the three ways of stating a size
+  on the batch screen keep their switch above one box, in the column of
+  controls.
+
 ### Fixed
 
 - **Asking for damaged files and declaring they will be accepted is now refused
@@ -40,6 +58,11 @@ because it turns other people's test suites red.
   from the program itself, so a command added later cannot go missing from it,
   and the site has a section explaining how to produce a file that is broken on
   purpose.
+
+- **The window spells a byte count the way the command line does.** The count
+  under a size box said `10485760 B` while `tfg` said `10 485 760 B` about the
+  same number - the window had a spelling of its own that the grouping of
+  digits in 0.3.0 never reached. There is one spelling now.
 
 ## [0.3.0] - 2026-09-09
 

@@ -43,8 +43,23 @@ func Prose(text string) fyne.CanvasObject {
 	return inkTight(label)
 }
 
-// Heading is the name of one field, above its control.
+// Heading is the name of one field, beside its control.
+//
+// Regular weight since 2026-09-14. Bold, at the same size as the value in the
+// box beside it, every name on the form was as loud as every value, so a
+// screen had twice as much heavy text as it had content and the eye had
+// nothing to skip. One rank is bold on a screen now - the title of a section
+// - and a name is read by where it stands: in the column of names, level with
+// its box.
 func Heading(text string) fyne.CanvasObject {
+	return words(text, TextBody, false, theme.ColorNameForeground)
+}
+
+// Subheading names a block inside a section - the list of what a preset finds,
+// the table of files inside an archive - at the size of a field's name and
+// the weight of a section's. The one bold thing at body size, so it is read as
+// a heading of the things under it and not as the name of a box beside it.
+func Subheading(text string) fyne.CanvasObject {
 	return words(text, TextBody, true, theme.ColorNameForeground)
 }
 

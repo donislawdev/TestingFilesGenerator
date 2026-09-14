@@ -7,16 +7,15 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Field is one labelled control, the line that explains it, and the longer
-// explanation behind a button.
+// Field is one labelled control, with the longer explanation behind a button
+// beside its name.
 //
 // Two lengths rather than one, split on 2026-08-12. The sentence used to be
 // whole and permanent, so a form of eight settings carried eight grey
 // paragraphs and the explanations took more vertical room than the controls
 // did - measured on the generate screen, where the help outweighed the fields
-// it was helping. What stays under a field is the line that says what it does.
-// What goes behind the button is the consequence, the example and the units,
-// which are things somebody needs once.
+// it was helping. Since 2026-08-25 the line that says what a field does is the
+// first line of the explanation, so at rest a field is its name and its box.
 //
 // It is a button rather than a tooltip because the toolkit has no tooltips -
 // issue 1650 is still open - and it is visible rather than a hover because a
@@ -24,6 +23,7 @@ import (
 // renders is the shape docs/CLAUDE.md warns about: text with no reader becomes
 // pressure on the text beside it, and the label starts trying to say
 // everything on its own.
+//
 // The plain Field function is gone as of 2026-08-12, and its absence is the
 // fix rather than a side effect of one. It built a field with nowhere to put a
 // refusal about it, so which boxes could be marked depended on which of two
@@ -32,6 +32,11 @@ import (
 // in now. See parts.Fields.
 
 // FieldSaying is a field that can carry a refusal of its own, underneath it.
+//
+// One row: the name in the column of names, the control beside it, and
+// whatever the control has to say about its value - the count of bytes a
+// size comes to - after the control. See fieldRow for why a row and not a
+// name over a box.
 //
 // UX8 asks for a message near where the error came from, and in a window that
 // means beside the field rather than at the foot of the form. Measured on
@@ -46,11 +51,28 @@ import (
 // as the sentence is there. Two marks rather than one on purpose - a colour on
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
-func FieldSaying(label, hint string, detail Detail, required bool, trailing, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
+func FieldSaying(names float32, label string, detail Detail, required bool, trailing, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
 	marked, ring := WithRing(shapedForItsValues(control))
-	area = NewErrorArea()
+	area = newErrorArea(names)
 	area.edge = ring
-	body = Column(GapLabel, fieldParts(label, hint, detail, required, trailing, marked)...)
+	cells := []fyne.CanvasObject{headingRow(label, detail, required), marked}
+	if trailing != nil {
+		cells = append(cells, trailing)
+	}
+	body = FieldRow(names, cells...)
+	return Column(GapTight, body, area.Object()), body, area
+}
+
+// CellSaying is a field drawn as a cell of a table: the name over the control,
+// for a list of rows that all have the same columns. A row of the form puts
+// the name beside the control - see FieldSaying - and a table puts the names
+// once, over the columns, where three files inside an archive would otherwise
+// carry nine names for three kinds of value.
+func CellSaying(label string, detail Detail, required bool, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
+	marked, ring := WithRing(shapedForItsValues(control))
+	area = newErrorArea(0)
+	area.edge = ring
+	body = Column(GapLabel, headingRow(label, detail, required), marked)
 	return Column(GapTight, body, area.Object()), body, area
 }
 
@@ -72,41 +94,27 @@ func shapedForItsValues(control fyne.CanvasObject) fyne.CanvasObject {
 	return control
 }
 
-// fieldParts is the run of pieces every field is made of, in order.
-//
-// One place rather than two, because the pair above differed by a single line
-// and the pair is where a field's shape would quietly come apart - one of them
-// growing a button and the other not.
-func fieldParts(label, hint string, detail Detail, required bool, trailing, control fyne.CanvasObject) []fyne.CanvasObject {
-	items := []fyne.CanvasObject{headingRow(label, detail, required, trailing), control}
-	if hint != "" {
-		items = append(items, Note(hint))
-	}
-	return items
-}
-
 // ToggleSaying lays out a switch that carries its own name, with the
 // explanation behind the button beside it.
 //
-// A switch is the one control that does not take a heading above it. Given one
-// it arrives as a bare square with the words somewhere else: the name above,
-// the sentence below, and nothing to read on the thing you click. That is what
-// O72 saw on screen. Putting the name on the switch also makes the words part
-// of the target, which is the difference between a click and an aimed click.
+// A switch is the one control that does not take a name in the column of
+// names. Given one it arrives as a bare square with the words somewhere else,
+// and nothing to read on the thing you click - which is what O72 saw on
+// screen. Putting the name on the switch makes the words part of the target,
+// which is the difference between a click and an aimed click. So the name
+// cell of its row is empty and the switch stands in the column of controls,
+// where the eye is already looking for the thing to change.
+//
 // It carries no edge of its own. A ring round a switch is a ring round the
 // words as well as the square - measured from a screenshot on 2026-08-12,
 // where it read as a box drawn around a sentence - and a switch has two
 // positions, neither of which the engine can refuse. What it does get is
 // somewhere to speak, because "every field has one" is worth more than the one
 // exception nobody would remember.
-func ToggleSaying(name, hint string, detail Detail, check *Toggle) (object, body fyne.CanvasObject, area *ErrorArea) {
+func ToggleSaying(names float32, name string, detail Detail, check *Toggle) (object, body fyne.CanvasObject, area *ErrorArea) {
 	check.Text = name
-	area = NewErrorArea()
-	items := []fyne.CanvasObject{withDetail(WithRoomForItsName(check), detail)}
-	if hint != "" {
-		items = append(items, Note(hint))
-	}
-	body = Column(GapTight, items...)
+	area = newErrorArea(names)
+	body = FieldRow(names, Clear(), withDetail(WithRoomForItsName(check), detail))
 	return Column(GapTight, body, area.Object()), body, area
 }
 
@@ -132,51 +140,46 @@ func Note(content string) fyne.CanvasObject {
 	label := widget.NewLabel(content)
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.LowImportance
-	// Smaller as well as quieter. At the same size as the value above it, an
-	// explanation of two lines outweighs the field it explains - which is the
-	// screen this one was: more words than controls, and the words winning.
 	label.SizeName = theme.SizeNameCaptionText
 	return inkTight(label)
 }
 
-// ErrorArea is where a refusal is shown, and it is sized for a real one.
-//
-// G9 is a requirement on the layout rather than on the wording: a refusal in
-// this tool has four parts - what happened, why, what is allowed, what to do
-// instead - and a control that shows one line forces a message carrying one of
-// the four. So this wraps, it never truncates, and it holds nothing at all
-// until there is something to say. An empty red box on a fresh screen reads as
-// a fault that has already happened.
+// ErrorArea is where a field says what a run said about it.
 type ErrorArea struct {
 	label *widget.Label
-	box   *fyne.Container
-
-	// edge is the line round the control this area belongs to, or nil for the
-	// area at the foot of the form, which is about the run rather than about
-	// one box. Set by FieldSaying, so a refusal marks and unmarks the box in
-	// the same call that shows and hides the sentence - two things that would
-	// otherwise be two calls, and the second one is the one somebody forgets on
-	// the path where the run succeeds.
+	box   fyne.CanvasObject
+	// edge is the line round the control, if it has one. Marked and cleared
+	// with the sentence, so the two never disagree.
 	edge *Ring
 }
 
-// NewErrorArea returns an area with nothing in it.
-func NewErrorArea() *ErrorArea {
+// NewErrorArea builds one that stands on its own, for the line at the foot of
+// the form that speaks for the whole run.
+func NewErrorArea() *ErrorArea { return newErrorArea(0) }
+
+// newErrorArea builds one for a field whose names stand in a column that
+// wide, so the sentence starts under the control it is about rather than
+// under the name. Nought for a cell of a table, where the sentence starts
+// under the cell.
+func newErrorArea(names float32) *ErrorArea {
 	label := widget.NewLabel("")
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.DangerImportance
-
-	area := &ErrorArea{label: label, box: container.NewVBox(inkTight(label))}
+	var box fyne.CanvasObject
+	if names > 0 {
+		box = FieldRow(names, Clear(), inkTight(label))
+	} else {
+		box = container.NewVBox(inkTight(label))
+	}
+	area := &ErrorArea{label: label, box: box}
 	area.Clear()
 	return area
 }
 
-// Object is the area, to put on a screen.
+// Object is what the area puts on the screen.
 func (a *ErrorArea) Object() fyne.CanvasObject { return a.box }
 
-// Say shows one refusal, whole. The text arrives as the engine wrote it - the
-// window does not shorten it, because every one of the four parts is there
-// because somebody could not act without it.
+// Say shows a sentence, or clears the area when handed nothing.
 func (a *ErrorArea) Say(text string) {
 	if text == "" {
 		a.Clear()
@@ -187,22 +190,18 @@ func (a *ErrorArea) Say(text string) {
 	a.mark(true)
 }
 
-// Clear takes the last refusal back, which is what every fresh attempt starts
-// with. A message left over from the previous press describes a state that is
-// no longer true.
+// Clear takes the sentence away and gives the room back.
 func (a *ErrorArea) Clear() {
 	a.label.SetText("")
 	a.box.Hide()
 	a.mark(false)
 }
 
-// mark turns the edge of the control this area belongs to on or off. The area
-// at the foot of the form has no control, and says so by having no edge.
 func (a *ErrorArea) mark(refused bool) {
 	if a.edge != nil {
 		a.edge.Refuse(refused)
 	}
 }
 
-// Text is what the area is currently saying, for a guard to read.
+// Text is what the area says, for the guards that read it back.
 func (a *ErrorArea) Text() string { return a.label.Text }
