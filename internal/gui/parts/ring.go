@@ -62,15 +62,6 @@ func (r *Ring) Resting(edge color.Color) {
 	r.draw()
 }
 
-// ringWidth is how thick the line is.
-//
-// Twice the toolkit's input border, so it reads as a deliberate edge rather than
-// as the box's own outline changing colour. One pixel lands between pixels and
-// is anti-aliased away to something fainter than the number suggests - measured
-// on the section surface on 2026-08-12, where a one pixel stroke of a 29.4 L*
-// colour came out at 22.3.
-const ringWidth = 2
-
 // WithRing puts a control on the screen with an edge it can draw when there is
 // something to say about it.
 //
@@ -83,7 +74,7 @@ const ringWidth = 2
 // content rather than overlays.
 func WithRing(control fyne.CanvasObject) (fyne.CanvasObject, *Ring) {
 	rect := canvas.NewRectangle(color.Transparent)
-	rect.CornerRadius = Theme().Size(theme.SizeNameInputRadius)
+	rect.CornerRadius = RadiusField
 	ring := &Ring{rect: rect}
 	ring.draw()
 
@@ -441,10 +432,6 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	// to the first value while the box shows the ninth.
 	list.StartOn(c.Selected)
 }
-
-// listEdgeGap is the space kept between an open list and the edge of the
-// window, so that a list filling the room still reads as sitting inside it.
-const listEdgeGap = 8
 
 // roomForList decides how tall an open list may be and where its top goes.
 //

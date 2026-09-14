@@ -50,7 +50,7 @@ func FieldSaying(label, hint string, detail Detail, required bool, trailing, con
 	marked, ring := WithRing(shapedForItsValues(control))
 	area = NewErrorArea()
 	area.edge = ring
-	body = Column(GapTight, fieldParts(label, hint, detail, required, trailing, marked)...)
+	body = Column(GapLabel, fieldParts(label, hint, detail, required, trailing, marked)...)
 	return Column(GapTight, body, area.Object()), body, area
 }
 
@@ -136,7 +136,7 @@ func Note(content string) fyne.CanvasObject {
 	// explanation of two lines outweighs the field it explains - which is the
 	// screen this one was: more words than controls, and the words winning.
 	label.SizeName = theme.SizeNameCaptionText
-	return label
+	return inkTight(label)
 }
 
 // ErrorArea is where a refusal is shown, and it is sized for a real one.
@@ -166,7 +166,7 @@ func NewErrorArea() *ErrorArea {
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.DangerImportance
 
-	area := &ErrorArea{label: label, box: container.NewVBox(label)}
+	area := &ErrorArea{label: label, box: container.NewVBox(inkTight(label))}
 	area.Clear()
 	return area
 }

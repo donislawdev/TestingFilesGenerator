@@ -61,7 +61,7 @@ type Folding struct {
 // do the two things they are most likely to want from a list of them.
 func NewFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
 	f := newFolding(title, head, content...)
-	f.object = container.NewStack(panelSurface(), container.NewPadded(f.inside))
+	f.object = container.NewStack(panelSurface(), Padded(Inset, f.inside))
 	return f
 }
 

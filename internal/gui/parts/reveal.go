@@ -5,11 +5,6 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
-// revealMargin is how much of the form is kept above a control brought into
-// view, so it arrives looking like part of a form rather than pinned to the top
-// edge with its own label cut off above it.
-const revealMargin = 24
-
 // Reveal scrolls a control into view and puts the keyboard in it.
 //
 // Pressing Generate with a bad value in a box did nothing anybody could see.

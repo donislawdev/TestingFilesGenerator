@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -204,10 +203,11 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 // namedOnScreen is the words a heading shows, whether it is a label above a
 // control or a switch carrying its own name.
 func namedOnScreen(o fyne.CanvasObject) string {
-	switch v := unringed(o).(type) {
-	case *widget.Label:
-		return v.Text
-	case *parts.Toggle:
+	inner := unringed(o)
+	if words, ok := wordsOf(inner); ok {
+		return words
+	}
+	if v, ok := inner.(*parts.Toggle); ok {
 		return v.Text
 	}
 	return ""

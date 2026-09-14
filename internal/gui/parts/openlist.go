@@ -34,30 +34,6 @@ import (
 // person types taken as a jump, and the value in the box marked in a list we
 // can read back. See docs/UX.md and OBSERVATIONS.md O92c and O92d.
 
-// visibleRows is how many rows are shown before the list starts scrolling.
-//
-// Eight, decided by the owner on 2026-08-18. NN/g puts it as a rule rather than
-// a number - the label and the context stay in view while the list is open -
-// and eight is what leaves most of the form visible at the window sizes this
-// program opens at, including 800x600.
-const visibleRows = 8
-
-// rowPadding is the room above and below a row's contents.
-//
-// Ours rather than the theme's, which is the entire point of this control. The
-// theme's innerPadding is what a box to type in and a button are also built
-// from, so a list cannot be made denser through it without making every control
-// on the form denser too.
-const rowPadding = 4
-
-// rowGutter is the room in front of the mark, and rowGap the room after it.
-// Together they put the text where the toolkit put it, so this change moves the
-// density and nothing else - one thing at a time.
-const (
-	rowGutter = 6
-	rowGap    = 6
-)
-
 // OpenList is the list of values a Chooser drops down.
 type OpenList struct {
 	widget.BaseWidget
@@ -231,7 +207,7 @@ func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// colour a guard measures for "an open list is told from the form behind
 	// it" is the colour actually on the screen.
 	back := canvas.NewRectangle(Theme().Color(theme.ColorNameMenuBackground, theme.VariantDark))
-	back.CornerRadius = Theme().Size(theme.SizeNameInputRadius)
+	back.CornerRadius = RadiusField
 	return widget.NewSimpleRenderer(container.NewStack(back, container.NewThemeOverride(l.list, rowTheme{})))
 }
 

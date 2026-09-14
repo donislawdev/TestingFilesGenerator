@@ -16,7 +16,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -921,8 +920,8 @@ func explanationBeside(t *testing.T, o fyne.CanvasObject, label string) *parts.D
 		if !ok || len(row.Objects) < 2 || found != nil {
 			return
 		}
-		head, isLabel := row.Objects[0].(*widget.Label)
-		if !isLabel || head.Text != label {
+		head, named := wordsOf(row.Objects[0])
+		if !named || head != label {
 			return
 		}
 		// Searched, not indexed - see detailButtonIn. A field that has to be

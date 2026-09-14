@@ -3,7 +3,6 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -115,7 +114,7 @@ func gapBefore(o fyne.CanvasObject) float32 {
 	if _, star := o.(*RequiredMark); star {
 		return 0
 	}
-	return theme.Padding()
+	return GapInline
 }
 
 func (h headingLine) MinSize(objects []fyne.CanvasObject) fyne.Size {

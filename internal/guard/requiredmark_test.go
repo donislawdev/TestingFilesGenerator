@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -128,13 +127,13 @@ func starsOnScreen(o fyne.CanvasObject) map[string]bool {
 		if !ok || len(row.Objects) < 2 {
 			return
 		}
-		head, isLabel := row.Objects[0].(*widget.Label)
-		if !isLabel {
+		head, named := wordsOf(row.Objects[0])
+		if !named {
 			return
 		}
 		for _, item := range row.Objects[1:] {
 			if _, star := item.(*parts.RequiredMark); star {
-				stars[head.Text] = true
+				stars[head] = true
 			}
 		}
 	})

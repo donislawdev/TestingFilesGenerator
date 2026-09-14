@@ -50,15 +50,14 @@ func foldRows(o fyne.CanvasObject) []foldRow {
 		var toggle *widget.Button
 		title := ""
 		for _, item := range row.Objects {
-			switch found := item.(type) {
-			case *widget.Button:
+			if found, ok := item.(*widget.Button); ok {
 				if found.Text == "" && found.Icon != nil {
 					toggle = found
 				}
-			case *widget.Label:
-				if title == "" {
-					title = found.Text
-				}
+				continue
+			}
+			if words, ok := wordsOf(item); ok && title == "" {
+				title = words
 			}
 		}
 		if toggle != nil && title != "" {

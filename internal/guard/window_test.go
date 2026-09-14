@@ -544,10 +544,12 @@ func tabNames(o fyne.CanvasObject) []string {
 func textIn(o fyne.CanvasObject) string {
 	var b strings.Builder
 	walk(o, func(obj fyne.CanvasObject) {
-		switch v := obj.(type) {
-		case *widget.Label:
-			b.WriteString(v.Text)
+		if words, ok := wordsOf(obj); ok {
+			b.WriteString(words)
 			b.WriteString("\n")
+			return
+		}
+		switch v := obj.(type) {
 		case *widget.Button:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
@@ -621,7 +623,7 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 		if isHeadingExtra(box.Objects[1]) {
 			return
 		}
-		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
+		if head, named := headingOf(box.Objects[0]); named && head == label {
 			found = unringed(box.Objects[1])
 		}
 	})
@@ -756,16 +758,15 @@ func detailButtonIn(row *fyne.Container) *parts.DetailButton {
 	return nil
 }
 
-func headingOf(o fyne.CanvasObject) *widget.Label {
-	if label, ok := o.(*widget.Label); ok {
-		return label
+func headingOf(o fyne.CanvasObject) (string, bool) {
+	if words, ok := wordsOf(o); ok {
+		return words, true
 	}
 	row, ok := o.(*fyne.Container)
 	if !ok || len(row.Objects) == 0 {
-		return nil
+		return "", false
 	}
-	label, _ := row.Objects[0].(*widget.Label)
-	return label
+	return wordsOf(row.Objects[0])
 }
 
 // entryUnder is the box somebody types into for a labelled field.

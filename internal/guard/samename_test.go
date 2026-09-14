@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -33,15 +32,15 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 			sections := map[string]bool{}
 			fields := map[string]bool{}
 			atAbsolute(screen, func(o fyne.CanvasObject, _ fyne.Position) {
-				label, is := o.(*widget.Label)
-				if !is || label.Text == "" || !label.TextStyle.Bold {
+				words, bold, size, is := boldWordsAt(o)
+				if !is || words == "" || !bold {
 					return
 				}
-				switch label.SizeName {
-				case theme.SizeNameHeadingText:
-					sections[label.Text] = true
-				case "", theme.SizeNameText:
-					fields[label.Text] = true
+				switch size {
+				case parts.TextHeading:
+					sections[words] = true
+				case parts.TextBody:
+					fields[words] = true
 				}
 			})
 

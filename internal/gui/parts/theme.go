@@ -324,36 +324,34 @@ func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.C
 // than the one its cards use, whatever the names suggest. Measured on screen:
 // with the toolkit's 24 and 18 the sections shouted over the page they were on.
 func (o ours) Size(name fyne.ThemeSizeName) float32 {
+	// Every answer is a token, so the ladder of type and the scale of
+	// distances have one home (parts/tokens.go). A size not named here is the
+	// toolkit's own, and the point of naming one is that somebody chose it.
+	//
+	// The room inside a control is the one that was argued over: the
+	// toolkit's 8 makes a row of a menu 41 px tall for 13 px of text -
+	// measured off the open list on 2026-08-12 - and moving it here made the
+	// whole form denser, not the list. The list got a control of its own
+	// instead (parts/openlist.go), and 6 stays on its own merits: it is the
+	// room inside every box and button on the form, and it went in against a
+	// render of the form.
 	switch name {
 	case theme.SizeNameSubHeadingText:
-		return 20 // the screen title
+		return TextTitle
 	case theme.SizeNameHeadingText:
-		return 17 // a section title, drawn by the card
+		return TextHeading
+	case theme.SizeNameText:
+		return TextBody
 	case theme.SizeNameCaptionText:
-		return 12 // an explanation under a field, at 11 it was hard work
+		return TextCaption
 	case theme.SizeNamePadding:
-		return 6 // room between things, the toolkit's 4 was tight
+		return ThemePadding
 	case theme.SizeNameInnerPadding:
-		// Room inside a control, above and below whatever it holds. The
-		// toolkit's 8 makes a row of a menu 41 px tall for 13 px of text -
-		// measured off the open list on 2026-08-12, which is 3.1 times the
-		// text and about half again what a desktop menu uses.
-		//
-		// The first half of what stood here is true and the conclusion was
-		// wrong, corrected on 2026-08-18. The theme IS asked for a size by name
-		// and not by widget. What that does not follow from is "it is the only
-		// knob there is", which is what this comment said for six days: a theme
-		// can be replaced for a SUBTREE with container.NewThemeOverride, and
-		// nobody had looked. So a list was made denser by moving the padding of
-		// the whole form, the owner reported the list again, and the answer the
-		// second time was a control of our own - see parts/openlist.go.
-		//
-		// This number stays at 6 on its own merits: it is the room inside every
-		// control on the form, it went in against a render of the form, and the
-		// toolkit's 8 was measured as too loose there as well.
-		return 6
+		return ControlInset
 	case theme.SizeNameCardRadius:
-		return 8
+		return RadiusPanel
+	case theme.SizeNameInputRadius, theme.SizeNameButtonRadius:
+		return RadiusField
 	}
 	return o.Theme.Size(name)
 }

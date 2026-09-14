@@ -82,7 +82,7 @@ var OpenSize = fyne.NewSize(1000, 1000)
 // without noticing was the thing worth guarding.
 func About(h Host) fyne.CanvasObject {
 	sections := []fyne.CanvasObject{
-		parts.Prose(text.AboutTagline()),
+		parts.Indented(parts.Prose(text.AboutTagline())),
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.

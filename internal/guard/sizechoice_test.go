@@ -185,25 +185,25 @@ func TestOnlyTheChosenWayOfStatingASizeReachesTheRun(t *testing.T) {
 // everything, then everything under each hidden thing, and takes the second
 // away from the first.
 func shownText(o fyne.CanvasObject) string {
-	var all []*widget.Label
+	var all []fyne.CanvasObject
 	var hidden []fyne.CanvasObject
 	walk(o, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Text != "" {
-			all = append(all, l)
+		if words, ok := wordsOf(obj); ok && words != "" {
+			all = append(all, obj)
 		}
 		if obj != nil && !obj.Visible() {
 			hidden = append(hidden, obj)
 		}
 	})
 
-	out := map[*widget.Label]bool{}
+	out := map[fyne.CanvasObject]bool{}
 	for _, l := range all {
 		out[l] = true
 	}
 	for _, root := range hidden {
 		walk(root, func(obj fyne.CanvasObject) {
-			if l, ok := obj.(*widget.Label); ok {
-				delete(out, l)
+			if _, ok := wordsOf(obj); ok {
+				delete(out, obj)
 			}
 		})
 	}
@@ -211,7 +211,8 @@ func shownText(o fyne.CanvasObject) string {
 	var said []string
 	for _, l := range all {
 		if out[l] {
-			said = append(said, l.Text)
+			words, _ := wordsOf(l)
+			said = append(said, words)
 		}
 	}
 	return strings.Join(said, "\n")

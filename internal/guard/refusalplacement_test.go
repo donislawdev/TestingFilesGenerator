@@ -6,7 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 
-	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -153,7 +152,7 @@ func sawItOnce(t *testing.T, content fyne.CanvasObject, label, refusal string) {
 	// screenshot of the top of the screen.
 	seen := 0
 	walk(content, func(obj fyne.CanvasObject) {
-		if l, is := obj.(*widget.Label); is && strings.Contains(l.Text, refusal) {
+		if words, is := wordsOf(obj); is && strings.Contains(words, refusal) {
 			seen++
 		}
 	})
@@ -176,7 +175,7 @@ func fieldBox(o fyne.CanvasObject, label string) *fyne.Container {
 		if !ok || len(box.Objects) < 2 || isHeadingExtra(box.Objects[1]) {
 			return
 		}
-		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
+		if head, named := headingOf(box.Objects[0]); named && head == label {
 			found = box
 		}
 	})
@@ -215,8 +214,8 @@ func underSomethingHidden(root fyne.CanvasObject) map[fyne.CanvasObject]bool {
 func allText(o fyne.CanvasObject) string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {
-		if l, ok := obj.(*widget.Label); ok && l.Text != "" {
-			out = append(out, l.Text)
+		if words, ok := wordsOf(obj); ok && words != "" {
+			out = append(out, words)
 		}
 	})
 	return strings.Join(out, "\n")

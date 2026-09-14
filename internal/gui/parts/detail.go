@@ -10,14 +10,6 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// DetailWidth is how wide the longer explanation gets when it opens.
-//
-// Narrower than the form on purpose. The column is 820 px because that is what
-// the form needs, and the same width for a paragraph of prose is about 112
-// characters a line - well past the 45 to 75 that reads easily. A block of text
-// with nothing beside it has no reason to be as wide as a row of fields.
-const DetailWidth = 380
-
 // Tips is the sheet a screen's explanations are drawn on.
 //
 // It exists because of where an explanation may NOT go, and that took two
@@ -227,7 +219,7 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	}
 	driver := app.Driver()
 
-	box := container.NewStack(panelSurface(), container.NewPadded(Prose(detail)))
+	box := container.NewStack(panelSurface(), Padded(Inset, Prose(detail)))
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the

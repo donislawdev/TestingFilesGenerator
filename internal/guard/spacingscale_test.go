@@ -181,8 +181,8 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 		if ok {
 			return
 		}
-		label, is := o.(*widget.Label)
-		if !is || label.Text != words {
+		shown, is := wordsOf(o)
+		if !is || shown != words {
 			return
 		}
 		found, ok = band{X: at.X, Y: at.Y, Width: o.Size().Width, Height: o.Size().Height}, true
