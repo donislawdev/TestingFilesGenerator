@@ -142,6 +142,8 @@ func (s summary) totalText() string {
 		if s.least != s.most {
 			return text.SizeBetween(core.HumanBytes(s.least), core.HumanBytes(s.most))
 		}
+	case stated:
+		// Every size is on the form, so the exact total below is the answer.
 	}
 	return text.SizeAndBytes(core.HumanBytes(s.least), core.ExactBytes(s.least))
 }

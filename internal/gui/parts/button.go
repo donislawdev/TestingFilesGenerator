@@ -390,6 +390,8 @@ func buttonFace(look Look, state buttonState) face {
 			f.fill = blended(f.fill, PaletteColour(ColorNameLift, dark))
 		case statePressed:
 			f.fill = blended(f.fill, PaletteColour(ColorNameShade, dark))
+		case stateRest, stateDisabled:
+			// The face as it is. Disabled fades the whole button elsewhere.
 		}
 		return f
 	case Secondary:
