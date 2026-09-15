@@ -189,12 +189,18 @@ const (
 	// ends with that number, so the second copy cost 23 px of a bar the owner
 	// asked to make smaller.
 	SlimHeight = 8
-	// visibleRows is how many rows of an open list show before it scrolls.
-	// Eight, decided by the owner on 2026-08-18. NN/g puts it as a rule rather
-	// than a number - the label and the context stay in view while the list is
-	// open - and eight is what leaves most of the form visible at the window
-	// sizes this program opens at, including 800x600.
-	visibleRows = 8
+	// listShare is how much of the window an open list may cover: half of its
+	// height, in whole rows, before it scrolls. NN/g puts the ceiling as a rule
+	// rather than a number - the label and the context stay in view while the
+	// list is open - and the other half of the window IS the context. Until
+	// 2026-09-15 this was a count, eight rows, chosen on 2026-08-18 for the
+	// smallest window this program opens at and then applied to every window:
+	// measured with guirender that day, the list of twenty-four formats was
+	// 224 px tall at 800x600, at 1100x1300 and at the owner's 1101x1025 alike,
+	// so a third of the values showed however tall the window was (O203). Half
+	// gives ten rows at 600 px, eighteen at 1025 and twenty-three at 1300, and
+	// at 600 the list still ends above the buttons at the foot.
+	listShare = 0.5
 	// rowPadding is the room above and below a list row's contents. Ours rather
 	// than the theme's, which is the entire point of that control: the theme's
 	// inner padding is what a box to type in and a button are also built from,

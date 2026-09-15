@@ -85,10 +85,11 @@ func TestAnOpenListStaysInsideTheWindow(t *testing.T) {
 
 // An open list is cut to the room there is, when there is not much anywhere.
 //
-// Opening upward is only half of it. In a window with fewer than eight rows of
-// room on either side, a list at its row ceiling goes past an edge whichever
-// way it opens - so it has to be shorter than its ceiling, and the shortening
-// has to reach the LIST rather than only the popup around it. Measured on
+// Opening upward is only half of it. In a window with less room on either side
+// of the box than the list's ceiling - a share of the window, so a few rows in
+// a window this short - the list goes past an edge whichever way it opens. So
+// it has to be shorter than its ceiling, and the shortening has to reach the
+// LIST rather than only the popup around it. Measured on
 // 2026-08-19: a popup is never laid out smaller than its content's minimum, so
 // resizing it alone left the list its full height and did nothing at all
 // (O113).
@@ -103,8 +104,9 @@ func TestAnOpenListIsCutToTheRoomThereIs(t *testing.T) {
 	}
 	menu := parts.NewChooser(values, nil)
 
-	// Shorter than eight rows either side of the box, so no whole list fits
-	// whichever way it opens.
+	// Too short for the list either side of the box - its ceiling here is two
+	// rows and the room on the roomier side is under three - so no whole list
+	// fits whichever way it opens.
 	const height = 120
 	w := test.NewWindow(container.NewBorder(nil, menu, nil, nil, container.NewVBox()))
 	t.Cleanup(w.Close)

@@ -188,6 +188,14 @@ func TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt(t *testing.T) {
 // needs one: focus belongs to a canvas, and a press has to land somewhere.
 func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	t.Helper()
+	return screenOnACanvasOfHeight(t, referenceHeight)
+}
+
+// screenOnACanvasOfHeight is the same screen in a window this tall, for a
+// guard asking about something that follows the window - an open list is as
+// tall as a share of it, so one height proves nothing about the rule.
+func screenOnACanvasOfHeight(t *testing.T, height float32) (fyne.Canvas, fyne.CanvasObject) {
+	t.Helper()
 	// A fresh application and our own theme, the same two lines renderScene
 	// opens with. Without them the sizes are the test driver's rather than the
 	// window's, and a press aimed with one set of numbers at a screen laid out
@@ -210,7 +218,7 @@ func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	// that is not the width it ends up with. A press aimed at a control that
 	// has not settled lands somewhere else, which reads as a control that
 	// cannot be pressed.
-	size := fyne.NewSize(referenceWidth, referenceHeight)
+	size := fyne.NewSize(referenceWidth, height)
 	w.Resize(size)
 	w.Resize(size)
 	host.content.Refresh()

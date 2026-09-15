@@ -12,7 +12,7 @@ import (
 // The buttons, the switch and the segmented control this window draws itself
 // arrived on 2026-09-15, and these guards are for the behaviour that came with
 // them - the states the toolkit's own controls either drew wrong or did not
-// draw at all. The look of each state is held by the stored screens; what is
+// draw at all. The look of each state is held by the stored screens. What is
 // here is the behaviour a picture cannot show.
 
 // A button draws its focus ring for the keyboard and not for a press.

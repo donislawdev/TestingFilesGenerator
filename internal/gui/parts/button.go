@@ -72,7 +72,7 @@ type Button struct {
 	// The pointer's state and the keyboard's, kept here because the toolkit
 	// keeps its own in unexported fields a renderer of ours cannot read.
 	//
-	// hovered and pressed are the pointer; marked is the keyboard, and it is
+	// hovered and pressed are the pointer. marked is the keyboard, and it is
 	// true only when a key put the focus here. A press with the mouse never
 	// focuses this control - the driver unfocuses on a tap and does not focus
 	// the tapped widget (glfw/window.go, mouseClicked), read rather than
@@ -365,7 +365,7 @@ type face struct {
 
 // buttonFace is the colours of one look in one state, worked out from the
 // palette rather than picked. The measurements behind the primary face are on
-// ColorNameLift and ColorNameShade in theme.go; the rest follow from what a
+// ColorNameLift and ColorNameShade in theme.go. The rest follow from what a
 // surface a button stands on already is.
 func buttonFace(look Look, state buttonState) face {
 	dark := theme.VariantDark

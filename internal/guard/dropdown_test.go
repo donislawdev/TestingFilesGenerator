@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"math"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -106,44 +107,72 @@ func TestOpeningAListWithAPressDrawsNoKeyboardBar(t *testing.T) {
 	}
 }
 
-// The list has a ceiling and scrolls under it.
+// The list has a ceiling, the ceiling is half the window, and it scrolls under it.
 //
 // Measured off the stored tree before this control existed: thirteen formats
 // made a list 476 px tall with no limit of any kind, covering the whole form.
-// At the twenty-five formats T1 is heading for that is about 925 px, which does
-// not fit in the window - so this is a defect that gets worse with every format
-// added and would have arrived without a line of code changing.
+// The first ceiling was a count, eight rows, and a count is the same in every
+// window: measured with guirender on 2026-09-15, the list of twenty-four
+// formats was 224 px tall at 800x600, at 1100x1300 and at 1101x1025 alike, so
+// a third of the values showed however tall the window was (O203). The
+// ceiling is a share of the window now, and that takes two canvases to ask
+// about. On each the list covers no more than the share, in whole rows, and no
+// less than the share less a row - the last half is what rules out a count
+// small enough to fit inside the share, which is exactly what eight was.
 //
-// Asked as a count of rows rather than a number of pixels, because the pixels
-// follow the text size and the rule does not.
-func TestTheOpenListStopsAtEightRowsHoweverManyValuesThereAre(t *testing.T) {
-	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat())
-
-	values := len(format.IDs())
-	if values <= 8 {
-		t.Skipf("this build has %d formats, so the ceiling cannot be reached from this screen", values)
+// The height read is the popup on the canvas, the way the edge guards read it,
+// rather than what the list says its minimum is: the promise is about what is
+// drawn over the form.
+func TestTheOpenListCoversHalfTheWindowAndGrowsWithIt(t *testing.T) {
+	const tall, short = referenceHeight, referenceHeight / 2
+	onTall := formatListRowsShownIn(t, tall)
+	onShort := formatListRowsShownIn(t, short)
+	if onTall <= onShort {
+		t.Errorf("the open list shows %.0f rows in a window %d px tall and %.0f in one %d px tall, so it does not grow "+
+			"with the window - a ceiling that is the same in every window is a count of rows under another name",
+			onTall, int(tall), onShort, int(short))
 	}
-	menu.Tapped(&fyne.PointEvent{})
-	list := menu.Opened()
-	if list == nil {
-		t.Fatal("the press opened no list")
-	}
+}
 
+// formatListRowsShownIn opens the format menu on the generate screen in a
+// window this tall, checks the open list against the share rule there and
+// answers how many rows it shows.
+func formatListRowsShownIn(t *testing.T, height float32) float32 {
+	t.Helper()
+	canvas, content := screenOnACanvasOfHeight(t, height)
+	// The row is measured once the window exists rather than up front: it
+	// follows the theme, and the theme is the window's only from here. Read
+	// before it, the row was 31 px against a list drawn in rows of 28.
 	row := parts.ListRowHeight()
 	if row <= 0 {
-		t.Fatal("a row measures nothing, so the height below says nothing either")
+		t.Fatal("a row measures nothing, so the heights below say nothing either")
 	}
-	shown := list.MinSize().Height / row
-	if shown > 8.5 {
-		t.Errorf("the list shows %.1f of %d values at once, and eight is the ceiling.\n"+
-			"Reason: an open list that covers the form takes the context away from the person reading it,\n"+
-			"and the number of formats only goes up.\n"+
-			"What to do: keep visibleRows in parts/openlist.go.", shown, values)
+	if values := len(format.IDs()); float32(values)*row <= height/2 {
+		t.Skipf("this build has %d formats, which fit inside half a %.0f px window, so the ceiling is never reached", values, height)
 	}
-	if shown < 7.5 {
-		t.Errorf("the list shows only %.1f rows of %d, which is fewer than the eight decided on", shown, values)
+
+	menu := chooserUnder(t, content, text.FieldFormat())
+	menu.Tapped(&fyne.PointEvent{})
+	pop := popUpIn(canvas.Overlays().Top())
+	if pop == nil {
+		t.Fatalf("the press opened no list on the canvas %.0f px tall", height)
 	}
+	tall := pop.Size().Height
+	shown := tall / row
+	if tall > height/2+0.5 {
+		t.Errorf("the open list is %.0f px tall in a window %.0f px tall, which is more than half of it.\n"+
+			"Reason: an open list that covers the form takes the context away from the person reading it.\n"+
+			"What to do: parts.roomForList cuts the list to parts.ListCeiling, a share of the window.",
+			tall, height)
+	}
+	if tall < height/2-row {
+		t.Errorf("the open list is %.0f px tall in a window %.0f px tall - %.1f rows - which leaves more "+
+			"than a row of its half unused, so the ceiling is not following the window.", tall, height, shown)
+	}
+	if whole := math.Round(float64(shown)); math.Abs(float64(shown)-whole) > 0.05 {
+		t.Errorf("the open list shows %.2f rows in a window %.0f px tall, and a list at its ceiling ends on a row's edge", shown, height)
+	}
+	return shown
 }
 
 // Escape closes the list and gives the keyboard back to the box.

@@ -68,6 +68,15 @@ because it turns other people's test suites red.
   what the screen is for, where until now each screen had one name on the tab
   and another over the form.
 
+- **An open list is as tall as half the window, not eight rows.** The list a
+  menu drops down stopped at eight rows in every window - 224 px at 800x600
+  and at 1100x1300 alike - so a third of the twenty-four formats showed
+  however tall the window was. It now covers up to half the window's height,
+  in whole rows: ten rows in a window 600 px tall, eighteen in one 1025 px
+  tall, and the rest under a scroll. It still opens upward when there is more
+  room above the box than below it, and is still cut to the room on whichever
+  side it lands.
+
 ### Added
 
 - **Every control shows where the keyboard is and answers the pointer.** Every

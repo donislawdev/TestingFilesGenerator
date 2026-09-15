@@ -456,16 +456,22 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 // format menu showed four of its twenty values that way, with the rest past the
 // edge and the run buttons underneath it (O113).
 //
-// Two things fix it and both are needed. It opens UPWARD when there is more
-// room above the box than below it, which is what every desktop menu does. And
-// it is cut to the room on whichever side it lands, rather than to a fixed
-// number of rows - the eight row ceiling is about not covering the form, and it
-// says nothing about a window that has less than eight rows left.
+// Three things decide it and each is needed. The list may cover a share of
+// the window and no more (ListCeiling) - the ceiling is about not taking the
+// form away from the person reading it, and it follows the window rather than
+// being a count of rows, which was eight in every window until 2026-09-15
+// (O203). It opens UPWARD when there is more room above the box than below
+// it, which is what every desktop menu does. And it is cut to the room on
+// whichever side it lands, because the ceiling says nothing about a window
+// that has less than that left beside the box.
 //
 // Arithmetic rather than widgets so that it can be checked directly. The screen
 // level guard opens a real menu and measures the overlay, which is the half
 // that catches this being wired up wrongly.
 func roomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
+	if ceiling := ListCeiling(canvasHeight); wanted > ceiling {
+		wanted = ceiling
+	}
 	below := canvasHeight - (boxTop + boxHeight) - listEdgeGap
 	above := boxTop - listEdgeGap
 	if below < 0 {
