@@ -77,9 +77,9 @@ type settler func() ([]engine.Target, engine.Options, error)
 type runner struct {
 	settle settler
 
-	previewBtn  *widget.Button
-	generateBtn *widget.Button
-	cancelBtn   *widget.Button
+	previewBtn  *parts.Button
+	generateBtn *parts.Button
+	cancelBtn   *parts.Button
 	// openBtn shows the directory a finished run wrote into.
 	//
 	// It appears when there is something to open and goes away the moment the
@@ -90,7 +90,7 @@ type runner struct {
 	// In the row of actions rather than beside the output box, so the bar keeps
 	// its height and the form does not move - the property
 	// TestTheFormDoesNotMoveWhenARunStarts holds.
-	openBtn *widget.Button
+	openBtn *parts.Button
 	// wroteInto is the directory of the run that just finished, kept because
 	// the box on the screen can be edited afterwards and the button has to open
 	// where the files ACTUALLY went.
@@ -362,9 +362,8 @@ func newRunner() *runner {
 	r.status.Hide()
 	r.problem = parts.NewErrorArea()
 
-	r.previewBtn = widget.NewButton(text.ButtonPreview(), r.onPreview)
-	r.generateBtn = widget.NewButton(text.ButtonGenerate(), r.onGenerate)
-	r.generateBtn.Importance = widget.HighImportance
+	r.previewBtn = parts.NewButton(parts.Secondary, text.ButtonPreview(), r.onPreview)
+	r.generateBtn = parts.NewButton(parts.Primary, text.ButtonGenerate(), r.onGenerate)
 	// Three ranks, so the eye lands on the one that does the work: Generate
 	// filled, Preview plain beside it, Cancel receding until there is something
 	// to cancel. They were three identical buttons in a row, which is a choice
@@ -380,11 +379,11 @@ func newRunner() *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	r.cancelBtn = widget.NewButton(text.ButtonCancel(), r.onCancel)
+	r.cancelBtn = parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel)
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 
-	r.openBtn = widget.NewButton(text.ButtonOpenFolder(), func() {
+	r.openBtn = parts.NewButton(parts.Secondary, text.ButtonOpenFolder(), func() {
 		if r.wroteInto != "" && r.openFolder != nil {
 			r.openFolder(r.wroteInto)
 		}

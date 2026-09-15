@@ -138,7 +138,7 @@ func boolField(p format.Property) PropertyField {
 	// place switches come from and the one nobody would remember, because there
 	// is no bool property in the registry today - the first format to declare
 	// one would have arrived with the defect already fixed everywhere else.
-	check := NewToggle("", nil)
+	check := NewToggle(nil)
 	check.SetChecked(p.Default == "true")
 	return PropertyField{
 		Name:    p.Name,

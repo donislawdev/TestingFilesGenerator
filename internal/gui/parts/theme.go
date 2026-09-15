@@ -30,6 +30,23 @@ import (
 // colours at call sites.
 const ColorNamePanel fyne.ThemeColorName = "panel"
 
+// ColorNameLift is what the pointer does to a face that is itself light - the
+// filled primary button - and ColorNameShade is what a press does to it.
+//
+// Two names of ours rather than the toolkit's Hover and Pressed, and the
+// reason is arithmetic rather than taste. L* is not linear: the palette's hover
+// of white at 0x22 moves a dark face by 12.7 L* and the primary face by 3.7,
+// which is the 1.12 contrast O205 measured on Generate - a hover drawn and not
+// seen. To move the primary face by the 10 L* this palette calls noticeable
+// takes white at 0x66, and that same alpha on a dark face would move it by
+// twenty five. One name cannot be right for both faces, so the light face has
+// its own two. Measured on 2026-09-15: 83.0 L* under the pointer and 58.5
+// pressed, against 71.9 at rest, with the ink on every one of them above 4.5.
+const (
+	ColorNameLift  fyne.ThemeColorName = "lift"
+	ColorNameShade fyne.ThemeColorName = "shade"
+)
+
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
 		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x1E),
@@ -90,7 +107,14 @@ var (
 		// hover of docs/UX.md section 8.2 to the byte. The measured look is
 		// kept and the behaviour is corrected, because section 8 computed this
 		// as the background of a row and the toolkit uses it on anything.
-		theme.ColorNameHover:     overlay(0xFF, 0xFF, 0xFF, 0x22),
+		theme.ColorNameHover: overlay(0xFF, 0xFF, 0xFF, 0x22),
+		// What a press does to a dark face: more of the same white, because a
+		// press has to be told from the hover it follows and black over
+		// #2A2A2D moves it by 3.9 L*, which nobody sees. Measured 2026-09-15.
+		theme.ColorNamePressed: overlay(0xFF, 0xFF, 0xFF, 0x40),
+		// The two for the light face, see ColorNameLift.
+		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
+		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
 		theme.ColorNameSelection: hex(0x2C, 0x4A, 0x6B),
 		// A box to type in has to be findable without reading a word, and until
 		// 2026-08-23 it was not. Measured on the palette as it stood: a field
@@ -243,7 +267,13 @@ var (
 		// Black rather than white here: this page is white, so its hover is
 		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
 		// which is what section 8.3 measured.
-		theme.ColorNameHover:     overlay(0x00, 0x00, 0x00, 0x20),
+		theme.ColorNameHover: overlay(0x00, 0x00, 0x00, 0x20),
+		// The same way up as the hover: a light face is pressed darker. The
+		// light primary is dark blue, so it is lifted with white like the dark
+		// palette's - written the same way, measured only for the dark one.
+		theme.ColorNamePressed:   overlay(0x00, 0x00, 0x00, 0x33),
+		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
+		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
 		theme.ColorNameSelection: hex(0xCF, 0xE4, 0xF7),
 		// The same step, worked out the same way against a white page. Here a
 		// field is the sunken one - on white there is nowhere lighter to go -
@@ -281,6 +311,29 @@ func hex(r, g, b uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: 0x
 // than one it paints. The distinction is invisible in a palette table and
 // decides what a hovered button looks like.
 func overlay(r, g, b, a uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: a} }
+
+// blended is an overlay laid over a face, worked out here so that a control
+// whose face IS the fill - the primary button - can paint one opaque colour
+// rather than stacking a translucent rectangle on an opaque one.
+//
+// The same arithmetic as the toolkit's blendColor (widget/button.go), the
+// over operator on premultiplied 16 bit channels, kept in step by hand
+// because the toolkit's is unexported: a guard measures the pixels a button
+// comes out as, so the two cannot quietly disagree without something going
+// red.
+func blended(under, over color.Color) color.Color {
+	dstR, dstG, dstB, dstA := under.RGBA()
+	srcR, srcG, srcB, srcA := over.RGBA()
+	blend := func(src, dst, alpha uint32) uint16 {
+		return uint16((src + dst - (dst * alpha / 0xFFFF)) & 0xFFFF)
+	}
+	return color.RGBA64{
+		R: blend(srcR, dstR, srcA),
+		G: blend(srcG, dstG, srcA),
+		B: blend(srcB, dstB, srcA),
+		A: blend(srcA, dstA, srcA),
+	}
+}
 
 // ours is the palette laid over the toolkit's theme.
 //

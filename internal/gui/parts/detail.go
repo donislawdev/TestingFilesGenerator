@@ -5,7 +5,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -137,7 +136,7 @@ func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
 // desktop.Hoverable, three methods a widget can answer, so this is built here
 // and no third party package enters the graph for it.
 type DetailButton struct {
-	widget.Button
+	Button
 
 	detail Detail
 	// shown is the box while it is on the sheet, and nil when it is not. Only
@@ -147,19 +146,11 @@ type DetailButton struct {
 
 func newDetailButton(detail Detail) *DetailButton {
 	b := &DetailButton{detail: detail}
+	b.look = Glyph
+	b.Icon = theme.InfoIcon()
 	b.ExtendBaseWidget(b)
-	b.Icon = theme.NewColoredResource(theme.InfoIcon(), theme.ColorNamePlaceHolder)
-	b.Importance = widget.LowImportance
 	b.OnTapped = b.toggle
 	return b
-}
-
-// MinSize is the glyph's room rather than a button's. The toolkit's button
-// keeps its inner padding all round the icon, and that padding is the room
-// inside a box to type in, which is the wrong thing for a mark beside a name
-// to be as tall as.
-func (b *DetailButton) MinSize() fyne.Size {
-	return fyne.NewSquareSize(GlyphButton)
 }
 
 // Explanation is what this button holds, for a guard to read without opening it.

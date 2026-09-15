@@ -94,30 +94,6 @@ func shapedForItsValues(control fyne.CanvasObject) fyne.CanvasObject {
 	return control
 }
 
-// ToggleSaying lays out a switch that carries its own name, with the
-// explanation behind the button beside it.
-//
-// A switch is the one control that does not take a name in the column of
-// names. Given one it arrives as a bare square with the words somewhere else,
-// and nothing to read on the thing you click - which is what O72 saw on
-// screen. Putting the name on the switch makes the words part of the target,
-// which is the difference between a click and an aimed click. So the name
-// cell of its row is empty and the switch stands in the column of controls,
-// where the eye is already looking for the thing to change.
-//
-// It carries no edge of its own. A ring round a switch is a ring round the
-// words as well as the square - measured from a screenshot on 2026-08-12,
-// where it read as a box drawn around a sentence - and a switch has two
-// positions, neither of which the engine can refuse. What it does get is
-// somewhere to speak, because "every field has one" is worth more than the one
-// exception nobody would remember.
-func ToggleSaying(names float32, name string, detail Detail, check *Toggle) (object, body fyne.CanvasObject, area *ErrorArea) {
-	check.Text = name
-	area = newErrorArea(names)
-	body = FieldRow(names, Clear(), withDetail(WithRoomForItsName(check), detail))
-	return Column(GapTight, body, area.Object()), body, area
-}
-
 // Note is a quiet line under something, for what a person needs once.
 //
 // Quiet by weight rather than by slant. docs/UX.md section 8.5 says italics
@@ -134,14 +110,16 @@ func ToggleSaying(names float32, name string, detail Detail, check *Toggle) (obj
 // worse than the italics it was replacing. So it went in as ordinary text
 // until the palette arrived.
 //
-// Under our palette the same widget.LowImportance is text-subdued, #9DA3A8,
-// which computes to 7.03:1. The control was never the problem. O70 and O71.
+// It goes through quiet rather than inkTight since 2026-09-15, which is O213:
+// widget.LowImportance draws in ColorNameDisabled, #C2C8CD at 80 L*, a step
+// brighter than the hint a caption is meant to be. quiet remaps it to the
+// placeholder, #9DA3A8 at 66.7 L*, 5.61:1 on a panel. O70 and O71.
 func Note(content string) fyne.CanvasObject {
 	label := widget.NewLabel(content)
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.LowImportance
 	label.SizeName = theme.SizeNameCaptionText
-	return inkTight(label)
+	return quiet(label)
 }
 
 // ErrorArea is where a field says what a run said about it.

@@ -9,7 +9,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -95,7 +94,7 @@ func TestEveryButtonAPersonCanSeeIsReallyPressable(t *testing.T) {
 
 			checked, unreachable := 0, 0
 			walk(screen, func(o fyne.CanvasObject) {
-				button, ok := o.(*widget.Button)
+				button, ok := o.(*parts.Button)
 				if !ok || !button.Visible() {
 					return
 				}
@@ -176,26 +175,11 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 				}
 				onScreen[f] = true
 			})
-			// A switch keeps its options in its renderer rather than in the
-			// tree, so walk cannot see them and the focus manager can - it uses
-			// the toolkit's own visible tree, which goes through renderers.
-			// Without this the batch screen reported three controls that Tab
-			// reaches and the screen does not have, which is a guard describing
-			// its own blind spot as a defect. Measured 2026-08-25, when the
-			// three ways of stating a size became a switch.
-			walk(screen, func(o fyne.CanvasObject) {
-				group, ok := o.(*widget.RadioGroup)
-				if !ok || !group.Visible() || buried[o] {
-					return
-				}
-				for _, part := range test.WidgetRenderer(group).Objects() {
-					walk(part, func(inner fyne.CanvasObject) {
-						if f, ok := inner.(fyne.Focusable); ok {
-							onScreen[f] = true
-						}
-					})
-				}
-			})
+			// The three ways of stating a size are one control now, not three
+			// radio circles, so there is nothing hidden in a renderer to reach
+			// for - the segmented switch is one focusable the walk above
+			// already finds. The block that dug into widget.RadioGroup's
+			// renderer went with the radio on 2026-09-15.
 
 			// The chain, walked until it repeats. The ceiling exists because a
 			// screen with nothing focusable would otherwise be walked forever,
@@ -281,7 +265,7 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 				if onScreen[f] {
 					continue
 				}
-				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+				if button, ok := f.(*parts.Button); ok && chrome[button.Text] {
 					continue
 				}
 				if word, ok := f.(*parts.TabWord); ok && strip[word.Text()] {
@@ -298,7 +282,7 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			reachedChrome := false
 			reachedWords := map[string]bool{}
 			for _, f := range order {
-				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+				if button, ok := f.(*parts.Button); ok && chrome[button.Text] {
 					reachedChrome = true
 				}
 				if word, ok := f.(*parts.TabWord); ok {
@@ -329,8 +313,8 @@ func describeFocusable(f fyne.Focusable) string {
 		}
 		return fmt.Sprintf("a box holding %q", control.Text)
 	case *parts.Toggle:
-		return fmt.Sprintf("the toggle %q", control.Text)
-	case *widget.Button:
+		return "the toggle"
+	case *parts.Button:
 		return fmt.Sprintf("the %q button", control.Text)
 	case *parts.TabWord:
 		return fmt.Sprintf("the %q word on the strip", control.Text())

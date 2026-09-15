@@ -153,7 +153,7 @@
   },
   "FieldLabel": {
     "description": "The name above a box somebody fills in.",
-    "other": "Write a label inside each file"
+    "other": "Label in each file"
   },
   "FieldManifest": {
     "description": "The name above a box somebody fills in.",

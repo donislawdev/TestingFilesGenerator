@@ -287,7 +287,7 @@ func (g *Generate) buildFields() {
 	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")
 
-	g.label = parts.NewToggle("", nil)
+	g.label = parts.NewToggle(nil)
 	g.label.SetChecked(true)
 }
 

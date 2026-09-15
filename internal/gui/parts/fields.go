@@ -214,8 +214,10 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 	// Beside the box on its own line, with no room of its own around the ink,
 	// so what the row puts between the box and the count is what reaches the
 	// screen. Until 2026-09-14 it stood at the far end of the name's line, 190
-	// px from the box it was counting for.
-	return inkTight(count)
+	// px from the box it was counting for. Drawn through quiet since 2026-09-15
+	// - it is a low importance label, so the same O213 that dimmed a caption
+	// dimmed this. See parts.quiet.
+	return quiet(count)
 }
 
 // Add builds a field and hands back the thing to put on the screen.
@@ -259,17 +261,16 @@ func (s *Fields) Unlabelled(control fyne.CanvasObject) fyne.CanvasObject {
 	return FieldRow(s.names, Clear(), control)
 }
 
-// AddToggle is a switch, which is the one control that carries its own name.
+// AddToggle is a switch, and since 2026-09-15 it is a field like any other: its
+// name in the column of names, its square in the column of controls.
 //
-// It goes through the same registry as everything else. A switch cannot hold a
-// value the engine refuses today, and leaving it out would be an exception to
-// remember - which is the class of thing this type exists to end.
+// It used to be the one field whose name sat on the control rather than in the
+// column - the answer to O72 while names stood ABOVE their boxes. In a grid the
+// name stands beside the square like every other name, so this is Add with no
+// special case: WithRing leaves the square alone because it draws its own edge,
+// and the switch cannot be refused so its error area never speaks.
 func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
-	object, body, area := ToggleSaying(s.names, name, alsoSaying(hint, detail), check)
-	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object, body: body}
-	s.list = append(s.list, f)
-	s.by[setting] = f
-	return object
+	return s.Add(setting, name, hint, detail, check)
 }
 
 // Row puts cells of a table side by side and gives their refusals the whole

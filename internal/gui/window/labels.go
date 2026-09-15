@@ -48,6 +48,10 @@ func everyName() []string {
 		text.FieldPreset(), text.FieldDamage(), text.FieldSizeRange(),
 		text.FieldBoundary(), text.FieldGroup(), text.FieldExpected(),
 		text.FieldReason(), text.FieldManifest(),
+		// The label switch stands under its name in the column since 2026-09-15,
+		// so its name is a name on a screen the column has to be wide enough
+		// for - it was not, while the switch carried its own words.
+		text.FieldLabel(),
 	}
 	for _, id := range format.IDs() {
 		d, err := format.Get(id)

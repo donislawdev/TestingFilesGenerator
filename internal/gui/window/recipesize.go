@@ -8,7 +8,6 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -76,15 +75,13 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 // only existed once the screen had been laid out was a switch a copy could not
 // read - so the copy took the values of the other two ways and then showed the
 // first one. Found by the guard on its first run.
-func newSizeWaySwitch() *widget.RadioGroup {
-	names := sizeWayNames()
-	group := widget.NewRadioGroup(names, nil)
-	group.Horizontal = true
-	// Required, so there is no fourth state where nothing is chosen and no box
-	// is shown. One of the three is always the answer.
-	group.Required = true
-	group.Selected = names[0]
-	return group
+//
+// A segmented switch since 2026-09-15, in place of three radio circles. One of
+// the three is always chosen - there is no fourth state where nothing is - so
+// nothing here has to ask for "required" the way the radio did: the switch
+// opens on the first way and never has none.
+func newSizeWaySwitch() *parts.Segments {
+	return parts.NewSegments(sizeWayNames(), nil)
 }
 
 // The three ways, in one order, named once. The window shows the words and the

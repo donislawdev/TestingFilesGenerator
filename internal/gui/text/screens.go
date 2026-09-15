@@ -115,7 +115,7 @@ func FieldTargetID() string     { return say("FieldTargetID", "Batch name") }
 func FieldNameTemplate() string { return say("FieldNameTemplate", "File names") }
 func FieldOutputDir() string    { return say("FieldOutputDir", "Output directory") }
 func FieldSeed() string         { return say("FieldSeed", "Seed") }
-func FieldLabel() string        { return say("FieldLabel", "Write a label inside each file") }
+func FieldLabel() string        { return say("FieldLabel", "Label in each file") }
 func FieldPreset() string       { return say("FieldPreset", "Preset") }
 
 // The line under each field: what it does, in one line, and nothing else.

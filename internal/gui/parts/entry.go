@@ -33,6 +33,14 @@ type Entry struct {
 	// onOurs is where a shortcut goes when this box has no use for it. Set by
 	// the screen, because the screen is what knows the canvas.
 	onOurs func(fyne.Shortcut)
+
+	// ring is the edge a field draws round this box when the keyboard is in it
+	// or a run refused it, so a box carries the same 2 px mark as the menu and
+	// the switch beside it rather than only the toolkit's own 1 px border -
+	// which came out at 2.0 against the resting border, under the 3.0 a state
+	// is held to (O207). Nil until a field wires one, which is every field the
+	// box stands in.
+	ring *Ring
 }
 
 // NewEntry builds one.
@@ -40,6 +48,28 @@ func NewEntry() *Entry {
 	e := &Entry{}
 	e.ExtendBaseWidget(e)
 	return e
+}
+
+// useRing takes the edge a field draws round this box. The box keeps its own
+// toolkit border at rest - the ring stays invisible until the keyboard arrives
+// or a run refuses the box - so there is one line round it in every state and
+// the ring is the 2 px one that says something has changed.
+func (e *Entry) useRing(r *Ring) { e.ring = r }
+
+// FocusGained draws the ring as well as letting the box do its own thing.
+func (e *Entry) FocusGained() {
+	e.Entry.FocusGained()
+	if e.ring != nil {
+		e.ring.Focus(true)
+	}
+}
+
+// FocusLost takes the ring away again.
+func (e *Entry) FocusLost() {
+	e.Entry.FocusLost()
+	if e.ring != nil {
+		e.ring.Focus(false)
+	}
 }
 
 // PassShortcutsTo says where a shortcut this box has no use for should go.

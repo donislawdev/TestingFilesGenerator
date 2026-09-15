@@ -16,6 +16,19 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window draws its own buttons, switches and choosers.** A button now
+  has one filled face for the action that does the work and an outline for the
+  ones beside it, lightens under the pointer, darkens when pressed, and shows a
+  clear ring in the accent colour when the keyboard is on it - where the
+  toolkit's own button blended that ring into the fill so it could not be seen
+  on the filled one, and had no pressed look at all. Enter presses a button as
+  well as the space bar. The three ways of stating a size are one segmented
+  switch instead of three circles: one keyboard stop the arrow keys step
+  through. A tick-box switch stands under its name in the column like every
+  other field rather than carrying its own words, and a caption under a field
+  now recedes to the same quiet grey as a hint rather than sitting a shade
+  brighter.
+
 - **The window lays every form out as a grid.** A field is one row now: its
   name in a column of names, its box beside it, and every box on a screen
   starting on the same edge. Until now the name stood over the box, so each
@@ -56,6 +69,14 @@ because it turns other people's test suites red.
   and another over the form.
 
 ### Added
+
+- **Every control shows where the keyboard is and answers the pointer.** Every
+  place the keyboard can land - a box, a menu, a switch, a button, the
+  segmented switch, a word on the tab strip - draws the same 2 px ring when a
+  key put it there and not when a press did, and every control you can click
+  lights up under the pointer. Buttons gain a pressed look. This closes the
+  gap where some stops drew a focus mark too faint to see and one drew none at
+  all.
 
 - **The tabs can be worked from the keyboard.** Tab reaches each word on the
   strip, Enter or Space opens its screen and puts the keyboard on the first

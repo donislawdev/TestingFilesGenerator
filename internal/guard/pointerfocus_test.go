@@ -144,7 +144,7 @@ func TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt(t *testing.T) {
 		case *parts.Toggle, *parts.Chooser:
 			seen++
 		case *widget.Check:
-			raw = append(raw, fmt.Sprintf("the switch %q", control.Text))
+			raw = append(raw, "the switch")
 		case *widget.Select:
 			raw = append(raw, fmt.Sprintf("the menu showing %q", control.Selected))
 		}

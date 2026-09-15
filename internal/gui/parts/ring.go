@@ -73,6 +73,16 @@ func (r *Ring) Resting(edge color.Color) {
 // same property the explanation sheet relies on, and the reason both are
 // content rather than overlays.
 func WithRing(control fyne.CanvasObject) (fyne.CanvasObject, *Ring) {
+	// A control that draws its own edge and its own ring is handed back
+	// untouched, with no ring for the field to mark. A switch is the one such
+	// control a field is built round today: its square carries its own border
+	// and its own focus ring, and a second one round the whole cell would be a
+	// ring round the name as well as the square - the box-round-a-sentence O72
+	// warned about. It also cannot be refused, so the nil ring is a fact rather
+	// than a gap: the engine has no verdict about a switch to place.
+	if _, own := control.(selfEdged); own {
+		return control, nil
+	}
 	rect := canvas.NewRectangle(color.Transparent)
 	rect.CornerRadius = RadiusField
 	ring := &Ring{rect: rect}
@@ -109,6 +119,11 @@ func wireRing(control fyne.CanvasObject, ring *Ring) {
 // ringed is a control that reports the keyboard arriving and leaving.
 type ringed interface{ useRing(*Ring) }
 
+// selfEdged is a control that draws its own border and its own focus ring, so
+// WithRing leaves it alone rather than drawing a second edge round the cell it
+// stands in.
+type selfEdged interface{ drawsOwnEdge() }
+
 // Refuse turns the edge red, or takes the red away. Called with what the run
 // said about this setting rather than with a judgement made here - G1.
 func (r *Ring) Refuse(refused bool) {
@@ -139,7 +154,7 @@ func (r *Ring) draw() {
 		// Thinner than the two states above, so a control at rest cannot be
 		// mistaken for one the run refused.
 		r.rect.StrokeColor = r.resting
-		r.rect.StrokeWidth = 1
+		r.rect.StrokeWidth = edgeWidth
 	default:
 		// No line at all rather than one in the background colour. A stroke
 		// that is meant to be invisible is a thing that shows up the day the

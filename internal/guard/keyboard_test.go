@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -287,7 +286,7 @@ func TestTheFolderOfferGoesAwayWhenTheNextRunStarts(t *testing.T) {
 // shownButton is a button somebody can actually see, which is not the same as
 // one that is in the tree - this window builds several and hides them until
 // they mean something.
-func shownButton(o fyne.CanvasObject, name string) *widget.Button {
+func shownButton(o fyne.CanvasObject, name string) *parts.Button {
 	button := buttonNamed(o, name)
 	if button == nil || !button.Visible() {
 		return nil

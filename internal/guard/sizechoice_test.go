@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -27,10 +28,10 @@ import (
 
 // sizeWaySwitches are the controls that choose how each batch says how big, in
 // the order the batches are drawn in.
-func sizeWaySwitches(o fyne.CanvasObject) []*widget.RadioGroup {
-	var found []*widget.RadioGroup
+func sizeWaySwitches(o fyne.CanvasObject) []*parts.Segments {
+	var found []*parts.Segments
 	walk(o, func(obj fyne.CanvasObject) {
-		if group, ok := obj.(*widget.RadioGroup); ok {
+		if group, ok := obj.(*parts.Segments); ok {
 			found = append(found, group)
 		}
 	})
@@ -38,14 +39,14 @@ func sizeWaySwitches(o fyne.CanvasObject) []*widget.RadioGroup {
 }
 
 // sizeWaySwitch is the one belonging to the first batch.
-func sizeWaySwitch(t *testing.T, o fyne.CanvasObject) *widget.RadioGroup {
+func sizeWaySwitch(t *testing.T, o fyne.CanvasObject) *parts.Segments {
 	t.Helper()
 	return sizeWaySwitchIn(t, o, 1)
 }
 
 // sizeWaySwitchIn is the one belonging to a batch counted from one, the way
 // every address on this screen counts.
-func sizeWaySwitchIn(t *testing.T, o fyne.CanvasObject, position int) *widget.RadioGroup {
+func sizeWaySwitchIn(t *testing.T, o fyne.CanvasObject, position int) *parts.Segments {
 	t.Helper()
 	all := sizeWaySwitches(o)
 	if position < 1 || position > len(all) {

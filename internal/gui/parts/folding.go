@@ -33,7 +33,7 @@ type Folding struct {
 	open   bool
 	body   fyne.CanvasObject
 	line   *widget.Label
-	toggle *widget.Button
+	toggle *Button
 
 	// object is the whole thing, rebuilt when the fold moves so the layout
 	// above it is told to take the room back.
@@ -90,8 +90,7 @@ func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 	f.line.Importance = widget.LowImportance
 	f.line.Hide()
 
-	f.toggle = widget.NewButtonWithIcon("", theme.MenuDropDownIcon(), func() { f.Set(!f.open) })
-	f.toggle.Importance = widget.LowImportance
+	f.toggle = NewGlyphButton(theme.MenuDropDownIcon(), func() { f.Set(!f.open) })
 
 	f.body = Column(GapField, content...)
 
@@ -104,7 +103,9 @@ func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 	// (TestEverythingAPersonReadsStartsOnOneLeftEdge). Indenting the section's
 	// contents to match would put its fields off that edge instead, which is
 	// worse - there are more of them and they are what somebody is reading.
-	row := []fyne.CanvasObject{sectionTitle(title), f.toggle, f.line, layout.NewSpacer()}
+	// The summary line goes through quiet, so it recedes to the hint's colour
+	// rather than the brighter disabled one widget.LowImportance draws (O213).
+	row := []fyne.CanvasObject{sectionTitle(title), f.toggle, quiet(f.line), layout.NewSpacer()}
 	row = append(row, head...)
 
 	f.inside = Column(GapField, container.NewHBox(row...), f.body)

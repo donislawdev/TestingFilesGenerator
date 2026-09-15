@@ -30,7 +30,7 @@
 				</container>
 			</container>
 			<container pos="0,73" size="1092x1218">
-				<widget size="1092x1158" type="*widget.Scroll">
+				<widget size="1092x1159" type="*widget.Scroll">
 					<container size="1092x1611">
 						<container pos="136,0" size="820x1611">
 							<container size="820x27">
@@ -181,33 +181,31 @@
 							</container>
 						</container>
 					</container>
-					<widget pos="0,1158" size="1092x0" type="*widget.Shadow">
+					<widget pos="0,1159" size="1092x0" type="*widget.Shadow">
 						<linearGradient pos="0,-8" size="1092x8"/>
 					</widget>
-					<widget pos="1086,0" size="6x1158" type="*widget.scrollBarArea">
-						<widget pos="3,0" size="3x832" type="*widget.scrollBar">
-							<rectangle fillColor="scrollbar" radius="3" size="3x832"/>
+					<widget pos="1086,0" size="6x1159" type="*widget.scrollBarArea">
+						<widget pos="3,0" size="3x834" type="*widget.scrollBar">
+							<rectangle fillColor="scrollbar" radius="3" size="3x834"/>
 						</widget>
 					</widget>
 				</widget>
-				<container pos="0,1162" size="1092x56">
-					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1092x56"/>
-					<container size="1092x56">
-						<container pos="12,12" size="1068x32">
-							<container size="1068x32">
-								<container pos="124,0" size="820x32">
-									<container pos="16,0" size="788x32">
+				<container pos="0,1163" size="1092x55">
+					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1092x55"/>
+					<container size="1092x55">
+						<container pos="12,12" size="1068x31">
+							<container size="1068x31">
+								<container pos="124,0" size="820x31">
+									<container pos="16,0" size="788x31">
 									</container>
 								</container>
 							</container>
-							<container size="1068x32">
-								<container size="1068x32">
-									<widget size="63x32" type="*widget.Button">
-										<rectangle fillColor="button" radius="6" size="63x32"/>
-										<rectangle size="63x32"/>
-										<widget pos="6,6" size="51x19" type="*widget.RichText">
-											<text alignment="center" bold size="51x19">Donate</text>
-										</widget>
+							<container size="1068x31">
+								<container size="1068x31">
+									<widget size="63x31" type="*parts.Button">
+										<rectangle pos="-2,-2" radius="6" size="67x35" strokeColor="hyperlink"/>
+										<rectangle radius="6" size="63x31"/>
+										<text alignment="center" bold pos="6,6" size="51x19">Donate</text>
 									</widget>
 								</container>
 							</container>

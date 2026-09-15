@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -322,7 +321,7 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // program fetches nothing and sends nothing, which is what keeps untouchable
 // rule 8 intact - see the carve out written into it on 2026-08-18.
 func donateButton(h Host) fyne.CanvasObject {
-	return widget.NewButton(text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
+	return parts.NewButton(parts.Quiet, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
 }
 
 // chooserFor is the output directory box with a way to browse to one.
@@ -335,7 +334,7 @@ func donateButton(h Host) fyne.CanvasObject {
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
 func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
-	choose := widget.NewButton(text.ButtonChoose(), func() {
+	choose := parts.NewButton(parts.Secondary, text.ButtonChoose(), func() {
 		host.ChooseDirectory(func(dir string) {
 			if dir != "" {
 				box.SetText(dir)

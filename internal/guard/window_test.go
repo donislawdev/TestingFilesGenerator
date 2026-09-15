@@ -557,7 +557,7 @@ func textIn(o fyne.CanvasObject) string {
 			return
 		}
 		switch v := obj.(type) {
-		case *widget.Button:
+		case *parts.Button:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
 		case *parts.Entry:
@@ -571,38 +571,33 @@ func textIn(o fyne.CanvasObject) string {
 	return b.String()
 }
 
-func buttonNamed(o fyne.CanvasObject, name string) *widget.Button {
-	var found *widget.Button
+func buttonNamed(o fyne.CanvasObject, name string) *parts.Button {
+	var found *parts.Button
 	walk(o, func(obj fyne.CanvasObject) {
-		if b, ok := obj.(*widget.Button); ok && b.Text == name {
+		if b, ok := obj.(*parts.Button); ok && b.Text == name {
 			found = b
 		}
 	})
 	return found
 }
 
-// checkNamed is a switch found by the words on it, which is where a switch
-// carries its name - a heading above one leaves a bare square to click.
+// checkNamed is the switch that stands under a name in the column of names.
 //
-// It looks for parts.Switch rather than widget.Check. The window's switches
-// report when the keyboard reaches them, which the toolkit's do not, and a
-// type that embeds another is not that other type - so this asks for the one
-// the window actually builds instead of matching both and pretending they are
-// interchangeable.
+// Found by the name beside it rather than by words on it, since 2026-09-15: a
+// switch carries no words of its own any more - its name is in the column like
+// every other field's - so it is the control under a heading, the same way
+// every other field is found. It looks for parts.Toggle rather than
+// widget.Check because a type that embeds another is not that other type, and
+// the window builds its own.
 func checkNamed(o fyne.CanvasObject, name string) *parts.Toggle {
-	var found *parts.Toggle
-	walk(o, func(obj fyne.CanvasObject) {
-		if c, ok := obj.(*parts.Toggle); ok && c.Text == name {
-			found = c
-		}
-	})
-	return found
+	toggle, _ := controlUnder(o, name).(*parts.Toggle)
+	return toggle
 }
 
 func buttonNames(o fyne.CanvasObject) []string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {
-		if b, ok := obj.(*widget.Button); ok {
+		if b, ok := obj.(*parts.Button); ok {
 			out = append(out, b.Text)
 		}
 	})

@@ -200,15 +200,12 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 	return found
 }
 
-// namedOnScreen is the words a heading shows, whether it is a label above a
-// control or a switch carrying its own name.
+// namedOnScreen is the words a heading shows. A switch's name is a heading in
+// the column like every other field's since 2026-09-15, so there is no special
+// case for it here any more - it carries no words of its own.
 func namedOnScreen(o fyne.CanvasObject) string {
-	inner := unringed(o)
-	if words, ok := wordsOf(inner); ok {
+	if words, ok := wordsOf(unringed(o)); ok {
 		return words
-	}
-	if v, ok := inner.(*parts.Toggle); ok {
-		return v.Text
 	}
 	return ""
 }

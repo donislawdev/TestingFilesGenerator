@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -69,7 +68,7 @@ type Recipe struct {
 
 	// addBtn lives in the bar at the foot rather than in the form, because the
 	// form scrolls and one batch is taller than the window (O112).
-	addBtn *widget.Button
+	addBtn *parts.Button
 
 	outDir   *parts.Entry
 	manifest *parts.Entry
@@ -106,7 +105,7 @@ type batch struct {
 	//
 	// Only the chosen one is sent - see draft. That is what makes the state the
 	// engine refuses unreachable rather than merely discouraged.
-	sizeWay   *widget.RadioGroup
+	sizeWay   *parts.Segments
 	sizeBoxes map[string]fyne.CanvasObject
 
 	// folded is whether this batch is put away, and it is a plain bool on the
@@ -176,7 +175,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// were the only boxes on any screen where "you may leave this" and "you
 	// must fill this in" looked the same. See the note on newBatch.
 	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
-	r.label = parts.NewToggle(text.FieldLabel(), nil)
+	r.label = parts.NewToggle(nil)
 
 	r.batchBox = parts.FieldColumn()
 	r.outBox = parts.FieldColumn()
@@ -186,7 +185,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// screen what it is does not depend on scrolling to reach - see rebuild.
 	// It is disabled with the rest of the form while a run is going, because
 	// adding a batch mid run would rebuild the form under the run.
-	r.addBtn = widget.NewButton(text.ButtonAddBatch(), r.addBatch)
+	r.addBtn = parts.NewButton(parts.Secondary, text.ButtonAddBatch(), r.addBatch)
 	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
 
 	r.body = r.tips.Over(container.NewBorder(
@@ -420,10 +419,10 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// makes several batches quick to write in the first place, since batches
 	// usually differ from each other in one setting.
 	head := []fyne.CanvasObject{
-		widget.NewButton(text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
+		parts.NewButton(parts.Secondary, text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
 	}
 	if len(r.batches) > 1 {
-		head = append(head, widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
+		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
 	r.wire(b.fold, &b.folded, b.summary)
@@ -458,7 +457,7 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		holds = d.Container
 	}
 
-	addContents := widget.NewButton(text.ButtonAddContents(), func() {
+	addContents := parts.NewButton(parts.Secondary, text.ButtonAddContents(), func() {
 		b.contents = append(b.contents, r.newContent())
 		r.rebuild()
 	})
@@ -482,7 +481,7 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 			// height of a label and a control together - see parts.BesideFields
 			// for the numbers that came off this very button.
 			parts.BesideFields(
-				widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
+				parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
 		))
 	}
 	// The button to add another only where another one would be legal. The rows

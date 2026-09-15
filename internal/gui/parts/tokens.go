@@ -111,6 +111,9 @@ const (
 	RadiusField = 6
 	// RadiusPanel rounds the surface a section stands on.
 	RadiusPanel = 8
+	// RadiusMark rounds the square of a switch. A step under RadiusField,
+	// because the square is 20 px and a 6 px corner on it reads as a disc.
+	RadiusMark = 4
 )
 
 // Strokes.
@@ -122,6 +125,22 @@ const (
 	// than the number suggests - measured on the section surface on 2026-08-12,
 	// where a one pixel stroke of a 29.4 L* colour came out at 22.3.
 	ringWidth = 2
+	// ringGap is the room between a control's face and the ring the keyboard
+	// draws round it, on the controls that draw the ring themselves - a
+	// button, the square of a switch. Read in the painter rather than assumed
+	// (internal/painter/draw.go, drawOblong): a stroke runs down the middle of
+	// its rectangle's edge, so a ring drawn ON the edge of the filled primary
+	// button is primary over primary and cannot be seen. Standing this far
+	// clear of the face the ring is one colour on every face. It is painted
+	// outside the control's bounds, which the toolkit allows because it clips
+	// nothing, so the control stays the size of its face.
+	ringGap = 2
+	// edgeWidth is the line round a control at rest that has one - a menu, a
+	// plain button. One pixel, and it arrives fainter than its colour for the
+	// reason ringWidth gives, which is why a resting edge and a state ring are
+	// never the same thickness: the eye tells them apart by weight before it
+	// reads the colour.
+	edgeWidth = 1
 	// TabIndicator is how thick the mark under the chosen word on the strip
 	// is. The same thickness as a ring, for the same reason: one pixel is
 	// anti-aliased to something fainter than the colour it was given.
@@ -153,6 +172,10 @@ const (
 	// glyph itself is the toolkit's inline icon, 20, and the square keeps two
 	// pixels round it, which is what makes it a target and not a letter.
 	GlyphButton = 24
+	// markSide is the side of the square of a switch: the toolkit's inline
+	// icon, the same 20 the glyph above is built round, so a switch and the
+	// button that explains it are one size and stand in one 24 px box.
+	markSide = 20
 	// DetailWidth is how wide the longer explanation gets when it opens.
 	// Narrower than the form on purpose: the column is 820 px because that is
 	// what the form needs, and the same width for a paragraph of prose is about
