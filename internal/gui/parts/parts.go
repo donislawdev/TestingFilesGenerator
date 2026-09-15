@@ -98,6 +98,19 @@ func Subtitle(sentence string) fyne.CanvasObject {
 	return quiet(label)
 }
 
+// Caption is a short quiet line over or under a thing, at the smallest rank
+// of the scale: the name of a state in the catalogue, the count of bytes
+// beside a size. The rank ByteCount has drawn since 2026-08-19, given a name
+// on 2026-09-15 when a second thing needed it - a rank used twice without a
+// name is GUI rule 7's definition of a missing style.
+func Caption(text string) fyne.CanvasObject {
+	label := widget.NewLabel(text)
+	label.Wrapping = fyne.TextWrapWord
+	label.SizeName = theme.SizeNameCaptionText
+	label.Importance = widget.LowImportance
+	return quiet(label)
+}
+
 // quiet draws a low importance label in the hint's colour rather than the
 // disabled one, and takes the room a label keeps around itself off it.
 //

@@ -12,5 +12,5 @@ import (
 )
 
 func main() {
-	os.Exit(gui.Run(os.Stderr))
+	os.Exit(gui.Run(os.Args[1:], os.Stderr))
 }

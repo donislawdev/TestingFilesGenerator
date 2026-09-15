@@ -54,12 +54,19 @@ import (
 // is not a number, so two sentences a person reads were built outside the text
 // package and no carrier list would ever have named them.
 var notWords = map[string]string{
-	`"10mb"`:         "the size a fresh screen starts at, a value rather than prose",
-	`"1"`:            "how many files a fresh screen starts at",
-	`"0"`:            "the seed a fresh screen starts at",
-	`"files"`:        "the group name a fresh screen starts at, and a recipe value",
-	`"tfg-gui"`:      "recorded in the manifest as the command that ran, a contract value",
-	`"chickpea.png"`: "the name the toolkit files the icon resource under, never shown",
+	`"10mb"`:              "the size a fresh screen starts at, a value rather than prose",
+	`"1"`:                 "how many files a fresh screen starts at",
+	`"0"`:                 "the seed a fresh screen starts at",
+	`"files"`:             "the group name a fresh screen starts at, and a recipe value",
+	`"tfg-gui"`:           "recorded in the manifest as the command that ran, a contract value",
+	`"chickpea.png"`:      "the name the toolkit files the icon resource under, never shown",
+	`"Inter-Regular.ttf"`: "the name the painter files the regular face under, the key of its cache of shaped faces, never shown",
+	`"Inter-Bold.ttf"`:    "the name the painter files the bold face under, never shown",
+	`"github.com/donislawdev/TestingFilesGenerator/internal/gui/font"`: "an import path, spelled the way go list spells it, which the font package " +
+		"announces itself to the licence registry under - a key, not a sentence",
+	`"--catalogue"`: "a flag on the launch line, which is English by D9 like every flag the command line takes, " +
+		"and is never translated or shown",
+	`"--catalog"`: "the same flag in its other spelling",
 	`"GetSystemDirectoryW"`: "the Windows entry point that says where the system keeps its own " +
 		"libraries, asked for by name because that is how the loader takes it",
 	`"preset"`: "the key the preset field is registered under, not a label",
@@ -124,6 +131,13 @@ func TestTheWindowSaysNothingItDoesNotSayFromTheTextPackage(t *testing.T) {
 		// The one package allowed to hold the words is the one whose whole
 		// purpose is holding them.
 		if strings.Contains(filepath.ToSlash(path), "/gui/text/") {
+			return nil
+		}
+		// And the catalogue of parts, whose captions are English for whoever
+		// builds the window and reach nobody else: it opens with --catalogue
+		// and is on no tab. Decision of the owner, 2026-09-15, written at the
+		// top of that package.
+		if strings.Contains(filepath.ToSlash(path), "/gui/catalogue/") {
 			return nil
 		}
 		files++

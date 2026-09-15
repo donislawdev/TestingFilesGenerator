@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/catalogue"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -202,7 +203,7 @@ func (d desktop) OpenFolder(path string) {
 
 // run opens a real window. The only file in this tree that reaches the app
 // package, and therefore the only one that needs a C compiler.
-func run(errOut io.Writer) int {
+func run(showCatalogue bool, errOut io.Writer) int {
 	// Said out loud rather than left to be inferred: everything that touches a
 	// widget from the worker goes through fyne.Do, and a static guard checks
 	// it, but the toolkit had no way to know that. Without this it printed
@@ -248,7 +249,14 @@ func run(errOut io.Writer) int {
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
 	host := desktop{w}
-	window.Open(host)
+	if showCatalogue {
+		// The hidden screen of GUI rule 4: every part in every state, for
+		// whoever builds the window. No host, because nothing on it runs,
+		// chooses a directory or remembers anything.
+		w.SetContent(catalogue.Screen())
+	} else {
+		window.Open(host)
+	}
 
 	// The size it was closed at, and whether to put it in the middle. The two
 	// answers come together because they are one decision - a window bigger than

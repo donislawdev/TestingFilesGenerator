@@ -18,6 +18,7 @@ import (
 	"fyne.io/fyne/v2/test"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/catalogue"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -297,10 +298,19 @@ type screenScene struct {
 	tab   string
 	set   func(t *testing.T, s scene)
 	after func(t *testing.T, s scene)
+	// page is a screen that is not a tab of the window, built on its own and
+	// drawn at its whole height rather than a screenful: the catalogue of
+	// parts, since 2026-09-15. Nil for the four screens the window opens on.
+	page func() fyne.CanvasObject
 }
 
 func screenScenes() []screenScene {
 	return []screenScene{
+		// The whole catalogue, every part in every state, as one picture.
+		// This is the one scene where a change of a token shows on every
+		// control at once, which is what makes it the before-and-after of
+		// every later step - and why it is the first in the list.
+		{name: "catalogue", page: catalogue.Page},
 		{name: "about", tab: text.TabAbout()},
 		{name: "generate", tab: text.TabOneTarget()},
 		{name: "generate-empty", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
@@ -747,11 +757,17 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 	defer test.NewApp()
 
 	host := newFakeHost(t)
-	window.Open(host)
-	if host.content == nil {
-		t.Fatal("opening the window put no screen in it")
+	var tab fyne.CanvasObject
+	if sc.page != nil {
+		host.SetContent(sc.page())
+		tab = host.content
+	} else {
+		window.Open(host)
+		if host.content == nil {
+			t.Fatal("opening the window put no screen in it")
+		}
+		tab = selectTab(t, host.content, sc.tab)
 	}
-	tab := selectTab(t, host.content, sc.tab)
 
 	// The window comes before the state rather than after it, so a state that
 	// needs a canvas - focus, an open menu - has one to act on.
@@ -782,6 +798,15 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 	w.Resize(size)
 	w.Resize(size)
 	host.content.Refresh()
+
+	// A page is drawn whole: as tall as it says it is once it knows its width,
+	// which it only knows after the two passes above.
+	if sc.page != nil {
+		whole := fyne.NewSize(referenceWidth, host.content.MinSize().Height)
+		w.Resize(whole)
+		w.Resize(whole)
+		host.content.Refresh()
+	}
 
 	if sc.after != nil {
 		sc.after(t, s)
