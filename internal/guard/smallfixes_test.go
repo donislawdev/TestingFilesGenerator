@@ -100,15 +100,25 @@ func TestTheRecordedCommandCanBeRunAgain(t *testing.T) {
 // The name carries this process's id, so the test can build the exact one the
 // run is about to use. That is also why it is unlikely to be met by accident
 // and easy to leave behind: a run killed outright leaves exactly this shape.
+//
+// The name is the SECOND file's, and the run is refused before the first file
+// is written. Two things defend the file itself - the check before the run
+// and the single door every file is created through - and until 2026-09-16
+// this guard could not tell them apart: the full mutation run found it green
+// with the check before the run gone, because the door still refused the
+// name mid-run, the exit code was still not zero and the file was still
+// whole. What the check before the run adds is that nothing is written at
+// all, which is what a refusal about a collision the tool can see in advance
+// owes the person - not a directory holding half a run and a refusal.
 func TestAFileUnderTheTemporaryNameIsNotWrittenOver(t *testing.T) {
 	dir := t.TempDir()
-	name := fmt.Sprintf("files_0001.txt.tfg-partial-%d", os.Getpid())
+	name := fmt.Sprintf("files_0002.txt.tfg-partial-%d", os.Getpid())
 	victim := filepath.Join(dir, name)
 	if err := os.WriteFile(victim, []byte("somebody's own work\n"), 0o644); err != nil {
 		t.Fatalf("writing: %v", err)
 	}
 
-	code, _, errOut := run(t, "generate", "--format", "txt", "--size", "1kb", "--out", dir)
+	code, _, errOut := run(t, "generate", "--format", "txt", "--size", "1kb", "--count", "3", "--out", dir)
 	if code == cli.ExitOK {
 		t.Error("a run wrote through a name that was already taken")
 	}
@@ -119,6 +129,18 @@ func TestAFileUnderTheTemporaryNameIsNotWrittenOver(t *testing.T) {
 	}
 	if string(body) != "somebody's own work\n" {
 		t.Errorf("the file was written over:\n%q\n%s", body, errOut)
+	}
+
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("listing: %v", err)
+	}
+	for _, e := range entries {
+		if e.Name() != name {
+			t.Errorf("the run was refused for a name it could see was taken before it started, and it "+
+				"wrote %q anyway - the refusal has to come before the first file, not in the middle of the run:\n%s",
+				e.Name(), errOut)
+		}
 	}
 }
 

@@ -96,18 +96,6 @@ func alsoSaying(line string, detail Detail) Detail {
 	return Detail{Text: text.OneExplanation(line, detail.Text), on: detail.on}
 }
 
-// withDetail puts the button that opens the longer explanation beside a label.
-//
-// Nothing at all when there is nothing more to say, rather than a button that
-// opens an empty box. A control that is always there and sometimes does nothing
-// teaches people to stop pressing it.
-func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
-	if detail.Text == "" || detail.on == nil {
-		return head
-	}
-	return container.NewHBox(head, newDetailButton(detail))
-}
-
 // DetailButton is the small control that shows one field's explanation.
 //
 // Exported for the same reason ErrorArea is: a guard has to be able to tell it

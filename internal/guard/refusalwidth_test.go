@@ -5,52 +5,71 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 // A refusal gets the width of the form to say what it has to say.
 //
 // A refusal in this tool has four parts - what happened, why, what is allowed,
-// what to do instead - which is a sentence and not a word. Two fields share a
-// row, so a message about one of them used to be laid out in half the form.
-// Measured off a render on 2026-08-20: a size below what BMP can make wrapped
-// onto four lines in the left column while the right half of the panel was
-// empty, and those four lines pushed everything under them down by three.
+// what to do instead - which is a sentence and not a word. Where fields share
+// a row, a message about one of them used to be laid out in a fraction of the
+// form. Measured off a render on 2026-08-20: a size below what BMP can make
+// wrapped onto four lines in the left column while the right half of the
+// panel was empty, and those four lines pushed everything under them down by
+// three.
 //
 // The controls share the row and the messages do not, now. Asserted against
 // the row rather than against a number of pixels: what has to hold is that a
 // message is not confined to the column its field is in.
+//
+// Asked on the batch screen, because that is where fields still share a row -
+// the format, count and size of a file inside an archive stand in cells of
+// one row (Fields.Row). The generate screen has had one field to a row since
+// the form became a grid on 2026-09-14, and this guard read that screen until
+// 2026-09-16: the full mutation run found it green while Fields.Row put every
+// message back into its cell, because nothing it measured went through
+// Fields.Row any more.
 func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
-	content, w, host := screenInAWindowWithHost(t, text.TabOneTarget())
+	screen := window.NewRecipe(newFakeHost(t))
+	body := screen.Object()
+	w := test.NewWindow(body)
+	t.Cleanup(w.Close)
+	fields := screen.Fields()
 
-	// A size no format can produce, so the refusal lands on the size box - and
-	// the size box shares its row with how many.
-	fill(t, content, text.FieldSize(), "1")
-	press(t, content, text.ButtonGenerate())
-	// The refusal comes back from a worker since 2026-08-26, so it is waited
-	// for before the tree is laid out and read.
-	join(host)
-	settle(content, w)
+	// A batch that is fine on its own, holding one file with a count and no
+	// size, so the refusal from the reader lands on the size cell of the
+	// contents row - one of its four columns, 185 px of the 788 the row has.
+	setBox(t, fields, recipe.TargetAddress(1, recipe.KeyID), "filled")
+	setBox(t, fields, recipe.TargetAddress(1, recipe.KeySize), "10kb")
+	chooserIn(t, fields, recipe.TargetAddress(1, recipe.KeyFormat)).SetSelected("zip")
+	pressNamed(t, body, text.ButtonAddContents())
+	setBox(t, fields, recipe.ContentAddress(1, 1, recipe.KeyCount), "1")
+	pressNamed(t, body, text.ButtonPreview())
+	settle(body, w)
 
-	said := refusalLabelSaying(content, strings.ToUpper(firstFormat()))
+	at := recipe.ContentAddress(1, 1, recipe.KeySize)
+	saying := saidBy(t, fields, at)
+	if saying == "" {
+		t.Fatalf("nothing is marked at %q, so there is no refusal to measure.\n%s", at, allSaid(fields))
+	}
+	said := refusalLabelSaying(body, saying)
 	if said == nil {
-		t.Fatalf("nothing on the screen is complaining about the size. It says:\n%s", textIn(content))
-	}
-	box := controlUnder(content, text.FieldSize())
-	if box == nil {
-		t.Fatal("the screen has no size box, so this guard read the wrong tree")
+		t.Fatalf("the size cell says %q and no red label on the screen carries it", saying)
 	}
 
-	// Halfway between one column and the whole form, so the assertion holds
+	// Halfway between one cell and the whole form, so the assertion holds
 	// whatever the padding does and fails the moment the message goes back
-	// into a column.
+	// into a cell.
 	half := float32(parts.ColumnWidth) / 2
 	if said.Size().Width <= half {
-		t.Errorf("the refusal about the size is %.0f px wide, which is no more than the %.0f px column it sits in."+
-			" A message with four parts in half a form is a message that wraps four times",
+		t.Errorf("the refusal about the size is %.0f px wide, which is no more than the %.0f px cell it sits in."+
+			" A message with four parts in a quarter of a form is a message that wraps four times",
 			said.Size().Width, half)
 	}
 }
