@@ -61,9 +61,12 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// The deepest rank used to be the line under a field. That line moved
 		// behind the button beside the field's name on 2026-08-24, so what is
 		// left standing on this edge is the heading a format's settings get.
-		// Four ranks either way, which is what this is about.
+		// The title is the word on the tab since 2026-09-15 and the sentence
+		// under it is what the title used to say - five ranks now, which is
+		// what this is about.
 		{text.TabOneTarget(), []string{
-			text.HeadingGenerate(),
+			text.TabOneTarget(),
+			text.SubtitleGenerate(),
 			text.SectionConfiguration(),
 			text.FieldFormat(),
 			text.SettingsFor(firstFormat()),
@@ -73,12 +76,14 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// about the section, which is the rank the heading above it has to
 		// line up with.
 		{text.TabPresets(), []string{
-			text.HeadingPreset(),
+			text.TabPresets(),
+			text.SubtitlePreset(),
 			text.SectionPreset(),
 			text.PresetCatchesHeading(),
 		}},
 		{text.TabRecipe(), []string{
-			text.HeadingRecipe(),
+			text.TabRecipe(),
+			text.SubtitleRecipe(),
 			text.FieldFormat(),
 		}},
 	}

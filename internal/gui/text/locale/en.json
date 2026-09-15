@@ -196,18 +196,6 @@
     "one": "1 file",
     "other": "{{.Count}} files"
   },
-  "HeadingGenerate": {
-    "description": "The heading at the top of a screen.",
-    "other": "Generate files"
-  },
-  "HeadingPreset": {
-    "description": "The heading at the top of a screen.",
-    "other": "Build a set for a question"
-  },
-  "HeadingRecipe": {
-    "description": "The heading at the top of a screen.",
-    "other": "Run several batches together"
-  },
   "HintBoundary": {
     "description": "The line under a field name, saying what the field does.",
     "other": "Three files: one byte under the limit, one on it, one over."
@@ -383,6 +371,18 @@
   "StoppedAfter": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
     "other": "Stopped after {{.Files}}. The manifest describes exactly those."
+  },
+  "SubtitleGenerate": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "other": "Files of one format and one size, as many as you need."
+  },
+  "SubtitlePreset": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "other": "Ready-made sets of files, each built to answer one question about the system under test."
+  },
+  "SubtitleRecipe": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "other": "Batches of different formats and sizes, generated together in one run."
   },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",

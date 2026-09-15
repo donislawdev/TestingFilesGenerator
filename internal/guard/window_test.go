@@ -399,6 +399,14 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 	} else if buttonNamed(tabs.Selected().Content, "Generate") == nil {
 		t.Error("the tab the window opens on has no Generate button")
 	}
+	// And the screen on show is the one whose content is VISIBLE, asked of the
+	// tree rather than of the strip: the strip could name one screen and show
+	// another, and everything above would still pass.
+	for _, tab := range tabs.Items() {
+		if shown := tab.Content.Visible(); shown != (tab.Text == text.TabOneTarget()) {
+			t.Errorf("the %q screen is visible=%v while the window opens on %q", tab.Text, shown, text.TabOneTarget())
+		}
+	}
 }
 
 // walk visits every object of a tree, through both kinds of grouping this
@@ -422,14 +430,6 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		// 2026-08-11. The first symptom was a nil type assertion in a guard
 		// that had been passing for weeks.
 		walk(v.Content, visit)
-	case *container.AppTabs:
-		// Every tab, including the ones not on show. A guard that only saw the
-		// selected one could not ask whether a screen it is not looking at
-		// still holds what it should - and the close intercept has to reach a
-		// run on the tab nobody is watching.
-		for _, item := range v.Items {
-			walk(item.Content, visit)
-		}
 	case *widget.PopUp:
 		// A field's longer explanation opens in one of these.
 		walk(v.Content, visit)
@@ -478,10 +478,17 @@ func walkUnknown(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 
 // tabsIn is the tab strip of the window, which is where moving between screens
 // lives since 2026-08-11.
-func tabsIn(o fyne.CanvasObject) *container.AppTabs {
-	var found *container.AppTabs
+//
+// Ours since 2026-09-15. The screens are no longer BELOW the strip in the tree
+// - parts.Tabbed puts the strip and every screen side by side in a plain
+// container, so walk reaches every screen, shown or not, without a case for
+// the strip's type. That is the reason it is a container: the case this switch
+// used to carry for the toolkit's tabs was the third such case added after a
+// guard had gone quiet rather than red.
+func tabsIn(o fyne.CanvasObject) *parts.Tabs {
+	var found *parts.Tabs
 	walk(o, func(obj fyne.CanvasObject) {
-		if tabs, ok := obj.(*container.AppTabs); ok && found == nil {
+		if tabs, ok := obj.(*parts.Tabs); ok && found == nil {
 			found = tabs
 		}
 	})
@@ -500,7 +507,7 @@ func tabNamed(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject 
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		if item.Text == name {
 			return item.Content
 		}
@@ -518,7 +525,7 @@ func selectTab(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		if item.Text == name {
 			tabs.Select(item)
 			return item.Content
@@ -534,7 +541,7 @@ func tabNames(o fyne.CanvasObject) []string {
 		return nil
 	}
 	var out []string
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		out = append(out, item.Text)
 	}
 	return out

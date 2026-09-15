@@ -266,12 +266,25 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			// fine" would have turned this assertion off, and the thing it
 			// catches - focus wandering into the OTHER tabs, which are in the
 			// canvas and laid out - is exactly what it was written for.
+			//
+			// The words on the strip are chrome as well since 2026-09-15, when
+			// the strip became ours and its words learnt to hold the keyboard -
+			// the toolkit's never could. Exactly the words the window lists,
+			// asked of the window rather than written here, so a fifth screen
+			// is covered the day it arrives and a stray word is not.
 			chrome := map[string]bool{text.ButtonDonate(): true}
+			strip := map[string]bool{}
+			for _, name := range tabNames(content) {
+				strip[name] = true
+			}
 			for _, f := range order {
 				if onScreen[f] {
 					continue
 				}
 				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+					continue
+				}
+				if word, ok := f.(*parts.TabWord); ok && strip[word.Text()] {
 					continue
 				}
 				t.Errorf("Tab reaches %s, which is not on the %q screen. Focus is leaving "+
@@ -280,16 +293,27 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 
 			// And the window chrome has to be reachable at all, from every
 			// screen, or the button nobody can Tab to is the one asking for
-			// money.
+			// money - and the strip nobody can Tab to is the one that leads to
+			// every other screen.
 			reachedChrome := false
+			reachedWords := map[string]bool{}
 			for _, f := range order {
 				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
 					reachedChrome = true
+				}
+				if word, ok := f.(*parts.TabWord); ok {
+					reachedWords[word.Text()] = true
 				}
 			}
 			if !reachedChrome {
 				t.Errorf("the %q button cannot be reached with Tab from the %q screen (UX9)",
 					text.ButtonDonate(), tab)
+			}
+			for name := range strip {
+				if !reachedWords[name] {
+					t.Errorf("the %q word on the strip cannot be reached with Tab from the %q screen, "+
+						"so the keyboard has no way to another screen (UX9)", name, tab)
+				}
 			}
 		})
 	}
@@ -308,6 +332,8 @@ func describeFocusable(f fyne.Focusable) string {
 		return fmt.Sprintf("the toggle %q", control.Text)
 	case *widget.Button:
 		return fmt.Sprintf("the %q button", control.Text)
+	case *parts.TabWord:
+		return fmt.Sprintf("the %q word on the strip", control.Text())
 	}
 	return fmt.Sprintf("%T", f)
 }

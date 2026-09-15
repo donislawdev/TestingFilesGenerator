@@ -103,7 +103,7 @@ func About(h Host) fyne.CanvasObject {
 			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
 	}
 	sections = append(sections, carried()...)
-	page := parts.Screen(text.HeadingAbout(version.Version), sections...)
+	page := parts.Screen(parts.Title(text.HeadingAbout(version.Version)), sections...)
 
 	// The same bar the work screens carry, holding only the Donate button.
 	//

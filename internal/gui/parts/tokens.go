@@ -49,6 +49,19 @@ const (
 	GapSection = space5
 	// GapColumns is the space between two fields standing side by side.
 	GapColumns = space4
+	// GapTabs is the space between two words on the strip across the top,
+	// box to box. The words keep TabInset inside their boxes as well, so the
+	// ink of two neighbours stands three steps apart.
+	GapTabs = space2
+	// TabInset is the room a word on the strip keeps inside its own box, all
+	// round the letters. It is what the fill under the pointer and the ring
+	// round the keyboard have to draw in, so it is the smallest step that
+	// leaves a ring readable as a ring rather than as an outline of the ink.
+	TabInset = space2
+	// GapUnderTabs is the space between the line under the strip and the title
+	// of the screen it leads to. A section's step, because the strip and the
+	// screen are two things and not one.
+	GapUnderTabs = space5
 	// Inset is the room a panel keeps between its edge and its content, and
 	// the distance a title standing outside a panel is indented by, so the two
 	// line up by construction rather than by two numbers agreeing.
@@ -109,6 +122,14 @@ const (
 	// than the number suggests - measured on the section surface on 2026-08-12,
 	// where a one pixel stroke of a 29.4 L* colour came out at 22.3.
 	ringWidth = 2
+	// TabIndicator is how thick the mark under the chosen word on the strip
+	// is. The same thickness as a ring, for the same reason: one pixel is
+	// anti-aliased to something fainter than the colour it was given.
+	TabIndicator = 2
+	// Hairline is a line that separates and says nothing else - the rule
+	// under the strip across the top. One pixel, and drawn as a filled
+	// rectangle rather than a stroke, so it is one pixel and not a blend.
+	Hairline = 1
 )
 
 // Widths and heights that are not distances.

@@ -46,6 +46,22 @@ because it turns other people's test suites red.
   run's other messages, so the bar no longer grows when a run is refused, and
   choosing from a menu reaches the live check the way typing in a box does.
 
+- **The tabs across the top stand on the same edge as the screen under them,
+  and a screen has one name.** The strip is drawn by the tool now rather than
+  by the toolkit: its words start where the title and every field name start,
+  the chosen one carries a 2 px mark in the accent colour, and a word lights up
+  under the pointer. The title of a work screen is the word on its tab -
+  Single batch, Presets, Several batches - and under it a quiet sentence says
+  what the screen is for, where until now each screen had one name on the tab
+  and another over the form.
+
+### Added
+
+- **The tabs can be worked from the keyboard.** Tab reaches each word on the
+  strip, Enter or Space opens its screen and puts the keyboard on the first
+  field with its mark showing, and the arrow keys move along the strip without
+  opening anything. The toolkit's tabs answered the mouse only.
+
 ### Fixed
 
 - **A refused preset no longer carries the note of the preset before it.** A

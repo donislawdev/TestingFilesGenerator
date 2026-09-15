@@ -94,7 +94,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		p.footer(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...)),
 		nil, nil,
 		(p.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingPreset(),
+			parts.Titled(text.TabPresets(), text.SubtitlePreset()),
 			parts.Section(text.SectionPreset(),
 				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
 					p.tips.Say(text.DetailPreset()), p.pick),

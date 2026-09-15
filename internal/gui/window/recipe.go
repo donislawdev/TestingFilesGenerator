@@ -193,7 +193,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		nil,
 		r.footer(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...)),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox)))),
+		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -640,7 +640,7 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	if err != nil {
 		return nil, none, err
 	}
-	rec, err := recipe.Parse(src, text.HeadingRecipe())
+	rec, err := recipe.Parse(src, text.TabRecipe())
 	if err != nil {
 		return nil, none, err
 	}

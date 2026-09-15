@@ -314,10 +314,6 @@ func atAbsolute(root fyne.CanvasObject, visit func(fyne.CanvasObject, fyne.Posit
 			step(v.Content, at)
 		case *widget.Card:
 			step(v.Content, at)
-		case *container.AppTabs:
-			for _, item := range v.Items {
-				step(item.Content, at)
-			}
 		case *container.ThemeOverride:
 			// Every screen is wrapped in one of these since 2026-08-20. A walk
 			// that stops here reports a screen with nothing on it, and three

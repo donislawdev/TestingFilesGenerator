@@ -21,8 +21,9 @@
 package parts
 
 import (
-	"fyne.io/fyne/v2"
+	"image/color"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -71,6 +72,49 @@ func Subheading(text string) fyne.CanvasObject {
 // the UX section 7 checklist - squint, and see what stands out - had no answer.
 func Title(text string) fyne.CanvasObject {
 	return words(text, TextTitle, true, theme.ColorNameForeground)
+}
+
+// Subtitle is the one quiet sentence under a screen's title, saying what the
+// screen is for.
+//
+// It exists because every work screen had two names until 2026-09-15: the word
+// on its tab and a title that said something else - "Single batch" over a
+// screen headed "Generate files". One vocabulary now: the tab's word is the
+// title, and what the title used to say is this sentence, in the colour of a
+// hint rather than of a value, so it reads as an explanation of the word above
+// it and not as a second heading competing with it.
+//
+// A toolkit label rather than canvas words, because a sentence wraps and a
+// name does not - the same split words and Prose make. Its colour is the
+// hint's, the same step the words on the strip stand at when they are not
+// chosen, so the head of a screen has one quiet colour and not two. Asked for
+// through a theme rather than an importance, because the toolkit draws a low
+// importance label in the DISABLED colour, and this palette keeps that a step
+// brighter than a hint on purpose - see ColorNameDisabled in theme.go.
+func Subtitle(sentence string) fyne.CanvasObject {
+	label := widget.NewLabel(sentence)
+	label.Wrapping = fyne.TextWrapWord
+	label.Importance = widget.LowImportance
+	return container.NewThemeOverride(label, hintInk{noInnerPadding{Theme()}})
+}
+
+// hintInk is the window's theme with a low importance label drawn in the
+// hint's colour rather than the disabled one, and without the room a label
+// keeps around itself.
+type hintInk struct{ noInnerPadding }
+
+func (h hintInk) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNameDisabled {
+		return h.noInnerPadding.Color(theme.ColorNamePlaceHolder, variant)
+	}
+	return h.noInnerPadding.Color(name, variant)
+}
+
+// Titled is what stands above a screen's sections: its name, and under it the
+// sentence saying what it is for. The two are one step apart, the step a
+// field's name keeps from its box, because they are one thing read together.
+func Titled(name, sentence string) fyne.CanvasObject {
+	return Column(GapLabel, Title(name), Subtitle(sentence))
 }
 
 // Section groups fields that answer one question, under a name.
@@ -334,16 +378,16 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	return container.NewStack(panelSurface(), Padded(InsetBar, standing))
 }
 
-// Screen stacks sections with a heading on top.
+// Screen stacks sections under a head - a Title, or a Titled pair.
 //
 // Windows compose sections rather than laying themselves out in one function.
 // That is not tidiness: the shape gate caps a function at eighty lines of
 // logic and window layout is long by nature, so a window written as one
 // function would arrive as an argument for raising the cap. The cap is a
 // ratchet and only goes down, so the composition has to come first.
-func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
+func Screen(head fyne.CanvasObject, sections ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.New(readableWidth{},
-		Stacked(append([]fyne.CanvasObject{Indented(Title(heading))}, sections...)...))
+		Stacked(append([]fyne.CanvasObject{Indented(head)}, sections...)...))
 }
 
 // Indented puts something that stands outside a panel on the same left edge as

@@ -3,8 +3,10 @@ package guard
 import (
 	"image"
 	"image/color"
+	"math"
 	"testing"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 
@@ -14,7 +16,7 @@ import (
 
 // The tab somebody is on is the one that stands out.
 //
-// The toolkit draws the selected tab in the accent colour and every other tab
+// The toolkit drew the selected tab in the accent colour and every other tab
 // in the ordinary foreground - tabs.go, either side of line 716. Measured off a
 // render on 2026-08-20: the SELECTED tab stood at 7.71 against the page and the
 // three nobody was on stood at 13.36. The chosen one was the dimmest label in
@@ -26,11 +28,15 @@ import (
 // first, which nothing but a picture can answer.
 //
 // It reads the pixels rather than the widget tree, and that is not a
-// preference: the strip is built inside the toolkit's own renderer, so the
-// walk this package uses does not reach it. A guard on the theme object would
-// prove the theme was written and say nothing about which colour the strip
-// took - that mistake was made twice in this run of changes and the mutation
-// runner caught both.
+// preference: what the strip DRAWS is the question, and a guard on the colour
+// a word says it has would prove the field was written and say nothing about
+// what reached the canvas - that mistake was made twice in this run of changes
+// and the mutation runner caught both. The bands it reads are taken from where
+// the words ended up rather than from numbers written here: the strip moved
+// from the edge of the window to the column on 2026-09-15, and a band pinned
+// to the old place would have measured the page and gone red for the wrong
+// reason - or, worse, caught half of the chosen word in both bands and gone
+// green for no reason, which is what it did that morning.
 func TestTheTabSomebodyIsOnIsTheOneThatStandsOut(t *testing.T) {
 	app := test.NewApp()
 	app.Settings().SetTheme(parts.Theme())
@@ -45,13 +51,32 @@ func TestTheTabSomebodyIsOnIsTheOneThatStandsOut(t *testing.T) {
 	t.Cleanup(w.Close)
 	w.Resize(window.OpenSize)
 
+	strip := tabsIn(host.content)
+	if strip == nil {
+		t.Fatal("the window has no strip")
+	}
 	picture := w.Canvas().Capture()
 	page := parts.PaletteColour(theme.ColorNameBackground, theme.VariantDark)
 
-	// The strip runs across the top. The first tab is the one selected when the
-	// window opens, and the rest follow it along the same band.
-	chosen := boldestIn(picture, image.Rect(0, 8, 130, 40), page)
-	rest := boldestIn(picture, image.Rect(140, 8, 560, 40), page)
+	// Each band is the word's own box on the canvas, so a word that moved is
+	// still the word that is measured. Which word is chosen is asked of the
+	// word, and a strip that marked none would put the chosen strength at
+	// zero, which is red rather than quietly green.
+	var chosen, rest float64
+	for _, word := range strip.Words() {
+		at := fyne.CurrentApp().Driver().AbsolutePositionForObject(word)
+		size := word.Size()
+		band := image.Rect(int(at.X), int(at.Y), int(at.X+size.Width), int(at.Y+size.Height))
+		if band.Empty() {
+			t.Fatalf("the %q word has no box on the canvas, so this guard is measuring nothing", word.Text())
+		}
+		got := boldestIn(picture, band, page)
+		if word.Chosen() {
+			chosen = got
+			continue
+		}
+		rest = math.Max(rest, got)
+	}
 
 	if chosen <= rest {
 		t.Errorf("the tab somebody is on stands at %.2f against the page and the ones they are not on stand"+
