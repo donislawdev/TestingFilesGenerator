@@ -219,7 +219,7 @@ func TestTheRunSpeaksInsideTheSameColumnAsTheForm(t *testing.T) {
 		// The line the run wrote, told from the form's own labels by what it
 		// says. Counting every visible label instead is what let this guard
 		// pass while the bar was empty.
-		if strings.Contains(label.Text, "nothing written yet") {
+		if strings.Contains(label.Text, text.AndNothingWrittenYet()) {
 			spoke = true
 		}
 		if got := label.Size().Width; got > parts.ColumnWidth {

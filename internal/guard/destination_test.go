@@ -3,6 +3,7 @@ package guard
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -65,7 +66,9 @@ func TestTheWindowOffersAFolderOfItsOwnToWriteInto(t *testing.T) {
 // decides where somebody else's disk gets written to was the one field nobody
 // saw before pressing Generate (O102). The bar at the foot never scrolls away
 // and it keeps a line clear for a run whether or not there is one, so saying it
-// there costs no room at all.
+// there costs no room at all. Since 2026-09-14 that line says what the whole
+// form comes to, and the destination is one fact on it - or the only one,
+// on a form that does not settle yet.
 //
 // The test is that the line is OUTSIDE the scrolling area rather than that it
 // exists. A label saying the right thing in a part of the screen you have to
@@ -79,12 +82,15 @@ func TestWhereTheFilesGoIsSaidOutsideTheScrollingPart(t *testing.T) {
 			if box == nil {
 				t.Fatalf("the %s screen has no output directory box, so this guard read the wrong tree", tab)
 			}
-			want := text.WritingTo(box.Text)
+			if box.Text == "" {
+				t.Fatalf("the %s screen's output directory box is empty, so this guard has nothing to look for", tab)
+			}
+			want := text.WillGoTo(box.Text)
 
-			said := labelSaying(content, want)
+			said := labelContaining(content, want)
 			if said == nil {
 				t.Fatalf("nothing on the %s screen says %q.\n"+
-					"The status line carries it while a run has said nothing - see runner.sayDestination.",
+					"The status line carries it while a run has said nothing - see runner.refreshLine.",
 					tab, want)
 			}
 
@@ -100,12 +106,12 @@ func TestWhereTheFilesGoIsSaidOutsideTheScrollingPart(t *testing.T) {
 	}
 }
 
-// labelSaying is the label carrying one exact sentence.
-func labelSaying(o fyne.CanvasObject, want string) *widget.Label {
+// labelContaining is the label carrying a sentence somewhere in its text.
+func labelContaining(o fyne.CanvasObject, want string) *widget.Label {
 	var found *widget.Label
 	walk(o, func(obj fyne.CanvasObject) {
 		label, ok := obj.(*widget.Label)
-		if ok && found == nil && label.Text == want {
+		if ok && found == nil && strings.Contains(label.Text, want) {
 			found = label
 		}
 	})

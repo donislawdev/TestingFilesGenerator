@@ -123,6 +123,10 @@
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
   },
+  "DirectoryWithFreeSpace": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Directory}}, {{.Free}}.",
+    "other": "{{.Directory}} ({{.Free}} free)"
+  },
   "FieldBoundary": {
     "description": "The name above a box somebody fills in.",
     "other": "Limit to test"
@@ -296,10 +300,6 @@
     "description": "Shown on the preset screen.",
     "other": "Typically finds:"
   },
-  "PreviewFreeSpace": {
-    "description": "Shown after a preview and before anything is written. Carries these values, each of which has to stay spelled exactly that way: {{.Free}}, {{.Directory}}.",
-    "other": "{{.Free}} free in {{.Directory}}"
-  },
   "PreviewNothingWritten": {
     "description": "Shown after a preview and before anything is written.",
     "other": "nothing written yet"
@@ -356,6 +356,18 @@
     "description": "Shown in the window. Carries one value, {{.Format}}, which has to stay spelled exactly that way.",
     "other": "Settings for {{.Format}}"
   },
+  "SizeAndBytes": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Human}}, {{.Exact}}.",
+    "other": "{{.Human}} ({{.Exact}})"
+  },
+  "SizeBetween": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Least}}, {{.Most}}.",
+    "other": "between {{.Least}} and {{.Most}}"
+  },
+  "SizeFromContents": {
+    "description": "Shown in the window.",
+    "other": "decided by the files inside, known after Preview"
+  },
   "SizeWayBoundary": {
     "description": "Shown in the window.",
     "other": "Around a limit"
@@ -395,6 +407,10 @@
   "TooManyFiles": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
     "other": "this run asks for {{.Count}} files - {{.Reason}}"
+  },
+  "WillGoTo": {
+    "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",
+    "other": "will go to {{.Directory}}"
   },
   "WorkingOutTheCost": {
     "description": "Shown in the window.",

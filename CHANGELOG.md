@@ -32,7 +32,30 @@ because it turns other people's test suites red.
   on the batch screen keep their switch above one box, in the column of
   controls.
 
+- **The line under the buttons says what the run comes to, before anything
+  is pressed.** How many files, how many bytes, what kinds and where, on one
+  line, worked out from the form as it is typed - with no disk read and no
+  planning. A range says "between" its two ends until Preview draws the
+  sizes, a container sized by its contents says so, and a form that cannot
+  be added up yet names only the destination. After Preview the line is exact
+  and the destination carries the room left on its disk. A change of the
+  form puts the summary back over whatever a press said, where until now the
+  line named the destination until the first press and never again.
+
+  The refusal about a run as a whole now scrolls inside the same room as the
+  run's other messages, so the bar no longer grows when a run is refused, and
+  choosing from a menu reaches the live check the way typing in a box does.
+
 ### Fixed
+
+- **A refused preset no longer carries the note of the preset before it.** A
+  limit of 512 B was refused with "no limit was given" under it - a note left
+  over from the last expansion that worked.
+
+- **A preview asks the disk how much room it has from the worker, not from
+  the interface thread.** The rest of a preview moved off that thread on
+  2026-08-26 and this one read stayed behind, so a directory on a slow share
+  could still stop the window from drawing for as long as the share took.
 
 - **Asking for damaged files and declaring they will be accepted is now refused
   on the command line too.** A damaged file is one a reader was measured to

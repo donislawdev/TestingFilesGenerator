@@ -124,14 +124,19 @@ func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
 	if !ok {
 		t.Fatal("the generate screen has no Format field")
 	}
-	// What the bar says at rest, before anything has been pressed.
-	status, ok := labelBox(generate, text.WritingTo(destinationShownAtRest(t, generate)))
-	if !ok {
-		t.Skip("the bar is not naming a destination at rest, so there is nothing on it to line up")
+	// What the bar says at rest, before anything has been pressed: the line
+	// naming, among other things, the destination.
+	status := labelContaining(generate, text.WillGoTo(destinationShownAtRest(t, generate)))
+	if status == nil {
+		t.Fatal("the bar is not naming the destination at rest, so this guard read the wrong tree")
 	}
-	if off := status.X - field.X; off > 1 || off < -1 {
+	at, found := absoluteOf(generate, status)
+	if !found {
+		t.Fatal("the status line is not on the screen it was found in")
+	}
+	if off := at.X - field.X; off > 1 || off < -1 {
 		t.Errorf("a field name starts at %.1f px and the bar's own line at %.1f px, %.1f px apart",
-			field.X, status.X, off)
+			field.X, at.X, off)
 	}
 }
 

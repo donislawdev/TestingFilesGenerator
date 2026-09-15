@@ -375,10 +375,14 @@
 															<container pos="0,40" size="788x43">
 																<widget size="788x43" type="*widget.Scroll">
 																	<container size="788x43">
-																		<widget size="788x31" type="*widget.Label">
-																			<widget size="788x31" type="*widget.RichText">
-																				<text pos="6,6" size="363x19">Nothing was written. Check the settings marked above.</text>
-																			</widget>
+																		<widget size="788x19" type="*container.ThemeOverride">
+																			<container size="788x19">
+																				<widget size="788x19" type="*widget.Label">
+																					<widget size="788x19" type="*widget.RichText">
+																						<text size="229x19">0 files · 0 B · avif · will go to /tfg/out</text>
+																					</widget>
+																				</widget>
+																			</container>
 																		</widget>
 																	</container>
 																</widget>

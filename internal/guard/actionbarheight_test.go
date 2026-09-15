@@ -55,7 +55,6 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 	restingStates := []struct {
 		name          string
 		clearTheBox   bool
-		wantResting   bool
 		whyItIsWorthA string
 	}{
 		{
@@ -63,11 +62,10 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 			whyItIsWorthA: "the ordinary path, where the status line already carries the output folder",
 		},
 		{
-			name:        "with nothing to say",
+			name:        "with the destination cleared",
 			clearTheBox: true,
-			wantResting: true,
-			whyItIsWorthA: "the state the reserve exists for - no destination, so the line is hidden " +
-				"and costs nothing until a run speaks",
+			whyItIsWorthA: "the line still says what the form comes to, without a destination - " +
+				"a different length of line in the same reserve",
 		},
 	}
 
@@ -94,14 +92,17 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 					settle(content, w)
 				}
 
-				// Whether the line is actually hidden is asserted rather than
-				// assumed. If a later change keeps something on it at rest,
-				// this state stops being the state the reserve is for, and
-				// this guard has to say so instead of quietly measuring the
-				// other one twice - which is exactly how it went blind before.
-				if state.wantResting && status.Visible() {
-					t.Fatalf("the status line still says %q with no destination, so this guard is not in "+
-						"the state it means to check (%s)", status.Text, state.whyItIsWorthA)
+				// Whether the line is in the state this case names is asserted
+				// rather than assumed. If a later change keeps naming a
+				// destination that was cleared, this guard has to say so
+				// instead of quietly measuring the other case twice - which is
+				// exactly how it went blind before. A hidden line is a legal
+				// state here rather than a wrong one: a form that does not
+				// settle and has no destination has nothing to say, which is
+				// the batch screen as it opens.
+				if state.clearTheBox && status.Visible() && strings.Contains(status.Text, text.WillGoTo("")) {
+					t.Fatalf("the status line still names a destination after the box was cleared: %q (%s)",
+						status.Text, state.whyItIsWorthA)
 				}
 
 				atRest := scroll.Size().Height
@@ -185,13 +186,11 @@ func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
 		t.Fatalf("the preview said %q, which is one line - this guard needs a run that also carries "+
 			"a note, or it is checking the order of a list with one thing in it", status.Text)
 	}
-	// Matched on the tail of the preview's own sentence rather than on a word
-	// like "file", because the note talks about files too - an earlier version
-	// of this checked for that and stayed green with the order reversed, which
-	// is a guard that reads like one and is not.
-	marker := text.PreviewCost(1, nil, "1 B")
-	tail := marker[strings.LastIndex(marker, " ")+1:]
-	if !strings.Contains(lines[0], tail) {
+	// Matched on the tail the preview puts on its own line rather than on a
+	// word like "file", because the note talks about files too - an earlier
+	// version of this checked for that and stayed green with the order
+	// reversed, which is a guard that reads like one and is not.
+	if !strings.HasSuffix(lines[0], text.AndNothingWrittenYet()) {
 		t.Errorf("the first line of the status is %q, and the preview's own sentence is not it.\n"+
 			"That sentence has to come first, because the room for these messages is a ceiling and "+
 			"the message scrolls inside it - so the first line is the only one certain to be read. "+
@@ -305,17 +304,23 @@ func runMessages(o fyne.CanvasObject) (*parts.Progress, *widget.Label) {
 		var foundBar *parts.Progress
 		var foundLabel *widget.Label
 		for _, child := range box.Objects {
-			// The label has to be a child of this box, because that is what
-			// says this is the row a run talks in. The track is looked for
-			// underneath the child instead: it is wrapped in parts.Slim since
-			// 2026-08-19, and a guard that insisted on a bare widget here read
-			// the wrapper and declared the screen had no progress bar.
-			if it, ok := child.(*widget.Label); ok {
-				foundLabel = it
-				continue
-			}
+			// The track is looked for underneath the child rather than as the
+			// child itself: it is wrapped in parts.Slim since 2026-08-19, and a
+			// guard that insisted on a bare widget here read the wrapper and
+			// declared the screen had no progress bar. The label likewise
+			// since 2026-09-14, when the line went under the same override
+			// every other word on the form stands in (parts.Flush).
+			//
+			// The first child holding one label and nothing to press or type
+			// in is the line a run talks on. The pairing has to stay that
+			// tight, because the box at the root of a screen also holds a
+			// track somewhere beneath it and a form full of labels beside it.
 			if it := progressUnder(child); it != nil {
 				foundBar = it
+				continue
+			}
+			if foundLabel == nil {
+				foundLabel = soleLabelUnder(child)
 			}
 		}
 		if foundBar != nil && foundLabel != nil {
@@ -323,6 +328,33 @@ func runMessages(o fyne.CanvasObject) (*parts.Progress, *widget.Label) {
 		}
 	})
 	return bar, status
+}
+
+// soleLabelUnder is the one label beneath an object that holds nothing else
+// a person could act on, or nil when the object is anything more than a line
+// of words.
+func soleLabelUnder(o fyne.CanvasObject) *widget.Label {
+	var found *widget.Label
+	labels, controls := 0, 0
+	walk(o, func(obj fyne.CanvasObject) {
+		switch it := obj.(type) {
+		case *widget.Label:
+			labels++
+			found = it
+		case *parts.Progress:
+			controls++
+		default:
+			// Anything that can be disabled is a control - a button, a box, a
+			// menu, a switch, and every wrapper of ours round one of those.
+			if _, can := obj.(fyne.Disableable); can {
+				controls++
+			}
+		}
+	})
+	if labels != 1 || controls > 0 {
+		return nil
+	}
+	return found
 }
 
 // progressUnder finds the progress track at or beneath an object.

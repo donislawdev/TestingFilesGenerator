@@ -423,10 +423,14 @@
 															<container pos="0,40" size="788x43">
 																<widget size="788x43" type="*widget.Scroll">
 																	<container size="788x43">
-																		<widget size="788x31" type="*widget.Label">
-																			<widget size="788x31" type="*widget.RichText">
-																				<text pos="6,6" size="147x19">Files will go to /tfg/out</text>
-																			</widget>
+																		<widget size="788x19" type="*container.ThemeOverride">
+																			<container size="788x19">
+																				<widget size="788x19" type="*widget.Label">
+																					<widget size="788x19" type="*widget.RichText">
+																						<text size="147x19">Files will go to /tfg/out</text>
+																					</widget>
+																				</widget>
+																			</container>
 																		</widget>
 																	</container>
 																</widget>

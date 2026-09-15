@@ -387,10 +387,14 @@ func TestPreviewSaysTheCostAndWritesNothing(t *testing.T) {
 		t.Errorf("Preview wrote %d thing(s) into the output directory", len(entries))
 	}
 
-	shown := textIn(content)
-	for _, want := range []string{"3 files", "12.0 KB", "free"} {
-		if !strings.Contains(shown, want) {
-			t.Errorf("the preview does not say %q. The screen says:\n%s", want, shown)
+	// The cost, exact, on the line under the buttons - and that none of it
+	// exists yet. Read off that line rather than off the whole screen, so the
+	// words have to be where somebody reads them after pressing.
+	got := statusLine(t, content)
+	want := text.SizeAndBytes(core.HumanBytes(3*4096), core.ExactBytes(3*4096))
+	for _, piece := range []string{"3 files", want, dir + " (", "free)", text.AndNothingWrittenYet()} {
+		if !strings.Contains(got, piece) {
+			t.Errorf("the preview does not say %q. The line says:\n%s", piece, got)
 		}
 	}
 }

@@ -335,22 +335,66 @@ func (s *Fields) WhenTypedIn(tell func(setting string)) {
 	s.tell = tell
 }
 
-// listen makes every box under one control report what is typed into it.
+// listen makes every control under one field report a change to it: a box
+// when it is typed into, a menu when a value is chosen, a switch when it is
+// flipped.
 //
 // Chained rather than assigned, because a control that already had something to
-// do on a change keeps doing it. Nothing in this window does today, and a
-// silently dropped callback is the kind of thing nobody notices until the
-// screen stops reacting.
+// do on a change keeps doing it - the format menu rebuilds the settings under
+// it, and a switch on the batch screen shows and hides boxes. A silently
+// dropped callback is the kind of thing nobody notices until the screen stops
+// reacting. The chain runs the control's own work FIRST, so what is reported
+// is read off a screen that has already changed.
+//
+// Menus and switches since 2026-09-14. Only boxes reported until then, which
+// was enough while the only listener was the live check and the only thing a
+// menu could be wrong about was nothing. It stopped being enough when the
+// foot of the form started saying what the form comes to: a format chosen from
+// the menu changed the run and the line went on naming the old one.
 func (s *Fields) listen(setting string, control fyne.CanvasObject) {
-	for _, box := range boxesIn(control) {
-		already := box.OnChanged
-		box.OnChanged = func(value string) {
-			if already != nil {
-				already(value)
+	// Read at the moment somebody types rather than at the moment this is
+	// wired, so a listener asked for after the field exists still hears it.
+	report := func() {
+		if s.tell != nil {
+			s.tell(setting)
+		}
+	}
+	walkControls(control, func(o fyne.CanvasObject) {
+		switch it := o.(type) {
+		case *Entry:
+			already := it.OnChanged
+			it.OnChanged = func(value string) {
+				if already != nil {
+					already(value)
+				}
+				report()
 			}
-			if s.tell != nil {
-				s.tell(setting)
+		case *Chooser:
+			already := it.OnChanged
+			it.OnChanged = func(value string) {
+				if already != nil {
+					already(value)
+				}
+				report()
 			}
+		case *Toggle:
+			already := it.OnChanged
+			it.OnChanged = func(on bool) {
+				if already != nil {
+					already(on)
+				}
+				report()
+			}
+		}
+	})
+}
+
+// walkControls visits a control and everything inside it, containers included.
+func walkControls(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+	visit(o)
+	if box, ok := o.(*fyne.Container); ok {
+		for _, child := range box.Objects {
+			walkControls(child, visit)
 		}
 	}
 }

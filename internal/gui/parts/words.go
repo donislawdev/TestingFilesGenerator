@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
 // words is one line of text drawn with no room of its own around the ink.
@@ -43,6 +44,12 @@ func words(text string, size float32, bold bool, colour fyne.ThemeColorName) *ca
 func inkTight(o fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewThemeOverride(o, noInnerPadding{Theme()})
 }
+
+// Flush puts a label a screen keeps hold of on the edge every other word
+// stands on. The same override as inkTight, exported for the one label the
+// runner writes to for the whole life of a screen - the line a run speaks on
+// - which has to be built by the runner and placed by the bar.
+func Flush(label *widget.Label) fyne.CanvasObject { return inkTight(label) }
 
 // noInnerPadding is the window's theme with the room inside a label taken out.
 // Only that one size, so a box to type in under the same override would still

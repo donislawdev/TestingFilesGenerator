@@ -191,8 +191,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
-			r.actions(), r.progress(), r.problem.Object()),
+		r.footer(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...)),
 		nil, nil,
 		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox)))),
 	))
@@ -203,9 +202,9 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.batches[0].formatPick.SetSelected(format.IDs()[0])
 	r.rebuild()
 
-	// Said last, once the box it reads exists.
+	// Said last, once every box it reads exists.
 	r.runner.destination = r.OutDir
-	r.runner.sayDestination()
+	r.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
@@ -324,6 +323,9 @@ func (r *Recipe) rebuild() {
 
 	r.batchBox.Refresh()
 	r.outBox.Refresh()
+	// A batch added, copied or taken away changes what the form comes to,
+	// and none of those goes through a box somebody typed in.
+	r.runner.refreshLine()
 }
 
 // batchBlock is one batch as it appears on the screen.

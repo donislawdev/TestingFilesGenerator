@@ -18,20 +18,6 @@ import (
 // number. The split is by subject: everything here turns what the engine
 // reports into the sentence under the buttons, and nothing here drives a run.
 
-// previewText is the cost, before anything exists. G6: how many files, what
-// kind, how many bytes, and how much room there is for them.
-func previewText(planned []engine.PlannedFile, outDir string) string {
-	total := engine.TotalBytes(planned)
-	line := text.PreviewCost(len(planned), formatsOf(planned), core.HumanBytes(total))
-
-	// A disk we cannot measure is not the same as a disk that is full, so a
-	// failure to read it says nothing rather than inventing a number.
-	if free, err := core.AvailableBytes(outDir); err == nil {
-		line += text.PreviewFreeSpace(outDir, core.HumanBytes(free))
-	}
-	return line
-}
-
 // manifestReachNote is the window's half of the warning the command line prints
 // before the first byte.
 //

@@ -197,8 +197,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// foot of the form would be cut off at the edge of the viewport.
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
-			g.actions(), g.progress(), g.problem.Object()),
+		g.footer(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...)),
 		nil, nil,
 		(g.keepScroll(container.NewVScroll(parts.Screen(
 			text.HeadingGenerate(),
@@ -214,9 +213,9 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g.ready = true
 	g.onFormatChosen(g.formatPick.Selected)
 
-	// Said last, once the box it reads exists.
+	// Said last, once every box it reads exists.
 	g.runner.destination = g.OutDir
-	g.runner.sayDestination()
+	g.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
