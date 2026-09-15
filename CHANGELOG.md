@@ -77,6 +77,13 @@ because it turns other people's test suites red.
   room above the box than below it, and is still cut to the room on whichever
   side it lands.
 
+- **The window is set in Inter.** The window was drawn in Noto Sans, the
+  toolkit's own face. It is set in Inter 4.1 now, Regular and Bold, embedded
+  in the window binary under the Open Font License - the licence notice and
+  `tfg-gui`'s About screen name it beside the other bundled work. The window
+  binary is about 800 kB larger for it. The command line binary carries no
+  font and is unchanged.
+
 ### Added
 
 - **Every control shows where the keyboard is and answers the pointer.** Every
@@ -91,6 +98,14 @@ because it turns other people's test suites red.
   strip, Enter or Space opens its screen and puts the keyboard on the first
   field with its mark showing, and the arrow keys move along the strip without
   opening anything. The toolkit's tabs answered the mouse only.
+
+- **`tfg-gui --catalogue` opens a catalogue of every part of the window in
+  every state it has.** A hidden screen for anybody changing the window's
+  look: each button, box, menu, switch, list, tab and rank of text, at rest,
+  under the pointer, holding the keyboard, refused, disabled and given a
+  sentence too long for it - sixteen entries and ninety-three states, drawn
+  at the widths a form gives them. `--catalog` is accepted too. Any other
+  argument is ignored, as every argument was until now.
 
 ### Fixed
 
