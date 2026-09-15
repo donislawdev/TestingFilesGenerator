@@ -59,7 +59,7 @@ func TestEveryFileEmbeddedFromSomebodyElseIsAccountedFor(t *testing.T) {
 			"An entry for bytes that no longer ship is a notice nobody needs, and it hides the day "+
 			"the real thing was replaced by something else.", len(stale), strings.Join(stale, "\n  "))
 	}
-	t.Logf("%d embedded file(s) from other modules, all accounted for by %d registry entr(y/ies)",
+	t.Logf("%d embedded file(s) across every package, all accounted for by %d registry entr(y/ies) or named as our own work",
 		total, len(legal.Assets()))
 }
 
@@ -88,9 +88,33 @@ func accountForPackage(t *testing.T, pkg string, files []string, seen, matched m
 		}
 		seen[pkg+" "+file] = true
 		added++
+		if ownWork[pkg+" "+file] {
+			continue
+		}
 		accountFor(t, pkg, file, matched)
 	}
 	return added
+}
+
+// ownWork is every file a package of THIS module embeds that this project
+// drew or wrote itself, so that no licence but our own applies to it.
+//
+// Until 2026-09-15 the walk skipped our module altogether, on the reasoning
+// that what we embed is our own work. That day the window took a font of
+// somebody else's (Inter, internal/gui/font) and the reasoning stopped being
+// true - and a skip would have let those bytes ship with a registry entry
+// that matched nothing, which the stale check below would have reported as
+// the ENTRY being wrong. So the module is walked like any other, and the
+// exceptions are named here, one by one, with the reason each is ours.
+//
+// A file added to any of our packages that is on neither list makes this
+// guard red, which is the direction it should fail in: the person adding it
+// says whose it is, rather than a guard assuming.
+var ownWork = map[string]bool{
+	// Drawn from shapes by tools/appicon.py. docs/LICENSING.md.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon chickpea.png": true,
+	// The window's own words.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/en.json": true,
 }
 
 // accountFor requires exactly one registry entry to claim a file. None means
@@ -148,8 +172,8 @@ func TestEveryEmbeddedAssetIsNamedInTheNotices(t *testing.T) {
 // CGO_ENABLED is set rather than inherited, for the reason written beside the
 // notices guard: the toolkit hides its real dependencies behind cgo build
 // constraints, so a shell with cgo off reports a tree with almost nothing in
-// it. Our own module is skipped - its embedded files are our own work, and the
-// question here is what somebody else's code brings along.
+// it. Our own module is walked with the rest since 2026-09-15 - see ownWork
+// for what changed and why.
 func embeddedFiles(t *testing.T, target, goos string) map[string][]string {
 	t.Helper()
 	cmd := exec.Command("go", "list", "-deps", "-f",
@@ -163,7 +187,7 @@ func embeddedFiles(t *testing.T, target, goos string) map[string][]string {
 	found := map[string][]string{}
 	for _, line := range strings.Split(string(out), "\n") {
 		parts := strings.SplitN(strings.TrimSpace(line), "|", 3)
-		if len(parts) != 3 || strings.Contains(parts[0], "donislawdev") {
+		if len(parts) != 3 {
 			continue
 		}
 		found[parts[1]] = strings.Fields(parts[2])

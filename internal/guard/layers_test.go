@@ -88,6 +88,7 @@ var layer = map[string]int{
 	"internal/gui":        4,
 	"internal/gui/parts":  4,
 	"internal/gui/icon":   4,
+	"internal/gui/font":   4,
 	"internal/gui/text":   4,
 	"internal/gui/window": 4,
 
@@ -175,7 +176,9 @@ var sameLayerAllowed = map[string][]string{
 	// package that reached for the engine to word a message would put half a
 	// message here and half where the engine says it, which is how two
 	// wordings for one thing start.
-	"internal/gui/parts": {"internal/gui/text"},
+	// And the typeface, since 2026-09-15: bytes of a font and nothing else,
+	// which the theme in parts hands to the toolkit.
+	"internal/gui/parts": {"internal/gui/text", "internal/gui/font"},
 	// And the package that opens a real window reaches all three. It is the
 	// only one that touches the toolkit's app package, so it is the only one
 	// that needs a C compiler.

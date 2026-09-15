@@ -23,6 +23,35 @@ package legal
 
 import "strings"
 
+// ourModule is this project, spelled as go list spells it. It is here because
+// the registry took its first entry for bytes that a package of OUR OWN embeds
+// on 2026-09-15 (the Inter font under internal/gui/font), and such an entry is
+// answered differently from the rest: whether a build carries it cannot be
+// read off the build's list of modules, because both binaries are this one
+// module. A guard checks the spelling against go list -m.
+const ourModule = "github.com/donislawdev/TestingFilesGenerator"
+
+// carrying is the set of our own packages that embed somebody else's bytes and
+// are linked into the running binary.
+//
+// Filled by those packages themselves, from an init - so the answer comes from
+// the build, the way debug.ReadBuildInfo answers for modules: a package's init
+// runs exactly when the package is linked, and neither binary has to be told
+// which of them it holds. Written only during initialisation, by one goroutine,
+// and read afterwards, which is why there is no lock on it.
+var carrying = map[string]bool{}
+
+// Carrying is how a package of ours that embeds somebody else's bytes says it
+// is in this binary. Called from that package's init and from nowhere else. A
+// guard asks that every such package in the registry does call it, because a
+// package that forgot would ship its bytes and drop off the licence command
+// without a word.
+func Carrying(pkg string) { carrying[pkg] = true }
+
+// LinkedHere reports whether one of our own packages announced itself in the
+// running binary. For a guard: the product reads carrying directly.
+func LinkedHere(pkg string) bool { return carrying[pkg] }
+
 // A Module is one module that a binary of this project links.
 type Module struct {
 	// Path is the module path as go list reports it. The Go runtime and
@@ -89,6 +118,16 @@ func Modules() []Module { return modules }
 
 // Assets returns the reviewed list of embedded files.
 func Assets() []Asset { return assets }
+
+// Ours reports whether the bytes are embedded by a package of this project
+// rather than by somebody else's module. Such an entry is answered by package
+// rather than by module wherever a build is asked what it carries - see
+// embeddedItems - and a guard holds the command line binary to linking none.
+func (a Asset) Ours() bool { return a.Module == ourModule }
+
+// OurModule is this project's module path as the registry spells it, for the
+// guard that checks the spelling against go list.
+func OurModule() string { return ourModule }
 
 // Covers reports whether this entry accounts for an embedded path, spelled the
 // way go list spells it.

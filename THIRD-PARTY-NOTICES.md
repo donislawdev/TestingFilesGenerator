@@ -593,8 +593,11 @@ THE SOFTWARE.
 The toolkit compiles fonts and drawings into the binary. They are not modules,
 so a list of modules never mentions them - which is how they shipped unnamed
 until this section was written on 2026-08-28. Seven fonts and ninety-seven
-images arrive this way, and their licences ask for their notices to travel with
-them.
+images arrive this way from the toolkit, and their licences ask for their
+notices to travel with them. Two more font files arrive from a package of this
+project itself: Inter, the face the window has been set in since 2026-09-15,
+is embedded by `internal/gui/font` rather than by the toolkit, and is listed
+here under the same rule.
 
 What is listed here was measured by asking the compiler which files each
 package embeds, not by reading its source. The copyright lines were read out of
@@ -603,7 +606,8 @@ the font files themselves.
 | what | comes from | licence | copyright |
 |---|---|---|---|
 | Noto Sans, four styles | `fyne.io/fyne/v2/theme` | OFL-1.1 | Copyright 2015 Google Inc. All Rights Reserved. |
-| Inter, symbols only | `fyne.io/fyne/v2/theme` | OFL-1.1 | (c) 2020 The Inter Project Authors |
+| Inter Symbols, the toolkit's symbol glyphs only | `fyne.io/fyne/v2/theme` | OFL-1.1 | (c) 2020 The Inter Project Authors |
+| Inter, Regular and Bold, the text of the window - static instances from the v4.1 release of github.com/rsms/inter | `internal/gui/font` in this project | OFL-1.1 | Copyright 2016 The Inter Project Authors |
 | DejaVu Sans Mono for Powerline | `fyne.io/fyne/v2/theme` | Bitstream-Vera | (c) 2003 Bitstream, Inc. DejaVu changes are in the public domain |
 | EmojiOne Color | `fyne.io/fyne/v2/theme` | MIT, and read the note below | Copyright 2016 Adobe Systems Incorporated |
 | Fyne icon set, 96 drawings and one image | `fyne.io/fyne/v2/theme` | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
@@ -612,8 +616,10 @@ the font files themselves.
 
 `tfg`, the command line binary, embeds none of this. It has no toolkit in it.
 
-Neither font licence declares a Reserved Font Name, so the identifier above is
-OFL-1.1 rather than OFL-1.1-RFN. Inter is a trademark of Rasmus Andersson.
+None of the three fonts under the Open Font License declares a Reserved Font
+Name - checked in the licence file of each and in the name table of each font
+file - so the identifier above is OFL-1.1 rather than OFL-1.1-RFN. Inter is a
+trademark of Rasmus Andersson.
 
 **EmojiOne Color says two different things about itself.** The toolkit ships it
 with an MIT licence naming Adobe Systems Incorporated. The font's own metadata
@@ -633,7 +639,7 @@ and only those were replaced by their plain equivalents.
 
 ### SIL Open Font License 1.1
 
-Applies to Noto Sans and to Inter.
+Applies to Noto Sans, to Inter Symbols and to Inter.
 
 ```
 ------------------------------
