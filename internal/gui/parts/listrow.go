@@ -79,7 +79,7 @@ func (r *ListRow) MouseMoved(*desktop.MouseEvent) {}
 
 func (r *ListRow) CreateRenderer() fyne.WidgetRenderer {
 	back := canvas.NewRectangle(color.Transparent)
-	back.CornerRadius = Theme().Size(theme.SizeNameInputRadius)
+	back.CornerRadius = RadiusField
 	tick := canvas.NewImageFromResource(theme.ConfirmIcon())
 	kind := canvas.NewImageFromResource(nil)
 	label := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))

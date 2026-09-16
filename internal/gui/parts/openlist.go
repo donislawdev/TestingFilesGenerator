@@ -2,6 +2,7 @@ package parts
 
 import (
 	"image/color"
+	"math"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -33,30 +34,6 @@ import (
 // a row height we choose, a ceiling with scrolling under it, the letter a
 // person types taken as a jump, and the value in the box marked in a list we
 // can read back. See docs/UX.md and OBSERVATIONS.md O92c and O92d.
-
-// visibleRows is how many rows are shown before the list starts scrolling.
-//
-// Eight, decided by the owner on 2026-08-18. NN/g puts it as a rule rather than
-// a number - the label and the context stay in view while the list is open -
-// and eight is what leaves most of the form visible at the window sizes this
-// program opens at, including 800x600.
-const visibleRows = 8
-
-// rowPadding is the room above and below a row's contents.
-//
-// Ours rather than the theme's, which is the entire point of this control. The
-// theme's innerPadding is what a box to type in and a button are also built
-// from, so a list cannot be made denser through it without making every control
-// on the form denser too.
-const rowPadding = 4
-
-// rowGutter is the room in front of the mark, and rowGap the room after it.
-// Together they put the text where the toolkit put it, so this change moves the
-// density and nothing else - one thing at a time.
-const (
-	rowGutter = 6
-	rowGap    = 6
-)
 
 // OpenList is the list of values a Chooser drops down.
 type OpenList struct {
@@ -192,27 +169,27 @@ type Choice struct {
 	Marked bool
 }
 
-// MinSize is as wide as the widest value and as tall as visibleRows of them.
+// MinSize is as wide as the widest value and as tall as all of them, cut to
+// the room the list was told it has.
 //
 // The ceiling is the point. Without one the list is as tall as it likes, which
 // at thirteen formats already covered the form and at twenty-five would not fit
-// in the window.
+// in the window. The ceiling is not worked out here, because it is a share of
+// the window (ListCeiling) and the list does not know the window - the Chooser
+// that opens it does, and tells it through LimitTo. Until 2026-09-15 a count
+// of rows lived here instead, which made the list 224 px tall in every window
+// there is (O203).
 func (l *OpenList) MinSize() fyne.Size {
 	rows := len(l.options)
-	if rows > visibleRows {
-		rows = visibleRows
-	}
 	if rows < 1 {
 		rows = 1
 	}
 	height := float32(rows) * listRowHeight()
-	// The room the window has left beats the row ceiling, where there is less
-	// of it. The ceiling is about not covering the form and says nothing about
-	// a window with fewer than eight rows to spare - and this has to happen in
-	// MinSize rather than by resizing the popup afterwards, because a popup is
-	// never laid out smaller than its content's minimum. Measured on
-	// 2026-08-19: asking for 195 px around a list whose minimum was 224 gave
-	// 224 (O113).
+	// The room the window has left is the whole of the ceiling, and this has
+	// to happen in MinSize rather than by resizing the popup afterwards,
+	// because a popup is never laid out smaller than its content's minimum.
+	// Measured on 2026-08-19: asking for 195 px around a list whose minimum
+	// was 224 gave 224 (O113).
 	if l.room > 0 && height > l.room {
 		height = l.room
 	}
@@ -222,16 +199,33 @@ func (l *OpenList) MinSize() fyne.Size {
 	return fyne.NewSize(l.list.MinSize().Width, height)
 }
 
-// LimitTo tells the list how much room it has, so it can be shorter than its
-// row ceiling when the window is shorter than that. Nought means no limit.
+// LimitTo tells the list how much room it has - the share of the window it
+// may cover, cut further to the room on the side it opens on. Nought means no
+// limit.
 func (l *OpenList) LimitTo(room float32) { l.room = room }
+
+// ListCeiling is how tall an open list may be in a window this tall: listShare
+// of the height, in whole rows, and never less than one row.
+//
+// Whole rows rather than the share to the pixel, so that a list at its ceiling
+// ends on a row's edge the way it did when the ceiling was a count - a row cut
+// through the middle is what the room on one side of a box does to a list in
+// a cramped window, and that is the emergency, not the everyday.
+func ListCeiling(canvasHeight float32) float32 {
+	row := listRowHeight()
+	rows := float32(math.Floor(float64(canvasHeight * listShare / row)))
+	if rows < 1 {
+		rows = 1
+	}
+	return rows * row
+}
 
 func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// The surface is drawn here rather than left to the popup, so that the
 	// colour a guard measures for "an open list is told from the form behind
 	// it" is the colour actually on the screen.
 	back := canvas.NewRectangle(Theme().Color(theme.ColorNameMenuBackground, theme.VariantDark))
-	back.CornerRadius = Theme().Size(theme.SizeNameInputRadius)
+	back.CornerRadius = RadiusField
 	return widget.NewSimpleRenderer(container.NewStack(back, container.NewThemeOverride(l.list, rowTheme{})))
 }
 

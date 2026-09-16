@@ -110,7 +110,7 @@ func Carried(info *debug.BuildInfo) []Item {
 		}
 		items = append(items, moduleItem(dep.Path, dep.Version, reviewed))
 	}
-	items = append(items, embeddedItems(linked)...)
+	items = append(items, embeddedItems(linked, carrying)...)
 
 	sort.SliceStable(items, func(i, j int) bool {
 		if items[i].Embedded != items[j].Embedded {
@@ -152,6 +152,16 @@ func Reviewed() []Item {
 	return items
 }
 
+// carries is the question embeddedItems asks of one entry: by package for a
+// package of ours, by module for everything else. See embeddedItems for why
+// there are two.
+func carries(asset Asset, linkedModules, ours map[string]bool) bool {
+	if asset.Ours() {
+		return ours[asset.Package]
+	}
+	return linkedModules[asset.Module]
+}
+
 // CarriedHere is Carried asked of the binary that is running.
 func CarriedHere() []Item {
 	info, ok := debug.ReadBuildInfo()
@@ -180,13 +190,19 @@ func moduleItem(path, version string, reviewed map[string]Module) Item {
 	return Item{Name: displayName(path), Version: version, SPDX: m.SPDX, Copyright: m.Copyright}
 }
 
-// embeddedItems are the registry entries whose module is in this build. A font
-// travels with the package that embeds it, so the question of whether it ships
-// is the question of whether its module was linked.
-func embeddedItems(linked map[string]bool) []Item {
+// embeddedItems are the registry entries whose bytes are in this build.
+//
+// Two questions, because there are two kinds of entry. A file inside somebody
+// else's module travels with the package that embeds it, and a build's own
+// record names modules rather than packages, so for those the question is
+// whether the module was linked. A file one of OUR packages embeds - Inter,
+// since 2026-09-15 - cannot be answered that way, because both binaries are
+// one module: for those the package itself has to be named in ours, and it is
+// the package that says so (Carrying) or, for a document, go list.
+func embeddedItems(linkedModules, ours map[string]bool) []Item {
 	var items []Item
 	for _, asset := range assets {
-		if !linked[asset.Module] {
+		if !carries(asset, linkedModules, ours) {
 			continue
 		}
 		items = append(items, Item{

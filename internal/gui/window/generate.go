@@ -197,11 +197,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// foot of the form would be cut off at the edge of the viewport.
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
-			g.actions(), g.progress(), g.problem.Object()),
+		g.footer(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...)),
 		nil, nil,
 		(g.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingGenerate(),
+			parts.Titled(text.TabOneTarget(), text.SubtitleGenerate()),
 			g.settingsSection()...,
 		)))),
 	))
@@ -214,9 +213,9 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g.ready = true
 	g.onFormatChosen(g.formatPick.Selected)
 
-	// Said last, once the box it reads exists.
+	// Said last, once every box it reads exists.
 	g.runner.destination = g.OutDir
-	g.runner.sayDestination()
+	g.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
@@ -288,7 +287,7 @@ func (g *Generate) buildFields() {
 	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")
 
-	g.label = parts.NewToggle("", nil)
+	g.label = parts.NewToggle(nil)
 	g.label.SetChecked(true)
 }
 
@@ -335,16 +334,12 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 				g.tips.Say(""), g.formatPick),
 			// Side by side, because each pair is one thought: how big and how
 			// many, then what the group is called and what the files are called.
-			g.fields.Row(
-				add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
-					parts.Numeric(g.size)),
-				add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
-			),
-			g.fields.Row(
-				add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), g.id),
-				add(engine.SettingName, text.FieldNameTemplate(), text.HintNameTemplate(),
-					g.tips.Say(text.DetailNameTemplate()), g.name),
-			),
+			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
+				parts.Numeric(g.size)),
+			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
+			add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), g.id),
+			add(engine.SettingName, text.FieldNameTemplate(), text.HintNameTemplate(),
+				g.tips.Say(text.DetailNameTemplate()), g.name),
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,
@@ -358,11 +353,9 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 		parts.Section(text.SectionOutput(),
 			add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
 				chooserFor(g.host, g.outDir)),
-			g.fields.Row(
-				add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
-					parts.Numeric(g.seed)),
-				g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
-			),
+			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
+				parts.Numeric(g.seed)),
+			g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
 		),
 	}
 }

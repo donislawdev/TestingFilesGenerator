@@ -1,12 +1,10 @@
 package parts
 
 import (
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
-	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // ByteCount says what the size in a box comes to, counted out in bytes.
@@ -22,12 +20,14 @@ import (
 // different number than the files do - and if the box holds something that is
 // not a size it says nothing at all rather than guessing.
 //
-// It lives on the field's NAME line, at the far right, and that placement is
-// the whole reason this was cheap. A line of its own under the box would have
-// cost about eighteen pixels per size field, and the single batch screen fits
-// its window today with about seventeen to spare - so the honest version of
-// "put it under the box" was "make the screen scroll". The name line has the
-// rest of the column empty.
+// It stands beside the box, on the same line, since 2026-09-14. It lived at
+// the far right of the field's name line before that - the cheap place while a
+// name stood over its box, and 190 px from the box it was counting for. A
+// field is one line now and the count is the thing after the box on it.
+//
+// Spelled by core.ExactBytes, which is what the command line prints. The
+// window had a spelling of its own without the grouping until 2026-09-14, so
+// one number came out as 10485760 B here and 10 485 760 B there.
 type ByteCount struct {
 	widget.Label
 }
@@ -40,7 +40,6 @@ func newByteCount() *ByteCount {
 	// it wants it.
 	c.SizeName = theme.SizeNameCaptionText
 	c.Importance = widget.LowImportance
-	c.Alignment = fyne.TextAlignTrailing
 	return c
 }
 
@@ -55,5 +54,5 @@ func (c *ByteCount) show(size string) {
 		c.SetText("")
 		return
 	}
-	c.SetText(text.ExactBytes(bytes))
+	c.SetText(core.ExactBytes(bytes))
 }

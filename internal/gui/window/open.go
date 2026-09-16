@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/fyne/v2/widget"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -40,13 +39,15 @@ func Open(h Host) {
 	// about. Leaving it at the foot would have kept exactly the defect being
 	// fixed, for the one screen somebody reaches least often and would look
 	// hardest for. It also loses its Back button: a tab is its own way out.
-	// Every screen goes back to the ordinary theme, because the strip they hang
-	// under is drawn quieter and a theme reaches everything below it.
-	tabs := container.NewAppTabs(
-		container.NewTabItem(text.TabOneTarget(), parts.AtFullStrength(gen.Object())),
-		container.NewTabItem(text.TabPresets(), parts.AtFullStrength(pre.Object())),
-		container.NewTabItem(text.TabRecipe(), parts.AtFullStrength(rec.Object())),
-		container.NewTabItem(text.TabAbout(), parts.AtFullStrength(About(h))),
+	//
+	// The strip is ours since 2026-09-15 - see parts.Tabs for the three things
+	// the toolkit's could not do, the first of which is stand on the same edge
+	// as the words under it.
+	tabs := parts.NewTabs(
+		&parts.Tab{Text: text.TabOneTarget(), Content: gen.Object()},
+		&parts.Tab{Text: text.TabPresets(), Content: pre.Object()},
+		&parts.Tab{Text: text.TabRecipe(), Content: rec.Object()},
+		&parts.Tab{Text: text.TabAbout(), Content: About(h)},
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -87,23 +88,9 @@ func Open(h Host) {
 
 	// The keyboard starts on the first field of the screen somebody is looking
 	// at, and moves with them. Owner's decision of 2026-08-25.
-	//
-	// The mark that says "the keyboard is here" is NOT drawn by this, and that
-	// is deliberate rather than a gap: this window draws that mark only for
-	// somebody using the keyboard (O90), so a focus placed by the program is
-	// silent until a key is pressed. Placing it quietly is what makes the first
-	// Tab land on the second field rather than the first.
-	focusFirst := func(name string) {
-		screen, ok := keyed[name]
-		if !ok {
-			return
-		}
-		if first := screen.FirstField(); first != nil {
-			parts.FocusQuietly(h.Canvas(), first)
-		}
-	}
+	focusFirst := firstFieldFocuser(h, keyed)
 
-	tabs.OnSelected = func(item *container.TabItem) {
+	tabs.OnSelected = func(item *parts.Tab, byKeyboard bool) {
 		from, leaving := working[showing]
 		to, arriving := working[item.Text]
 		if leaving && arriving {
@@ -118,7 +105,7 @@ func Open(h Host) {
 		// The keyboard follows the person to the screen they moved to. Without
 		// this it stays on a control of the screen they left, which is a Tab
 		// that starts somewhere nobody can see.
-		focusFirst(item.Text)
+		focusFirst(item.Text, byKeyboard)
 	}
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The
@@ -142,12 +129,10 @@ func Open(h Host) {
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
-	// The strip reads with one point of focus: the tab somebody is on is in the
-	// accent colour and the others are quiet. Until 2026-08-20 it was the other
-	// way round by contrast - the chosen one was the dimmest label there.
-	h.SetContent(parts.QuietUnlessChosen(tabs))
-	// Last, once there is something on the canvas to focus.
-	focusFirst(showing)
+	h.SetContent(parts.Tabbed(tabs))
+	// Last, once there is something on the canvas to focus. Quietly: nobody
+	// has pressed a key yet.
+	focusFirst(showing, false)
 }
 
 // closeCleanly stops whatever is running, writes down where the files were
@@ -265,6 +250,42 @@ func wireKeyboard(h Host, keyed map[string]keyboardScreen, showing *string, tabl
 
 }
 
+// firstFieldFocuser is the way the keyboard is put on the first field of a
+// named screen, quietly or visibly.
+//
+// The mark that says "the keyboard is here" is NOT drawn unless the keyboard
+// is what brought the person there, and that is deliberate rather than a gap:
+// this window draws that mark only for somebody using the keyboard (O90), so a
+// focus placed by the program after a press is silent until a key is pressed.
+// Placing it quietly is what makes the first Tab land on the second field
+// rather than the first. Somebody who chose the screen with Enter on the strip
+// IS using the keyboard, so for them the mark is drawn at once - the form has
+// moved the keyboard, and saying where it went is the whole point, the same
+// decision Reveal makes.
+//
+// A screen the map does not know - About, which has no field - is left alone.
+//
+// Split out of Open on 2026-09-15, when the second way of arriving took that
+// function into the crowded band. The ceiling is a ratchet, so the answer is
+// a split and never a higher number.
+func firstFieldFocuser(h Host, keyed map[string]keyboardScreen) func(name string, visibly bool) {
+	return func(name string, visibly bool) {
+		screen, ok := keyed[name]
+		if !ok {
+			return
+		}
+		first := screen.FirstField()
+		if first == nil {
+			return
+		}
+		if visibly {
+			h.Canvas().Focus(first)
+			return
+		}
+		parts.FocusQuietly(h.Canvas(), first)
+	}
+}
+
 // keyboardScreen is what a screen has to offer for the keyboard to reach it.
 //
 // An interface rather than a switch over the three screens, so that a fourth
@@ -300,7 +321,7 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // program fetches nothing and sends nothing, which is what keeps untouchable
 // rule 8 intact - see the carve out written into it on 2026-08-18.
 func donateButton(h Host) fyne.CanvasObject {
-	return widget.NewButton(text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
+	return parts.NewButton(parts.Quiet, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
 }
 
 // chooserFor is the output directory box with a way to browse to one.
@@ -313,7 +334,7 @@ func donateButton(h Host) fyne.CanvasObject {
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
 func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
-	choose := widget.NewButton(text.ButtonChoose(), func() {
+	choose := parts.NewButton(parts.Secondary, text.ButtonChoose(), func() {
 		host.ChooseDirectory(func(dir string) {
 			if dir != "" {
 				box.SetText(dir)

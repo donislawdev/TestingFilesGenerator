@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/catalogue"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -202,7 +203,7 @@ func (d desktop) OpenFolder(path string) {
 
 // run opens a real window. The only file in this tree that reaches the app
 // package, and therefore the only one that needs a C compiler.
-func run(errOut io.Writer) int {
+func run(showCatalogue bool, errOut io.Writer) int {
 	// Said out loud rather than left to be inferred: everything that touches a
 	// widget from the worker goes through fyne.Do, and a static guard checks
 	// it, but the toolkit had no way to know that. Without this it printed
@@ -248,7 +249,17 @@ func run(errOut io.Writer) int {
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
 	host := desktop{w}
-	window.Open(host)
+	if showCatalogue {
+		// The hidden screen of GUI rule 4: every part in every state, for
+		// whoever builds the window. No host, because nothing on it runs or
+		// chooses a directory - and nothing about it is remembered either,
+		// which is why the close callback below is registered for the
+		// ordinary window alone. It opens at the remembered size all the same,
+		// because that is the size this person's screen has room for.
+		w.SetContent(catalogue.Screen())
+	} else {
+		window.Open(host)
+	}
 
 	// The size it was closed at, and whether to put it in the middle. The two
 	// answers come together because they are one decision - a window bigger than
@@ -263,7 +274,16 @@ func run(errOut io.Writer) int {
 	// Written down as the window goes rather than as it is resized. SetOnClosed
 	// runs after the close intercept, which is where the directory is kept, so
 	// the two land together whichever way the window was shut.
-	w.SetOnClosed(func() { host.rememberThisSize() })
+	//
+	// The ordinary window only. The catalogue is a developer's screen, 8900 px
+	// of controls somebody drags tall to read, and until 2026-09-16 closing it
+	// wrote that size down as the size the ordinary window opens at next time.
+	// An outside review of the pull request named it. No guard reaches this
+	// line - it is behind cgo, like the rest of the remembering - so it is
+	// checked the way the rest was, by a run of the binary.
+	if !showCatalogue {
+		w.SetOnClosed(func() { host.rememberThisSize() })
+	}
 	w.ShowAndRun()
 	return 0
 }

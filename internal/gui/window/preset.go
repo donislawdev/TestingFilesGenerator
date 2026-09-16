@@ -91,11 +91,10 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// chooser, because they are the answer to the question that card asks.
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...),
-			p.actions(), p.progress(), p.problem.Object()),
+		p.footer(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...)),
 		nil, nil,
 		(p.keepScroll(container.NewVScroll(parts.Screen(
-			text.HeadingPreset(),
+			parts.Titled(text.TabPresets(), text.SubtitlePreset()),
 			parts.Section(text.SectionPreset(),
 				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
 					p.tips.Say(text.DetailPreset()), p.pick),
@@ -119,9 +118,9 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		p.pick.SetSelected(ids[0])
 	}
 
-	// Said last, once the box it reads exists.
+	// Said last, once every box it reads exists.
 	p.runner.destination = p.OutDir
-	p.runner.sayDestination()
+	p.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
@@ -185,7 +184,7 @@ func (p *Preset) onPresetChosen(id string) {
 	// text and wrapped with it, and each item carried a full label's spacing -
 	// which left more room between the items than around the whole list.
 	if len(chosen.Catches) > 0 {
-		p.about.Add(parts.Heading(text.PresetCatchesHeading()))
+		p.about.Add(parts.Subheading(text.PresetCatchesHeading()))
 		p.about.Add(parts.Bullets(chosen.Catches))
 	}
 	p.about.Refresh()
@@ -261,6 +260,13 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	// message about a recipe nobody could build would name a cause that is not
 	// the cause.
 	var bad []error
+
+	// Cleared before the expansion rather than after it, so a form that does
+	// not expand carries no notes at all. They stayed from the last expansion
+	// that worked until 2026-09-14, and the refusal for a limit of 512 B was
+	// followed by "no limit was given" - a note about a form nobody was
+	// looking at any more, read as a sentence about this one.
+	p.notes = nil
 
 	seed, err := wholeNumber(engine.SettingSeed, text.FieldSeed(), p.seed.Text)
 	if err != nil {

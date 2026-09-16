@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 )
 
@@ -30,6 +29,23 @@ import (
 // the guard measures, which is the whole point of having a palette rather than
 // colours at call sites.
 const ColorNamePanel fyne.ThemeColorName = "panel"
+
+// ColorNameLift is what the pointer does to a face that is itself light - the
+// filled primary button - and ColorNameShade is what a press does to it.
+//
+// Two names of ours rather than the toolkit's Hover and Pressed, and the
+// reason is arithmetic rather than taste. L* is not linear: the palette's hover
+// of white at 0x22 moves a dark face by 12.7 L* and the primary face by 3.7,
+// which is the 1.12 contrast O205 measured on Generate - a hover drawn and not
+// seen. To move the primary face by the 10 L* this palette calls noticeable
+// takes white at 0x66, and that same alpha on a dark face would move it by
+// twenty five. One name cannot be right for both faces, so the light face has
+// its own two. Measured on 2026-09-15: 83.0 L* under the pointer and 58.5
+// pressed, against 71.9 at rest, with the ink on every one of them above 4.5.
+const (
+	ColorNameLift  fyne.ThemeColorName = "lift"
+	ColorNameShade fyne.ThemeColorName = "shade"
+)
 
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
@@ -91,7 +107,14 @@ var (
 		// hover of docs/UX.md section 8.2 to the byte. The measured look is
 		// kept and the behaviour is corrected, because section 8 computed this
 		// as the background of a row and the toolkit uses it on anything.
-		theme.ColorNameHover:     overlay(0xFF, 0xFF, 0xFF, 0x22),
+		theme.ColorNameHover: overlay(0xFF, 0xFF, 0xFF, 0x22),
+		// What a press does to a dark face: more of the same white, because a
+		// press has to be told from the hover it follows and black over
+		// #2A2A2D moves it by 3.9 L*, which nobody sees. Measured 2026-09-15.
+		theme.ColorNamePressed: overlay(0xFF, 0xFF, 0xFF, 0x40),
+		// The two for the light face, see ColorNameLift.
+		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
+		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
 		theme.ColorNameSelection: hex(0x2C, 0x4A, 0x6B),
 		// A box to type in has to be findable without reading a word, and until
 		// 2026-08-23 it was not. Measured on the palette as it stood: a field
@@ -244,7 +267,13 @@ var (
 		// Black rather than white here: this page is white, so its hover is
 		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
 		// which is what section 8.3 measured.
-		theme.ColorNameHover:     overlay(0x00, 0x00, 0x00, 0x20),
+		theme.ColorNameHover: overlay(0x00, 0x00, 0x00, 0x20),
+		// The same way up as the hover: a light face is pressed darker. The
+		// light primary is dark blue, so it is lifted with white like the dark
+		// palette's - written the same way, measured only for the dark one.
+		theme.ColorNamePressed:   overlay(0x00, 0x00, 0x00, 0x33),
+		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
+		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
 		theme.ColorNameSelection: hex(0xCF, 0xE4, 0xF7),
 		// The same step, worked out the same way against a white page. Here a
 		// field is the sunken one - on white there is nowhere lighter to go -
@@ -282,6 +311,29 @@ func hex(r, g, b uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: 0x
 // than one it paints. The distinction is invisible in a palette table and
 // decides what a hovered button looks like.
 func overlay(r, g, b, a uint8) color.Color { return color.NRGBA{R: r, G: g, B: b, A: a} }
+
+// blended is an overlay laid over a face, worked out here so that a control
+// whose face IS the fill - the primary button - can paint one opaque colour
+// rather than stacking a translucent rectangle on an opaque one.
+//
+// The same arithmetic as the toolkit's blendColor (widget/button.go), the
+// over operator on premultiplied 16 bit channels, kept in step by hand
+// because the toolkit's is unexported: a guard measures the pixels a button
+// comes out as, so the two cannot quietly disagree without something going
+// red.
+func blended(under, over color.Color) color.Color {
+	dstR, dstG, dstB, dstA := under.RGBA()
+	srcR, srcG, srcB, srcA := over.RGBA()
+	blend := func(src, dst, alpha uint32) uint16 {
+		return uint16((src + dst - (dst * alpha / 0xFFFF)) & 0xFFFF)
+	}
+	return color.RGBA64{
+		R: blend(srcR, dstR, srcA),
+		G: blend(srcG, dstG, srcA),
+		B: blend(srcB, dstB, srcA),
+		A: blend(srcA, dstA, srcA),
+	}
+}
 
 // ours is the palette laid over the toolkit's theme.
 //
@@ -324,36 +376,34 @@ func (o ours) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.C
 // than the one its cards use, whatever the names suggest. Measured on screen:
 // with the toolkit's 24 and 18 the sections shouted over the page they were on.
 func (o ours) Size(name fyne.ThemeSizeName) float32 {
+	// Every answer is a token, so the ladder of type and the scale of
+	// distances have one home (parts/tokens.go). A size not named here is the
+	// toolkit's own, and the point of naming one is that somebody chose it.
+	//
+	// The room inside a control is the one that was argued over: the
+	// toolkit's 8 makes a row of a menu 41 px tall for 13 px of text -
+	// measured off the open list on 2026-08-12 - and moving it here made the
+	// whole form denser, not the list. The list got a control of its own
+	// instead (parts/openlist.go), and 6 stays on its own merits: it is the
+	// room inside every box and button on the form, and it went in against a
+	// render of the form.
 	switch name {
 	case theme.SizeNameSubHeadingText:
-		return 20 // the screen title
+		return TextTitle
 	case theme.SizeNameHeadingText:
-		return 17 // a section title, drawn by the card
+		return TextHeading
+	case theme.SizeNameText:
+		return TextBody
 	case theme.SizeNameCaptionText:
-		return 12 // an explanation under a field, at 11 it was hard work
+		return TextCaption
 	case theme.SizeNamePadding:
-		return 6 // room between things, the toolkit's 4 was tight
+		return ThemePadding
 	case theme.SizeNameInnerPadding:
-		// Room inside a control, above and below whatever it holds. The
-		// toolkit's 8 makes a row of a menu 41 px tall for 13 px of text -
-		// measured off the open list on 2026-08-12, which is 3.1 times the
-		// text and about half again what a desktop menu uses.
-		//
-		// The first half of what stood here is true and the conclusion was
-		// wrong, corrected on 2026-08-18. The theme IS asked for a size by name
-		// and not by widget. What that does not follow from is "it is the only
-		// knob there is", which is what this comment said for six days: a theme
-		// can be replaced for a SUBTREE with container.NewThemeOverride, and
-		// nobody had looked. So a list was made denser by moving the padding of
-		// the whole form, the owner reported the list again, and the answer the
-		// second time was a control of our own - see parts/openlist.go.
-		//
-		// This number stays at 6 on its own merits: it is the room inside every
-		// control on the form, it went in against a render of the form, and the
-		// toolkit's 8 was measured as too loose there as well.
-		return 6
+		return ControlInset
 	case theme.SizeNameCardRadius:
-		return 8
+		return RadiusPanel
+	case theme.SizeNameInputRadius, theme.SizeNameButtonRadius:
+		return RadiusField
 	}
 	return o.Theme.Size(name)
 }
@@ -362,47 +412,6 @@ func (o ours) Size(name fyne.ThemeSizeName) float32 {
 // guard to render with. A picture taken under a different theme is a picture
 // of a screen nobody has.
 func Theme() fyne.Theme { return ours{theme.DefaultTheme()} }
-
-// QuietUnlessChosen dims the ordinary text colour for one part of the screen.
-//
-// The tab strip is the reason it exists. The toolkit draws the tab somebody is
-// on in the accent colour and every other tab in the ordinary foreground -
-// tabs.go, the two lines either side of 716 - so measured off a render on
-// 2026-08-20 the SELECTED tab stood at 7.71 against the page while the three
-// nobody is on stood at 13.36. The one that is chosen was the dimmest label in
-// the strip, and four names competed at full strength for a strip that has one
-// answer.
-//
-// A theme for a subtree rather than a colour at a call site, because the strip
-// is drawn inside the toolkit's own renderer and there is nothing there to
-// hand a colour to. That mechanism is container.NewThemeOverride, which this
-// project spent six days believing did not exist - the comment claiming the
-// theme was "the only knob there is" was wrong, and this is the second place
-// the correction pays.
-//
-// Everything else falls through to our own theme, so the strip keeps the
-// palette, the sizes and the spacing the rest of the window has.
-func QuietUnlessChosen(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewThemeOverride(o, quiet{Theme()})
-}
-
-// AtFullStrength puts a subtree back on the ordinary theme.
-//
-// The screens live inside the tab container, so anything applied to the strip
-// reaches them as well. This is what stops a dimmer strip from dimming every
-// word on the form under it.
-func AtFullStrength(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewThemeOverride(o, Theme())
-}
-
-type quiet struct{ fyne.Theme }
-
-func (q quiet) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	if name == theme.ColorNameForeground {
-		return q.Theme.Color(theme.ColorNamePlaceHolder, variant)
-	}
-	return q.Theme.Color(name, variant)
-}
 
 // PaletteColour is one colour of either palette, for a guard to measure.
 //

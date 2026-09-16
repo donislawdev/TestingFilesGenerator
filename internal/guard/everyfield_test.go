@@ -190,7 +190,7 @@ func controlName(o fyne.CanvasObject) string {
 	case *parts.Chooser:
 		return fmt.Sprintf("the menu showing %q", v.Selected)
 	case *parts.Toggle:
-		return fmt.Sprintf("the switch %q", v.Text)
+		return "the switch"
 	}
 	return fmt.Sprintf("a %T", o)
 }

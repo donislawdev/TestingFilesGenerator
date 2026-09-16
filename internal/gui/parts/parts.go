@@ -21,8 +21,9 @@
 package parts
 
 import (
-	"fyne.io/fyne/v2"
+	"image/color"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -40,14 +41,27 @@ import (
 func Prose(text string) fyne.CanvasObject {
 	label := widget.NewLabel(text)
 	label.Wrapping = fyne.TextWrapWord
-	return label
+	return inkTight(label)
 }
 
-// Heading is the name of one field, above its control.
+// Heading is the name of one field, beside its control.
+//
+// Regular weight since 2026-09-14. Bold, at the same size as the value in the
+// box beside it, every name on the form was as loud as every value, so a
+// screen had twice as much heavy text as it had content and the eye had
+// nothing to skip. One rank is bold on a screen now - the title of a section
+// - and a name is read by where it stands: in the column of names, level with
+// its box.
 func Heading(text string) fyne.CanvasObject {
-	label := widget.NewLabel(text)
-	label.TextStyle = fyne.TextStyle{Bold: true}
-	return label
+	return words(text, TextBody, false, theme.ColorNameForeground)
+}
+
+// Subheading names a block inside a section - the list of what a preset finds,
+// the table of files inside an archive - at the size of a field's name and
+// the weight of a section's. The one bold thing at body size, so it is read as
+// a heading of the things under it and not as the name of a box beside it.
+func Subheading(text string) fyne.CanvasObject {
+	return words(text, TextBody, true, theme.ColorNameForeground)
 }
 
 // Title is the one line that says what a screen is for.
@@ -57,10 +71,79 @@ func Heading(text string) fyne.CanvasObject {
 // of every field were one style, so nothing led the eye and the first point of
 // the UX section 7 checklist - squint, and see what stands out - had no answer.
 func Title(text string) fyne.CanvasObject {
+	return words(text, TextTitle, true, theme.ColorNameForeground)
+}
+
+// Subtitle is the one quiet sentence under a screen's title, saying what the
+// screen is for.
+//
+// It exists because every work screen had two names until 2026-09-15: the word
+// on its tab and a title that said something else - "Single batch" over a
+// screen headed "Generate files". One vocabulary now: the tab's word is the
+// title, and what the title used to say is this sentence, in the colour of a
+// hint rather than of a value, so it reads as an explanation of the word above
+// it and not as a second heading competing with it.
+//
+// A toolkit label rather than canvas words, because a sentence wraps and a
+// name does not - the same split words and Prose make. Its colour is the
+// hint's, the same step the words on the strip stand at when they are not
+// chosen, so the head of a screen has one quiet colour and not two. Asked for
+// through quiet below, because the toolkit draws a low importance label in the
+// DISABLED colour, and this palette keeps that a step brighter than a hint on
+// purpose - see ColorNameDisabled in theme.go.
+func Subtitle(sentence string) fyne.CanvasObject {
+	label := widget.NewLabel(sentence)
+	label.Wrapping = fyne.TextWrapWord
+	label.Importance = widget.LowImportance
+	return quiet(label)
+}
+
+// Caption is a short quiet line over or under a thing, at the smallest rank
+// of the scale: the name of a state in the catalogue, the count of bytes
+// beside a size. The rank ByteCount has drawn since 2026-08-19, given a name
+// on 2026-09-15 when a second thing needed it - a rank used twice without a
+// name is GUI rule 7's definition of a missing style.
+func Caption(text string) fyne.CanvasObject {
 	label := widget.NewLabel(text)
-	label.TextStyle = fyne.TextStyle{Bold: true}
-	label.SizeName = theme.SizeNameSubHeadingText
-	return label
+	label.Wrapping = fyne.TextWrapWord
+	label.SizeName = theme.SizeNameCaptionText
+	label.Importance = widget.LowImportance
+	return quiet(label)
+}
+
+// quiet draws a low importance label in the hint's colour rather than the
+// disabled one, and takes the room a label keeps around itself off it.
+//
+// One helper rather than one at each call site, because O213 was four call
+// sites saying different things: a caption under a field, the count of bytes, a
+// folded section's summary and this subtitle were all widget.LowImportance,
+// which the toolkit draws in ColorNameDisabled - #C2C8CD, 80 L*, a step
+// BRIGHTER than a hint. So a caption meant to recede sat louder than the
+// placeholder in an empty box beside it. Owner's decision on 2026-09-15: one
+// quiet, the hint's, and the disabled colour kept for a value that is switched
+// off - which is content somebody may want to re-read and so is right to be the
+// brighter of the two.
+func quiet(o fyne.CanvasObject) fyne.CanvasObject {
+	return container.NewThemeOverride(o, quietInk{noInnerPadding{Theme()}})
+}
+
+// quietInk is the window's theme with a low importance label drawn in the
+// hint's colour rather than the disabled one, and without the room a label
+// keeps around itself.
+type quietInk struct{ noInnerPadding }
+
+func (q quietInk) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	if name == theme.ColorNameDisabled {
+		return q.noInnerPadding.Color(theme.ColorNamePlaceHolder, variant)
+	}
+	return q.noInnerPadding.Color(name, variant)
+}
+
+// Titled is what stands above a screen's sections: its name, and under it the
+// sentence saying what it is for. The two are one step apart, the step a
+// field's name keeps from its box, because they are one thing read together.
+func Titled(name, sentence string) fyne.CanvasObject {
+	return Column(GapLabel, Title(name), Subtitle(sentence))
 }
 
 // Section groups fields that answer one question, under a name.
@@ -82,7 +165,7 @@ func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
 	body := make([]fyne.CanvasObject, 0, len(content)+1)
 	body = append(body, sectionTitle(title))
 	body = append(body, content...)
-	return container.NewStack(panelSurface(), container.NewPadded(Column(GapField, body...)))
+	return container.NewStack(panelSurface(), Padded(Inset, Column(GapField, body...)))
 }
 
 // FieldColumn stacks fields the way a section stacks them, for the boxes a screen
@@ -111,10 +194,7 @@ func FieldColumn(children ...fyne.CanvasObject) *fyne.Container {
 // ranks and this is the second, so moving off the toolkit's widget must not
 // quietly move the type with it.
 func sectionTitle(text string) fyne.CanvasObject {
-	label := widget.NewLabel(text)
-	label.TextStyle = fyne.TextStyle{Bold: true}
-	label.SizeName = theme.SizeNameHeadingText
-	return label
+	return words(text, TextHeading, true, theme.ColorNameForeground)
 }
 
 // panelSurface is what a section and the action bar stand on.
@@ -133,7 +213,7 @@ func sectionTitle(text string) fyne.CanvasObject {
 // a surface. The border belongs to the fields now.
 func panelSurface() *canvas.Rectangle {
 	rect := canvas.NewRectangle(PaletteColour(ColorNamePanel, theme.VariantDark))
-	rect.CornerRadius = Theme().Size(theme.SizeNameCardRadius)
+	rect.CornerRadius = RadiusPanel
 	return rect
 }
 
@@ -151,9 +231,7 @@ func panelSurface() *canvas.Rectangle {
 func Bullets(items []string) fyne.CanvasObject {
 	rows := make([]fyne.CanvasObject, 0, len(items))
 	for _, item := range items {
-		marker := widget.NewLabel(bulletMarker)
-		marker.Importance = widget.LowImportance
-		marker.SizeName = theme.SizeNameCaptionText
+		marker := words(bulletMarker, TextCaption, false, theme.ColorNamePlaceHolder)
 		rows = append(rows, container.NewBorder(nil, nil, marker, nil, Note(item)))
 	}
 	// Tight, because these items are one list rather than a run of separate
@@ -176,7 +254,53 @@ const bulletMarker = "•"
 // Stacked, each took a full width it did not need and pushed the next one off
 // the screen.
 func Row(fields ...fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewGridWithColumns(len(fields), fields...)
+	return container.New(columns{gap: GapColumns}, fields...)
+}
+
+// columns shares a row out in equal columns with one gap from the scale
+// between them. The toolkit's grid does the same with the theme's padding,
+// which is the smallest step - and two fields side by side are two things,
+// not one thing and its caption.
+type columns struct{ gap float32 }
+
+func (c columns) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.NewSize(0, 0)
+	shown := 0
+	for _, o := range objects {
+		if !o.Visible() {
+			continue
+		}
+		min := o.MinSize()
+		size.Width = fyne.Max(size.Width, min.Width)
+		size.Height = fyne.Max(size.Height, min.Height)
+		shown++
+	}
+	if shown > 0 {
+		size.Width = size.Width*float32(shown) + c.gap*float32(shown-1)
+	}
+	return size
+}
+
+func (c columns) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	shown := 0
+	for _, o := range objects {
+		if o.Visible() {
+			shown++
+		}
+	}
+	if shown == 0 {
+		return
+	}
+	width := (size.Width - c.gap*float32(shown-1)) / float32(shown)
+	x := float32(0)
+	for _, o := range objects {
+		if !o.Visible() {
+			continue
+		}
+		o.Resize(fyne.NewSize(width, size.Height))
+		o.Move(fyne.NewPos(x, 0))
+		x += width + c.gap
+	}
 }
 
 // BesideFields puts something that is not a field into a row of them without
@@ -225,7 +349,7 @@ func Divider() fyne.CanvasObject {
 type dividerLayout struct{}
 
 func (dividerLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	return fyne.NewSize(1+theme.Padding()*4, 0)
+	return fyne.NewSize(GapSection, 0)
 }
 
 func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
@@ -233,7 +357,7 @@ func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	// layout is what owns the width either way.
 	for _, o := range objects {
 		o.Resize(fyne.NewSize(1, size.Height))
-		o.Move(fyne.NewPos(theme.Padding()*2, 0))
+		o.Move(fyne.NewPos(GapSection/2, 0))
 	}
 }
 
@@ -268,7 +392,7 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	// rather than at its content. The status line and every field name on the
 	// screen above it were 6 px apart, which is the distance that reads as a
 	// mistake rather than as an indent.
-	column := container.New(readableWidth{}, Indented(container.NewVBox(content...)))
+	column := container.New(readableWidth{}, Indented(Column(GapLabel, content...)))
 	standing := fyne.CanvasObject(column)
 	if rail != nil {
 		// Laid over the column rather than beside it. Sharing the row, the rail
@@ -280,29 +404,19 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 		// as tall as the bar is what the first attempt drew.
 		standing = container.NewStack(column, container.NewVBox(rail))
 	}
-	return container.NewStack(panelSurface(), container.NewPadded(standing))
+	return container.NewStack(panelSurface(), Padded(InsetBar, standing))
 }
 
-// SlimHeight is how tall a progress track is drawn.
-//
-// The toolkit's progress bar is as tall as the words "100%" and the padding
-// around them, because it writes the percentage inside itself. The line
-// directly under it already ends with that same percentage - see text.Progress
-// - so the number stood on the screen twice and the second copy cost 23 px of
-// a bar the owner asked to make smaller. Measured from the stored tree on
-// 2026-08-19: the bar was 31 px and the line under it another 31.
-const SlimHeight = 8
-
-// Screen stacks sections with a heading on top.
+// Screen stacks sections under a head - a Title, or a Titled pair.
 //
 // Windows compose sections rather than laying themselves out in one function.
 // That is not tidiness: the shape gate caps a function at eighty lines of
 // logic and window layout is long by nature, so a window written as one
 // function would arrive as an argument for raising the cap. The cap is a
 // ratchet and only goes down, so the composition has to come first.
-func Screen(heading string, sections ...fyne.CanvasObject) fyne.CanvasObject {
+func Screen(head fyne.CanvasObject, sections ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.New(readableWidth{},
-		Stacked(append([]fyne.CanvasObject{Indented(Title(heading))}, sections...)...))
+		Stacked(append([]fyne.CanvasObject{Indented(head)}, sections...)...))
 }
 
 // Indented puts something that stands outside a panel on the same left edge as
@@ -318,19 +432,11 @@ func Indented(o fyne.CanvasObject) fyne.CanvasObject {
 }
 
 // indent is the layout behind Indented. Horizontal only: the vertical scale
-// above already says how far apart these things stand.
-//
-// It asks the installed theme at layout time rather than holding a number, and
-// that is not caution. A panel gets its inset from container.NewPadded, which
-// reads the installed theme - so an indent taken from our own palette object
-// agrees with it only while the two are the same. They are not always: a test
-// canvas that has not installed our theme pads by 4 where we pad by 6, and the
-// first version of this was 2 px out under exactly that canvas. Alignment is a
-// relationship between two things, so it has to be read from the same place
-// both of them read it from.
+// says how far apart these things stand. It is the same token a panel keeps
+// between its edge and its content, so the two line up by construction.
 type indent struct{}
 
-func (indent) by() float32 { return theme.Padding() }
+func (indent) by() float32 { return Inset }
 
 func (i indent) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	size := fyne.NewSize(0, 0)
@@ -348,33 +454,6 @@ func (i indent) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 		o.Move(fyne.NewPos(i.by(), 0))
 	}
 }
-
-// ColumnWidth is as wide as this form is allowed to get, whatever the window
-// does. O72, measured on 2026-08-10 and again on 2026-08-11: maximised to
-// 3862 px, every box was 3848 to 3854 px of it - 99.7 per cent - so the seed
-// field holding "0" was nearly four thousand pixels wide. UX6 puts it as a
-// question rather than a rule: run your eye along a row to the right edge, and
-// if you got lost the row is too long.
-//
-// 820 comes from the longest sentence the form actually holds, which ends at
-// 797 px - the hint under the self describing label - so nothing rewraps and
-// this change only stops the stretching. It is not a claim about the ideal
-// measure: prose is easiest at 45 to 75 characters a line and 820 px is about
-// 112, so the typography pass has room to tighten this. It cannot widen it.
-const ColumnWidth = 820
-
-// NumericWidth is as wide as a box holding a number gets.
-//
-// A box is a promise about what goes in it, and one that runs half the window
-// while holding "0" promises something the field cannot take. Measured on
-// 2026-08-12 before this existed: the seed and the count were 397 and 399 px
-// wide for a single digit, because a column split in two hands each half to
-// whatever is in it.
-//
-// 140 px holds eleven digits at the text size this window uses, which covers
-// every number any of these fields accepts - the ceiling on files is seven
-// digits and the largest size anybody types is eight.
-const NumericWidth = 140
 
 // Numeric sizes a control to what it holds rather than to the column it is in.
 //
@@ -458,38 +537,6 @@ func (readableWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	objects[0].Resize(fyne.NewSize(width, size.Height))
 	objects[0].Move(fyne.NewPos((size.Width-width)/2, 0))
 }
-
-// The vertical scale. Three steps, and the ratio between them is the point
-// rather than the individual numbers.
-//
-// Measured on 2026-08-20, before this existed: every gap in the form came out
-// of the theme's one padding value, so the distance from a label to its own
-// control and the distance from the end of one field to the start of the next
-// were 20 px and 23 px. The form said "these belong together" and "this group
-// has ended" with the same space, which is the whole of what spacing is for.
-// A picture of it reads as a wall of text, and that was the first finding of
-// the design audit.
-//
-// The steps have to be far enough apart to be read without counting. The pairs
-// above were fifteen per cent apart, which the eye does not resolve.
-const (
-	// GapTight is the space inside one field, between its name, its control
-	// and the sentence under it. Those are one thing, so they sit close.
-	GapTight = 1
-	// GapField is the space between two fields in a section.
-	GapField = 9
-	// GapSection is the space between two panels.
-	//
-	// Reported from use on 2026-08-18, looking at the recipe screen: with a
-	// panel per batch stacked one under another, the gap the toolkit left was
-	// small enough that two panels read as one long one with a line across it.
-	// The edge of a panel is what says where a batch begins, and it was doing
-	// that job at the same strength as the gap between two fields inside it.
-	//
-	// Applied wherever panels are stacked rather than inside Section, so a
-	// panel used on its own carries no stray space under it.
-	GapSection = 14
-)
 
 // Column stacks its children with one fixed gap, whatever the theme's padding
 // is.

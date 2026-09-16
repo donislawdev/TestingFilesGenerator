@@ -54,6 +54,13 @@ type Binary struct {
 	// added from GoVersion.
 	Modules map[string]string
 
+	// Packages is which of OUR OWN packages this binary links, by import path.
+	// Only one kind can matter to the registry: a package of ours that embeds
+	// somebody else's bytes. Both binaries are one module, so Modules cannot
+	// say whether the window's font is in the command line binary, and this
+	// can. Read from go list, the same way as Modules.
+	Packages map[string]bool
+
 	// GoVersion is the toolchain the binary was built with, which is also the
 	// version of the runtime and standard library inside it.
 	GoVersion string
@@ -196,7 +203,7 @@ func carriedBy(binary Binary) []Item {
 		}
 		items = append(items, moduleItem(path, binary.Modules[path], reviewed))
 	}
-	return append(items, embeddedItems(linkedSet(binary.Modules))...)
+	return append(items, embeddedItems(linkedSet(binary.Modules), binary.Packages)...)
 }
 
 func linkedSet(versions map[string]string) map[string]bool {

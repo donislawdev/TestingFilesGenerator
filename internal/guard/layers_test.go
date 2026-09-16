@@ -84,12 +84,14 @@ var layer = map[string]int{
 	"internal/engine": 3,
 	"internal/audit":  3,
 
-	"internal/cli":        4,
-	"internal/gui":        4,
-	"internal/gui/parts":  4,
-	"internal/gui/icon":   4,
-	"internal/gui/text":   4,
-	"internal/gui/window": 4,
+	"internal/cli":           4,
+	"internal/gui":           4,
+	"internal/gui/parts":     4,
+	"internal/gui/icon":      4,
+	"internal/gui/font":      4,
+	"internal/gui/catalogue": 4,
+	"internal/gui/text":      4,
+	"internal/gui/window":    4,
 
 	"cmd/tfg":     5,
 	"cmd/tfg-gui": 5,
@@ -175,7 +177,9 @@ var sameLayerAllowed = map[string][]string{
 	// package that reached for the engine to word a message would put half a
 	// message here and half where the engine says it, which is how two
 	// wordings for one thing start.
-	"internal/gui/parts": {"internal/gui/text"},
+	// And the typeface, since 2026-09-15: bytes of a font and nothing else,
+	// which the theme in parts hands to the toolkit.
+	"internal/gui/parts": {"internal/gui/text", "internal/gui/font"},
 	// And the package that opens a real window reaches all three. It is the
 	// only one that touches the toolkit's app package, so it is the only one
 	// that needs a C compiler.
@@ -187,7 +191,11 @@ var sameLayerAllowed = map[string][]string{
 	// - the one that watches for words outside the text package worked from a
 	// list of the calls that show text, and nobody had put the toolkit's
 	// NewWindow on it. The rule is the other way round now.
-	"internal/gui": {"internal/gui/window", "internal/gui/parts", "internal/gui/text", "internal/gui/icon"},
+	"internal/gui": {"internal/gui/window", "internal/gui/parts", "internal/gui/text", "internal/gui/icon", "internal/gui/catalogue"},
+	// The catalogue draws the parts and nothing else of ours: it is a screen
+	// for whoever builds the window, and a screen that reached the engine
+	// would be a fifth work screen.
+	"internal/gui/catalogue": {"internal/gui/parts"},
 }
 
 // Edges that a plain layer number would allow but that must never exist.

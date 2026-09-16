@@ -13,43 +13,59 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// Space says what belongs together.
+// A name stands level with its box, on one edge with every other box.
 //
-// Measured off a render on 2026-08-20, before the scale existed: every gap in
-// the form came out of the theme's one padding value, so the distance from a
-// label to its own control was 20 px and the distance from the end of one
-// field to the start of the next was 23 px. Sixteen consecutive gaps down one
-// card, all of them between 20 and 27. The form gave the same distance to
-// "these three things are one field" and "that group has ended", which is the
-// whole of what spacing does, and a picture of it reads as a wall of text.
+// GUI rule 13 in the owner's words: a form is a grid with a column of names,
+// values in a second column, names lined up with each other. Until
+// 2026-09-14 a name stood OVER its box, and this guard measured the gap
+// between the two against the gap between two fields, because those were the
+// two distances a stacked form has. A row has one: the space between two
+// rows. What holds a field together in a row is that its name and its box
+// share a line, and what lines the form up is that every box starts where
+// every other box starts.
 //
-// This asks the laid out screen rather than the constants. Reading the numbers
-// back out of the package that declares them proves they were declared, which
-// is not the question - what a person sees is where the widgets ended up, and
-// a layout is free to add padding of its own on top of any gap it is given.
-// The old code did exactly that, which is why a spacer could not make a gap
-// smaller and the tight step needed a layout rather than a constant.
+// Three things, all read off the laid out screen rather than off the
+// constants, for the reason the section guards give below: a layout is free
+// to put a name anywhere, and reading the numbers back out of the package that
+// declares them proves they were declared, which is not the question.
 //
-// The ratio is what is asserted rather than the values. Nothing here says a
-// field's parts must be 15 px apart - that is a judgement to make with a
-// picture. What has to hold is that the eye can tell the two apart without
-// counting, and 1.5 is the weakest version of that claim: the pair this
-// replaced was 1.15 apart.
-func TestAFieldHoldsTogetherMoreTightlyThanTwoFieldsDo(t *testing.T) {
+// Level means the middle of the name is the middle of the box, to a pixel.
+// "Inside the box's height" was the first version and a mutation laying every
+// name at the top of its row passed it: a name 19 px tall at the top of a 32
+// px row has its middle 6 px above the box's, still inside, and a form where
+// every name floats above its box reads as the stacked form it replaced. One edge means every control of the screen begins
+// at one X, whatever the length of the name beside it - the column of names
+// is worked out from the widest name the window can show, so "Seed" and
+// "Output directory" put their boxes on the same line. Apart means two rows
+// have room between them, or the form is a list with no rhythm.
+func TestANameStandsLevelWithItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 	generate := tabContent(t, content, text.TabOneTarget())
 
-	inside := gapBelowLabel(t, generate, text.FieldFormat())
-	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
-
-	if inside <= 0 || between <= 0 {
-		t.Fatalf("measured %.1f px inside a field and %.1f px between two, and neither can be zero", inside, between)
+	names := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldTargetID(),
+		text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
+	edges := map[float32][]string{}
+	var boxes []band
+	for _, label := range names {
+		name, box := nameAndBox(t, generate, label)
+		middle, boxMiddle := name.Y+name.Height/2, box.Y+box.Height/2
+		if off := middle - boxMiddle; off > 1 || off < -1 {
+			t.Errorf("%q has its middle at y=%.1f and its box its middle at y=%.1f, so the name is not level with the box",
+				label, middle, boxMiddle)
+		}
+		edges[box.X] = append(edges[box.X], label)
+		boxes = append(boxes, box)
 	}
-	if between < inside*1.5 {
-		t.Errorf("a field's own parts are %.1f px apart and two fields are %.1f px apart, which is a ratio of %.2f."+
-			" Below 1.5 the two distances read as one and the form has no grouping left",
-			inside, between, between/inside)
+	if len(edges) != 1 {
+		t.Errorf("the boxes on the generate screen start on %d different edges, and a form is a grid only while they start on one: %v",
+			len(edges), edges)
+	}
+	for i := 1; i < len(boxes); i++ {
+		if boxes[i].Y <= boxes[i-1].Y+boxes[i-1].Height {
+			t.Errorf("%q and %q are not apart: one box ends at %.1f and the next begins at %.1f",
+				names[i-1], names[i], boxes[i-1].Y+boxes[i-1].Height, boxes[i].Y)
+		}
 	}
 }
 
@@ -181,8 +197,8 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 		if ok {
 			return
 		}
-		label, is := o.(*widget.Label)
-		if !is || label.Text != words {
+		shown, is := wordsOf(o)
+		if !is || shown != words {
 			return
 		}
 		found, ok = band{X: at.X, Y: at.Y, Width: o.Size().Width, Height: o.Size().Height}, true
@@ -190,9 +206,8 @@ func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 	return found, ok
 }
 
-// gapBelowLabel is the space between a field's name and the control under it,
-// which is the tightest step the scale has.
-func gapBelowLabel(t *testing.T, screen fyne.CanvasObject, label string) float32 {
+// nameAndBox is where a field's name and its control ended up on the screen.
+func nameAndBox(t *testing.T, screen fyne.CanvasObject, label string) (name, box band) {
 	t.Helper()
 	name, ok := labelBox(screen, label)
 	if !ok {
@@ -202,11 +217,11 @@ func gapBelowLabel(t *testing.T, screen fyne.CanvasObject, label string) float32
 	if control == nil {
 		t.Fatalf("no control under %q", label)
 	}
-	box, ok := objectBox(screen, control)
+	box, ok = objectBox(screen, control)
 	if !ok {
 		t.Fatalf("the control under %q is not laid out", label)
 	}
-	return box.Y - (name.Y + name.Height)
+	return name, box
 }
 
 // objectBox is where one object this test already holds ended up.
@@ -299,10 +314,6 @@ func atAbsolute(root fyne.CanvasObject, visit func(fyne.CanvasObject, fyne.Posit
 			step(v.Content, at)
 		case *widget.Card:
 			step(v.Content, at)
-		case *container.AppTabs:
-			for _, item := range v.Items {
-				step(item.Content, at)
-			}
 		case *container.ThemeOverride:
 			// Every screen is wrapped in one of these since 2026-08-20. A walk
 			// that stops here reports a screen with nothing on it, and three

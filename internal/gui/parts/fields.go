@@ -100,7 +100,26 @@ type Fields struct {
 	// the wiring would be one where Ctrl+Enter does nothing, which is a defect
 	// nobody would find by looking.
 	shortcuts func(fyne.Shortcut)
+
+	// names is how wide the column of names is, so every field on the screen
+	// puts its control on the same edge. Set once by the screen from the
+	// widest name the window can ever show - see LabelColumn - and nought
+	// until then, which lays a name out at its own width.
+	names float32
 }
+
+// LabelColumn says how wide the column of names is on this screen.
+//
+// Every field built after this stands its control on that edge. Handed in
+// rather than measured from the fields as they arrive, because the settings a
+// chosen format declares arrive after the screen is built, and a column that
+// widened to fit them would move every control on the screen the moment
+// somebody chose a format with a long setting name.
+func (s *Fields) LabelColumn(width float32) { s.names = width }
+
+// Names is the width of the column of names, for a screen laying out a row
+// of its own beside the fields.
+func (s *Fields) Names() float32 { return s.names }
 
 // PassShortcutsTo says where the boxes of this screen should send a shortcut
 // they have no use for. Called once, before the fields are built.
@@ -192,7 +211,13 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 		// And once now, for a box that arrives with a size already in it.
 		count.show(b.Text)
 	}
-	return count
+	// Beside the box on its own line, with no room of its own around the ink,
+	// so what the row puts between the box and the count is what reaches the
+	// screen. Until 2026-09-14 it stood at the far end of the name's line, 190
+	// px from the box it was counting for. Drawn through quiet since 2026-09-15
+	// - it is a low importance label, so the same O213 that dimmed a caption
+	// dimmed this. See parts.quiet.
+	return quiet(count)
 }
 
 // Add builds a field and hands back the thing to put on the screen.
@@ -203,8 +228,21 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// The line under a field is now the first sentence behind its button - see
 	// alsoSaying. Folded here rather than at the thirty-two call sites, so a
 	// field that still carries one is not something anybody can write.
-	object, body, area := FieldSaying(label, "", alsoSaying(hint, detail),
+	object, body, area := FieldSaying(s.names, label, alsoSaying(hint, detail),
 		s.required[setting], s.counter(setting, control), control)
+	return s.register(setting, label, control, object, body, area)
+}
+
+// AddCell builds a field as a cell of a table - its name over its control -
+// for the lists whose rows all have the same columns. Everything else about
+// it is a field: the refusal, the edge, the count, the registry.
+func (s *Fields) AddCell(setting, label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
+	object, body, area := CellSaying(label, alsoSaying(hint, detail), s.required[setting], control)
+	return s.register(setting, label, control, object, body, area)
+}
+
+// register is what every kind of field goes through once it is built.
+func (s *Fields) register(setting, label string, control, object, body fyne.CanvasObject, area *ErrorArea) fyne.CanvasObject {
 	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object, body: body}
 	s.list = append(s.list, f)
 	// Last one wins, which is what a rebuilt screen needs: the preset screen
@@ -216,20 +254,28 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	return object
 }
 
-// AddToggle is a switch, which is the one control that carries its own name.
-//
-// It goes through the same registry as everything else. A switch cannot hold a
-// value the engine refuses today, and leaving it out would be an exception to
-// remember - which is the class of thing this type exists to end.
-func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
-	object, body, area := ToggleSaying(name, "", alsoSaying(hint, detail), check)
-	f := &Field{Setting: setting, Label: name, Control: check, area: area, object: object, body: body}
-	s.list = append(s.list, f)
-	s.by[setting] = f
-	return object
+// Unlabelled is a row of the form for something that is not a field and has
+// no name of its own - the switch that chooses between three ways of saying
+// how big - so it stands in the column of controls like everything else.
+func (s *Fields) Unlabelled(control fyne.CanvasObject) fyne.CanvasObject {
+	return FieldRow(s.names, Clear(), control)
 }
 
-// Row puts fields side by side and gives their refusals the whole width.
+// AddToggle is a switch, and since 2026-09-15 it is a field like any other: its
+// name in the column of names, its square in the column of controls.
+//
+// It used to be the one field whose name sat on the control rather than in the
+// column - the answer to O72 while names stood ABOVE their boxes. In a grid the
+// name stands beside the square like every other name, so this is Add with no
+// special case: WithRing leaves the square alone because it draws its own edge,
+// and the switch cannot be refused so its error area never speaks.
+func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
+	return s.Add(setting, name, hint, detail, check)
+}
+
+// Row puts cells of a table side by side and gives their refusals the whole
+// width. For fields built with AddCell - a field built with Add is a row of
+// the form already and stands under the one before it.
 //
 // A refusal in this tool has four parts - what happened, why, what is allowed,
 // what to do instead - so it is a sentence and not a word. Inside a column of
@@ -290,22 +336,66 @@ func (s *Fields) WhenTypedIn(tell func(setting string)) {
 	s.tell = tell
 }
 
-// listen makes every box under one control report what is typed into it.
+// listen makes every control under one field report a change to it: a box
+// when it is typed into, a menu when a value is chosen, a switch when it is
+// flipped.
 //
 // Chained rather than assigned, because a control that already had something to
-// do on a change keeps doing it. Nothing in this window does today, and a
-// silently dropped callback is the kind of thing nobody notices until the
-// screen stops reacting.
+// do on a change keeps doing it - the format menu rebuilds the settings under
+// it, and a switch on the batch screen shows and hides boxes. A silently
+// dropped callback is the kind of thing nobody notices until the screen stops
+// reacting. The chain runs the control's own work FIRST, so what is reported
+// is read off a screen that has already changed.
+//
+// Menus and switches since 2026-09-14. Only boxes reported until then, which
+// was enough while the only listener was the live check and the only thing a
+// menu could be wrong about was nothing. It stopped being enough when the
+// foot of the form started saying what the form comes to: a format chosen from
+// the menu changed the run and the line went on naming the old one.
 func (s *Fields) listen(setting string, control fyne.CanvasObject) {
-	for _, box := range boxesIn(control) {
-		already := box.OnChanged
-		box.OnChanged = func(value string) {
-			if already != nil {
-				already(value)
+	// Read at the moment somebody types rather than at the moment this is
+	// wired, so a listener asked for after the field exists still hears it.
+	report := func() {
+		if s.tell != nil {
+			s.tell(setting)
+		}
+	}
+	walkControls(control, func(o fyne.CanvasObject) {
+		switch it := o.(type) {
+		case *Entry:
+			already := it.OnChanged
+			it.OnChanged = func(value string) {
+				if already != nil {
+					already(value)
+				}
+				report()
 			}
-			if s.tell != nil {
-				s.tell(setting)
+		case *Chooser:
+			already := it.OnChanged
+			it.OnChanged = func(value string) {
+				if already != nil {
+					already(value)
+				}
+				report()
 			}
+		case *Toggle:
+			already := it.OnChanged
+			it.OnChanged = func(on bool) {
+				if already != nil {
+					already(on)
+				}
+				report()
+			}
+		}
+	})
+}
+
+// walkControls visits a control and everything inside it, containers included.
+func walkControls(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+	visit(o)
+	if box, ok := o.(*fyne.Container); ok {
+		for _, child := range box.Objects {
+			walkControls(child, visit)
 		}
 	}
 }

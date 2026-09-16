@@ -67,33 +67,106 @@ func files(n int) string {
 	return sayN("Files", "1 file", "{{.Count}} files", n, nil)
 }
 
-// separator divides the facts on a status line.
+// separator divides the facts on one line.
 //
-// They are separate facts and were one sentence: how many files, how big, and
-// whether anything exists yet ran together with a full stop between them, so
-// three unrelated things read as prose and none of them could be found at a
-// glance. Divided, the line is scanned rather than read.
+// They are separate facts and were one sentence: a folded section's stated
+// values ran together with a full stop between them, so unrelated things read
+// as prose and none of them could be found at a glance. Divided, the line is
+// scanned rather than read.
 const separator = " · "
 
-// PreviewCost is the line under the buttons after Preview, saying what the run
-// would cost and that nothing exists yet.
+// RunLine is the line under the buttons while nothing pressed has spoken:
+// what the form comes to, worked out from the form as it is typed.
 //
-// It names the kinds of file as well as the count, added on 2026-08-12. On the
-// generate screen that is on the screen anyway, and on the preset screen it is
-// the answer to a question the screen could not otherwise be asked: a preset
-// supplies the format itself unless somebody says otherwise, so "seven files,
-// 70 MiB" left out the one fact that says what they are.
+// It grew out of the line that named only the destination. G6 says the window
+// says what a run will cost before anything is pressed, and until 2026-09-14
+// that answer was behind the Preview button - the line at rest said where the
+// files would go and nothing else. Now it says how many, how big, what kind
+// and where, and Preview turns the estimate into a measurement.
 //
-// The list is left out entirely when there is nothing to list, rather than
-// shown empty. A plan that produces no files is a legal outcome here and it
-// already says so in the count.
-func PreviewCost(count int, formats []string, total string) string {
-	line := files(count)
-	if len(formats) > 0 {
-		line += separator + strings.Join(formats, ", ")
+// One line rather than a panel of rows, and that is the owner's verdict on
+// the rows: four short values in a wide strip read as a panel with nothing
+// in it. A line holds the same four facts in the room the bar already keeps.
+//
+// The facts are divided the way FoldedSummary divides them, so the line is
+// scanned rather than read. The destination comes last and is left off when
+// there is none, so a form with the directory cleared still says what it
+// comes to.
+func RunLine(count int, total string, formats []string, destination string) string {
+	facts := []string{files(count)}
+	if total != "" {
+		facts = append(facts, total)
 	}
-	return line + separator + total + separator +
-		say("PreviewNothingWritten", "nothing written yet")
+	if len(formats) > 0 {
+		facts = append(facts, Formats(formats))
+	}
+	if destination != "" {
+		facts = append(facts, WillGoTo(destination))
+	}
+	return strings.Join(facts, separator)
+}
+
+// WillGoTo is the destination, as one fact among the others on the line.
+func WillGoTo(dir string) string {
+	return sayf("WillGoTo", "will go to {{.Directory}}", map[string]any{"Directory": dir})
+}
+
+// WritingTo is what the line says when the form cannot be added up yet - a
+// batch with no name, a count that is not a number. The one fact that is
+// still true is where the files would go, and it is the one field that
+// decides where somebody else's disk gets written to, so it stays on the
+// line on its own rather than the line going blank.
+func WritingTo(dir string) string {
+	return sayf("WritingTo", "Files will go to {{.Directory}}", map[string]any{"Directory": dir})
+}
+
+// AndNothingWrittenYet follows the line after a preview, which has made
+// every number on it exact and put nothing on the disk. It carries its own
+// divider, so a caller appends it to a line rather than assembling one.
+func AndNothingWrittenYet() string {
+	return separator + say("PreviewNothingWritten", "nothing written yet")
+}
+
+// Formats is a list of kinds of file, said on one line. Here rather than
+// joined at the call site because the mark between two items is something a
+// person reads, and one language's comma is another's ideograph.
+func Formats(kinds []string) string { return strings.Join(kinds, listSeparator) }
+
+// listSeparator divides the items of a list said on one line.
+const listSeparator = ", "
+
+// SizeAndBytes is a size a person can read with the exact count after it,
+// because a limit under test is exact and "10 MB" does not say whether it is
+// 10 000 000 or 10 485 760. The exact count is left off when the readable
+// form already is it.
+func SizeAndBytes(human, exact string) string {
+	if human == exact {
+		return human
+	}
+	return sayf("SizeAndBytes", "{{.Human}} ({{.Exact}})",
+		map[string]any{"Human": human, "Exact": exact})
+}
+
+// SizeBetween is the total of a form that draws its sizes from a range. The
+// draw happens when the run is planned, so before that the honest answer is
+// the two ends - and Preview turns it into one number.
+func SizeBetween(least, most string) string {
+	return sayf("SizeBetween", "between {{.Least}} and {{.Most}}",
+		map[string]any{"Least": least, "Most": most})
+}
+
+// SizeFromContents is the total of a form holding a container whose size is
+// whatever the files inside it come to, which nothing knows until the
+// container is built.
+func SizeFromContents() string {
+	return say("SizeFromContents", "decided by the files inside, known after Preview")
+}
+
+// DirectoryWithFreeSpace is the output directory with the room left on its
+// disk after it, once a preview has measured that room.
+func DirectoryWithFreeSpace(dir, free string) string {
+	return sayf("DirectoryWithFreeSpace", "{{.Directory}} ({{.Free}} free)",
+		map[string]any{"Directory": dir, "Free": free})
 }
 
 // ManifestTooLargeToRead is said when a run will write a record this build
@@ -111,25 +184,6 @@ func ManifestTooLargeToRead(size, limit string) string {
 	return sayf("ManifestTooLargeToRead",
 		"this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable.",
 		map[string]any{"Size": size, "Limit": limit})
-}
-
-// PreviewFreeSpace follows PreviewCost when the disk could be measured. It is
-// a separate fact because a disk we cannot read has to say nothing at all
-// rather than invent a number.
-func PreviewFreeSpace(dir, free string) string {
-	return separator + sayf("PreviewFreeSpace", "{{.Free}} free in {{.Directory}}",
-		map[string]any{"Free": free, "Directory": dir})
-}
-
-// WritingTo is what the status line says when a run has not said anything yet.
-//
-// The destination is the one field on these forms that is off the screen when
-// the window opens, and it is the only one that decides where somebody else's
-// disk gets written to. It sits here because the line is kept clear for a run
-// whether or not there is one, so saying this costs no room at all - and a
-// preview replaces it with a sentence that names the same directory.
-func WritingTo(dir string) string {
-	return sayf("WritingTo", "Files will go to {{.Directory}}", map[string]any{"Directory": dir})
 }
 
 // WorkingOutTheCost is what a preview says while it is going.

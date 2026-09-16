@@ -14,7 +14,109 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Changed
+
+- **The window draws its own buttons, switches and choosers.** A button now
+  has one filled face for the action that does the work and an outline for the
+  ones beside it, lightens under the pointer, darkens when pressed, and shows a
+  clear ring in the accent colour when the keyboard is on it - where the
+  toolkit's own button blended that ring into the fill so it could not be seen
+  on the filled one, and had no pressed look at all. Enter presses a button as
+  well as the space bar. The three ways of stating a size are one segmented
+  switch instead of three circles: one keyboard stop the arrow keys step
+  through. A tick-box switch stands under its name in the column like every
+  other field rather than carrying its own words, and a caption under a field
+  now recedes to the same quiet grey as a hint rather than sitting a shade
+  brighter.
+
+- **The window lays every form out as a grid.** A field is one row now: its
+  name in a column of names, its box beside it, and every box on a screen
+  starting on the same edge. Until now the name stood over the box, so each
+  field cost two rows, and the small button that opens a field's explanation
+  was the tallest thing on the name's line - the name of a box floated 13 px
+  above the box's middle. Names are regular weight, the one bold thing on a
+  screen is the title of a section, and the count of bytes a size comes to
+  stands right after the size box instead of at the far end of the line.
+
+  Underneath it, every distance in the window is one of six steps and every
+  number about the look lives in one file, so the gaps between things are the
+  ones somebody chose. The settings a format declares stand one to a row -
+  two of them no longer share a line - and the three ways of stating a size
+  on the batch screen keep their switch above one box, in the column of
+  controls.
+
+- **The line under the buttons says what the run comes to, before anything
+  is pressed.** How many files, how many bytes, what kinds and where, on one
+  line, worked out from the form as it is typed - with no disk read and no
+  planning. A range says "between" its two ends until Preview draws the
+  sizes, a container sized by its contents says so, and a form that cannot
+  be added up yet names only the destination. After Preview the line is exact
+  and the destination carries the room left on its disk. A change of the
+  form puts the summary back over whatever a press said, where until now the
+  line named the destination until the first press and never again.
+
+  The refusal about a run as a whole now scrolls inside the same room as the
+  run's other messages, so the bar no longer grows when a run is refused, and
+  choosing from a menu reaches the live check the way typing in a box does.
+
+- **The tabs across the top stand on the same edge as the screen under them,
+  and a screen has one name.** The strip is drawn by the tool now rather than
+  by the toolkit: its words start where the title and every field name start,
+  the chosen one carries a 2 px mark in the accent colour, and a word lights up
+  under the pointer. The title of a work screen is the word on its tab -
+  Single batch, Presets, Several batches - and under it a quiet sentence says
+  what the screen is for, where until now each screen had one name on the tab
+  and another over the form.
+
+- **An open list is as tall as half the window, not eight rows.** The list a
+  menu drops down stopped at eight rows in every window - 224 px at 800x600
+  and at 1100x1300 alike - so a third of the twenty-four formats showed
+  however tall the window was. It now covers up to half the window's height,
+  in whole rows: ten rows in a window 600 px tall, eighteen in one 1025 px
+  tall, and the rest under a scroll. It still opens upward when there is more
+  room above the box than below it, and is still cut to the room on whichever
+  side it lands.
+
+- **The window is set in Inter.** The window was drawn in Noto Sans, the
+  toolkit's own face. It is set in Inter 4.1 now, Regular and Bold, embedded
+  in the window binary under the Open Font License - the licence notice and
+  `tfg-gui`'s About screen name it beside the other bundled work. The window
+  binary is about 800 kB larger for it. The command line binary carries no
+  font and is unchanged.
+
+### Added
+
+- **Every control shows where the keyboard is and answers the pointer.** Every
+  place the keyboard can land - a box, a menu, a switch, a button, the
+  segmented switch, a word on the tab strip - draws the same 2 px ring when a
+  key put it there and not when a press did, and every control you can click
+  lights up under the pointer. Buttons gain a pressed look. This closes the
+  gap where some stops drew a focus mark too faint to see and one drew none at
+  all.
+
+- **The tabs can be worked from the keyboard.** Tab reaches each word on the
+  strip, Enter or Space opens its screen and puts the keyboard on the first
+  field with its mark showing, and the arrow keys move along the strip without
+  opening anything. The toolkit's tabs answered the mouse only.
+
+- **`tfg-gui --catalogue` opens a catalogue of every part of the window in
+  every state it has.** A hidden screen for anybody changing the window's
+  look: each button, box, menu, switch, list, tab and rank of text, at rest,
+  under the pointer, holding the keyboard, refused, disabled and given a
+  sentence too long for it - sixteen entries and ninety-three states, drawn
+  at the widths a form gives them. `--catalog` is accepted too. Any other
+  argument is ignored, as every argument was until now.
+
 ### Fixed
+
+- **A refused preset no longer carries the note of the preset before it.** A
+  limit of 512 B was refused with "no limit was given" under it - a note left
+  over from the last expansion that worked.
+
+- **A preview asks the disk how much room it has from the worker, not from
+  the interface thread.** The rest of a preview moved off that thread on
+  2026-08-26 and this one read stayed behind, so a directory on a slow share
+  could still stop the window from drawing for as long as the share took.
 
 - **Asking for damaged files and declaring they will be accepted is now refused
   on the command line too.** A damaged file is one a reader was measured to
@@ -40,6 +142,11 @@ because it turns other people's test suites red.
   from the program itself, so a command added later cannot go missing from it,
   and the site has a section explaining how to produce a file that is broken on
   purpose.
+
+- **The window spells a byte count the way the command line does.** The count
+  under a size box said `10485760 B` while `tfg` said `10 485 760 B` about the
+  same number - the window had a spelling of its own that the grouping of
+  digits in 0.3.0 never reached. There is one spelling now.
 
 ## [0.3.0] - 2026-09-09
 

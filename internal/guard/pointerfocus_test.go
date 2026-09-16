@@ -43,6 +43,16 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 		t.Error("the format menu was pressed with the pointer and drew the keyboard mark, " +
 			"so the value chosen sits on a blue box until something else is clicked")
 	}
+	// And the keyboard IS there. The name of this guard promised that from
+	// the start and until 2026-09-16 only the second half was asked, so a
+	// control that took the keyboard nowhere at all passed it - which is what
+	// the switch below did: the driver unfocuses whatever had the keyboard on
+	// a press and leaves focusing to the widget, and the switch left it.
+	// On the list the press opened, which is where the arrows have to work.
+	// Closing it hands the keyboard back to the menu (see Chooser.giveBack).
+	if list := menu.Opened(); list == nil || c.Focused() != fyne.Focusable(list) {
+		t.Errorf("the format menu was pressed and the keyboard is on %T, not on the list it opened", c.Focused())
+	}
 
 	// The list the press opened is taken away first. A real press respects what
 	// covers it - which is the point of pressing for real - so leaving an open
@@ -70,6 +80,46 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 	if toggle.Marked() {
 		t.Error("the switch was pressed with the pointer and drew the keyboard mark, " +
 			"which is the blue disc behind the square that was reported on 2026-08-18")
+	}
+	if c.Focused() != toggle {
+		t.Errorf("the switch was pressed and the keyboard is on %T, not on the switch - so the next "+
+			"Space flips nothing and the next Tab starts from the top of the screen", c.Focused())
+	}
+}
+
+// A press on a segmented switch puts the keyboard on it quietly, and the
+// first arrow says so.
+//
+// The same rule as the two above, on the third control that can hold the
+// keyboard. Asked on a bare canvas rather than on a screen, because a press
+// aimed at one segment needs a position, and the segment widths are the
+// control's own to know.
+func TestAPressOnASegmentedSwitchPutsTheKeyboardOnItQuietly(t *testing.T) {
+	app := test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+	t.Cleanup(func() { test.NewApp() })
+
+	s := parts.NewSegments([]string{"one", "two", "three"}, nil)
+	w := test.NewWindow(s)
+	t.Cleanup(w.Close)
+	w.Resize(s.MinSize())
+
+	test.TapAt(s, fyne.NewPos(s.Size().Width-1, s.Size().Height/2))
+	if s.Selected != "three" {
+		t.Fatalf("the press on the last segment chose %q, so this guard never reached the state it is about", s.Selected)
+	}
+	if w.Canvas().Focused() != s {
+		t.Errorf("the switch was pressed and the keyboard is on %T, not on the switch", w.Canvas().Focused())
+	}
+	if s.Marked() {
+		t.Error("the switch was pressed with the pointer and drew the keyboard mark")
+	}
+	s.TypedKey(&fyne.KeyEvent{Name: fyne.KeyLeft})
+	if !s.Marked() {
+		t.Error("an arrow was pressed on the switch and the mark that says the keyboard is here did not come on")
+	}
+	if s.Selected != "two" {
+		t.Errorf("the arrow after the press moved to %q, not on from the segment that was pressed", s.Selected)
 	}
 }
 
@@ -144,7 +194,7 @@ func TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt(t *testing.T) {
 		case *parts.Toggle, *parts.Chooser:
 			seen++
 		case *widget.Check:
-			raw = append(raw, fmt.Sprintf("the switch %q", control.Text))
+			raw = append(raw, "the switch")
 		case *widget.Select:
 			raw = append(raw, fmt.Sprintf("the menu showing %q", control.Selected))
 		}
@@ -188,6 +238,14 @@ func TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt(t *testing.T) {
 // needs one: focus belongs to a canvas, and a press has to land somewhere.
 func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	t.Helper()
+	return screenOnACanvasOfHeight(t, referenceHeight)
+}
+
+// screenOnACanvasOfHeight is the same screen in a window this tall, for a
+// guard asking about something that follows the window - an open list is as
+// tall as a share of it, so one height proves nothing about the rule.
+func screenOnACanvasOfHeight(t *testing.T, height float32) (fyne.Canvas, fyne.CanvasObject) {
+	t.Helper()
 	// A fresh application and our own theme, the same two lines renderScene
 	// opens with. Without them the sizes are the test driver's rather than the
 	// window's, and a press aimed with one set of numbers at a screen laid out
@@ -210,7 +268,7 @@ func screenOnACanvas(t *testing.T) (fyne.Canvas, fyne.CanvasObject) {
 	// that is not the width it ends up with. A press aimed at a control that
 	// has not settled lands somewhere else, which reads as a control that
 	// cannot be pressed.
-	size := fyne.NewSize(referenceWidth, referenceHeight)
+	size := fyne.NewSize(referenceWidth, height)
 	w.Resize(size)
 	w.Resize(size)
 	host.content.Refresh()

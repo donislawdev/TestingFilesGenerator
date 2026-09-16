@@ -78,23 +78,35 @@ func TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt(t *testing.T) {
 // Without this the test above passes on a build that refuses everything, which
 // is the shape this project has thrown away six pieces of defensive code for -
 // a check nothing can turn red is not a check.
+//
+// Ten thousand files rather than four thousand, and the number is the
+// ceiling's own. When the cheap counter says the plan may be over the
+// ceiling, the swept heap is read, and a heap no larger than at the start is
+// taken as nothing to refuse - with the next reading planCheckEvery (4096)
+// files on. A ceiling too low for any run therefore refuses nothing in a run
+// shorter than that: the counter trips at the first files, the collector has
+// just handed back what the test process left lying about, and the plan is
+// never read again. The full mutation run of 2026-09-16 found exactly that -
+// a 2 KB ceiling green under four thousand files. At ten thousand the second
+// reading lands on four thousand planned files that nothing can collect.
 func TestAnOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
+	const files = 10000
 	targets := []engine.Target{{
 		ID:     "files",
 		Format: "txt",
-		Sizes:  engine.Uniform(4000, 4096),
+		Sizes:  engine.Uniform(files, 4096),
 	}}
 
-	files, err := engine.Plan(targets, engine.Options{
+	planned, err := engine.Plan(targets, engine.Options{
 		OutDir:       "out",
 		ManifestName: "manifest.json",
 		// Zero means the real ceiling, which is what every caller passes.
 	})
 	if err != nil {
-		t.Fatalf("four thousand text files were refused under the real ceiling: %v", err)
+		t.Fatalf("ten thousand text files were refused under the real ceiling: %v", err)
 	}
-	if len(files) != 4000 {
-		t.Fatalf("planned %d files, expected 4000", len(files))
+	if len(planned) != files {
+		t.Fatalf("planned %d files, expected %d", len(planned), files)
 	}
 }
 

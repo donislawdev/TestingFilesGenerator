@@ -75,7 +75,17 @@ func TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty(t *testing.T) {
 	// windows subsystem so it opens without a console, and that is guarded
 	// elsewhere. Here the question is what the code SAYS, so it is built plain
 	// and its streams can be read.
-	run := exec.Command(built)
+	// Asked twice: for the window, and for the catalogue of its parts, which
+	// the binary opens on --catalogue since 2026-09-15 and which is a window
+	// like any other. A build with no window in it has one answer.
+	for _, args := range [][]string{{}, {"--catalogue"}} {
+		saysSoAndKeepsStandardOutputEmpty(t, built, args)
+	}
+}
+
+func saysSoAndKeepsStandardOutputEmpty(t *testing.T, built string, args []string) {
+	t.Helper()
+	run := exec.Command(built, args...)
 	var stdout, stderr bytes.Buffer
 	run.Stdout = &stdout
 	run.Stderr = &stderr
@@ -86,7 +96,7 @@ func TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty(t *testing.T) {
 	if errors.As(err, &exit) {
 		code = exit.ExitCode()
 	} else if err != nil {
-		t.Fatalf("running the window binary built without cgo: %v", err)
+		t.Fatalf("running the window binary built without cgo (%v): %v", args, err)
 	}
 
 	if code != 1 {

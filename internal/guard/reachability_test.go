@@ -9,7 +9,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -95,7 +94,7 @@ func TestEveryButtonAPersonCanSeeIsReallyPressable(t *testing.T) {
 
 			checked, unreachable := 0, 0
 			walk(screen, func(o fyne.CanvasObject) {
-				button, ok := o.(*widget.Button)
+				button, ok := o.(*parts.Button)
 				if !ok || !button.Visible() {
 					return
 				}
@@ -176,26 +175,11 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 				}
 				onScreen[f] = true
 			})
-			// A switch keeps its options in its renderer rather than in the
-			// tree, so walk cannot see them and the focus manager can - it uses
-			// the toolkit's own visible tree, which goes through renderers.
-			// Without this the batch screen reported three controls that Tab
-			// reaches and the screen does not have, which is a guard describing
-			// its own blind spot as a defect. Measured 2026-08-25, when the
-			// three ways of stating a size became a switch.
-			walk(screen, func(o fyne.CanvasObject) {
-				group, ok := o.(*widget.RadioGroup)
-				if !ok || !group.Visible() || buried[o] {
-					return
-				}
-				for _, part := range test.WidgetRenderer(group).Objects() {
-					walk(part, func(inner fyne.CanvasObject) {
-						if f, ok := inner.(fyne.Focusable); ok {
-							onScreen[f] = true
-						}
-					})
-				}
-			})
+			// The three ways of stating a size are one control now, not three
+			// radio circles, so there is nothing hidden in a renderer to reach
+			// for - the segmented switch is one focusable the walk above
+			// already finds. The block that dug into widget.RadioGroup's
+			// renderer went with the radio on 2026-09-15.
 
 			// The chain, walked until it repeats. The ceiling exists because a
 			// screen with nothing focusable would otherwise be walked forever,
@@ -266,12 +250,25 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 			// fine" would have turned this assertion off, and the thing it
 			// catches - focus wandering into the OTHER tabs, which are in the
 			// canvas and laid out - is exactly what it was written for.
+			//
+			// The words on the strip are chrome as well since 2026-09-15, when
+			// the strip became ours and its words learnt to hold the keyboard -
+			// the toolkit's never could. Exactly the words the window lists,
+			// asked of the window rather than written here, so a fifth screen
+			// is covered the day it arrives and a stray word is not.
 			chrome := map[string]bool{text.ButtonDonate(): true}
+			strip := map[string]bool{}
+			for _, name := range tabNames(content) {
+				strip[name] = true
+			}
 			for _, f := range order {
 				if onScreen[f] {
 					continue
 				}
-				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+				if button, ok := f.(*parts.Button); ok && chrome[button.Text] {
+					continue
+				}
+				if word, ok := f.(*parts.TabWord); ok && strip[word.Text()] {
 					continue
 				}
 				t.Errorf("Tab reaches %s, which is not on the %q screen. Focus is leaving "+
@@ -280,16 +277,27 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 
 			// And the window chrome has to be reachable at all, from every
 			// screen, or the button nobody can Tab to is the one asking for
-			// money.
+			// money - and the strip nobody can Tab to is the one that leads to
+			// every other screen.
 			reachedChrome := false
+			reachedWords := map[string]bool{}
 			for _, f := range order {
-				if button, ok := f.(*widget.Button); ok && chrome[button.Text] {
+				if button, ok := f.(*parts.Button); ok && chrome[button.Text] {
 					reachedChrome = true
+				}
+				if word, ok := f.(*parts.TabWord); ok {
+					reachedWords[word.Text()] = true
 				}
 			}
 			if !reachedChrome {
 				t.Errorf("the %q button cannot be reached with Tab from the %q screen (UX9)",
 					text.ButtonDonate(), tab)
+			}
+			for name := range strip {
+				if !reachedWords[name] {
+					t.Errorf("the %q word on the strip cannot be reached with Tab from the %q screen, "+
+						"so the keyboard has no way to another screen (UX9)", name, tab)
+				}
 			}
 		})
 	}
@@ -305,9 +313,11 @@ func describeFocusable(f fyne.Focusable) string {
 		}
 		return fmt.Sprintf("a box holding %q", control.Text)
 	case *parts.Toggle:
-		return fmt.Sprintf("the toggle %q", control.Text)
-	case *widget.Button:
+		return "the toggle"
+	case *parts.Button:
 		return fmt.Sprintf("the %q button", control.Text)
+	case *parts.TabWord:
+		return fmt.Sprintf("the %q word on the strip", control.Text())
 	}
 	return fmt.Sprintf("%T", f)
 }

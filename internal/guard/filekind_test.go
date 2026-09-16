@@ -142,14 +142,18 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 // targets, so before this the window could tell somebody it was about to write
 // seven files and 70 MiB without saying what they were. G6 makes the preview
 // the thing somebody presses instead of finding out by writing gigabytes.
+//
+// Read off the line under the buttons, which is the one somebody reads
+// after pressing - not off the screen as a whole, which has a menu holding
+// the word anyway.
 func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 	generateHost, generate := screen(t)
 	choose(t, generate, text.FieldFormat(), "png")
 	fill(t, generate, text.FieldOutputDir(), t.TempDir())
 	press(t, generate, "Preview")
 	join(generateHost)
-	if shown := allText(generate); !strings.Contains(shown, "png") {
-		t.Errorf("the preview does not say what it would write. It says:\n%s", shown)
+	if got := statusLine(t, generate); !strings.Contains(got, text.Formats([]string{"png"})) {
+		t.Errorf("the preview does not say what it would write. It says:\n%s", got)
 	}
 
 	presetHost, presets := presetScreen(t)
@@ -157,14 +161,14 @@ func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 	choose(t, presets, text.SettingLabel("format"), "wav")
 	press(t, presets, "Preview")
 	join(presetHost)
-	shown := allText(presets)
-	if !strings.Contains(shown, "wav") {
-		t.Errorf("the preset preview does not say what it would write. It says:\n%s", shown)
+	got := statusLine(t, presets)
+	if !strings.Contains(got, text.Formats([]string{"wav"})) {
+		t.Errorf("the preset preview does not say what it would write. It says:\n%s", got)
 	}
-	// Not merely the word somewhere on a screen that has a menu holding it.
-	// The line under the buttons is the one somebody reads after pressing.
-	if !strings.Contains(shown, "7 files · wav") {
-		t.Errorf("the preview line does not name the kind beside the count. It says:\n%s", shown)
+	// The count and the kind on one line, so somebody reads "7" and "wav"
+	// together rather than finding one in a menu and the other in a sentence.
+	if !strings.HasPrefix(got, "7 files") {
+		t.Errorf("the preview line does not begin with the count. It says:\n%s", got)
 	}
 }
 

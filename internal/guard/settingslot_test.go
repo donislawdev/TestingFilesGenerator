@@ -194,7 +194,7 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"Limit to test": "a", "One size": "a", "A range": "a",
 		"Rule being tested": "a", "Manifest file name": "a", "Preset": "a",
 		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a", "Quality": "a",
-		"Write a label inside each file": "a",
+		"Label in each file": "a",
 	}
 
 	check := func(name, source string) {

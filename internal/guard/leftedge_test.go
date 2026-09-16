@@ -61,9 +61,12 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// The deepest rank used to be the line under a field. That line moved
 		// behind the button beside the field's name on 2026-08-24, so what is
 		// left standing on this edge is the heading a format's settings get.
-		// Four ranks either way, which is what this is about.
+		// The title is the word on the tab since 2026-09-15 and the sentence
+		// under it is what the title used to say - five ranks now, which is
+		// what this is about.
 		{text.TabOneTarget(), []string{
-			text.HeadingGenerate(),
+			text.TabOneTarget(),
+			text.SubtitleGenerate(),
 			text.SectionConfiguration(),
 			text.FieldFormat(),
 			text.SettingsFor(firstFormat()),
@@ -73,12 +76,14 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// about the section, which is the rank the heading above it has to
 		// line up with.
 		{text.TabPresets(), []string{
-			text.HeadingPreset(),
+			text.TabPresets(),
+			text.SubtitlePreset(),
 			text.SectionPreset(),
 			text.PresetCatchesHeading(),
 		}},
 		{text.TabRecipe(), []string{
-			text.HeadingRecipe(),
+			text.TabRecipe(),
+			text.SubtitleRecipe(),
 			text.FieldFormat(),
 		}},
 	}
@@ -124,14 +129,19 @@ func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
 	if !ok {
 		t.Fatal("the generate screen has no Format field")
 	}
-	// What the bar says at rest, before anything has been pressed.
-	status, ok := labelBox(generate, text.WritingTo(destinationShownAtRest(t, generate)))
-	if !ok {
-		t.Skip("the bar is not naming a destination at rest, so there is nothing on it to line up")
+	// What the bar says at rest, before anything has been pressed: the line
+	// naming, among other things, the destination.
+	status := labelContaining(generate, text.WillGoTo(destinationShownAtRest(t, generate)))
+	if status == nil {
+		t.Fatal("the bar is not naming the destination at rest, so this guard read the wrong tree")
 	}
-	if off := status.X - field.X; off > 1 || off < -1 {
+	at, found := absoluteOf(generate, status)
+	if !found {
+		t.Fatal("the status line is not on the screen it was found in")
+	}
+	if off := at.X - field.X; off > 1 || off < -1 {
 		t.Errorf("a field name starts at %.1f px and the bar's own line at %.1f px, %.1f px apart",
-			field.X, status.X, off)
+			field.X, at.X, off)
 	}
 }
 

@@ -83,11 +83,9 @@ func previewOf(t *testing.T, count string) string {
 	if status == nil {
 		t.Fatal("the screen has no status line, so this guard read the wrong tree")
 	}
-	// Matched on the tail of the preview's own sentence, the way the action bar
-	// guard does it, so this cannot be satisfied by a refusal.
-	marker := text.PreviewCost(1, nil, "1 B")
-	tail := marker[strings.LastIndex(marker, " ")+1:]
-	if !strings.Contains(status.Text, tail) {
+	// Matched on the tail the preview puts on its own line, the way the
+	// action bar guard does it, so this cannot be satisfied by a refusal.
+	if !strings.Contains(status.Text, text.AndNothingWrittenYet()) {
 		t.Fatalf("the preview of %s files was not accepted, so nothing here was asked about the manifest.\nIt said:\n%s",
 			count, status.Text)
 	}

@@ -5,18 +5,9 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
-
-// DetailWidth is how wide the longer explanation gets when it opens.
-//
-// Narrower than the form on purpose. The column is 820 px because that is what
-// the form needs, and the same width for a paragraph of prose is about 112
-// characters a line - well past the 45 to 75 that reads easily. A block of text
-// with nothing beside it has no reason to be as wide as a row of fields.
-const DetailWidth = 380
 
 // Tips is the sheet a screen's explanations are drawn on.
 //
@@ -105,18 +96,6 @@ func alsoSaying(line string, detail Detail) Detail {
 	return Detail{Text: text.OneExplanation(line, detail.Text), on: detail.on}
 }
 
-// withDetail puts the button that opens the longer explanation beside a label.
-//
-// Nothing at all when there is nothing more to say, rather than a button that
-// opens an empty box. A control that is always there and sometimes does nothing
-// teaches people to stop pressing it.
-func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
-	if detail.Text == "" || detail.on == nil {
-		return head
-	}
-	return container.NewHBox(head, newDetailButton(detail))
-}
-
 // DetailButton is the small control that shows one field's explanation.
 //
 // Exported for the same reason ErrorArea is: a guard has to be able to tell it
@@ -126,7 +105,12 @@ func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
 //
 // An icon rather than a word, because it sits on the same line as the field
 // name and a word there competes with it. Low importance so it recedes: it is
-// the quietest thing on the row until somebody wants it.
+// the quietest thing on the row until somebody wants it. Quiet in colour as
+// well, the grey a hint is drawn in, and no bigger than the glyph and the room
+// a finger needs: it was 32 px square until 2026-09-14, the tallest thing on
+// every line it stood on, so the name of a field stood 13 px above the middle
+// of its own row and thirty three of these were the loudest marks on a screen
+// at rest.
 //
 // It opens on HOVER, which is what anybody meeting a small letter i expects,
 // and a press toggles it. Both, deliberately: hovering is not something a
@@ -140,7 +124,7 @@ func withDetail(head fyne.CanvasObject, detail Detail) fyne.CanvasObject {
 // desktop.Hoverable, three methods a widget can answer, so this is built here
 // and no third party package enters the graph for it.
 type DetailButton struct {
-	widget.Button
+	Button
 
 	detail Detail
 	// shown is the box while it is on the sheet, and nil when it is not. Only
@@ -150,9 +134,9 @@ type DetailButton struct {
 
 func newDetailButton(detail Detail) *DetailButton {
 	b := &DetailButton{detail: detail}
-	b.ExtendBaseWidget(b)
+	b.look = Glyph
 	b.Icon = theme.InfoIcon()
-	b.Importance = widget.LowImportance
+	b.ExtendBaseWidget(b)
 	b.OnTapped = b.toggle
 	return b
 }
@@ -227,7 +211,7 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	}
 	driver := app.Driver()
 
-	box := container.NewStack(panelSurface(), container.NewPadded(Prose(detail)))
+	box := container.NewStack(panelSurface(), Padded(Inset, Prose(detail)))
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the

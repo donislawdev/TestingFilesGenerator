@@ -8,8 +8,6 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -35,16 +33,13 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	// "10mb" and the three used to share one row between them, so a box across
 	// the whole form would be the only wide box holding four characters - and
 	// the eye reads width as how much is expected.
-	half := func(field fyne.CanvasObject) fyne.CanvasObject {
-		return r.fields.Row(field, layout.NewSpacer())
-	}
 	b.sizeBoxes = map[string]fyne.CanvasObject{
-		recipe.KeySize: half(add(recipe.KeySize, text.FieldSize(), text.HintSizeExact(),
-			r.tips.Say(text.DetailSize()), b.size)),
-		recipe.KeySizeRange: half(add(recipe.KeySizeRange, text.FieldSizeRange(), text.HintSizeRange(),
-			r.tips.Say(text.DetailSizeRange()), b.sizeRange)),
-		recipe.KeyBoundary: half(add(recipe.KeyBoundary, text.FieldBoundary(), text.HintBoundary(),
-			r.tips.Say(text.DetailBoundary()), b.boundary)),
+		recipe.KeySize: add(recipe.KeySize, text.FieldSize(), text.HintSizeExact(),
+			r.tips.Say(text.DetailSize()), parts.Numeric(b.size)),
+		recipe.KeySizeRange: add(recipe.KeySizeRange, text.FieldSizeRange(), text.HintSizeRange(),
+			r.tips.Say(text.DetailSizeRange()), parts.Numeric(b.sizeRange)),
+		recipe.KeyBoundary: add(recipe.KeyBoundary, text.FieldBoundary(), text.HintBoundary(),
+			r.tips.Say(text.DetailBoundary()), parts.Numeric(b.boundary)),
 	}
 
 	names := sizeWayNames()
@@ -70,7 +65,7 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	for _, key := range sizeWayKeys() {
 		boxes = append(boxes, b.sizeBoxes[key])
 	}
-	return parts.Stacked(append([]fyne.CanvasObject{b.sizeWay}, boxes...)...)
+	return parts.FieldColumn(append([]fyne.CanvasObject{r.fields.Unlabelled(b.sizeWay)}, boxes...)...)
 }
 
 // newSizeWaySwitch is the control itself, built with the batch rather than with
@@ -80,15 +75,13 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 // only existed once the screen had been laid out was a switch a copy could not
 // read - so the copy took the values of the other two ways and then showed the
 // first one. Found by the guard on its first run.
-func newSizeWaySwitch() *widget.RadioGroup {
-	names := sizeWayNames()
-	group := widget.NewRadioGroup(names, nil)
-	group.Horizontal = true
-	// Required, so there is no fourth state where nothing is chosen and no box
-	// is shown. One of the three is always the answer.
-	group.Required = true
-	group.Selected = names[0]
-	return group
+//
+// A segmented switch since 2026-09-15, in place of three radio circles. One of
+// the three is always chosen - there is no fourth state where nothing is - so
+// nothing here has to ask for "required" the way the radio did: the switch
+// opens on the first way and never has none.
+func newSizeWaySwitch() *parts.Segments {
+	return parts.NewSegments(sizeWayNames(), nil)
 }
 
 // The three ways, in one order, named once. The window shows the words and the

@@ -77,9 +77,9 @@ type settler func() ([]engine.Target, engine.Options, error)
 type runner struct {
 	settle settler
 
-	previewBtn  *widget.Button
-	generateBtn *widget.Button
-	cancelBtn   *widget.Button
+	previewBtn  *parts.Button
+	generateBtn *parts.Button
+	cancelBtn   *parts.Button
 	// openBtn shows the directory a finished run wrote into.
 	//
 	// It appears when there is something to open and goes away the moment the
@@ -90,7 +90,7 @@ type runner struct {
 	// In the row of actions rather than beside the output box, so the bar keeps
 	// its height and the form does not move - the property
 	// TestTheFormDoesNotMoveWhenARunStarts holds.
-	openBtn *widget.Button
+	openBtn *parts.Button
 	// wroteInto is the directory of the run that just finished, kept because
 	// the box on the screen can be edited afterwards and the button has to open
 	// where the files ACTUALLY went.
@@ -203,29 +203,19 @@ type runner struct {
 
 	// destination is where this screen would write, asked for rather than
 	// stored, because the box it comes from is edited after this is wired.
-	// Nil on a screen that has no such box, and the status line simply stays
-	// empty there.
+	// Read for the line even when the rest of the form does not settle, so
+	// the one box that decides where somebody else's disk gets written to is
+	// on the line whatever the other boxes say.
 	destination func() string
 
-	// resting is true while nothing pressed has spoken. The status line
-	// carries the destination until then and whatever was pressed afterwards.
-	//
-	// One way only, and that is worth knowing before relying on it: nothing
-	// sets it back. So the destination line is live until the first press and
-	// never again, and the call to sayDestination in the live check is doing
-	// something only for that first stretch.
-	//
-	// It was tempting to make typing restore it, and that is wrong for a
-	// measured reason - see sayDestination. A refusal puts its sentence on this
-	// same line, and the live check runs on the next keystroke, so restoring
-	// here would wipe the sentence somebody had just been given.
-	//
-	// The consequence left standing: after a preview, editing a field leaves a
-	// cost on the line that was worked out for the old values. The answer to
-	// that is a summary that is always live rather than a sentence that has to
-	// be defended - the report calls it the permanent line in the action bar,
-	// and this whole mechanism goes when that lands.
-	resting bool
+	// line is what the status line says while nothing pressed has spoken:
+	// what the form comes to, live. It replaced a line that carried the
+	// destination until the first press and never again - a one way flag
+	// called resting, which meant that after a preview, editing a field left
+	// a cost on the line worked out for the old values. The line is worked
+	// out from the form on every change, so there is nothing on it to defend:
+	// a change of the form puts the summary back over whatever a press said.
+	line *runLine
 
 	// notes is what settling had to say out loud, set by settle rather than
 	// worked out here. Silence is banned: a set built around a limit we
@@ -243,192 +233,6 @@ type runner struct {
 // and counting them from the registry alone could never find one.
 func (r *runner) Fields() *parts.Fields { return r.fields }
 
-// refuse shows a refusal, under the field it is about where it names one.
-//
-// The choice is the engine's rather than the window's. It sets the setting on
-// the error, and this looks it up - the alternative was matching the wording
-// here, which is a second copy of rules the engine owns and the copy that
-// drifts.
-func (r *runner) refuse(err error) {
-	var loose []string
-	// The first box a refusal lands on, so the form can be brought to it. A
-	// refusal that marks a box the person cannot see reads as a button that did
-	// nothing - see parts.Reveal and O107.
-	first := ""
-	for _, one := range spread(err) {
-		// An interface rather than a case per error type, so a screen shown a
-		// kind of refusal nobody thought about here still gets it placed. The
-		// engine, the format registry and the preset package all answer this
-		// and none of them had to be imported for the question to be asked.
-		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && about.AboutSetting() != "" {
-			if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
-				if first == "" {
-					first = where
-				}
-				continue
-			}
-		}
-		// About the run rather than about one box, or about a setting this
-		// screen does not draw. The foot of the form is where those belong.
-		loose = append(loose, one.Error())
-	}
-	if len(loose) > 0 {
-		r.problem.Say(strings.Join(loose, "\n\n"))
-	}
-	if first == "" {
-		return
-	}
-	// Every problem went onto a box, so the foot of the form says nothing and
-	// the only sign the press was even received is a red box that may be off
-	// the screen. Both halves of the answer are here: a sentence where the
-	// button is, and the form moved to the first box that needs attention.
-	if len(loose) == 0 {
-		r.say(text.RefusedBeforeWriting())
-	}
-	// Anything folded away that a refusal is about is opened before the form is
-	// moved, because a box inside a fold cannot be shown by scrolling to it -
-	// and a screen that refuses to run while marking nothing anybody can see
-	// reads as a button that did nothing. This is what keeps the objection of
-	// 2026-08-18 answered rather than dodged: refusals about a batch that is
-	// not on the screen were the reason a list with one batch open at a time
-	// was rejected.
-	if r.unfold != nil {
-		for _, marked := range r.fields.Marked() {
-			r.unfold(marked)
-		}
-	}
-	if field := r.fields.Lookup(first); field != nil {
-		parts.Reveal(r.scroll, field.Control)
-	}
-}
-
-// spread opens a refusal that carries several into the ones it carries.
-//
-// The window used to mark ONE box however many were wrong, because everything
-// between the screen and the field registry was singular by type: settle
-// returned at the first bad box, refuse took one error, Mark marked one field.
-// Reported from the screen on 2026-08-18, and it is the window narrowing what
-// the layer below already does - RC7 has the engine refuse a recipe with every
-// problem it has rather than the first, on the grounds that fixing a file one
-// error per run is the cheapest way to make somebody stop using the tool. The
-// same argument applies to a form.
-//
-// errors.Join is what carries them, so nothing here has to be a new error type
-// and a single refusal still arrives as itself. Walked rather than flattened
-// once, because a join can hold a join - the preset screen collects its own and
-// hands on whatever the recipe parser gave it.
-func spread(err error) []error {
-	if err == nil {
-		return nil
-	}
-	if joined, several := err.(interface{ Unwrap() []error }); several {
-		var out []error
-		for _, one := range joined.Unwrap() {
-			out = append(out, spread(one)...)
-		}
-		return out
-	}
-	// A join under a single wrapper is still a join. The type assertion above
-	// only sees the outermost layer, so one fmt.Errorf("%s: %w", ...) anywhere
-	// on the way here turns five marked boxes back into one paragraph at the
-	// foot of the form - which is the defect this function exists to prevent.
-	//
-	// Nothing wraps a join today: settle returns errors.Join straight out on
-	// both screens. So this is not fixing anything that is broken, it is
-	// removing the way it comes back - and it comes back silently, because the
-	// guards for marking all build their errors with a bare join.
-	if inner := errors.Unwrap(err); inner != nil {
-		if _, several := inner.(interface{ Unwrap() []error }); several {
-			return spread(inner)
-		}
-	}
-	return []error{err}
-}
-
-// recheck says what is wrong with the screen while somebody is still typing.
-//
-// Asked for from the screen on 2026-08-18: a bad value should turn its box red
-// and give the reason straight away, rather than waiting for a button. It runs
-// the SAME settle the buttons run, which is the whole of the design - there is
-// no second set of rules to write, nothing to keep in step, and a box that can
-// be refused is refused here because it is refused there. A field nobody has
-// added a rule for needs no rule added.
-//
-// Two things it does not do. It leaves the foot of the form alone, because a
-// complaint about the run rather than about a box is not something to shout
-// while somebody is mid-word. And it says nothing about an empty box - see
-// Fields.Blank.
-// placeOf is where a refusal about one setting belongs on this screen, which is
-// the setting itself unless the screen said otherwise - see readdress.
-func (r *runner) placeOf(setting string) string {
-	if r.readdress == nil {
-		return setting
-	}
-	return r.readdress(setting)
-}
-
-// withoutTheTarget is the readdress a screen showing exactly one target uses.
-//
-// The engine addresses a refusal about a target by its position, because a
-// screen with twenty batches cannot place one otherwise. A screen with one
-// batch draws its boxes under the bare key - measured 2026-08-25, the single
-// batch screen registers size, name and width where the batch screen registers
-// targets[1].size, targets[1].name and targets[1].properties.width. So the
-// position is the part to drop, and the last segment is what is left.
-//
-// Settings of the run itself are handed back untouched. output.dir names no
-// target, and taking its last segment would leave "dir", which is a box
-// nothing draws.
-func withoutTheTarget(address string) string {
-	if !core.AddressNamesATarget(address) {
-		return address
-	}
-	return core.LastSettingSegment(address)
-}
-
-func (r *runner) recheck(setting string) {
-	// Nothing to check against yet, during the screen being built.
-	if r.settle == nil {
-		return
-	}
-	// A run owns the screen while it lasts. Its progress and its refusals are
-	// not to be wiped by a keystroke.
-	if r.running {
-		return
-	}
-	// Typing in the destination box moves the destination, and the line saying
-	// where the files go is worth nothing if it names the old one.
-	//
-	// This only reaches the line while nothing pressed has spoken - see
-	// resting. Said here because the call reads as though it always does.
-	r.sayDestination()
-	// Only this box, in both directions. What the other boxes were told is
-	// about values nobody has just changed, and it is still true - including
-	// the parts of it this cannot see, because a format minimum and a name
-	// already taken are the engine's answers rather than settle's.
-	r.fields.Clear(setting)
-	if r.fields.Blank(setting) {
-		return
-	}
-	_, _, err := r.settle()
-	for _, one := range spread(err) {
-		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && r.placeOf(about.AboutSetting()) == setting {
-			r.fields.Mark(setting, one)
-			return
-		}
-	}
-}
-
-// clearProblems empties every place a refusal can appear, not just the last one
-// used. Clearing only the foot of the form would leave a message under a field
-// after the value that caused it was fixed.
-func (r *runner) clearProblems() {
-	r.problem.Clear()
-	r.fields.ClearAll()
-}
-
 // say puts a sentence on the status line, above whatever settling had to say.
 //
 // A line with nothing on it takes no room, the same rule the error area
@@ -445,19 +249,27 @@ func (r *runner) clearProblems() {
 // a finished run showed "no limit was given, so this set is built around
 // 10mb..." with "7 files written." out of sight below it.
 func (r *runner) say(lines ...string) {
-	said := strings.Join(append(append([]string{}, lines...), r.notes...), "\n")
+	showOn(r.status, strings.Join(append(append([]string{}, lines...), r.notes...), "\n"))
+}
+
+// showOn puts words on the status line without the notes, or takes the
+// line away when handed nothing. The line at rest goes through here: what
+// settling had to say out loud belongs with a press, and at rest it made a
+// second line that scrolled inside the room kept for one. A function rather
+// than a method, because the runner stands at its ceiling of methods.
+func showOn(status *widget.Label, said string) {
 	if said == "" {
-		r.sayDestination()
+		status.SetText("")
+		status.Hide()
 		return
 	}
-	r.resting = false
 	// Back to the ordinary colour unless the caller says otherwise. Anything
 	// coloured is coloured about one run, so it has to be cleared by the next
 	// thing said - otherwise a green line from a finished run stays green over
 	// the progress of the one after it.
-	r.status.Importance = widget.MediumImportance
-	r.status.SetText(said)
-	r.status.Show()
+	status.Importance = widget.MediumImportance
+	status.SetText(said)
+	status.Show()
 }
 
 // toneOfOutcome colours what a finished run said.
@@ -501,45 +313,35 @@ func (r *runner) toneOfOutcome(res *engine.Result, runErr error) {
 	r.status.Refresh()
 }
 
-// sayDestination puts where the files will go on the status line, while there
-// is nothing louder to put there.
+// refreshLine works out what the form comes to and puts it on the line.
 //
-// The line is kept clear for a run whether or not there is one, so at rest it
-// was empty space in the one part of the screen that never scrolls away - and
-// the destination is the one field that is off the bottom of every form when
-// the window opens. It is also the only field that decides where somebody
-// else's disk gets written to, so the cost of not seeing it is not symmetric
-// with the cost of not seeing the others (O102).
+// From settle rather than from a plan: settle is what the form parses to and
+// costs nothing, and planning is what the engine does with it and can cost
+// seconds (see onPreview). A form that does not settle falls back to naming
+// the destination alone, which is read off its own box because it is the one
+// fact worth having whatever the other boxes say.
 //
-// It gives way to anything a run has to say and does not come back, because a
-// preview and an outcome are answers to something that was just pressed. A
-// preview names the same directory in its own sentence anyway.
-func (r *runner) sayDestination() {
-	// Once something louder has spoken, this says nothing at all - including
-	// not clearing what was said. Clearing was the first version and it was
-	// wrong in a way only the stored screens caught: a refusal put its sentence
-	// at the foot, the next keystroke ran the live check, and the check called
-	// this, which wiped the sentence somebody had just been given.
-	if !r.resting {
+// Not while a run owns the screen: its progress is not to be overwritten by
+// a summary, and the form is frozen then anyway.
+func (r *runner) refreshLine() {
+	if r.settle == nil || r.running {
 		return
 	}
-	if r.destination == nil {
-		r.status.SetText("")
-		r.status.Hide()
+	dir := ""
+	if r.destination != nil {
+		dir = r.destination()
+	}
+	targets, opt, err := r.settle()
+	if err != nil {
+		showOn(r.status, r.line.fallback(dir))
 		return
 	}
-	dir := strings.TrimSpace(r.destination())
-	if dir == "" {
-		r.status.SetText("")
-		r.status.Hide()
-		return
-	}
-	r.status.SetText(text.WritingTo(dir))
-	r.status.Show()
+	showOn(r.status, r.line.said(summarise(targets), opt.OutDir))
 }
 
 func newRunner() *runner {
-	r := &runner{fields: parts.NewFields(), resting: true}
+	r := &runner{fields: parts.NewFields(), line: &runLine{}}
+	r.fields.LabelColumn(labelColumn())
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
@@ -560,9 +362,8 @@ func newRunner() *runner {
 	r.status.Hide()
 	r.problem = parts.NewErrorArea()
 
-	r.previewBtn = widget.NewButton(text.ButtonPreview(), r.onPreview)
-	r.generateBtn = widget.NewButton(text.ButtonGenerate(), r.onGenerate)
-	r.generateBtn.Importance = widget.HighImportance
+	r.previewBtn = parts.NewButton(parts.Secondary, text.ButtonPreview(), r.onPreview)
+	r.generateBtn = parts.NewButton(parts.Primary, text.ButtonGenerate(), r.onGenerate)
 	// Three ranks, so the eye lands on the one that does the work: Generate
 	// filled, Preview plain beside it, Cancel receding until there is something
 	// to cancel. They were three identical buttons in a row, which is a choice
@@ -578,11 +379,11 @@ func newRunner() *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	r.cancelBtn = widget.NewButton(text.ButtonCancel(), r.onCancel)
+	r.cancelBtn = parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel)
 	r.cancelBtn.Disable()
 	r.cancelBtn.Hide()
 
-	r.openBtn = widget.NewButton(text.ButtonOpenFolder(), func() {
+	r.openBtn = parts.NewButton(parts.Secondary, text.ButtonOpenFolder(), func() {
 		if r.wroteInto != "" && r.openFolder != nil {
 			r.openFolder(r.wroteInto)
 		}
@@ -597,10 +398,21 @@ func rail(items ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewHBox(items...)
 }
 
-// progress is where a run says what it is doing, and it keeps its height
+// roomToSpeak is where a run says what it is doing, and it keeps its height
 // whether or not there is a run. See parts.WithRoomForARun for why.
-func (r *runner) progress() fyne.CanvasObject {
-	return parts.WithRoomForARun(container.NewVBox(r.bar, r.status))
+//
+// The refusal about the run as a whole is in here too since 2026-09-14. It
+// stood outside the reserved room until then, so a refusal grew the bar and
+// moved the form - the same movement the room exists to prevent, allowed for
+// one kind of message because it was the kind nobody had measured.
+func roomToSpeak(bar *parts.Progress, status *widget.Label, problem *parts.ErrorArea) fyne.CanvasObject {
+	return parts.WithRoomForARun(container.NewVBox(bar, parts.Flush(status), problem.Object()))
+}
+
+// footer is the bar at the foot of a screen: the buttons, and under them the
+// room a run speaks in - which at rest carries what the form comes to.
+func (r *runner) footer(rail fyne.CanvasObject) fyne.CanvasObject {
+	return parts.ActionBar(rail, r.actions(), roomToSpeak(r.bar, r.status, r.problem))
 }
 
 // onPreview says what the run would cost and writes nothing.
@@ -664,15 +476,41 @@ func (r *runner) onPreview() {
 			// Do rather than DoAndWait, for the same reason startRun gives: the
 			// interface thread must never be left waiting on a worker.
 			r.holdBeforeFinishing()
-			fyne.Do(func() { r.previewFinished(nil, nil, opt, planErr) })
+			fyne.Do(func() { r.previewFinished(nil, nil, opt, diskRoom{}, planErr) })
 			close(done)
 			return
 		}
 		res, runErr := engine.Run(ctx, planned, opt)
+		// The disk is asked here, on the worker, for the reason the whole
+		// preview is: on a network share the answer can take as long as the
+		// share takes, and the interface thread is the one thing that must
+		// not wait for it. It used to be asked after crossing back.
+		room := roomOn(opt.OutDir)
 		r.holdBeforeFinishing()
-		fyne.Do(func() { r.previewFinished(res, planned, opt, runErr) })
+		fyne.Do(func() { r.previewFinished(res, planned, opt, room, runErr) })
 		close(done)
 	}()
+}
+
+// diskRoom is what a worker found out about the room under a directory.
+// known is false when the disk could not be asked, and then nothing is said
+// rather than a number invented - a disk we cannot measure is not a full one.
+type diskRoom struct {
+	free  int64
+	known bool
+}
+
+// roomOn asks the disk under a directory how much room it has. Disk work,
+// so it belongs on a worker and never on the interface thread.
+func roomOn(dir string) diskRoom {
+	if dir == "" {
+		return diskRoom{}
+	}
+	free, err := core.AvailableBytes(dir)
+	if err != nil {
+		return diskRoom{}
+	}
+	return diskRoom{free: free, known: true}
 }
 
 // previewFinished is the end of a preview, back on the interface thread.
@@ -681,13 +519,20 @@ func (r *runner) onPreview() {
 // preview warn about a record too big to read back. A dry run builds the whole
 // document - see manifestReachNote - so the answer is there for the asking
 // rather than something the window would have to work out for itself.
-func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFile, opt engine.Options, runErr error) {
+func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFile, opt engine.Options, room diskRoom, runErr error) {
 	r.setBusy(false, false)
 	if runErr != nil {
 		r.refuse(runErr)
 		return
 	}
-	r.say(append([]string{previewText(planned, opt.OutDir)}, manifestReachNote(res)...)...)
+	// The line goes exact: the plan has drawn every size a range left open,
+	// and the disk has been asked. What it adds is the one thing the numbers
+	// cannot say, which is that none of it exists yet.
+	if room.known {
+		r.line.measured(opt.OutDir, room.free)
+	}
+	said := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()
+	r.say(append([]string{said}, manifestReachNote(res)...)...)
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -815,11 +660,14 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// it is disk work and the interface thread is the one thing that must
 		// not wait on a disk.
 		saveErr := saveManifest(res, opt)
+		// The room left on the disk is the room left AFTER the files, which
+		// is not the number a preview measured before them.
+		room := roomOn(opt.OutDir)
 		// Do rather than DoAndWait. The interface thread may already be inside
 		// stop, waiting on the channel closed below, and a worker waiting for
 		// that thread to run something would be both of them waiting.
 		r.holdBeforeFinishing()
-		fyne.Do(func() { r.runFinished(res, runErr, saveErr) })
+		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room) })
 		close(done)
 	}()
 }
@@ -828,8 +676,11 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 //
 // Note what it does not do: clear stop. That is deliberate and the reason is at
 // the declaration of the field.
-func (r *runner) runFinished(res *engine.Result, runErr, saveErr error) {
+func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom) {
 	r.setRunning(false)
+	if room.known && r.wroteInto != "" {
+		r.line.measured(r.wroteInto, room.free)
+	}
 
 	switch {
 	case runErr != nil:

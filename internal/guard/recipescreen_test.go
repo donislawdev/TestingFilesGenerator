@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -288,12 +287,12 @@ func allSaid(fields *parts.Fields) string {
 // buttonsNamed is every button carrying one label, in the order they are drawn.
 // Several rather than one, because a repeating block has a button per repetition
 // and which one was pressed is the whole question.
-func buttonsNamed(o fyne.CanvasObject, name string) []*widget.Button {
-	var out []*widget.Button
+func buttonsNamed(o fyne.CanvasObject, name string) []*parts.Button {
+	var out []*parts.Button
 	// walk from window_test.go, which knows to step inside a Card - every field
 	// on these screens sits in one, and nothing below it is reachable otherwise.
 	walk(o, func(child fyne.CanvasObject) {
-		if b, ok := child.(*widget.Button); ok && b.Text == name {
+		if b, ok := child.(*parts.Button); ok && b.Text == name {
 			out = append(out, b)
 		}
 	})

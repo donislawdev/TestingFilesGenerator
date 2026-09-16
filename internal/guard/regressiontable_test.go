@@ -53,7 +53,6 @@ var notYetJustified = []string{
 	"keyboard_test.go",
 	"livecheck_test.go",
 	"openlist_test.go",
-	"pointerfocus_test.go",
 	"recipescreen_test.go",
 	"refusaladdress_test.go",
 }

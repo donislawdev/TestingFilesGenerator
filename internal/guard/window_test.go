@@ -399,6 +399,14 @@ func TestTheWindowOpensOnTheGenerateScreen(t *testing.T) {
 	} else if buttonNamed(tabs.Selected().Content, "Generate") == nil {
 		t.Error("the tab the window opens on has no Generate button")
 	}
+	// And the screen on show is the one whose content is VISIBLE, asked of the
+	// tree rather than of the strip: the strip could name one screen and show
+	// another, and everything above would still pass.
+	for _, tab := range tabs.Items() {
+		if shown := tab.Content.Visible(); shown != (tab.Text == text.TabOneTarget()) {
+			t.Errorf("the %q screen is visible=%v while the window opens on %q", tab.Text, shown, text.TabOneTarget())
+		}
+	}
 }
 
 // walk visits every object of a tree, through both kinds of grouping this
@@ -422,14 +430,6 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		// 2026-08-11. The first symptom was a nil type assertion in a guard
 		// that had been passing for weeks.
 		walk(v.Content, visit)
-	case *container.AppTabs:
-		// Every tab, including the ones not on show. A guard that only saw the
-		// selected one could not ask whether a screen it is not looking at
-		// still holds what it should - and the close intercept has to reach a
-		// run on the tab nobody is watching.
-		for _, item := range v.Items {
-			walk(item.Content, visit)
-		}
 	case *widget.PopUp:
 		// A field's longer explanation opens in one of these.
 		walk(v.Content, visit)
@@ -478,10 +478,17 @@ func walkUnknown(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 
 // tabsIn is the tab strip of the window, which is where moving between screens
 // lives since 2026-08-11.
-func tabsIn(o fyne.CanvasObject) *container.AppTabs {
-	var found *container.AppTabs
+//
+// Ours since 2026-09-15. The screens are no longer BELOW the strip in the tree
+// - parts.Tabbed puts the strip and every screen side by side in a plain
+// container, so walk reaches every screen, shown or not, without a case for
+// the strip's type. That is the reason it is a container: the case this switch
+// used to carry for the toolkit's tabs was the third such case added after a
+// guard had gone quiet rather than red.
+func tabsIn(o fyne.CanvasObject) *parts.Tabs {
+	var found *parts.Tabs
 	walk(o, func(obj fyne.CanvasObject) {
-		if tabs, ok := obj.(*container.AppTabs); ok && found == nil {
+		if tabs, ok := obj.(*parts.Tabs); ok && found == nil {
 			found = tabs
 		}
 	})
@@ -500,7 +507,7 @@ func tabNamed(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject 
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		if item.Text == name {
 			return item.Content
 		}
@@ -518,7 +525,7 @@ func selectTab(t *testing.T, o fyne.CanvasObject, name string) fyne.CanvasObject
 	if tabs == nil {
 		t.Fatal("the window has no tabs")
 	}
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		if item.Text == name {
 			tabs.Select(item)
 			return item.Content
@@ -534,7 +541,7 @@ func tabNames(o fyne.CanvasObject) []string {
 		return nil
 	}
 	var out []string
-	for _, item := range tabs.Items {
+	for _, item := range tabs.Items() {
 		out = append(out, item.Text)
 	}
 	return out
@@ -544,11 +551,13 @@ func tabNames(o fyne.CanvasObject) []string {
 func textIn(o fyne.CanvasObject) string {
 	var b strings.Builder
 	walk(o, func(obj fyne.CanvasObject) {
-		switch v := obj.(type) {
-		case *widget.Label:
-			b.WriteString(v.Text)
+		if words, ok := wordsOf(obj); ok {
+			b.WriteString(words)
 			b.WriteString("\n")
-		case *widget.Button:
+			return
+		}
+		switch v := obj.(type) {
+		case *parts.Button:
 			b.WriteString(v.Text)
 			b.WriteString("\n")
 		case *parts.Entry:
@@ -562,38 +571,33 @@ func textIn(o fyne.CanvasObject) string {
 	return b.String()
 }
 
-func buttonNamed(o fyne.CanvasObject, name string) *widget.Button {
-	var found *widget.Button
+func buttonNamed(o fyne.CanvasObject, name string) *parts.Button {
+	var found *parts.Button
 	walk(o, func(obj fyne.CanvasObject) {
-		if b, ok := obj.(*widget.Button); ok && b.Text == name {
+		if b, ok := obj.(*parts.Button); ok && b.Text == name {
 			found = b
 		}
 	})
 	return found
 }
 
-// checkNamed is a switch found by the words on it, which is where a switch
-// carries its name - a heading above one leaves a bare square to click.
+// checkNamed is the switch that stands under a name in the column of names.
 //
-// It looks for parts.Switch rather than widget.Check. The window's switches
-// report when the keyboard reaches them, which the toolkit's do not, and a
-// type that embeds another is not that other type - so this asks for the one
-// the window actually builds instead of matching both and pretending they are
-// interchangeable.
+// Found by the name beside it rather than by words on it, since 2026-09-15: a
+// switch carries no words of its own any more - its name is in the column like
+// every other field's - so it is the control under a heading, the same way
+// every other field is found. It looks for parts.Toggle rather than
+// widget.Check because a type that embeds another is not that other type, and
+// the window builds its own.
 func checkNamed(o fyne.CanvasObject, name string) *parts.Toggle {
-	var found *parts.Toggle
-	walk(o, func(obj fyne.CanvasObject) {
-		if c, ok := obj.(*parts.Toggle); ok && c.Text == name {
-			found = c
-		}
-	})
-	return found
+	toggle, _ := controlUnder(o, name).(*parts.Toggle)
+	return toggle
 }
 
 func buttonNames(o fyne.CanvasObject) []string {
 	var out []string
 	walk(o, func(obj fyne.CanvasObject) {
-		if b, ok := obj.(*widget.Button); ok {
+		if b, ok := obj.(*parts.Button); ok {
 			out = append(out, b.Text)
 		}
 	})
@@ -621,7 +625,7 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 		if isHeadingExtra(box.Objects[1]) {
 			return
 		}
-		if head := headingOf(box.Objects[0]); head != nil && head.Text == label {
+		if head, named := headingOf(box.Objects[0]); named && head == label {
 			found = unringed(box.Objects[1])
 		}
 	})
@@ -756,16 +760,15 @@ func detailButtonIn(row *fyne.Container) *parts.DetailButton {
 	return nil
 }
 
-func headingOf(o fyne.CanvasObject) *widget.Label {
-	if label, ok := o.(*widget.Label); ok {
-		return label
+func headingOf(o fyne.CanvasObject) (string, bool) {
+	if words, ok := wordsOf(o); ok {
+		return words, true
 	}
 	row, ok := o.(*fyne.Container)
 	if !ok || len(row.Objects) == 0 {
-		return nil
+		return "", false
 	}
-	label, _ := row.Objects[0].(*widget.Label)
-	return label
+	return wordsOf(row.Objects[0])
 }
 
 // entryUnder is the box somebody types into for a labelled field.

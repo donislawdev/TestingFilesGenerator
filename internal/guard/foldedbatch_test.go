@@ -6,8 +6,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
@@ -17,7 +17,7 @@ import (
 // button that puts it away.
 type foldRow struct {
 	title  string
-	toggle *widget.Button
+	toggle *parts.Button
 }
 
 // foldRows is every fold on a screen, in the order the tree holds them.
@@ -47,18 +47,17 @@ func foldRows(o fyne.CanvasObject) []foldRow {
 		if !ok {
 			return
 		}
-		var toggle *widget.Button
+		var toggle *parts.Button
 		title := ""
 		for _, item := range row.Objects {
-			switch found := item.(type) {
-			case *widget.Button:
+			if found, ok := item.(*parts.Button); ok {
 				if found.Text == "" && found.Icon != nil {
 					toggle = found
 				}
-			case *widget.Label:
-				if title == "" {
-					title = found.Text
-				}
+				continue
+			}
+			if words, ok := wordsOf(item); ok && title == "" {
+				title = words
 			}
 		}
 		if toggle != nil && title != "" {
@@ -71,7 +70,7 @@ func foldRows(o fyne.CanvasObject) []foldRow {
 // foldTitled is the fold with these words in its head, counting from the one
 // named. Titles repeat - every batch has a section called "Settings for bmp" -
 // so a section is asked for as the first one after the batch it belongs to.
-func foldTitled(t *testing.T, o fyne.CanvasObject, after, title string) *widget.Button {
+func foldTitled(t *testing.T, o fyne.CanvasObject, after, title string) *parts.Button {
 	t.Helper()
 	rows := foldRows(o)
 	from := 0

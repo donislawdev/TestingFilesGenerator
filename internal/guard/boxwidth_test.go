@@ -273,17 +273,24 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 // settingLabelOf is what the label above a declared setting reads.
 func settingLabelOf(p format.Property) string { return text.SettingLabel(p.Name) }
 
-// Two narrow settings share a row, on both screens that draw them.
+// A declared setting stands its box on the same edge as every field above
+// it, on both screens that draw them.
 //
-// Two boxes for a number stacked one above the other cost a row of height each
-// and leave two thirds of the panel empty beside them. Measured on 2026-08-20:
-// pairing them took the batch screen from 1259 px to 1173.
+// Until 2026-09-14 this guard asked for two narrow settings to SHARE a row,
+// because a name standing over its box left two thirds of the panel empty
+// beside it and pairing took the batch screen from 1259 px to 1173. A form
+// laid out as rows has no such width to fill - a row is as tall as one box -
+// and the property that replaces it is GUI rule 13: the box of a setting a
+// format declares begins where the box of "Format" begins, however long the
+// setting's name. That is what a column of names worked out from EVERY name
+// buys, and what a column measured from the fields on the screen would
+// break the moment a format with a longer setting name was chosen.
 //
 // Both screens, because the width went into one of them first and the other
 // kept drawing full width boxes until the next commit - and then the pairing
 // went into one of them first as well. It is the same declaration drawn by two
 // pieces of code, so it is the same defect waiting twice.
-func TestTwoNarrowSettingsShareARowOnEveryScreenThatDrawsThem(t *testing.T) {
+func TestADeclaredSettingStandsOnTheSameEdgeAsTheFieldsAboveIt(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 
@@ -295,27 +302,29 @@ func TestTwoNarrowSettingsShareARowOnEveryScreenThatDrawsThem(t *testing.T) {
 			if !ok {
 				t.Fatal("this screen has no format list, so this guard read the wrong tree")
 			}
-			// A format declaring two narrow settings and nothing else between
-			// them, so "same row" is a question this can ask at all.
+			// A format declaring settings with names of two lengths.
 			picker.SetSelected("bmp")
 			// What a format declares arrives folded away since 2026-08-25, and
-			// a box that is not on the screen has no position to measure. This
-			// guard is about how two of them sit beside each other once they
-			// are, so it opens the section rather than asking about a shape
-			// nobody is looking at.
+			// a box that is not on the screen has no position to measure.
 			openFold(t, screen, "", text.SettingsFor("bmp"))
 
-			width, ok := labelBox(screen, text.SettingLabel("width"))
+			format, ok := objectBox(screen, controlUnder(screen, text.FieldFormat()))
 			if !ok {
-				t.Fatal("bmp declares width and no label on this screen says so")
+				t.Fatal("the format list is not laid out")
 			}
-			height, ok := labelBox(screen, text.SettingLabel("height"))
-			if !ok {
-				t.Fatal("bmp declares height and no label on this screen says so")
-			}
-			if off := width.Y - height.Y; off > 1 || off < -1 {
-				t.Errorf("width sits at %.0f px and height at %.0f px, so two boxes holding four digits each "+
-					"take a row of the form apiece", width.Y, height.Y)
+			for _, name := range []string{"width", "height"} {
+				control := controlUnder(screen, text.SettingLabel(name))
+				if control == nil {
+					t.Fatalf("bmp declares %s and no field on this screen holds it", name)
+				}
+				box, ok := objectBox(screen, control)
+				if !ok {
+					t.Fatalf("the box for %s is not laid out", name)
+				}
+				if off := box.X - format.X; off > 1 || off < -1 {
+					t.Errorf("the box for %s begins at x=%.0f and the format list at x=%.0f, so the settings a "+
+						"format declares do not stand in the column of controls", name, box.X, format.X)
+				}
 			}
 		})
 	}

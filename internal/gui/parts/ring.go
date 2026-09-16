@@ -62,15 +62,6 @@ func (r *Ring) Resting(edge color.Color) {
 	r.draw()
 }
 
-// ringWidth is how thick the line is.
-//
-// Twice the toolkit's input border, so it reads as a deliberate edge rather than
-// as the box's own outline changing colour. One pixel lands between pixels and
-// is anti-aliased away to something fainter than the number suggests - measured
-// on the section surface on 2026-08-12, where a one pixel stroke of a 29.4 L*
-// colour came out at 22.3.
-const ringWidth = 2
-
 // WithRing puts a control on the screen with an edge it can draw when there is
 // something to say about it.
 //
@@ -82,8 +73,18 @@ const ringWidth = 2
 // same property the explanation sheet relies on, and the reason both are
 // content rather than overlays.
 func WithRing(control fyne.CanvasObject) (fyne.CanvasObject, *Ring) {
+	// A control that draws its own edge and its own ring is handed back
+	// untouched, with no ring for the field to mark. A switch is the one such
+	// control a field is built round today: its square carries its own border
+	// and its own focus ring, and a second one round the whole cell would be a
+	// ring round the name as well as the square - the box-round-a-sentence O72
+	// warned about. It also cannot be refused, so the nil ring is a fact rather
+	// than a gap: the engine has no verdict about a switch to place.
+	if _, own := control.(selfEdged); own {
+		return control, nil
+	}
 	rect := canvas.NewRectangle(color.Transparent)
-	rect.CornerRadius = Theme().Size(theme.SizeNameInputRadius)
+	rect.CornerRadius = RadiusField
 	ring := &Ring{rect: rect}
 	ring.draw()
 
@@ -118,6 +119,11 @@ func wireRing(control fyne.CanvasObject, ring *Ring) {
 // ringed is a control that reports the keyboard arriving and leaving.
 type ringed interface{ useRing(*Ring) }
 
+// selfEdged is a control that draws its own border and its own focus ring, so
+// WithRing leaves it alone rather than drawing a second edge round the cell it
+// stands in.
+type selfEdged interface{ drawsOwnEdge() }
+
 // Refuse turns the edge red, or takes the red away. Called with what the run
 // said about this setting rather than with a judgement made here - G1.
 func (r *Ring) Refuse(refused bool) {
@@ -148,7 +154,7 @@ func (r *Ring) draw() {
 		// Thinner than the two states above, so a control at rest cannot be
 		// mistaken for one the run refused.
 		r.rect.StrokeColor = r.resting
-		r.rect.StrokeWidth = 1
+		r.rect.StrokeWidth = edgeWidth
 	default:
 		// No line at all rather than one in the background colour. A stroke
 		// that is meant to be invisible is a thing that shows up the day the
@@ -442,10 +448,6 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	list.StartOn(c.Selected)
 }
 
-// listEdgeGap is the space kept between an open list and the edge of the
-// window, so that a list filling the room still reads as sitting inside it.
-const listEdgeGap = 8
-
 // roomForList decides how tall an open list may be and where its top goes.
 //
 // It used to go under the box at its full height, always, which is right until
@@ -454,16 +456,22 @@ const listEdgeGap = 8
 // format menu showed four of its twenty values that way, with the rest past the
 // edge and the run buttons underneath it (O113).
 //
-// Two things fix it and both are needed. It opens UPWARD when there is more
-// room above the box than below it, which is what every desktop menu does. And
-// it is cut to the room on whichever side it lands, rather than to a fixed
-// number of rows - the eight row ceiling is about not covering the form, and it
-// says nothing about a window that has less than eight rows left.
+// Three things decide it and each is needed. The list may cover a share of
+// the window and no more (ListCeiling) - the ceiling is about not taking the
+// form away from the person reading it, and it follows the window rather than
+// being a count of rows, which was eight in every window until 2026-09-15
+// (O203). It opens UPWARD when there is more room above the box than below
+// it, which is what every desktop menu does. And it is cut to the room on
+// whichever side it lands, because the ceiling says nothing about a window
+// that has less than that left beside the box.
 //
 // Arithmetic rather than widgets so that it can be checked directly. The screen
 // level guard opens a real menu and measures the overlay, which is the half
 // that catches this being wired up wrongly.
 func roomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
+	if ceiling := ListCeiling(canvasHeight); wanted > ceiling {
+		wanted = ceiling
+	}
 	below := canvasHeight - (boxTop + boxHeight) - listEdgeGap
 	above := boxTop - listEdgeGap
 	if below < 0 {
@@ -521,6 +529,13 @@ func (c *Chooser) Quietly(focus func()) { c.from.Quietly(focus) }
 // UX9 asks that whatever the mouse can do the keyboard can - which has to mean
 // the same thing, not a second version of it.
 func (c *Chooser) TypedKey(event *fyne.KeyEvent) {
+	// A frozen menu answers no key. The toolkit's Select.TypedKey moves the
+	// value on Left and Right without asking, and a menu frozen for a run
+	// keeps the keyboard if it had it - see Segments.TypedKey for the same
+	// finding on the same day.
+	if event == nil || c.Disabled() {
+		return
+	}
 	// The keyboard has been used, so from here on it is worth saying where it
 	// is. Somebody who opened this list with the mouse and then reached for the
 	// arrows is somebody who now needs to see which control is listening.

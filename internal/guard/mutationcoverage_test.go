@@ -161,7 +161,11 @@ var provenByProbe = map[string]string{
 		"That break is the real failure mode rather than an invented one. Visible() on a child answers for the CHILD, so a control inside a hidden container still reports itself visible " +
 		"while the focus chain, which walks the visible tree, steps straight past it. A section quietly hidden is exactly how a screen stops being operable from the keyboard without looking any different in a screenshot. " +
 		"Not a mutation entry because no substitution of one piece of text for another produces that state today: the failure lives in the disagreement between two ways of asking what is visible, " +
-		"and nothing in the tree says Hide for a substitution to aim at.",
+		"and nothing in the tree says Hide for a substitution to aim at. " +
+		"The clause about the strip, added 2026-09-15 when the strip became ours and its words learnt to hold the keyboard, was broken by hand the same way: " +
+		"hiding every word in parts.Tabbed made it red naming all four words on every screen, and green again when the lines came out. " +
+		"Taking the words' FocusGained away is not a break this guard can be shown - the product itself refuses to compile, because the strip focuses its own words in two places, " +
+		"so that half is held by the compiler rather than by a test.",
 
 	"TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon": "checked 2026-08-13 with tools/probes/exe-icon.ps1, run on both binaries. " +
 		"It reported 7 of 7 icon images inside tfg-gui.exe and 0 of 7 inside tfg.exe, which is the right answer for a command line with no window. " +

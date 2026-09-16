@@ -162,7 +162,9 @@ func TestTheSBOMIsTheSameBytesForTheSameInputs(t *testing.T) {
 }
 
 // sbomInput is the document as a release would ask for it, with the versions
-// read from the build on every system - the Linux only module is why.
+// read from the build on every system - the Linux only module is why - and,
+// since 2026-09-15, with the packages of our own module each binary links,
+// which is what tells the window's font from the command line binary.
 func sbomInput(t *testing.T) legal.Document {
 	t.Helper()
 	window, _ := shipped(t, "../../cmd/tfg-gui")
@@ -177,8 +179,8 @@ func sbomInput(t *testing.T) legal.Document {
 		Created: "2026-08-28T00:00:00Z",
 		Seed:    "guard",
 		Binaries: []legal.Binary{
-			{Name: "tfg", Modules: command, GoVersion: runtime.Version()},
-			{Name: "tfg-gui", Modules: window, GoVersion: runtime.Version()},
+			{Name: "tfg", Modules: command, Packages: ourPackagesLinkedBy(t, "../../cmd/tfg", false), GoVersion: runtime.Version()},
+			{Name: "tfg-gui", Modules: window, Packages: ourPackagesLinkedBy(t, "../../cmd/tfg-gui", false), GoVersion: runtime.Version()},
 		},
 	}
 }

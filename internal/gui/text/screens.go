@@ -1,14 +1,24 @@
 package text
 
 import (
-	"strconv"
 	"strings"
 )
 
-// Headings, one per screen. They name what the screen is for rather than what
-// it contains, which is why the preset one is a question.
-func HeadingGenerate() string { return say("HeadingGenerate", "Generate files") }
-func HeadingPreset() string   { return say("HeadingPreset", "Build a set for a question") }
+// The sentence under each work screen's title, saying what the screen DOES
+// for the person reading it - files of what shape, and what they are for.
+//
+// The titles said this until 2026-09-15 ("Generate files", "Build a set for a
+// question"), when the word on the tab became the title so that a screen has
+// one name rather than two. The old titles moved under the new ones first,
+// word for word, and the owner allowed them to be rewritten the same day:
+// "Generate files" under "Single batch" explained nothing the tab had not.
+func SubtitleGenerate() string {
+	return say("SubtitleGenerate", "Files of one format and one size, as many as you need.")
+}
+
+func SubtitlePreset() string {
+	return say("SubtitlePreset", "Ready-made sets of files, each built to answer one question about the system under test.")
+}
 
 // HeadingAbout carries the version, so the screen somebody is told to look at
 // when reporting a problem says which build they are on.
@@ -105,7 +115,7 @@ func FieldTargetID() string     { return say("FieldTargetID", "Batch name") }
 func FieldNameTemplate() string { return say("FieldNameTemplate", "File names") }
 func FieldOutputDir() string    { return say("FieldOutputDir", "Output directory") }
 func FieldSeed() string         { return say("FieldSeed", "Seed") }
-func FieldLabel() string        { return say("FieldLabel", "Write a label inside each file") }
+func FieldLabel() string        { return say("FieldLabel", "Label in each file") }
 func FieldPreset() string       { return say("FieldPreset", "Preset") }
 
 // The line under each field: what it does, in one line, and nothing else.
@@ -306,8 +316,11 @@ func TooManyFiles(count int64, reason error) string {
 // difference between the two screens is how many batches, not how advanced
 // the person is. "Advanced" would have said the other screen is for
 // beginners, which is not true of anybody generating one batch of files.
-func HeadingRecipe() string { return say("HeadingRecipe", "Run several batches together") }
-func TabRecipe() string     { return say("TabRecipe", "Several batches") }
+func SubtitleRecipe() string {
+	return say("SubtitleRecipe", "Batches of different formats and sizes, generated together in one run.")
+}
+
+func TabRecipe() string { return say("TabRecipe", "Several batches") }
 
 // BatchHeading names one batch in the list, counted the way the refusals count.
 //
@@ -516,25 +529,6 @@ func OneExplanation(line, detail string) string {
 		return line
 	}
 	return line + " " + detail
-}
-
-// ExactBytes says what a size somebody typed comes to, counted out.
-//
-// It exists because "10mb" is two different numbers depending on who is
-// reading. This tool counts in 1024s - RECIPE.md section 9, settled and not
-// reopened - and everything downstream of the box agrees, but nothing on the
-// screen said so, so a person testing a limit their system declares in
-// millions had no way to see the difference until the files were on disk.
-//
-// It states the number rather than arguing the units. Saying "MiB" would be
-// answering a question nobody asked with a spelling most of the world does not
-// use, and it would still need the count for anyone checking a limit.
-//
-// "B" rather than "bytes" because that is what the command line prints - one
-// vocabulary for one thing across both surfaces - and it sidesteps the plural
-// a number always drags behind it.
-func ExactBytes(n int64) string {
-	return strconv.FormatInt(n, 10) + " B"
 }
 
 // RefusedBeforeWriting is what the foot of the form says when a press was

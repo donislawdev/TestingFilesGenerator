@@ -78,13 +78,14 @@ func describeBinaries() ([]legal.Binary, error) {
 		{"tfg", "./cmd/tfg"},
 		{"tfg-gui", "./cmd/tfg-gui"},
 	} {
-		versions, err := linked(target.path)
+		versions, packages, err := linked(target.path)
 		if err != nil {
 			return nil, err
 		}
 		binaries = append(binaries, legal.Binary{
 			Name:      target.name,
 			Modules:   versions,
+			Packages:  packages,
 			GoVersion: runtime.Version(),
 		})
 	}
@@ -92,7 +93,9 @@ func describeBinaries() ([]legal.Binary, error) {
 }
 
 // linked is what one target links on EVERY system this project releases for,
-// rather than on the one running the generator.
+// rather than on the one running the generator: the modules with their
+// versions, and the packages of our own module - the second answer is what
+// tells the window's font from the command line binary, since 2026-09-15.
 //
 // Measured while writing this, on the generator's own first output: asked on
 // Windows alone the window came back with twenty-seven modules instead of
@@ -100,21 +103,25 @@ func describeBinaries() ([]legal.Binary, error) {
 // document generated on this machine would have shipped without naming it -
 // which is the same trap THIRD-PARTY-NOTICES.md records having fallen into,
 // in almost the same words.
-func linked(target string) (map[string]string, error) {
+func linked(target string) (map[string]string, map[string]bool, error) {
 	versions := map[string]string{}
+	packages := map[string]bool{}
 	for _, goos := range []string{"windows", "linux", "darwin"} {
-		found, err := linkedOn(target, goos)
+		found, ours, err := linkedOn(target, goos)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := merge(versions, found, goos); err != nil {
-			return nil, err
+			return nil, nil, err
+		}
+		for pkg := range ours {
+			packages[pkg] = true
 		}
 	}
 	if len(versions) == 0 {
-		return nil, fmt.Errorf("%s reported no modules at all, which cannot be right", target)
+		return nil, nil, fmt.Errorf("%s reported no modules at all, which cannot be right", target)
 	}
-	return versions, nil
+	return versions, packages, nil
 }
 
 // merge folds one system's answer into the set, refusing a disagreement rather
@@ -133,26 +140,35 @@ func merge(into, found map[string]string, goos string) error {
 
 // linkedOn asks one system. CGO is on because with it off the toolkit hides
 // behind build constraints and the window lists as the stub that has no window.
-func linkedOn(target, goos string) (map[string]string, error) {
+func linkedOn(target, goos string) (map[string]string, map[string]bool, error) {
 	//nolint:gosec // the command is the go tool and the target is one of the
 	// two literals in describeBinaries - nothing here comes from outside.
 	cmd := exec.Command("go", "list", "-deps", "-f",
-		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}", target)
+		"{{if .Module}}{{.Module.Path}}@{{.Module.Version}}|{{.ImportPath}}{{end}}", target)
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=1", "GOOS="+goos)
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("asking what %s links on %s: %w", target, goos, err)
+		return nil, nil, fmt.Errorf("asking what %s links on %s: %w", target, goos, err)
 	}
 	versions := map[string]string{}
+	ours := map[string]bool{}
 	for _, line := range strings.Split(string(out), "\n") {
-		path, moduleVersion, found := strings.Cut(strings.TrimSpace(line), "@")
-		if !found || strings.Contains(path, "donislawdev") {
+		module, pkg, _ := strings.Cut(strings.TrimSpace(line), "|")
+		path, moduleVersion, found := strings.Cut(module, "@")
+		if !found {
+			continue
+		}
+		// Our own module has no version to report and is not a dependency,
+		// so it is not a row of the module table. Its packages are kept
+		// instead, because the registry asks about them.
+		if strings.Contains(path, "donislawdev") {
+			ours[pkg] = true
 			continue
 		}
 		versions[path] = moduleVersion
 	}
-	return versions, nil
+	return versions, ours, nil
 }
 
 func fail(err error) {

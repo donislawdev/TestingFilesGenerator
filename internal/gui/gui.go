@@ -22,6 +22,27 @@ import "io"
 // table the way the command line has - docs/GUI.md section 5 says that is a
 // fact to write down rather than a gap to fill. The code still exists because
 // this is a process, and it answers one question: did the window come up.
-func Run(errOut io.Writer) int {
-	return run(errOut)
+//
+// args are the process's arguments after its name. One of them is read, and
+// it is the first argument this binary has ever read: --catalogue (or
+// --catalog) opens the catalogue of the window's parts instead of the work
+// screens - GUI rule 4's hidden screen, reached from the launch line. Every
+// other argument is ignored, which is what happened to all of them before
+// this and is written here rather than changed: a window started from a
+// shortcut with odd arguments has always opened.
+func Run(args []string, errOut io.Writer) int {
+	return run(wantsCatalogue(args), errOut)
+}
+
+// wantsCatalogue says whether the launch line asked for the catalogue. Two
+// spellings, because the tree writes the word one way and the flag was
+// named the other on the day it was decided, and a flag typed the wrong way
+// would open the ordinary window without a word.
+func wantsCatalogue(args []string) bool {
+	for _, arg := range args {
+		if arg == "--catalogue" || arg == "--catalog" {
+			return true
+		}
+	}
+	return false
 }

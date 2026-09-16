@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -26,28 +25,40 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 
+	// Counted so that the comparison cannot quietly happen nowhere: a screen
+	// with sections and no readable field names is skipped, and if every
+	// screen were, this guard would be green over nothing.
+	compared := 0
 	for _, tab := range allTabs() {
 		t.Run(tab, func(t *testing.T) {
 			screen := tabContent(t, content, tab)
 
 			sections := map[string]bool{}
-			fields := map[string]bool{}
 			atAbsolute(screen, func(o fyne.CanvasObject, _ fyne.Position) {
-				label, is := o.(*widget.Label)
-				if !is || label.Text == "" || !label.TextStyle.Bold {
-					return
-				}
-				switch label.SizeName {
-				case theme.SizeNameHeadingText:
-					sections[label.Text] = true
-				case "", theme.SizeNameText:
-					fields[label.Text] = true
+				words, bold, size, is := boldWordsAt(o)
+				if is && words != "" && bold && size == parts.TextHeading {
+					sections[words] = true
 				}
 			})
+			// Read off the rows of the form rather than by weight. Until
+			// 2026-09-16 a field was "bold words at the body size", which
+			// every field's name was until the form became a grid on
+			// 2026-09-14 and names went to regular weight - from that day
+			// this map was empty on every screen, the comparison below was
+			// over nothing, and the full mutation run found the guard green
+			// with the preset card named after its field again.
+			fields := map[string]bool{}
+			for _, name := range fieldNamesOn(screen) {
+				fields[name] = true
+			}
 
 			if len(sections) == 0 {
 				t.Skipf("%s draws no sections, so there is nothing to compare", tab)
 			}
+			if len(fields) == 0 {
+				t.Skipf("%s draws no field with a name, so there is nothing to compare", tab)
+			}
+			compared++
 			for name := range sections {
 				if fields[name] {
 					t.Errorf("%q is the name of a section and the name of a field on the same screen."+
@@ -55,6 +66,9 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 				}
 			}
 		})
+	}
+	if compared == 0 {
+		t.Fatal("no screen had both sections and named fields, so nothing was compared")
 	}
 }
 

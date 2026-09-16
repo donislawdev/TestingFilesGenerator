@@ -151,11 +151,31 @@ func TestVerifyCatchesAMissingAnExtraAndAChangedFile(t *testing.T) {
 // The manifest normally sits in the directory it describes. Reporting it as a
 // file nobody asked for would make the most obvious invocation fail on the
 // tool's own output.
+//
+// Asked of the report, not of the exit code. Until 2026-09-16 this guard read
+// the exit code alone, and the full mutation run found it green with the
+// manifest no longer skipped: since 2026-09-07 an unclaimed manifest is named
+// "another run's record" - a note, exit zero - so the tool said a false
+// sentence about its own output and the guard heard nothing. A verify of a
+// directory the tool has just written has no differences of any kind.
 func TestVerifyDoesNotReportTheManifestAsAnExtraFile(t *testing.T) {
 	_, mf := generated(t)
-	code, _, errOut := run(t, "verify", mf)
+	code, stdout, errOut := run(t, "verify", mf, "--json")
 	if code != cli.ExitOK {
 		t.Fatalf("verify gave %d on its own output:\n%s", code, errOut)
+	}
+	var report struct {
+		Differences []struct {
+			Kind string `json:"kind"`
+			Path string `json:"path"`
+		} `json:"differences"`
+	}
+	if err := json.Unmarshal([]byte(stdout), &report); err != nil {
+		t.Fatalf("stdout is not JSON: %v\n%s", err, stdout)
+	}
+	for _, d := range report.Differences {
+		t.Errorf("verify names %q as %q in the directory it has just written - the manifest is "+
+			"the tool's own record, not a difference of any kind", d.Path, d.Kind)
 	}
 }
 

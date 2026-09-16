@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -33,7 +32,7 @@ func TestTheActionBarCostsItsContentPlusOneInset(t *testing.T) {
 	inside := widget.NewLabel("what a run has to say")
 	bar := parts.ActionBar(nil, inside)
 
-	want := inside.MinSize().Height + theme.Padding()*2
+	want := inside.MinSize().Height + parts.InsetBar*2
 	got := bar.MinSize().Height
 
 	// Half a pixel, because a rounded corner and a stroke are drawn on the

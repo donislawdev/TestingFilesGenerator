@@ -126,14 +126,21 @@ func TestProgressStaysOffWhenNothingIsWatching(t *testing.T) {
 		t.Fatalf("creating the log: %v", err)
 	}
 
-	// Enough bytes that the run outlasts the interval between redraws. With a
-	// smaller run the bar would stay silent because there was no time to draw
+	// Enough work that the run outlasts the interval between redraws. With a
+	// shorter run the bar would stay silent because there was no time to draw
 	// it, and the guard would pass without ever reaching the question it asks.
 	// That is not hypothetical - it is what the first version of this test did,
-	// and the mutation runner is what said so.
+	// and the mutation runner is what said so. And it said so a second time:
+	// eight files of 8 MB were enough until the files of a run were written
+	// over several threads, after which the whole test took 40 ms on
+	// 2026-09-16 - under the 100 ms before the bar draws for the first time -
+	// and the mutant that draws to a log file drew nothing. Many small files
+	// instead, because their cost is one system call sequence per file, which
+	// no faster disk makes cheap: 2000 of 4 kB took about 1.2 s when measured
+	// for docs/PERFORMANCE-REVIEW-2026-09-05.md, twelve times the interval.
 	var out bytes.Buffer
 	code := cli.Run(context.Background(), []string{
-		"generate", "--format", "txt", "--size", "8mb", "--count", "8",
+		"generate", "--format", "txt", "--size", "4kb", "--count", "2000",
 		"--out", filepath.Join(dir, "files"),
 	}, &out, logFile)
 	logFile.Close()

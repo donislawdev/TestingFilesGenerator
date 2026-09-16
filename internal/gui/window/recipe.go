@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -69,7 +68,7 @@ type Recipe struct {
 
 	// addBtn lives in the bar at the foot rather than in the form, because the
 	// form scrolls and one batch is taller than the window (O112).
-	addBtn *widget.Button
+	addBtn *parts.Button
 
 	outDir   *parts.Entry
 	manifest *parts.Entry
@@ -106,7 +105,7 @@ type batch struct {
 	//
 	// Only the chosen one is sent - see draft. That is what makes the state the
 	// engine refuses unreachable rather than merely discouraged.
-	sizeWay   *widget.RadioGroup
+	sizeWay   *parts.Segments
 	sizeBoxes map[string]fyne.CanvasObject
 
 	// folded is whether this batch is put away, and it is a plain bool on the
@@ -176,7 +175,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// were the only boxes on any screen where "you may leave this" and "you
 	// must fill this in" looked the same. See the note on newBatch.
 	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
-	r.label = parts.NewToggle(text.FieldLabel(), nil)
+	r.label = parts.NewToggle(nil)
 
 	r.batchBox = parts.FieldColumn()
 	r.outBox = parts.FieldColumn()
@@ -186,15 +185,14 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// screen what it is does not depend on scrolling to reach - see rebuild.
 	// It is disabled with the rest of the form while a run is going, because
 	// adding a batch mid run would rebuild the form under the run.
-	r.addBtn = widget.NewButton(text.ButtonAddBatch(), r.addBatch)
+	r.addBtn = parts.NewButton(parts.Secondary, text.ButtonAddBatch(), r.addBatch)
 	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...),
-			r.actions(), r.progress(), r.problem.Object()),
+		r.footer(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...)),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(text.HeadingRecipe(), r.batchBox, r.outBox)))),
+		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -203,9 +201,9 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r.batches[0].formatPick.SetSelected(format.IDs()[0])
 	r.rebuild()
 
-	// Said last, once the box it reads exists.
+	// Said last, once every box it reads exists.
 	r.runner.destination = r.OutDir
-	r.runner.sayDestination()
+	r.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
 	// guards build one - never goes through Open, and would otherwise have
@@ -324,6 +322,9 @@ func (r *Recipe) rebuild() {
 
 	r.batchBox.Refresh()
 	r.outBox.Refresh()
+	// A batch added, copied or taken away changes what the form comes to,
+	// and none of those goes through a box somebody typed in.
+	r.runner.refreshLine()
 }
 
 // batchBlock is one batch as it appears on the screen.
@@ -381,11 +382,9 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 			// the line under the label, so it has to exist even when there is
 			// nothing further to add.
 			r.tips.Say(""), b.formatPick),
-		r.fields.Row(
-			add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
-				r.tips.Say(text.DetailTargetID()), b.id),
-			add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
-		),
+		add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
+			r.tips.Say(text.DetailTargetID()), b.id),
+		add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
 		// One way of saying how big, chosen from three, since 2026-08-25.
 		//
 		// They were three boxes side by side with a sentence above them saying
@@ -420,10 +419,10 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// makes several batches quick to write in the first place, since batches
 	// usually differ from each other in one setting.
 	head := []fyne.CanvasObject{
-		widget.NewButton(text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
+		parts.NewButton(parts.Secondary, text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
 	}
 	if len(r.batches) > 1 {
-		head = append(head, widget.NewButton(text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
+		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
 	r.wire(b.fold, &b.folded, b.summary)
@@ -458,7 +457,7 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		holds = d.Container
 	}
 
-	addContents := widget.NewButton(text.ButtonAddContents(), func() {
+	addContents := parts.NewButton(parts.Secondary, text.ButtonAddContents(), func() {
 		b.contents = append(b.contents, r.newContent())
 		r.rebuild()
 	})
@@ -468,21 +467,21 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		}
 		return addContents
 	}
-	rows := []fyne.CanvasObject{parts.Heading(text.ContentsHeading())}
+	rows := []fyne.CanvasObject{parts.Subheading(text.ContentsHeading())}
 	for j, c := range b.contents {
 		at := func(setting string) string {
 			return recipe.ContentAddress(index+1, j+1, setting)
 		}
 		entry := j
 		rows = append(rows, r.fields.Row(
-			r.fields.Add(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
-			r.fields.Add(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
-			r.fields.Add(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
+			r.fields.AddCell(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
+			r.fields.AddCell(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
+			r.fields.AddCell(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
 			// Not a field, so the row would hand it a whole column and the
 			// height of a label and a control together - see parts.BesideFields
 			// for the numbers that came off this very button.
 			parts.BesideFields(
-				widget.NewButton(text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
+				parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
 		))
 	}
 	// The button to add another only where another one would be legal. The rows
@@ -523,12 +522,10 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	return parts.Section(text.SectionOutput(),
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
 			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir)),
-		r.fields.Row(
-			r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
-				r.tips.Say(text.DetailManifest()), r.manifest),
-			r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
-				r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
-		),
+		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
+			r.tips.Say(text.DetailManifest()), r.manifest),
+		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
+			r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
 		r.fields.AddToggle(recipe.KeyDefaultsLabel, text.FieldLabel(), "",
 			r.tips.Say(text.DetailLabel()), r.label),
 	)
@@ -642,7 +639,7 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	if err != nil {
 		return nil, none, err
 	}
-	rec, err := recipe.Parse(src, text.HeadingRecipe())
+	rec, err := recipe.Parse(src, text.TabRecipe())
 	if err != nil {
 		return nil, none, err
 	}

@@ -41,7 +41,7 @@ func TestASectionDrawsItsOwnSurface(t *testing.T) {
 		// it matters more there: the bar is pinned over a form that scrolls
 		// underneath it, so a bar with no surface is a bar with text sliding
 		// through its buttons. That is what it was built to stop.
-		{"the action bar", parts.ActionBar(widget.NewButton("Generate", nil))},
+		{"the action bar", parts.ActionBar(parts.NewButton(parts.Primary, "Generate", nil))},
 	} {
 		var found []*canvas.Rectangle
 		walk(subject.tree, func(o fyne.CanvasObject) {

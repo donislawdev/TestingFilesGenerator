@@ -4,9 +4,9 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
 // The buttons that start, stop and follow a run.
@@ -54,7 +54,7 @@ func (r *runner) PressCancel() { pressIfLive(r.cancelBtn) }
 // Hidden as well as disabled, because Cancel is BOTH while nothing is running -
 // and a shortcut that worked on a button nobody can see would be a way to reach
 // a state the screen does not offer.
-func pressIfLive(b *widget.Button) {
+func pressIfLive(b *parts.Button) {
 	if b == nil || b.Disabled() || !b.Visible() || b.OnTapped == nil {
 		return
 	}

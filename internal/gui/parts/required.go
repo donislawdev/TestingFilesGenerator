@@ -2,6 +2,7 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -22,41 +23,47 @@ import (
 // cannot tell the red from the grey around it still sees a star that the fields
 // beside it do not have. The colour is the palette's error red, the same one a
 // refusal about the field will use, so the mark and the message that follows it
-// are the same colour rather than two reds.
+// are the same colour rather than two reds. A grey star was tried on 2026-09-14
+// and went back the same day: beside a regular-weight name and the grey button
+// that opens the explanation it was one more grey glyph, and a mark that does
+// not stand out from what it marks is not a mark.
 //
 // A type of its own for the reason DetailButton is one: the heading of a field
 // is a row, guards and probes read that row to find the control under it, and
 // recognising a thing by its position in a list is what breaks the third time
-// somebody adds a fourth thing to the row.
+// somebody adds a fourth thing to the row. Drawn with no room of its own
+// around the glyph, like every other word on the form - see words.
 type RequiredMark struct {
-	widget.Label
+	widget.BaseWidget
+	glyph *canvas.Text
 }
 
 func newRequiredMark() *RequiredMark {
-	m := &RequiredMark{}
+	m := &RequiredMark{glyph: words(text.RequiredMark, TextBody, true, theme.ColorNameError)}
 	m.ExtendBaseWidget(m)
-	m.Text = text.RequiredMark
-	// Bold, because it stands beside a bold name and a light star next to heavy
-	// words reads as a smudge rather than as a mark.
-	m.TextStyle = fyne.TextStyle{Bold: true}
-	// The palette's error colour, asked for by role rather than by value. The
-	// same name ErrorArea uses, so a field's mark and a field's refusal cannot
-	// come apart.
-	m.Importance = widget.DangerImportance
 	return m
 }
+
+// CreateRenderer draws the glyph and nothing else.
+func (m *RequiredMark) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(m.glyph)
+}
+
+// MinSize is the glyph's, so the mark takes the room of a star and not of a
+// label round one.
+func (m *RequiredMark) MinSize() fyne.Size { return m.glyph.MinSize() }
 
 // headingRow is a field's name, the mark saying it must be filled in, and the
 // button holding its longer explanation - in that order, on one line.
 //
 // Flat rather than nested, and that is load bearing. Every walk in this project
-// finds a field by looking for a label with its control after it, so the name
+// finds a field by looking for a name with its control after it, so the name
 // has to stay the FIRST thing in this row - wrapping the name and the star in a
-// box of their own would hide the label one level down and every one of those
+// box of their own would hide the name one level down and every one of those
 // walks would stop finding fields. Measured cost of getting that wrong: the
 // probe reported "there is no field labelled width" the first time this was
 // tried the other way round.
-func headingRow(label string, detail Detail, required bool, trailing fyne.CanvasObject) fyne.CanvasObject {
+func headingRow(label string, detail Detail, required bool) fyne.CanvasObject {
 	head := Heading(label)
 	row := []fyne.CanvasObject{head}
 	if required {
@@ -65,15 +72,6 @@ func headingRow(label string, detail Detail, required bool, trailing fyne.Canvas
 	if detail.Text != "" && detail.on != nil {
 		row = append(row, newDetailButton(detail))
 	}
-	// Last, and laid out against the far edge rather than after the button -
-	// see headingLine. It belongs to the box below rather than to the name, so
-	// crowding it against the name would make it read as part of the name.
-	if trailing != nil {
-		row = append(row, trailing)
-	}
-	// A row of one is the label itself. Wrapping it would put every field's
-	// name a level deeper for no reason and change the shape of every stored
-	// screen that has no explanation and no star.
 	if len(row) == 1 {
 		return head
 	}
@@ -95,6 +93,9 @@ func headingRow(label string, detail Detail, required bool, trailing fyne.Canvas
 // belonged to neither. A mark that qualifies a name has to be nearer the name
 // than the next control, which is the same rule the form already follows
 // between a label, its box and the line explaining it.
+//
+// Everything on the line is centred on its height, so a star and a button of
+// two different heights both sit level with the middle of the name.
 type headingLine struct{}
 
 // gapBefore is the room left in front of one thing on the heading line.
@@ -107,15 +108,14 @@ type headingLine struct{}
 // trees said so on the first regeneration: a label 32 px tall became 31 and a
 // button at x=69 moved to 63 on fields this change was not supposed to touch.
 //
-// So: nothing in front of the star, and the toolkit's own padding in front of
-// everything else. A field with no star lays out exactly as it did before, and
-// what a reader sees between the name and the star is the padding a label
-// carries inside itself.
+// So: the smallest step in front of the star, which qualifies the name, and
+// the next one in front of everything else. Both on the scale, and the star
+// nearer the name than the button is to the star.
 func gapBefore(o fyne.CanvasObject) float32 {
 	if _, star := o.(*RequiredMark); star {
-		return 0
+		return GapInline
 	}
-	return theme.Padding()
+	return GapLabel
 }
 
 func (h headingLine) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -143,28 +143,13 @@ func (h headingLine) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 		if !o.Visible() {
 			continue
 		}
-		width := o.MinSize().Width
-		// The full height of the line rather than each thing's own, which is
-		// what a horizontal box does - and matching it is what keeps a field
-		// with no star laid out to the pixel as it was.
-		o.Resize(fyne.NewSize(width, size.Height))
-
-		// A count of bytes is pushed to the far edge instead of following the
-		// name. It describes the box underneath rather than the words beside
-		// it, and the whole point of putting it on this line was the empty half
-		// of the column - laid out next to the name it would sit in the middle
-		// of nothing, and read as part of the label.
-		if _, trailing := o.(*ByteCount); trailing {
-			o.Resize(fyne.NewSize(size.Width-x, size.Height))
-			o.Move(fyne.NewPos(x, 0))
-			continue
-		}
-
+		min := o.MinSize()
 		if !first {
 			x += gapBefore(o)
 		}
 		first = false
-		o.Move(fyne.NewPos(x, 0))
-		x += width
+		o.Resize(min)
+		o.Move(fyne.NewPos(x, (size.Height-min.Height)/2))
+		x += min.Width
 	}
 }

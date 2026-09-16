@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -33,7 +34,7 @@ func TestABoxHoldingASizeSaysWhatItComesTo(t *testing.T) {
 	}
 
 	// The size the box opens with, in the units this tool uses.
-	if want := text.ExactBytes(10 * 1024 * 1024); count.Text != want {
+	if want := core.ExactBytes(10 * 1024 * 1024); count.Text != want {
 		t.Errorf("the size box holds 10mb and the count beside it reads %q, not %q.\n"+
 			"Reason: a megabyte is 1024 kilobytes here, and the count is the only place the screen says so",
 			count.Text, want)
@@ -43,7 +44,7 @@ func TestABoxHoldingASizeSaysWhatItComesTo(t *testing.T) {
 	// the opening value would be worse than none: it would be a wrong number
 	// beside a right one.
 	fill(t, content, text.FieldSize(), "1kb")
-	if want := text.ExactBytes(1024); count.Text != want {
+	if want := core.ExactBytes(1024); count.Text != want {
 		t.Errorf("1kb was typed and the count beside the box reads %q, not %q", count.Text, want)
 	}
 
@@ -129,7 +130,7 @@ func TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne(t *testing.T) {
 		label := text.SettingLabel("entry_size")
 		count := byteCountBeside(t, content, label)
 		fill(t, content, label, "4kb")
-		if want := text.ExactBytes(4 * 1024); count.Text != want {
+		if want := core.ExactBytes(4 * 1024); count.Text != want {
 			t.Errorf("%q holds 4kb and the count beside it reads %q, not %q", label, count.Text, want)
 		}
 	})
@@ -149,7 +150,7 @@ func TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne(t *testing.T) {
 		}
 
 		fill(t, content, label, "2mb")
-		if want := text.ExactBytes(2 * 1024 * 1024); count.Text != want {
+		if want := core.ExactBytes(2 * 1024 * 1024); count.Text != want {
 			t.Errorf("%q holds 2mb and the count beside it reads %q, not %q", label, count.Text, want)
 		}
 	})

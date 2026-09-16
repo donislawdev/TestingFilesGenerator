@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -201,14 +200,12 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 	return found
 }
 
-// namedOnScreen is the words a heading shows, whether it is a label above a
-// control or a switch carrying its own name.
+// namedOnScreen is the words a heading shows. A switch's name is a heading in
+// the column like every other field's since 2026-09-15, so there is no special
+// case for it here any more - it carries no words of its own.
 func namedOnScreen(o fyne.CanvasObject) string {
-	switch v := unringed(o).(type) {
-	case *widget.Label:
-		return v.Text
-	case *parts.Toggle:
-		return v.Text
+	if words, ok := wordsOf(unringed(o)); ok {
+		return words
 	}
 	return ""
 }

@@ -50,24 +50,15 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) fyne.CanvasO
 	}
 
 	var out []fyne.CanvasObject
-	// The same pairing the single batch screen uses, through the same code.
-	pair := parts.PairNarrow(r.fields.Row)
 	for i, f := range b.props {
 		// Shaped here as well as on the single batch screen. The two draw the
 		// same declarations through different code, and only one of them was
 		// given the width on the first try - which is how a difference between
 		// two surfaces starts.
-		object := r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
+		out = append(out, r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
 			parts.PropertyDetail(b.declared[i]), r.tips.Say(text.SettingKey(f.Name)),
-			parts.ShapedFor(b.declared[i], f.Control))
-		if parts.Narrow(b.declared[i]) {
-			pair.Add(object)
-			continue
-		}
-		out = append(out, pair.Rest()...)
-		out = append(out, object)
+			parts.ShapedFor(b.declared[i], f.Control)))
 	}
-	out = append(out, pair.Rest()...)
 	// A rule binding two settings belongs beside them. Two number boxes drawn
 	// from a range alone would offer a pair the run then refuses.
 	if d, err := format.Get(b.formatPick.Selected); err == nil {
@@ -96,12 +87,10 @@ func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
 		parts.Note(text.NoteManifestOnly()),
 		add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
 			r.tips.Say(text.DetailGroup()), b.group),
-		r.fields.Row(
-			add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
-				r.tips.Say(text.DetailExpected()), b.expected),
-			add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
-				r.tips.Say(text.DetailReason()), b.reason),
-		),
+		add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
+			r.tips.Say(text.DetailExpected()), b.expected),
+		add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
+			r.tips.Say(text.DetailReason()), b.reason),
 	)
 	r.wire(b.notes, &b.notesFolded, func() string { return b.notesSaid() })
 	return b.notes.Object()

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -68,7 +68,7 @@ func TestTheButtonsThatRunSomethingSitInTheMiddle(t *testing.T) {
 }
 
 // rowHolding is the container one control is directly inside.
-func rowHolding(o fyne.CanvasObject, want *widget.Button) *fyne.Container {
+func rowHolding(o fyne.CanvasObject, want *parts.Button) *fyne.Container {
 	var found *fyne.Container
 	walk(o, func(obj fyne.CanvasObject) {
 		box, ok := obj.(*fyne.Container)

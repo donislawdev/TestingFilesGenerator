@@ -68,7 +68,7 @@ func TestTheWindowSpeaksWhateverTheCatalogueSays(t *testing.T) {
 // kind and not the others would otherwise pass.
 const madeUpCatalogue = `{
   "FieldSize": { "other": "ROZMIAREK" },
-  "HeadingGenerate": { "other": "NAGLOWEK" },
+  "TabOneTarget": { "other": "NAGLOWEK" },
   "ButtonPreview": { "other": "PODGLAD" }
 }`
 
@@ -95,7 +95,7 @@ func theWindowSpeaksTheCatalogue(t *testing.T) {
 		say  string
 	}{
 		{"the name above the size box", text.FieldSize, "ROZMIAREK"},
-		{"the heading of the generate screen", text.HeadingGenerate, "NAGLOWEK"},
+		{"the heading of the generate screen", text.TabOneTarget, "NAGLOWEK"},
 		{"the words on the preview button", text.ButtonPreview, "PODGLAD"},
 	} {
 		if got := want.got(); got != want.say {

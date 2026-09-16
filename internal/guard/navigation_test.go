@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 )
@@ -89,8 +89,8 @@ func TestCancelIsDrawnAsAButton(t *testing.T) {
 	if cancel == nil {
 		t.Fatal("there is no Cancel button at all, so this guard read the wrong tree")
 	}
-	if cancel.Importance == widget.LowImportance {
-		t.Error("Cancel is drawn at the lowest importance, which paints no surface - so it arrives as bare words beside two filled buttons and reads as disabled")
+	if cancel.Look() == parts.Quiet {
+		t.Error("Cancel is drawn as the quiet look, which paints no surface at rest - so it arrives as bare words beside two filled buttons and reads as disabled")
 	}
 }
 
@@ -129,7 +129,7 @@ func TestMovingBetweenScreensIsTabsAndNotButtons(t *testing.T) {
 	for _, name := range want {
 		screen := tabNamed(t, host.content, name)
 		walk(screen, func(obj fyne.CanvasObject) {
-			button, ok := obj.(*widget.Button)
+			button, ok := obj.(*parts.Button)
 			if !ok {
 				return
 			}
