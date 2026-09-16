@@ -223,11 +223,26 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	box.Move(t.place(driver, near, box.Size()))
 
 	t.sheet.Add(box)
+	t.sheet.Refresh()
 	return box
 }
 
+// close takes a box off the sheet, and the sheet says so.
+//
+// The sheet asks for the repaint in both directions, and the reason is the
+// same in both: nothing else will. A box just made is not yet known to the
+// canvas - it is filed when first painted, and this is before that - so a
+// refresh asked of the box itself reaches nothing, and a box just removed is
+// out of the tree. On the pointer's way in and out the button's own face
+// changes and asks for a repaint in the same tick, which is how the sheet
+// managed without this until 2026-09-16 and why the keyboard never did: a
+// press on the focused button changes no face, so the box it put on the sheet
+// waited for the next repaint from anywhere, and the box it took off stayed
+// drawn until then. The sheet is the thing that changed, so the sheet says so
+// (O217, and the convention every box in internal/gui/window already keeps).
 func (t *Tips) close(box fyne.CanvasObject) {
 	t.sheet.Remove(box)
+	t.sheet.Refresh()
 }
 
 // place is where the box goes, in the sheet's own coordinates.

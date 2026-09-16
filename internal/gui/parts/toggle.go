@@ -255,11 +255,7 @@ func (r *toggleRenderer) Refresh() {
 		r.square.StrokeWidth = edgeWidth
 		r.tick.Hide()
 	}
-	r.halo.Refresh()
-	r.ring.Refresh()
-	r.square.Refresh()
-	r.tick.Refresh()
-	canvas.Refresh(r.toggle)
+	redraw(r.halo, r.ring, r.square, r.tick)
 }
 
 func (r *toggleRenderer) Objects() []fyne.CanvasObject {

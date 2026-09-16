@@ -183,10 +183,7 @@ func (r *listRowRenderer) Refresh() {
 		r.kind.Hide()
 	}
 
-	r.back.Refresh()
-	r.tick.Refresh()
-	r.kind.Refresh()
-	r.label.Refresh()
+	redraw(r.back, r.tick, r.kind, r.label)
 	// The width a row asks for changes with the picture, and the row is laid
 	// out by the list rather than by this renderer.
 	r.Layout(r.row.Size())

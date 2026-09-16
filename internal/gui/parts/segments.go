@@ -305,17 +305,14 @@ func (r *segmentsRenderer) Refresh() {
 			r.fills[i].FillColor = color.Transparent
 			r.words[i].Color = PaletteColour(theme.ColorNamePlaceHolder, dark)
 		}
-		r.fills[i].Refresh()
-		r.words[i].Refresh()
+		redraw(r.fills[i], r.words[i])
 	}
 	if r.seg.marked {
 		r.ring.StrokeWidth = ringWidth
 	} else {
 		r.ring.StrokeWidth = 0
 	}
-	r.border.Refresh()
-	r.ring.Refresh()
-	canvas.Refresh(r.seg)
+	redraw(r.border, r.ring)
 	r.Layout(r.seg.Size())
 }
 
