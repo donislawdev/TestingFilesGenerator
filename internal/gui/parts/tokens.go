@@ -213,3 +213,7 @@ const (
 	rowGutter = space2
 	rowGap    = space2
 )
+
+// EdgeWidth is the line round a control at rest, for a guard measuring
+// whether a fill stays inside it.
+func EdgeWidth() float32 { return edgeWidth }

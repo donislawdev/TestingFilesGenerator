@@ -110,6 +110,24 @@ type Fields struct {
 	// widest name the window can ever show - see LabelColumn - and nought
 	// until then, which lays a name out at its own width.
 	names float32
+
+	// bare are the controls on the form that have no setting and no name of
+	// their own and are still part of the form - the switch between the three
+	// ways of stating a size. Each remembers how many fields stood before it,
+	// so that KeepFirst can throw it away with the fields it arrived with.
+	//
+	// A second list rather than an entry in list with an empty key, because
+	// list is what a refusal is addressed against and what the guards compare
+	// with the tree: a field that cannot say what it is about does not belong
+	// there. Until 2026-09-16 there was no list at all, and Freeze reached
+	// only list - measured on a render of the batch screen mid run, the size
+	// boxes frozen and the switch above them live (O223).
+	bare []bareControl
+}
+
+type bareControl struct {
+	control fyne.Disableable
+	after   int
 }
 
 // LabelColumn says how wide the column of names is on this screen.
@@ -252,8 +270,12 @@ func (s *Fields) register(setting, label string, detail Detail, control fyne.Can
 
 // Unlabelled is a row of the form for something that is not a field and has
 // no name of its own - the switch that chooses between three ways of saying
-// how big - so it stands in the column of controls like everything else.
+// how big - so it stands in the column of controls like everything else, and
+// freezes with them.
 func (s *Fields) Unlabelled(control fyne.CanvasObject) fyne.CanvasObject {
+	if d, ok := control.(fyne.Disableable); ok {
+		s.bare = append(s.bare, bareControl{control: d, after: len(s.list)})
+	}
 	return FieldRow(s.names, Clear(), control)
 }
 
@@ -434,6 +456,13 @@ func (s *Fields) KeepFirst(n int) {
 	for _, f := range s.list {
 		s.by[f.Setting] = f
 	}
+	kept := s.bare[:0]
+	for _, b := range s.bare {
+		if b.after <= n {
+			kept = append(kept, b)
+		}
+	}
+	s.bare = kept
 }
 
 // Mark shows a refusal under the field it is about, and says whether it found
@@ -563,6 +592,13 @@ func (s *Fields) Freeze(frozen bool) {
 			continue
 		}
 		control.Enable()
+	}
+	for _, b := range s.bare {
+		if frozen {
+			b.control.Disable()
+			continue
+		}
+		b.control.Enable()
 	}
 }
 

@@ -109,6 +109,18 @@ because it turns other people's test suites red.
   it so under every format, so the ellipsis only ever appears in a window
   made narrower than a title needs.
 
+- **The switch between the three ways of stating a size is drawn as one
+  shape.** The chosen way was a sharp rectangle under a rounded border, with
+  a hairline against its edge and the keyboard ring outside - three
+  geometries at once. The fill is rounded and sits inside the border now, and
+  a line stands only between two ways neither of which is chosen.
+
+- **The words in an open list start where the word in the box does.** Every
+  row kept a column for the tick in front of its words, whether or not
+  anything in the list was ticked, so the words of a list with nothing chosen
+  floated a column to the right of the box. The tick stands at the end of the
+  row now, and the picture of a file kind stays in front where it was.
+
 ### Added
 
 - **Every control shows where the keyboard is and answers the pointer.** Every
@@ -133,6 +145,12 @@ because it turns other people's test suites red.
   argument is ignored, as every argument was until now.
 
 ### Fixed
+
+- **The switch between the three ways of stating a size freezes with the
+  rest of the form while a run is going.** It stayed live: during a run,
+  choosing another way rebuilt the size boxes under a form drawn as frozen.
+  A frozen switch also kept no sign of which way was chosen. Both are
+  fixed, and the switch thaws with the form when the run ends.
 
 - **The explanation beside a field opens on the first hover, and opens and
   closes from the keyboard.** Pointing at the information mark in a fresh

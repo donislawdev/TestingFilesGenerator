@@ -101,11 +101,22 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 	icon := Theme().Size(theme.SizeNameInlineIcon)
 	r.back.Resize(size)
 	r.tick.Resize(fyne.NewSquareSize(icon))
-	r.tick.Move(fyne.NewPos(rowGutter, (size.Height-icon)/2))
 
-	// The kind sits between the tick and the words, and takes no room at all
-	// where there is none - so a list of paper sizes is drawn exactly as it was.
-	left := rowGutter + icon + rowGap
+	// The tick stands at the far end of the row, and the words start at the
+	// gutter - where the word in the box above the list starts. Until
+	// 2026-09-16 the tick was in front, and its column was kept whether or
+	// not anything in the list was ticked, so the words of every list stood a
+	// column to the right of the word in the box. On a list of formats the
+	// picture in front made that look intended, and on a list with no picture
+	// and nothing chosen it read as words floating in a rectangle - the
+	// owner's report from the running window (O220). The column is still
+	// kept, on the right, so a row does not change width when its value is
+	// chosen.
+	r.tick.Move(fyne.NewPos(size.Width-rowGutter-icon, (size.Height-icon)/2))
+	left, right := float32(rowGutter), float32(rowGutter+icon+rowGap)
+
+	// The kind sits in front of the words, and takes no room at all where
+	// there is none - so a list of paper sizes is drawn exactly as it was.
 	if r.row.kind != nil {
 		r.kind.Resize(fyne.NewSquareSize(icon))
 		r.kind.Move(fyne.NewPos(left, (size.Height-icon)/2))
@@ -116,7 +127,7 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 
 	text := r.label.MinSize()
 	r.label.Move(fyne.NewPos(left, (size.Height-text.Height)/2))
-	r.label.Resize(fyne.NewSize(size.Width-left-rowGutter, text.Height))
+	r.label.Resize(fyne.NewSize(size.Width-left-right, text.Height))
 }
 
 func (r *listRowRenderer) MinSize() fyne.Size {
@@ -144,7 +155,7 @@ func (r *listRowRenderer) MinSize() fyne.Size {
 // first.
 func RowWidthFor(word float32, withKind bool) float32 {
 	icon := Theme().Size(theme.SizeNameInlineIcon)
-	width := rowGutter + icon + rowGap + word + rowGutter
+	width := rowGutter + word + rowGutter + icon + rowGap
 	if withKind {
 		width += icon + rowGap
 	}
