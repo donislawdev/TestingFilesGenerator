@@ -339,7 +339,10 @@ jobs:
         # what makes it worth having: a scanner that lists every advisory
         # touching the module graph produces noise, and noise gets switched off.
         # Measured before switching it on, 2026-08-02: no vulnerabilities found.
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 -tags "$(cat .github/build-tags)" ./...
+        # v1.8.0 since 2026-09-16, run on the tree before the pin moved: the same
+        # verdict as v1.7.0, exit 0 under Go 1.27 - the two pins before this one
+        # had stopped working with the compiler without anybody noticing.
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 -tags "$(cat .github/build-tags)" ./...
 
   staticcheck:
     name: staticcheck
