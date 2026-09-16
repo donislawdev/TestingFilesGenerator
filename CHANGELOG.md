@@ -146,6 +146,17 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A window the graphics toolkit could not create is a refusal that says
+  why, not a process with no window in it.** On a Windows machine whose
+  graphics driver offers no OpenGL 2.1 - a virtual machine without 3D
+  acceleration, measured on Windows Server 2025 under VirtualBox - the
+  window binary opened nothing, said nothing, and stayed in the task list
+  until the session ended. It now says what did not happen, quotes the
+  driver's reason as the toolkit reported it, points at the command line
+  (which needs no graphics driver), and exits 1 - on standard error and in
+  a system dialog, because the window that would have carried the message
+  is what failed.
+
 - **The switch between the three ways of stating a size freezes with the
   rest of the form while a run is going.** It stayed live: during a run,
   choosing another way rebuilt the size boxes under a form drawn as frozen.
