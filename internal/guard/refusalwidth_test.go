@@ -30,11 +30,11 @@ import (
 //
 // Asked on the batch screen, because that is where fields still share a row -
 // the format, count and size of a file inside an archive stand in cells of
-// one row (Fields.Row). The generate screen has had one field to a row since
+// one row (parts.Table.Row). The generate screen has had one field to a row since
 // the form became a grid on 2026-09-14, and this guard read that screen until
-// 2026-09-16: the full mutation run found it green while Fields.Row put every
+// 2026-09-16: the full mutation run found it green while the table's Row put every
 // message back into its cell, because nothing it measured went through
-// Fields.Row any more.
+// a table's Row any more.
 func TestARefusalIsAsWideAsTheFormRatherThanItsColumn(t *testing.T) {
 	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()

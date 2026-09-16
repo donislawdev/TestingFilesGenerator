@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -311,4 +312,60 @@ func menusWithAnArchiveOpened(t *testing.T, screen fyne.CanvasObject, tab string
 		canvas.Content().Resize(canvas.Size())
 	}
 	return menusOn(screen)
+}
+
+// And one setting is one menu width on every screen it stands on.
+//
+// The regression table has promised this sentence since 2026-08-28 under the
+// guard above, and the guard above does not measure it: it compares a menu
+// with the BOXES beside it, never with the same menu on another screen. So
+// the format menu stood at 152 px on the single batch and batch screens and
+// 140 px on the preset screen for nineteen days, measured on 2026-09-16 from
+// the stored screens when parts.menuWidth stopped measuring the placeholder
+// the toolkit puts into a menu that has been drawn once. A menu given its
+// value before it was sized had the placeholder, and a menu sized cold did
+// not - two widths for one list of twenty formats.
+//
+// Asked by the values a menu offers rather than by the field's name, because
+// the values are what the width is computed from: two menus of the same
+// values that come out different widths were measured at different moments,
+// which is the defect.
+func TestOneSettingIsOneMenuWidthOnEveryScreen(t *testing.T) {
+	ourTheme(t)
+	content, canvas := laidOutWindow(t)
+
+	type seen struct {
+		tab   string
+		width float32
+	}
+	widths := map[string][]seen{}
+	for _, tab := range allTabs() {
+		screen := selectTab(t, content, tab)
+		for _, menu := range menusWithAnArchiveOpened(t, screen, tab, canvas) {
+			if menu.Size().Width == 0 {
+				continue
+			}
+			key := strings.Join(menu.Options, "\x00")
+			widths[key] = append(widths[key], seen{tab, menu.Size().Width})
+		}
+	}
+	shared := 0
+	for _, places := range widths {
+		if len(places) < 2 {
+			continue
+		}
+		shared++
+		for _, p := range places[1:] {
+			if p.width != places[0].width {
+				t.Errorf("one menu is %.2f px on the %s screen and %.2f px on the %s screen - the same"+
+					" values, two widths, so it was measured at two different moments.\n"+
+					"What to do: parts.menuWidth must answer the same for a menu drawn once and a menu never drawn.",
+					places[0].width, places[0].tab, p.width, p.tab)
+			}
+		}
+	}
+	if shared == 0 {
+		t.Fatal("no menu stands on more than one screen, so this guard compared nothing")
+	}
+	t.Logf("%d menus stand on more than one screen, each one width everywhere", shared)
 }

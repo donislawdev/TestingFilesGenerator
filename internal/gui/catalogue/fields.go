@@ -27,7 +27,7 @@ func fields() Entry {
 		e.SetText("10mb")
 		return s.Add("size", "Size", "10mb", parts.NoDetail, parts.Numeric(e))
 	}
-	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldRow", "RequiredMark"}, States: []State{
+	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldRow", "RequiredMark", "Table"}, States: []State{
 		{"a row", func() fyne.CanvasObject { return sizeRow(form()) }},
 		{"a row that has to be filled in", func() fyne.CanvasObject {
 			s := form()
@@ -50,21 +50,42 @@ func fields() Entry {
 			s := form()
 			return s.AddToggle("label", "Label in each file", "", parts.NoDetail, parts.NewToggle(func(bool) {}))
 		}},
-		{"a cell of a table, the name over the control", func() fyne.CanvasObject {
+		{"a table: the names once over the columns, cells under them", func() fyne.CanvasObject {
+			// Two rows, because one row cannot show what the header is for:
+			// until 2026-09-16 every cell drew its own name, and the second
+			// row of a table repeated the first row's names a control's
+			// height below them. The header is derived from the first row,
+			// star and explanation included.
 			s := form()
-			e := parts.NewEntry()
-			e.SetText("report.txt")
-			return s.AddCell("name", "Name", "", parts.NoDetail, e)
+			s.Require("size-1", "size-2")
+			table := s.Table()
+			first := tableRow(table, "1", "report.txt", "10kb")
+			return parts.Column(parts.GapTight,
+				table.Header(first...), table.Row(first...), table.Row(tableRow(table, "2", "invoice.pdf", "2mb")...))
 		}},
 		{"a row of arbitrary cells", func() fyne.CanvasObject {
 			s := form()
-			return s.Row(parts.Prose("Anything"), parts.NewEntry(), parts.NewButton(parts.Secondary, "Choose...", func() {}))
+			return s.Table().Row(parts.Prose("Anything"), parts.NewEntry(), parts.NewButton(parts.Secondary, "Choose...", func() {}))
 		}},
 		{"a long name", func() fyne.CanvasObject {
 			s := form()
 			return s.Add("size", longText, "10mb", parts.NoDetail, parts.NewEntry())
 		}},
 	}}
+}
+
+// tableRow is one row of the catalogue's table: a name, a size that has to be
+// filled in, and the button that would take the row away.
+func tableRow(table *parts.Table, n, name, size string) []fyne.CanvasObject {
+	e := parts.NewEntry()
+	e.SetText(name)
+	z := parts.NewEntry()
+	z.SetText(size)
+	return []fyne.CanvasObject{
+		table.Cell("name-"+n, "Name", "", parts.NoDetail, e),
+		table.Cell("size-"+n, "Size", "How big each file inside is.", parts.NoDetail, parts.Numeric(z)),
+		parts.BesideFields(parts.NewButton(parts.Secondary, "Remove", func() {})),
+	}
 }
 
 // A field drawn from a declaration - what a format's settings and a preset's

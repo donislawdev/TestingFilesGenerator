@@ -314,12 +314,15 @@ func (c columns) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // Duplicate button at the head of the same batch, which is in no row, is 79x35.
 //
 // Two layouts and each answers one half. The box across gives it the width it
-// asks for instead of the column's. The spacer above pushes it down onto the
-// line the controls are on - a row of fields is a label with a control under
-// it, so anything sitting at the top of that column lines up with the labels
-// and reads as a heading of its own.
+// asks for instead of the column's. The spacers above and below hold it level
+// with the middle of the controls beside it. Until 2026-09-16 there was one
+// spacer, above, pushing it down onto the line the controls stood on - a cell
+// was then a name with a control under it, so anything at the top of that
+// column lined up with the names and read as a heading of its own. The names
+// stand over the table once now (Table.Header), a cell is its control,
+// and a button three pixels taller than a box beside it is centred on it.
 func BesideFields(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewVBox(layout.NewSpacer(), container.NewHBox(o))
+	return container.NewVBox(layout.NewSpacer(), container.NewHBox(o), layout.NewSpacer())
 }
 
 // Divider is a line between two things standing side by side.

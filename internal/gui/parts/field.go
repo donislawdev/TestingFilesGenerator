@@ -51,29 +51,49 @@ import (
 // as the sentence is there. Two marks rather than one on purpose - a colour on
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
-func FieldSaying(names float32, label string, detail Detail, required bool, trailing, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
+func FieldSaying(names float32, label string, detail Detail, required bool, trailing, control fyne.CanvasObject) Built {
 	marked, ring := WithRing(shapedForItsValues(control))
-	area = newErrorArea(names)
+	area := newErrorArea(names)
 	area.edge = ring
 	cells := []fyne.CanvasObject{headingRow(label, detail, required), marked}
 	if trailing != nil {
 		cells = append(cells, trailing)
 	}
-	body = FieldRow(names, cells...)
-	return Column(GapTight, body, area.Object()), body, area
+	body := FieldRow(names, cells...)
+	return Built{Object: Column(GapTight, body, area.Object()), Body: body, Area: area}
 }
 
-// CellSaying is a field drawn as a cell of a table: the name over the control,
-// for a list of rows that all have the same columns. A row of the form puts
-// the name beside the control - see FieldSaying - and a table puts the names
-// once, over the columns, where three files inside an archive would otherwise
-// carry nine names for three kinds of value.
-func CellSaying(label string, detail Detail, required bool, control fyne.CanvasObject) (object, body fyne.CanvasObject, area *ErrorArea) {
+// Built is what building a field comes to, in one hand: the whole thing to
+// put on a screen, the part of it without the room for a refusal, and the
+// refusal area itself. One value rather than three results, so the registry
+// takes one argument for what was built and the two builders cannot come to
+// hand it back in two different orders.
+type Built struct {
+	// Object is the field whole, with the room under it for a refusal.
+	Object fyne.CanvasObject
+	// Body is the field without that room, so a table row can lay every
+	// refusal in it across the whole width.
+	Body fyne.CanvasObject
+	// Area is where the field says what a run said about it.
+	Area *ErrorArea
+}
+
+// CellSaying is a field drawn as a cell of a table: the control alone, for a
+// list of rows that all have the same columns. A row of the form puts the name
+// beside the control - see FieldSaying - and a table puts the names once,
+// over the columns, in Table.Header.
+//
+// The sentence above was true of the intent and false of the drawing until
+// 2026-09-16: every cell carried its own name over its control, so three
+// files inside an archive read as nine names for three kinds of value, and
+// the second row of the table repeated the first row's names a control's
+// height below them. The name is still registered with the field - a refusal
+// names the box by it - it is just not drawn here.
+func CellSaying(control fyne.CanvasObject) Built {
 	marked, ring := WithRing(shapedForItsValues(control))
-	area = newErrorArea(0)
+	area := newErrorArea(0)
 	area.edge = ring
-	body = Column(GapLabel, headingRow(label, detail, required), marked)
-	return Column(GapTight, body, area.Object()), body, area
+	return Built{Object: Column(GapTight, marked, area.Object()), Body: marked, Area: area}
 }
 
 // shapedForItsValues holds a menu to the width of what it can show.
