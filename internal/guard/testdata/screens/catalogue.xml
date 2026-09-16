@@ -4,7 +4,15 @@
 			<container pos="136,0" size="820x8887">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
-						<text bold size="788x24" textSize="20">Catalogue</text>
+						<widget size="788x24" type="*container.ThemeOverride">
+							<container size="788x24">
+								<widget size="788x24" type="*widget.Label">
+									<widget size="788x24" type="*widget.RichText">
+										<text bold size="100x24" textSize="20">Catalogue</text>
+									</widget>
+								</widget>
+							</container>
+						</widget>
 						<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 							<container size="788x16">
 								<widget size="788x16" type="*widget.Label">
@@ -2621,7 +2629,15 @@
 										</widget>
 									</container>
 								</widget>
-								<text bold pos="0,18" size="788x24" textSize="20">Single batch</text>
+								<widget pos="0,18" size="788x24" type="*container.ThemeOverride">
+									<container size="788x24">
+										<widget size="788x24" type="*widget.Label">
+											<widget size="788x24" type="*widget.RichText">
+												<text bold size="121x24" textSize="20">Single batch</text>
+											</widget>
+										</widget>
+									</container>
+								</widget>
 							</container>
 							<container pos="0,95" size="788x35">
 								<widget size="788x14" type="*container.ThemeOverride">
@@ -2654,7 +2670,15 @@
 									</container>
 								</widget>
 								<container pos="0,18" size="788x49">
-									<text bold size="788x24" textSize="20">Single batch</text>
+									<widget size="788x24" type="*container.ThemeOverride">
+										<container size="788x24">
+											<widget size="788x24" type="*widget.Label">
+												<widget size="788x24" type="*widget.RichText">
+													<text bold size="121x24" textSize="20">Single batch</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
 									<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 										<container size="788x16">
 											<widget size="788x16" type="*widget.Label">
@@ -2688,7 +2712,15 @@
 										</widget>
 									</container>
 								</widget>
-								<text bold pos="0,18" size="788x16">Typically finds</text>
+								<widget pos="0,18" size="788x16" type="*container.ThemeOverride">
+									<container size="788x16">
+										<widget size="788x16" type="*widget.Label">
+											<widget size="788x16" type="*widget.RichText">
+												<text bold size="100x16">Typically finds</text>
+											</widget>
+										</widget>
+									</container>
+								</widget>
 							</container>
 							<container pos="0,333" size="788x35">
 								<widget size="788x14" type="*container.ThemeOverride">
@@ -2810,9 +2842,25 @@
 									</container>
 								</widget>
 								<container pos="0,18" size="788x153">
-									<text bold size="788x24" textSize="20">Write a label inside each generated file, including the ones that are far too small to hold it</text>
+									<widget size="788x24" type="*container.ThemeOverride">
+										<container size="788x24">
+											<widget size="788x24" type="*widget.Label">
+												<widget size="788x24" type="*widget.RichText">
+													<text bold size="783x24" textSize="20">Write a label inside each generated file, including the ones that are far too sma…</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
 									<text pos="0,40" size="788x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
-									<text bold pos="0,73" size="788x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
+									<widget pos="0,73" size="788x16" type="*container.ThemeOverride">
+										<container size="788x16">
+											<widget size="788x16" type="*widget.Label">
+												<widget size="788x16" type="*widget.RichText">
+													<text bold size="604x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
 									<widget pos="0,106" size="788x16" type="*container.ThemeOverride">
 										<container size="788x16">
 											<widget size="788x16" type="*widget.Label">

@@ -188,13 +188,14 @@ func controlOf(t *testing.T, fields *parts.Fields, body fyne.CanvasObject, at st
 	return box
 }
 
-// textAt is where one line of words stands on the screen.
+// textAt is where one line of words stands on the screen - canvas words or a
+// one line label, which is what a block's name has been since 2026-09-16.
 func textAt(t *testing.T, body fyne.CanvasObject, words string) fyne.Position {
 	t.Helper()
 	var at fyne.Position
 	found := 0
 	atAbsolute(body, func(o fyne.CanvasObject, pos fyne.Position) {
-		if txt, ok := o.(*canvas.Text); ok && txt.Text == words {
+		if shown, _, _, ok := boldWordsAt(o); ok && shown == words {
 			at = pos
 			found++
 		}

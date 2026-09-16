@@ -36,7 +36,15 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<text bold size="788x24" textSize="20">Several batches</text>
+										<widget size="788x24" type="*container.ThemeOverride">
+											<container size="788x24">
+												<widget size="788x24" type="*widget.Label">
+													<widget size="788x24" type="*widget.RichText">
+														<text bold size="157x24" textSize="20">Several batches</text>
+													</widget>
+												</widget>
+											</container>
+										</widget>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -276,7 +284,15 @@
 															</container>
 														</container>
 														<container pos="0,346" size="788x103">
-															<text bold size="788x16">Files inside each archive</text>
+															<widget size="788x16" type="*container.ThemeOverride">
+																<container size="788x16">
+																	<widget size="788x16" type="*widget.Label">
+																		<widget size="788x16" type="*widget.RichText">
+																			<text bold size="168x16">Files inside each archive</text>
+																		</widget>
+																	</widget>
+																</container>
+															</widget>
 															<container pos="0,20" size="788x16">
 																<text size="185x16">Format</text>
 																<text pos="201,0" size="185x16">How many files</text>

@@ -34,7 +34,15 @@
 					<container size="1092x1484">
 						<container pos="136,0" size="820x1484">
 							<container size="820x24">
-								<text bold pos="16,0" size="788x24" textSize="20">Testing Files Generator 0.3.0</text>
+								<widget pos="16,0" size="788x24" type="*container.ThemeOverride">
+									<container size="788x24">
+										<widget size="788x24" type="*widget.Label">
+											<widget size="788x24" type="*widget.RichText">
+												<text bold size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
+											</widget>
+										</widget>
+									</container>
+								</widget>
 							</container>
 							<container pos="0,48" size="820x16">
 								<widget pos="16,0" size="788x16" type="*container.ThemeOverride">

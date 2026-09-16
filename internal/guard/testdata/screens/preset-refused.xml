@@ -36,7 +36,15 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<text bold size="788x24" textSize="20">Presets</text>
+										<widget size="788x24" type="*container.ThemeOverride">
+											<container size="788x24">
+												<widget size="788x24" type="*widget.Label">
+													<widget size="788x24" type="*widget.RichText">
+														<text bold size="74x24" textSize="20">Presets</text>
+													</widget>
+												</widget>
+											</container>
+										</widget>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -90,7 +98,15 @@
 														</widget>
 													</container>
 												</widget>
-												<text bold pos="0,32" size="788x16">Typically finds:</text>
+												<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
+													<container size="788x16">
+														<widget size="788x16" type="*widget.Label">
+															<widget size="788x16" type="*widget.RichText">
+																<text bold size="105x16">Typically finds:</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
 												<container pos="0,65" size="788x51">
 													<container size="788x14">
 														<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
