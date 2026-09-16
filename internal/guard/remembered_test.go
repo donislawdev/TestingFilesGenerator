@@ -228,8 +228,12 @@ func TestTheFirstOpeningShowsEveryWorkScreenWhole(t *testing.T) {
 	// And no taller than that. The tallest screen fits with nothing to spare,
 	// because the height is worked out from it - a window that opened taller
 	// would be the band of nothing under the form that O202 is about, back
-	// under another number.
-	if tightest > 1 && size.Height < window.LargestOpening.Height {
+	// under another number. Asked at the ceiling too: a want a hundred pixels
+	// over the truth is stopped by the ceiling and leaves the band all the
+	// same, and the first version of this line let that through by excusing
+	// everything at the ceiling. Only a form TALLER than the room is the
+	// ceiling's doing.
+	if tightest > 1 {
 		t.Errorf("the first opening is %v and the tallest work screen still has %.0f px to spare under"+
 			" its form, so the window opens taller than the screens want", size, tightest)
 	}
