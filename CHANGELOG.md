@@ -134,6 +134,14 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The explanation beside a field opens on the first hover, and opens and
+  closes from the keyboard.** Pointing at the information mark in a fresh
+  window showed nothing until something else on the screen happened to
+  repaint, and Space on the mark with the keyboard drew nothing at all. The
+  window's controls now tell the canvas about each piece they change, and the
+  sheet the explanation is drawn on says so when a box is put on it or taken
+  off.
+
 - **A refused preset no longer carries the note of the preset before it.** A
   limit of 512 B was refused with "no limit was given" under it - a note left
   over from the last expansion that worked.

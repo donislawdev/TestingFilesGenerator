@@ -179,7 +179,7 @@ func (r *tabsRenderer) Refresh() {
 		word.Refresh()
 	}
 	r.placeIndicator(r.strip.Size())
-	r.indicator.Refresh()
+	redraw(r.indicator)
 }
 
 func (r *tabsRenderer) Objects() []fyne.CanvasObject {
@@ -353,9 +353,7 @@ func (r *tabWordRenderer) Refresh() {
 	} else {
 		r.ring.StrokeWidth = 0
 	}
-	r.back.Refresh()
-	r.ring.Refresh()
-	r.text.Refresh()
+	redraw(r.back, r.ring, r.text)
 }
 
 func (r *tabWordRenderer) Objects() []fyne.CanvasObject {

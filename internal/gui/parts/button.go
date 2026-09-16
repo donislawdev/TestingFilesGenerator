@@ -322,7 +322,10 @@ func (r *buttonRenderer) Refresh() {
 	} else {
 		r.label.Show()
 	}
-	canvas.Refresh(r.button)
+	// The pieces, never r.button - see redraw. This face is worn by the
+	// explanation button through embedding, and a refresh asked for the inner
+	// Button reached no canvas there: measured 2026-09-16, O217.
+	redraw(r.bg, r.ring, r.label, r.icon)
 	r.Layout(r.button.Size())
 }
 

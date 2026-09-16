@@ -129,7 +129,7 @@ func (r *progressRenderer) MinSize() fyne.Size { return r.bar.MinSize() }
 func (r *progressRenderer) Refresh() {
 	r.applyColours()
 	r.Layout(r.bar.Size())
-	canvas.Refresh(r.bar)
+	redraw(r.track, r.fill)
 }
 
 func (r *progressRenderer) Objects() []fyne.CanvasObject {
