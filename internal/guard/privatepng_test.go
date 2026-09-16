@@ -122,8 +122,7 @@ func textChunk(kind string, data []byte, room int) ([]string, error) {
 		if i+2 > len(data) {
 			return nil, errors.New("has a zTXt chunk that ends before its text")
 		}
-		text, err := inflated(data[i+2:], room)
-		return []string{string(data[:i]), text}, err
+		return withText([]string{string(data[:i])}, data[i+2:], true, room)
 	}
 	// iTXt: keyword, nought, compression flag, method, language, nought,
 	// translated keyword, nought, text.
@@ -134,14 +133,22 @@ func textChunk(kind string, data []byte, room int) ([]string, error) {
 	if len(parts) < 3 {
 		return nil, errors.New("has an iTXt chunk without the noughts around its language")
 	}
-	text := string(parts[2])
-	if data[i+1] == 1 {
-		var err error
-		if text, err = inflated(parts[2], room); err != nil {
-			return nil, err
-		}
+	return withText([]string{string(data[:i]), string(parts[0]), string(parts[1])}, parts[2], data[i+1] == 1, room)
+}
+
+// withText is the pieces of a chunk with its text after them - inflated when
+// it is compressed, into the room left once the pieces before it are counted,
+// so that the room the inflating read is held to is the room the budget will
+// ask about.
+func withText(pieces []string, text []byte, compressed bool, room int) ([]string, error) {
+	if !compressed {
+		return append(pieces, string(text)), nil
 	}
-	return []string{string(data[:i]), string(parts[0]), string(parts[1]), text}, nil
+	for _, piece := range pieces {
+		room -= len(piece)
+	}
+	inflatedText, err := inflated(text, room)
+	return append(pieces, inflatedText), err
 }
 
 // inflated is zlib data as text, or a refusal for data that will not inflate.
