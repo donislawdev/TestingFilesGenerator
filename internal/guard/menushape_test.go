@@ -208,11 +208,18 @@ func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 	tightest, tightestIn := float32(0), float32(0)
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
-		for _, menu := range menusWithAnArchiveOpened(t, screen, tab, canvas) {
-			room, needs := menu.Size().Width, menu.MinSize().Width
-			if room == 0 {
+		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
+		buried := underSomethingHidden(screen)
+		for _, menu := range menus {
+			room, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
 				continue
 			}
+			if !shown {
+				continue
+			}
+			needs := menu.MinSize().Width
 			if room < needs {
 				t.Errorf("a menu of %v on the %s screen is %.2f px and the toolkit says it needs"+
 					" %.2f to show what is in it, so the words are cut off in the box that"+
@@ -244,9 +251,11 @@ func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 // Asked against the narrowest box laid out on the SAME screen, for the reason
 // its sibling above is asked against the widest: the claim is a relationship
 // between the controls a person sees together, not a number written down twice.
-// Boxes with no width are left out - the two ways of stating a size that the
-// switch is hiding are laid out at nought and minus three, and a floor taken
-// from those would be no floor at all.
+// Boxes with no width are left out. When this was written the two ways of
+// stating a size that the switch hid were laid out at nought and minus three,
+// and a floor taken from those would have been no floor at all. None is today
+// - measured 2026-09-16, after the switch became segments - and the rule stays
+// for the day a hidden box is laid out at nothing again.
 func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 	ourTheme(t)
 	content, canvas := laidOutWindow(t)
@@ -272,9 +281,14 @@ func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 			t.Fatalf("the %s screen has %d menus and no box to type in that was laid out,"+
 				" so there is nothing to compare them against", tab, len(menus))
 		}
+		buried := underSomethingHidden(screen)
 		for _, menu := range menus {
-			got := menu.Size().Width
-			if got == 0 {
+			got, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				continue
+			}
+			if !shown {
 				continue
 			}
 			if got < narrowest {
@@ -341,12 +355,19 @@ func TestOneSettingIsOneMenuWidthOnEveryScreen(t *testing.T) {
 	widths := map[string][]seen{}
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
-		for _, menu := range menusWithAnArchiveOpened(t, screen, tab, canvas) {
-			if menu.Size().Width == 0 {
+		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
+		buried := underSomethingHidden(screen)
+		for _, menu := range menus {
+			width, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				continue
+			}
+			if !shown {
 				continue
 			}
 			key := strings.Join(menu.Options, "\x00")
-			widths[key] = append(widths[key], seen{tab, menu.Size().Width})
+			widths[key] = append(widths[key], seen{tab, width})
 		}
 	}
 	shared := 0

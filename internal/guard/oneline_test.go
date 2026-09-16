@@ -1,11 +1,14 @@
 package guard
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
@@ -89,38 +92,18 @@ func TestEveryTitleAndBlockNameFitsWhereItStands(t *testing.T) {
 
 	checked := 0
 	measure := func(tab, under string, screen fyne.CanvasObject) {
-		walk(screen, func(o fyne.CanvasObject) {
-			var words string
-			var need, room float32
-			switch v := o.(type) {
-			case *widget.Label:
-				if v.Truncation != fyne.TextTruncateEllipsis {
-					return
-				}
-				size := fyne.CurrentApp().Settings().Theme().Size(sizeNameOf(v))
-				words, need, room = v.Text, fyne.MeasureText(v.Text, size, v.TextStyle).Width, v.Size().Width
-			case *canvas.Text:
-				// A section's name is still canvas words - it also heads a
-				// folded section, in a row that hands it the width of its own
-				// text, where an ellipsis could never be asked for - so it is
-				// measured here rather than left to run past a panel unseen.
-				if !v.TextStyle.Bold || v.TextSize != parts.TextHeading {
-					return
-				}
-				words, need, room = v.Text, v.MinSize().Width, v.Size().Width
-			default:
-				return
-			}
-			if room == 0 {
-				return
-			}
-			if need > room {
+		found, refused := headingsOn(screen)
+		for _, r := range refused {
+			t.Errorf("on the %s screen%s, %s", tab, under, r)
+		}
+		for _, h := range found {
+			if h.need > h.room {
 				t.Errorf("on the %s screen%s, %q needs %.2f px and has %.2f, so it is drawn cut - a word"+
 					" of ours never reaches a person with an ellipsis in it or past the edge of its panel",
-					tab, under, words, need, room)
+					tab, under, h.words, h.need, h.room)
 			}
 			checked++
-		})
+		}
 	}
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
@@ -144,6 +127,103 @@ func TestEveryTitleAndBlockNameFitsWhereItStands(t *testing.T) {
 		t.Fatalf("only %d titles and block names were laid out, and there are four screens", checked)
 	}
 	t.Logf("%d titles, section and block names measured at %.0f px wide, every one whole", checked, window.LargestOpening.Width)
+}
+
+// heading is one title, section name or block name a person can see: what it
+// says, the width its words need and the room the layout gave it.
+type heading struct {
+	words      string
+	need, room float32
+}
+
+// headingsOn is every heading a person can see on a screen, and a refusal for
+// every one the layout gave no room - see widthShown for why that is a
+// refusal and not a skip. Every label that ends in an ellipsis is a heading,
+// and so is every bold canvas text at the heading size: a section's name is
+// still canvas words, because it also heads a folded section, in a row that
+// hands it the width of its own text, where an ellipsis could never be asked
+// for - so it is measured here rather than left to run past a panel unseen.
+func headingsOn(screen fyne.CanvasObject) (found []heading, refused []string) {
+	buried := underSomethingHidden(screen)
+	walk(screen, func(o fyne.CanvasObject) {
+		var words string
+		var need float32
+		switch v := o.(type) {
+		case *widget.Label:
+			if v.Truncation != fyne.TextTruncateEllipsis {
+				return
+			}
+			size := fyne.CurrentApp().Settings().Theme().Size(sizeNameOf(v))
+			words, need = v.Text, fyne.MeasureText(v.Text, size, v.TextStyle).Width
+		case *canvas.Text:
+			if !v.TextStyle.Bold || v.TextSize != parts.TextHeading {
+				return
+			}
+			words, need = v.Text, v.MinSize().Width
+		default:
+			return
+		}
+		room, shown, err := widthShown(o, buried)
+		if err != nil {
+			refused = append(refused, fmt.Sprintf("%q %v", words, err))
+			return
+		}
+		if shown {
+			found = append(found, heading{words, need, room})
+		}
+	})
+	return found, refused
+}
+
+// widthShown is the width the layout gave a control a person can see, and
+// whether it is one.
+//
+// Under something hidden a control is not shown whatever its size - Visible()
+// answers for one object and not for its ancestors, so this asks through
+// underSomethingHidden. Shown and given no width, a control is a refusal
+// rather than a skip: it is drawn as nothing, and a guard that stepped over it
+// would pass on the strength of the controls beside it. Three guards stepped
+// over zero until 2026-09-16, each for the hidden case, and measured that day
+// nothing on any screen reached the skip - so it was dead for the state it
+// was written for and live for the collapse it would have hidden. Hidden is
+// asked by hiddenness now, and zero is what it is.
+func widthShown(o fyne.CanvasObject, buried map[fyne.CanvasObject]bool) (width float32, shown bool, err error) {
+	if buried[o] {
+		return 0, false, nil
+	}
+	if width = o.Size().Width; width == 0 {
+		return 0, true, errors.New("was laid out to nothing, so it is drawn as nothing - a collapse no skip may pass")
+	}
+	return width, true, nil
+}
+
+// widthShown's red path and its two green ones: a heading a person can see
+// that the layout gave nothing is refused, one under something hidden is not
+// measured whatever its size, and one laid out is measured - asked through
+// headingsOn, because that is where the answer is used. The third half is the
+// control: a refusal that refused everything would pass the first two.
+func TestAHeadingLaidOutToNothingIsRefusedAndAHiddenOneIsNotMeasured(t *testing.T) {
+	ourTheme(t)
+	nothing := container.NewWithoutLayout(parts.Title("Single batch"))
+	if found, refused := headingsOn(nothing); len(refused) != 1 || len(found) != 0 {
+		t.Errorf("a title the layout gave no room is measured as %v and refused as %v - it is drawn"+
+			" as nothing, which is a cut, not a state to step over", found, refused)
+	}
+
+	hidden := container.NewWithoutLayout(parts.Title("Single batch"))
+	hidden.Hide()
+	if found, refused := headingsOn(hidden); len(refused) != 0 || len(found) != 0 {
+		t.Errorf("a title under something hidden is measured as %v and refused as %v - nobody sees"+
+			" it, so the room it has is not a room", found, refused)
+	}
+
+	shown := parts.Title("Single batch")
+	w := test.NewWindow(shown)
+	t.Cleanup(w.Close)
+	w.Resize(fyne.NewSize(300, 60))
+	if found, refused := headingsOn(shown); len(refused) != 0 || len(found) != 1 || found[0].room == 0 {
+		t.Errorf("a title laid out in a window is measured as %v and refused as %v", found, refused)
+	}
 }
 
 // labelIn is the one toolkit label under an object - a title is a label wrapped
