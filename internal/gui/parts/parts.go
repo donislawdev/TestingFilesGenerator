@@ -61,7 +61,7 @@ func Heading(text string) fyne.CanvasObject {
 // the weight of a section's. The one bold thing at body size, so it is read as
 // a heading of the things under it and not as the name of a box beside it.
 func Subheading(text string) fyne.CanvasObject {
-	return words(text, TextBody, true, theme.ColorNameForeground)
+	return oneLine(text, theme.SizeNameText)
 }
 
 // Title is the one line that says what a screen is for.
@@ -71,7 +71,41 @@ func Subheading(text string) fyne.CanvasObject {
 // of every field were one style, so nothing led the eye and the first point of
 // the UX section 7 checklist - squint, and see what stands out - had no answer.
 func Title(text string) fyne.CanvasObject {
-	return words(text, TextTitle, true, theme.ColorNameForeground)
+	return oneLine(text, theme.SizeNameSubHeadingText)
+}
+
+// oneLine is a bold line that stays one line: too long for its room, it ends
+// in an ellipsis at the room's edge instead of running past it.
+//
+// A toolkit label since 2026-09-16 rather than canvas words, for one reason.
+// A canvas text is one line however much room it has, and a title and a
+// block's name are the two ranks with no column worked out for them - a
+// name has room by construction, because the column of names is measured
+// from every name the window can show, and a sentence wraps. The catalogue's
+// long line state showed a title 60 px outside its panel (O214), which no
+// screen shows today and a translation could. A label given
+// TextTruncateEllipsis draws what fits and says that it cut.
+//
+// Two things keep this honest rather than a way to hide text. A guard asks
+// every title and block name on every screen, at the largest first opening,
+// whether it fits whole - so an ellipsis on a real screen is red in CI, and
+// the ellipsis is the state of the control for a window somebody has made
+// narrower than that, not for the words we ship. And the catalogue shows the
+// cut state, so it is looked at rather than assumed.
+//
+// The size is asked for by the theme's name for it rather than as a number,
+// because a label sizes itself from the theme, and this window's theme maps
+// SizeNameSubHeadingText to TextTitle and SizeNameText to TextBody - see
+// ours.Size for why the two heading names are the other way round from what
+// they sound like. Ink tight like every other label here, so it stands on the
+// scale.
+func oneLine(text string, size fyne.ThemeSizeName) fyne.CanvasObject {
+	label := widget.NewLabel(text)
+	label.TextStyle = fyne.TextStyle{Bold: true}
+	label.SizeName = size
+	label.Wrapping = fyne.TextWrapOff
+	label.Truncation = fyne.TextTruncateEllipsis
+	return inkTight(label)
 }
 
 // Subtitle is the one quiet sentence under a screen's title, saying what the
@@ -314,12 +348,15 @@ func (c columns) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // Duplicate button at the head of the same batch, which is in no row, is 79x35.
 //
 // Two layouts and each answers one half. The box across gives it the width it
-// asks for instead of the column's. The spacer above pushes it down onto the
-// line the controls are on - a row of fields is a label with a control under
-// it, so anything sitting at the top of that column lines up with the labels
-// and reads as a heading of its own.
+// asks for instead of the column's. The spacers above and below hold it level
+// with the middle of the controls beside it. Until 2026-09-16 there was one
+// spacer, above, pushing it down onto the line the controls stood on - a cell
+// was then a name with a control under it, so anything at the top of that
+// column lined up with the names and read as a heading of its own. The names
+// stand over the table once now (Table.Header), a cell is its control,
+// and a button three pixels taller than a box beside it is centred on it.
 func BesideFields(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewVBox(layout.NewSpacer(), container.NewHBox(o))
+	return container.NewVBox(layout.NewSpacer(), container.NewHBox(o), layout.NewSpacer())
 }
 
 // Divider is a line between two things standing side by side.

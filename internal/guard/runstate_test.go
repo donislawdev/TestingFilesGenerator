@@ -85,9 +85,9 @@ func TestARefusalBringsTheBoxItIsAboutIntoView(t *testing.T) {
 	// scrolls to was already on the screen. Nothing was broken and this guard
 	// went red honestly - it had stopped reaching the state it exists for,
 	// which is the same shape as observation O118.
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 500))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, 500))
 	content.Refresh()
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 501))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, 501))
 	content.Refresh()
 	if room, form := scroll.Size().Height, scroll.Content.MinSize().Height; form <= room {
 		t.Fatalf("the form is %.0f px in %.0f px of room, so nothing has to scroll and this guard "+

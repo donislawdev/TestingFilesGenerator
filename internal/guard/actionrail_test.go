@@ -44,7 +44,7 @@ func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 
 			atOpening := fyne.CurrentApp().Driver().AbsolutePositionForObject(donate).X
 
-			wider := fyne.NewSize(window.OpenSize.Width+600, window.OpenSize.Height)
+			wider := fyne.NewSize(window.LargestOpening.Width+600, window.LargestOpening.Height)
 			w.Resize(wider)
 			content.Refresh()
 			w.Resize(wider)
@@ -57,7 +57,7 @@ func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 					"standing at the edge of the bar.\n"+
 					"What to do: it belongs in the rail argument of parts.ActionBar, which is laid "+
 					"outside the form's column. Put back inside that column it moves with it.",
-					text.ButtonDonate(), atOpening, window.OpenSize.Width, whenWider, wider.Width)
+					text.ButtonDonate(), atOpening, window.LargestOpening.Width, whenWider, wider.Width)
 			}
 
 			// The bar's own padding is the only thing that should stand between

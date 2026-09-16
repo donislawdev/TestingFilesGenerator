@@ -261,23 +261,28 @@ func Menu(c *Chooser) fyne.CanvasObject { return Sized(menuWidth(c), c) }
 // for the placeholder, so a menu keeps the proportions the toolkit gives it.
 func menuWidth(c *Chooser) float32 {
 	th, size := Theme(), theme.TextSize()
-	// The placeholder read here is whatever has been set. The toolkit puts its
-	// own default in when the field is empty and does it while the renderer is
+	// The VALUES, and not the placeholder. The toolkit puts its own default
+	// placeholder in when the field is empty and does it while the renderer is
 	// made - fyne v2.8.1 widget/select.go line 94, read in the pinned module -
-	// so a menu built cold is measured against a string that is about to be
-	// replaced by a longer one. That is what made the same twenty format ids
-	// 139.91 px on two screens and 97.75 px on the other two, measured on
-	// 2026-08-28 with tools/probes/menuwidth, and the narrow ones then drew
-	// "(Select ..." in a box that exists to show "(Select one)".
+	// so a menu measured before it has been drawn has no placeholder and a
+	// menu measured after it has been drawn has "(Select one)". Until
+	// 2026-09-16 this line measured whatever was set, and the same menu came
+	// out two widths: 140 px built cold and 152 px the second time the batch
+	// screen rebuilt its table of files inside an archive, where the first
+	// row's menu had been drawn once already and the new row's had not.
+	// Measured on the two row table with tools/probes/guirender -boxes, and
+	// visible on the screen as a first row wider than the second.
 	//
-	// Asking the widget for its MinSize first would settle it, and it was
-	// written that way for an hour. It came out because it could not change an
-	// answer: the string the toolkit inserts needs 139.91 px, the floor at the
-	// end of this function is 140, so every menu it could affect is already
-	// wider than the placeholder it is about to be given. A line that cannot
-	// change an answer is not a defence, and this project has taken seven of
-	// them out for that reason.
-	widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width
+	// Whether the placeholder fits is not this function's to answer, and is
+	// answered: TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt asks every
+	// laid out menu whether its width covers the toolkit's own MinSize, which
+	// is the one measurement that knows the placeholder. The floor at the end
+	// of this function is what covers it today, with room to spare.
+	//
+	// Nothing of ours ever sets a placeholder on a menu - it would be a word a
+	// person reads coming from outside the text package - so there is no
+	// placeholder of ours to measure either.
+	var widest float32
 	for _, option := range c.Options {
 		if w := fyne.MeasureText(option, size, fyne.TextStyle{}).Width; w > widest {
 			widest = w

@@ -37,6 +37,10 @@ type Field struct {
 	// body is the field without the room under it for a refusal, so a row can
 	// put the refusals of every field in it across the whole width.
 	body fyne.CanvasObject
+	// detail is the longer explanation behind the button beside the name.
+	// Kept so that a table header, which is derived from the cells under it,
+	// can draw the same button a row of the form would.
+	detail Detail
 }
 
 // Object is the field, to put on a screen.
@@ -228,22 +232,14 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// The line under a field is now the first sentence behind its button - see
 	// alsoSaying. Folded here rather than at the thirty-two call sites, so a
 	// field that still carries one is not something anybody can write.
-	object, body, area := FieldSaying(s.names, label, alsoSaying(hint, detail),
-		s.required[setting], s.counter(setting, control), control)
-	return s.register(setting, label, control, object, body, area)
-}
-
-// AddCell builds a field as a cell of a table - its name over its control -
-// for the lists whose rows all have the same columns. Everything else about
-// it is a field: the refusal, the edge, the count, the registry.
-func (s *Fields) AddCell(setting, label, hint string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
-	object, body, area := CellSaying(label, alsoSaying(hint, detail), s.required[setting], control)
-	return s.register(setting, label, control, object, body, area)
+	explained := alsoSaying(hint, detail)
+	return s.register(setting, label, explained, control,
+		FieldSaying(s.names, label, explained, s.required[setting], s.counter(setting, control), control))
 }
 
 // register is what every kind of field goes through once it is built.
-func (s *Fields) register(setting, label string, control, object, body fyne.CanvasObject, area *ErrorArea) fyne.CanvasObject {
-	f := &Field{Setting: setting, Label: label, Control: control, area: area, object: object, body: body}
+func (s *Fields) register(setting, label string, detail Detail, control fyne.CanvasObject, built Built) fyne.CanvasObject {
+	f := &Field{Setting: setting, Label: label, Control: control, area: built.Area, object: built.Object, body: built.Body, detail: detail}
 	s.list = append(s.list, f)
 	// Last one wins, which is what a rebuilt screen needs: the preset screen
 	// throws its parameter fields away and draws the new preset's, and an entry
@@ -251,7 +247,7 @@ func (s *Fields) register(setting, label string, control, object, body fyne.Canv
 	s.by[setting] = f
 	s.listen(setting, control)
 	s.wireShortcuts(control)
-	return object
+	return built.Object
 }
 
 // Unlabelled is a row of the form for something that is not a field and has
@@ -273,38 +269,9 @@ func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Tog
 	return s.Add(setting, name, hint, detail, check)
 }
 
-// Row puts cells of a table side by side and gives their refusals the whole
-// width. For fields built with AddCell - a field built with Add is a row of
-// the form already and stands under the one before it.
-//
-// A refusal in this tool has four parts - what happened, why, what is allowed,
-// what to do instead - so it is a sentence and not a word. Inside a column of
-// a row it gets half the form to say that in. Measured off a render on
-// 2026-08-20: a size below what BMP can make wrapped onto four lines in the
-// left column while the right half of the panel was empty, and the four lines
-// pushed everything under them down by three.
-//
-// So the controls share the row and the messages do not. The message still
-// belongs to its own field - it is the same area, marked and cleared with the
-// same box - it is just laid out where there is room to read it.
-//
-// Given something that is not a field it falls back to putting it in the row
-// whole, because a row of one field and one plain object is a shape this
-// screen is allowed to build.
-func (s *Fields) Row(objects ...fyne.CanvasObject) fyne.CanvasObject {
-	bodies := make([]fyne.CanvasObject, 0, len(objects))
-	areas := make([]fyne.CanvasObject, 0, len(objects))
-	for _, o := range objects {
-		f := s.holding(o)
-		if f == nil || f.body == nil {
-			bodies = append(bodies, o)
-			continue
-		}
-		bodies = append(bodies, f.body)
-		areas = append(areas, f.area.Object())
-	}
-	return Column(GapTight, append([]fyne.CanvasObject{Row(bodies...)}, areas...)...)
-}
+// Table is how fields go into a table - cells under names said once - rather
+// than into rows of the form. See Table.
+func (s *Fields) Table() *Table { return &Table{fields: s} }
 
 // holding is the field one object is the whole of, or nil.
 func (s *Fields) holding(object fyne.CanvasObject) *Field {

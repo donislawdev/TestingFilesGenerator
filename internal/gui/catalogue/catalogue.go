@@ -92,6 +92,7 @@ func NotDrawn() []Reason {
 		{"Choice", "a value: one row of an open list, read back by a guard"},
 		{"Detail", "data: the longer explanation of a field and the sheet it opens on"},
 		{"Field", "the model of one row of a form, drawn by Fields"},
+		{"Built", "a value: what building a field comes to, handed to the registry in one piece"},
 		{"Tab", "data: one screen and the word that leads to it, drawn by Tabs"},
 		{"Look", "an enum: which face a Button wears, every value drawn under Button"},
 		{"PointerFocus", "a piece inside a control, knowing what put the keyboard there - no picture of its own"},

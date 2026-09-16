@@ -406,7 +406,7 @@ func (tabbed) MinSize(objects []fyne.CanvasObject) fyne.Size {
 		return fyne.Size{}
 	}
 	strip := objects[1].MinSize()
-	size := fyne.NewSize(strip.Width, InsetBar+strip.Height+GapUnderTabs)
+	size := fyne.NewSize(strip.Width, aboveTheScreens(objects[1]))
 	// Every screen rather than the one on show, so that moving between them
 	// never asks the window to grow - the same answer the toolkit's tabs gave.
 	screens := fyne.NewSize(0, 0)
@@ -416,6 +416,21 @@ func (tabbed) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	size.Width = fyne.Max(size.Width, screens.Width)
 	size.Height += screens.Height
 	return size
+}
+
+// aboveTheScreens is the height Tabbed spends above its screens: the bar's
+// inset, the strip and the gap under it. One function for the two places the
+// layout needs it and the one place the window does - AboveTheScreens - so the
+// three cannot come to three answers.
+func aboveTheScreens(strip fyne.CanvasObject) float32 {
+	return InsetBar + strip.MinSize().Height + GapUnderTabs
+}
+
+// AboveTheScreens is how much of a window's height Tabbed keeps above the
+// screen on show. The window asks it when working out how tall to open so
+// that a screen shows whole - the rest of that height is the screen's own.
+func AboveTheScreens(tabbed *fyne.Container) float32 {
+	return aboveTheScreens(tabbed.Objects[1])
 }
 
 func (tabbed) Layout(objects []fyne.CanvasObject, size fyne.Size) {
@@ -430,7 +445,7 @@ func (tabbed) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	rule.Move(fyne.NewPos(0, foot-Hairline))
 	rule.Resize(fyne.NewSize(size.Width, Hairline))
 
-	top := foot + GapUnderTabs
+	top := aboveTheScreens(strip)
 	for _, screen := range objects[2:] {
 		screen.Move(fyne.NewPos(0, top))
 		screen.Resize(fyne.NewSize(size.Width, fyne.Max(0, size.Height-top)))

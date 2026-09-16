@@ -23,7 +23,7 @@ import (
 // Every screen is built once and kept. Rebuilding one on the way back would
 // lose whatever was typed, and would lose a run in progress along with the only
 // handle on stopping it.
-func Open(h Host) {
+func Open(h Host) fyne.Size {
 	gen := NewGenerate(h)
 	pre := NewPreset(h)
 	rec := NewRecipe(h)
@@ -129,10 +129,15 @@ func Open(h Host) {
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
 	// first rather than of which screen is installed.
-	h.SetContent(parts.Tabbed(tabs))
+	tabbed := parts.Tabbed(tabs)
+	h.SetContent(tabbed)
 	// Last, once there is something on the canvas to focus. Quietly: nobody
 	// has pressed a key yet.
 	focusFirst(showing, false)
+	// What the window has to be for the tallest work screen to show whole,
+	// worked out from the screens as built rather than measured once and
+	// typed in - the size a first start opens at, see HowToOpen.
+	return firstOpening(tabbed, gen, pre, rec)
 }
 
 // closeCleanly stops whatever is running, writes down where the files were

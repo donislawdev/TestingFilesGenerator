@@ -215,6 +215,10 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
 
+// Unscrolled is how tall this screen has to be for its form to show whole -
+// what a first start opens at, see firstOpening.
+func (r *Recipe) Unscrolled() float32 { return unscrolledHeight(r.body, r.scroll) }
+
 // FirstField is where the keyboard starts: the format of the first batch. There
 // is always a first batch - the last one cannot be removed.
 func (r *Recipe) FirstField() fyne.Focusable { return r.batches[0].formatPick }
@@ -468,21 +472,17 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		return addContents
 	}
 	rows := []fyne.CanvasObject{parts.Subheading(text.ContentsHeading())}
+	table := r.fields.Table()
+	cells := make([][]fyne.CanvasObject, len(b.contents))
 	for j, c := range b.contents {
-		at := func(setting string) string {
-			return recipe.ContentAddress(index+1, j+1, setting)
-		}
-		entry := j
-		rows = append(rows, r.fields.Row(
-			r.fields.AddCell(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
-			r.fields.AddCell(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
-			r.fields.AddCell(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
-			// Not a field, so the row would hand it a whole column and the
-			// height of a label and a control together - see parts.BesideFields
-			// for the numbers that came off this very button.
-			parts.BesideFields(
-				parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, entry) })),
-		))
+		cells[j] = r.contentCells(table, b, index, j, c)
+	}
+	// The names once, over the first row, derived from that row's cells - so
+	// the header cannot call a column something a refusal about a cell under
+	// it does not. Every row stands under the same names, in the same columns.
+	rows = append(rows, table.Header(cells[0]...))
+	for _, row := range cells {
+		rows = append(rows, table.Row(row...))
 	}
 	// The button to add another only where another one would be legal. The rows
 	// above it can outlive a format change, the offer to make more of them
@@ -491,6 +491,23 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 		rows = append(rows, addContents)
 	}
 	return container.NewVBox(rows...)
+}
+
+// contentCells is one row of the table of files inside an archive: the three
+// cells a file is described by and the button that takes the row away.
+func (r *Recipe) contentCells(table *parts.Table, b *batch, index, j int, c *content) []fyne.CanvasObject {
+	at := func(setting string) string {
+		return recipe.ContentAddress(index+1, j+1, setting)
+	}
+	return []fyne.CanvasObject{
+		table.Cell(at(recipe.KeyFormat), text.FieldFormat(), "", parts.NoDetail, c.formatPick),
+		table.Cell(at(recipe.KeyCount), text.FieldCount(), "", parts.NoDetail, parts.Numeric(c.count)),
+		table.Cell(at(recipe.KeySize), text.FieldSize(), "", parts.NoDetail, parts.Numeric(c.size)),
+		// Not a field, so the row would hand it a whole column - see
+		// parts.BesideFields for the numbers that came off this very button.
+		parts.BesideFields(
+			parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, j) })),
+	}
 }
 
 func (r *Recipe) newContent() *content {

@@ -249,6 +249,10 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
 	host := desktop{w}
+	// What a first start opens at, if nothing is remembered: nothing for the
+	// catalogue, which opens at the ceiling, and what the screens want for
+	// the ordinary window.
+	var wanted fyne.Size
 	if showCatalogue {
 		// The hidden screen of GUI rule 4: every part in every state, for
 		// whoever builds the window. No host, because nothing on it runs or
@@ -258,7 +262,7 @@ func run(showCatalogue bool, errOut io.Writer) int {
 		// because that is the size this person's screen has room for.
 		w.SetContent(catalogue.Screen())
 	} else {
-		window.Open(host)
+		wanted = window.Open(host)
 	}
 
 	// The size it was closed at, and whether to put it in the middle. The two
@@ -266,7 +270,7 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	// the screen it comes back on has its title bar off the top when it is
 	// centred, and cannot then be moved or resized at all. Measured, both ways,
 	// in window.HowToOpen.
-	size, centre := window.HowToOpen(host.Remembered().Size())
+	size, centre := window.HowToOpen(host.Remembered().Size(), wanted)
 	w.Resize(size)
 	if centre {
 		w.CenterOnScreen()

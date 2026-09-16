@@ -36,7 +36,15 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<text bold size="788x24" textSize="20">Single batch</text>
+										<widget size="788x24" type="*container.ThemeOverride">
+											<container size="788x24">
+												<widget size="788x24" type="*widget.Label">
+													<widget size="788x24" type="*widget.RichText">
+														<text bold size="121x24" textSize="20">Single batch</text>
+													</widget>
+												</widget>
+											</container>
+										</widget>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -64,18 +72,18 @@
 														</widget>
 													</container>
 													<container pos="183,0" size="604x26">
-														<container size="152x26">
-															<widget size="152x26" type="*parts.Chooser">
-																<rectangle fillColor="inputBackground" radius="6" size="152x26"/>
+														<container size="140x26">
+															<widget size="140x26" type="*parts.Chooser">
+																<rectangle fillColor="inputBackground" radius="6" size="140x26"/>
 																<rectangle size="0x0"/>
-																<widget pos="4,3" size="122x20" type="*widget.RichText">
+																<widget pos="4,3" size="110x20" type="*widget.RichText">
 																	<text pos="2,2" size="25x16">png</text>
 																</widget>
-																<widget pos="126,3" size="20x20" type="*widget.Icon">
+																<widget pos="114,3" size="20x20" type="*widget.Icon">
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 																</widget>
 															</widget>
-															<rectangle radius="6" size="152x26" strokeColor="inputBorder" strokeWidth="1"/>
+															<rectangle radius="6" size="140x26" strokeColor="inputBorder" strokeWidth="1"/>
 														</container>
 													</container>
 												</container>

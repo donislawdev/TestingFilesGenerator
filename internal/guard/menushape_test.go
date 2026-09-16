@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -207,11 +208,18 @@ func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 	tightest, tightestIn := float32(0), float32(0)
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
-		for _, menu := range menusWithAnArchiveOpened(t, screen, tab, canvas) {
-			room, needs := menu.Size().Width, menu.MinSize().Width
-			if room == 0 {
+		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
+		buried := underSomethingHidden(screen)
+		for _, menu := range menus {
+			room, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
 				continue
 			}
+			if !shown {
+				continue
+			}
+			needs := menu.MinSize().Width
 			if room < needs {
 				t.Errorf("a menu of %v on the %s screen is %.2f px and the toolkit says it needs"+
 					" %.2f to show what is in it, so the words are cut off in the box that"+
@@ -243,9 +251,11 @@ func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 // Asked against the narrowest box laid out on the SAME screen, for the reason
 // its sibling above is asked against the widest: the claim is a relationship
 // between the controls a person sees together, not a number written down twice.
-// Boxes with no width are left out - the two ways of stating a size that the
-// switch is hiding are laid out at nought and minus three, and a floor taken
-// from those would be no floor at all.
+// Boxes with no width are left out. When this was written the two ways of
+// stating a size that the switch hid were laid out at nought and minus three,
+// and a floor taken from those would have been no floor at all. None is today
+// - measured 2026-09-16, after the switch became segments - and the rule stays
+// for the day a hidden box is laid out at nothing again.
 func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 	ourTheme(t)
 	content, canvas := laidOutWindow(t)
@@ -271,9 +281,14 @@ func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 			t.Fatalf("the %s screen has %d menus and no box to type in that was laid out,"+
 				" so there is nothing to compare them against", tab, len(menus))
 		}
+		buried := underSomethingHidden(screen)
 		for _, menu := range menus {
-			got := menu.Size().Width
-			if got == 0 {
+			got, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				continue
+			}
+			if !shown {
 				continue
 			}
 			if got < narrowest {
@@ -311,4 +326,67 @@ func menusWithAnArchiveOpened(t *testing.T, screen fyne.CanvasObject, tab string
 		canvas.Content().Resize(canvas.Size())
 	}
 	return menusOn(screen)
+}
+
+// And one setting is one menu width on every screen it stands on.
+//
+// The regression table has promised this sentence since 2026-08-28 under the
+// guard above, and the guard above does not measure it: it compares a menu
+// with the BOXES beside it, never with the same menu on another screen. So
+// the format menu stood at 152 px on the single batch and batch screens and
+// 140 px on the preset screen for nineteen days, measured on 2026-09-16 from
+// the stored screens when parts.menuWidth stopped measuring the placeholder
+// the toolkit puts into a menu that has been drawn once. A menu given its
+// value before it was sized had the placeholder, and a menu sized cold did
+// not - two widths for one list of twenty formats.
+//
+// Asked by the values a menu offers rather than by the field's name, because
+// the values are what the width is computed from: two menus of the same
+// values that come out different widths were measured at different moments,
+// which is the defect.
+func TestOneSettingIsOneMenuWidthOnEveryScreen(t *testing.T) {
+	ourTheme(t)
+	content, canvas := laidOutWindow(t)
+
+	type seen struct {
+		tab   string
+		width float32
+	}
+	widths := map[string][]seen{}
+	for _, tab := range allTabs() {
+		screen := selectTab(t, content, tab)
+		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
+		buried := underSomethingHidden(screen)
+		for _, menu := range menus {
+			width, shown, err := widthShown(menu, buried)
+			if err != nil {
+				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				continue
+			}
+			if !shown {
+				continue
+			}
+			key := strings.Join(menu.Options, "\x00")
+			widths[key] = append(widths[key], seen{tab, width})
+		}
+	}
+	shared := 0
+	for _, places := range widths {
+		if len(places) < 2 {
+			continue
+		}
+		shared++
+		for _, p := range places[1:] {
+			if p.width != places[0].width {
+				t.Errorf("one menu is %.2f px on the %s screen and %.2f px on the %s screen - the same"+
+					" values, two widths, so it was measured at two different moments.\n"+
+					"What to do: parts.menuWidth must answer the same for a menu drawn once and a menu never drawn.",
+					places[0].width, places[0].tab, p.width, p.tab)
+			}
+		}
+	}
+	if shared == 0 {
+		t.Fatal("no menu stands on more than one screen, so this guard compared nothing")
+	}
+	t.Logf("%d menus stand on more than one screen, each one width everywhere", shared)
 }

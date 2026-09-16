@@ -290,7 +290,7 @@ func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 func TestTheWindowActuallyDrawsSomething(t *testing.T) {
 	w := test.NewWindow(window.FirstScreen(newFakeHost(t)))
 	defer w.Close()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 
 	img := w.Canvas().Capture()
 	bounds := img.Bounds()

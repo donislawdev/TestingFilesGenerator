@@ -45,7 +45,7 @@ func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 	// Whether a form fits is already answered, with a number, by that probe.
 	// What is left for this one is whether a control that HAS room can be
 	// pressed - so it gets the room.
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
 	return host.content, w.Canvas()
 }
 

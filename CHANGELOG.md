@@ -84,6 +84,31 @@ because it turns other people's test suites red.
   binary is about 800 kB larger for it. The command line binary carries no
   font and is unchanged.
 
+- **The window opens as tall as its screens need, and no taller than a
+  1080p screen.** A first start used to open at a height measured against the
+  forms of an earlier version, and left a band of nothing under the form once
+  the forms grew shorter. It now opens exactly tall enough for the tallest
+  screen to show whole - today that is 917 px - and never taller than fits a
+  1080p screen with its taskbar. A window you have resized still comes back at
+  the size you left it.
+
+- **The files inside an archive are a table with one row of headings.** The
+  table on the batch screen named every column again in every row, so two
+  files read as six names. The names stand once over the first row now, and
+  the Remove button is centred on the row it removes.
+
+- **Every menu is one width.** The format menu was 152 px on two screens and
+  140 px on the third, and in a table with two rows the first row's menu was
+  wider than the second's - a menu measured after it had been drawn once came
+  out wider than the same menu measured before. Every menu is now as wide as
+  its values need and never narrower than the boxes beside it, the same on
+  every screen.
+
+- **A title too long for its room ends in an ellipsis instead of running past
+  the panel.** No title in the window is that long today, and a check keeps
+  it so under every format, so the ellipsis only ever appears in a window
+  made narrower than a title needs.
+
 ### Added
 
 - **Every control shows where the keyboard is and answers the pointer.** Every

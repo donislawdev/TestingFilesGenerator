@@ -148,7 +148,7 @@ func sayingUnder(t *testing.T, o fyne.CanvasObject, label string) string {
 	// The smallest block holding both the field and something red, rather than
 	// the field alone. Since 2026-08-20 two fields share a row and their
 	// messages are laid out under it across the full width, so a message is no
-	// longer a descendant of its own field - see Fields.Row and the reason
+	// longer a descendant of its own field - see parts.Table.Row and the reason
 	// there.
 	//
 	// In a row this reads the messages of both fields in it. That is enough for

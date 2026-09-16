@@ -46,7 +46,7 @@ func keyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, fyne.Canvas) {
 	// NOT SetContent again: the host has already put the tree on this canvas,
 	// and setting it a second time takes the keyboard off whatever Open put it
 	// on - which is the very thing some of these guards ask about.
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	t.Cleanup(func() { join(host) })
 	return host, host.content, w.Canvas()
 }
@@ -66,7 +66,7 @@ func heldKeyedWindow(t *testing.T) (*fakeHost, fyne.CanvasObject, *holdDuringRun
 	if host.content == nil {
 		t.Fatal("opening the window put no screen in it")
 	}
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	// Freed before joining, and in that order - a guard that failed before it
 	// looked would otherwise leave the worker parked and hang the package.
 	t.Cleanup(func() {

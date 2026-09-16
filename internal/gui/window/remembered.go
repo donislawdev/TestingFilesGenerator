@@ -49,37 +49,3 @@ type Remembered interface {
 func WorthRemembering(size fyne.Size) bool {
 	return size.Width > 0 && size.Height > 0
 }
-
-// HowToOpen says what size to open the window at, and whether to put it in the
-// middle of the screen.
-//
-// The two answers travel together because they are one decision. Measured on
-// 2026-08-25 with tools/probes/windowsize and tools/probes/windowrect.ps1, on a
-// screen with 3840x2088 of usable area:
-//
-//	asked for 5000x3000, not centred : the window lands at 304,304 and its
-//	                                   title bar is on the screen
-//	asked for 5000x3000, centred     : the window lands at -1841,-1215 and its
-//	                                   title bar is 1215 px above the top
-//
-// Centring works out the middle from the size that was ASKED for, so a window
-// bigger than the screen it comes back on is placed with its title bar off the
-// top - and a window whose title bar cannot be reached cannot be moved or
-// resized with a mouse at all. That is the whole reason a remembered size is
-// not centred, and it is the state a person reaches by carrying a laptop from a
-// large monitor to its own screen.
-//
-// Fyne cannot help here: there is no way to ask how big the screen is, checked
-// in the driver interface on 2026-08-19 and again in v2.8.0 on 2026-08-25. So
-// the size cannot be checked against the screen, and what is done instead is to
-// leave the window where the system puts it.
-//
-// A first start still opens in the middle at the measured OpenSize, because
-// there is nothing to restore and the middle is where a window belongs when
-// nobody has an opinion yet.
-func HowToOpen(remembered fyne.Size) (size fyne.Size, centre bool) {
-	if !WorthRemembering(remembered) {
-		return OpenSize, true
-	}
-	return remembered, false
-}

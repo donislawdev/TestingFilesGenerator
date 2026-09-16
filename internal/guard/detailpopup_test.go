@@ -45,7 +45,7 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 	// all, on purpose - several guards build a tree they never show.
 	w := test.NewWindow(host.content)
 	defer w.Close()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	host.content.Refresh()
 
 	// Every field that has one, rather than a sample. These are the sentences
@@ -144,7 +144,7 @@ func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 
 	w := test.NewWindow(host.content)
 	defer w.Close()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	host.content.Refresh()
 
 	button := detailButtonBeside(content, text.FieldSize())

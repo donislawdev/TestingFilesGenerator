@@ -49,7 +49,7 @@ func TestTheTabSomebodyIsOnIsTheOneThatStandsOut(t *testing.T) {
 	}
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 
 	strip := tabsIn(host.content)
 	if strip == nil {

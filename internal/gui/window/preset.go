@@ -140,6 +140,10 @@ const settingPreset = "preset"
 // Object is the screen, to put in a window.
 func (p *Preset) Object() fyne.CanvasObject { return p.body }
 
+// Unscrolled is how tall this screen has to be for its form to show whole -
+// what a first start opens at, see firstOpening.
+func (p *Preset) Unscrolled() float32 { return unscrolledHeight(p.body, p.scroll) }
+
 // FirstField is where the keyboard starts: which preset, because every
 // parameter under it is drawn from that answer.
 func (p *Preset) FirstField() fyne.Focusable { return p.pick }
