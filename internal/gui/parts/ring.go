@@ -529,6 +529,13 @@ func (c *Chooser) Quietly(focus func()) { c.from.Quietly(focus) }
 // UX9 asks that whatever the mouse can do the keyboard can - which has to mean
 // the same thing, not a second version of it.
 func (c *Chooser) TypedKey(event *fyne.KeyEvent) {
+	// A frozen menu answers no key. The toolkit's Select.TypedKey moves the
+	// value on Left and Right without asking, and a menu frozen for a run
+	// keeps the keyboard if it had it - see Segments.TypedKey for the same
+	// finding on the same day.
+	if event == nil || c.Disabled() {
+		return
+	}
 	// The keyboard has been used, so from here on it is worth saying where it
 	// is. Somebody who opened this list with the mouse and then reached for the
 	// arrows is somebody who now needs to see which control is listening.

@@ -38,6 +38,9 @@ type Segments struct {
 
 	hovered int // the segment under the pointer, or -1
 	marked  bool
+	// from knows whether the keyboard arrived by press or by key - see
+	// PointerFocus and Toggle, which follow the same rule.
+	from PointerFocus
 }
 
 var (
@@ -85,15 +88,37 @@ func (s *Segments) indexOf(value string) int {
 	return -1
 }
 
-// Tapped chooses the segment under the pointer.
+// Tapped chooses the segment under the pointer and puts the keyboard on the
+// switch, quietly - the way the toolkit's radio item does (widget/radio_item.go
+// Tapped), so the arrows step on from what was clicked. See Toggle.Tapped for
+// the whole of why, and for what stood here until 2026-09-16.
 func (s *Segments) Tapped(event *fyne.PointEvent) {
 	if s.Disabled() || event == nil {
 		return
 	}
+	s.takeTheKeyboardQuietly()
 	if at := s.segmentAt(event.Position.X); at >= 0 {
 		s.SetSelected(s.Options[at])
 	}
 }
+
+// takeTheKeyboardQuietly moves the focus here without the mark, unless it is
+// here already.
+func (s *Segments) takeTheKeyboardQuietly() {
+	app := fyne.CurrentApp()
+	if app == nil {
+		return
+	}
+	canvas := app.Driver().CanvasForObject(s)
+	if canvas == nil || canvas.Focused() == s {
+		return
+	}
+	s.from.Quietly(func() { canvas.Focus(s) })
+}
+
+// Quietly runs a focus change without drawing the mark. See PointerFocus and
+// FocusQuietly.
+func (s *Segments) Quietly(focus func()) { s.from.Quietly(focus) }
 
 // segmentAt is the segment a point falls in, or -1 past the last one.
 func (s *Segments) segmentAt(x float32) int {
@@ -130,7 +155,16 @@ func (s *Segments) MouseOut() {
 	}
 }
 
+// FocusGained draws the ring when the keyboard is what brought the focus here.
+// A press brings it quietly and the first key turns the ring on.
 func (s *Segments) FocusGained() {
+	if s.from.Quiet() {
+		return
+	}
+	s.mark()
+}
+
+func (s *Segments) mark() {
 	s.marked = true
 	s.Refresh()
 }
@@ -147,8 +181,17 @@ func (s *Segments) TypedRune(rune) {}
 // tab strip makes (see TabWord) not applying where the choice does not move the
 // keyboard off the control.
 func (s *Segments) TypedKey(event *fyne.KeyEvent) {
-	if event == nil || len(s.Options) == 0 {
+	// Disabled asked here and not left to the renderer: a switch frozen for
+	// the length of a run keeps the keyboard if it had it, because the focus
+	// manager checks Disabled only when it MOVES the focus (internal/app/
+	// focus_manager.go), and the driver hands every key to whatever is
+	// focused. Without this the arrows moved the choice under a form drawn as
+	// frozen - an outside review of the pull request named it, 2026-09-16.
+	if event == nil || s.Disabled() || len(s.Options) == 0 {
 		return
+	}
+	if !s.marked {
+		s.mark()
 	}
 	at := s.indexOf(s.Selected)
 	switch event.Name {

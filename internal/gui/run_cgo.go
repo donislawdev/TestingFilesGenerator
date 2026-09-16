@@ -251,8 +251,11 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	host := desktop{w}
 	if showCatalogue {
 		// The hidden screen of GUI rule 4: every part in every state, for
-		// whoever builds the window. No host, because nothing on it runs,
-		// chooses a directory or remembers anything.
+		// whoever builds the window. No host, because nothing on it runs or
+		// chooses a directory - and nothing about it is remembered either,
+		// which is why the close callback below is registered for the
+		// ordinary window alone. It opens at the remembered size all the same,
+		// because that is the size this person's screen has room for.
 		w.SetContent(catalogue.Screen())
 	} else {
 		window.Open(host)
@@ -271,7 +274,16 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	// Written down as the window goes rather than as it is resized. SetOnClosed
 	// runs after the close intercept, which is where the directory is kept, so
 	// the two land together whichever way the window was shut.
-	w.SetOnClosed(func() { host.rememberThisSize() })
+	//
+	// The ordinary window only. The catalogue is a developer's screen, 8900 px
+	// of controls somebody drags tall to read, and until 2026-09-16 closing it
+	// wrote that size down as the size the ordinary window opens at next time.
+	// An outside review of the pull request named it. No guard reaches this
+	// line - it is behind cgo, like the rest of the remembering - so it is
+	// checked the way the rest was, by a run of the binary.
+	if !showCatalogue {
+		w.SetOnClosed(func() { host.rememberThisSize() })
+	}
 	w.ShowAndRun()
 	return 0
 }

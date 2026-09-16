@@ -111,6 +111,58 @@ func TestOnePressOfSpacePressesAButtonOnce(t *testing.T) {
 	}
 }
 
+// And flips a switch once - the same two deliveries, and a switch that
+// answered both flipped twice, back to where it started, which reads as a
+// switch that ignores the space bar. Found by reading the switch beside the
+// button on 2026-09-16, not by the review that named the button.
+func TestOnePressOfSpaceFlipsASwitchOnce(t *testing.T) {
+	flips := 0
+	s := parts.NewToggle(func(bool) { flips++ })
+	s.TypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	s.TypedRune(' ')
+	if flips != 1 || !s.Checked {
+		t.Errorf("one press of the space bar flipped the switch %d times and left it %v", flips, s.Checked)
+	}
+}
+
+// A frozen control answers no key.
+//
+// A form is frozen for the length of a run (Fields.Freeze disables every
+// control), and a control that had the keyboard keeps it: the focus manager
+// asks Disabled only when it MOVES the focus (internal/app/focus_manager.go)
+// and the driver hands every key to whatever is focused. So a disabled
+// switch went on moving its choice under a form drawn as frozen, and a
+// disabled menu went on changing its value on Left and Right through the
+// toolkit's own Select.TypedKey, which asks nothing either. An outside review
+// of the pull request named the switch on 2026-09-16. The menu came out of
+// reading what the switch's fix had to cover.
+func TestAFrozenControlAnswersNoKey(t *testing.T) {
+	changed := 0
+	segments := parts.NewSegments([]string{"one", "two", "three"}, func(string) { changed++ })
+	segments.Disable()
+	segments.TypedKey(&fyne.KeyEvent{Name: fyne.KeyRight})
+	if segments.Selected != "one" || changed != 0 {
+		t.Errorf("a frozen segmented switch moved to %q on an arrow and reported %d change(s)", segments.Selected, changed)
+	}
+
+	menu := parts.NewChooser([]string{"one", "two", "three"}, func(string) { changed++ })
+	menu.SetSelected("one")
+	changed = 0
+	menu.Disable()
+	menu.TypedKey(&fyne.KeyEvent{Name: fyne.KeyRight})
+	if menu.Selected != "one" || changed != 0 {
+		t.Errorf("a frozen menu moved to %q on an arrow and reported %d change(s)", menu.Selected, changed)
+	}
+
+	toggle := parts.NewToggle(func(bool) { changed++ })
+	changed = 0
+	toggle.Disable()
+	toggle.TypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	if toggle.Checked || changed != 0 {
+		t.Errorf("a frozen switch flipped on the space bar and reported %d change(s)", changed)
+	}
+}
+
 // A segmented switch ignores a value it does not hold.
 //
 // A switch of fixed choices is not a box: handed a word it does not offer it

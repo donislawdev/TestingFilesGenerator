@@ -42,6 +42,9 @@ type Toggle struct {
 
 	hovered bool
 	marked  bool
+	// from knows whether the keyboard arrived by press or by key, so that a
+	// press can put the keyboard here without drawing the mark that says so.
+	from PointerFocus
 }
 
 var (
@@ -79,15 +82,46 @@ func (t *Toggle) Marked() bool  { return t.marked }
 // border and its own ring, see selfEdged.
 func (t *Toggle) drawsOwnEdge() {}
 
-// Tapped flips the switch. The keyboard is not taken, for the reason the button
-// gives: the driver does not focus a tapped widget, so a press leaves the mark
-// off without anything having to make the focus quiet.
+// Tapped flips the switch and puts the keyboard on it, quietly.
+//
+// Quietly, because the mark means "the keyboard is here and you are using
+// it" and a press is not that - see PointerFocus. But the keyboard does come
+// here, the way it comes to the toolkit's own check (widget/check.go Tapped,
+// focusIfNotMobile) and to every checkbox on every desktop: the next Space
+// flips this switch again and the next Tab leaves from here. Until 2026-09-16
+// it did not come at all. The sentence that stood here said the driver does
+// not focus a tapped widget, which is true - it UNFOCUSES whatever had the
+// keyboard (internal/driver/glfw/window.go, mouseClicked) and leaves the rest
+// to the widget - and the conclusion drawn from it was that nothing needed
+// doing, so a press left the keyboard nowhere. An outside review of the pull
+// request named it, with a mechanism that was wrong about the driver and a
+// conclusion that was right about this switch.
 func (t *Toggle) Tapped(*fyne.PointEvent) {
 	if t.Disabled() {
 		return
 	}
+	t.takeTheKeyboardQuietly()
 	t.SetChecked(!t.Checked)
 }
+
+// takeTheKeyboardQuietly moves the focus here without the mark, unless it is
+// here already - a Space on a focused switch goes through Tapped too, and
+// re-focusing it would run FocusLost and FocusGained for nothing.
+func (t *Toggle) takeTheKeyboardQuietly() {
+	app := fyne.CurrentApp()
+	if app == nil {
+		return
+	}
+	canvas := app.Driver().CanvasForObject(t)
+	if canvas == nil || canvas.Focused() == t {
+		return
+	}
+	t.from.Quietly(func() { canvas.Focus(t) })
+}
+
+// Quietly runs a focus change without drawing the mark. See PointerFocus and
+// FocusQuietly.
+func (t *Toggle) Quietly(focus func()) { t.from.Quietly(focus) }
 
 func (t *Toggle) MouseIn(*desktop.MouseEvent) {
 	t.hovered = true
@@ -99,8 +133,18 @@ func (t *Toggle) MouseOut() {
 	t.Refresh()
 }
 
-// FocusGained draws the ring, and only the keyboard ever brings the focus here.
+// FocusGained draws the ring when the keyboard is what brought the focus here.
+// A press brings it quietly and the first key drawn on it turns the ring on -
+// the same rule as the Chooser, so a person reaching for the keyboard after a
+// click sees which control is listening.
 func (t *Toggle) FocusGained() {
+	if t.from.Quiet() {
+		return
+	}
+	t.mark()
+}
+
+func (t *Toggle) mark() {
 	t.marked = true
 	t.Refresh()
 }
@@ -110,14 +154,22 @@ func (t *Toggle) FocusLost() {
 	t.Refresh()
 }
 
-func (t *Toggle) TypedRune(r rune) {
-	if r == ' ' {
-		t.Tapped(nil)
-	}
-}
+// TypedRune answers nothing, for the reason Button.TypedRune gives: the
+// desktop driver delivers one press of the space bar as the key and as the
+// character, and a switch answering both flipped twice on one press - back to
+// where it started, which reads as a switch that ignores the space bar.
+func (t *Toggle) TypedRune(rune) {}
 
+// TypedKey flips the switch on the space bar, and draws the mark if the
+// keyboard arrived quietly - a key has been used now.
 func (t *Toggle) TypedKey(event *fyne.KeyEvent) {
-	if event != nil && event.Name == fyne.KeySpace {
+	if event == nil || t.Disabled() {
+		return
+	}
+	if !t.marked {
+		t.mark()
+	}
+	if event.Name == fyne.KeySpace {
 		t.Tapped(nil)
 	}
 }

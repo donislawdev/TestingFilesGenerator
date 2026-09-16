@@ -31,10 +31,18 @@ func TestEveryFileEmbeddedFromSomebodyElseIsAccountedFor(t *testing.T) {
 	seen := map[string]bool{}
 	matched := map[string]bool{}
 	total := 0
+	// Every key of ownWork has to be spent on a file some build embeds, or it
+	// is an exemption that outlived its file - and an exemption nobody uses
+	// today is the one that exempts somebody else's bytes tomorrow, at the
+	// same package and path, without a word. Asked the same way the registry
+	// is asked below, since an unused entry and an unused exemption are the
+	// same drift facing two ways. An outside review of the pull request
+	// pointed at the missing half on 2026-09-16.
+	usedExemptions := map[string]bool{}
 
 	for _, target := range []string{"../../cmd/tfg-gui", "../../cmd/tfg"} {
 		for _, goos := range []string{"windows", "linux", "darwin"} {
-			total += accountForBuild(t, target, goos, seen, matched)
+			total += accountForBuild(t, target, goos, seen, matched, usedExemptions)
 		}
 	}
 
@@ -59,6 +67,18 @@ func TestEveryFileEmbeddedFromSomebodyElseIsAccountedFor(t *testing.T) {
 			"An entry for bytes that no longer ship is a notice nobody needs, and it hides the day "+
 			"the real thing was replaced by something else.", len(stale), strings.Join(stale, "\n  "))
 	}
+	var unspent []string
+	for key := range ownWork {
+		if !usedExemptions[key] {
+			unspent = append(unspent, key)
+		}
+	}
+	if len(unspent) > 0 {
+		sort.Strings(unspent)
+		t.Errorf("%d ownWork exemption(s) name a file no build embeds:\n  %s\n"+
+			"An exemption without a file is a licence check switched off for whatever lands at that "+
+			"path next. Take it off the list.", len(unspent), strings.Join(unspent, "\n  "))
+	}
 	t.Logf("%d embedded file(s) across every package, all accounted for by %d registry entr(y/ies) or named as our own work",
 		total, len(legal.Assets()))
 }
@@ -67,11 +87,11 @@ func TestEveryFileEmbeddedFromSomebodyElseIsAccountedFor(t *testing.T) {
 // added. Split out rather than nested inside the test because the depth ceiling
 // said so, and the ceiling is a measurement rather than a preference - see
 // docs/QUALITY.md.
-func accountForBuild(t *testing.T, target, goos string, seen, matched map[string]bool) int {
+func accountForBuild(t *testing.T, target, goos string, seen, matched, usedExemptions map[string]bool) int {
 	t.Helper()
 	added := 0
 	for pkg, files := range embeddedFiles(t, target, goos) {
-		added += accountForPackage(t, pkg, files, seen, matched)
+		added += accountForPackage(t, pkg, files, seen, matched, usedExemptions)
 	}
 	return added
 }
@@ -79,7 +99,7 @@ func accountForBuild(t *testing.T, target, goos string, seen, matched map[string
 // accountForPackage does one package, skipping what another platform already
 // answered for. Three systems are asked and they agree about most of the tree,
 // so without seen the same font would be reported six times.
-func accountForPackage(t *testing.T, pkg string, files []string, seen, matched map[string]bool) int {
+func accountForPackage(t *testing.T, pkg string, files []string, seen, matched, usedExemptions map[string]bool) int {
 	t.Helper()
 	added := 0
 	for _, file := range files {
@@ -89,6 +109,7 @@ func accountForPackage(t *testing.T, pkg string, files []string, seen, matched m
 		seen[pkg+" "+file] = true
 		added++
 		if ownWork[pkg+" "+file] {
+			usedExemptions[pkg+" "+file] = true
 			continue
 		}
 		accountFor(t, pkg, file, matched)
