@@ -133,7 +133,7 @@ func formatsLaidOut(t *testing.T) (fyne.CanvasObject, *formatChooser, *fakeHost)
 	}
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
 
 	generate := tabNamed(t, host.content, text.TabOneTarget())
 	picker, ok := controlUnder(generate, text.FieldFormat()).(*parts.Chooser)
@@ -154,8 +154,8 @@ type formatChooser struct {
 func (c *formatChooser) to(id string) {
 	c.t.Helper()
 	c.picker.SetSelected(id)
-	c.w.Resize(fyne.NewSize(window.OpenSize.Width, 1599))
-	c.w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+	c.w.Resize(fyne.NewSize(window.LargestOpening.Width, 1599))
+	c.w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
 }
 
 // typedInWidth is how wide the box a person types into ended up.
@@ -205,7 +205,7 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	batches := selectTab(t, host.content, text.TabRecipe())
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)
-	w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
 
 	picker, ok := controlUnder(batches, text.FieldFormat()).(*parts.Chooser)
 	if !ok {
@@ -216,8 +216,8 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	// for rather than the size it got. That is what let the first version of
 	// this guard pass against a screen drawing every box at the full width.
 	layOut := func() {
-		w.Resize(fyne.NewSize(window.OpenSize.Width, 1599))
-		w.Resize(fyne.NewSize(window.OpenSize.Width, 1600))
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1599))
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
 	}
 
 	checked := 0

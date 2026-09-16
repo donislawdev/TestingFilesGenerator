@@ -215,6 +215,10 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
 
+// Unscrolled is how tall this screen has to be for its form to show whole -
+// what a first start opens at, see firstOpening.
+func (r *Recipe) Unscrolled() float32 { return unscrolledHeight(r.body, r.scroll) }
+
 // FirstField is where the keyboard starts: the format of the first batch. There
 // is always a first batch - the last one cannot be removed.
 func (r *Recipe) FirstField() fyne.Focusable { return r.batches[0].formatPick }

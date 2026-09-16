@@ -206,9 +206,9 @@ func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
 // before its own change and compares it with itself.
 func settle(content fyne.CanvasObject, w fyne.Window) {
 	content.Refresh()
-	w.Resize(fyne.NewSize(window.OpenSize.Width, window.OpenSize.Height-1))
+	w.Resize(fyne.NewSize(window.LargestOpening.Width, window.LargestOpening.Height-1))
 	content.Refresh()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 }
 
 // The room kept for a run's messages is real room, not a number that happens to
@@ -263,11 +263,11 @@ func screenInAWindowWithHost(t *testing.T, tab string) (fyne.CanvasObject, fyne.
 
 	w := test.NewWindow(host.content)
 	t.Cleanup(w.Close)
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	content.Refresh()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	content.Refresh()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 
 	// Nothing this window started may outlive the test that started it - see
 	// the note on screen().

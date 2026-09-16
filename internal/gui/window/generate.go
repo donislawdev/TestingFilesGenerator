@@ -227,6 +227,10 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 // Object is the screen, to put in a window.
 func (g *Generate) Object() fyne.CanvasObject { return g.body }
 
+// Unscrolled is how tall this screen has to be for its form to show whole -
+// what a first start opens at, see firstOpening.
+func (g *Generate) Unscrolled() float32 { return unscrolledHeight(g.body, g.scroll) }
+
 // FirstField is where the keyboard starts on this screen: the format, because
 // everything else on the form follows from it.
 func (g *Generate) FirstField() fyne.Focusable { return g.formatPick }

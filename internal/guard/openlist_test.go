@@ -85,7 +85,7 @@ func TestTheOpenListMarksTheValueThatIsChosen(t *testing.T) {
 
 	w := test.NewWindow(host.content)
 	defer w.Close()
-	w.Resize(window.OpenSize)
+	w.Resize(window.LargestOpening)
 	host.content.Refresh()
 
 	picker, ok := controlUnder(content, text.FieldFormat()).(*parts.Chooser)

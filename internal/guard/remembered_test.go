@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/test"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -121,8 +122,10 @@ func TestClosingTheWindowRemembersWhereTheFilesWereGoing(t *testing.T) {
 // the screen is - there is no such call in v2.8.0 - so leaving the window where
 // the system puts it is the whole of the mitigation.
 func TestARememberedSizeIsUsedAndNotRecentred(t *testing.T) {
-	bigger := fyne.NewSize(window.OpenSize.Width+600, window.OpenSize.Height+400)
-	size, centre := window.HowToOpen(bigger)
+	bigger := fyne.NewSize(window.LargestOpening.Width+600, window.LargestOpening.Height+400)
+	// With the screens wanting something else entirely, so that the answer
+	// cannot be the want by coincidence.
+	size, centre := window.HowToOpen(bigger, fyne.NewSize(window.LargestOpening.Width, 700))
 	if size != bigger {
 		t.Errorf("the window was %v when it was closed and opens at %v", bigger, size)
 	}
@@ -132,28 +135,105 @@ func TestARememberedSizeIsUsedAndNotRecentred(t *testing.T) {
 	}
 }
 
-// With nothing remembered it opens at the measured size, in the middle.
+// With nothing remembered it opens as tall as the screens want, no taller
+// than the ceiling, in the middle.
 //
-// The other half, and it has to be here rather than assumed: a first start with
-// no opinion belongs in the middle of the screen, and OpenSize is a measured
-// number with its own reasoning. A version that never centred would leave every
-// first start in whatever corner the system chose.
-func TestAFirstStartOpensAtTheMeasuredSizeInTheMiddle(t *testing.T) {
-	for _, nothing := range []fyne.Size{
-		{},
-		fyne.NewSize(0, 900),
-		fyne.NewSize(1200, 0),
+// Three answers and each has to be here rather than assumed. The height is
+// the screens' want, because until 2026-09-16 it was a number measured once
+// against the forms of 2026-08-19 and typed in, and the forms moved 300 px
+// under it (O202) - GUI rule 14, worked out and never measured. The ceiling
+// holds, because it is the one fact about somebody else's screen this program
+// has and a window taller than the screen cannot be reached at the bottom. And
+// a first start with no opinion belongs in the middle of the screen - a
+// version that never centred would leave every first start in whatever corner
+// the system chose.
+//
+// A want with a nought in it is no want, and gets the ceiling: the same
+// predicate that refuses a remembered nought, so a screen that could not be
+// measured does not open as a window of nothing.
+func TestAFirstStartOpensAsTallAsTheScreensWantInTheMiddle(t *testing.T) {
+	ceiling := window.LargestOpening
+	wanted := fyne.NewSize(ceiling.Width, ceiling.Height-183)
+	for _, tc := range []struct {
+		name         string
+		remembered   fyne.Size
+		wanted, want fyne.Size
+	}{
+		{"nothing remembered, the screens want less than the ceiling", fyne.Size{}, wanted, wanted},
+		{"a remembered nought is nothing remembered", fyne.NewSize(0, 900), wanted, wanted},
+		{"a remembered nought the other way", fyne.NewSize(1200, 0), wanted, wanted},
+		{"the screens want more than the ceiling", fyne.Size{}, fyne.NewSize(ceiling.Width, ceiling.Height+500), ceiling},
+		{"the screens want exactly the ceiling", fyne.Size{}, ceiling, ceiling},
+		{"a want with a nought in it is no want", fyne.Size{}, fyne.NewSize(ceiling.Width, 0), ceiling},
+		{"no want at all", fyne.Size{}, fyne.Size{}, ceiling},
 	} {
-		size, centre := window.HowToOpen(nothing)
-		if size != window.OpenSize {
-			t.Errorf("with %v remembered the window opens at %v rather than the measured %v",
-				nothing, size, window.OpenSize)
+		size, centre := window.HowToOpen(tc.remembered, tc.wanted)
+		if size != tc.want {
+			t.Errorf("%s: with %v remembered and %v wanted the window opens at %v rather than %v",
+				tc.name, tc.remembered, tc.wanted, size, tc.want)
 		}
 		if !centre {
-			t.Errorf("with %v remembered the window is not centred, so a first start lands"+
-				" wherever the system put it", nothing)
+			t.Errorf("%s: the window is not centred, so a first start lands wherever the system put it", tc.name)
 		}
 	}
+}
+
+// And what the screens want is what shows every work screen whole: laid out
+// at the size Open hands back, no work screen scrolls - unless the ceiling
+// stopped the window growing, which is the one reason a form may be cut.
+//
+// Asked of the real screens through Open rather than of HowToOpen alone,
+// because HowToOpen is arithmetic on two numbers and the number that matters
+// is the one Open works out: a want that left out a screen, or forgot the
+// strip above the screens, would pass every case above and still open a
+// window whose batch screen scrolls from the first frame.
+func TestTheFirstOpeningShowsEveryWorkScreenWhole(t *testing.T) {
+	ourTheme(t)
+	host := newFakeHost(t)
+	wanted := window.Open(host)
+	size, _ := window.HowToOpen(fyne.Size{}, wanted)
+	w := test.NewWindow(host.content)
+	t.Cleanup(w.Close)
+	w.Resize(size)
+	host.content.Refresh()
+	w.Resize(size)
+
+	if size.Height >= window.LargestOpening.Height {
+		t.Logf("the screens want %.0f px and the ceiling is %.0f, so a screen is allowed to scroll today",
+			wanted.Height, window.LargestOpening.Height)
+	}
+	checked := 0
+	tightest := float32(-1)
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
+		screen := selectTab(t, host.content, tab)
+		w.Resize(fyne.NewSize(size.Width, size.Height-1))
+		w.Resize(size)
+		scroll := scrollIn(screen)
+		if scroll == nil {
+			t.Fatalf("the %s screen has no scroll, so this guard cannot say whether it fits", tab)
+		}
+		form, room := scroll.Content.MinSize().Height, scroll.Size().Height
+		if form > room && size.Height < window.LargestOpening.Height {
+			t.Errorf("at the first opening of %v the %s screen's form needs %.0f px and gets %.0f, so it"+
+				" scrolls from the first frame although the window had room to grow", size, tab, form, room)
+		}
+		if slack := room - form; tightest < 0 || slack < tightest {
+			tightest = slack
+		}
+		checked++
+	}
+	if checked != 3 {
+		t.Fatalf("checked %d screens, and there are three work screens", checked)
+	}
+	// And no taller than that. The tallest screen fits with nothing to spare,
+	// because the height is worked out from it - a window that opened taller
+	// would be the band of nothing under the form that O202 is about, back
+	// under another number.
+	if tightest > 1 && size.Height < window.LargestOpening.Height {
+		t.Errorf("the first opening is %v and the tallest work screen still has %.0f px to spare under"+
+			" its form, so the window opens taller than the screens want", size, tightest)
+	}
+	t.Logf("first opening %v: every work screen shows whole, the tallest with %.2f px to spare", size, tightest)
 }
 
 // A size with a nought in it is refused at BOTH ends by one predicate.
