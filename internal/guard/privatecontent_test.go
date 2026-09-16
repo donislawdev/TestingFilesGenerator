@@ -207,7 +207,9 @@ func TestNoTrackedFileCarriesPrivateContent(t *testing.T) {
 			continue
 		}
 		checked++
-		for _, fault := range privateFaults(quotedLicencesRemoved(f, string(body))) {
+		// What a person could have typed into the file - for a picture, its
+		// text chunks rather than its pixels. See readableText.
+		for _, fault := range privateFaults(quotedLicencesRemoved(f, readableText(body))) {
 			faults = append(faults, f+": "+fault)
 		}
 	}
