@@ -3,8 +3,10 @@
 package gui
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"path/filepath"
 
@@ -235,6 +237,16 @@ func run(showCatalogue bool, errOut io.Writer) int {
 		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
 	}
 
+	// Where the toolkit says what went wrong when it cannot open its window.
+	// It writes through the standard logger, whose stream a binary built for
+	// the windows subsystem does not have, so the stream is kept as it was
+	// and a copy is held for the sentence at the end of this function. The
+	// copy comes first: a writer that stops at the first failure would stop
+	// at a standard error that is not there. Our own code never logs, so on a
+	// machine where the window opens the copy stays empty (O218).
+	var said bytes.Buffer
+	log.SetOutput(io.MultiWriter(&said, log.Writer()))
+
 	a := app.NewWithID(appID)
 	// The picture the desktop shows for this program, in the taskbar, in the
 	// switcher and on the window itself - the toolkit says an application icon
@@ -288,6 +300,15 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	if !showCatalogue {
 		w.SetOnClosed(func() { host.rememberThisSize() })
 	}
-	w.ShowAndRun()
-	return 0
+	// Shown, then run - and refused out loud when the toolkit gave the
+	// window no window. Not ShowAndRun, which is the same two calls without
+	// the question between them, and which on a machine without OpenGL runs
+	// a loop nothing will ever end (O218). The sentence goes to standard error
+	// for whatever started this, and to a system dialog for the person,
+	// because the window that would have carried it is what failed.
+	return OpenOrRefuse(w, a.Run, func() {
+		sentence := text.WindowRefused(CauseFrom(said.String()))
+		fmt.Fprintln(errOut, sentence)
+		sayInADialog(text.WindowRefusedTitle(), sentence)
+	})
 }

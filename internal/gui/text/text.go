@@ -248,6 +248,34 @@ func CatalogueNotLoaded(err error) string {
 		"so the window is in English: " + err.Error()
 }
 
+// WindowRefusedTitle is over the one dialog this program can show without a
+// window of its own: the toolkit could not open one.
+func WindowRefusedTitle() string {
+	return say("WindowRefusedTitle", "Testing Files Generator could not open its window")
+}
+
+// WindowRefused is what the window binary says when the toolkit could not
+// create a window at all - measured on a virtual machine without 3D
+// acceleration, where the graphics driver offers no OpenGL (O218).
+//
+// Four parts, D6: what did not happen, why, what works instead, and what to
+// do about it. The cause is the toolkit's own sentence about the driver,
+// quoted rather than said, so it stays in English whatever the language -
+// and it is left out rather than quoted empty when the toolkit gave none.
+//
+// Through the catalogue although it may reach a terminal: it is the same
+// sentence in the dialog and on standard error, and the dialog is read by
+// the person the window was for.
+func WindowRefused(cause string) string {
+	// One literal each, however long: the catalogue is written from the
+	// calls a script can see, and a sentence built from pieces is invisible
+	// to it.
+	if cause == "" {
+		return say("WindowRefusedNoCause", "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1.")
+	}
+	return sayf("WindowRefused", "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. The toolkit said: {{.Cause}}. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1.", map[string]any{"Cause": cause})
+}
+
 // NotAWholeNumber refuses a box that should hold digits and does not.
 //
 // The field is named by its label rather than by its key, because this is read

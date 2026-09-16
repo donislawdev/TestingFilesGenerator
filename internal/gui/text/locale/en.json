@@ -412,6 +412,18 @@
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",
     "other": "will go to {{.Directory}}"
   },
+  "WindowRefused": {
+    "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in. Carries one value, {{.Cause}}, which has to stay spelled exactly that way.",
+    "other": "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. The toolkit said: {{.Cause}}. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1."
+  },
+  "WindowRefusedNoCause": {
+    "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in.",
+    "other": "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1."
+  },
+  "WindowRefusedTitle": {
+    "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in.",
+    "other": "Testing Files Generator could not open its window"
+  },
   "WorkingOutTheCost": {
     "description": "Shown in the window.",
     "other": "Working out what this would cost..."

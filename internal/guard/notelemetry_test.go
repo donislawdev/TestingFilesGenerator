@@ -165,6 +165,7 @@ var allowedURLs = map[string]string{
 var allowedLibraries = map[string]string{
 	"kernel32.dll": "free disk space, and GetProcAddress for the call below",
 	"uxtheme.dll":  "the dark window menu, called by ordinal - see darkmenus_windows.go",
+	"user32.dll":   "the system dialog shown when the toolkit could not open a window - see dialog_windows.go",
 }
 
 // socketCalls are the low level calls that open or use a socket. syscall itself
