@@ -188,13 +188,18 @@ func (b *Button) FocusLost() {
 	b.Refresh()
 }
 
-// TypedRune presses on the space bar, which is what the toolkit's own button
-// answers to and so what a person coming from any other control tries first.
-func (b *Button) TypedRune(r rune) {
-	if r == ' ' {
-		b.Tapped(nil)
-	}
-}
+// TypedRune answers nothing, and that is the whole of it. One press of the
+// space bar reaches a focused control TWICE from the desktop driver: as the
+// key (internal/driver/glfw/window.go, processKeyPressed, which ends in
+// TypedKey) and as the character (processCharInput, which ends in
+// TypedRune) - measured in the pinned module on 2026-09-16, after an outside
+// review said so. The toolkit's own button leaves TypedRune empty for exactly
+// this reason. Until that day this pressed on the space character as well,
+// on the sentence that the toolkit's button "answers to space", which is true
+// of its TypedKey and not of this hook - so one press of space on Add batch
+// added two batches in the real window, and no guard saw it, because the test
+// driver delivers a key and a character as two separate calls.
+func (b *Button) TypedRune(rune) {}
 
 // TypedKey presses on Enter as well as the space bar. The toolkit answers space
 // alone, so Enter on a focused button did nothing - and silence in place of an

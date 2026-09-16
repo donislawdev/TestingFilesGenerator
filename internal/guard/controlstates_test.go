@@ -89,6 +89,28 @@ func TestAButtonIsPressedByEnterAsWellAsSpace(t *testing.T) {
 	}
 }
 
+// One press of the space bar presses a button ONCE.
+//
+// The desktop driver delivers a press of space to a focused control twice:
+// as the key, ending in TypedKey, and as the character, ending in TypedRune
+// (internal/driver/glfw/window.go, processKeyPressed and processCharInput,
+// read in the pinned module on 2026-09-16 after an outside review said so).
+// The test driver delivers them as two separate calls, which is why a button
+// answering both was green here and pressed twice in the window - one press
+// of space on Add batch added two batches. The toolkit's own button leaves
+// TypedRune empty for this reason. Delivered here the way the driver does it,
+// both calls for one press.
+func TestOnePressOfSpacePressesAButtonOnce(t *testing.T) {
+	presses := 0
+	b := parts.NewButton(parts.Secondary, "Add batch", func() { presses++ })
+	b.TypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	b.TypedRune(' ')
+	if presses != 1 {
+		t.Errorf("one press of the space bar, delivered as the key and the character the way the "+
+			"desktop driver delivers it, pressed the button %d times", presses)
+	}
+}
+
 // A segmented switch ignores a value it does not hold.
 //
 // A switch of fixed choices is not a box: handed a word it does not offer it
