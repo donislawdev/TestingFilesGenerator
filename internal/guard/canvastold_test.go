@@ -33,10 +33,12 @@ import (
 // code, so that is what these two ask, mechanically and over both packages
 // the window is built from.
 //
-// What neither can see: a container held in a local variable rather than in a
-// field, and a renderer that names the right pieces but changes a different
-// one. The copy of the window with the logging driver is the instrument for
-// those, and it lives in tools, not here.
+// What neither can see: a piece or a box held in a local variable rather than
+// in a field, a write hidden in a function that is not a method of the
+// renderer, one element of a slice written and another named, and a box
+// changed on a path that returns before the refresh at the end of the
+// function. The copy of the window with the logging driver is the instrument
+// for those, and it lives in tools, not here.
 
 // canvasSource is one parsed production file of the window's code.
 type canvasSource struct {
@@ -108,9 +110,16 @@ func collectDeclaredFields(spec ast.Spec, index map[string]map[string]string) {
 	index[ts.Name.Name] = fields
 }
 
-// methodsOf indexes the method names each receiver type answers.
-func methodsOf(sources []canvasSource) map[string]map[string]bool {
-	index := map[string]map[string]bool{}
+// methodBody is one method with the file it was read from, so a reader that
+// follows a call into it can still say where a line is.
+type methodBody struct {
+	src canvasSource
+	fn  *ast.FuncDecl
+}
+
+// methodsOf indexes the methods each receiver type answers, by name.
+func methodsOf(sources []canvasSource) map[string]map[string]methodBody {
+	index := map[string]map[string]methodBody{}
 	for _, src := range sources {
 		for _, decl := range src.file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
@@ -119,13 +128,23 @@ func methodsOf(sources []canvasSource) map[string]map[string]bool {
 			}
 			if _, typeName := receiverOf(fn); typeName != "" {
 				if index[typeName] == nil {
-					index[typeName] = map[string]bool{}
+					index[typeName] = map[string]methodBody{}
 				}
-				index[typeName][fn.Name.Name] = true
+				index[typeName][fn.Name.Name] = methodBody{src: src, fn: fn}
 			}
 		}
 	}
 	return index
+}
+
+// answers says whether a type has every one of these methods.
+func answers(has map[string]methodBody, names ...string) bool {
+	for _, name := range names {
+		if _, ok := has[name]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 // receiverOf is the receiver's name and type of a method, both empty for a
@@ -159,13 +178,39 @@ func fieldChain(expr ast.Expr, recv string) []string {
 	return chain
 }
 
+// pieceChain is fieldChain looking through an index: r.fills[i] and r.fills
+// name the same field, because the slice is the piece a renderer holds and the
+// index is which one it is drawing this time.
+func pieceChain(expr ast.Expr, recv string) []string {
+	var chain []string
+	for {
+		switch e := expr.(type) {
+		case *ast.SelectorExpr:
+			chain = append([]string{e.Sel.Name}, chain...)
+			expr = e.X
+			continue
+		case *ast.IndexExpr:
+			expr = e.X
+			continue
+		case *ast.ParenExpr:
+			expr = e.X
+			continue
+		}
+		break
+	}
+	if id, ok := expr.(*ast.Ident); !ok || id.Name != recv || recv == "" || len(chain) == 0 {
+		return nil
+	}
+	return chain
+}
+
 // resolveChain follows field names down from a struct type and returns the
 // type of the last one as written, or "" when the chain leaves what the
 // sources declare.
 func resolveChain(fields map[string]map[string]string, typeName string, chain []string) string {
 	written := ""
 	for _, name := range chain {
-		declared, ok := fields[strings.TrimPrefix(typeName, "*")]
+		declared, ok := fields[bareType(typeName)]
 		if !ok {
 			return ""
 		}
@@ -177,6 +222,11 @@ func resolveChain(fields map[string]map[string]string, typeName string, chain []
 	}
 	return written
 }
+
+// bareType is a written type without the pointer and slice marks in front of
+// it, so a field holding one piece and a field holding a row of them resolve
+// to the same declared type.
+func bareType(written string) string { return strings.TrimLeft(written, "[]*") }
 
 // calledOn is the receiver expression and method name of a method call, or
 // nil for anything else.
@@ -200,6 +250,17 @@ func calledOn(n ast.Node) (ast.Expr, string, *ast.CallExpr) {
 // through redraw, and none of those pieces is a widget of this package - a
 // widget of this package asked to refresh would ask the canvas about itself,
 // which is the same wrong question one step removed.
+//
+// And EVERY piece the face changes is named, not merely one. Until 2026-09-16
+// this counted the arguments of redraw and stopped, so a renderer setting the
+// colour of four pieces and naming three passed - an outside review of the
+// pull request pointed at the count. A piece is changed when a field of it is
+// set, or when it is shown: Show on a rectangle, an image, a text or a
+// container sets Hidden and stops (canvas/base.go, fyne v2.8.1, read in the
+// pinned module), where Hide, Move and Resize repaint by themselves. The
+// reading follows the renderer into its own methods, because two of the seven
+// set their colours in a helper and a reader stopping at Refresh would have
+// read nothing about them and stayed green for it.
 func TestARendererRedrawsThePiecesItDrawsAndNeverTheWidget(t *testing.T) {
 	sources := windowSources(t)
 	fields := declaredFields(sources)
@@ -208,10 +269,10 @@ func TestARendererRedrawsThePiecesItDrawsAndNeverTheWidget(t *testing.T) {
 	widgets := map[string]bool{}
 	renderers := map[string]bool{}
 	for typeName, has := range methods {
-		if has["CreateRenderer"] {
+		if answers(has, "CreateRenderer") {
 			widgets[typeName] = true
 		}
-		if has["Refresh"] && has["Layout"] && has["MinSize"] && has["Objects"] && has["Destroy"] {
+		if answers(has, "Refresh", "Layout", "MinSize", "Objects", "Destroy") {
 			renderers[typeName] = true
 		}
 	}
@@ -220,7 +281,7 @@ func TestARendererRedrawsThePiecesItDrawsAndNeverTheWidget(t *testing.T) {
 	}
 
 	var offences []string
-	checked := 0
+	checked, pieces := 0, 0
 	for _, src := range sources {
 		for _, decl := range src.file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
@@ -233,13 +294,16 @@ func TestARendererRedrawsThePiecesItDrawsAndNeverTheWidget(t *testing.T) {
 				continue
 			}
 			checked++
-			offences = append(offences, rendererRefreshOffences(src, fn, recv, typeName, fields, widgets)...)
+			read := newRendererReading(recv, typeName, fields, widgets, methods)
+			read.walk(src, fn)
+			pieces += len(read.changed)
+			offences = append(offences, read.verdict(src, fn)...)
 		}
 	}
-	if checked == 0 {
-		t.Fatal("no renderer Refresh method was read, so this guard would pass against anything")
+	if checked == 0 || pieces == 0 {
+		t.Fatalf("%d renderer Refresh methods read and %d changed pieces found, so this guard would pass against anything", checked, pieces)
 	}
-	t.Logf("%d renderer Refresh methods read in parts, %d widget types known", checked, len(widgets))
+	t.Logf("%d renderer Refresh methods read in parts, %d pieces changed by them, %d widget types known", checked, pieces, len(widgets))
 	sort.Strings(offences)
 	for _, o := range offences {
 		t.Error(o)
@@ -264,40 +328,123 @@ func canvasRefreshCalls(src canvasSource, fn *ast.FuncDecl) []string {
 	return out
 }
 
-// rendererRefreshOffences reads one renderer's Refresh: it must call redraw
-// with at least one piece, and nothing it refreshes may be a widget of the
-// package.
-func rendererRefreshOffences(src canvasSource, fn *ast.FuncDecl, recv, typeName string,
-	fields map[string]map[string]string, widgets map[string]bool) []string {
-	var out []string
-	redrawn := 0
-	where := func(n ast.Node) string { return fmt.Sprintf("%s:%d", src.rel, src.fset.Position(n.Pos()).Line) }
-	isWidget := func(expr ast.Expr) bool {
-		written := resolveChain(fields, typeName, fieldChain(expr, recv))
-		return widgets[strings.TrimPrefix(written, "*")]
+// rendererReading is what one renderer's Refresh does to the pieces it holds,
+// read through every method of the renderer that Refresh calls.
+type rendererReading struct {
+	recv, typeName string
+	fields         map[string]map[string]string
+	widgets        map[string]bool
+	methods        map[string]map[string]methodBody
+
+	// changed is each piece a field was set on or that was shown, with where
+	// that first happened, and named is each piece handed to redraw.
+	changed  map[string]string
+	named    map[string]bool
+	offences []string
+	visited  map[string]bool
+}
+
+func newRendererReading(recv, typeName string, fields map[string]map[string]string,
+	widgets map[string]bool, methods map[string]map[string]methodBody) *rendererReading {
+	return &rendererReading{recv: recv, typeName: typeName, fields: fields, widgets: widgets, methods: methods,
+		changed: map[string]string{}, named: map[string]bool{}, visited: map[string]bool{}}
+}
+
+// piece is the field of the renderer an expression names, through any index,
+// and whether that field holds a widget of this package - which is not a piece
+// but the thing wearing the face.
+func (rd *rendererReading) piece(expr ast.Expr) (key string, widget bool) {
+	chain := pieceChain(expr, rd.recv)
+	if chain == nil {
+		return "", false
 	}
+	written := resolveChain(rd.fields, rd.typeName, chain)
+	return strings.Join(chain, "."), rd.widgets[bareType(written)]
+}
+
+// walk reads one method: every field set on a piece, every piece shown, every
+// piece named through redraw, and every method of this renderer called along
+// the way, once each.
+func (rd *rendererReading) walk(src canvasSource, fn *ast.FuncDecl) {
+	if rd.visited[fn.Name.Name] {
+		return
+	}
+	rd.visited[fn.Name.Name] = true
+	where := func(n ast.Node) string { return fmt.Sprintf("%s:%d", src.rel, src.fset.Position(n.Pos()).Line) }
 	ast.Inspect(fn.Body, func(n ast.Node) bool {
-		call, ok := n.(*ast.CallExpr)
-		if !ok {
-			return true
-		}
-		if id, ok := call.Fun.(*ast.Ident); ok && id.Name == "redraw" {
-			redrawn += len(call.Args)
-			for _, arg := range call.Args {
-				if isWidget(arg) {
-					out = append(out, where(arg)+" hands redraw a widget of this package, which asks the canvas about itself one step removed")
+		switch node := n.(type) {
+		case *ast.AssignStmt:
+			for _, lhs := range node.Lhs {
+				if sel, ok := lhs.(*ast.SelectorExpr); ok {
+					rd.change(sel.X, where(lhs))
 				}
 			}
-			return true
-		}
-		if on, method, _ := calledOn(n); method == "Refresh" && isWidget(on) {
-			out = append(out, where(n)+" refreshes a widget of this package from inside a renderer, which is the wrong value under embedding")
+		case *ast.CallExpr:
+			rd.call(node, where(node))
 		}
 		return true
 	})
-	if redrawn == 0 {
+}
+
+// change records a piece whose face is now different from what the canvas
+// last painted.
+func (rd *rendererReading) change(expr ast.Expr, at string) {
+	key, widget := rd.piece(expr)
+	if key == "" || widget {
+		return
+	}
+	if _, seen := rd.changed[key]; !seen {
+		rd.changed[key] = at
+	}
+}
+
+// call reads one call: redraw and what it was handed, a method of the renderer
+// to follow, Show on a piece, or Refresh on a widget of this package.
+func (rd *rendererReading) call(call *ast.CallExpr, at string) {
+	if id, ok := call.Fun.(*ast.Ident); ok && id.Name == "redraw" {
+		for _, arg := range call.Args {
+			key, widget := rd.piece(arg)
+			if widget {
+				rd.offences = append(rd.offences, at+" hands redraw a widget of this package, which asks the canvas about itself one step removed")
+			}
+			if key != "" {
+				rd.named[key] = true
+			}
+		}
+		return
+	}
+	on, method, _ := calledOn(call)
+	if on == nil {
+		return
+	}
+	if id, ok := on.(*ast.Ident); ok && id.Name == rd.recv {
+		if helper, ok := rd.methods[rd.typeName][method]; ok {
+			rd.walk(helper.src, helper.fn)
+		}
+		return
+	}
+	key, widget := rd.piece(on)
+	switch {
+	case method == "Refresh" && widget:
+		rd.offences = append(rd.offences, at+" refreshes a widget of this package from inside a renderer, which is the wrong value under embedding")
+	case method == "Show" && key != "":
+		rd.change(on, at)
+	}
+}
+
+// verdict is every offence read, plus one for each piece changed and never
+// named, and one for a Refresh that names nothing at all.
+func (rd *rendererReading) verdict(src canvasSource, fn *ast.FuncDecl) []string {
+	out := rd.offences
+	for key, at := range rd.changed {
+		if !rd.named[key] {
+			out = append(out, fmt.Sprintf("%s %s.Refresh changes %s.%s and never names it through redraw, so that piece keeps the face the canvas last painted",
+				at, rd.typeName, rd.recv, key))
+		}
+	}
+	if len(rd.named) == 0 {
 		out = append(out, fmt.Sprintf("%s:%d %s.Refresh names no piece through redraw, so nothing tells the canvas the face changed",
-			src.rel, src.fset.Position(fn.Pos()).Line, typeName))
+			src.rel, src.fset.Position(fn.Pos()).Line, rd.typeName))
 	}
 	return out
 }
@@ -328,12 +475,17 @@ func TestABoxThatGainsOrLosesAPieceSaysSo(t *testing.T) {
 			if recv == "" {
 				continue
 			}
-			changed, refreshed := boxesTouched(src, fn, recv, typeName, fields)
+			changed, refreshed := boxesTouched(fn, recv, typeName, fields)
 			sites += len(changed)
-			for box, line := range changed {
-				if !refreshed[box] {
+			for box, last := range changed {
+				line := src.fset.Position(last).Line
+				switch {
+				case !refreshed[box].IsValid():
 					offences = append(offences, fmt.Sprintf("%s:%d %s changes %s and never refreshes it - the piece it added waits for a repaint from anywhere, and the piece it removed stays drawn until one",
 						src.rel, line, fn.Name.Name, box))
+				case refreshed[box] < last:
+					offences = append(offences, fmt.Sprintf("%s:%d %s changes %s after the last word to the canvas about it (line %d) - a refresh before the change repaints the old contents",
+						src.rel, line, fn.Name.Name, box, src.fset.Position(refreshed[box]).Line))
 				}
 			}
 		}
@@ -349,11 +501,19 @@ func TestABoxThatGainsOrLosesAPieceSaysSo(t *testing.T) {
 }
 
 // boxesTouched reads one method and returns the container fields it adds to
-// or removes from, each with the line of the first change, and the ones it
-// refreshes.
-func boxesTouched(src canvasSource, fn *ast.FuncDecl, recv, typeName string, fields map[string]map[string]string) (changed map[string]int, refreshed map[string]bool) {
-	changed = map[string]int{}
-	refreshed = map[string]bool{}
+// or removes from, each with where the LAST change is, and the ones it
+// refreshes, each with where the LAST refresh is.
+//
+// The last of each rather than any: a refresh standing before the change
+// repaints what the box held before it, and the change after it is as silent
+// as no refresh at all. Until 2026-09-16 any refresh anywhere in the method
+// counted, which an outside review of the pull request pointed at. What this
+// still reads as one method is the source order, so a change on a path that
+// returns before the refresh at the foot of the method passes - two such
+// paths exist, both on a value the registry cannot hand the menu.
+func boxesTouched(fn *ast.FuncDecl, recv, typeName string, fields map[string]map[string]string) (changed, refreshed map[string]token.Pos) {
+	changed = map[string]token.Pos{}
+	refreshed = map[string]token.Pos{}
 	ast.Inspect(fn.Body, func(n ast.Node) bool {
 		on, method, call := calledOn(n)
 		if call == nil {
@@ -366,11 +526,9 @@ func boxesTouched(src canvasSource, fn *ast.FuncDecl, recv, typeName string, fie
 		box := recv + "." + strings.Join(chain, ".")
 		switch method {
 		case "Add", "Remove", "RemoveAll":
-			if _, seen := changed[box]; !seen {
-				changed[box] = src.fset.Position(call.Pos()).Line
-			}
+			changed[box] = max(changed[box], call.Pos())
 		case "Refresh":
-			refreshed[box] = true
+			refreshed[box] = max(refreshed[box], call.Pos())
 		}
 		return true
 	})
