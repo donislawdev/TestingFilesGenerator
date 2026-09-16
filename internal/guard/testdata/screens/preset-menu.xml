@@ -405,8 +405,8 @@
 											<widget size="151x28" type="*widget.listItem">
 												<widget size="151x28" type="*parts.ListRow">
 													<rectangle radius="6" size="151x28"/>
-													<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-													<text pos="36,5" size="107x16">size-boundaries</text>
+													<image pos="123,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+													<text pos="8,5" size="107x16">size-boundaries</text>
 												</widget>
 											</widget>
 										</container>

@@ -213,6 +213,15 @@ func segments() Entry {
 			s.MouseIn(&desktop.MouseEvent{PointEvent: fyne.PointEvent{Position: fyne.NewPos(s.MinSize().Width-parts.GapInline, 0)}})
 			return s
 		}},
+		{"frozen, middle chosen", func() fyne.CanvasObject {
+			// Frozen for a run, and still saying which way was chosen. The
+			// state the catalogue lacked until 2026-09-16, when the frozen
+			// face lost the choice and nobody had a picture of it (O223).
+			s := parts.NewSegments(ways, func(string) {})
+			s.SetSelected("Range")
+			s.Disable()
+			return s
+		}},
 		{"long words", func() fyne.CanvasObject {
 			return parts.NewSegments([]string{"Exactly this size", "Somewhere in a range", "On a boundary"}, func(string) {})
 		}},

@@ -183,10 +183,9 @@
 															<container size="788x28">
 																<rectangle pos="0,13" size="167x1"/>
 																<widget pos="183,0" size="604x28" type="*parts.Segments">
-																	<rectangle fillColor="selection" size="69x28"/>
-																	<rectangle pos="70,0" size="63x28"/>
-																	<rectangle pos="135,0" size="103x28"/>
-																	<rectangle fillColor="inputBorder" pos="69,0" size="1x28"/>
+																	<rectangle fillColor="selection" pos="1,1" radius="5" size="67x26"/>
+																	<rectangle pos="71,1" radius="5" size="61x26"/>
+																	<rectangle pos="136,1" radius="5" size="101x26"/>
 																	<rectangle fillColor="inputBorder" pos="134,0" size="1x28"/>
 																	<rectangle radius="6" size="238x28" strokeColor="inputBorder" strokeWidth="1"/>
 																	<text pos="6,5" size="57x16">One size</text>

@@ -36,6 +36,12 @@ func openList() Entry {
 		{"a few values, one chosen", func() fyne.CanvasObject {
 			return asWideAsItsBox(few, parts.NewOpenList(few, "jpg", func(string, bool) {}, func(bool) {}))
 		}},
+		{"nothing chosen yet", func() fyne.CanvasObject {
+			// The list under a box that shows "not stated": no tick anywhere,
+			// and the words start where the box's word does. The state the
+			// owner reported as words floating in a rectangle (O220).
+			return asWideAsItsBox(few, parts.NewOpenList(few, "", func(string, bool) {}, func(bool) {}))
+		}},
 		{"more values than a short window shows at once", func() fyne.CanvasObject {
 			l := parts.NewOpenList(many, "json", func(string, bool) {}, func(bool) {})
 			l.LimitTo(parts.ListCeiling(shortWindow))

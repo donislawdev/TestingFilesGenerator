@@ -241,6 +241,11 @@ type segmentsRenderer struct {
 func (r *segmentsRenderer) build() {
 	for range r.seg.Options {
 		fill := canvas.NewRectangle(color.Transparent)
+		// Rounded to sit inside the border's own curve. Until 2026-09-16 the
+		// fill was a sharp rectangle under a rounded border, so the corner of
+		// the chosen segment stood out past the border's arc - one of the
+		// three geometries the owner saw at once (O219).
+		fill.CornerRadius = RadiusField - edgeWidth
 		r.fills = append(r.fills, fill)
 		r.words = append(r.words, canvas.NewText("", color.Transparent))
 	}
@@ -249,13 +254,16 @@ func (r *segmentsRenderer) build() {
 	}
 }
 
+// Layout puts each fill a border's width inside the switch, so that it
+// never reaches under the stroke, and each rule on the seam between two
+// segments. The words are centred in their segment, not in their fill.
 func (r *segmentsRenderer) Layout(fyne.Size) {
 	h := r.MinSize().Height
 	x := float32(0)
 	for i, word := range r.seg.Options {
 		w := r.seg.segmentWidth(word)
-		r.fills[i].Resize(fyne.NewSize(w, h))
-		r.fills[i].Move(fyne.NewPos(x, 0))
+		r.fills[i].Resize(fyne.NewSize(w-edgeWidth*2, h-edgeWidth*2))
+		r.fills[i].Move(fyne.NewPos(x+edgeWidth, edgeWidth))
 		ink := r.words[i].MinSize()
 		r.words[i].Resize(ink)
 		r.words[i].Move(fyne.NewPos(x+(w-ink.Width)/2, (h-ink.Height)/2))
@@ -285,27 +293,25 @@ func (r *segmentsRenderer) MinSize() fyne.Size {
 }
 
 func (r *segmentsRenderer) Refresh() {
-	dark := theme.VariantDark
 	off := r.seg.Disabled()
 	chosen := r.seg.indexOf(r.seg.Selected)
 	for i, word := range r.seg.Options {
 		r.words[i].Text = word
 		r.words[i].TextSize = TextBody
-		switch {
-		case off:
-			r.fills[i].FillColor = color.Transparent
-			r.words[i].Color = PaletteColour(theme.ColorNameDisabled, dark)
-		case i == chosen:
-			r.fills[i].FillColor = PaletteColour(theme.ColorNameSelection, dark)
-			r.words[i].Color = PaletteColour(theme.ColorNameForeground, dark)
-		case i == r.seg.hovered:
-			r.fills[i].FillColor = PaletteColour(theme.ColorNameHover, dark)
-			r.words[i].Color = PaletteColour(theme.ColorNameForeground, dark)
-		default:
-			r.fills[i].FillColor = color.Transparent
-			r.words[i].Color = PaletteColour(theme.ColorNamePlaceHolder, dark)
-		}
+		r.fills[i].FillColor, r.words[i].Color = segmentFace(i == chosen, i == r.seg.hovered, off)
 		redraw(r.fills[i], r.words[i])
+	}
+	for i := range r.rules {
+		// A rule stands on the seam between two segments, and only where
+		// neither of them is the chosen one: there the chosen fill is the
+		// boundary, and a line beside it was the second of the three
+		// geometries (O219).
+		if chosen != i && chosen != i+1 {
+			r.rules[i].Show()
+		} else {
+			r.rules[i].Hide()
+		}
+		redraw(r.rules[i])
 	}
 	if r.seg.marked {
 		r.ring.StrokeWidth = ringWidth
@@ -314,6 +320,34 @@ func (r *segmentsRenderer) Refresh() {
 	}
 	redraw(r.border, r.ring)
 	r.Layout(r.seg.Size())
+}
+
+// segmentFace is the fill and the ink of one segment in one state.
+//
+// A frozen switch keeps the chosen fill, in disabled ink. Until 2026-09-16 it
+// lost it - every fill went transparent when the switch was off - so a form
+// frozen for a run would not have said which way of stating a size it was
+// running with (O223). It never showed, because the switch was not being
+// frozen at all, which is the other half of O223.
+func segmentFace(chosen, hovered, off bool) (fill, ink color.Color) {
+	dark := theme.VariantDark
+	fill = color.Transparent
+	switch {
+	case off:
+		ink = PaletteColour(theme.ColorNameDisabled, dark)
+		if chosen {
+			fill = PaletteColour(theme.ColorNameSelection, dark)
+		}
+	case chosen:
+		fill = PaletteColour(theme.ColorNameSelection, dark)
+		ink = PaletteColour(theme.ColorNameForeground, dark)
+	case hovered:
+		fill = PaletteColour(theme.ColorNameHover, dark)
+		ink = PaletteColour(theme.ColorNameForeground, dark)
+	default:
+		ink = PaletteColour(theme.ColorNamePlaceHolder, dark)
+	}
+	return fill, ink
 }
 
 // Objects draws the fills first, then the rules and border over their edges,
