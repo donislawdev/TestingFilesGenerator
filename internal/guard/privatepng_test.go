@@ -167,7 +167,7 @@ func inflated(data []byte, room int) (string, error) {
 		b, err = io.ReadAll(io.LimitReader(r, int64(room)+1))
 	}
 	if err != nil {
-		return "", fmt.Errorf("has compressed text that will not inflate: %v", err)
+		return "", fmt.Errorf("has compressed text that will not inflate: %w", err)
 	}
 	return string(b), nil
 }
