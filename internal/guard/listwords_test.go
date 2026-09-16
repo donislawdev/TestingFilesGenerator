@@ -25,10 +25,19 @@ import (
 // picture and nothing chosen showed the empty column for what it was (O220).
 //
 // Asked of two real lists on the screen: one without pictures, where the row's
-// words must start within a step of the box's word, and one with them, where
-// the picture stands in front and the tick behind. Positions are read off the
-// canvas, because a row laid out at one width in a probe says nothing about
-// the width the form gives it.
+// words start at the gutter with nothing in front of them, and one with them,
+// where the picture stands at the gutter and the tick behind the words.
+// Positions are read off rows the list is actually drawing, because a row laid
+// out at one width in a probe says nothing about the width the form gives it.
+//
+// The rule is held against OUR geometry - the gutter, the tick, the picture -
+// and the distance to the box's own word is only logged. The first version
+// asserted that distance within a step of the scale, and CI turned it red:
+// the toolkit draws the box's word 2 px from where the row's word starts on
+// the owner's machine and 6 px on the runners (2026-09-16, all three systems),
+// because the inset of a Select's RichText is the toolkit's and not a token
+// of ours. What the owner saw was 36 px, and that is what the tick column in
+// front of the words was.
 func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 	cv, content := screenOnACanvas(t)
 	drv := fyne.CurrentApp().Driver()
@@ -55,10 +64,17 @@ func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 		}
 		for _, row := range rows {
 			words, tick, picture := piecesOfARow(t, row)
-			rowWord := drv.AbsolutePositionForObject(words).X
-			if !tc.pictured && (rowWord < boxWord-parts.GapInline || rowWord > boxWord+parts.GapInline) {
-				t.Errorf("%s: the words of row %q start at %.1f and the word in the box at %.1f - the list reads as words floating in a rectangle",
-					tc.field, row.Label(), rowWord, boxWord)
+			first := words.Position().X
+			if tc.pictured {
+				first = picture.Position().X
+			}
+			if first != parts.RowGutter() {
+				t.Errorf("%s: row %q starts its first piece at %.1f rather than at the gutter (%.1f) - a column stands in front of the words and the list reads as words floating in a rectangle",
+					tc.field, row.Label(), first, parts.RowGutter())
+			}
+			if !tc.pictured {
+				t.Logf("%s: row %q words at %.1f, the box's word at %.1f (the toolkit's inset, logged and not held)",
+					tc.field, row.Label(), drv.AbsolutePositionForObject(words).X, boxWord)
 			}
 			if tick.Position().X < words.Position().X+words.Size().Width {
 				t.Errorf("%s: the tick of row %q stands at %.1f, in front of words ending at %.1f - the column it keeps pushes every list's words off the box's word",
