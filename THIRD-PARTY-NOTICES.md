@@ -238,6 +238,16 @@ file is the unmodified Apache template with the copyright placeholder left as
 the table says so rather than inventing one. The module is published by the
 rymdport project.
 
+`github.com/go-gl/gl` is carried as a copy, under `third_party/go-gl-gl` in
+the repository, since 2026-09-17. The copy is the version the table names,
+reduced to the two packages the window imports, with one change: on Windows it
+looks `wglGetProcAddress` up at run time instead of importing it, so the
+window binary carries no load time import of `opengl32.dll` and can fall back
+to a software renderer on a machine whose driver offers no OpenGL. The change
+and the reason for it are written in `PATCH.md` beside the copy, and a guard
+holds the copy to the published version plus exactly that change. The licence
+is the module's own MIT, carried unchanged.
+
 | module | version | licence | copyright |
 |---|---|---|---|
 | `fyne.io/fyne/v2` | v2.8.1 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
@@ -246,7 +256,6 @@ rymdport project.
 | `github.com/FyshOS/fancyfs` | v0.0.1 | BSD-3-Clause | (C) 2025 FyshOS developers (see AUTHORS) |
 | `github.com/anthonynsimon/bild` | v0.14.0 | MIT | (c) 2021 Anthony Najjar Simon |
 | `github.com/clipperhouse/uax29/v2` | v2.2.0 | MIT | (c) 2020 Matt Sherman |
-
 | `github.com/fsnotify/fsnotify` | v1.9.0 | BSD-3-Clause | Copyright 2012 The Go Authors |
 | `github.com/fyne-io/image` | v0.1.1 | BSD-3-Clause | (c) 2022, Fyne.io |
 | `github.com/fyne-io/oksvg` | v0.2.0 | BSD-3-Clause | (c) 2018, Steven R Wiley |

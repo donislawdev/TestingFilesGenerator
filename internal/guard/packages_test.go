@@ -73,6 +73,20 @@ func packages(t *testing.T) []pkg {
 			name == "testdata" || name == "tools") {
 			return filepath.SkipDir
 		}
+		// A directory with a go.mod of its own is another module, and the
+		// toolchain already draws that line: "./..." never enters it, so
+		// nothing here builds, vets or lints it as part of this one. The
+		// first such directory arrived on 2026-09-17 - a copy of the OpenGL
+		// binding under third_party, 2.3 MB of generated code with C in its
+		// comments, which this walk would otherwise have handed to every
+		// guard that judges the shape of OUR code. The rule is the
+		// toolchain's rather than a name on the list above, so that the next
+		// nested module is left alone the day it arrives.
+		if p != root {
+			if _, err := os.Stat(filepath.Join(p, "go.mod")); err == nil {
+				return filepath.SkipDir
+			}
+		}
 
 		bp, err := build.ImportDir(p, 0)
 		if err != nil {

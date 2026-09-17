@@ -61,6 +61,10 @@ var englishFiles = []string{
 	// listing it safe - the wording of somebody else's licence is not ours to
 	// tidy.
 	"THIRD-PARTY-NOTICES.md",
+	// The note beside the copy of the OpenGL binding, added 2026-09-17 with
+	// the copy. Repository text somebody reads to learn what was changed in
+	// a module they thought they knew - the same criterion again.
+	"third_party/go-gl-gl/PATCH.md",
 }
 
 // symbolsAllowed names the files that may hold a symbol such as an emoji.

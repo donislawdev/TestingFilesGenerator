@@ -111,3 +111,16 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// The OpenGL binding, with one change: the window binary must not import
+// opengl32.dll at load time. Measured on 2026-09-17 (docs/GUI-NO-OPENGL
+// section 7): the upstream module links -lopengl32 and calls wglGetProcAddress
+// directly, so the loader maps the system's opengl32.dll before a line of our
+// code runs, and a software renderer loaded by path afterwards can never be
+// the one the toolkit finds under that name. The copy under third_party looks
+// the one symbol up at run time instead, which is the whole of the change -
+// PATCH.md there says what was taken out and TestTheOpenGLBindingIsThePinnedModulePlusExactlyThePatch
+// holds the copy to the pinned version plus that. Only two of its packages are
+// carried, because only those two are imported. Dependabot does not bump a
+// replaced module, so this line pins it as much as the version above does.
+replace github.com/go-gl/gl => ./third_party/go-gl-gl

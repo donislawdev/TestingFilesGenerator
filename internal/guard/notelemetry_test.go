@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -682,6 +683,9 @@ func TestARegisteredAddressInItsOwnFileIsAllowed(t *testing.T) {
 	}
 }
 
+// sortedKeys names the keys of a set in one order, for a message that reads
+// the same twice. Until 2026-09-17 it did not sort at all, and every message
+// built with it listed the same set in a different order on every run.
 func sortedKeys(m map[string]bool) []string {
 	if len(m) == 0 {
 		return []string{"nothing"}
@@ -690,5 +694,6 @@ func sortedKeys(m map[string]bool) []string {
 	for k := range m {
 		out = append(out, k)
 	}
+	sort.Strings(out)
 	return out
 }

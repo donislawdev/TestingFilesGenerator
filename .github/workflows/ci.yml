@@ -139,6 +139,17 @@ jobs:
         # updated the list and not the prose. The list is checked by the job
         # below and the prose is checked by nobody.
         #
+        # Unchanged on 2026-09-17, when github.com/go-gl/gl gained a replace
+        # directive pointing at a copy under third_party, and that is worth
+        # saying because it looks like the kind of change this list exists to
+        # notice. go list still reports the module under its own path, so
+        # the list below is the same - what moved is where the bytes come
+        # from, and two guards hold that instead: one keeps the copy equal to
+        # the published version plus exactly the one patch its PATCH.md
+        # describes, and one reads the built window binary's import table.
+        # go.sum no longer carries the module's sum, because a replaced
+        # module has none there. The sum lives in that PATCH.md now.
+        #
         # The second question protects what ships to most people. The
         # command line binary links exactly four external modules and the
         # toolkit is not among them, so a build for a server carries no
