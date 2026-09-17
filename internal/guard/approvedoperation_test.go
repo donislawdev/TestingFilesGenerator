@@ -139,6 +139,11 @@ func TestARegisteredFileIsForgivenOneOperationAndNoMore(t *testing.T) {
 	}{
 		{"the approved spawn", header + approved, "internal/gui/again.go", "spawn", 0},
 		{"the approved spawn and a second one", header + approved + "\nfunc g() { _ = exec.Command(\"curl\") }\n", "internal/gui/again.go", "spawn", 1},
+		// Twice the approved one: the entry forgives one operation, and the
+		// second copy is not forgiven for being identical - the mutation
+		// runner found the shape missing here, because curl beside the
+		// approved spawn is refused by the match alone.
+		{"the approved spawn twice", header + approved + "\nfunc g() {\n\texe, _ := os.Executable()\n\t_ = exec.Command(exe)\n}\n", "internal/gui/again.go", "spawn", 1},
 		{"the approved call handed another program", header + "func f() { _ = exec.Command(os.Args[0]) }\n", "internal/gui/again.go", "spawn", 1},
 		{"another call handed the approved program", header + "func f() {\n\texe, _ := os.Executable()\n\t_, _ = os.StartProcess(exe, nil, nil)\n}\n", "internal/gui/again.go", "spawn", 1},
 		{"the approved program bound twice on the way", header + "func f() {\n\texe, _ := os.Executable()\n\texe = os.Args[0]\n\t_ = exec.Command(exe)\n}\n", "internal/gui/again.go", "spawn", 1},
