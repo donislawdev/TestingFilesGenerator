@@ -126,10 +126,18 @@ func TestTheFetchScriptChecksTheSumBeforeItUnpacks(t *testing.T) {
 // decision: a build from a branch has to be the build a guest without a
 // driver can be handed.
 func TestEveryWindowBuildFetchesTheRendererBeforeItPacks(t *testing.T) {
+	// The call at the start of a line, after indentation and nothing else.
+	// The first version of this guard asked whether the text was anywhere
+	// in the file, and the mutation runner answered with the call commented
+	// out: found, green, and no renderer in the archive.
+	call := regexp.MustCompile(`(?m)^[ \t]*\.github/scripts/fetch_software_renderer\.sh "\$\{work\}"[ \t]*$`)
 	for _, name := range []string{"release.yml", "dev-build.yml"} {
 		text := workflowText(t, name)
 		build := strings.Index(text, `-o "${work}/tfg-gui.exe" ./cmd/tfg-gui`)
-		fetch := strings.Index(text, `.github/scripts/fetch_software_renderer.sh "${work}"`)
+		fetch := -1
+		if at := call.FindStringIndex(text); at != nil {
+			fetch = at[0]
+		}
 		pack := strings.Index(text, "7z a -tzip")
 		if build < 0 || fetch < 0 || pack < 0 {
 			t.Errorf("%s: the window build (%d), the fetch (%d) or the packing (%d) is missing", name, build, fetch, pack)
