@@ -70,6 +70,9 @@ type fakeHost struct {
 
 	opened      string
 	openedCount int
+	// software is what SoftwareRendering answers: set by the one guard that
+	// asks the About screen to say the window is drawn in software.
+	software bool
 
 	canvas      fyne.Canvas
 	folder      string
@@ -217,6 +220,10 @@ func (h *fakeHost) OpenLink(address string) {
 	h.opened = address
 	h.openedCount++
 }
+
+// SoftwareRendering answers what a guard set. The real window answers from
+// whether the renderer beside it loaded, and only the About screen reads it.
+func (h *fakeHost) SoftwareRendering() bool { return h.software }
 
 // Canvas is where a shortcut gets registered and where the keyboard starts.
 //

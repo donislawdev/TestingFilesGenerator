@@ -255,6 +255,15 @@ jobs:
         # This is the step the whole job runs on Windows for. All three, not the
         # first one found: signing two of three and publishing the third
         # unsigned is a mistake that looks like nothing at all on the page.
+        #
+        # Every library beside a program as well, since 2026-09-17: the window's
+        # archive carries the software renderer in opengl\, two files the
+        # window loads by path when the driver offers no OpenGL 2.1, and a
+        # library beside a signed program is the one file a tamperer would
+        # swap. The two are named from the registry the notices are rendered
+        # from, so an archive that lost them - the signing repack used to drop
+        # a subdirectory's contents without a word - is refused here, on the
+        # bytes a person downloads.
         run: |
           $line = Select-String -Path ../internal/legal/codesign.go `
                     -Pattern 'CodeSigningSHA256 = "([0-9a-f]{64})"'
@@ -262,30 +271,50 @@ jobs:
           $pinned = $line.Matches[0].Groups[1].Value
           "pinned  : $pinned"
 
+          $beside = Select-String -Path ../internal/legal/companions.go `
+                      -Pattern '\{Path: "([^"]+)", Size: [0-9]+, SHA256: "[0-9a-f]{64}"\}' -AllMatches
+          $renderer = @($beside.Matches | ForEach-Object { $_.Groups[1].Value })
+          if ($renderer.Count -lt 1) { throw "could not read the software renderer's files out of internal/legal/companions.go" }
+          "renderer: $($renderer -join ', ')"
+
           $zips = Get-ChildItem -Filter *windows*.zip
           if ($zips.Count -ne 3) { throw "expected three Windows archives, found $($zips.Count)" }
 
+          $checked = 0
           foreach ($zip in $zips) {
             $into = Join-Path $PWD ("unpacked_" + $zip.BaseName)
             Expand-Archive -LiteralPath $zip.FullName -DestinationPath $into -Force
-            $exe = Get-ChildItem -Path $into -Filter *.exe -Recurse | Select-Object -First 1
-            if (-not $exe) { throw "no program inside $($zip.Name)" }
+            $signed = @(Get-ChildItem -Path $into -Recurse -Include *.exe, *.dll)
+            if (-not ($signed | Where-Object { $_.Extension -eq '.exe' })) { throw "no program inside $($zip.Name)" }
 
-            $sig = Get-AuthenticodeSignature -LiteralPath $exe.FullName
-            "$($zip.Name) -> $($exe.Name): $($sig.Status)"
-            if ($sig.Status -ne 'Valid') { throw "$($exe.Name): signature status is $($sig.Status)" }
+            if ($zip.Name -like 'tfg-gui_*_windows_amd64.zip') {
+              foreach ($rel in $renderer) {
+                $file = Join-Path $into ($rel -replace '/', '\')
+                if (-not (Test-Path -LiteralPath $file)) { throw "$($zip.Name) does not carry $rel, which the window loads when the driver offers no OpenGL 2.1" }
+              }
+              "$($zip.Name) carries the software renderer: $($renderer -join ', ')"
+            }
 
-            # Without a timestamp the signature dies when the certificate
-            # expires, so its absence is a defect rather than a detail.
-            if (-not $sig.TimeStamperCertificate) { throw "$($exe.Name): the signature carries no timestamp" }
+            foreach ($file in $signed) {
+              $sig = Get-AuthenticodeSignature -LiteralPath $file.FullName
+              $rel = $file.FullName.Substring($into.Length + 1)
+              "$($zip.Name) -> ${rel}: $($sig.Status)"
+              if ($sig.Status -ne 'Valid') { throw "${rel}: signature status is $($sig.Status)" }
 
-            $bytes = [System.Security.Cryptography.SHA256]::Create().ComputeHash($sig.SignerCertificate.RawData)
-            $actual = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
-            if ($actual -ne $pinned) {
-              throw "$($exe.Name) was signed by a DIFFERENT certificate: $actual"
+              # Without a timestamp the signature dies when the certificate
+              # expires, so its absence is a defect rather than a detail.
+              if (-not $sig.TimeStamperCertificate) { throw "${rel}: the signature carries no timestamp" }
+
+              $bytes = [System.Security.Cryptography.SHA256]::Create().ComputeHash($sig.SignerCertificate.RawData)
+              $actual = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
+              if ($actual -ne $pinned) {
+                throw "$rel was signed by a DIFFERENT certificate: $actual"
+              }
+              $checked++
             }
           }
-          "all three signed by the pinned certificate, each with a timestamp"
+          if ($checked -lt 3) { throw "only $checked signed file(s) were checked across three archives" }
+          "$checked file(s) signed by the pinned certificate, each with a timestamp"
 
       - name: the page promises what was just checked
         id: notes

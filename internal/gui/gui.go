@@ -23,26 +23,50 @@ import "io"
 // fact to write down rather than a gap to fill. The code still exists because
 // this is a process, and it answers one question: did the window come up.
 //
-// args are the process's arguments after its name. One of them is read, and
-// it is the first argument this binary has ever read: --catalogue (or
-// --catalog) opens the catalogue of the window's parts instead of the work
-// screens - GUI rule 4's hidden screen, reached from the launch line. Every
-// other argument is ignored, which is what happened to all of them before
-// this and is written here rather than changed: a window started from a
-// shortcut with odd arguments has always opened.
+// args are the process's arguments after its name. Two of them are read.
+// --catalogue (or --catalog) opens the catalogue of the window's parts
+// instead of the work screens - GUI rule 4's hidden screen, reached from the
+// launch line. --software-gl draws the window with the software renderer
+// shipped beside it instead of the graphics driver, which is what the window
+// does by itself, in a second process, when the driver offers no OpenGL - see
+// software.go. Every other argument is ignored, which is what happened to all
+// of them before this and is written here rather than changed: a window
+// started from a shortcut with odd arguments has always opened.
 func Run(args []string, errOut io.Writer) int {
-	return run(wantsCatalogue(args), errOut)
+	return run(ReadLaunch(args), errOut)
 }
 
-// wantsCatalogue says whether the launch line asked for the catalogue. Two
-// spellings, because the tree writes the word one way and the flag was
-// named the other on the day it was decided, and a flag typed the wrong way
-// would open the ordinary window without a word.
-func wantsCatalogue(args []string) bool {
+// Launch is what the launch line asked for.
+//
+// The arguments are kept as they were given, because a window that could not
+// open starts this program again with them - plus the one flag that says to
+// draw without the driver - and the second process has to be asked for the
+// same thing the first one was.
+type Launch struct {
+	Catalogue  bool
+	SoftwareGL bool
+	Args       []string
+}
+
+// SoftwareFlag asks for the software renderer. Public, because it is the way
+// to see the window as a machine without a driver sees it - and the way the
+// window asks for itself when it starts again.
+const SoftwareFlag = "--software-gl"
+
+// ReadLaunch reads the two flags the window knows out of the launch line.
+//
+// The catalogue has two spellings, because the tree writes the word one way
+// and the flag was named the other on the day it was decided, and a flag
+// typed the wrong way would open the ordinary window without a word.
+func ReadLaunch(args []string) Launch {
+	launch := Launch{Args: args}
 	for _, arg := range args {
-		if arg == "--catalogue" || arg == "--catalog" {
-			return true
+		switch arg {
+		case "--catalogue", "--catalog":
+			launch.Catalogue = true
+		case SoftwareFlag:
+			launch.SoftwareGL = true
 		}
 	}
-	return false
+	return launch
 }

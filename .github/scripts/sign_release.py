@@ -108,10 +108,15 @@ def run(argv, **kw):
     return subprocess.run(argv, check=True, **kw)
 
 
-def powershell(script):
+def powershell(script, env=None):
+    """Run a PowerShell script. Values the script needs go in env, never in
+    the script's text: a file name with a quote in it would end the string
+    and the rest would run as PowerShell. -LiteralPath does not help, because
+    the injected quote is parsed before the parameter is."""
     out = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-        capture_output=True, text=True)
+        capture_output=True, text=True,
+        env=None if env is None else {**os.environ, **env})
     if out.returncode != 0:
         raise SystemExit("sign_release: powershell failed:\n%s" % out.stderr.strip())
     # PowerShell errors are NON TERMINATING by default, so a script can print
@@ -243,15 +248,21 @@ def signing_thumbprint(pin):
 
 
 def certificate_of(path):
-    """The sha256 of the certificate that actually signed a file."""
+    """The sha256 of the certificate that actually signed a file.
+
+    The path reaches PowerShell as an environment variable and never as part
+    of the script. Until 2026-09-17 it was interpolated into the text, which
+    was harmless while the only file was our own tfg-gui.exe and stopped
+    being harmless the day the archive gained files named by somebody else
+    - an outside review of the pull request named it."""
     script = (
-        "$s = Get-AuthenticodeSignature -LiteralPath '%s'; "
+        "$s = Get-AuthenticodeSignature -LiteralPath $env:TFG_SIGNED_FILE; "
         "if ($s.Status -ne 'Valid') { Write-Error ('signature status: ' + $s.Status); exit 1 }; "
         "$h = [System.Security.Cryptography.SHA256]::Create()"
         ".ComputeHash($s.SignerCertificate.RawData); "
-        "(($h | ForEach-Object { $_.ToString('x2') }) -join '')" % path
+        "(($h | ForEach-Object { $_.ToString('x2') }) -join '')"
     )
-    return powershell(script).strip()
+    return powershell(script, env={"TFG_SIGNED_FILE": path}).strip()
 
 
 def sha256_of(path):
@@ -333,40 +344,76 @@ def windows_archives(directory):
     return found
 
 
+def files_under(work):
+    """Every file under work, as a path relative to it with forward slashes.
+
+    Recursive, and that is the whole point of it. Until 2026-09-17 the
+    archive was put back together from os.listdir, which names a directory
+    and none of its contents, and zipfile writes a directory entry for a
+    directory and nothing more - so a subdirectory came out of the signing
+    EMPTY, with no error and a valid archive. Nothing shipped in a
+    subdirectory until the software renderer did, so nothing had noticed.
+    """
+    found = []
+    for base, _dirs, names in os.walk(work):
+        for name in names:
+            full = os.path.join(base, name)
+            found.append(os.path.relpath(full, work).replace(os.sep, "/"))
+    return sorted(found)
+
+
 def sign_archive(path, thumbprint, pin, signtool, dry_run):
-    """Sign the program inside one archive and put the archive back together."""
+    """Sign everything Authenticode can sign inside one archive - the program
+    and any library beside it - and put the archive back together whole."""
     work = path + ".unpacked"
     if os.path.isdir(work):
         shutil.rmtree(work)
     os.makedirs(work)
     with zipfile.ZipFile(path) as archive:
         archive.extractall(work)
-    programs = [n for n in sorted(os.listdir(work)) if n.endswith(".exe")]
+    inside = files_under(work)
+    programs = [n for n in inside if n.endswith(".exe")]
     if len(programs) != 1:
         raise SystemExit("sign_release: %s holds %d programs, expected one"
                          % (os.path.basename(path), len(programs)))
-    program = os.path.join(work, programs[0])
+    # The libraries beside the program too: the software renderer in the
+    # window's archive. Their bytes are somebody else's and reviewed as such
+    # (internal/legal/companions.go), and the signature says this release
+    # vouches for exactly these bytes next to its program - a library beside
+    # a signed program is otherwise the one file a tamperer would swap.
+    signed = programs + [n for n in inside if n.endswith(".dll")]
 
-    command = [signtool, "sign", "/sha1", thumbprint, "/fd", "sha256",
-               "/tr", TIMESTAMP_URL, "/td", "sha256", "/v", program]
-    if dry_run:
-        print("    DRY RUN, would run: %s" % " ".join(command))
-    else:
+    for name in signed:
+        target = os.path.join(work, name)
+        command = [signtool, "sign", "/sha1", thumbprint, "/fd", "sha256",
+                   "/tr", TIMESTAMP_URL, "/td", "sha256", "/v", target]
+        if dry_run:
+            print("    DRY RUN, would run: %s" % " ".join(command))
+            continue
         run(command)
-        run([signtool, "verify", "/pa", "/v", program])
-        actual = certificate_of(program)
+        run([signtool, "verify", "/pa", "/v", target])
+        actual = certificate_of(target)
         if actual != pin:
             raise SystemExit(
                 "sign_release: %s was signed by a DIFFERENT certificate\n"
                 "  expected %s\n  got      %s\nNothing has been uploaded."
-                % (programs[0], pin, actual))
+                % (name, pin, actual))
 
     os.remove(path)
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
-        for name in sorted(os.listdir(work)):
+        for name in files_under(work):
             archive.write(os.path.join(work, name), name)
+    # What went in is what comes out: every file, in every directory. A
+    # repack that lost a file would be the quietest defect this script could
+    # have, so it is counted rather than trusted.
+    with zipfile.ZipFile(path) as archive:
+        repacked = sorted(n for n in archive.namelist() if not n.endswith("/"))
+    if repacked != inside:
+        raise SystemExit("sign_release: %s was repacked with %d file(s) and held %d\nNothing has been uploaded."
+                         % (os.path.basename(path), len(repacked), len(inside)))
     shutil.rmtree(work)
-    print("    %s: %s signed and repacked" % (os.path.basename(path), programs[0]))
+    print("    %s: %s signed and repacked, %d file(s)"
+          % (os.path.basename(path), ", ".join(signed), len(repacked)))
 
 
 def macos_archives(directory):

@@ -48,6 +48,13 @@ func repoRoot(t *testing.T) string {
 	}
 }
 
+// nestedModules are the directories packages() skipped as modules of their
+// own on its last walk, module relative and slash separated. Recorded so a
+// guard can ask that the set is exactly the one expected: a go.mod dropped
+// into a first party directory would otherwise take that directory out of
+// every guard reading packages(), silently.
+var nestedModules []string
+
 // packages lists every package of this module.
 //
 // It fails when it finds none. A walk that quietly matches nothing is the
@@ -57,6 +64,7 @@ func packages(t *testing.T) []pkg {
 	root := repoRoot(t)
 
 	var out []pkg
+	nestedModules = nil
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -72,6 +80,23 @@ func packages(t *testing.T) []pkg {
 		if p != root && (name == ".git" || name == ".github" || name == "docs" ||
 			name == "testdata" || name == "tools") {
 			return filepath.SkipDir
+		}
+		// A directory with a go.mod of its own is another module, and the
+		// toolchain already draws that line: "./..." never enters it, so
+		// nothing here builds, vets or lints it as part of this one. The
+		// first such directory arrived on 2026-09-17 - a copy of the OpenGL
+		// binding under third_party, 2.3 MB of generated code with C in its
+		// comments, which this walk would otherwise have handed to every
+		// guard that judges the shape of OUR code. The rule is the
+		// toolchain's rather than a name on the list above, so that the next
+		// nested module is left alone the day it arrives.
+		if p != root {
+			if _, err := os.Stat(filepath.Join(p, "go.mod")); err == nil {
+				if rel, err := filepath.Rel(root, p); err == nil {
+					nestedModules = append(nestedModules, filepath.ToSlash(rel))
+				}
+				return filepath.SkipDir
+			}
 		}
 
 		bp, err := build.ImportDir(p, 0)

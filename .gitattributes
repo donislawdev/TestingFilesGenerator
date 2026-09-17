@@ -18,3 +18,12 @@
 # The licence is a legal document. It is stored exactly as received.
 # ---------------------------------------------------------------------------
 /LICENSE -text
+
+# ---------------------------------------------------------------------------
+# The copy of the OpenGL binding under third_party is a published module with
+# one patch, and a guard holds every file of it to the published bytes plus
+# that patch. The generated bindings are 2.3 MB and 0.8 MB of code nobody
+# wrote by hand, so they are marked generated for the pull request view. The
+# patched file, procaddr.go, is not - it is the one worth reading.
+# ---------------------------------------------------------------------------
+third_party/go-gl-gl/**/package.go linguist-generated=true

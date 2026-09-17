@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -154,6 +155,9 @@ var allowedURLs = map[string]string{
 	"internal/version/version.go|https://www.gnu.org/licenses/gpl-3.0.html":                            "where the GPL text is, named by the licence notice this tool prints",
 	"internal/gui/text/screens.go|https://donislawdev.com/support/": "the support page, handed to the system browser on a click - " +
 		"untouchable rule 8 permits this and permits nothing else like it",
+	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z": "where the software " +
+		"renderer's bytes were downloaded FROM, by the release workflow and never by the program: written into the bill of " +
+		"materials as the package's download location, and compared with the workflow's pin by a guard",
 }
 
 // allowedLibraries are the libraries shipped code may load by name.
@@ -190,6 +194,12 @@ var lowLevelPackages = map[string]bool{
 	"golang.org/x/sys/execabs":  true,
 	"os/exec":                   true,
 	"golang.org/x/net/internal": true,
+	// os carries one spawn, os.StartProcess, and until 2026-09-17 it was not
+	// here: a program started through it walked past this guard without a
+	// word. Found while adding the first spawn this tree has, by asking what
+	// else the tree could have used instead. Nothing else os offers is on
+	// either list of calls, so this costs no false finding.
+	"os": true,
 }
 
 // spawnCalls start another program. curl needs no networking package, so a
@@ -209,10 +219,22 @@ var spawnCalls = map[string]bool{
 type telemetryFinding struct {
 	kind   string // "url", "library", "socket", "spawn"
 	detail string
+	// For a library load or a spawn: the call as the file spells it, and the
+	// call its first argument is bound to - the two things a registry entry
+	// is matched by. Empty for a URL and for a socket.
+	call, from string
 }
 
-// telemetryFindings reads one file's source and reports every way out it holds.
+// telemetryFindings reads one file's source and reports every way out it
+// holds that no registry entry forgives.
 func telemetryFindings(src, rel string) []telemetryFinding {
+	return withoutRegisteredPathLoads(rawTelemetryFindings(src, rel), rel)
+}
+
+// rawTelemetryFindings is every way out a file holds, forgiven or not. The
+// staleness half reads this one, because an allowance is stale exactly when
+// the raw findings no longer hold what it forgives.
+func rawTelemetryFindings(src, rel string) []telemetryFinding {
 	fset := token.NewFileSet()
 	tree, err := parser.ParseFile(fset, rel, src, parser.ParseComments)
 	if err != nil {
@@ -221,20 +243,29 @@ func telemetryFindings(src, rel string) []telemetryFinding {
 
 	local := lowLevelLocalNames(tree)
 	var found []telemetryFinding
-	ast.Inspect(tree, func(n ast.Node) bool {
-		switch node := n.(type) {
-		case *ast.BasicLit:
-			found = append(found, urlFinding(node, rel)...)
-		case *ast.CallExpr:
-			found = append(found, callFindings(node, local)...)
-		}
-		return true
-	})
-	return withoutRegisteredPathLoads(found, rel)
+	// Declaration by declaration rather than the file at once, so that a
+	// call knows the function it sits in - which is where its argument was
+	// bound, and what boundTo reads.
+	for _, decl := range tree.Decls {
+		fn, _ := decl.(*ast.FuncDecl)
+		ast.Inspect(decl, func(n ast.Node) bool {
+			switch node := n.(type) {
+			case *ast.BasicLit:
+				found = append(found, urlFinding(node, rel)...)
+			case *ast.CallExpr:
+				found = append(found, callFindings(node, local, fn)...)
+			}
+			return true
+		})
+	}
+	return found
 }
 
 // librariesLoadedByPath are the files allowed to name a library with something
-// other than a literal, and why.
+// other than a literal, which call may do it there, where the path has to
+// come from, and why. Read by two guards: this one, about a way out, and
+// hardening_test.go, about the search order - one declaration for the two,
+// because they ask about the same two calls.
 //
 // A computed name is normally the worst answer this guard can get - it cannot
 // read what is being loaded, so it cannot vouch for it. There is one case where
@@ -248,21 +279,67 @@ func telemetryFindings(src, rel string) []telemetryFinding {
 // kernel32.dll is one of them and uxtheme.dll is not.
 //
 // The file is named rather than the shape, because the shape is exactly what
-// this guard cannot tell apart.
-var librariesLoadedByPath = map[string]string{
-	"internal/gui/darkmenus_windows.go": "the dark window menu, loaded from an absolute path under the system directory " +
-		"because uxtheme.dll is not a KnownDLL - see systemLibraryPath there",
+// this guard cannot tell apart - and the function the path comes from is
+// named beside it, because THAT is what makes the path safe: what
+// SoftwareFiles answers is held by softwarerenderer_test.go to be under the
+// executable's directory, and what systemLibraryPath answers is under the
+// system directory by its own source.
+var librariesLoadedByPath = map[string]approvedOperation{
+	"internal/gui/darkmenus_windows.go": {call: "syscall.LoadDLL", from: "systemLibraryPath",
+		why: "the dark window menu, loaded from an absolute path under the system directory " +
+			"because uxtheme.dll is not a KnownDLL - see systemLibraryPath there"},
+	// The second case, and the reason it is the safer answer is different:
+	// the path is under the executable's own directory rather than the
+	// system's, which is the trust the executable already carries, and a
+	// name would be looked for beside the program FIRST - so the load says
+	// which file it means instead of letting the loader pick one. Two files
+	// of Mesa, loaded in the order software.go names.
+	"internal/gui/software_windows.go": {call: "syscall.LoadDLL", from: "SoftwareFiles",
+		why: "the software renderer shipped beside the window, loaded from absolute paths under " +
+			"the executable's own directory - see LoadSoftwareRenderer there and docs/GUI-SOFTWARE-RENDERER-2026-09-17.md"},
 }
 
-// withoutRegisteredPathLoads drops the one finding a registered file is allowed
-// to raise, and leaves every other finding from that file alone.
+// spawnsAllowed are the files allowed to start a process, which call, what
+// the program has to be answered by, and why.
+//
+// One, since 2026-09-17, and the reason it is allowed is the whole of what
+// it starts: THIS program, by the path os.Executable answers and no other,
+// with the arguments it was given plus one flag. That is how the window
+// gets a second process that can load the software renderer before the
+// toolkit asks the driver for anything - see startAgain. Nothing on the
+// search path and nothing beside the program can be what runs, so the way
+// out this guard exists to close - curl is one line away - stays closed.
+//
+// The command line binary never links this file's package, and
+// TestTheCommandLineBinaryCannotStartAProcess holds that separately, asked
+// of the compiler.
+var spawnsAllowed = map[string]approvedOperation{
+	"internal/gui/again.go": {call: "exec.Command", from: "os.Executable",
+		why: "starts this program again, by the path os.Executable answers, for the software renderer - see startAgain there"},
+}
+
+// withoutRegisteredPathLoads drops the findings a registered file is allowed
+// to raise - ONE load by a computed path, ONE spawn, each the operation its
+// entry names - and leaves every other finding from that file alone,
+// including a second of the same kind and one of the same kind that is not
+// the entry's. An entry forgives the operation it was written for and not
+// whatever is added beside it later - an outside review of #109 pointed out
+// that the first version forgave every such finding in a registered file,
+// and then that the second forgave any operation of the kind.
 func withoutRegisteredPathLoads(found []telemetryFinding, rel string) []telemetryFinding {
-	if _, granted := librariesLoadedByPath[rel]; !granted {
+	load, loads := librariesLoadedByPath[rel]
+	spawn, spawns := spawnsAllowed[rel]
+	if !loads && !spawns {
 		return found
 	}
 	kept := make([]telemetryFinding, 0, len(found))
 	for _, f := range found {
-		if f.kind == "library" && f.detail == computedLibraryName {
+		if loads && f.kind == "library" && load.forgives(f) {
+			loads = false
+			continue
+		}
+		if spawns && f.kind == "spawn" && spawn.forgives(f) {
+			spawns = false
 			continue
 		}
 		kept = append(kept, f)
@@ -346,10 +423,10 @@ func urlFinding(lit *ast.BasicLit, rel string) []telemetryFinding {
 }
 
 // callFindings reports a call that loads a library, opens a socket or starts a
-// program.
-func callFindings(call *ast.CallExpr, local map[string]bool) []telemetryFinding {
+// program. fn is the function the call sits in, or nil outside one.
+func callFindings(call *ast.CallExpr, local map[string]bool, fn *ast.FuncDecl) []telemetryFinding {
 	if libraryLoadCalls[libraryCallName(call)] {
-		return libraryFinding(call)
+		return libraryFinding(call, fn)
 	}
 
 	sel, ok := call.Fun.(*ast.SelectorExpr)
@@ -369,14 +446,16 @@ func callFindings(call *ast.CallExpr, local map[string]bool) []telemetryFinding 
 		return []telemetryFinding{{kind: "socket", detail: ident.Name + "." + name}}
 	}
 	if spawnCalls[name] {
-		return []telemetryFinding{{kind: "spawn", detail: ident.Name + "." + name}}
+		spelled := ident.Name + "." + name
+		from := firstArgumentSource(call, fn)
+		return []telemetryFinding{{kind: "spawn", detail: spelled + " of " + describeSource(from), call: spelled, from: from}}
 	}
 	return nil
 }
 
 // computedLibraryName is what this guard says about a load whose argument it
-// cannot read. Spelled once, because the check that raises it and the registry
-// that forgives it in one named file have to mean the same string.
+// cannot read. Spelled once, because the check that raises it and the message
+// the staleness half prints have to mean the same string.
 const computedLibraryName = "a library named by something other than a literal"
 
 // libraryLoadCalls are the calls that name a library, whoever owns them.
@@ -415,14 +494,16 @@ func libraryCallName(call *ast.CallExpr) string {
 
 // libraryFinding reads the library a load call names, and reports it when the
 // name is computed rather than written down - a library nobody can read here is
-// a library this guard cannot vouch for.
-func libraryFinding(call *ast.CallExpr) []telemetryFinding {
+// a library this guard cannot vouch for. A computed one carries the call and
+// what answered its argument, which is what an entry is matched by.
+func libraryFinding(call *ast.CallExpr, fn *ast.FuncDecl) []telemetryFinding {
 	if len(call.Args) == 0 {
 		return nil
 	}
 	lit, ok := call.Args[0].(*ast.BasicLit)
 	if !ok || lit.Kind != token.STRING {
-		return []telemetryFinding{{kind: "library", detail: computedLibraryName}}
+		spelled, from := spelledCall(call), boundTo(fn, call.Args[0])
+		return []telemetryFinding{{kind: "library", detail: computedLibraryName + " - " + spelled + " of " + describeSource(from), call: spelled, from: from}}
 	}
 	name, err := strconv.Unquote(lit.Value)
 	if err != nil {
@@ -451,11 +532,11 @@ func TestNothingShippedHoldsAnUndeclaredWayOut(t *testing.T) {
 			scanned++
 			rel := p.rel + "/" + filepath.Base(file)
 			for _, f := range telemetryFindings(string(raw), rel) {
-				t.Errorf("%s (%s).\n"+
+				t.Errorf("%s: %s (%s).\n"+
 					"Reason: untouchable rule 8 says this tool opens no outgoing connection, and this is a way\n"+
 					"out that no import of net would show. If it is wanted, add it to the registry in\n"+
 					"notelemetry_test.go with the reason - if it is not, this is the guard doing its job.",
-					f.detail, f.kind)
+					rel, f.detail, f.kind)
 			}
 		}
 	}
@@ -472,6 +553,11 @@ func TestNothingShippedHoldsAnUndeclaredWayOut(t *testing.T) {
 // a longer list to argue from.
 func TestEveryTelemetryExceptionStillNamesLiveCode(t *testing.T) {
 	urls, libraries := map[string]bool{}, map[string]bool{}
+	// The operations found, keyed the way the entries are matched: file,
+	// kind, call and what answered the argument. An entry whose file still
+	// holds an operation of the kind but not THIS one is stale all the same
+	// - that is a different decision wearing the old one's permission.
+	operations := map[string]bool{}
 	for _, p := range shippedSource(t) {
 		for _, file := range p.files {
 			raw, err := os.ReadFile(file)
@@ -480,6 +566,28 @@ func TestEveryTelemetryExceptionStillNamesLiveCode(t *testing.T) {
 			}
 			rel := p.rel + "/" + filepath.Base(file)
 			collectUses(string(raw), rel, urls, libraries)
+			for _, f := range rawTelemetryFindings(string(raw), rel) {
+				if f.kind == "library" || f.kind == "spawn" {
+					operations[rel+"|"+f.kind+"|"+f.call+"|"+f.from] = true
+				}
+			}
+		}
+	}
+
+	// The two registries keyed by file. Read from the raw findings, because
+	// the forgiven ones are exactly what the scan no longer shows.
+	for rel, op := range librariesLoadedByPath {
+		if !operations[rel+"|library|"+op.call+"|"+op.from] {
+			t.Errorf("%s is allowed one %s of what %s answers, and holds no such load.\n"+
+				"Reason: a stale permission forgives whatever lands in that file next. Delete the line, "+
+				"or if the load moved to another call or another source, that is a new decision - write it.", rel, op.call, op.from)
+		}
+	}
+	for rel, op := range spawnsAllowed {
+		if !operations[rel+"|spawn|"+op.call+"|"+op.from] {
+			t.Errorf("%s is allowed one %s of what %s answers, and holds no such spawn.\n"+
+				"Reason: the same - and this one forgives the exact call that walks past every other guard here. Delete the line, "+
+				"or if the spawn moved to another call or another program, that is a new decision - write it.", rel, op.call, op.from)
 		}
 	}
 
@@ -625,6 +733,9 @@ var badTelemetryCode = []struct {
 		"package p\n\nimport sh \"os/exec\"\n\nfunc f() { _ = sh.Command(\"curl\") }\n", "spawn"},
 	{"starting a process the plainest way",
 		"package p\n\nimport \"syscall\"\n\nfunc f() { _, _ = syscall.StartProcess(\"curl\", nil, nil) }\n", "spawn"},
+	// The spawn os offers, which walked past this guard until 2026-09-17.
+	{"a process started through os",
+		"package p\n\nimport \"os\"\n\nfunc f() { _, _ = os.StartProcess(\"curl\", nil, nil) }\n", "spawn"},
 }
 
 func TestTheTelemetryScannerRejectsCodeItMustReject(t *testing.T) {
@@ -643,6 +754,15 @@ func TestTheTelemetryScannerRejectsCodeItMustReject(t *testing.T) {
 			"Reason: a guard that has only ever read clean code has been shown to run, not to look.",
 			len(missed), strings.Join(missed, "\n  "))
 	}
+}
+
+// kindsIn counts findings by kind.
+func kindsIn(found []telemetryFinding) map[string]int {
+	kinds := map[string]int{}
+	for _, f := range found {
+		kinds[f.kind]++
+	}
+	return kinds
 }
 
 // And it does not reach that by flagging everything, or the case above proves
@@ -682,6 +802,9 @@ func TestARegisteredAddressInItsOwnFileIsAllowed(t *testing.T) {
 	}
 }
 
+// sortedKeys names the keys of a set in one order, for a message that reads
+// the same twice. Until 2026-09-17 it did not sort at all, and every message
+// built with it listed the same set in a different order on every run.
 func sortedKeys(m map[string]bool) []string {
 	if len(m) == 0 {
 		return []string{"nothing"}
@@ -690,5 +813,6 @@ func sortedKeys(m map[string]bool) []string {
 	for k := range m {
 		out = append(out, k)
 	}
+	sort.Strings(out)
 	return out
 }

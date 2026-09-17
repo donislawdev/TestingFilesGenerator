@@ -40,6 +40,15 @@ type Item struct {
 	// Embedded separates code from bytes that are not code. A person reading
 	// the list wants to know which of these is a library and which is a font.
 	Embedded bool
+
+	// Beside is a program shipped next to the binary rather than in it - a
+	// companion, in the registry's word - which one archive carries and the
+	// program loads at run time. The window's list names it, because the
+	// person reading that list may be looking at a window it is drawing.
+	// The command line's list never does: nothing ships beside that binary,
+	// and a list read from a build cannot see what an archive was packed
+	// with anyway.
+	Beside bool
 }
 
 // Line is the item written out: name, version, licence and copyright, joined
@@ -136,20 +145,38 @@ func Carried(info *debug.BuildInfo) []Item {
 // asked in a binary that has them. The versions also stand in
 // THIRD-PARTY-NOTICES.md, held to the build by a guard of their own.
 func Reviewed() []Item {
-	items := make([]Item, 0, len(modules)+len(assets))
+	items := make([]Item, 0, len(modules)+len(assets)+len(companions))
 	for _, m := range modules {
 		items = append(items, Item{Name: displayName(m.Path), SPDX: m.SPDX, Copyright: m.Copyright})
 	}
 	for _, a := range assets {
 		items = append(items, Item{Name: a.Name, SPDX: a.SPDX, Copyright: a.Copyright, Embedded: true})
 	}
+	// With a version, unlike the rest of this list: a companion's version is
+	// a fact of the registry rather than of a build, so it is known here.
+	for _, c := range companions {
+		items = append(items, Item{Name: c.Name, Version: c.Source.Version, SPDX: c.SPDX, Copyright: c.Copyright, Beside: true})
+	}
 	sort.SliceStable(items, func(i, j int) bool {
-		if items[i].Embedded != items[j].Embedded {
-			return !items[i].Embedded
+		if group(items[i]) != group(items[j]) {
+			return group(items[i]) < group(items[j])
 		}
 		return items[i].Name < items[j].Name
 	})
 	return items
+}
+
+// group is the order the list is printed in: code, then bytes that are not
+// code, then what ships beside the binary.
+func group(i Item) int {
+	switch {
+	case i.Beside:
+		return 2
+	case i.Embedded:
+		return 1
+	default:
+		return 0
+	}
 }
 
 // carries is the question embeddedItems asks of one entry: by package for a

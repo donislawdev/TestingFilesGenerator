@@ -39,6 +39,17 @@ import (
 func About(h Host) fyne.CanvasObject {
 	sections := []fyne.CanvasObject{
 		parts.Indented(parts.Prose(text.AboutTagline())),
+	}
+	// Under the tagline and only when it is true: the window is drawn by the
+	// software renderer shipped beside it, not by a driver. Said here rather
+	// than in a title or a dialog because it is a fact about this window for
+	// as long as it is open, and this is the screen that says what the
+	// program is. Untouchable rule 6 - a window drawn in software that did
+	// not say so would be a slow window with no explanation.
+	if h.SoftwareRendering() {
+		sections = append(sections, parts.Indented(parts.Prose(text.DrawingWithSoftwareRenderer())))
+	}
+	sections = append(sections,
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
@@ -57,7 +68,7 @@ func About(h Host) fyne.CanvasObject {
 		// OpenLink said this screen carried it. This is that screen carrying it.
 		parts.Section(text.SectionSupport(),
 			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
-	}
+	)
 	sections = append(sections, carried()...)
 	page := parts.Screen(parts.Title(text.HeadingAbout(version.Version)), sections...)
 
@@ -98,20 +109,31 @@ func About(h Host) fyne.CanvasObject {
 func carried() []fyne.CanvasObject {
 	items := legal.Reviewed()
 	var out []fyne.CanvasObject
-	if lines := carriedLines(items, false); lines != "" {
-		out = append(out, parts.Section(text.SectionCarriedCode(), parts.Prose(lines)))
+	groups := []struct {
+		heading string
+		in      func(legal.Item) bool
+	}{
+		{text.SectionCarriedCode(), func(i legal.Item) bool { return !i.Embedded && !i.Beside }},
+		{text.SectionCarriedFiles(), func(i legal.Item) bool { return i.Embedded }},
+		// Named on every system, although one archive carries it: the
+		// notices say the same everywhere, and a screen that named it only
+		// where it was found would say nothing on the machine where it was
+		// deleted, which is the machine whose person is asking.
+		{text.SectionCarriedBeside(), func(i legal.Item) bool { return i.Beside }},
 	}
-	if lines := carriedLines(items, true); lines != "" {
-		out = append(out, parts.Section(text.SectionCarriedFiles(), parts.Prose(lines)))
+	for _, g := range groups {
+		if lines := carriedLines(items, g.in); lines != "" {
+			out = append(out, parts.Section(g.heading, parts.Prose(lines)))
+		}
 	}
 	return out
 }
 
 // carriedLines writes one group as text, in the order internal/legal settled.
-func carriedLines(items []legal.Item, embedded bool) string {
+func carriedLines(items []legal.Item, in func(legal.Item) bool) string {
 	var lines []string
 	for _, item := range items {
-		if item.Embedded == embedded {
+		if in(item) {
 			lines = append(lines, item.Line())
 		}
 	}

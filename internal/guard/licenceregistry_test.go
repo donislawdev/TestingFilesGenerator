@@ -101,7 +101,9 @@ func TestTheRegistryAndTheNoticesAgreeOnEveryLicence(t *testing.T) {
 	root := repoRoot(t)
 	body, err := os.ReadFile(filepath.Join(root, "THIRD-PARTY-NOTICES.md"))
 	if err != nil {
-		t.Skipf("no notices file here: %v", err)
+		// Fatal since 2026-09-17, for the same reason as the companion guard
+		// beside it: the file is tracked, so its absence is a deletion.
+		t.Fatalf("reading THIRD-PARTY-NOTICES.md: %v", err)
 	}
 
 	registry := map[string]string{}

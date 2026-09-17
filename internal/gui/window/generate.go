@@ -95,6 +95,16 @@ type Host interface {
 	// can press the button on a machine with no browser and still ask where it
 	// was going to go.
 	OpenLink(url string)
+
+	// SoftwareRendering reports whether this window is drawn by the software
+	// renderer shipped beside the program rather than by the graphics driver.
+	//
+	// Only the real window knows, because only the process that loaded the
+	// renderer does - a stand in answers whatever a guard set. The About
+	// screen says so when it is true and nothing when it is not, because a
+	// window drawn in software is slower and the person should be able to
+	// read why, in the place they go to read what this program is.
+	SoftwareRendering() bool
 }
 
 // Generate is the screen that produces files from settings somebody chose.

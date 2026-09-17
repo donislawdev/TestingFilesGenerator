@@ -127,6 +127,25 @@ func TestTheDependencyGateRefusesALicenceThisProjectCannotDistribute(t *testing.
 				"name": "example.com/gpl2", "version": "v1.0.0", "license": "GPL-2.0-only"}},
 			0,
 		},
+		{
+			// Measured on #109, 2026-09-17: GitHub's graph reported the
+			// directory behind go.mod's replace directive as an added
+			// dependency with no licence, and the gate blocked - correctly,
+			// for a name nobody had looked at. This one has been: it is the
+			// published module plus one patch, and a guard holds it to that.
+			"the copy of the OpenGL binding, a directory the graph cannot licence",
+			[]dep{{"change_type": "added", "ecosystem": "gomod",
+				"name": "./third_party/go-gl-gl", "version": "0.0.0-20260331235117-4566fea9a276", "license": nil}},
+			0,
+		},
+		{
+			// And the exception names that one directory, not every directory:
+			// a second copy of something else is a second decision.
+			"another directory replacement nobody has looked at",
+			[]dep{{"change_type": "added", "ecosystem": "gomod",
+				"name": "./third_party/something-else", "version": "0.0.0", "license": nil}},
+			1,
+		},
 	} {
 		if got := runGate(t, python, c.review); got != c.want {
 			t.Errorf("the gate answered %d for %s, and it has to answer %d", got, c.what, c.want)

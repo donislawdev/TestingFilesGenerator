@@ -72,7 +72,19 @@ const appID = "dev.donislaw.tfg"
 // changed is that it is now downloaded, checksummed and compiled in.
 type desktop struct {
 	fyne.Window
+	// software says the window is drawn by the renderer shipped beside it
+	// rather than by the graphics driver - the fact the About screen states,
+	// because a window drawn in software is slower and the person should
+	// be able to read why.
+	software bool
 }
+
+// SoftwareRendering reports whether this window draws through the software
+// renderer shipped beside it. True in the second process after the driver
+// refused, and in any process asked for it by the flag - and only when the
+// renderer actually loaded, because a window that says it draws in software
+// while the driver draws it would be saying something untrue.
+func (d desktop) SoftwareRendering() bool { return d.software }
 
 // Remembered is the window size and output directory, kept by the toolkit in
 // the file its folder picker already writes.
@@ -205,7 +217,26 @@ func (d desktop) OpenFolder(path string) {
 
 // run opens a real window. The only file in this tree that reaches the app
 // package, and therefore the only one that needs a C compiler.
-func run(showCatalogue bool, errOut io.Writer) int {
+func run(launch Launch, errOut io.Writer) int {
+	// The software renderer, when asked for, before anything below asks the
+	// driver for anything: the toolkit's first request for OpenGL by name has
+	// to find it already mapped. A renderer that does not load is said out
+	// loud and the window goes on to the toolkit - which on the machine this
+	// exists for will refuse, and the refusal then says the renderer was
+	// tried and why it could not be. On a machine with a driver it opens as
+	// usual, drawn by the driver, and says so by not claiming otherwise.
+	var loaded error
+	software := false
+	if launch.SoftwareGL {
+		dir, err := executableDir()
+		if err == nil {
+			err = LoadSoftwareRenderer(dir)
+		}
+		loaded = err
+		software = err == nil
+		fmt.Fprintln(errOut, LoadingSentence(loaded))
+	}
+
 	// Said out loud rather than left to be inferred: everything that touches a
 	// widget from the worker goes through fyne.Do, and a static guard checks
 	// it, but the toolkit had no way to know that. Without this it printed
@@ -260,12 +291,12 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	// answers dark whatever the desktop is set to, by the owner's decision.
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
-	host := desktop{w}
+	host := desktop{Window: w, software: software}
 	// What a first start opens at, if nothing is remembered: nothing for the
 	// catalogue, which opens at the ceiling, and what the screens want for
 	// the ordinary window.
 	var wanted fyne.Size
-	if showCatalogue {
+	if launch.Catalogue {
 		// The hidden screen of GUI rule 4: every part in every state, for
 		// whoever builds the window. No host, because nothing on it runs or
 		// chooses a directory - and nothing about it is remembered either,
@@ -297,18 +328,26 @@ func run(showCatalogue bool, errOut io.Writer) int {
 	// An outside review of the pull request named it. No guard reaches this
 	// line - it is behind cgo, like the rest of the remembering - so it is
 	// checked the way the rest was, by a run of the binary.
-	if !showCatalogue {
+	if !launch.Catalogue {
 		w.SetOnClosed(func() { host.rememberThisSize() })
 	}
-	// Shown, then run - and refused out loud when the toolkit gave the
-	// window no window. Not ShowAndRun, which is the same two calls without
-	// the question between them, and which on a machine without OpenGL runs
-	// a loop nothing will ever end (O218). The sentence goes to standard error
-	// for whatever started this, and to a system dialog for the person,
-	// because the window that would have carried it is what failed.
-	return OpenOrRefuse(w, a.Run, func() {
+	// Shown, then run - and when the toolkit gave the window no window,
+	// tried again in a second process with the software renderer, and only
+	// then refused out loud. Not ShowAndRun, which is the same two calls
+	// without the question between them, and which on a machine without
+	// OpenGL runs a loop nothing will ever end (O218). The refusal goes to
+	// standard error for whatever started this, and to a system dialog for
+	// the person, because the window that would have carried it is what
+	// failed - and it says what became of the renderer, when there is
+	// something to say.
+	return OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {
 		sentence := text.WindowRefused(CauseFrom(said.String()))
 		fmt.Fprintln(errOut, sentence)
-		sayInADialog(text.WindowRefusedTitle(), sentence)
+		body := sentence
+		if renderer := RendererSentence(why, loaded); renderer != "" {
+			fmt.Fprintln(errOut, renderer)
+			body += "\n\n" + renderer
+		}
+		sayInADialog(text.WindowRefusedTitle(), body)
 	})
 }

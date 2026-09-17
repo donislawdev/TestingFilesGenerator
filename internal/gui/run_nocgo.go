@@ -20,7 +20,7 @@ import (
 // to do about it. RUNTIME rather than USAGE because nothing the caller typed
 // is wrong - the same reasoning docs/GUI.md section 5 applies to the stub this
 // replaces.
-func run(_ bool, errOut io.Writer) int {
+func run(_ Launch, errOut io.Writer) int {
 	fmt.Fprintln(errOut, text.NoWindowInThisBuild)
 	return 1
 }

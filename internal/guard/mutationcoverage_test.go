@@ -212,6 +212,17 @@ var provenByProbe = map[string]string{
 
 	"TestTheObservationsAreNumberedOnceEach": "checked 2026-08-02 two ways: one number used twice, and a number cut out of the middle leaving a hole. " +
 		"Both went red. Written the same day the rule it guards was broken - two rows were appended reusing 25 and 26, and nothing noticed.",
+
+	"TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime": "broken by hand on 2026-09-17 and put back byte for byte: the one line of the patched " +
+		"Windows lookup in third_party/go-gl-gl/v2.1/gl/procaddr.go turned back into a direct call of wglGetProcAddress. " +
+		"Red, naming opengl32.dll among the fifteen libraries the binary imported - resolved through the -lopengl32 the windowing " +
+		"library links on the same line, which is the exact way the import would come back in practice. " +
+		"A probe rather than a mutation entry because of what the runner would score, not because the substitution cannot be written: " +
+		"the guard itself took 3.1 s, and the run took 3 min 56 s, because a change to the binding recompiles the binding, " +
+		"the toolkit above it and the guard binary above that. The runner's ceiling is 120 s at one worker and 240 s at six, so every " +
+		"entry touching that package would be CAPPED, which is neither caught nor a failure. The companion guard that CAN be scored, " +
+		"TestTheOpenGLBindingIsThePinnedModulePlusExactlyThePatch, holds the copy to the published module plus the patch and has entries " +
+		"that touch nothing the compiler reads.",
 }
 
 var (

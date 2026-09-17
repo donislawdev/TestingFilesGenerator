@@ -68,13 +68,16 @@ func SectionSettings() string      { return say("SectionSettings", "Settings") }
 func SectionLicence() string       { return say("SectionLicence", "Licence") }
 func SectionSupport() string       { return say("SectionSupport", "Support") }
 
-// The two headings over what this binary carries that somebody else wrote.
+// The three headings over what this binary carries that somebody else wrote.
 //
-// They are two rather than one because the difference matters to whoever is
+// They are three rather than one because the difference matters to whoever is
 // reading: a library and a font are not the same kind of thing, they arrive
 // under different licences, and a person checking whether they may ship this
 // is asking about both. Seven fonts and ninety-seven drawings sat unnamed
 // until 2026-08-28 precisely because everything only ever counted libraries.
+// The third, since 2026-09-17, is what ships NEXT to the binary rather than
+// in it - the software renderer in the Windows archive - which no list of
+// what was compiled in could ever name.
 //
 // The values under them - names, versions, licence identifiers - are not
 // translated. They are the same in every language, and the program reads them
@@ -82,6 +85,9 @@ func SectionSupport() string       { return say("SectionSupport", "Support") }
 func SectionCarriedCode() string { return say("SectionCarriedCode", "Third party code compiled in") }
 func SectionCarriedFiles() string {
 	return say("SectionCarriedFiles", "Files compiled in that are not code")
+}
+func SectionCarriedBeside() string {
+	return say("SectionCarriedBeside", "Shipped beside the program on Windows")
 }
 
 // Field labels on the generate screen, in the order somebody fills them in.

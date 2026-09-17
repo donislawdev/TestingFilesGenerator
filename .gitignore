@@ -100,3 +100,10 @@ desktop.ini
 # ---------------------------------------------------------------------------
 !**/testdata/
 !**/testdata/**
+
+# ---------------------------------------------------------------------------
+# Python bytecode. The scripts under .github/scripts are run, never imported
+# by anything shipped - but a guard or a probe importing one to exercise it
+# leaves a cache beside it, and one such file reached a commit on 2026-09-17.
+# ---------------------------------------------------------------------------
+__pycache__/

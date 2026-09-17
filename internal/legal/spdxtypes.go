@@ -44,6 +44,18 @@ type spdxPackage struct {
 	LicenseDeclared  string            `json:"licenseDeclared"`
 	CopyrightText    string            `json:"copyrightText"`
 	ExternalRefs     []spdxExternalRef `json:"externalRefs,omitempty"`
+
+	// The three below are filled for a companion only - a file the archive
+	// carries beside a binary, which has an artefact of its own to name and
+	// to checksum, where a module linked into ours does not.
+	PackageFileName string         `json:"packageFileName,omitempty"`
+	Checksums       []spdxChecksum `json:"checksums,omitempty"`
+	Comment         string         `json:"comment,omitempty"`
+}
+
+type spdxChecksum struct {
+	Algorithm     string `json:"algorithm"`
+	ChecksumValue string `json:"checksumValue"`
 }
 
 type spdxExternalRef struct {

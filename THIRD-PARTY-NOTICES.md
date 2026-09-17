@@ -238,6 +238,16 @@ file is the unmodified Apache template with the copyright placeholder left as
 the table says so rather than inventing one. The module is published by the
 rymdport project.
 
+`github.com/go-gl/gl` is carried as a copy, under `third_party/go-gl-gl` in
+the repository, since 2026-09-17. The copy is the version the table names,
+reduced to the two packages the window imports, with one change: on Windows it
+looks `wglGetProcAddress` up at run time instead of importing it, so the
+window binary carries no load time import of `opengl32.dll` and can fall back
+to a software renderer on a machine whose driver offers no OpenGL. The change
+and the reason for it are written in `PATCH.md` beside the copy, and a guard
+holds the copy to the published version plus exactly that change. The licence
+is the module's own MIT, carried unchanged.
+
 | module | version | licence | copyright |
 |---|---|---|---|
 | `fyne.io/fyne/v2` | v2.8.1 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
@@ -246,7 +256,6 @@ rymdport project.
 | `github.com/FyshOS/fancyfs` | v0.0.1 | BSD-3-Clause | (C) 2025 FyshOS developers (see AUTHORS) |
 | `github.com/anthonynsimon/bild` | v0.14.0 | MIT | (c) 2021 Anthony Najjar Simon |
 | `github.com/clipperhouse/uax29/v2` | v2.2.0 | MIT | (c) 2020 Matt Sherman |
-
 | `github.com/fsnotify/fsnotify` | v1.9.0 | BSD-3-Clause | Copyright 2012 The Go Authors |
 | `github.com/fyne-io/image` | v0.1.1 | BSD-3-Clause | (c) 2022, Fyne.io |
 | `github.com/fyne-io/oksvg` | v0.2.0 | BSD-3-Clause | (c) 2018, Steven R Wiley |
@@ -798,6 +807,104 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+---
+
+## Shipped beside the window binary on Windows
+
+One thing ships NEXT to `tfg-gui.exe` rather than inside it, since 2026-09-17,
+and only in the Windows archive: a software OpenGL renderer, for a machine
+whose graphics driver offers no OpenGL 2.1 - a virtual machine without 3D
+acceleration, a remote desktop, a server. The window loads it only after the
+graphics toolkit could not open a window, or when started with
+`--software-gl`, and says so on its About screen while it draws with it. On
+a machine with a driver it is never loaded. Linux and macOS archives carry
+nothing of the kind - Linux has Mesa in the system, and macOS has never
+offered the toolkit less than it needs.
+
+| what | files in the archive | licence | copyright |
+|---|---|---|---|
+| Mesa 3D, llvmpipe software renderer, 26.2.0 | `opengl/libgallium_wgl.dll` and `opengl/opengl32.dll` | MIT AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 | Copyright (C) 1999-2007 Brian Paul, Copyright (C) 2008 VMware, Inc. |
+
+The two files are taken from `x64/` of `mesa3d-26.2.0-release-msvc.7z`, the
+MSVC release archive of the pal1000/mesa-dist-win project, version 26.2.0,
+whose SHA-256 is
+`dcb2719ef346dab5b609fcb193a5f13cfc4b0502e3f4de1ad43d349477402f47`. The
+release workflow downloads that archive, checks the sum before it unpacks
+anything, and puts exactly these two files into the Windows archive of the
+window:
+
+| file | bytes | SHA-256 |
+|---|---|---|
+| `opengl/libgallium_wgl.dll` | 61734400 | `1a2e49cd5fdb1a857d98117ab04240d723b57da5dffe6d07f5386f42014557c1` |
+| `opengl/opengl32.dll` | 139264 | `33b217ed7947b48684baa987914475898a2b4d7d64cce96b078216c67a633582` |
+
+The archive carries no licence file of its own - checked on 2026-09-17, it
+holds one readme pointing at a web page - so what is compiled into the two
+files was read from the sources of the pinned versions, and the bytes of the
+renderer were asked which of the build's components they hold:
+
+- **Mesa 26.2.0** is MIT: the core, the llvmpipe driver and the WGL frontend.
+  The core's line is quoted in the table, the driver is Copyright 2007
+  VMware, Inc. Read from `docs/license.rst` and `licenses/` of
+  `mesa-26.2.0.tar.xz`. Two things in that tree carry a GPL identifier and
+  neither is in these files: Linux kernel headers under `include/drm-uapi`,
+  and headers of the freedreno and svga drivers, none of which a Windows
+  build compiles.
+- **LLVM 22.1.8**, compiled in for llvmpipe's code generation, is Apache-2.0
+  WITH LLVM-exception. Its licence file states no copyright line under that
+  licence, and the one it does carry - Copyright (c) 2003-2019 University of
+  Illinois at Urbana-Champaign - belongs to the legacy licence the same file
+  reproduces. Read from `llvm/LICENSE.TXT` at `llvmorg-22.1.8`.
+- The **C11 threads shim** Mesa compiles on Windows, `src/c11/impl/threads_win32.c`,
+  is BSL-1.0, Copyright yohhoy 2012.
+- The **Direct3D 12 headers**, 1.619.5, used by the d3d12 driver that the same
+  file also carries, are MIT, Copyright (c) Microsoft Corporation.
+- **pal1000/mesa-dist-win**, whose scripts build and publish the archive, is
+  MIT, Copyright (c) 2017-2020 pal1000. None of its own code is in the files.
+- Neither zlib nor zstd is compiled in, although both stand in the build
+  environment: the renderer holds none of their code, and its only mention of
+  zlib is LLVM saying it was built without it.
+
+The MIT and Apache-2.0 texts are reproduced above. The two texts below are
+reproduced from the files named beside them.
+
+### LLVM-exception
+
+From `llvm/LICENSE.TXT` at `llvmorg-22.1.8`, the exceptions that follow the
+Apache License, Version 2.0 there.
+
+```
+---- LLVM Exceptions to the Apache 2.0 License ----
+
+As an exception, if, as a result of your compiling your source code, portions
+of this Software are embedded into an Object form of such source code, you
+may redistribute such embedded portions in such Object form without complying
+with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
+
+In addition, if you combine or link compiled forms of this Software with
+software that is licensed under the GPLv2 ("Combined Software") and if a
+court of competent jurisdiction determines that the patent provision (Section
+3), the indemnity provision (Section 9) or other Section of the License
+conflicts with the conditions of the GPLv2, you may retroactively and
+prospectively choose to deem waived or otherwise exclude such Section(s) of
+the License, but only in their entirety and only with respect to the Combined
+Software.
+```
+
+### BSL-1.0
+
+From `licenses/BSL-1.0` of `mesa-26.2.0.tar.xz`.
+
+```
+Boost Software License - Version 1.0 - August 17th, 2003
+
+Permission is hereby granted, free of charge, to any person or organization obtaining a copy of the software and accompanying documentation covered by this license (the "Software") to use, reproduce, display, distribute, execute, and transmit the Software, and to prepare derivative works of the Software, and to permit third-parties to whom the Software is furnished to do so, all subject to the following:
+
+The copyright notices in the Software and this entire statement, including the above license grant, this restriction and the following disclaimer, must be included in all copies of the Software, in whole or in part, and all derivative works of the Software, unless such copies or derivative works are solely in the form of machine-executable object code generated by a source language processor.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ---

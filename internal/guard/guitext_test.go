@@ -67,6 +67,15 @@ var notWords = map[string]string{
 	`"--catalogue"`: "a flag on the launch line, which is English by D9 like every flag the command line takes, " +
 		"and is never translated or shown",
 	`"--catalog"`: "the same flag in its other spelling",
+	`"--software-gl"`: "a flag on the launch line, English by D9 like every flag, never translated or shown - " +
+		"and the one the window passes to itself when it starts again with the software renderer",
+	`"opengl"`:             "the folder beside the program that holds the software renderer, a directory name and not a word",
+	`"libgallium_wgl.dll"`: "the software renderer's file, loaded by absolute path, a file name and not a word",
+	`"opengl32.dll"`:       "the software renderer's loader, loaded by absolute path, a file name and not a word",
+	`"GALLIUM_DRIVER"`:     "the environment variable the software renderer reads to pick its driver, a name and not a word",
+	`"llvmpipe"`:           "the driver named in that variable, an identifier the renderer knows and not a word",
+	`"="`:                  "what joins a variable to its value in an environment handed to a process, not a word",
+	`": "`:                 "what joins a file name to what the system said about it, in an error nobody reads as prose",
 	`"GetSystemDirectoryW"`: "the Windows entry point that says where the system keeps its own " +
 		"libraries, asked for by name because that is how the loader takes it",
 	`"preset"`: "the key the preset field is registered under, not a label",
