@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
 )
 
 // ourRepository is how a link to this project has to read.
@@ -66,7 +68,11 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 			t.Errorf("reading %s: %v", p, err)
 			continue
 		}
-		links, seen := foreignProjectLinks(string(body), filepath.Base(p))
+		// The path from the repository root, not the file's name: the one
+		// exemption below is granted to one file, and a name is what a
+		// second file anywhere under .github could share with it.
+		rel := filepath.ToSlash(strings.TrimPrefix(p, root+string(filepath.Separator)))
+		links, seen := foreignProjectLinks(string(body), rel)
 		checked += seen
 		for _, project := range links {
 			t.Errorf("%s links to https://github.com/%s.\n"+
@@ -84,30 +90,49 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 	}
 }
 
-// The issue forms are shaped the way GitHub needs them.
-//
-// A form GitHub cannot read is not reported anywhere a person would see. It
-// simply stops offering the template, and the first anybody knows is that
-// reports arrive without the version in them.
 // rendererFetchScript is the one file allowed to name another project's
 // release: the script that downloads the software renderer. A download a
-// workflow makes is not a place a person is sent.
-const rendererFetchScript = "fetch_software_renderer.sh"
+// workflow makes is not a place a person is sent. By its path from the
+// repository root, because a file's name is what a second script anywhere
+// under .github could share with it.
+const rendererFetchScript = ".github/scripts/fetch_software_renderer.sh"
+
+// companionProjects are the projects whose releases the fetch script may
+// download from: the ones the registry of companions names as the source of
+// what ships beside a binary. Derived from the registry rather than written
+// here, so a companion added tomorrow is covered on the day - and a download
+// of any other project is a link to somebody else's code, refused like any
+// other. An outside review of #109 pointed out that the exemption as it
+// stood forgave a release download of anything in that script, and asked for
+// the pinned address written here instead - which the script does not hold:
+// it builds the address from the version and the archive name in the pin, so
+// a literal in this guard would have gone red on the correct script. The
+// project is the part that IS literal in both places.
+func companionProjects() map[string]bool {
+	out := map[string]bool{}
+	for _, c := range legal.Companions() {
+		out[c.Source.Project] = true
+	}
+	return out
+}
 
 // foreignProjectLinks are the GitHub projects a file links to that are not
-// this one, and how many project links it holds at all. The one exemption
-// is by FILE and by shape together: a release download, in the script that
-// makes it. The same address in a file a person reads is refused - an
-// outside review of #109 pointed out that an exemption by shape alone would
-// have let a release download of anything into SECURITY.md.
-func foreignProjectLinks(text, base string) (foreign []string, seen int) {
+// this one, and how many project links it holds at all. rel is the file's
+// path from the repository root, slash separated. The one exemption is by
+// FILE, by PROJECT and by shape together: a release download of a project
+// the companion registry names, in the script that makes it. The same
+// address in a file a person reads is refused - an outside review of #109
+// pointed out that an exemption by shape alone would have let a release
+// download of anything into SECURITY.md.
+func foreignProjectLinks(text, rel string) (foreign []string, seen int) {
 	for _, at := range githubProject.FindAllStringSubmatchIndex(text, -1) {
 		seen++
 		project := text[at[2]:at[3]]
 		if project == ourRepository {
 			continue
 		}
-		if base == rendererFetchScript && strings.HasPrefix(text[at[1]:], "/releases/download/") {
+		download := strings.HasPrefix(text[at[1]:], "/releases/download/")
+		if rel == rendererFetchScript && download && companionProjects()[project] {
 			continue
 		}
 		foreign = append(foreign, project)
@@ -115,23 +140,44 @@ func foreignProjectLinks(text, base string) (foreign []string, seen int) {
 	return foreign, seen
 }
 
-// The exemption reaches the fetch script and nothing else: the same release
-// download in a file a person reads is refused.
+// The exemption reaches the fetch script, the companion's own project and a
+// release download, and nothing beside any of the three: the same address
+// in a file a person reads, a script of the same name somewhere else, and a
+// download of another project in the right script are each refused.
 func TestAReleaseDownloadIsForgivenInTheFetchScriptAlone(t *testing.T) {
-	download := "see https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/x.7z here"
+	project := legal.Companions()[0].Source.Project
+	download := "see https://github.com/" + project + "/releases/download/26.2.0/x.7z here"
 	if foreign, _ := foreignProjectLinks(download, rendererFetchScript); len(foreign) != 0 {
 		t.Errorf("the fetch script's own download is refused: %v", foreign)
 	}
-	for _, base := range []string{"SECURITY.md", "CONTRIBUTING.md", "config.yml"} {
-		if foreign, _ := foreignProjectLinks(download, base); len(foreign) != 1 {
-			t.Errorf("a release download in %s is forgiven, and only the fetch script may make one", base)
+	for _, rel := range []string{"SECURITY.md", "CONTRIBUTING.md", ".github/ISSUE_TEMPLATE/config.yml"} {
+		if foreign, _ := foreignProjectLinks(download, rel); len(foreign) != 1 {
+			t.Errorf("a release download in %s is forgiven, and only the fetch script may make one", rel)
 		}
 	}
-	if foreign, _ := foreignProjectLinks("https://github.com/pal1000/mesa-dist-win/issues", rendererFetchScript); len(foreign) != 1 {
+	// A script of the same name that is not THE script: the first version
+	// compared names, and a name is what any file can carry.
+	for _, rel := range []string{".github/fetch_software_renderer.sh", ".github/other/fetch_software_renderer.sh", "fetch_software_renderer.sh"} {
+		if foreign, _ := foreignProjectLinks(download, rel); len(foreign) != 1 {
+			t.Errorf("a release download in %s is forgiven, and only %s may make one", rel, rendererFetchScript)
+		}
+	}
+	// The right script downloading somebody else's release: the registry
+	// names where the renderer comes from, and nothing else ships beside.
+	other := "https://github.com/someone/else/releases/download/1.0/x.7z"
+	if foreign, _ := foreignProjectLinks(other, rendererFetchScript); len(foreign) != 1 {
+		t.Error("a release download of a project the companion registry does not name is forgiven in the fetch script")
+	}
+	if foreign, _ := foreignProjectLinks("https://github.com/"+project+"/issues", rendererFetchScript); len(foreign) != 1 {
 		t.Error("a link that is not a release download is forgiven in the fetch script, and only a download is")
 	}
 }
 
+// The issue forms are shaped the way GitHub needs them.
+//
+// A form GitHub cannot read is not reported anywhere a person would see. It
+// simply stops offering the template, and the first anybody knows is that
+// reports arrive without the version in them.
 func TestTheIssueFormsAreShapedTheWayGitHubNeeds(t *testing.T) {
 	dir := filepath.Join(repoRoot(t), ".github", "ISSUE_TEMPLATE")
 	entries, err := os.ReadDir(dir)

@@ -17,13 +17,19 @@ import (
 // rendered from. Two written copies of one fact, and these guards are what
 // make that safe - the same shape as the notices held to the registry.
 
-// activeLines is a text with its comment lines taken out - every line whose
-// first character that is not blank is a hash, which is the comment of the
-// shell, of YAML and of Python alike. The guards below read the result, so
-// that an operation commented out is an operation gone: the mutation runner
-// answered the first version of one of them with the call commented out,
-// and the text was still in the file. Inert text inside a string literal is
-// not caught by this, and is said so rather than pretended.
+// activeLines is a shell script or a workflow with its comment lines taken
+// out - every line whose first character that is not blank is a hash. The
+// guards below read the result, so that an operation commented out is an
+// operation gone: the mutation runner answered the first version of one of
+// them with the call commented out, and the text was still in the file.
+//
+// Whole lines only, and that is the limit of what can be done without
+// reading the shell: a hash after code starts a comment unless it sits in
+// quotes, and the workflows are YAML whose run blocks are one string each,
+// so there is no string boundary to stop at. What a guard over these looks
+// for is quoted by nature - a URL handed to curl, a condition in brackets -
+// and a rule that dropped string contents would drop the things asked
+// about. A Python script has a reader of its own, activePython.
 func activeLines(text string) string {
 	var kept []string
 	for _, line := range strings.Split(text, "\n") {
@@ -33,6 +39,75 @@ func activeLines(text string) string {
 		kept = append(kept, line)
 	}
 	return strings.Join(kept, "\n")
+}
+
+// activePython is a Python script with its comments and its docstrings
+// taken out: a comment to the end of its line, a triple-quoted string
+// whole, each replaced by nothing so that the lines stay where they were.
+// Short string literals stay, on purpose. Measured with Python's own
+// tokenizer on 2026-09-17: of the ten things the two guards over
+// sign_release.py look for, five ARE string contents by nature - arguments
+// handed to a subprocess, the PowerShell text the script runs, a constant -
+// so a reader that dropped every literal would turn those guards red on the
+// correct script. What this closes is the shape that script actually has,
+// which activeLines left in: a docstring naming an operation (one of them
+// names os.listdir, the very call the repack guard refuses). A short
+// literal holding an operation is not caught here - the guards that look
+// for CODE ask for the statement at the start of a line instead, see
+// statementIn, and a literal does not start a line.
+func activePython(text string) string {
+	var out strings.Builder
+	for i := 0; i < len(text); {
+		rest := text[i:]
+		switch {
+		case rest[0] == '#':
+			end := strings.IndexByte(rest, '\n')
+			if end < 0 {
+				end = len(rest)
+			}
+			i += end
+		case strings.HasPrefix(rest, `"""`) || strings.HasPrefix(rest, `'''`):
+			end := closingQuote(rest, 3, rest[:3], false)
+			out.WriteString(strings.Repeat("\n", strings.Count(rest[:end], "\n")))
+			i += end
+		case rest[0] == '"' || rest[0] == '\'':
+			end := closingQuote(rest, 1, rest[:1], true)
+			out.WriteString(rest[:end])
+			i += end
+		default:
+			out.WriteByte(rest[0])
+			i++
+		}
+	}
+	return out.String()
+}
+
+// closingQuote is the index just past the quote that closes a string open
+// at the start of text, searched from at, with a backslash escaping the
+// character after it. A short string stops at the end of its line, because
+// Python does - and a string that never closes runs to the end of the text
+// rather than being guessed at.
+func closingQuote(text string, at int, quote string, shortString bool) int {
+	for i := at; i < len(text); i++ {
+		switch {
+		case text[i] == '\\':
+			i++
+		case shortString && text[i] == '\n':
+			return i
+		case strings.HasPrefix(text[i:], quote):
+			return i + len(quote)
+		}
+	}
+	return len(text)
+}
+
+// statementIn reports whether a line of code begins with the statement,
+// after indentation and before anything else. The statement is a regular
+// expression. A string literal holding the same text does not begin a line
+// - `note = "os.walk(work)"` begins with note - and a docstring is gone
+// before this is asked, so what is left is the operation itself.
+func statementIn(code, statement string) bool {
+	return regexp.MustCompile(`(?m)^[ \t]*` + statement).MatchString(code)
 }
 
 // rendererPin reads .github/mesa-dist-win: the version, the archive, its
@@ -184,19 +259,59 @@ func TestEveryWindowBuildFetchesTheRendererBeforeItPacks(t *testing.T) {
 // defect the script could have had, and it had it from the day it was
 // written, waiting for the first file in a subdirectory.
 func TestTheSigningRepacksWholeAndSignsTheLibraries(t *testing.T) {
-	script := activeLines(signingScript(t))
+	script := activePython(signingScript(t))
+	// Each one a statement at the start of a line, not a text anywhere in
+	// the file: an outside review of #109 pointed out that the text inside
+	// a string literal satisfied the first version, and the script's own
+	// docstrings name operations - see activePython.
 	for what, want := range map[string]string{
-		"it walks every directory when it repacks":      "os.walk(work)",
-		"it signs the libraries beside the program":     `n.endswith(".dll")`,
-		"it counts the repacked files against the held": "if repacked != inside:",
-		"it verifies each signed file's certificate":    "actual = certificate_of(target)",
+		"it walks every directory when it repacks":      `for .+ in os\.walk\(work\):`,
+		"it signs the libraries beside the program":     `signed = .+n\.endswith\("\.dll"\)`,
+		"it counts the repacked files against the held": `if repacked != inside:`,
+		"it verifies each signed file's certificate":    `actual = certificate_of\(target\)`,
 	} {
-		if !strings.Contains(script, want) {
-			t.Errorf("%s: sign_release.py does not contain %q", what, want)
+		if !statementIn(script, want) {
+			t.Errorf("%s: no line of sign_release.py begins with %s", what, want)
 		}
 	}
-	if strings.Contains(script, "for name in sorted(os.listdir(work)):") {
+	if statementIn(script, `for name in sorted\(os\.listdir\(work\)\):`) {
 		t.Error("sign_release.py still repacks from os.listdir, which names a directory and none of its contents")
+	}
+}
+
+// The reader of the signing script drops what is not code and keeps what
+// is, in the shapes the script has: a comment after code, a docstring across
+// lines, a short literal that holds a hash or a quote. Each shape is pressed
+// on its own, because the reader that gets one of them wrong is green on the
+// real script all the same.
+func TestTheSigningScriptReaderKeepsCodeAndDropsProse(t *testing.T) {
+	for _, c := range []struct{ label, in, want string }{
+		{"a comment after code", "x = 1  # os.walk(work)\ny = 2\n", "x = 1  \ny = 2\n"},
+		{"a docstring across lines", "def f():\n    \"\"\"walks with\n    os.walk(work)\n    \"\"\"\n    return 1\n", "def f():\n    \n\n\n    return 1\n"},
+		{"a docstring in single quotes", "'''os.walk(work)'''\nz = 3\n", "\nz = 3\n"},
+		{"a short literal with a hash in it", "note = \"a # b\"\n", "note = \"a # b\"\n"},
+		{"a short literal with the other quote in it", "note = 'say \"hi\"'\nq = 1\n", "note = 'say \"hi\"'\nq = 1\n"},
+		{"an escaped quote inside a literal", "note = \"a \\\" b\"  # c\n", "note = \"a \\\" b\"  \n"},
+		{"triple quotes inside a short literal", "note = \"'''\"\nq = 1\n", "note = \"'''\"\nq = 1\n"},
+		{"a short literal that never closes stops at its line", "note = \"open\nq = 1\n", "note = \"open\nq = 1\n"},
+	} {
+		if got := activePython(c.in); got != c.want {
+			t.Errorf("%s: activePython(%q) = %q, want %q", c.label, c.in, got, c.want)
+		}
+	}
+	// And the statement check reads the result the way the guards do.
+	code := activePython("note = \"os.walk(work)\"\n\"\"\"\nfor x in os.walk(work):\n\"\"\"\n    for base, names in os.walk(work):  # here\n")
+	if !statementIn(code, `for .+ in os\.walk\(work\):`) {
+		t.Errorf("the statement is there and was not found in %q", code)
+	}
+	if statementIn(activePython("note = \"for x in os.walk(work):\"\n"), `for .+ in os\.walk\(work\):`) {
+		t.Error("a literal holding the statement counted as the statement")
+	}
+	if statementIn(activePython("\"\"\"\nfor x in os.walk(work):\n\"\"\"\n"), `for .+ in os\.walk\(work\):`) {
+		t.Error("a docstring holding the statement counted as the statement")
+	}
+	if statementIn(activePython("# for x in os.walk(work):\n"), `for .+ in os\.walk\(work\):`) {
+		t.Error("a comment holding the statement counted as the statement")
 	}
 }
 
@@ -218,10 +333,16 @@ func TestThePublishedWindowArchiveIsCheckedForTheRenderer(t *testing.T) {
 	}
 
 	release := activeLines(workflowText(t, "release.yml"))
+	// When it is used is the condition the program tests - no window from
+	// the first attempt - and not the cause a person would name for it. The
+	// first version of the notes said "when the graphics driver offers no
+	// OpenGL 2.1", which is the usual reason and not the test the code
+	// makes: an outside review of #109 pointed at opening.go, where the
+	// second attempt follows any first attempt that left no window.
 	for what, want := range map[string]string{
 		"the notes say the renderer is in the archive": "software OpenGL renderer",
 		"the notes say where it is":                    "next to the program",
-		"the notes say when it is used":                "offers no OpenGL 2.1",
+		"the notes say when it is used":                "loads it only after its first attempt",
 	} {
 		if !strings.Contains(release, want) {
 			t.Errorf("%s: the release notes in release.yml do not contain %q", what, want)

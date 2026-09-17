@@ -146,11 +146,12 @@ because it turns other people's test suites red.
 
 - **On Windows the window opens without a graphics driver.** The Windows
   archive of the window carries a software OpenGL renderer, Mesa llvmpipe
-  26.2.0, in an `opengl` folder next to the program. When the graphics driver
-  offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote
-  desktop, a server - the window starts itself again with the renderer and
-  opens, drawn in software: slower, and it says so on its About screen and on
-  standard error. On a machine with a driver the renderer is not touched
+  26.2.0, in an `opengl` folder next to the program. When the first attempt
+  at a window fails - typically a graphics driver with no OpenGL 2.1: a
+  virtual machine without 3D acceleration, a remote desktop, a server - the
+  window starts itself again with the renderer and opens, drawn in software:
+  slower, and it says so on its About screen and on standard error. On a
+  machine with a driver the renderer is not touched
   unless asked for: `tfg-gui --software-gl` loads it on any Windows machine,
   which is the way to see the window as such a machine sees it. If the folder
   is missing, the refusal says which file it looked for, and if a file is

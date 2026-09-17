@@ -45,26 +45,21 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 			"the window binary asks it for MessageBoxW when the toolkit could not open a window (O218)",
 	}
 
-	// Where a load may name something this cannot read, and why. A path worked
-	// out at run time is the SAFE form when it is absolute and comes from the
-	// system rather than from the search order, and it is the dangerous one
-	// when it comes from anywhere else - a list of names cannot tell those
-	// apart, so the file is named instead.
-	byPath := map[string]string{
-		"internal/gui/darkmenus_windows.go": "builds an absolute path from the system directory, because uxtheme.dll is not a KnownDLL",
-		// Not from the system, and allowed all the same: the path is built
-		// under the directory the executable itself was loaded from, which
-		// is exactly the trust the executable already has. What this rules
-		// out is the search order - a name would be looked for beside the
-		// program FIRST, and a renderer beside the program is what this
-		// project ships on purpose, so the load has to say which file it
-		// means rather than let the loader pick one of that name.
-		"internal/gui/software_windows.go": "builds absolute paths under the executable's own directory, for the software renderer shipped beside it (docs/GUI-SOFTWARE-RENDERER-2026-09-17.md)",
-	}
-
+	// Where a load may name something this cannot read, which call, where
+	// the path has to come from, and why: librariesLoadedByPath in
+	// notelemetry_test.go, one declaration for the two guards that ask
+	// about the same two calls - this one about the search order, that one
+	// about a way out. A path worked out at run time is the SAFE form when
+	// it is absolute and comes from the system or from under the executable,
+	// and the dangerous one when it comes from anywhere else. A list of
+	// names cannot tell those apart, so the entry names the file AND the
+	// function the path has to be answered by - and a computed path answered
+	// by anything else in that file is refused below, not forgiven as "the
+	// one" load. An outside review of #109 pointed out that the count alone
+	// would have forgiven a bare name worked out in place.
 	root := repoRoot(t)
 	used := map[string]bool{}
-	// How many call sites load by a computed path, per registered file. One
+	// How many call sites make the approved load, per registered file. One
 	// each: the entry forgives the call it names and not a second one added
 	// beside it - an outside review of #109 pointed out that a registered
 	// file could otherwise grow any number of computed loads unnoticed.
@@ -90,50 +85,59 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 		if perr != nil {
 			return perr
 		}
-		ast.Inspect(file, func(n ast.Node) bool {
-			call, ok := n.(*ast.CallExpr)
-			if !ok {
-				return true
-			}
-			sel, ok := call.Fun.(*ast.SelectorExpr)
-			if !ok {
-				return true
-			}
-			if pkg, ok := sel.X.(*ast.Ident); !ok || pkg.Name != "syscall" {
-				return true
-			}
-			switch sel.Sel.Name {
-			case "NewLazyDLL", "LoadDLL", "LoadLibrary":
-			default:
-				return true
-			}
-			name := loadedName(call)
-			where := fset.Position(call.Pos()).Line
-			if name == "" {
-				if _, granted := byPath[rel]; !granted {
-					t.Errorf("%s:%d loads a library under a name this guard cannot read.\n"+
-						"A load whose argument is worked out at run time is safe when the path is "+
-						"absolute and comes from the system, and unsafe when it comes from anywhere "+
-						"else - and nothing here can tell those apart. Add this file to the list "+
-						"above with the reason, or name a KnownDLL.", rel, where)
+		// Declaration by declaration, so that a call knows the function it
+		// sits in - where its argument was bound, which boundTo reads.
+		for _, decl := range file.Decls {
+			fn, _ := decl.(*ast.FuncDecl)
+			ast.Inspect(decl, func(n ast.Node) bool {
+				call, ok := n.(*ast.CallExpr)
+				if !ok {
 					return true
 				}
-				viaPath[rel]++
+				sel, ok := call.Fun.(*ast.SelectorExpr)
+				if !ok {
+					return true
+				}
+				if pkg, ok := sel.X.(*ast.Ident); !ok || pkg.Name != "syscall" {
+					return true
+				}
+				switch sel.Sel.Name {
+				case "NewLazyDLL", "LoadDLL", "LoadLibrary":
+				default:
+					return true
+				}
+				name := loadedName(call)
+				where := fset.Position(call.Pos()).Line
+				if name == "" {
+					spelled, from := spelledCall(call), firstArgumentSource(call, fn)
+					op, granted := librariesLoadedByPath[rel]
+					if !granted || !op.forgives(telemetryFinding{call: spelled, from: from}) {
+						t.Errorf("%s:%d makes %s of %s, a library under a name this guard cannot read.\n"+
+							"A load whose argument is worked out at run time is safe when the path is "+
+							"absolute and comes from the system or from under the executable, and unsafe "+
+							"when it comes from anywhere else - and nothing here can tell those apart from "+
+							"the call. The entry for a file in librariesLoadedByPath (notelemetry_test.go) "+
+							"names the call and the function the path has to be answered by. Name this one "+
+							"there with the reason, or name a KnownDLL.", rel, where, spelled, describeSource(from))
+						return true
+					}
+					viaPath[rel]++
+					return true
+				}
+				if _, known := knownDLLs[name]; !known {
+					t.Errorf("%s:%d loads %q with syscall.%s.\n"+
+						"That goes through the standard search order, which has included the directory "+
+						"the program was started from, and only a KnownDLL is immune because it is "+
+						"already mapped. syscall has no System variant of this call - measured 2026-09-06 - "+
+						"so a library that is not on the list above needs a deliberate answer rather than "+
+						"this form: an absolute path, or golang.org/x/sys/windows with the owner's yes "+
+						"under untouchable rule 11.", rel, where, name, sel.Sel.Name)
+					return true
+				}
+				used[name] = true
 				return true
-			}
-			if _, known := knownDLLs[name]; !known {
-				t.Errorf("%s:%d loads %q with syscall.%s.\n"+
-					"That goes through the standard search order, which has included the directory "+
-					"the program was started from, and only a KnownDLL is immune because it is "+
-					"already mapped. syscall has no System variant of this call - measured 2026-09-06 - "+
-					"so a library that is not on the list above needs a deliberate answer rather than "+
-					"this form: an absolute path, or golang.org/x/sys/windows with the owner's yes "+
-					"under untouchable rule 11.", rel, where, name, sel.Sel.Name)
-				return true
-			}
-			used[name] = true
-			return true
-		})
+			})
+		}
 		return nil
 	})
 	if err != nil {
@@ -151,17 +155,17 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 				"Delete the entry rather than leaving it to cover the next arrival.", name, why)
 		}
 	}
-	for rel, why := range byPath {
+	for rel, op := range librariesLoadedByPath {
 		switch viaPath[rel] {
 		case 0:
-			t.Errorf("%s is allowed to load a library by a path it works out (%s) and it loads "+
-				"none.\nDelete the entry rather than leaving it to cover whatever lands in that "+
-				"file next.", rel, why)
+			t.Errorf("%s is allowed one %s of what %s answers (%s) and makes none.\n"+
+				"Delete the entry rather than leaving it to cover whatever lands in that "+
+				"file next.", rel, op.call, op.from, op.why)
 		case 1:
 		default:
-			t.Errorf("%s loads a library by a computed path at %d call sites, and its entry (%s) "+
+			t.Errorf("%s makes the approved load at %d call sites, and its entry (%s) "+
 				"forgives one.\nA second computed load is a second decision: name it with its own reason, "+
-				"or it rides on the first one's.", rel, viaPath[rel], why)
+				"or it rides on the first one's.", rel, viaPath[rel], op.why)
 		}
 	}
 }

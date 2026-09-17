@@ -460,11 +460,12 @@ jobs:
             echo "- \`tfg-gui_*\` is the desktop window. Same engine, same features."
             echo
             echo "The Windows window archive also carries a software OpenGL renderer, Mesa llvmpipe,"
-            echo "in \`opengl\` next to the program. The window loads it only when the graphics driver"
-            echo "offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote desktop,"
-            echo "a server - and says so on its About screen. On a machine with a driver it is not"
-            echo "touched unless you ask for it with \`--software-gl\`. Both files are signed like the"
-            echo "program. Keep the folder next to the program."
+            echo "in \`opengl\` next to the program. The window loads it only after its first attempt"
+            echo "at a window failed - typically a graphics driver with no OpenGL 2.1: a virtual"
+            echo "machine without 3D acceleration, a remote desktop, a server - and says so on its"
+            echo "About screen. On a machine with a driver it is not touched unless you ask for it"
+            echo "with \`--software-gl\`. Both files are signed like the program. Keep the folder next"
+            echo "to the program."
             echo
             echo "Match the file to your system and architecture. Check what you downloaded against"
             echo "\`verify-SHA256SUMS.txt\`, at the bottom of this list."

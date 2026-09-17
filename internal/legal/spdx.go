@@ -184,7 +184,7 @@ func (doc *spdxDocument) accompany(root string, c Companion) {
 			Checksums:        []spdxChecksum{{Algorithm: "SHA256", ChecksumValue: c.Source.SHA256}},
 			Comment: "Shipped beside " + c.Binary + " in the " + c.Platform + " archive only, as " +
 				strings.Join(files, " and ") + ", taken from " + c.Source.Inside + " inside the archive named here. " +
-				"Loaded at run time only when the graphics driver offers no OpenGL 2.1, or when asked for.",
+				"Loaded at run time only after the first attempt at a window failed, or when asked for.",
 		})
 	}
 	doc.Relationships = append(doc.Relationships, spdxRelationship{

@@ -100,19 +100,35 @@ func TestTheReleaseChecksTheTreeAndTheChangelogFirst(t *testing.T) {
 }
 
 // What the script refuses is worth more than what it does.
+//
+// Read as code: comments and docstrings gone (activePython), and what is a
+// statement asked for at the start of a line. The first version searched
+// the raw text, so a required line commented out satisfied it - an outside
+// review of #109 named it - and one of its texts, codesign.go, stood in the
+// file four times, once as the constant and three times in error messages,
+// so the constant could have gone and the messages would have answered.
 func TestTheSigningScriptRefusesBeforeItSigns(t *testing.T) {
-	script := signingScript(t)
+	script := activePython(signingScript(t))
 
 	for what, want := range map[string]string{
-		"it verifies the build before touching it":                                                      "gh\", \"attestation\", \"verify\"",
-		"it timestamps, or the signature dies with the certificate":                                     "/tr",
-		"it reads the certificate back out of the signed file":                                          "certificate_of(target)",
+		"it verifies the build before touching it":                `run\(\["gh", "attestation", "verify",`,
+		"it reads the certificate back out of the signed file":    `actual = certificate_of\(target\)`,
+		"it selects the certificate by OID rather than by a name": `CODE_SIGNING_OID = "1\.3\.6\.1\.5\.5\.7\.3\.3"`,
+		"it reads the pin from one place":                         `PIN_FILE = os\.path\.join\("internal", "legal", "codesign\.go"\)`,
+	} {
+		if !statementIn(script, want) {
+			t.Errorf("%s: no line of the script begins with %s", what, want)
+		}
+	}
+	// String contents by nature - an argument to signtool inside a list
+	// that spans lines, and the PowerShell text the script runs - so asked
+	// for as text, in the code that is left.
+	for what, want := range map[string]string{
+		"it timestamps, or the signature dies with the certificate":                                     `"/tr", TIMESTAMP_URL`,
 		"it hands a file's path to PowerShell through the environment, never through the script's text": "-LiteralPath $env:TFG_SIGNED_FILE",
-		"it selects the certificate by OID rather than by a name":                                       "1.3.6.1.5.5.7.3.3",
-		"it reads the pin from one place":                                                               "codesign.go",
 	} {
 		if !strings.Contains(script, want) {
-			t.Errorf("%s: the script does not contain %q", what, want)
+			t.Errorf("%s: the script's code does not contain %q", what, want)
 		}
 	}
 
@@ -152,10 +168,12 @@ func TestTheSigningScriptRefusesBeforeItSigns(t *testing.T) {
 // lookup without reading stderr leaves the next non terminating error just as
 // invisible - the message a person needs would still be thrown away.
 func TestTheSigningScriptDoesNotDependOnWhichShellStartedIt(t *testing.T) {
-	script := signingScript(t)
+	// Code, not text: the sibling above reads the script the same way, for
+	// the same reason.
+	script := activePython(signingScript(t))
 
 	// The .NET store is in the runtime rather than in a module, so it answers
-	// whatever PSModulePath says.
+	// whatever PSModulePath says. Inside the PowerShell text, so a text.
 	if !strings.Contains(script, "X509Store") {
 		t.Error("the script does not open the certificate store through .NET, so it answers differently depending on the shell that launched it")
 	}
@@ -168,7 +186,7 @@ func TestTheSigningScriptDoesNotDependOnWhichShellStartedIt(t *testing.T) {
 	}
 	// A non-zero code is not the only way PowerShell says something is wrong,
 	// so the check that reads stderr must not be reached only through one.
-	if !strings.Contains(script, "out.stderr.strip():") {
+	if !statementIn(script, `if out\.stderr\.strip\(\):`) {
 		t.Error("nothing prints what PowerShell said unless the exit code is non-zero, and a non terminating error leaves that code at zero")
 	}
 }
