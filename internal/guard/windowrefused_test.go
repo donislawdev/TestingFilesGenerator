@@ -254,7 +254,7 @@ func stringOf(call *ast.CallExpr) string {
 // attempt the seam offers - the one built by SecondAttemptFor, which starts
 // this program again with the software renderer - and that a window asked
 // for the renderer loads it, through LoadSoftwareRenderer. Both calls are
-// behind cgo too, so presence in the source is what can be asked; what
+// behind cgo too, so presence in the source is what can be asked. What
 // they do when reached was measured by running the binary, on a machine
 // with a driver and on a guest without one.
 func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {

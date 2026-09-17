@@ -60,6 +60,17 @@ are not signed**, because desktop Linux has no equivalent to sign them with. Ver
 any download against `verify-SHA256SUMS.txt` from the same release, and the build
 provenance attestation published with it.
 
+**The Windows window archive carries one thing this project did not write:** a
+software OpenGL renderer, two files of Mesa llvmpipe in an `opengl` folder next to
+the program, for machines whose graphics driver offers no OpenGL 2.1. The release
+workflow downloads them from a pinned release of the project that builds them,
+checks the archive's SHA-256 and each file's own before unpacking anything, and
+signs both files with the same certificate as the program. The sums they were
+reviewed at are in `THIRD-PARTY-NOTICES.md`. The program loads them only by their
+absolute path under its own directory, only after the driver has refused, or when
+asked with `--software-gl` - never by name from the search path, and never on a
+machine where the driver draws.
+
 ### In scope
 
 - A way to make the tool write or delete outside the directory it was given.

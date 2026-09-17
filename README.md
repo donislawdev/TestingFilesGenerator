@@ -191,10 +191,18 @@ through OpenGL and reaches it through C, so that one needs a C compiler and is
 built natively on each system. Built without one it still compiles, and says on
 start that it has no window in it and that everything is on the command line.
 
-The window needs a graphics driver that provides OpenGL 2.1. A Windows
-virtual machine without 3D acceleration has none - there the window binary
-says so in a dialog and on standard error, and exits 1. The command line
-needs no graphics driver and does everything the window does.
+The window needs OpenGL 2.1 to draw. On Windows the archive carries a
+software renderer for machines whose graphics driver offers none - Mesa
+llvmpipe, in an `opengl` folder next to `tfg-gui.exe` - and the window uses it
+by itself when the driver refuses: a virtual machine without 3D acceleration,
+a remote desktop, a server. Drawn that way it is slower and says so on its
+About screen. On a machine with a driver the folder is never touched.
+`tfg-gui --software-gl` asks for the renderer on any machine. Keep the folder
+next to the program: without it, and without a driver, the window says what
+it looked for in a dialog and on standard error, and exits 1. Linux has Mesa
+in the system and macOS has never lacked what the toolkit needs, so nothing
+of the kind ships there. The command line needs no graphics driver and does
+everything the window does.
 
 ## 🚀 Quick start
 
