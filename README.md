@@ -191,6 +191,11 @@ through OpenGL and reaches it through C, so that one needs a C compiler and is
 built natively on each system. Built without one it still compiles, and says on
 start that it has no window in it and that everything is on the command line.
 
+The window needs a graphics driver that provides OpenGL 2.1. A Windows
+virtual machine without 3D acceleration has none - there the window binary
+says so in a dialog and on standard error, and exits 1. The command line
+needs no graphics driver and does everything the window does.
+
 ## 🚀 Quick start
 
 **1. Make a file.** One PNG, exactly two megabytes:

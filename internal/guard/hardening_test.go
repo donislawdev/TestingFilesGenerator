@@ -41,6 +41,8 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 	// rather than remembered: the KnownDLLs registry key on 2026-09-06.
 	knownDLLs := map[string]string{
 		"kernel32.dll": "a KnownDLL, always already mapped - free space asks it for GetDiskFreeSpaceExW",
+		"user32.dll": "a KnownDLL, measured in the registry on 2026-09-16 among the same thirty seven - " +
+			"the window binary asks it for MessageBoxW when the toolkit could not open a window (O218)",
 	}
 
 	// Where a load may name something this cannot read, and why. A path worked
