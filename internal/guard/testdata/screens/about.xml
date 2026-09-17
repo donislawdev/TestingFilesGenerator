@@ -31,8 +31,8 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<widget size="1092x1164" type="*widget.Scroll">
-					<container size="1092x1484">
-						<container pos="136,0" size="820x1484">
+					<container size="1092x1611">
+						<container pos="136,0" size="820x1611">
 							<container size="820x24">
 								<widget pos="16,0" size="788x24" type="*container.ThemeOverride">
 									<container size="788x24">
@@ -188,14 +188,32 @@
 									</container>
 								</container>
 							</container>
+							<container pos="0,1508" size="820x102">
+								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x102"/>
+								<container size="820x102">
+									<container pos="16,16" size="788x70">
+										<text bold size="788x20" textSize="17">Shipped beside the program on Windows</text>
+										<widget pos="0,36" size="788x33" type="*container.ThemeOverride">
+											<container size="788x33">
+												<widget size="788x33" type="*widget.Label">
+													<widget size="788x33" type="*widget.RichText">
+														<text size="784x16">Mesa 3D, llvmpipe software renderer  26.2.0  MIT AND Apache-2.0 WITH LLVM-exception AND BSL-1.0  Copyright (C)</text>
+														<text pos="0,16" size="369x16">1999-2007 Brian Paul, Copyright (C) 2008 VMware, Inc.</text>
+													</widget>
+												</widget>
+											</container>
+										</widget>
+									</container>
+								</container>
+							</container>
 						</container>
 					</container>
 					<widget pos="0,1164" size="1092x0" type="*widget.Shadow">
 						<linearGradient pos="0,-8" size="1092x8"/>
 					</widget>
 					<widget pos="1086,0" size="6x1164" type="*widget.scrollBarArea">
-						<widget pos="3,0" size="3x912" type="*widget.scrollBar">
-							<rectangle fillColor="scrollbar" radius="3" size="3x912"/>
+						<widget pos="3,0" size="3x841" type="*widget.scrollBar">
+							<rectangle fillColor="scrollbar" radius="3" size="3x841"/>
 						</widget>
 					</widget>
 				</widget>

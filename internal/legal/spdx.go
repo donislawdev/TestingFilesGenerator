@@ -147,6 +147,51 @@ func (doc *spdxDocument) add(binary Binary, version string) {
 	for _, item := range carriedBy(binary) {
 		doc.contain(root, item)
 	}
+	for _, c := range companions {
+		if c.Binary == binary.Name {
+			doc.accompany(root, c)
+		}
+	}
+}
+
+// accompany adds a companion and the relationship saying which binary it is
+// shipped beside.
+//
+// DEPENDS_ON rather than CONTAINS, because the binary does not contain it:
+// the archive of one platform carries it next to the binary, and the
+// program loads it at run time, and only when the graphics driver leaves it
+// nothing else to draw with. The package names the archive it is downloaded
+// from and that archive's checksum, which is what the release workflow
+// verifies before it unpacks - so a reader of this document can check the
+// same bytes the release was built from.
+func (doc *spdxDocument) accompany(root string, c Companion) {
+	id := identifier("Package", c.Name)
+	if !doc.has(id) {
+		files := make([]string, 0, len(c.Files))
+		for _, f := range c.Files {
+			files = append(files, f.Path)
+		}
+		doc.Packages = append(doc.Packages, spdxPackage{
+			SPDXID:           id,
+			Name:             c.Name,
+			VersionInfo:      c.Source.Version,
+			DownloadLocation: c.Source.URL,
+			FilesAnalyzed:    false,
+			LicenseConcluded: c.SPDX,
+			LicenseDeclared:  c.SPDX,
+			CopyrightText:    c.Copyright,
+			PackageFileName:  c.Source.Archive,
+			Checksums:        []spdxChecksum{{Algorithm: "SHA256", ChecksumValue: c.Source.SHA256}},
+			Comment: "Shipped beside " + c.Binary + " in the " + c.Platform + " archive only, as " +
+				strings.Join(files, " and ") + ", taken from " + c.Source.Inside + " inside the archive named here. " +
+				"Loaded at run time only when the graphics driver offers no OpenGL 2.1, or when asked for.",
+		})
+	}
+	doc.Relationships = append(doc.Relationships, spdxRelationship{
+		SPDXElementID:      root,
+		RelationshipType:   "DEPENDS_ON",
+		RelatedSPDXElement: id,
+	})
 }
 
 // contain adds one component and the relationship saying which binary has it.

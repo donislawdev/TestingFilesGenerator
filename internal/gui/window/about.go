@@ -109,20 +109,31 @@ func About(h Host) fyne.CanvasObject {
 func carried() []fyne.CanvasObject {
 	items := legal.Reviewed()
 	var out []fyne.CanvasObject
-	if lines := carriedLines(items, false); lines != "" {
-		out = append(out, parts.Section(text.SectionCarriedCode(), parts.Prose(lines)))
+	groups := []struct {
+		heading string
+		in      func(legal.Item) bool
+	}{
+		{text.SectionCarriedCode(), func(i legal.Item) bool { return !i.Embedded && !i.Beside }},
+		{text.SectionCarriedFiles(), func(i legal.Item) bool { return i.Embedded }},
+		// Named on every system, although one archive carries it: the
+		// notices say the same everywhere, and a screen that named it only
+		// where it was found would say nothing on the machine where it was
+		// deleted, which is the machine whose person is asking.
+		{text.SectionCarriedBeside(), func(i legal.Item) bool { return i.Beside }},
 	}
-	if lines := carriedLines(items, true); lines != "" {
-		out = append(out, parts.Section(text.SectionCarriedFiles(), parts.Prose(lines)))
+	for _, g := range groups {
+		if lines := carriedLines(items, g.in); lines != "" {
+			out = append(out, parts.Section(g.heading, parts.Prose(lines)))
+		}
 	}
 	return out
 }
 
 // carriedLines writes one group as text, in the order internal/legal settled.
-func carriedLines(items []legal.Item, embedded bool) string {
+func carriedLines(items []legal.Item, in func(legal.Item) bool) string {
 	var lines []string
 	for _, item := range items {
-		if item.Embedded == embedded {
+		if in(item) {
 			lines = append(lines, item.Line())
 		}
 	}
