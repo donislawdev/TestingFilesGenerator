@@ -291,7 +291,7 @@ func TestASectionPutAwayStillSaysWhatIsInIt(t *testing.T) {
 		// Shut again, which is what a person does after looking - and the line
 		// has to be worked out at that moment rather than when the panel was
 		// built, because at build time nobody had typed anything.
-		foldTitled(t, body, text.BatchHeading(1), section.title).OnTapped()
+		foldTitled(t, body, text.BatchHeading(1), section.title).Tapped(nil)
 
 		if !buriedFields(body, fields)[at] {
 			t.Fatalf("%q did not shut, so this guard is asking about an open section", section.title)

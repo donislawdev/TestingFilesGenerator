@@ -164,6 +164,16 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The whole head row of a section opens and closes it.** Until now only the
+  small arrow after a section's title was the target, so a click on "Notes
+  for the manifest" or on "Settings for png" did nothing and the section
+  stayed shut. The row is one control now: the title, the arrow, the line a
+  closed section shows about its contents, and the room to the right of them
+  all open and close it, the row lights under the pointer, and it is one stop
+  for the keyboard, where Space and Enter open and close it. The Duplicate and
+  Remove buttons in a batch's head keep doing their own job. Section titles
+  stay exactly where they were.
+
 - **A window the graphics toolkit could not create is a refusal that says
   why, not a process with no window in it.** On a Windows machine whose
   graphics driver offers no OpenGL 2.1 - a virtual machine without 3D

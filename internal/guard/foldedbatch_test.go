@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -14,54 +13,27 @@ import (
 )
 
 // foldRow is one fold as this file finds it: the words in its head and the
-// button that puts it away.
+// control the head row is.
 type foldRow struct {
-	title  string
-	toggle *parts.Button
+	title string
+	head  *parts.FoldHead
 }
 
 // foldRows is every fold on a screen, in the order the tree holds them.
 //
-// Found by shape AND by the title beside it, which is a change of 2026-08-25
-// and the reason is worth stating. A fold used to be the only button on this
-// screen with an icon and nothing written on it, so counting those was enough
-// and the batches came out in order. Then batches gained folds INSIDE them -
-// settings and manifest notes - and the same count returned six buttons for two
-// batches, so "the fold of batch 2" was the settings of batch 1. That is O118
-// again: nothing broke in the guard or in the screen, the shape it identified
-// its subject by stopped identifying it.
-//
-// The title is read out of the same row as the button rather than by position
-// in it. Positions in that row have moved before - a star, a byte count and a
-// detail button have all been added to a field's name row, and each time three
-// walks and a probe that read position 1 stopped reading what they meant.
-//
-// The button that opens a field's longer explanation looks the same from a
-// distance and is a *parts.DetailButton, which embeds widget.Button rather than
-// being one, so it does not answer this type assertion. It also has no title
-// beside it, which is the second reason it cannot be mistaken for a fold here.
+// Found by TYPE since O221 (2026-09-17), and by shape and title before that -
+// the shape was "an icon-only button in a row with words", and the reason it
+// stopped being right is the reason the change was made: the whole head row
+// is one control now, and the arrow is a mark on it rather than a button, so
+// there is no button to find. The head carries its own title, read from the
+// fold rather than from the row beside it, which closes the O118 shape this
+// helper used to describe: a title read by position in a row moves when the
+// row gains a star, a count or a detail button, and this did three times.
 func foldRows(o fyne.CanvasObject) []foldRow {
 	var out []foldRow
 	walk(o, func(obj fyne.CanvasObject) {
-		row, ok := obj.(*fyne.Container)
-		if !ok {
-			return
-		}
-		var toggle *parts.Button
-		title := ""
-		for _, item := range row.Objects {
-			if found, ok := item.(*parts.Button); ok {
-				if found.Text == "" && found.Icon != nil {
-					toggle = found
-				}
-				continue
-			}
-			if words, ok := wordsOf(item); ok && title == "" {
-				title = words
-			}
-		}
-		if toggle != nil && title != "" {
-			out = append(out, foldRow{title: title, toggle: toggle})
+		if head, ok := obj.(*parts.FoldHead); ok {
+			out = append(out, foldRow{title: head.Title(), head: head})
 		}
 	})
 	return out
@@ -70,7 +42,7 @@ func foldRows(o fyne.CanvasObject) []foldRow {
 // foldTitled is the fold with these words in its head, counting from the one
 // named. Titles repeat - every batch has a section called "Settings for bmp" -
 // so a section is asked for as the first one after the batch it belongs to.
-func foldTitled(t *testing.T, o fyne.CanvasObject, after, title string) *parts.Button {
+func foldTitled(t *testing.T, o fyne.CanvasObject, after, title string) *parts.FoldHead {
 	t.Helper()
 	rows := foldRows(o)
 	from := 0
@@ -88,7 +60,7 @@ func foldTitled(t *testing.T, o fyne.CanvasObject, after, title string) *parts.B
 	}
 	for _, row := range rows[from:] {
 		if row.title == title {
-			return row.toggle
+			return row.head
 		}
 	}
 	t.Fatalf("there is no fold headed %q after %q, and the screen has %v", title, after, foldTitles(rows))
@@ -123,7 +95,7 @@ func batchFolds(o fyne.CanvasObject) int {
 
 func foldBatch(t *testing.T, o fyne.CanvasObject, position int) {
 	t.Helper()
-	foldTitled(t, o, "", text.BatchHeading(position)).OnTapped()
+	foldTitled(t, o, "", text.BatchHeading(position)).Tapped(nil)
 }
 
 // openFold opens a fold that is shut, and says so if it was open already.
@@ -131,15 +103,15 @@ func foldBatch(t *testing.T, o fyne.CanvasObject, position int) {
 // Asserting the state rather than assuming it, which is the lesson O118 keeps
 // teaching in this package: a guard that presses a toggle blindly SHUTS a fold
 // somebody has since made open by default, and then measures a screen it
-// believes it opened. The state is read off the arrow, which is the same thing
-// a person reads it off.
+// believes it opened. The state is read off the head, which reads it off the
+// fold - the same state the arrow is drawn from.
 func openFold(t *testing.T, o fyne.CanvasObject, after, title string) {
 	t.Helper()
-	toggle := foldTitled(t, o, after, title)
-	if toggle.Icon == nil || toggle.Icon.Name() != theme.MenuExpandIcon().Name() {
+	head := foldTitled(t, o, after, title)
+	if head.Open() {
 		t.Fatalf("the section headed %q is already open, so this guard is not asking what it thinks", title)
 	}
-	toggle.OnTapped()
+	head.Tapped(nil)
 }
 
 // assertFoldOpen says the fold is open without touching it.
@@ -150,8 +122,7 @@ func openFold(t *testing.T, o fyne.CanvasObject, after, title string) {
 // a screen with nothing on it.
 func assertFoldOpen(t *testing.T, o fyne.CanvasObject, after, title string) {
 	t.Helper()
-	toggle := foldTitled(t, o, after, title)
-	if toggle.Icon != nil && toggle.Icon.Name() == theme.MenuExpandIcon().Name() {
+	if !foldTitled(t, o, after, title).Open() {
 		t.Fatalf("the section headed %q is shut, so whatever is measured next is not on the screen", title)
 	}
 }

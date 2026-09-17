@@ -56,10 +56,10 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x429">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x429"/>
-									<container size="820x429">
-										<container pos="16,16" size="788x397">
+								<container pos="0,73" size="820x441">
+									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x441"/>
+									<container size="820x441">
+										<container pos="16,16" size="788x409">
 											<text bold size="788x20" textSize="17">File configuration</text>
 											<container pos="0,36" size="788x26">
 												<container size="788x26">
@@ -227,24 +227,35 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,314" size="788x24">
-												<container size="788x24">
-													<container size="788x24">
-														<text bold size="132x24" textSize="17">Settings for avif</text>
-														<widget pos="136,0" size="24x24" type="*parts.Button">
-															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
-															<rectangle radius="6" size="24x24"/>
-															<image fillMode="contain" pos="2,2" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
-														</widget>
-														<widget pos="164,0" size="0x24" type="*container.ThemeOverride">
-															<container size="0x24">
+											<container pos="0,314" size="788x36">
+												<container size="788x36">
+													<container size="788x36">
+														<container pos="-8,0" size="796x36">
+															<container size="792x36">
+																<widget size="792x36" type="*parts.FoldHead">
+																	<rectangle radius="6" size="792x36"/>
+																	<rectangle radius="6" size="792x36" strokeColor="hyperlink"/>
+																</widget>
+																<container size="792x36">
+																	<container pos="8,8" size="776x20">
+																		<text bold size="132x20" textSize="17">Settings for avif</text>
+																		<widget pos="136,0" size="20x20" type="*widget.Icon">
+																			<image fillMode="contain" rsc="menuExpandIcon" size="20x20" themed="placeholder"/>
+																		</widget>
+																		<widget pos="160,0" size="0x20" type="*container.ThemeOverride">
+																			<container size="0x20">
+																			</container>
+																		</widget>
+																	</container>
+																</container>
 															</container>
-														</widget>
-														<spacer pos="168,0" size="623x24"/>
+															<container pos="796,0" size="0x36">
+															</container>
+														</container>
 													</container>
 												</container>
 											</container>
-											<container pos="0,354" size="788x26">
+											<container pos="0,366" size="788x26">
 												<container size="788x26">
 													<container pos="0,1" size="167x24">
 														<text pos="0,3" size="54x16">Damage</text>
@@ -271,12 +282,12 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,397" size="788x0">
+											<container pos="0,409" size="788x0">
 											</container>
 										</container>
 									</container>
 								</container>
-								<container pos="0,526" size="820x182">
+								<container pos="0,538" size="820x182">
 									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x182"/>
 									<container size="820x182">
 										<container pos="16,16" size="788x150">

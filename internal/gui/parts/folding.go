@@ -3,7 +3,6 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -30,10 +29,12 @@ import (
 // box is in, which is what keeps the objection answered rather than dodged. See
 // the batch screen's use of it.
 type Folding struct {
-	open   bool
-	body   fyne.CanvasObject
-	line   *widget.Label
-	toggle *Button
+	open  bool
+	title string
+	body  fyne.CanvasObject
+	line  *widget.Label
+	// head is the one control the whole head row is - see FoldHead.
+	head *FoldHead
 
 	// object is the whole thing, rebuilt when the fold moves so the layout
 	// above it is told to take the room back.
@@ -84,13 +85,11 @@ func NewInnerFolding(title string, content ...fyne.CanvasObject) *Folding {
 }
 
 func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
-	f := &Folding{open: true}
+	f := &Folding{open: true, title: title}
 
 	f.line = widget.NewLabel("")
 	f.line.Importance = widget.LowImportance
 	f.line.Hide()
-
-	f.toggle = NewGlyphButton(theme.MenuDropDownIcon(), func() { f.Set(!f.open) })
 
 	f.body = Column(GapField, content...)
 
@@ -105,15 +104,28 @@ func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 	// worse - there are more of them and they are what somebody is reading.
 	// The summary line goes through quiet, so it recedes to the hint's colour
 	// rather than the brighter disabled one widget.LowImportance draws (O213).
-	row := []fyne.CanvasObject{sectionTitle(title), f.toggle, quiet(f.line), layout.NewSpacer()}
-	row = append(row, head...)
+	//
+	// The whole row is the control, since O221, and the arrow is its mark
+	// rather than a button: FoldHead answers to the pointer and the keyboard
+	// under the title, the arrow and the line, and the row reaches to the
+	// buttons a batch keeps at its right. The head keeps TabInset inside its
+	// box for the fill and the ring to draw in, and overhangs the column by
+	// the same amount so the title's ink does not move - see overhang.
+	arrow := widget.NewIcon(theme.MenuDropDownIcon())
+	f.head = newFoldHead(f, arrow)
+	words := Padded(TabInset, container.NewHBox(sectionTitle(title), arrow, quiet(f.line)))
+	row := container.NewBorder(nil, nil, nil, container.NewHBox(head...), container.NewStack(f.head, words))
 
-	f.inside = Column(GapField, container.NewHBox(row...), f.body)
+	f.inside = Column(GapField, container.New(overhang{by: TabInset}, row), f.body)
 	return f
 }
 
 // Object is the panel to put on a screen.
 func (f *Folding) Object() fyne.CanvasObject { return f.object }
+
+// Head is the control the head row is, for a screen or a guard that wants to
+// press it, hover it or hand it the keyboard.
+func (f *Folding) Head() *FoldHead { return f.head }
 
 // Holds says whether a control is somewhere inside this fold.
 //
@@ -173,14 +185,14 @@ func (f *Folding) Set(open bool) {
 	if open {
 		f.body.Show()
 		f.line.Hide()
-		f.toggle.SetIcon(theme.MenuDropDownIcon())
 	} else {
 		f.body.Hide()
 		if f.line.Text != "" {
 			f.line.Show()
 		}
-		f.toggle.SetIcon(theme.MenuExpandIcon())
 	}
+	// The head reads the fold's state and points its arrow by it.
+	f.head.Refresh()
 	f.object.Refresh()
 	if f.OnChange != nil {
 		f.OnChange(open)
