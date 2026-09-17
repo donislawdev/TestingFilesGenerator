@@ -316,6 +316,10 @@
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
     "other": "The software renderer shipped beside the program could not be loaded: {{.Error}}."
   },
+  "RendererNotShipped": {
+    "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
+    "other": "No software renderer ships for this system. The window is drawn by the graphics driver as usual."
+  },
   "RendererStartFailed": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
     "other": "Starting the program again with the software renderer did not work: {{.Error}}."

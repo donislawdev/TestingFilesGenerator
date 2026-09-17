@@ -330,6 +330,13 @@ func RendererDidNotHelp() string {
 	return say("RendererDidNotHelp", "The software renderer shipped beside the program was loaded, and the graphics toolkit still could not open a window with it.")
 }
 
+// RendererNotShipped is what --software-gl answers on a system the
+// renderer does not ship for. Said rather than ignored, because a flag
+// that does nothing in silence is one somebody waits on.
+func RendererNotShipped() string {
+	return say("RendererNotShipped", "No software renderer ships for this system. The window is drawn by the graphics driver as usual.")
+}
+
 // NotAWholeNumber refuses a box that should hold digits and does not.
 //
 // The field is named by its label rather than by its key, because this is read

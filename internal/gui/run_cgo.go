@@ -234,11 +234,7 @@ func run(launch Launch, errOut io.Writer) int {
 		}
 		loaded = err
 		software = err == nil
-		if software {
-			fmt.Fprintln(errOut, text.DrawingWithSoftwareRenderer())
-		} else {
-			fmt.Fprintln(errOut, text.RendererNotLoaded(err))
-		}
+		fmt.Fprintln(errOut, LoadingSentence(loaded))
 	}
 
 	// Said out loud rather than left to be inferred: everything that touches a

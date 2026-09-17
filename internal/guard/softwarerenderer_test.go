@@ -84,6 +84,9 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 		{name: "already the second process, renderer did not load",
 			launch: gui.Launch{SoftwareGL: true}, goos: "windows", loaded: loadFailed,
 			wantAdd: text.RendererNotLoaded(loadFailed)},
+		{name: "asked for by flag on a system nothing ships for, and refused by the driver",
+			launch: gui.Launch{SoftwareGL: true}, goos: "linux", loaded: notShippedLoad(t),
+			wantAdd: ""},
 	}
 
 	for _, c := range cases {
@@ -132,6 +135,39 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 				t.Errorf("the refusal adds %q about the renderer and it has to add %q", got, c.wantAdd)
 			}
 		})
+	}
+}
+
+// notShippedLoad is what loading the renderer answers on a system nothing
+// ships for, built by the package that answers it, so this guard does not
+// spell the reason itself - and the same on every system, because the case
+// it feeds is about a Linux machine wherever the guard happens to run.
+func notShippedLoad(t *testing.T) error {
+	t.Helper()
+	err := gui.NotShippedFor("linux")
+	if err == nil {
+		t.Fatal("NotShippedFor answered nil")
+	}
+	return err
+}
+
+// A window asked for the renderer says what became of the loading, and on
+// a system nothing ships for it says that rather than naming the system as
+// if it were an error - which is what the first version did: "could not be
+// loaded: linux".
+func TestAWindowAskedForTheRendererSaysWhatBecameOfIt(t *testing.T) {
+	if got := gui.LoadingSentence(nil); got != text.DrawingWithSoftwareRenderer() {
+		t.Errorf("a renderer that loaded is announced as %q", got)
+	}
+	if got := gui.LoadingSentence(gui.NotShippedFor("darwin")); got != text.RendererNotShipped() {
+		t.Errorf("a system nothing ships for is announced as %q", got)
+	}
+	if strings.Contains(gui.LoadingSentence(gui.NotShippedFor("darwin")), "darwin") {
+		t.Error("the sentence names the system as if it were the error")
+	}
+	failed := errors.New("the renderer did not load")
+	if got := gui.LoadingSentence(failed); got != text.RendererNotLoaded(failed) {
+		t.Errorf("a renderer that did not load is announced as %q", got)
 	}
 }
 

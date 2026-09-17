@@ -184,11 +184,17 @@ func executableDir() (string, error) {
 func RendererSentence(why error, loaded error) string {
 	var beside notBeside
 	var failed startFailed
+	var shipsNot notShipped
 	switch {
 	case errors.As(why, &beside):
 		return text.RendererNotBeside(beside.path)
 	case errors.As(why, &failed):
 		return text.RendererStartFailed(failed.err)
+	case errors.Is(why, alreadySoftware{}) && errors.As(loaded, &shipsNot):
+		// Asked for by flag on a system nothing ships for, and refused by
+		// the driver: the same silence as without the flag, because the
+		// sentence would be about a file nobody promised there.
+		return ""
 	case errors.Is(why, alreadySoftware{}) && loaded != nil:
 		return text.RendererNotLoaded(loaded)
 	case errors.Is(why, alreadySoftware{}):
@@ -197,3 +203,24 @@ func RendererSentence(why error, loaded error) string {
 		return ""
 	}
 }
+
+// LoadingSentence is what a window asked for the renderer says on standard
+// error about the loading: that it draws with the renderer, that no
+// renderer ships for this system, or what stood in the way. Nothing when
+// loaded is nil and the flag was not given, which is every ordinary start.
+func LoadingSentence(loaded error) string {
+	var shipsNot notShipped
+	switch {
+	case errors.As(loaded, &shipsNot):
+		return text.RendererNotShipped()
+	case loaded != nil:
+		return text.RendererNotLoaded(loaded)
+	default:
+		return text.DrawingWithSoftwareRenderer()
+	}
+}
+
+// NotShippedFor is the reason loading the renderer answers on a system
+// nothing ships for, for a guard on another system to hand to the sentences
+// above - the reason is a type of this package and the guard cannot spell it.
+func NotShippedFor(goos string) error { return notShipped{goos} }

@@ -155,6 +155,9 @@ var allowedURLs = map[string]string{
 	"internal/version/version.go|https://www.gnu.org/licenses/gpl-3.0.html":                            "where the GPL text is, named by the licence notice this tool prints",
 	"internal/gui/text/screens.go|https://donislawdev.com/support/": "the support page, handed to the system browser on a click - " +
 		"untouchable rule 8 permits this and permits nothing else like it",
+	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z": "where the software " +
+		"renderer's bytes were downloaded FROM, by the release workflow and never by the program: written into the bill of " +
+		"materials as the package's download location, and compared with the workflow's pin by a guard",
 }
 
 // allowedLibraries are the libraries shipped code may load by name.
