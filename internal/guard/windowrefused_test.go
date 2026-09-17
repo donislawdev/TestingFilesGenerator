@@ -158,6 +158,41 @@ func TestTheToolkitsOwnReasonReachesTheSentenceAndItsAbsenceDoesNotBreakIt(t *te
 	}
 }
 
+// addressedFirst is the name of the variable whose address is the first
+// argument of call, as in io.MultiWriter(&said, ...), or nothing.
+func addressedFirst(call *ast.CallExpr) string {
+	if len(call.Args) == 0 {
+		return ""
+	}
+	first, ok := call.Args[0].(*ast.UnaryExpr)
+	if !ok || first.Op != token.AND {
+		return ""
+	}
+	if buffer, ok := first.X.(*ast.Ident); ok {
+		return buffer.Name
+	}
+	return ""
+}
+
+// stringOf is the name of x in a call shaped f(x.String()), or nothing.
+func stringOf(call *ast.CallExpr) string {
+	if len(call.Args) != 1 {
+		return ""
+	}
+	inner, ok := call.Args[0].(*ast.CallExpr)
+	if !ok {
+		return ""
+	}
+	sel, ok := inner.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "String" {
+		return ""
+	}
+	if buffer, ok := sel.X.(*ast.Ident); ok {
+		return buffer.Name
+	}
+	return ""
+}
+
 // The window binary goes through the seam above and never through
 // ShowAndRun, and the copy of the toolkit's log is written before the
 // toolkit's own stream is - a multi-writer stops at the first writer that
@@ -168,7 +203,13 @@ func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 	root := repoRoot(t)
 	fset := token.NewFileSet()
 	seamCalls, showAndRun := 0, []string{}
-	copyFirst := false
+	// The buffer the cause is read from, and the buffer the copy of the log
+	// goes to. They have to be the same variable - named by the code, not
+	// by this guard, because "the first writer is an address" passed for
+	// the address of any buffer at all (an outside review of the pull
+	// request named it), and a copy into some other buffer leaves the one
+	// CauseFrom reads empty.
+	readFrom, copiedTo := "", ""
 
 	err := filepath.WalkDir(filepath.Join(root, "internal", "gui"), func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil || d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
@@ -190,14 +231,19 @@ func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 				case "ShowAndRun":
 					showAndRun = append(showAndRun, rel)
 				case "MultiWriter":
-					if pkg, ok := fun.X.(*ast.Ident); ok && pkg.Name == "io" && strings.HasSuffix(rel, "run_cgo.go") && len(call.Args) == 2 {
-						first, ok := call.Args[0].(*ast.UnaryExpr)
-						copyFirst = ok && first.Op == token.AND
+					if pkg, ok := fun.X.(*ast.Ident); ok && pkg.Name == "io" && strings.HasSuffix(rel, "run_cgo.go") {
+						copiedTo = addressedFirst(call)
 					}
 				}
 			case *ast.Ident:
-				if fun.Name == "OpenOrRefuse" && strings.HasSuffix(rel, "run_cgo.go") {
+				if !strings.HasSuffix(rel, "run_cgo.go") {
+					return true
+				}
+				switch fun.Name {
+				case "OpenOrRefuse":
 					seamCalls++
+				case "CauseFrom":
+					readFrom = stringOf(call)
 				}
 			}
 			return true
@@ -218,10 +264,15 @@ func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 		t.Errorf("run_cgo.go calls OpenOrRefuse %d time(s), and the window binary opens through "+
 			"it exactly once - that is the seam the guard above reaches.", seamCalls)
 	}
-	if !copyFirst {
-		t.Errorf("run_cgo.go does not hand io.MultiWriter the copy of the toolkit's log FIRST.\n" +
-			"io.MultiWriter stops at the first writer that fails. The toolkit's own stream is " +
-			"standard error, which a windows-subsystem binary does not have, so with the copy " +
-			"second the cause never reaches it and the refusal says nothing about the driver.")
+	if readFrom == "" {
+		t.Fatalf("run_cgo.go does not read the cause with CauseFrom(<buffer>.String()), so this " +
+			"guard cannot tell which buffer the copy of the toolkit's log has to reach.")
+	}
+	if copiedTo != readFrom {
+		t.Errorf("run_cgo.go hands io.MultiWriter %q first, and CauseFrom reads %q.\n"+
+			"io.MultiWriter stops at the first writer that fails. The toolkit's own stream is "+
+			"standard error, which a windows-subsystem binary does not have, so the copy has to "+
+			"come first - and it has to be the buffer the cause is read from, or that buffer stays "+
+			"empty and the refusal says nothing about the driver.", copiedTo, readFrom)
 	}
 }
