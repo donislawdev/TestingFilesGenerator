@@ -66,7 +66,17 @@ ALLOWED = frozenset({
 # looked at. A name here is a decision with a reason, not a way to make a red
 # build green - and it names one package, never a whole ecosystem.
 EXCEPTIONS = {
-    # (empty on purpose - add "name": "why this is fine" when it happens)
+    # The OpenGL binding, carried as a copy in this repository since
+    # 2026-09-17 and named by go.mod through a replace directive. GitHub's
+    # graph reports the directory as a new dependency with no licence, because
+    # a directory is not a package on any registry. The licence is the copied
+    # module's own MIT, in the LICENSE file that travels with the directory,
+    # and the bytes are the published module plus one patch - which is what
+    # TestTheOpenGLBindingIsThePinnedModulePlusExactlyThePatch holds, by
+    # downloading the pinned version and comparing. The reason for the copy is
+    # in third_party/go-gl-gl/PATCH.md. This names one directory, and a second
+    # copy of something else needs a line of its own here.
+    "./third_party/go-gl-gl": "a copy of github.com/go-gl/gl, MIT, held to the published module plus one patch by a guard",
 }
 
 # GitHub reports license: null for every action, measured on this repository on
