@@ -66,16 +66,26 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 			t.Errorf("reading %s: %v", p, err)
 			continue
 		}
-		for _, m := range githubProject.FindAllStringSubmatch(string(body), -1) {
+		text := string(body)
+		for _, at := range githubProject.FindAllStringSubmatchIndex(text, -1) {
 			checked++
-			if m[1] == ourRepository {
+			project := text[at[2]:at[3]]
+			if project == ourRepository {
+				continue
+			}
+			// A download a workflow makes from somebody else's release is not
+			// a place a person is sent: the fetch script for the software
+			// renderer names the project that publishes it, by design, and a
+			// guard that refused it would refuse the one link here that has
+			// to point elsewhere. Only a release download, and nothing else.
+			if strings.HasPrefix(text[at[1]:], "/releases/download/") {
 				continue
 			}
 			t.Errorf("%s links to https://github.com/%s.\n"+
 				"This project is %s. A link left pointing at another repository is the "+
 				"specific way these files go wrong, and in the issue chooser it would "+
 				"send a vulnerability report to somebody else.",
-				filepath.Base(p), m[1], ourRepository)
+				filepath.Base(p), project, ourRepository)
 		}
 	}
 

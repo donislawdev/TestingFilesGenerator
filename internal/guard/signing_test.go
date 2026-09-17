@@ -102,7 +102,7 @@ func TestTheSigningScriptRefusesBeforeItSigns(t *testing.T) {
 	for what, want := range map[string]string{
 		"it verifies the build before touching it":                  "gh\", \"attestation\", \"verify\"",
 		"it timestamps, or the signature dies with the certificate": "/tr",
-		"it reads the certificate back out of the signed file":      "certificate_of(program)",
+		"it reads the certificate back out of the signed file":      "certificate_of(target)",
 		"it selects the certificate by OID rather than by a name":   "1.3.6.1.5.5.7.3.3",
 		"it reads the pin from one place":                           "codesign.go",
 	} {

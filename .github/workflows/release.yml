@@ -314,6 +314,20 @@ jobs:
               "${work}" "tfg-gui" "com.donislawdev.tfg-gui" "${version}"
           fi
 
+          # The software renderer, beside the program, Windows only: two files
+          # of Mesa's llvmpipe the window loads when the graphics driver offers
+          # no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote
+          # desktop, a server. Measured on 2026-09-17 on such a guest: without
+          # them the window refuses, with them it opens. The version and the
+          # sums come from .github/mesa-dist-win, the script checks the sums
+          # before it unpacks anything, and a guard holds that file to the
+          # registry the notices are rendered from. Linux has Mesa in the
+          # system and macOS has never offered the toolkit less than it needs,
+          # so nothing of the kind ships there.
+          if [ "$os" = "windows" ]; then
+            .github/scripts/fetch_software_renderer.sh "${work}"
+          fi
+
           cp LICENSE THIRD-PARTY-NOTICES.md README.md "${work}/"
 
           base="tfg-gui_${version}_${label}_${arch}"
@@ -444,6 +458,12 @@ jobs:
             echo
             echo "- \`tfg_*\` is the command line. It carries no graphics toolkit and no network stack."
             echo "- \`tfg-gui_*\` is the desktop window. Same engine, same features."
+            echo
+            echo "The Windows window archive also carries a software OpenGL renderer, Mesa llvmpipe,"
+            echo "in \`opengl\` next to the program. The window loads it only when the graphics driver"
+            echo "offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote desktop,"
+            echo "a server - and says so on its About screen. On a machine with a driver it is never"
+            echo "touched. Both files are signed like the program. Keep the folder next to the program."
             echo
             echo "Match the file to your system and architecture. Check what you downloaded against"
             echo "\`verify-SHA256SUMS.txt\`, at the bottom of this list."
