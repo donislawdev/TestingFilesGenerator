@@ -193,7 +193,11 @@ func folding() Entry {
 	// A fold is built open, which the first render of this catalogue found
 	// out: "open" drew exactly as "closed" did, because the closed one had
 	// never been closed. Guarded now, and closed here on purpose.
-	return Entry{Name: "Folding", Covers: []string{"InnerFolding"}, States: []State{
+	// The head row is one control since O221, so it has the pointer and the
+	// keyboard states a control has - and FoldHead is covered here rather
+	// than as an entry of its own, because it is never on a screen without
+	// the fold it heads.
+	return Entry{Name: "Folding", Covers: []string{"InnerFolding", "FoldHead"}, States: []State{
 		{"open", func() fyne.CanvasObject {
 			return parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside the fold")).Object()
 		}},
@@ -218,6 +222,23 @@ func folding() Entry {
 		}},
 		{"a long title", func() fyne.CanvasObject {
 			return parts.NewFolding(longText, nil, parts.Prose("inside the fold")).Object()
+		}},
+		{"the head under the pointer", func() fyne.CanvasObject {
+			f := parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside the fold"))
+			f.Head().MouseIn(&desktop.MouseEvent{})
+			return f.Object()
+		}},
+		{"the head holding the keyboard", func() fyne.CanvasObject {
+			f := parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside the fold"))
+			f.Head().FocusGained()
+			return f.Object()
+		}},
+		{"shut, the head under the pointer", func() fyne.CanvasObject {
+			f := parts.NewFolding("Settings for png", nil, parts.Prose("inside the fold"))
+			f.Say("width 800, height 600")
+			f.Set(false)
+			f.Head().MouseIn(&desktop.MouseEvent{})
+			return f.Object()
 		}},
 	}}
 }
