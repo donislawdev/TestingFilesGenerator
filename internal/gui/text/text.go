@@ -276,6 +276,60 @@ func WindowRefused(cause string) string {
 	return sayf("WindowRefused", "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. The toolkit said: {{.Cause}}. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1.", map[string]any{"Cause": cause})
 }
 
+// The software renderer shipped beside the window binary on Windows: what
+// the window says when it starts again with it, when it draws with it, and
+// when it could not. See internal/gui/software.go for the mechanism. The
+// sentences below name the renderer's files and folder, which are file names
+// rather than words and are not translated.
+
+// StartingAgainWithSoftwareRenderer is the line the first process writes to
+// standard error before it starts the second one: the driver refused, and
+// this is what is being done about it.
+func StartingAgainWithSoftwareRenderer() string {
+	return say("RendererStartingAgain", "The graphics driver on this computer offers no OpenGL 2.1. Starting again with the software renderer shipped beside the program.")
+}
+
+// DrawingWithSoftwareRenderer is what a window drawn in software says about
+// itself, on standard error when it starts and on the About screen while it
+// is open. True whether the window got there by itself or was asked for it
+// with --software-gl, which is why it says what is happening and not why.
+func DrawingWithSoftwareRenderer() string {
+	return say("RendererDrawing", "This window is drawn by the software renderer shipped beside the program (Mesa llvmpipe), not by the graphics driver. Everything works. Drawing is slower than with a driver that provides OpenGL 2.1.")
+}
+
+// RendererNotBeside is what the refusal adds on Windows when the renderer's
+// file is not where the archive put it.
+func RendererNotBeside(path string) string {
+	return sayf("RendererNotBeside", "The software renderer that ships with the Windows archive was not found beside the program - {{.Path}} is missing. Put the opengl folder from the archive back next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1.", map[string]any{"Path": path})
+}
+
+// RendererStartFailed is what the refusal adds when the second process,
+// the one that would have loaded the renderer, could not be started.
+func RendererStartFailed(err error) string {
+	return sayf("RendererStartFailed", "Starting the program again with the software renderer did not work: {{.Error}}.", map[string]any{"Error": withoutFullStop(err)})
+}
+
+// RendererNotLoaded is what the window says when it was asked to draw with
+// the renderer and could not load it. On standard error as it happens, and
+// in the refusal if the driver then refuses too.
+func RendererNotLoaded(err error) string {
+	return sayf("RendererNotLoaded", "The software renderer shipped beside the program could not be loaded: {{.Error}}.", map[string]any{"Error": withoutFullStop(err)})
+}
+
+// withoutFullStop is an error's words without the full stop Windows ends
+// its own with, for a sentence that supplies its own. Measured on
+// 2026-09-17: "The specified module could not be found." arrived with one
+// and the sentence around it ended with two.
+func withoutFullStop(err error) string {
+	return strings.TrimSuffix(strings.TrimSpace(err.Error()), ".")
+}
+
+// RendererDidNotHelp is what the refusal adds when the renderer was loaded
+// and the toolkit still could not open a window with it.
+func RendererDidNotHelp() string {
+	return say("RendererDidNotHelp", "The software renderer shipped beside the program was loaded, and the graphics toolkit still could not open a window with it.")
+}
+
 // NotAWholeNumber refuses a box that should hold digits and does not.
 //
 // The field is named by its label rather than by its key, because this is read

@@ -52,6 +52,14 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 	// apart, so the file is named instead.
 	byPath := map[string]string{
 		"internal/gui/darkmenus_windows.go": "builds an absolute path from the system directory, because uxtheme.dll is not a KnownDLL",
+		// Not from the system, and allowed all the same: the path is built
+		// under the directory the executable itself was loaded from, which
+		// is exactly the trust the executable already has. What this rules
+		// out is the search order - a name would be looked for beside the
+		// program FIRST, and a renderer beside the program is what this
+		// project ships on purpose, so the load has to say which file it
+		// means rather than let the loader pick one of that name.
+		"internal/gui/software_windows.go": "builds absolute paths under the executable's own directory, for the software renderer shipped beside it (docs/GUI-SOFTWARE-RENDERER-2026-09-17.md)",
 	}
 
 	root := repoRoot(t)

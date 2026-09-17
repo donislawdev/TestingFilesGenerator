@@ -39,6 +39,17 @@ import (
 func About(h Host) fyne.CanvasObject {
 	sections := []fyne.CanvasObject{
 		parts.Indented(parts.Prose(text.AboutTagline())),
+	}
+	// Under the tagline and only when it is true: the window is drawn by the
+	// software renderer shipped beside it, not by a driver. Said here rather
+	// than in a title or a dialog because it is a fact about this window for
+	// as long as it is open, and this is the screen that says what the
+	// program is. Untouchable rule 6 - a window drawn in software that did
+	// not say so would be a slow window with no explanation.
+	if h.SoftwareRendering() {
+		sections = append(sections, parts.Indented(parts.Prose(text.DrawingWithSoftwareRenderer())))
+	}
+	sections = append(sections,
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
@@ -57,7 +68,7 @@ func About(h Host) fyne.CanvasObject {
 		// OpenLink said this screen carried it. This is that screen carrying it.
 		parts.Section(text.SectionSupport(),
 			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
-	}
+	)
 	sections = append(sections, carried()...)
 	page := parts.Screen(parts.Title(text.HeadingAbout(version.Version)), sections...)
 

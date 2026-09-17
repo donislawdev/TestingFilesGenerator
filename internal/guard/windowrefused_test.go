@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -74,26 +75,41 @@ func TestAWindowTheToolkitGaveNoWindowIsRefusedAndNeverRun(t *testing.T) {
 		"wayland": driver.WaylandWindowContext{WaylandSurface: 1},
 	}
 
+	// Every refused window is tried again, and what the second attempt
+	// answers is what the seam answers: the exit code of the process that
+	// carried it, or - when there was none - the refusal, with the reason
+	// the attempt gave, and 1.
 	for name, context := range refused {
 		w := &nativeWindow{plainWindow: plainWindow{Window: test.NewWindow(nil)}, context: context}
-		code := gui.OpenOrRefuse(w, func() { w.calls = append(w.calls, "run") }, func() { w.calls = append(w.calls, "refuse") })
-		if got := strings.Join(w.calls, ","); got != "show,refuse" {
-			t.Errorf("%s, no native window: the calls were %q and they have to be show,refuse.\n"+
-				"Show first, because only after it can the toolkit have failed - and then the "+
-				"refusal, and NOT the loop, which on such a machine never ends.", name, got)
+		code := openOrRefuse(t, w, &w.calls, noSecondAttempt)
+		if got := strings.Join(w.calls, ","); got != "show,again,refuse" {
+			t.Errorf("%s, no native window, no second attempt: the calls were %q and they have to be show,again,refuse.\n"+
+				"Show first, because only after it can the toolkit have failed - then the second "+
+				"attempt, then the refusal, and NOT the loop, which on such a machine never ends.", name, got)
 		}
 		if code != 1 {
 			t.Errorf("%s, no native window: exit code %d, and a window that could not open exits 1 "+
 				"like a build with no window in it.", name, code)
 		}
+
+		w = &nativeWindow{plainWindow: plainWindow{Window: test.NewWindow(nil)}, context: context}
+		code = openOrRefuse(t, w, &w.calls, secondAttemptAnswered(7))
+		if got := strings.Join(w.calls, ","); got != "show,again" {
+			t.Errorf("%s, no native window, second attempt carried: the calls were %q and they have to be show,again - "+
+				"no refusal, because the second process put the window on the screen, and no loop, "+
+				"because that process ran it.", name, got)
+		}
+		if code != 7 {
+			t.Errorf("%s, second attempt carried: exit code %d, and it has to be the second process's own, 7.", name, code)
+		}
 	}
 
 	for name, context := range opened {
 		w := &nativeWindow{plainWindow: plainWindow{Window: test.NewWindow(nil)}, context: context}
-		code := gui.OpenOrRefuse(w, func() { w.calls = append(w.calls, "run") }, func() { w.calls = append(w.calls, "refuse") })
+		code := openOrRefuse(t, w, &w.calls, secondAttemptAnswered(7))
 		if got := strings.Join(w.calls, ","); got != "show,run" {
 			t.Errorf("%s, native window present: the calls were %q and they have to be show,run - "+
-				"the same two calls ShowAndRun makes, in the same order.", name, got)
+				"the same two calls ShowAndRun makes, in the same order, and no second attempt.", name, got)
 		}
 		if code != 0 {
 			t.Errorf("%s, native window present: exit code %d after a run that returned normally.", name, code)
@@ -105,16 +121,50 @@ func TestAWindowTheToolkitGaveNoWindowIsRefusedAndNeverRun(t *testing.T) {
 	// opened, because nothing about them is known to have failed. The test
 	// driver is the first kind, and every guard drawing a screen rests on it.
 	plain := &plainWindow{Window: test.NewWindow(nil)}
-	if code := gui.OpenOrRefuse(plain, func() { plain.calls = append(plain.calls, "run") }, func() { plain.calls = append(plain.calls, "refuse") }); code != 0 || strings.Join(plain.calls, ",") != "show,run" {
+	if code := openOrRefuse(t, plain, &plain.calls, secondAttemptAnswered(7)); code != 0 || strings.Join(plain.calls, ",") != "show,run" {
 		t.Errorf("a window whose driver has no NativeWindow: code %d, calls %q - it has to run, "+
 			"because the test driver is such a window and it draws every screen this package checks.",
 			code, strings.Join(plain.calls, ","))
 	}
 	unknown := &nativeWindow{plainWindow: plainWindow{Window: test.NewWindow(nil)}, context: struct{}{}}
-	if code := gui.OpenOrRefuse(unknown, func() { unknown.calls = append(unknown.calls, "run") }, func() { unknown.calls = append(unknown.calls, "refuse") }); code != 0 || strings.Join(unknown.calls, ",") != "show,run" {
+	if code := openOrRefuse(t, unknown, &unknown.calls, secondAttemptAnswered(7)); code != 0 || strings.Join(unknown.calls, ",") != "show,run" {
 		t.Errorf("a window whose driver answers with an unknown context: code %d, calls %q - "+
 			"cannot tell is not the same as failed.", code, strings.Join(unknown.calls, ","))
 	}
+}
+
+// errNoSecondAttempt is the reason a second attempt gives when there is
+// none, and the refusal has to receive exactly it.
+var errNoSecondAttempt = errors.New("no second attempt in this case")
+
+// noSecondAttempt is a second attempt that was not to be had.
+func noSecondAttempt() (int, error) { return 0, errNoSecondAttempt }
+
+// secondAttemptAnswered is a second attempt carried by a process that
+// exited with code.
+func secondAttemptAnswered(code int) func() (int, error) {
+	return func() (int, error) { return code, nil }
+}
+
+// openOrRefuse drives the seam with a window that records every call in
+// calls, and holds the refusal to receiving the reason the second attempt
+// gave. The window is passed as the seam sees it, so a driver's
+// NativeWindow is found when the case has one.
+func openOrRefuse(t *testing.T, w fyne.Window, calls *[]string, again func() (int, error)) int {
+	t.Helper()
+	return gui.OpenOrRefuse(w,
+		func() { *calls = append(*calls, "run") },
+		func() (int, error) {
+			*calls = append(*calls, "again")
+			return again()
+		},
+		func(why error) {
+			*calls = append(*calls, "refuse")
+			if !errors.Is(why, errNoSecondAttempt) {
+				t.Errorf("the refusal was given %v and it has to be given the reason the second attempt gave, "+
+					"because the sentence the person reads is built from it.", why)
+			}
+		})
 }
 
 // The three lines the toolkit wrote on the guest, verbatim from the
@@ -199,10 +249,19 @@ func stringOf(call *ast.CallExpr) string {
 // fails, and the stream a windows-subsystem binary does not have is exactly
 // such a writer. Read from the source, because run_cgo.go is behind cgo and
 // the test driver cannot fail the way the guest did.
+//
+// Since 2026-09-17 it also asks that the real window takes the second
+// attempt the seam offers - the one built by SecondAttemptFor, which starts
+// this program again with the software renderer - and that a window asked
+// for the renderer loads it, through LoadSoftwareRenderer. Both calls are
+// behind cgo too, so presence in the source is what can be asked; what
+// they do when reached was measured by running the binary, on a machine
+// with a driver and on a guest without one.
 func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 	root := repoRoot(t)
 	fset := token.NewFileSet()
 	seamCalls, showAndRun := 0, []string{}
+	secondAttempt, loadsRenderer := 0, 0
 	// The buffer the cause is read from, and the buffer the copy of the log
 	// goes to. They have to be the same variable - named by the code, not
 	// by this guard, because "the first writer is an address" passed for
@@ -244,6 +303,10 @@ func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 					seamCalls++
 				case "CauseFrom":
 					readFrom = stringOf(call)
+				case "SecondAttemptFor":
+					secondAttempt++
+				case "LoadSoftwareRenderer":
+					loadsRenderer++
 				}
 			}
 			return true
@@ -263,6 +326,16 @@ func TestTheWindowBinaryOpensThroughTheRefusalSeam(t *testing.T) {
 	if seamCalls != 1 {
 		t.Errorf("run_cgo.go calls OpenOrRefuse %d time(s), and the window binary opens through "+
 			"it exactly once - that is the seam the guard above reaches.", seamCalls)
+	}
+	if secondAttempt != 1 {
+		t.Errorf("run_cgo.go builds the second attempt with SecondAttemptFor %d time(s), and the "+
+			"real window takes exactly the one the guard above presses: without it, a guest with "+
+			"no driver gets the refusal and never the renderer.", secondAttempt)
+	}
+	if loadsRenderer != 1 {
+		t.Errorf("run_cgo.go calls LoadSoftwareRenderer %d time(s), and a window started with "+
+			"--software-gl loads the renderer exactly once, before the toolkit asks the driver "+
+			"for anything.", loadsRenderer)
 	}
 	if readFrom == "" {
 		t.Fatalf("run_cgo.go does not read the cause with CauseFrom(<buffer>.String()), so this " +

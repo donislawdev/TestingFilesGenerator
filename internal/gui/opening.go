@@ -8,8 +8,11 @@ import (
 )
 
 // OpenOrRefuse shows w and runs the toolkit's loop only if the toolkit gave
-// it a window. When it did not, refuse is called instead and the answer is 1,
-// the exit code a build with no window in it already uses.
+// it a window. When it did not, the window is tried again and, if that was
+// not to be had either, refused: again is asked for a second attempt and
+// answers with the exit code of the process that carried it, or with why
+// there was none - and then refuse is called with that reason and the
+// answer is 1, the exit code a build with no window in it already uses.
 //
 // Measured on 2026-09-16, on a Windows Server 2025 guest without 3D
 // acceleration (O218): the graphics driver there offers no OpenGL, so the
@@ -19,14 +22,24 @@ import (
 // and Quit closes nothing then. A double click, nothing on screen, and
 // tfg-gui.exe in the task list until the session ends.
 //
+// The second attempt is a second process, because the toolkit's state after
+// a failed window is not something its public API can reset, and because
+// the renderer that attempt loads has to be mapped before the toolkit asks
+// the driver for anything - see software.go. Measured on the same guest on
+// 2026-09-17: the second process opens the window.
+//
 // ShowAndRun is Show followed by Run and nothing else, so on a machine where
 // the window opens this is the same two calls in the same order. The
 // question between them is asked of the window's state, not of the
 // toolkit's log - see Shown.
-func OpenOrRefuse(w fyne.Window, run func(), refuse func()) int {
+func OpenOrRefuse(w fyne.Window, run func(), again func() (int, error), refuse func(why error)) int {
 	w.Show()
 	if !Shown(w) {
-		refuse()
+		code, why := again()
+		if why == nil {
+			return code
+		}
+		refuse(why)
 		return 1
 	}
 	run()

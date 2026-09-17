@@ -191,6 +191,12 @@ var lowLevelPackages = map[string]bool{
 	"golang.org/x/sys/execabs":  true,
 	"os/exec":                   true,
 	"golang.org/x/net/internal": true,
+	// os carries one spawn, os.StartProcess, and until 2026-09-17 it was not
+	// here: a program started through it walked past this guard without a
+	// word. Found while adding the first spawn this tree has, by asking what
+	// else the tree could have used instead. Nothing else os offers is on
+	// either list of calls, so this costs no false finding.
+	"os": true,
 }
 
 // spawnCalls start another program. curl needs no networking package, so a
@@ -212,8 +218,16 @@ type telemetryFinding struct {
 	detail string
 }
 
-// telemetryFindings reads one file's source and reports every way out it holds.
+// telemetryFindings reads one file's source and reports every way out it
+// holds that no registry entry forgives.
 func telemetryFindings(src, rel string) []telemetryFinding {
+	return withoutRegisteredPathLoads(rawTelemetryFindings(src, rel), rel)
+}
+
+// rawTelemetryFindings is every way out a file holds, forgiven or not. The
+// staleness half reads this one, because an allowance is stale exactly when
+// the raw findings no longer hold what it forgives.
+func rawTelemetryFindings(src, rel string) []telemetryFinding {
 	fset := token.NewFileSet()
 	tree, err := parser.ParseFile(fset, rel, src, parser.ParseComments)
 	if err != nil {
@@ -231,7 +245,7 @@ func telemetryFindings(src, rel string) []telemetryFinding {
 		}
 		return true
 	})
-	return withoutRegisteredPathLoads(found, rel)
+	return found
 }
 
 // librariesLoadedByPath are the files allowed to name a library with something
@@ -253,17 +267,48 @@ func telemetryFindings(src, rel string) []telemetryFinding {
 var librariesLoadedByPath = map[string]string{
 	"internal/gui/darkmenus_windows.go": "the dark window menu, loaded from an absolute path under the system directory " +
 		"because uxtheme.dll is not a KnownDLL - see systemLibraryPath there",
+	// The second case, and the reason it is the safer answer is different:
+	// the path is under the executable's own directory rather than the
+	// system's, which is the trust the executable already carries, and a
+	// name would be looked for beside the program FIRST - so the load says
+	// which file it means instead of letting the loader pick one. Two files
+	// of Mesa, loaded in the order software.go names.
+	"internal/gui/software_windows.go": "the software renderer shipped beside the window, loaded from absolute paths under " +
+		"the executable's own directory - see LoadSoftwareRenderer there and docs/GUI-SOFTWARE-RENDERER-2026-09-17.md",
 }
 
-// withoutRegisteredPathLoads drops the one finding a registered file is allowed
-// to raise, and leaves every other finding from that file alone.
+// spawnsAllowed are the files allowed to start a process, and why.
+//
+// One, since 2026-09-17, and the reason it is allowed is the whole of what
+// it starts: THIS program, by the path os.Executable answers and no other,
+// with the arguments it was given plus one flag. That is how the window
+// gets a second process that can load the software renderer before the
+// toolkit asks the driver for anything - see startAgain. Nothing on the
+// search path and nothing beside the program can be what runs, so the way
+// out this guard exists to close - curl is one line away - stays closed.
+//
+// The command line binary never links this file's package, and
+// TestTheCommandLineBinaryCannotStartAProcess holds that separately, asked
+// of the compiler.
+var spawnsAllowed = map[string]string{
+	"internal/gui/again.go": "starts this program again, by the path os.Executable answers, for the software renderer - see startAgain there",
+}
+
+// withoutRegisteredPathLoads drops the findings a registered file is allowed
+// to raise - a load by a computed path, a spawn - and leaves every other
+// finding from that file alone.
 func withoutRegisteredPathLoads(found []telemetryFinding, rel string) []telemetryFinding {
-	if _, granted := librariesLoadedByPath[rel]; !granted {
+	_, loads := librariesLoadedByPath[rel]
+	_, spawns := spawnsAllowed[rel]
+	if !loads && !spawns {
 		return found
 	}
 	kept := make([]telemetryFinding, 0, len(found))
 	for _, f := range found {
-		if f.kind == "library" && f.detail == computedLibraryName {
+		if loads && f.kind == "library" && f.detail == computedLibraryName {
+			continue
+		}
+		if spawns && f.kind == "spawn" {
 			continue
 		}
 		kept = append(kept, f)
@@ -452,11 +497,11 @@ func TestNothingShippedHoldsAnUndeclaredWayOut(t *testing.T) {
 			scanned++
 			rel := p.rel + "/" + filepath.Base(file)
 			for _, f := range telemetryFindings(string(raw), rel) {
-				t.Errorf("%s (%s).\n"+
+				t.Errorf("%s: %s (%s).\n"+
 					"Reason: untouchable rule 8 says this tool opens no outgoing connection, and this is a way\n"+
 					"out that no import of net would show. If it is wanted, add it to the registry in\n"+
 					"notelemetry_test.go with the reason - if it is not, this is the guard doing its job.",
-					f.detail, f.kind)
+					rel, f.detail, f.kind)
 			}
 		}
 	}
@@ -473,6 +518,7 @@ func TestNothingShippedHoldsAnUndeclaredWayOut(t *testing.T) {
 // a longer list to argue from.
 func TestEveryTelemetryExceptionStillNamesLiveCode(t *testing.T) {
 	urls, libraries := map[string]bool{}, map[string]bool{}
+	pathLoads, spawns := map[string]bool{}, map[string]bool{}
 	for _, p := range shippedSource(t) {
 		for _, file := range p.files {
 			raw, err := os.ReadFile(file)
@@ -481,6 +527,29 @@ func TestEveryTelemetryExceptionStillNamesLiveCode(t *testing.T) {
 			}
 			rel := p.rel + "/" + filepath.Base(file)
 			collectUses(string(raw), rel, urls, libraries)
+			for _, f := range rawTelemetryFindings(string(raw), rel) {
+				switch {
+				case f.kind == "library" && f.detail == computedLibraryName:
+					pathLoads[rel] = true
+				case f.kind == "spawn":
+					spawns[rel] = true
+				}
+			}
+		}
+	}
+
+	// The two registries keyed by file. Read from the raw findings, because
+	// the forgiven ones are exactly what the scan no longer shows.
+	for rel := range librariesLoadedByPath {
+		if !pathLoads[rel] {
+			t.Errorf("%s is allowed to load a library by a computed path and loads none.\n"+
+				"Reason: a stale permission forgives whatever lands in that file next. Delete the line.", rel)
+		}
+	}
+	for rel := range spawnsAllowed {
+		if !spawns[rel] {
+			t.Errorf("%s is allowed to start a process and starts none.\n"+
+				"Reason: the same - and this one forgives the exact call that walks past every other guard here. Delete the line.", rel)
 		}
 	}
 
@@ -626,6 +695,9 @@ var badTelemetryCode = []struct {
 		"package p\n\nimport sh \"os/exec\"\n\nfunc f() { _ = sh.Command(\"curl\") }\n", "spawn"},
 	{"starting a process the plainest way",
 		"package p\n\nimport \"syscall\"\n\nfunc f() { _, _ = syscall.StartProcess(\"curl\", nil, nil) }\n", "spawn"},
+	// The spawn os offers, which walked past this guard until 2026-09-17.
+	{"a process started through os",
+		"package p\n\nimport \"os\"\n\nfunc f() { _, _ = os.StartProcess(\"curl\", nil, nil) }\n", "spawn"},
 }
 
 func TestTheTelemetryScannerRejectsCodeItMustReject(t *testing.T) {
