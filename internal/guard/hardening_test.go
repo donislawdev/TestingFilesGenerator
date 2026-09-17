@@ -64,7 +64,11 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 
 	root := repoRoot(t)
 	used := map[string]bool{}
-	viaPath := map[string]bool{}
+	// How many call sites load by a computed path, per registered file. One
+	// each: the entry forgives the call it names and not a second one added
+	// beside it - an outside review of #109 pointed out that a registered
+	// file could otherwise grow any number of computed loads unnoticed.
+	viaPath := map[string]int{}
 
 	err := filepath.WalkDir(filepath.Join(root, "internal"), func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -114,7 +118,7 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 						"above with the reason, or name a KnownDLL.", rel, where)
 					return true
 				}
-				viaPath[rel] = true
+				viaPath[rel]++
 				return true
 			}
 			if _, known := knownDLLs[name]; !known {
@@ -148,10 +152,16 @@ func TestALibraryIsOnlyLoadedLazilyWhenTheSystemAlreadyHasIt(t *testing.T) {
 		}
 	}
 	for rel, why := range byPath {
-		if !viaPath[rel] {
+		switch viaPath[rel] {
+		case 0:
 			t.Errorf("%s is allowed to load a library by a path it works out (%s) and it loads "+
 				"none.\nDelete the entry rather than leaving it to cover whatever lands in that "+
 				"file next.", rel, why)
+		case 1:
+		default:
+			t.Errorf("%s loads a library by a computed path at %d call sites, and its entry (%s) "+
+				"forgives one.\nA second computed load is a second decision: name it with its own reason, "+
+				"or it rides on the first one's.", rel, viaPath[rel], why)
 		}
 	}
 }

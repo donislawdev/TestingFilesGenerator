@@ -28,7 +28,11 @@ func workflowText(t *testing.T, name string) string {
 	t.Helper()
 	body, err := os.ReadFile(filepath.Join(repoRoot(t), ".github", "workflows", name))
 	if err != nil {
-		t.Skipf("no %s here: %v", name, err)
+		// Fatal, not a skip: the workflow is tracked, so its absence is a
+		// deletion and not a fresh clone without docs/. A guard that skipped
+		// here would pass the package with the release machinery gone - an
+		// outside review of #109 named it.
+		t.Fatalf("required workflow %s is missing: %v", name, err)
 	}
 	return string(body)
 }
@@ -37,7 +41,7 @@ func signingScript(t *testing.T) string {
 	t.Helper()
 	body, err := os.ReadFile(filepath.Join(repoRoot(t), ".github", "scripts", "sign_release.py"))
 	if err != nil {
-		t.Skipf("no signing script here: %v", err)
+		t.Fatalf("required signing script is missing: %v", err)
 	}
 	return string(body)
 }
@@ -100,15 +104,23 @@ func TestTheSigningScriptRefusesBeforeItSigns(t *testing.T) {
 	script := signingScript(t)
 
 	for what, want := range map[string]string{
-		"it verifies the build before touching it":                  "gh\", \"attestation\", \"verify\"",
-		"it timestamps, or the signature dies with the certificate": "/tr",
-		"it reads the certificate back out of the signed file":      "certificate_of(target)",
-		"it selects the certificate by OID rather than by a name":   "1.3.6.1.5.5.7.3.3",
-		"it reads the pin from one place":                           "codesign.go",
+		"it verifies the build before touching it":                                                      "gh\", \"attestation\", \"verify\"",
+		"it timestamps, or the signature dies with the certificate":                                     "/tr",
+		"it reads the certificate back out of the signed file":                                          "certificate_of(target)",
+		"it hands a file's path to PowerShell through the environment, never through the script's text": "-LiteralPath $env:TFG_SIGNED_FILE",
+		"it selects the certificate by OID rather than by a name":                                       "1.3.6.1.5.5.7.3.3",
+		"it reads the pin from one place":                                                               "codesign.go",
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("%s: the script does not contain %q", what, want)
 		}
+	}
+
+	// A path in the script's text is a path PowerShell parses: a file name
+	// with a quote in it would end the string and run the rest. The archive
+	// holds files named by somebody else since 2026-09-17.
+	if strings.Contains(script, "-LiteralPath '%s'") {
+		t.Error("the signing script interpolates a file's path into PowerShell text, and a name with a quote in it would run as PowerShell")
 	}
 
 	// Nothing here publishes. The release stays a draft until a person reads it.

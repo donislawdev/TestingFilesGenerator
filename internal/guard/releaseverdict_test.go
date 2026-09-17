@@ -61,7 +61,7 @@ func readReleaseWorkflow(t *testing.T) releaseWorkflow {
 
 	body, err := os.ReadFile(filepath.Join(repoRoot(t), ".github", "workflows", "verify-release.yml"))
 	if err != nil {
-		t.Skipf("no verify-release.yml here: %v", err)
+		t.Fatalf("required workflow verify-release.yml is missing: %v", err)
 	}
 
 	var parsed releaseWorkflow

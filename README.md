@@ -196,13 +196,15 @@ software renderer for machines whose graphics driver offers none - Mesa
 llvmpipe, in an `opengl` folder next to `tfg-gui.exe` - and the window uses it
 by itself when the driver refuses: a virtual machine without 3D acceleration,
 a remote desktop, a server. Drawn that way it is slower and says so on its
-About screen. On a machine with a driver the folder is never touched.
-`tfg-gui --software-gl` asks for the renderer on any machine. Keep the folder
-next to the program: without it, and without a driver, the window says what
-it looked for in a dialog and on standard error, and exits 1. Linux has Mesa
-in the system and macOS has never lacked what the toolkit needs, so nothing
-of the kind ships there. The command line needs no graphics driver and does
-everything the window does.
+About screen. On a machine with a driver the folder is not touched unless
+you ask: `tfg-gui --software-gl` loads the renderer on any Windows machine,
+which is the way to see the window as a machine without a driver sees it. Keep
+the folder next to the program: without it, and without a driver, the window
+says what it looked for in a dialog and on standard error, and exits 1. Linux
+has Mesa in the system and macOS has never lacked what the toolkit needs, so
+nothing of the kind ships there, and there the flag says so and changes
+nothing. The command line needs no graphics driver and does everything the
+window does.
 
 ## 🚀 Quick start
 

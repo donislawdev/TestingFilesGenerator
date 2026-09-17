@@ -3,6 +3,7 @@ package guard
 import (
 	"bytes"
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -42,6 +43,7 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 	noDir := errors.New("no executable path")
 	noStart := errors.New("access denied")
 	loadFailed := errors.New("the renderer did not load")
+	unreadable := errors.New("CreateFile C:/somewhere/opengl/opengl32.dll: Access is denied.")
 
 	type attempt struct {
 		name       string
@@ -49,6 +51,7 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 		goos       string
 		dirErr     error
 		missing    string
+		besideErr  error // what stood in the way of looking beside the program
 		startCode  int
 		startErr   error
 		loaded     error
@@ -71,6 +74,9 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 		{name: "windows, renderer not beside",
 			launch: gui.Launch{}, goos: "windows", missing: missing,
 			wantAdd: text.RendererNotBeside(missing)},
+		{name: "windows, renderer beside but not readable",
+			launch: gui.Launch{}, goos: "windows", besideErr: unreadable,
+			wantAdd: text.RendererNotReadable(unreadable)},
 		{name: "windows, the executable's directory unknown",
 			launch: gui.Launch{}, goos: "windows", dirErr: noDir,
 			wantAdd: text.RendererStartFailed(noDir)},
@@ -98,7 +104,7 @@ func TestTheSecondAttemptIsTakenOnlyWhereTheRendererCanBe(t *testing.T) {
 				Launch:        c.launch,
 				GOOS:          c.goos,
 				ExecutableDir: func() (string, error) { return "somewhere", c.dirErr },
-				Beside:        func(string) string { return c.missing },
+				Beside:        func(string) (string, error) { return c.missing, c.besideErr },
 				Start: func(args []string) (int, error) {
 					tried = true
 					startedWith = args
@@ -168,6 +174,32 @@ func TestAWindowAskedForTheRendererSaysWhatBecameOfIt(t *testing.T) {
 	failed := errors.New("the renderer did not load")
 	if got := gui.LoadingSentence(failed); got != text.RendererNotLoaded(failed) {
 		t.Errorf("a renderer that did not load is announced as %q", got)
+	}
+}
+
+// The renderer is looked for file by file, and a file that cannot be looked
+// at is not a file that is missing - the advice for the two differs, and an
+// outside review of #109 pointed out that the first version gave the advice
+// for a missing file to a person whose file was there and unreadable.
+func TestARendererFileThatCannotBeReadIsNotReportedAsMissing(t *testing.T) {
+	files := gui.SoftwareFiles("here")
+	present := func(string) (fs.FileInfo, error) { return nil, nil }
+	if missing, err := gui.RendererBeside("here", present); missing != "" || err != nil {
+		t.Errorf("with every file present the answer is %q, %v", missing, err)
+	}
+	gone := func(path string) (fs.FileInfo, error) {
+		if path == files[1] {
+			return nil, fs.ErrNotExist
+		}
+		return nil, nil
+	}
+	if missing, err := gui.RendererBeside("here", gone); missing != files[1] || err != nil {
+		t.Errorf("with the loader gone the answer is %q, %v - it has to name %s", missing, err, files[1])
+	}
+	denied := &fs.PathError{Op: "stat", Path: files[0], Err: fs.ErrPermission}
+	unreadable := func(string) (fs.FileInfo, error) { return nil, denied }
+	if missing, err := gui.RendererBeside("here", unreadable); missing != "" || !errors.Is(err, fs.ErrPermission) {
+		t.Errorf("with a file that cannot be read the answer is %q, %v - a permission error is not a missing file", missing, err)
 	}
 }
 

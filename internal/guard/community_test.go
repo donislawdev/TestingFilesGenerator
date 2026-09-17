@@ -66,21 +66,9 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 			t.Errorf("reading %s: %v", p, err)
 			continue
 		}
-		text := string(body)
-		for _, at := range githubProject.FindAllStringSubmatchIndex(text, -1) {
-			checked++
-			project := text[at[2]:at[3]]
-			if project == ourRepository {
-				continue
-			}
-			// A download a workflow makes from somebody else's release is not
-			// a place a person is sent: the fetch script for the software
-			// renderer names the project that publishes it, by design, and a
-			// guard that refused it would refuse the one link here that has
-			// to point elsewhere. Only a release download, and nothing else.
-			if strings.HasPrefix(text[at[1]:], "/releases/download/") {
-				continue
-			}
+		links, seen := foreignProjectLinks(string(body), filepath.Base(p))
+		checked += seen
+		for _, project := range links {
 			t.Errorf("%s links to https://github.com/%s.\n"+
 				"This project is %s. A link left pointing at another repository is the "+
 				"specific way these files go wrong, and in the issue chooser it would "+
@@ -101,6 +89,49 @@ func TestNothingThatDirectsAPersonPointsAtAnotherProject(t *testing.T) {
 // A form GitHub cannot read is not reported anywhere a person would see. It
 // simply stops offering the template, and the first anybody knows is that
 // reports arrive without the version in them.
+// rendererFetchScript is the one file allowed to name another project's
+// release: the script that downloads the software renderer. A download a
+// workflow makes is not a place a person is sent.
+const rendererFetchScript = "fetch_software_renderer.sh"
+
+// foreignProjectLinks are the GitHub projects a file links to that are not
+// this one, and how many project links it holds at all. The one exemption
+// is by FILE and by shape together: a release download, in the script that
+// makes it. The same address in a file a person reads is refused - an
+// outside review of #109 pointed out that an exemption by shape alone would
+// have let a release download of anything into SECURITY.md.
+func foreignProjectLinks(text, base string) (foreign []string, seen int) {
+	for _, at := range githubProject.FindAllStringSubmatchIndex(text, -1) {
+		seen++
+		project := text[at[2]:at[3]]
+		if project == ourRepository {
+			continue
+		}
+		if base == rendererFetchScript && strings.HasPrefix(text[at[1]:], "/releases/download/") {
+			continue
+		}
+		foreign = append(foreign, project)
+	}
+	return foreign, seen
+}
+
+// The exemption reaches the fetch script and nothing else: the same release
+// download in a file a person reads is refused.
+func TestAReleaseDownloadIsForgivenInTheFetchScriptAlone(t *testing.T) {
+	download := "see https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/x.7z here"
+	if foreign, _ := foreignProjectLinks(download, rendererFetchScript); len(foreign) != 0 {
+		t.Errorf("the fetch script's own download is refused: %v", foreign)
+	}
+	for _, base := range []string{"SECURITY.md", "CONTRIBUTING.md", "config.yml"} {
+		if foreign, _ := foreignProjectLinks(download, base); len(foreign) != 1 {
+			t.Errorf("a release download in %s is forgiven, and only the fetch script may make one", base)
+		}
+	}
+	if foreign, _ := foreignProjectLinks("https://github.com/pal1000/mesa-dist-win/issues", rendererFetchScript); len(foreign) != 1 {
+		t.Error("a link that is not a release download is forgiven in the fetch script, and only a download is")
+	}
+}
+
 func TestTheIssueFormsAreShapedTheWayGitHubNeeds(t *testing.T) {
 	dir := filepath.Join(repoRoot(t), ".github", "ISSUE_TEMPLATE")
 	entries, err := os.ReadDir(dir)

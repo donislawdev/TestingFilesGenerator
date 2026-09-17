@@ -108,10 +108,15 @@ def run(argv, **kw):
     return subprocess.run(argv, check=True, **kw)
 
 
-def powershell(script):
+def powershell(script, env=None):
+    """Run a PowerShell script. Values the script needs go in env, never in
+    the script's text: a file name with a quote in it would end the string
+    and the rest would run as PowerShell. -LiteralPath does not help, because
+    the injected quote is parsed before the parameter is."""
     out = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-        capture_output=True, text=True)
+        capture_output=True, text=True,
+        env=None if env is None else {**os.environ, **env})
     if out.returncode != 0:
         raise SystemExit("sign_release: powershell failed:\n%s" % out.stderr.strip())
     # PowerShell errors are NON TERMINATING by default, so a script can print
@@ -243,15 +248,21 @@ def signing_thumbprint(pin):
 
 
 def certificate_of(path):
-    """The sha256 of the certificate that actually signed a file."""
+    """The sha256 of the certificate that actually signed a file.
+
+    The path reaches PowerShell as an environment variable and never as part
+    of the script. Until 2026-09-17 it was interpolated into the text, which
+    was harmless while the only file was our own tfg-gui.exe and stopped
+    being harmless the day the archive gained files named by somebody else
+    - an outside review of the pull request named it."""
     script = (
-        "$s = Get-AuthenticodeSignature -LiteralPath '%s'; "
+        "$s = Get-AuthenticodeSignature -LiteralPath $env:TFG_SIGNED_FILE; "
         "if ($s.Status -ne 'Valid') { Write-Error ('signature status: ' + $s.Status); exit 1 }; "
         "$h = [System.Security.Cryptography.SHA256]::Create()"
         ".ComputeHash($s.SignerCertificate.RawData); "
-        "(($h | ForEach-Object { $_.ToString('x2') }) -join '')" % path
+        "(($h | ForEach-Object { $_.ToString('x2') }) -join '')"
     )
-    return powershell(script).strip()
+    return powershell(script, env={"TFG_SIGNED_FILE": path}).strip()
 
 
 def sha256_of(path):

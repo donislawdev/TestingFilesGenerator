@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -53,15 +54,30 @@ func SoftwareFiles(exeDir string) []string {
 	}
 }
 
-// softwareBeside reports whether every file of the renderer is beside the
-// executable, and names the first one that is not.
-func softwareBeside(exeDir string) (missing string) {
+// softwareBeside looks for every file of the renderer beside the executable
+// and answers with the first that is missing, or with what stood in the way
+// of looking - a file that cannot be read is not a file that is missing, and
+// the advice for the two differs (put the folder back, against look at the
+// permissions). An outside review of #109 named the difference.
+func softwareBeside(exeDir string) (missing string, err error) {
+	return RendererBeside(exeDir, os.Stat)
+}
+
+// RendererBeside is softwareBeside with the question to the file system
+// handed in, so that a guard can answer it with a permission error - which
+// no test can arrange on a real disk the same way on every system.
+func RendererBeside(exeDir string, stat func(string) (fs.FileInfo, error)) (missing string, err error) {
 	for _, path := range SoftwareFiles(exeDir) {
-		if _, err := os.Stat(path); err != nil {
-			return path
+		_, err := stat(path)
+		if err == nil {
+			continue
 		}
+		if errors.Is(err, fs.ErrNotExist) {
+			return path, nil
+		}
+		return "", err
 	}
-	return ""
+	return "", nil
 }
 
 // SecondAttempt is the second attempt at a window, taken when the toolkit
@@ -79,8 +95,9 @@ type SecondAttempt struct {
 	// in the way of knowing.
 	ExecutableDir func() (string, error)
 	// Beside names the first file of the renderer that is not beside the
-	// executable, or nothing when they all are.
-	Beside func(exeDir string) (missing string)
+	// executable, or nothing when they all are - or what stood in the way of
+	// looking, which is a different answer with different advice.
+	Beside func(exeDir string) (missing string, err error)
 	// Start starts this program again with args and answers its exit code.
 	Start  func(args []string) (code int, err error)
 	ErrOut io.Writer
@@ -99,6 +116,9 @@ type (
 	notShipped struct{ goos string }
 	// notBeside: the renderer's file is not where the archive put it.
 	notBeside struct{ path string }
+	// notReadable: a file of the renderer could not be looked at - the
+	// system's answer, which names the file.
+	notReadable struct{ err error }
 	// startFailed: the second process could not be started at all.
 	startFailed struct{ err error }
 )
@@ -106,6 +126,8 @@ type (
 func (alreadySoftware) Error() string { return SoftwareFlag }
 func (e notShipped) Error() string    { return e.goos }
 func (e notBeside) Error() string     { return e.path }
+func (e notReadable) Error() string   { return e.err.Error() }
+func (e notReadable) Unwrap() error   { return e.err }
 func (e startFailed) Error() string   { return e.err.Error() }
 func (e startFailed) Unwrap() error   { return e.err }
 
@@ -140,7 +162,11 @@ func (a SecondAttempt) Try() (int, error) {
 	if err != nil {
 		return 0, startFailed{err}
 	}
-	if missing := a.Beside(dir); missing != "" {
+	missing, err := a.Beside(dir)
+	if err != nil {
+		return 0, notReadable{err}
+	}
+	if missing != "" {
 		return 0, notBeside{missing}
 	}
 	// Said out loud before the second process starts, on the stream whatever
@@ -173,11 +199,14 @@ func executableDir() (string, error) {
 // nil as well in a first process that never tried.
 func RendererSentence(why error, loaded error) string {
 	var beside notBeside
+	var unreadable notReadable
 	var failed startFailed
 	var shipsNot notShipped
 	switch {
 	case errors.As(why, &beside):
 		return text.RendererNotBeside(beside.path)
+	case errors.As(why, &unreadable):
+		return text.RendererNotReadable(unreadable.err)
 	case errors.As(why, &failed):
 		return text.RendererStartFailed(failed.err)
 	case errors.Is(why, alreadySoftware{}) && errors.As(loaded, &shipsNot):

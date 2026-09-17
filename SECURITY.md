@@ -67,9 +67,9 @@ workflow downloads them from a pinned release of the project that builds them,
 checks the archive's SHA-256 and each file's own before unpacking anything, and
 signs both files with the same certificate as the program. The sums they were
 reviewed at are in `THIRD-PARTY-NOTICES.md`. The program loads them only by their
-absolute path under its own directory, only after the driver has refused, or when
-asked with `--software-gl` - never by name from the search path, and never on a
-machine where the driver draws.
+absolute path under its own directory, and only in two cases: after the driver has
+refused, or when asked with `--software-gl`. Never by name from the search path,
+and never otherwise.
 
 ### In scope
 

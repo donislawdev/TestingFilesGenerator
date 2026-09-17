@@ -324,4 +324,11 @@ func TestANestedModuleIsNotAPackageOfThisModule(t *testing.T) {
 				"A directory with its own go.mod is outside \"./...\" and has to be outside this walk.", p.rel)
 		}
 	}
+	// And the walk skipped exactly that module. A go.mod dropped into a
+	// first party directory would take it out of every guard that reads
+	// packages(), and nothing but this line would say so.
+	if got := strings.Join(nestedModules, ","); got != bindingCopy {
+		t.Errorf("the walk skipped %q as nested modules, and the only one there is %s.\n"+
+			"A directory that grew a go.mod of its own has left every guard that reads packages().", got, bindingCopy)
+	}
 }

@@ -303,6 +303,14 @@ func RendererNotBeside(path string) string {
 	return sayf("RendererNotBeside", "The software renderer that ships with the Windows archive was not found beside the program - {{.Path}} is missing. Put the opengl folder from the archive back next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1.", map[string]any{"Path": path})
 }
 
+// RendererNotReadable is what the refusal adds on Windows when a file of the
+// renderer is there and could not be looked at - the advice differs from a
+// missing file's, because putting the folder back does nothing for a file
+// the person may not read.
+func RendererNotReadable(err error) string {
+	return sayf("RendererNotReadable", "A file of the software renderer beside the program could not be read: {{.Error}}. Check who may read the opengl folder next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1.", map[string]any{"Error": withoutFullStop(err)})
+}
+
 // RendererStartFailed is what the refusal adds when the second process,
 // the one that would have loaded the renderer, could not be started.
 func RendererStartFailed(err error) string {
@@ -334,7 +342,7 @@ func RendererDidNotHelp() string {
 // renderer does not ship for. Said rather than ignored, because a flag
 // that does nothing in silence is one somebody waits on.
 func RendererNotShipped() string {
-	return say("RendererNotShipped", "No software renderer ships for this system. The window is drawn by the graphics driver as usual.")
+	return say("RendererNotShipped", "No software renderer ships for this system, so this flag changes nothing here.")
 }
 
 // NotAWholeNumber refuses a box that should hold digits and does not.

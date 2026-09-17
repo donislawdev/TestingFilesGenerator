@@ -316,9 +316,13 @@
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
     "other": "The software renderer shipped beside the program could not be loaded: {{.Error}}."
   },
+  "RendererNotReadable": {
+    "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
+    "other": "A file of the software renderer beside the program could not be read: {{.Error}}. Check who may read the opengl folder next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1."
+  },
   "RendererNotShipped": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
-    "other": "No software renderer ships for this system. The window is drawn by the graphics driver as usual."
+    "other": "No software renderer ships for this system, so this flag changes nothing here."
   },
   "RendererStartFailed": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",

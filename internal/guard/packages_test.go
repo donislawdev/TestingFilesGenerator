@@ -48,6 +48,13 @@ func repoRoot(t *testing.T) string {
 	}
 }
 
+// nestedModules are the directories packages() skipped as modules of their
+// own on its last walk, module relative and slash separated. Recorded so a
+// guard can ask that the set is exactly the one expected: a go.mod dropped
+// into a first party directory would otherwise take that directory out of
+// every guard reading packages(), silently.
+var nestedModules []string
+
 // packages lists every package of this module.
 //
 // It fails when it finds none. A walk that quietly matches nothing is the
@@ -57,6 +64,7 @@ func packages(t *testing.T) []pkg {
 	root := repoRoot(t)
 
 	var out []pkg
+	nestedModules = nil
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -84,6 +92,9 @@ func packages(t *testing.T) []pkg {
 		// nested module is left alone the day it arrives.
 		if p != root {
 			if _, err := os.Stat(filepath.Join(p, "go.mod")); err == nil {
+				if rel, err := filepath.Rel(root, p); err == nil {
+					nestedModules = append(nestedModules, filepath.ToSlash(rel))
+				}
 				return filepath.SkipDir
 			}
 		}

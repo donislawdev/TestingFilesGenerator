@@ -192,7 +192,9 @@ func TestTheNoticesNameWhatShipsBesideTheWindow(t *testing.T) {
 	root := repoRoot(t)
 	raw, err := os.ReadFile(filepath.Join(root, "THIRD-PARTY-NOTICES.md"))
 	if err != nil {
-		t.Skipf("no notices file here: %v", err)
+		// Fatal: the notices are tracked and ship in every archive, so their
+		// absence is a deletion, not a fresh clone without docs/.
+		t.Fatalf("reading THIRD-PARTY-NOTICES.md: %v", err)
 	}
 	body := string(raw)
 	headings := map[string]bool{}

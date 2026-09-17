@@ -17,6 +17,24 @@ import (
 // rendered from. Two written copies of one fact, and these guards are what
 // make that safe - the same shape as the notices held to the registry.
 
+// activeLines is a text with its comment lines taken out - every line whose
+// first character that is not blank is a hash, which is the comment of the
+// shell, of YAML and of Python alike. The guards below read the result, so
+// that an operation commented out is an operation gone: the mutation runner
+// answered the first version of one of them with the call commented out,
+// and the text was still in the file. Inert text inside a string literal is
+// not caught by this, and is said so rather than pretended.
+func activeLines(text string) string {
+	var kept []string
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return strings.Join(kept, "\n")
+}
+
 // rendererPin reads .github/mesa-dist-win: the version, the archive, its
 // sum, and each file with its sum, exactly as the fetch script reads them.
 func rendererPin(t *testing.T) (version, archive, sum string, files map[string]string) {
@@ -90,7 +108,7 @@ func TestTheFetchScriptChecksTheSumBeforeItUnpacks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("no fetch script: %v", err)
 	}
-	script := string(raw)
+	script := activeLines(string(raw))
 	for what, want := range map[string]string{
 		"it reads the pin": `pin=".github/mesa-dist-win"`,
 		"it downloads from the project's own releases": "github.com/pal1000/mesa-dist-win/releases/download/${version}/${archive}",
@@ -132,7 +150,7 @@ func TestEveryWindowBuildFetchesTheRendererBeforeItPacks(t *testing.T) {
 	// out: found, green, and no renderer in the archive.
 	call := regexp.MustCompile(`(?m)^[ \t]*\.github/scripts/fetch_software_renderer\.sh "\$\{work\}"[ \t]*$`)
 	for _, name := range []string{"release.yml", "dev-build.yml"} {
-		text := workflowText(t, name)
+		text := activeLines(workflowText(t, name))
 		build := strings.Index(text, `-o "${work}/tfg-gui.exe" ./cmd/tfg-gui`)
 		fetch := -1
 		if at := call.FindStringIndex(text); at != nil {
@@ -166,7 +184,7 @@ func TestEveryWindowBuildFetchesTheRendererBeforeItPacks(t *testing.T) {
 // defect the script could have had, and it had it from the day it was
 // written, waiting for the first file in a subdirectory.
 func TestTheSigningRepacksWholeAndSignsTheLibraries(t *testing.T) {
-	script := signingScript(t)
+	script := activeLines(signingScript(t))
 	for what, want := range map[string]string{
 		"it walks every directory when it repacks":      "os.walk(work)",
 		"it signs the libraries beside the program":     `n.endswith(".dll")`,
@@ -187,7 +205,7 @@ func TestTheSigningRepacksWholeAndSignsTheLibraries(t *testing.T) {
 // bytes a person downloads, by the workflow that runs after publication.
 // The notes say the renderer is there and why.
 func TestThePublishedWindowArchiveIsCheckedForTheRenderer(t *testing.T) {
-	verify := workflowText(t, "verify-release.yml")
+	verify := activeLines(workflowText(t, "verify-release.yml"))
 	for what, want := range map[string]string{
 		"it reads the renderer's files from the registry": "companions.go",
 		"it checks every library, not only the program":   "-Include *.exe, *.dll",
@@ -199,7 +217,7 @@ func TestThePublishedWindowArchiveIsCheckedForTheRenderer(t *testing.T) {
 		}
 	}
 
-	release := workflowText(t, "release.yml")
+	release := activeLines(workflowText(t, "release.yml"))
 	for what, want := range map[string]string{
 		"the notes say the renderer is in the archive": "software OpenGL renderer",
 		"the notes say where it is":                    "next to the program",

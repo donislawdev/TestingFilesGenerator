@@ -150,14 +150,16 @@ because it turns other people's test suites red.
   offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote
   desktop, a server - the window starts itself again with the renderer and
   opens, drawn in software: slower, and it says so on its About screen and on
-  standard error. On a machine with a driver the renderer is never touched.
-  `tfg-gui --software-gl` asks for it on any machine, which is the way to see
-  the window as such a machine sees it. If the folder is missing, the refusal
-  says which file it looked for. Measured on Windows Server 2025 under
-  VirtualBox without 3D acceleration, where the window refused until now.
-  Both files are signed like the program, named in `THIRD-PARTY-NOTICES.md`
-  with the sums they were reviewed at, and listed in the bill of materials.
-  Nothing changes for Linux or macOS, where nothing of the kind is shipped.
+  standard error. On a machine with a driver the renderer is not touched
+  unless asked for: `tfg-gui --software-gl` loads it on any Windows machine,
+  which is the way to see the window as such a machine sees it. If the folder
+  is missing, the refusal says which file it looked for, and if a file is
+  there but cannot be read, it says that instead. Measured on Windows Server
+  2025 under VirtualBox without 3D acceleration, where the window refused
+  until now. Both files are signed like the program, named in
+  `THIRD-PARTY-NOTICES.md` with the sums they were reviewed at, and listed in
+  the bill of materials. Nothing changes for Linux or macOS, where nothing of
+  the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
 

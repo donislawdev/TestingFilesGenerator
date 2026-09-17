@@ -298,8 +298,11 @@ var spawnsAllowed = map[string]string{
 }
 
 // withoutRegisteredPathLoads drops the findings a registered file is allowed
-// to raise - a load by a computed path, a spawn - and leaves every other
-// finding from that file alone.
+// to raise - ONE load by a computed path, ONE spawn - and leaves every other
+// finding from that file alone, including a second of the same kind. An
+// entry forgives the operation it was written for and not whatever is
+// added beside it later - an outside review of #109 pointed out that the
+// first version forgave every such finding in a registered file.
 func withoutRegisteredPathLoads(found []telemetryFinding, rel string) []telemetryFinding {
 	_, loads := librariesLoadedByPath[rel]
 	_, spawns := spawnsAllowed[rel]
@@ -309,9 +312,11 @@ func withoutRegisteredPathLoads(found []telemetryFinding, rel string) []telemetr
 	kept := make([]telemetryFinding, 0, len(found))
 	for _, f := range found {
 		if loads && f.kind == "library" && f.detail == computedLibraryName {
+			loads = false
 			continue
 		}
 		if spawns && f.kind == "spawn" {
+			spawns = false
 			continue
 		}
 		kept = append(kept, f)
@@ -719,6 +724,34 @@ func TestTheTelemetryScannerRejectsCodeItMustReject(t *testing.T) {
 			"Reason: a guard that has only ever read clean code has been shown to run, not to look.",
 			len(missed), strings.Join(missed, "\n  "))
 	}
+}
+
+// A registered file is forgiven the one operation its entry names, and a
+// second operation of the same kind in the same file is a finding. The
+// canary above passes an unregistered name, so it could not see this: a
+// registered file with two spawns was forgiven both.
+func TestARegisteredFileIsForgivenOneOperationAndNoMore(t *testing.T) {
+	twoSpawns := "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n)\n\nfunc f() { _ = exec.Command(os.Args[0]) }\n\nfunc g() { _ = exec.Command(\"curl\") }\n"
+	if kinds := kindsIn(telemetryFindings(twoSpawns, "internal/gui/again.go")); kinds["spawn"] != 1 {
+		t.Errorf("a registered file with two spawns left %d finding(s), and the entry forgives one", kinds["spawn"])
+	}
+	oneSpawn := "package p\n\nimport (\n\t\"os\"\n\t\"os/exec\"\n)\n\nfunc f() { _ = exec.Command(os.Args[0]) }\n"
+	if kinds := kindsIn(telemetryFindings(oneSpawn, "internal/gui/again.go")); kinds["spawn"] != 0 {
+		t.Errorf("the one spawn the entry names is still reported, %d time(s)", kinds["spawn"])
+	}
+	twoLoads := "package p\n\nimport \"syscall\"\n\nfunc f(p string) { _, _ = syscall.LoadDLL(p) }\n\nfunc g(p string) { _, _ = syscall.LoadDLL(p) }\n"
+	if kinds := kindsIn(telemetryFindings(twoLoads, "internal/gui/software_windows.go")); kinds["library"] != 1 {
+		t.Errorf("a registered file with two computed loads left %d finding(s), and the entry forgives one", kinds["library"])
+	}
+}
+
+// kindsIn counts findings by kind.
+func kindsIn(found []telemetryFinding) map[string]int {
+	kinds := map[string]int{}
+	for _, f := range found {
+		kinds[f.kind]++
+	}
+	return kinds
 }
 
 // And it does not reach that by flagging everything, or the case above proves
