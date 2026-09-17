@@ -110,7 +110,7 @@ var companions = []Companion{
 			Inside:  "x64/",
 		},
 		Note: "OpenGL in software, for a machine whose graphics driver offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote desktop, a server. " +
-			"Loaded only after the toolkit could not open a window, or when asked for with --software-gl, and never otherwise. " +
+			"Loaded only after the toolkit could not open a window, or when the window is started with the flag that asks for it, and never otherwise. " +
 			"Mesa is MIT (core, the llvmpipe driver and the WGL frontend - the core's line is quoted, the driver is Copyright 2007 VMware, Inc.). " +
 			"LLVM 22.1.8, compiled in for llvmpipe's code generation, is Apache-2.0 WITH LLVM-exception - its licence file states no copyright line under that licence, and the one it does carry, Copyright (c) 2003-2019 University of Illinois at Urbana-Champaign, belongs to the legacy licence the file also reproduces. " +
 			"The C11 threads shim Mesa compiles on Windows is BSL-1.0, Copyright yohhoy 2012. " +

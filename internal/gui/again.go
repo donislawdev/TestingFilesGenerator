@@ -31,7 +31,13 @@ func startAgain(args []string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	cmd := exec.Command(exe, args...)
+	// Settled rather than suppressed, for both scanners that flag a command
+	// built from variables: the program is this one, by the path the system
+	// answers for the running process, and the arguments are the ones this
+	// process was started with plus one flag of ours. Nothing a person typed
+	// chooses what runs, and nothing on the search path can be what runs.
+	//nolint:gosec // G204: the command is os.Executable and the arguments are our own
+	cmd := exec.Command(exe, args...) // nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	cmd.Env = append(os.Environ(), softwareDriver+"="+softwareLLVMPipe)
 	err = cmd.Run()

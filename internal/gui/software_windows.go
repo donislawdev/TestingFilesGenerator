@@ -7,6 +7,20 @@ import (
 	"syscall"
 )
 
+// loadFailed: the renderer was asked for and the variable it reads could
+// not be set - which variable, and what the system said. A file that does
+// not load is reported by the toolchain's own error, which already names
+// the file. Here rather than beside the other reasons because only this
+// file raises it, and a type nothing on Linux raises is a type staticcheck
+// there calls unused - measured on the first CI run of this change.
+type loadFailed struct {
+	path string
+	err  error
+}
+
+func (e loadFailed) Error() string { return e.path + ": " + e.err.Error() }
+func (e loadFailed) Unwrap() error { return e.err }
+
 // LoadSoftwareRenderer loads the renderer shipped beside the executable, so
 // that the toolkit's later request for OpenGL by name is answered by it.
 //

@@ -101,14 +101,6 @@ type (
 	notBeside struct{ path string }
 	// startFailed: the second process could not be started at all.
 	startFailed struct{ err error }
-	// loadFailed: the renderer was asked for and the variable it reads
-	// could not be set - which variable, and what the system said. A file
-	// that does not load is reported by the toolchain's own error, which
-	// already names the file.
-	loadFailed struct {
-		path string
-		err  error
-	}
 )
 
 func (alreadySoftware) Error() string { return SoftwareFlag }
@@ -116,8 +108,6 @@ func (e notShipped) Error() string    { return e.goos }
 func (e notBeside) Error() string     { return e.path }
 func (e startFailed) Error() string   { return e.err.Error() }
 func (e startFailed) Unwrap() error   { return e.err }
-func (e loadFailed) Error() string    { return e.path + ": " + e.err.Error() }
-func (e loadFailed) Unwrap() error    { return e.err }
 
 // SecondAttemptFor builds the attempt the real window takes: this
 // executable, this system, a real second process.
