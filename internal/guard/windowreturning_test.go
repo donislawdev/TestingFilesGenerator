@@ -160,7 +160,7 @@ func TestTheWindowPackageOutsideCgoReachesNoWidget(t *testing.T) {
 
 // behindCgo says whether a file's build constraint keeps it out of the build
 // with cgo off. Only the plain "cgo" constraint is looked for, because that
-// is the one the window package uses (run_cgo.go); a constraint written any
+// is the one the window package uses (run_cgo.go). A constraint written any
 // other way counts as taking part, which errs towards asking.
 func behindCgo(file *ast.File) bool {
 	for _, group := range file.Comments {
