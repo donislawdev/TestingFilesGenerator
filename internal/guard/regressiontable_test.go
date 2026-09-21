@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-// Every guard file CLAUDE.md cites as evidence has a paragraph in
-// REGRESSION.md saying what it defends.
+// Every guard file the verdict table of REGRESSION.md cites as evidence has a
+// paragraph further down the same document saying what it defends.
 //
 // The two tables were one table until 2026-08-12, when the justifications were
 // moved out because they were 12.8k tokens of a file that is read at every step
@@ -27,6 +27,13 @@ import (
 // What is actually at stake is the verdict column. "JEST" with nothing behind
 // it reads as an assurance, which is precisely what the header of REGRESSION.md
 // warns against.
+//
+// Until 2026-09-21 the verdict table lived in CLAUDE.md and the paragraphs
+// here, so this compared two files. That day CLAUDE.md was cut from 310 KB to
+// a guarded ceiling and the table moved in above the paragraphs, so the two
+// halves are now two sections of one document, split at the heading below.
+// The drift this watches for is unchanged: a row can be added to the table
+// without a paragraph, whichever file the table is in.
 
 // notYetJustified is the sixteen this check started with, and it may only
 // shrink.
@@ -59,6 +66,10 @@ var notYetJustified = []string{
 
 var guardFileName = regexp.MustCompile(`[A-Za-z0-9_]+_test\.go`)
 
+// justificationsHeading is where the verdict table ends and the paragraphs
+// begin in REGRESSION.md.
+const justificationsHeading = "\n## Uzasadnienia"
+
 // citedInTables is every guard file named inside a table row.
 //
 // Table rows rather than the whole file, because both documents also mention
@@ -80,29 +91,27 @@ func citedInTables(body string) map[string]bool {
 
 func TestEveryGuardCitedInTheSummaryIsJustifiedInRegression(t *testing.T) {
 	root := repoRoot(t)
-	summary := filepath.Join(root, "CLAUDE.md")
-	detail := filepath.Join(root, "docs", "REGRESSION.md")
-
-	for _, path := range []string{summary, detail} {
-		if _, err := os.Stat(path); err != nil {
-			t.Logf("SKIPPED: %s is not here, so nothing was compared. "+
-				"The internal documents are excluded from the repository, so this check only "+
-				"runs on a machine that has them. (%v)", filepath.Base(path), err)
-			return
-		}
-	}
-
-	summaryBody, err := os.ReadFile(summary)
+	body, err := os.ReadFile(filepath.Join(root, "docs", "REGRESSION.md"))
 	if err != nil {
-		t.Fatalf("reading CLAUDE.md: %v", err)
-	}
-	detailBody, err := os.ReadFile(detail)
-	if err != nil {
-		t.Fatalf("reading REGRESSION.md: %v", err)
+		t.Logf("SKIPPED: REGRESSION.md is not here, so nothing was compared. "+
+			"The internal documents are excluded from the repository, so this check only "+
+			"runs on a machine that has them. (%v)", err)
+		return
 	}
 
-	cited := citedInTables(string(summaryBody))
-	justified := citedInTables(string(detailBody))
+	// The document is two halves: the verdict table, then the paragraphs. The
+	// split is asserted rather than assumed - a document without the heading
+	// is one this guard cannot read, not one it may pass - and so is the table
+	// having rows to compare, because two empty sets agree about everything.
+	summaryBody, detailBody, ok := strings.Cut(string(body), justificationsHeading)
+	if !ok {
+		t.Fatalf("REGRESSION.md has no heading %q, so the verdict table and the paragraphs cannot be told apart", strings.TrimSpace(justificationsHeading))
+	}
+	cited := citedInTables(summaryBody)
+	justified := citedInTables(detailBody)
+	if len(cited) == 0 {
+		t.Fatal("the verdict table of REGRESSION.md cites no guard file at all, so this guard has nothing to compare")
+	}
 
 	allowed := map[string]bool{}
 	for _, name := range notYetJustified {
@@ -126,7 +135,7 @@ func TestEveryGuardCitedInTheSummaryIsJustifiedInRegression(t *testing.T) {
 	sort.Strings(stale)
 
 	for _, name := range unjustified {
-		t.Errorf("CLAUDE.md cites %s as evidence and REGRESSION.md says nothing about it.\n"+
+		t.Errorf("the verdict table of REGRESSION.md cites %s as evidence and the paragraphs below say nothing about it.\n"+
 			"Reason: a verdict of JEST with no paragraph behind it reads as an assurance, which is\n"+
 			"what the header of REGRESSION.md warns against.\n"+
 			"What to do: write what that guard defends, from its commits and its code rather than\n"+
@@ -149,10 +158,10 @@ func TestEveryGuardCitedInTheSummaryIsJustifiedInRegression(t *testing.T) {
 		}
 	}
 
-	// Said rather than asserted. A row in REGRESSION.md whose file CLAUDE.md
-	// does not cite is not a defect - plenty of rows there carry their evidence
-	// in the paragraph and leave the summary's last column empty - but the
-	// number is worth seeing, because it is the same drift facing the other way.
+	// Said rather than asserted. A paragraph whose file the verdict table does
+	// not cite is not a defect - plenty of rows carry their evidence in the
+	// paragraph and leave the table's last column empty - but the number is
+	// worth seeing, because it is the same drift facing the other way.
 	var onlyJustified []string
 	for name := range justified {
 		if !cited[name] {
@@ -160,7 +169,7 @@ func TestEveryGuardCitedInTheSummaryIsJustifiedInRegression(t *testing.T) {
 		}
 	}
 	sort.Strings(onlyJustified)
-	t.Logf("%d guard file(s) cited in CLAUDE.md, %d justified in REGRESSION.md, %d still excused",
+	t.Logf("%d guard file(s) cited in the verdict table, %d justified in the paragraphs, %d still excused",
 		len(cited), len(justified), len(notYetJustified))
 	if len(onlyJustified) > 0 {
 		t.Logf("justified but not cited in the summary, which is the same drift the other way: %v",
