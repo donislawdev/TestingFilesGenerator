@@ -143,11 +143,15 @@ var provenByProbe = map[string]string{
 		"A probe rather than a mutation entry because there is no product code underneath: it reads the test files of this package, " +
 		"so a substitution in a shipped .go file never reaches it.",
 
+	"TestTheSummaryFitsItsCeilingAndHoldsNoState": "broken by hand on 2026-09-21 in all five directions it can fail - a dated STAN NA block in CLAUDE.md, a promised heading gone, " +
+		"2 KB past the ceiling, STATE.md with a second \"Gdzie jestesmy\", STATE.md past its ceiling - red each time, green with the files put back byte for byte (cmp). " +
+		"A probe rather than a mutation entry because there is no product code underneath: it reads CLAUDE.md and docs/STATE.md, neither of which is in the repository.",
+
 	"TestEveryGuardCitedInTheSummaryIsJustifiedInRegression": "broken by hand on 2026-08-26, in all three directions it can fail, and put back byte for byte through the checked restore in tools/mutate/runner.py. " +
 		"Taking keyboard_test.go off notYetJustified made it red, because CLAUDE.md cites that guard and REGRESSION.md still says nothing about it. " +
 		"Adding verify_test.go to the list made it red the other way, which is the direction that matters most: a list nobody prunes is where this drift would hide next. " +
 		"Naming a guard that does not exist made it red as well. Green again after each, and the run before them all was green, so none of the three was red for a reason that was already there. " +
-		"A probe rather than a mutation entry because there is no product code underneath: it reads CLAUDE.md and docs/REGRESSION.md, neither of which is in the repository, " +
+		"A probe rather than a mutation entry because there is no product code underneath: it reads docs/REGRESSION.md (both halves of it since 2026-09-21), which is not in the repository, " +
 		"so a substitution in a .go file never reaches it.",
 
 	"TestARunIsStoppableFromTheMomentItStarts": "checked 2026-08-23 with tools/probes/run-stop-order.py, which reproduces the original defect faithfully: it moves the assignment of r.stop " +
