@@ -303,23 +303,12 @@ func run(launch Launch, errOut io.Writer) int {
 	w := a.NewWindow(text.WindowTitle(version.Version))
 	host := desktop{Window: w, software: software}
 	// The window coming to the front is not the keyboard arriving, and only
-	// the window can tell the two apart. Measured in the pinned toolkit on
-	// 2026-09-21: whenever the system gives this window the front, the driver
-	// calls FocusGained on whatever holds the keyboard as if the keyboard had
-	// just moved there (internal/driver/glfw/window.go, processFocused) - on
-	// the very first activation too, right after Open has put the keyboard on
-	// the first field quietly. So the first menu on the first screen opened
-	// marked, alone among every control in the window, which the owner
-	// reported as one menu wearing a different colour from the rest. The
-	// foreground hook runs just before that call, so this is where the
-	// control is told what is coming. See parts.PointerFocus.Draws. No guard
-	// reaches this line - it is behind cgo, like the remembering above - so
-	// it is checked the way the rest is, by a run of the binary.
-	a.Lifecycle().SetOnEnteredForeground(func() {
-		if returning, ok := w.Canvas().Focused().(parts.Returnable); ok {
-			returning.WindowReturning()
-		}
-	})
+	// the window can tell the two apart - see WindowReturning for the
+	// measurement. The foreground hook runs just before the driver's call, so
+	// this is where the control is told what is coming. The registration is
+	// behind cgo like the remembering above, so a guard reads this line out
+	// of the source and calls what it registers with a canvas of its own.
+	a.Lifecycle().SetOnEnteredForeground(func() { WindowReturning(w.Canvas()) })
 	// What a first start opens at, if nothing is remembered: nothing for the
 	// catalogue, which opens at the ceiling, and what the screens want for
 	// the ordinary window.

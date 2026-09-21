@@ -182,3 +182,64 @@ func TestTheButtonsStandWhereTheyStoodAfterAPreview(t *testing.T) {
 			"the row kept the positions it worked out with Cancel in it", got[0], got[1], atRest[0], atRest[1])
 	}
 }
+
+// A face asked for by earlier work never dresses the work that came after.
+//
+// Calling the clock off is not enough, and an outside review of the pull
+// request measured why: the real window's clock hands the face to the
+// toolkit's queue (desktop.Later, time.AfterFunc then fyne.Do), and a face
+// already queued when the work ends still runs. If the next press comes in
+// that gap, the earlier face lands on the later work - a preview's face,
+// which has no bar, on a run - and the run's own face finds the screen
+// already dressed and does nothing, so the run has no progress bar at all.
+// Each piece of work is an epoch, and a face checks it is still its own.
+//
+// Played out with the held clock: the preview's face is kept aside, the
+// preview finishes, a run starts and is held, the stale face is fired as if
+// the queue had just got round to it, and then the run's own face fires.
+func TestAFaceAskedForByEarlierWorkNeverDressesLaterWork(t *testing.T) {
+	host, content, hold := heldScreen(t)
+	clock := host.holdTheClock()
+	w := test.NewWindow(host.content)
+	t.Cleanup(w.Close)
+	w.Resize(window.LargestOpening)
+
+	dir := t.TempDir()
+	fill(t, content, text.FieldOutputDir(), dir)
+	fill(t, content, text.FieldSize(), "1kb")
+	fill(t, content, text.FieldCount(), "3")
+
+	// The preview: its face is kept aside, and the preview is let through
+	// the hold and joined, which calls the clock off - too late for a face
+	// already on the toolkit's queue.
+	press(t, content, text.ButtonPreview())
+	stale := clock.then
+	if stale == nil {
+		t.Fatal("the preview asked the clock for nothing, so there is no face to keep aside")
+	}
+	hold.look(func() {})
+	join(host)
+	if !clock.calledOff {
+		t.Fatal("the preview finished without calling its face off, which is the case the guard above holds")
+	}
+
+	// The run, held in flight, and the stale face arriving now - inside the
+	// hold, so the run is still going whatever the timing of three files.
+	hold.again()
+	press(t, content, text.ButtonGenerate())
+	hold.look(func() {
+		stale()
+		if bar, _ := runMessages(content); bar != nil && bar.Visible() {
+			t.Error("the preview's face showed a bar, which is not its to show")
+		}
+		if cancel := buttonNamed(content, text.ButtonCancel()); cancel != nil && cancel.Visible() {
+			t.Error("the preview's face dressed the run that came after it")
+		}
+		// The run's own face, and what it earned: a bar.
+		clock.fire()
+		if bar, _ := runMessages(content); bar == nil || !bar.Visible() {
+			t.Error("the run's own face showed no bar - the stale face had dressed the screen first, and the run found it worn")
+		}
+	})
+	join(host)
+}

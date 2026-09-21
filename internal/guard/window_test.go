@@ -258,6 +258,17 @@ func (p *holdDuringRun) look(fn func()) {
 // a test that failed earlier.
 func (p *holdDuringRun) free() { p.freed.Do(func() { close(p.release) }) }
 
+// again arms the hold for a second piece of work, for a guard that has to
+// see one run in flight AFTER another has finished. Only after the first
+// has been joined: the worker captured enter as a method value at Open, so
+// fresh channels and a fresh once under the same pointer are what it parks
+// on next, and resetting them while a worker still holds them would be the
+// race the hold exists to prevent.
+func (p *holdDuringRun) again() {
+	p.reached, p.release = make(chan struct{}, 1), make(chan struct{})
+	p.parked, p.freed = sync.Once{}, sync.Once{}
+}
+
 // picked is what the stand in answers when a screen asks where the files
 // should go, and asked counts how often it was asked. A real picker needs a
 // real window, and the behaviour worth proving is that the button reaches one

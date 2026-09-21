@@ -71,6 +71,13 @@ type busy struct {
 
 	later   later
 	callOff func()
+	// epoch counts the pieces of work that have owned the screen, so that a
+	// face asked for by one of them can never dress the next. Calling the
+	// clock off is not enough: the real window's clock hands the face to
+	// the toolkit's queue, and a face already queued when the work ends
+	// still runs - after the next work has started, if the next press comes
+	// in that gap. An outside review of the pull request named it.
+	epoch int
 }
 
 // busyFace is which parts of the face a piece of work earns: whether there
@@ -93,10 +100,13 @@ func (b *busy) set(occupied bool, face busyFace) {
 		b.undress()
 		return
 	}
+	b.epoch++
+	mine := b.epoch
 	b.callOff = b.later(BusyFaceAfter, func() {
-		// Still going, and not already worn: a face put on twice would be
-		// taken off once.
-		if b.occupied && !b.worn {
+		// The same work still going, and not already worn: a face asked for
+		// by earlier work is a face for a screen that has moved on, and a
+		// face put on twice would be taken off once.
+		if b.epoch == mine && b.occupied && !b.worn {
 			b.wear(face)
 		}
 	})
