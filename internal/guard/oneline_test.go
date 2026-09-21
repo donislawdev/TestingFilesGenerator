@@ -140,11 +140,24 @@ type heading struct {
 // every one the layout gave no room - see widthShown for why that is a
 // refusal and not a skip. Every label that ends in an ellipsis is a heading,
 // and so is every bold canvas text at the heading size: a section's name is
-// still canvas words, because it also heads a folded section, in a row that
-// hands it the width of its own text, where an ellipsis could never be asked
-// for - so it is measured here rather than left to run past a panel unseen.
+// still canvas words, where an ellipsis could never be asked for - so it is
+// measured here rather than left to run past a panel unseen.
+//
+// The name of a FOLDED section is measured as its whole head row - title,
+// arrow and line against the width the row was given - and not as its own
+// words. The row hands each of them the width of its own text (an HBox lays
+// every child out at its MinSize width, layout/boxlayout.go), so the title
+// measured alone is whole by construction and this guard was green with the
+// arrow drawn 6 px outside the row it marks, in the catalogue's long title
+// state, until 2026-09-17 - an outside review of #110 counted the pixels.
+// Every head row on the screen has to be found, and a head the walk could
+// not pair with its words is a refusal rather than a row stepped over: the
+// pairing is the row's shape, and a guard that assumed the shape would be
+// green the day it changed (O118).
 func headingsOn(screen fyne.CanvasObject) (found []heading, refused []string) {
 	buried := underSomethingHidden(screen)
+	inRow := insideAHeadRow(screen)
+	heads, rows := 0, 0
 	walk(screen, func(o fyne.CanvasObject) {
 		var words string
 		var need float32
@@ -156,10 +169,20 @@ func headingsOn(screen fyne.CanvasObject) (found []heading, refused []string) {
 			size := fyne.CurrentApp().Settings().Theme().Size(sizeNameOf(v))
 			words, need = v.Text, fyne.MeasureText(v.Text, size, v.TextStyle).Width
 		case *canvas.Text:
-			if !v.TextStyle.Bold || v.TextSize != parts.TextHeading {
+			if !v.TextStyle.Bold || v.TextSize != parts.TextHeading || inRow[v] {
 				return
 			}
 			words, need = v.Text, v.MinSize().Width
+		case *parts.FoldHead:
+			heads++
+			return
+		case *fyne.Container:
+			head, row, ok := foldHeadRow(v)
+			if !ok {
+				return
+			}
+			rows++
+			words, need, o = fmt.Sprintf("the head row of %q", head.Title()), row.MinSize().Width, row
 		default:
 			return
 		}
@@ -172,7 +195,44 @@ func headingsOn(screen fyne.CanvasObject) (found []heading, refused []string) {
 			found = append(found, heading{words, need, room})
 		}
 	})
+	if heads != rows {
+		refused = append(refused, fmt.Sprintf("%d head row(s) of folds stand on the screen and %d were paired with"+
+			" their words, so a fold's title is being measured on its own text again", heads, rows))
+	}
 	return found, refused
+}
+
+// foldHeadRow is the pairing a fold's head is built as: the head control and
+// the words it lies under, the two children of one stack (folding.go). The
+// words are whichever child is not the head, so the order of the two is not
+// something this guard assumes.
+func foldHeadRow(c *fyne.Container) (head *parts.FoldHead, row fyne.CanvasObject, ok bool) {
+	if len(c.Objects) != 2 {
+		return nil, nil, false
+	}
+	for i, child := range c.Objects {
+		if h, isHead := child.(*parts.FoldHead); isHead {
+			return h, c.Objects[1-i], true
+		}
+	}
+	return nil, nil, false
+}
+
+// insideAHeadRow is every object standing in the words of a fold's head row,
+// so that the title's own canvas text is not measured a second time on its
+// own width.
+func insideAHeadRow(screen fyne.CanvasObject) map[fyne.CanvasObject]bool {
+	inside := map[fyne.CanvasObject]bool{}
+	walk(screen, func(o fyne.CanvasObject) {
+		c, isContainer := o.(*fyne.Container)
+		if !isContainer {
+			return
+		}
+		if _, row, ok := foldHeadRow(c); ok {
+			walk(row, func(within fyne.CanvasObject) { inside[within] = true })
+		}
+	})
+	return inside
 }
 
 // widthShown is the width the layout gave a control a person can see, and
@@ -224,6 +284,63 @@ func TestAHeadingLaidOutToNothingIsRefusedAndAHiddenOneIsNotMeasured(t *testing.
 	if found, refused := headingsOn(shown); len(refused) != 0 || len(found) != 1 || found[0].room == 0 {
 		t.Errorf("a title laid out in a window is measured as %v and refused as %v", found, refused)
 	}
+}
+
+// A fold's head row is measured as a whole against the width it was given,
+// and its title is not measured a second time on its own. Asked of a fold
+// too narrow for its title - the catalogue's long title, in the room the
+// catalogue gives it - and of one with room, so a measure that refused every
+// row would pass the first half alone. The narrow fold is laid out below its
+// MinSize on purpose: a real window refuses that (the driver sets the
+// window's minimum from the content, window_desktop.go fitContent), so this
+// is the state only the catalogue reaches, and the one the arrow was drawn
+// outside the row in.
+func TestAFoldsHeadRowIsMeasuredAsAWholeAgainstItsWidth(t *testing.T) {
+	ourTheme(t)
+	long := "Write a label inside each generated file, including the ones that are far too small to hold it"
+	for _, tc := range []struct {
+		name  string
+		title string
+		room  float32
+		cut   bool
+	}{
+		{"a title wider than its row", long, 300, true},
+		{"a title with room", "Single batch", 600, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fold := parts.NewFolding(tc.title, nil, parts.Prose("inside"))
+			w := test.NewWindow(fold.Object())
+			t.Cleanup(w.Close)
+			w.Resize(fyne.NewSize(tc.room, 120))
+			found, refused := headingsOn(fold.Object())
+			if len(refused) != 0 {
+				t.Fatalf("a fold laid out in a window is refused: %v", refused)
+			}
+			if len(found) != 1 {
+				t.Fatalf("a fold with one title is measured as %d heading(s): %v - the row once, and the title"+
+					" not again on its own", len(found), found)
+			}
+			row := found[0]
+			if !strings.Contains(row.words, tc.title) {
+				t.Errorf("the one heading measured is %q, and the fold's title is %q", row.words, tc.title)
+			}
+			if cut := row.need > row.room; cut != tc.cut {
+				t.Errorf("%s needs %.2f px in %.2f: measured as cut %v, and it is cut %v", tc.name, row.need, row.room, cut, tc.cut)
+			}
+		})
+	}
+
+	// And a head the walk finds with no words beside it is a refusal, not a
+	// row stepped over - the assertion that every fold on a screen was
+	// measured, for the day the row is built another way.
+	t.Run("a head without its row", func(t *testing.T) {
+		fold := parts.NewFolding("Single batch", nil, parts.Prose("inside"))
+		alone := container.NewWithoutLayout(fold.Head())
+		if found, refused := headingsOn(alone); len(refused) != 1 || len(found) != 0 {
+			t.Errorf("a head row with no words is measured as %v and refused as %v - a fold this guard"+
+				" cannot pair is a fold it is not measuring", found, refused)
+		}
+	})
 }
 
 // labelIn is the one toolkit label under an object - a title is a label wrapped

@@ -57,7 +57,7 @@ func TestTheFoldedLineNamesWhatWasChosenAndNotTheDefaults(t *testing.T) {
 		// that prefixes, because there the same key belongs to several batches.
 		openFold(t, body, "", text.SettingsFor("log"))
 		chooserIn(t, fields, "entry_format").SetSelected("syslog")
-		foldTitled(t, body, "", text.SettingsFor("log")).OnTapped()
+		foldTitled(t, body, "", text.SettingsFor("log")).Tapped(nil)
 
 		said := shownText(body)
 		if !strings.Contains(said, "syslog") {

@@ -36,6 +36,40 @@ func (p *PointerFocus) Quietly(focus func()) {
 // Quiet reports whether the focus arriving right now came from the pointer.
 func (p *PointerFocus) Quiet() bool { return p.silent }
 
+// Take is what a press does with the keyboard: it moves the focus to the
+// control quietly, unless the control holds it already.
+//
+// The one place for it, because three controls had a copy by 2026-09-17 - the
+// switch, the segmented switch and the head row of a fold - and the third
+// copy is where a repeated shape becomes a part. It is also where the copies
+// disagreed: the first two skipped a control that was focused already and
+// the third did not, so a Space on a focused head row went through the
+// focus manager's search for the object in the whole tree - Focus in
+// internal/app/focus_manager.go walks the tree before its focus() returns
+// on finding the same object - once per press, for nothing. The reason the
+// first copy wrote down for the skip, that re-focusing would run FocusLost
+// and FocusGained, was wrong: focus() returns before either. The skip is
+// right for the cost of the walk.
+func (p *PointerFocus) Take(control focusableObject) {
+	app := fyne.CurrentApp()
+	if app == nil || control == nil {
+		return
+	}
+	canvas := app.Driver().CanvasForObject(control)
+	if canvas == nil || canvas.Focused() == fyne.Focusable(control) {
+		return
+	}
+	p.Quietly(func() { canvas.Focus(control) })
+}
+
+// focusableObject is a control on a canvas that can hold the keyboard - both
+// halves, because the canvas is found through the one and asked about the
+// other.
+type focusableObject interface {
+	fyne.CanvasObject
+	fyne.Focusable
+}
+
 // FocusQuietly puts the keyboard on a control without drawing the mark that
 // says it is there.
 //

@@ -56,31 +56,42 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x527">
-									<container size="820x527">
-										<container size="820x527">
-											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x527"/>
-											<container size="820x527">
-												<container pos="16,16" size="788x495">
-													<container size="788x28">
-														<text bold size="59x28" textSize="17">Batch 1</text>
-														<widget pos="63,0" size="24x28" type="*parts.Button">
-															<rectangle pos="-2,-2" radius="6" size="28x32" strokeColor="hyperlink"/>
-															<rectangle radius="6" size="24x28"/>
-															<image fillMode="contain" pos="2,4" rsc="menuDropDownIcon" size="iconInlineSize" themed="placeholder"/>
-														</widget>
-														<widget pos="91,0" size="19x28" type="*container.ThemeOverride">
-															<container size="19x28">
+								<container pos="0,73" size="820x560">
+									<container size="820x560">
+										<container size="820x560">
+											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x560"/>
+											<container size="820x560">
+												<container pos="16,16" size="788x528">
+													<container size="788x36">
+														<container pos="-8,0" size="796x36">
+															<container size="714x36">
+																<widget size="714x36" type="*parts.FoldHead">
+																	<rectangle radius="6" size="714x36"/>
+																	<rectangle radius="6" size="714x36" strokeColor="hyperlink"/>
+																</widget>
+																<container size="714x36">
+																	<container pos="8,8" size="698x20">
+																		<text bold size="59x20" textSize="17">Batch 1</text>
+																		<widget pos="63,0" size="20x20" type="*widget.Icon">
+																			<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
+																		</widget>
+																		<widget pos="87,0" size="19x20" type="*container.ThemeOverride">
+																			<container size="19x20">
+																			</container>
+																		</widget>
+																	</container>
+																</container>
 															</container>
-														</widget>
-														<spacer pos="114,0" size="595x28"/>
-														<widget pos="710,0" size="77x28" type="*parts.Button">
-															<rectangle pos="-2,-2" radius="6" size="81x32" strokeColor="hyperlink"/>
-															<rectangle radius="6" size="77x28" strokeColor="inputBorder" strokeWidth="1"/>
-															<text alignment="center" bold pos="6,6" size="65x16">Duplicate</text>
-														</widget>
+															<container pos="718,0" size="77x36">
+																<widget size="77x36" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="81x40" strokeColor="hyperlink"/>
+																	<rectangle radius="6" size="77x36" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="6,9" size="65x16">Duplicate</text>
+																</widget>
+															</container>
+														</container>
 													</container>
-													<container pos="0,44" size="788x450">
+													<container pos="0,52" size="788x475">
 														<container size="788x26">
 															<container size="788x26">
 																<container pos="0,1" size="167x24">
@@ -252,37 +263,59 @@
 																</container>
 															</container>
 														</container>
-														<container pos="0,266" size="788x24">
-															<container size="788x24">
-																<text bold size="126x24" textSize="17">Settings for zip</text>
-																<widget pos="130,0" size="24x24" type="*parts.Button">
-																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
-																	<rectangle radius="6" size="24x24"/>
-																	<image fillMode="contain" pos="2,2" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
-																</widget>
-																<widget pos="158,0" size="0x24" type="*container.ThemeOverride">
-																	<container size="0x24">
+														<container pos="0,266" size="788x36">
+															<container size="788x36">
+																<container pos="-8,0" size="796x36">
+																	<container size="792x36">
+																		<widget size="792x36" type="*parts.FoldHead">
+																			<rectangle radius="6" size="792x36"/>
+																			<rectangle radius="6" size="792x36" strokeColor="hyperlink"/>
+																		</widget>
+																		<container size="792x36">
+																			<container pos="8,8" size="776x20">
+																				<text bold size="126x20" textSize="17">Settings for zip</text>
+																				<widget pos="130,0" size="20x20" type="*widget.Icon">
+																					<image fillMode="contain" rsc="menuExpandIcon" size="20x20" themed="placeholder"/>
+																				</widget>
+																				<widget pos="154,0" size="0x20" type="*container.ThemeOverride">
+																					<container size="0x20">
+																					</container>
+																				</widget>
+																			</container>
+																		</container>
 																	</container>
-																</widget>
-																<spacer pos="162,0" size="629x24"/>
+																	<container pos="796,0" size="0x36">
+																	</container>
+																</container>
 															</container>
 														</container>
-														<container pos="0,306" size="788x24">
-															<container size="788x24">
-																<text bold size="185x24" textSize="17">Notes for the manifest</text>
-																<widget pos="189,0" size="24x24" type="*parts.Button">
-																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
-																	<rectangle radius="6" size="24x24"/>
-																	<image fillMode="contain" pos="2,2" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
-																</widget>
-																<widget pos="217,0" size="0x24" type="*container.ThemeOverride">
-																	<container size="0x24">
+														<container pos="0,319" size="788x36">
+															<container size="788x36">
+																<container pos="-8,0" size="796x36">
+																	<container size="792x36">
+																		<widget size="792x36" type="*parts.FoldHead">
+																			<rectangle radius="6" size="792x36"/>
+																			<rectangle radius="6" size="792x36" strokeColor="hyperlink"/>
+																		</widget>
+																		<container size="792x36">
+																			<container pos="8,8" size="776x20">
+																				<text bold size="185x20" textSize="17">Notes for the manifest</text>
+																				<widget pos="189,0" size="20x20" type="*widget.Icon">
+																					<image fillMode="contain" rsc="menuExpandIcon" size="20x20" themed="placeholder"/>
+																				</widget>
+																				<widget pos="213,0" size="0x20" type="*container.ThemeOverride">
+																					<container size="0x20">
+																					</container>
+																				</widget>
+																			</container>
+																		</container>
 																	</container>
-																</widget>
-																<spacer pos="221,0" size="570x24"/>
+																	<container pos="796,0" size="0x36">
+																	</container>
+																</container>
 															</container>
 														</container>
-														<container pos="0,346" size="788x103">
+														<container pos="0,371" size="788x103">
 															<widget size="788x16" type="*container.ThemeOverride">
 																<container size="788x16">
 																	<widget size="788x16" type="*widget.Label">
@@ -378,7 +411,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,624" size="820x227">
+								<container pos="0,657" size="820x227">
 									<container size="820x227">
 										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x227"/>
 										<container size="820x227">
