@@ -4,7 +4,9 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -103,4 +105,70 @@ func TestTheWindowBinaryRegistersTheForegroundHook(t *testing.T) {
 	if telling != 1 {
 		t.Errorf("the registered foreground hook calls WindowReturning %d time(s), and it is the one thing the hook is for", telling)
 	}
+}
+
+// No file of the window package outside the cgo build reaches the toolkit's
+// widgets, so the window binary still compiles where there is no C compiler
+// - on every system, darwin included.
+//
+// Measured on 2026-09-21, the hard way: the first version of returning.go
+// imported parts for one interface, and parts reaches the toolkit's widget
+// tree, whose internal/widget does not compile on darwin with cgo off
+// (ci.yml records it at the matrix, from 2026-08-20). The build guard
+// beside this one builds with cgo off on the system it runs on, so Linux
+// and Windows stayed green and the macOS job went red. This asks the
+// question the same on every system: the import lists of the files that
+// take part in the no-cgo build, read from the source with their build
+// constraints. A file behind a cgo constraint may import anything.
+func TestTheWindowPackageOutsideCgoReachesNoWidget(t *testing.T) {
+	root := repoRoot(t)
+	fset := token.NewFileSet()
+	dir := filepath.Join(root, "internal", "gui")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("reading internal/gui: %v", err)
+	}
+	checked := 0
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		file, perr := parser.ParseFile(fset, filepath.Join(dir, name), nil, parser.ParseComments|parser.ImportsOnly)
+		if perr != nil {
+			t.Fatalf("parsing %s: %v", name, perr)
+		}
+		if behindCgo(file) {
+			continue
+		}
+		checked++
+		for _, imp := range file.Imports {
+			path := strings.Trim(imp.Path.Value, `"`)
+			if strings.HasSuffix(path, "/internal/gui/parts") || strings.HasSuffix(path, "/internal/gui/window") ||
+				strings.HasSuffix(path, "/internal/gui/catalogue") || strings.HasPrefix(path, "fyne.io/fyne/v2/widget") ||
+				strings.HasPrefix(path, "fyne.io/fyne/v2/container") {
+				t.Errorf("internal/gui/%s takes part in the build with cgo off and imports %s, which reaches the toolkit's widgets - "+
+					"and those do not compile on darwin without cgo, so the window binary stops building where there is no C compiler",
+					name, path)
+			}
+		}
+	}
+	if checked < 3 {
+		t.Fatalf("only %d files of internal/gui are outside the cgo build, which is fewer than there are - this guard is reading the wrong directory", checked)
+	}
+}
+
+// behindCgo says whether a file's build constraint keeps it out of the build
+// with cgo off. Only the plain "cgo" constraint is looked for, because that
+// is the one the window package uses (run_cgo.go); a constraint written any
+// other way counts as taking part, which errs towards asking.
+func behindCgo(file *ast.File) bool {
+	for _, group := range file.Comments {
+		for _, c := range group.List {
+			if strings.HasPrefix(c.Text, "//go:build") && strings.Contains(c.Text, "cgo") && !strings.Contains(c.Text, "!cgo") {
+				return true
+			}
+		}
+	}
+	return false
 }
