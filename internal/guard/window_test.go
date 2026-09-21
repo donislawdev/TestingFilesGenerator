@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -83,6 +84,31 @@ type fakeHost struct {
 	// hold parks the worker just before it reports, so that a guard can read
 	// the screen while a run is going. Nil unless a guard asked for one.
 	hold *holdDuringRun
+
+	// held is what the window asked to run later and has not run yet, when a
+	// guard is holding the clock - see Later. Nil means the clock runs at once.
+	held *heldClock
+}
+
+// heldClock keeps what the window asked for later, so a guard can look at the
+// screen BEFORE the busy face arrives and then let it arrive.
+type heldClock struct {
+	after time.Duration
+	then  func()
+	// calledOff is whether the window took the request back before it fired,
+	// and asked how many times the window asked at all.
+	calledOff bool
+	asked     int
+}
+
+// fire runs what was held, once, unless it was called off.
+func (c *heldClock) fire() {
+	if c.calledOff || c.then == nil {
+		return
+	}
+	then := c.then
+	c.then = nil
+	then()
 }
 
 // newFakeHost builds one and promises that nothing it starts outlives the test.
@@ -131,6 +157,30 @@ func (h *fakeHost) SetContent(o fyne.CanvasObject) {
 	}
 }
 func (h *fakeHost) SetCloseIntercept(fn func()) { h.intercept = fn }
+
+// Later is the clock the busy face waits on. At once, unless a guard holds
+// the clock: under the test driver fyne.Do runs on the calling goroutine, so
+// a real timer would be a second writer to the widgets a guard is reading,
+// and every guard that ran before the face had a delay saw the face at once
+// - so at once is what keeps them asking what they asked. A guard that wants
+// to see the moment before the face holds the clock (holdTheClock) and fires
+// it when it is ready.
+func (h *fakeHost) Later(after time.Duration, then func()) func() {
+	if h.held == nil {
+		then()
+		return func() {}
+	}
+	h.held.after, h.held.then, h.held.calledOff = after, then, false
+	h.held.asked++
+	return func() { h.held.calledOff = true }
+}
+
+// holdTheClock makes this host keep what the window asks for later, rather
+// than running it at once.
+func (h *fakeHost) holdTheClock() *heldClock {
+	h.held = &heldClock{}
+	return h.held
+}
 
 // SetWaitForWork is the optional interface the window offers rather than
 // requires - a real window has no use for it and does not implement it.

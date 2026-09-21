@@ -284,3 +284,87 @@ func chooserUnder(t *testing.T, o fyne.CanvasObject, label string) *parts.Choose
 	}
 	return chooser
 }
+
+// The window coming back to the front draws no mark nobody asked for, and
+// draws again the one that was there.
+//
+// Reported by the owner on 2026-09-21 as one menu wearing a different colour
+// from the others: on the single batch screen the format menu opened blue
+// with a ring round it, and no other menu anywhere did. It was the keyboard
+// mark, drawn by a call the control could not tell from the keyboard
+// arriving - when the system gives the window the front, the driver calls
+// FocusGained on whatever holds the keyboard (internal/driver/glfw/window.go
+// processFocused, internal/app/focus_manager.go FocusGained), on the very
+// first activation too, right after Open has put the keyboard on the first
+// field quietly. So every start marked that one field, and every Alt-Tab
+// back marked whichever control held the keyboard.
+//
+// The window says WindowReturning just before that call, from the toolkit's
+// foreground hook - see internal/gui/run_cgo.go - and this guard does what
+// the hook and the driver do, in that order, because the hook itself is
+// behind cgo where no guard reaches it. Three arrivals, on the same control:
+// the first activation after a quiet focus, a return after the keyboard had
+// been used, and a plain FocusGained with no window in it, which is the
+// keyboard moving here and has to draw as it always did.
+func TestTheWindowComingBackDrawsOnlyTheMarkThatWasThere(t *testing.T) {
+	c, content := screenOnACanvas(t)
+	menu := chooserUnder(t, content, text.FieldFormat())
+
+	// The first activation: the window put the keyboard here quietly, and
+	// then the system handed it the front.
+	parts.FocusQuietly(c, menu)
+	if menu.Marked() {
+		t.Fatal("a quiet focus drew the mark, so this guard is not starting from the state it is about")
+	}
+	menu.FocusLost()
+	menu.WindowReturning()
+	menu.FocusGained()
+	if menu.Marked() {
+		t.Error("the window came to the front and the first menu drew the keyboard mark although nobody had pressed a key - " +
+			"the blue box the owner saw on one menu and no other")
+	}
+
+	// The keyboard moving here, with no window in it, draws the mark as it
+	// always did - a return is not a licence to stay quiet afterwards.
+	// Asked while nothing is marked, so a return that was never forgotten
+	// answers with the old state and goes red here.
+	menu.FocusLost()
+	menu.FocusGained()
+	if !menu.Marked() {
+		t.Error("the keyboard arrived by a plain FocusGained and nothing was drawn, so the window's return has muted an ordinary arrival")
+	}
+
+	// The keyboard has been used - the mark is drawn - and the window went
+	// behind and came back: what was drawn is drawn again.
+	menu.TypedKey(&fyne.KeyEvent{Name: fyne.KeyRight})
+	if !menu.Marked() {
+		t.Fatal("an arrow key did not draw the mark, so the last part of this guard cannot start")
+	}
+	menu.FocusLost()
+	if menu.Marked() {
+		t.Fatal("losing the focus left the mark on")
+	}
+	menu.WindowReturning()
+	menu.FocusGained()
+	if !menu.Marked() {
+		t.Error("the window came back and the mark a keyboard user had was gone, so they no longer know which control is listening")
+	}
+
+	// The same rule on the other controls that know who focused them, so the
+	// class is held and not the one instance the owner saw.
+	for _, control := range []interface {
+		fyne.Focusable
+		parts.Returnable
+		Marked() bool
+	}{
+		checkNamed(content, text.FieldLabel()),
+		parts.NewSegments([]string{"one", "two"}, func(string) {}),
+	} {
+		control.FocusLost()
+		control.WindowReturning()
+		control.FocusGained()
+		if control.Marked() {
+			t.Errorf("%T drew its mark when the window came back although it had none before", control)
+		}
+	}
+}

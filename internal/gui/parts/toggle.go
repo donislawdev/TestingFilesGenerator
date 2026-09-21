@@ -123,7 +123,7 @@ func (t *Toggle) MouseOut() {
 // the same rule as the Chooser, so a person reaching for the keyboard after a
 // click sees which control is listening.
 func (t *Toggle) FocusGained() {
-	if t.from.Quiet() {
+	if !t.from.Draws() {
 		return
 	}
 	t.mark()
@@ -135,9 +135,14 @@ func (t *Toggle) mark() {
 }
 
 func (t *Toggle) FocusLost() {
+	t.from.Lost(t.marked)
 	t.marked = false
 	t.Refresh()
 }
+
+// WindowReturning is the window saying the next FocusGained is its own
+// return to the front. See PointerFocus.
+func (t *Toggle) WindowReturning() { t.from.WindowReturning() }
 
 // TypedRune answers nothing, for the reason Button.TypedRune gives: the
 // desktop driver delivers one press of the space bar as the key and as the
@@ -205,8 +210,13 @@ func (r *toggleRenderer) Layout(size fyne.Size) {
 	// thing that changes and not round the room a finger needs.
 	r.ring.Resize(square.Add(fyne.NewSquareSize(ringGap * 2)))
 	r.ring.Move(at.Subtract(fyne.NewPos(ringGap, ringGap)))
-	r.tick.Resize(fyne.NewSquareSize(markSide - GapInline*2))
-	r.tick.Move(at.Add(fyne.NewPos(GapInline, GapInline)))
+	// The tick is drawn on the WHOLE square. It kept a step of room inside
+	// the square until 2026-09-21, and the owner's report from the running
+	// window was a mark too small to read as one: the toolkit's glyph fills
+	// 56 per cent of its own picture, so a picture 12 px wide drew a tick 7 px
+	// wide in a square of 20. The glyph's own margin is the room it needs.
+	r.tick.Resize(square)
+	r.tick.Move(at)
 }
 
 func (r *toggleRenderer) MinSize() fyne.Size { return fyne.NewSquareSize(GlyphButton) }

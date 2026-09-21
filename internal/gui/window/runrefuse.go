@@ -171,7 +171,7 @@ func (r *runner) recheck(setting string) {
 	}
 	// A run owns the screen while it lasts. Its progress and its refusals are
 	// not to be wiped by a keystroke.
-	if r.running {
+	if r.busy.occupied {
 		return
 	}
 	// Whatever changed, the line says what the form comes to now - over an

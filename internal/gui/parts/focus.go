@@ -23,7 +23,15 @@ import (
 // control has to get the same answer without anybody remembering. See
 // docs/UX.md section 7.0 gate 2: a fix that has to be repeated is not a fix of
 // the class.
-type PointerFocus struct{ silent bool }
+type PointerFocus struct {
+	silent bool
+	// returning is set by the window just before the toolkit hands the
+	// keyboard back to the control that held it, because the WINDOW came to
+	// the front again - see WindowReturning. wasMarked is whether the mark
+	// was drawn when the keyboard last left, which is what a return draws.
+	returning bool
+	wasMarked bool
+}
 
 // Quietly moves the focus the way a press does: the control gets the keyboard
 // and nothing is drawn to say so.
@@ -33,8 +41,43 @@ func (p *PointerFocus) Quietly(focus func()) {
 	focus()
 }
 
-// Quiet reports whether the focus arriving right now came from the pointer.
-func (p *PointerFocus) Quiet() bool { return p.silent }
+// Draws reports whether the focus arriving right now is to be drawn: not
+// when the pointer put it here, and - when the window is coming back to the
+// front - only if it was drawn when the window went behind.
+//
+// The second half is the defect the owner reported on 2026-09-21 as one
+// menu wearing a different colour from the others. Measured in the pinned
+// toolkit: when the system gives the window the front, the driver calls
+// FocusGained on whatever holds the keyboard as if the keyboard had just
+// arrived (internal/driver/glfw/window.go processFocused, then
+// internal/app/focus_manager.go FocusGained) - and it does so on the very
+// first activation, right after the window has put the keyboard on the first
+// field quietly. So the first menu on the first screen opened marked, alone
+// among every control in the window, and marked again after every Alt-Tab.
+// A control cannot tell that call from the keyboard moving to it, because
+// both arrive as one FocusGained with the same state - only the window can,
+// and it says so through WindowReturning before the call lands.
+func (p *PointerFocus) Draws() bool {
+	if p.returning {
+		p.returning = false
+		return p.wasMarked
+	}
+	return !p.silent
+}
+
+// Lost is what a control says as the keyboard leaves it: whether its mark
+// was drawn. The window coming back draws exactly that again.
+func (p *PointerFocus) Lost(marked bool) { p.wasMarked = marked }
+
+// WindowReturning tells the control that the next FocusGained is the window
+// coming back to the front, not the keyboard moving. The real window says it
+// from the toolkit's foreground hook, which runs just before the driver's
+// call - see Draws, and the wiring in internal/gui.
+func (p *PointerFocus) WindowReturning() { p.returning = true }
+
+// Returnable is a control that can be told the window is coming back, so
+// that it does not mistake the toolkit's call for the keyboard arriving.
+type Returnable interface{ WindowReturning() }
 
 // Take is what a press does with the keyboard: it moves the focus to the
 // control quietly, unless the control holds it already.

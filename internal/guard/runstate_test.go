@@ -150,7 +150,7 @@ func TestAPreviewDoesItsDiskWorkOffTheInterfaceThread(t *testing.T) {
 
 	worker := strings.Index(fn, "go func()")
 	call := strings.Index(fn, "engine.Run(")
-	busy := strings.Index(fn, "r.setBusy(true")
+	busy := strings.Index(fn, "r.busy.set(true")
 	switch {
 	case call < 0:
 		t.Fatal("onPreview no longer goes through engine.Run, so a preview has stopped answering the same question the run does")

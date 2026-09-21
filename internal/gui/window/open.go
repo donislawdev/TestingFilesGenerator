@@ -134,10 +134,11 @@ func Open(h Host) fyne.Size {
 	// Last, once there is something on the canvas to focus. Quietly: nobody
 	// has pressed a key yet.
 	focusFirst(showing, false)
-	// What the window has to be for the tallest work screen to show whole,
-	// worked out from the screens as built rather than measured once and
-	// typed in - the size a first start opens at, see HowToOpen.
-	return firstOpening(tabbed, gen, pre, rec)
+	// What the window has to be for the screen it opens ON to show whole,
+	// worked out from that screen as built rather than measured once and
+	// typed in - the size a first start opens at, see HowToOpen and
+	// firstOpening for why the other two screens are not asked.
+	return firstOpening(tabbed, gen)
 }
 
 // closeCleanly stops whatever is running, writes down where the files were

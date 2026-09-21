@@ -178,16 +178,23 @@ func TestAFirstStartOpensAsTallAsTheScreensWantInTheMiddle(t *testing.T) {
 	}
 }
 
-// And what the screens want is what shows every work screen whole: laid out
-// at the size Open hands back, no work screen scrolls - unless the ceiling
-// stopped the window growing, which is the one reason a form may be cut.
+// And what the screens want is what shows the FIRST work screen whole and
+// nothing more: laid out at the size Open hands back, the screen the window
+// opens on does not scroll and has no band of nothing under its form.
+//
+// The first screen alone, on the owner's decision of 2026-09-21. Until then
+// the window opened as tall as the tallest work screen, so that none of the
+// three scrolled from the first frame - and the one a person sees first,
+// which is the shortest, opened with 70 px of nothing between its form and
+// the bar. The batch screen is allowed to scroll on arrival now, which it
+// does from the second batch on in any case.
 //
 // Asked of the real screens through Open rather than of HowToOpen alone,
 // because HowToOpen is arithmetic on two numbers and the number that matters
-// is the one Open works out: a want that left out a screen, or forgot the
-// strip above the screens, would pass every case above and still open a
-// window whose batch screen scrolls from the first frame.
-func TestTheFirstOpeningShowsEveryWorkScreenWhole(t *testing.T) {
+// is the one Open works out: a want that forgot the strip above the screens
+// would pass every case above and still open a window whose first screen
+// scrolls from the first frame.
+func TestTheFirstOpeningShowsTheFirstScreenWholeAndNoMore(t *testing.T) {
 	ourTheme(t)
 	host := newFakeHost(t)
 	wanted := window.Open(host)
@@ -199,45 +206,42 @@ func TestTheFirstOpeningShowsEveryWorkScreenWhole(t *testing.T) {
 	w.Resize(size)
 
 	if size.Height >= window.LargestOpening.Height {
-		t.Logf("the screens want %.0f px and the ceiling is %.0f, so a screen is allowed to scroll today",
+		t.Logf("the first screen wants %.0f px and the ceiling is %.0f, so it is allowed to scroll today",
 			wanted.Height, window.LargestOpening.Height)
 	}
-	checked := 0
-	tightest := float32(-1)
-	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
-		screen := selectTab(t, host.content, tab)
-		w.Resize(fyne.NewSize(size.Width, size.Height-1))
-		w.Resize(size)
-		scroll := scrollIn(screen)
-		if scroll == nil {
-			t.Fatalf("the %s screen has no scroll, so this guard cannot say whether it fits", tab)
-		}
-		form, room := scroll.Content.MinSize().Height, scroll.Size().Height
-		if form > room && size.Height < window.LargestOpening.Height {
-			t.Errorf("at the first opening of %v the %s screen's form needs %.0f px and gets %.0f, so it"+
-				" scrolls from the first frame although the window had room to grow", size, tab, form, room)
-		}
-		if slack := room - form; tightest < 0 || slack < tightest {
-			tightest = slack
-		}
-		checked++
+	screen := selectTab(t, host.content, text.TabOneTarget())
+	w.Resize(fyne.NewSize(size.Width, size.Height-1))
+	w.Resize(size)
+	scroll := scrollIn(screen)
+	if scroll == nil {
+		t.Fatalf("the %s screen has no scroll, so this guard cannot say whether it fits", text.TabOneTarget())
 	}
-	if checked != 3 {
-		t.Fatalf("checked %d screens, and there are three work screens", checked)
+	form, room := scroll.Content.MinSize().Height, scroll.Size().Height
+	if form > room && size.Height < window.LargestOpening.Height {
+		t.Errorf("at the first opening of %v the first screen's form needs %.0f px and gets %.0f, so it"+
+			" scrolls from the first frame although the window had room to grow", size, form, room)
 	}
-	// And no taller than that. The tallest screen fits with nothing to spare,
+	// And no taller than that. The first screen fits with nothing to spare,
 	// because the height is worked out from it - a window that opened taller
 	// would be the band of nothing under the form that O202 is about, back
 	// under another number. Asked at the ceiling too: a want a hundred pixels
 	// over the truth is stopped by the ceiling and leaves the band all the
-	// same, and the first version of this line let that through by excusing
-	// everything at the ceiling. Only a form TALLER than the room is the
-	// ceiling's doing.
-	if tightest > 1 {
-		t.Errorf("the first opening is %v and the tallest work screen still has %.0f px to spare under"+
-			" its form, so the window opens taller than the screens want", size, tightest)
+	// same. Only a form TALLER than the room is the ceiling's doing.
+	if slack := room - form; slack > 1 {
+		t.Errorf("the first opening is %v and the first screen still has %.0f px to spare under"+
+			" its form, so the window opens taller than the screen it opens on wants", size, slack)
 	}
-	t.Logf("first opening %v: every work screen shows whole, the tallest with %.2f px to spare", size, tightest)
+	// The other two are not what the height is worked out from, and the
+	// batch screen is taller than the first - so a window sized for the first
+	// screen that showed the batch screen whole as well would be a window
+	// sized for the batch screen after all, which is the band coming back.
+	batches := selectTab(t, host.content, text.TabRecipe())
+	w.Resize(fyne.NewSize(size.Width, size.Height-1))
+	w.Resize(size)
+	if batchScroll := scrollIn(batches); batchScroll != nil {
+		t.Logf("first opening %v: the first screen shows whole with %.2f px to spare, the batch screen has %.0f px of form in %.0f px of room",
+			size, room-form, batchScroll.Content.MinSize().Height, batchScroll.Size().Height)
+	}
 }
 
 // A size with a nought in it is refused at BOTH ends by one predicate.

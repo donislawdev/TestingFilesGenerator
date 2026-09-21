@@ -52,7 +52,7 @@ type Preset struct {
 
 // NewPreset builds the screen. links are the buttons to the other screens.
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
-	p := &Preset{runner: newRunner(), host: host, tips: parts.NewTips()}
+	p := &Preset{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
 	p.runner.openFolder = host.OpenFolder
 	p.runner.settle = p.settle
 	// No readdress here, and that is the boundary of this screen rather than an
@@ -139,10 +139,6 @@ const settingPreset = "preset"
 
 // Object is the screen, to put in a window.
 func (p *Preset) Object() fyne.CanvasObject { return p.body }
-
-// Unscrolled is how tall this screen has to be for its form to show whole -
-// what a first start opens at, see firstOpening.
-func (p *Preset) Unscrolled() float32 { return unscrolledHeight(p.body, p.scroll) }
 
 // FirstField is where the keyboard starts: which preset, because every
 // parameter under it is drawn from that answer.

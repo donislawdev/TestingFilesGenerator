@@ -13,8 +13,9 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// The words in an open list start where the word in the box does, and the
-// tick stands at the far end of the row.
+// The words in an open list without pictures start where the word in the box
+// does, with the tick at the far end of the row - and a list WITH pictures
+// keeps its tick in front, the picture next and the words after it.
 //
 // Reported by the owner from the running window on 2026-09-16: the list of
 // formats looked right and the lists of outcomes and rules looked like words
@@ -24,11 +25,19 @@ import (
 // pictures in front of the formats made that look meant, and a list with no
 // picture and nothing chosen showed the empty column for what it was (O220).
 //
+// The second half is the owner's too, from 2026-09-21: the tick moved to the
+// end of EVERY row on 2026-09-16, and on the list of formats that pulled the
+// picture and the word a column to the left of where they had stood - "what
+// was nicely in the middle is at the left edge again". So a pictured row keeps
+// the shape it had before O220 - tick, picture, words - and only a row with
+// nothing to draw in front of its words starts them at the gutter.
+//
 // Asked of two real lists on the screen: one without pictures, where the row's
 // words start at the gutter with nothing in front of them, and one with them,
-// where the picture stands at the gutter and the tick behind the words.
-// Positions are read off rows the list is actually drawing, because a row laid
-// out at one width in a probe says nothing about the width the form gives it.
+// where the tick's column stands at the gutter, the picture a column later
+// and the words after it. Positions are read off rows the list is actually
+// drawing, because a row laid out at one width in a probe says nothing about
+// the width the form gives it.
 //
 // The rule is held against OUR geometry - the gutter, the tick, the picture -
 // and the distance to the box's own word is only logged. The first version
@@ -64,25 +73,32 @@ func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 		}
 		for _, row := range rows {
 			words, tick, picture := piecesOfARow(t, row)
-			first := words.Position().X
 			if tc.pictured {
-				first = picture.Position().X
+				// Tick, picture, words: each starts where the one before it
+				// ends, a gap later, and the first of them at the gutter.
+				if tick.Position().X != parts.RowGutter() {
+					t.Errorf("%s: the tick of row %q stands at %.1f rather than at the gutter (%.1f) - the column that kept the picture and the word off the edge is gone",
+						tc.field, row.Label(), tick.Position().X, parts.RowGutter())
+				}
+				if picture.Position().X <= tick.Position().X+tick.Size().Width {
+					t.Errorf("%s: the picture of row %q stands at %.1f, not after the tick's column ending at %.1f",
+						tc.field, row.Label(), picture.Position().X, tick.Position().X+tick.Size().Width)
+				}
+				if words.Position().X <= picture.Position().X+picture.Size().Width {
+					t.Errorf("%s: the words of row %q start at %.1f, not after the picture ending at %.1f",
+						tc.field, row.Label(), words.Position().X, picture.Position().X+picture.Size().Width)
+				}
+				continue
 			}
-			if first != parts.RowGutter() {
-				t.Errorf("%s: row %q starts its first piece at %.1f rather than at the gutter (%.1f) - a column stands in front of the words and the list reads as words floating in a rectangle",
-					tc.field, row.Label(), first, parts.RowGutter())
+			if words.Position().X != parts.RowGutter() {
+				t.Errorf("%s: row %q starts its words at %.1f rather than at the gutter (%.1f) - a column stands in front of the words and the list reads as words floating in a rectangle",
+					tc.field, row.Label(), words.Position().X, parts.RowGutter())
 			}
-			if !tc.pictured {
-				t.Logf("%s: row %q words at %.1f, the box's word at %.1f (the toolkit's inset, logged and not held)",
-					tc.field, row.Label(), drv.AbsolutePositionForObject(words).X, boxWord)
-			}
+			t.Logf("%s: row %q words at %.1f, the box's word at %.1f (the toolkit's inset, logged and not held)",
+				tc.field, row.Label(), drv.AbsolutePositionForObject(words).X, boxWord)
 			if tick.Position().X < words.Position().X+words.Size().Width {
 				t.Errorf("%s: the tick of row %q stands at %.1f, in front of words ending at %.1f - the column it keeps pushes every list's words off the box's word",
 					tc.field, row.Label(), tick.Position().X, words.Position().X+words.Size().Width)
-			}
-			if tc.pictured && picture.Position().X+picture.Size().Width > words.Position().X {
-				t.Errorf("%s: the picture of row %q reaches %.1f, over words starting at %.1f",
-					tc.field, row.Label(), picture.Position().X+picture.Size().Width, words.Position().X)
 			}
 		}
 		list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyEscape})

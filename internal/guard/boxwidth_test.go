@@ -329,3 +329,103 @@ func TestADeclaredSettingStandsOnTheSameEdgeAsTheFieldsAboveIt(t *testing.T) {
 		})
 	}
 }
+
+// Only a path takes the whole row.
+//
+// The owner's question from the running window on 2026-09-21: why are Batch
+// name, File names, Password, Spread, Kind of case and Manifest file name so
+// long. They took the row on the sentence that free text has no length to
+// promise, which is true and beside the point - a name is a short thing, and
+// a box 806 px wide for one promises something the value will never be, the
+// same defect TestABoxForANumberIsNotAsWideAsTheForm holds for a number.
+// The one value that can be long is a path, so the output directory keeps
+// the row and everything else typed into these screens is held under half
+// the column.
+//
+// Every box a person types into, on all three screens, rather than the six
+// the owner named: the seventh is the one nobody names. The folded sections
+// are opened first, because a box that is not on the screen has no laid out
+// width (the lesson of the guard above), and the two boxes the report named
+// inside them - a password, a kind of case - are exactly the ones a guard
+// reading the open screen would never see.
+func TestOnlyAPathTakesTheWholeRow(t *testing.T) {
+	ourTheme(t)
+	host := newFakeHost(t)
+	window.Open(host)
+	if host.content == nil {
+		t.Fatal("opening the window put no screen in it")
+	}
+	w := test.NewWindow(host.content)
+	t.Cleanup(w.Close)
+	layOut := func() {
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1599))
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
+	}
+	layOut()
+
+	batches := selectTab(t, host.content, text.TabRecipe())
+	// A zip holds the one password box in the registry, and the notes hold the
+	// kind of case.
+	if picker, ok := controlUnder(batches, text.FieldFormat()).(*parts.Chooser); ok {
+		picker.SetSelected("zip")
+	} else {
+		t.Fatal("the first batch has no format list, so this guard read the wrong tree")
+	}
+	openFold(t, batches, "", text.SettingsFor("zip"))
+	openFold(t, batches, text.BatchHeading(1), text.SectionManifestNotes())
+	layOut()
+
+	half := float32(parts.ColumnWidth) / 2
+	checked, paths := 0, 0
+	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
+		screen := selectTab(t, host.content, tab)
+		layOut()
+		path := controlUnder(screen, text.FieldOutputDir())
+		if path == nil {
+			t.Fatalf("the %s screen has no output directory, so this guard cannot tell the path from the rest", tab)
+		}
+		onThePath := map[fyne.CanvasObject]bool{}
+		walk(path, func(o fyne.CanvasObject) { onThePath[o] = true })
+
+		walk(screen, func(o fyne.CanvasObject) {
+			box, is := o.(*parts.Entry)
+			if !is || !box.Visible() || box.Size().Width == 0 {
+				return
+			}
+			if onThePath[box] {
+				paths++
+				return
+			}
+			checked++
+			if box.Size().Width > half {
+				t.Errorf("%s: the box holding %q (placeholder %q) is %.0f px of a %d px column, and only a path is allowed the row",
+					tab, box.Text, box.PlaceHolder, box.Size().Width, parts.ColumnWidth)
+			}
+		})
+	}
+	// The boxes the owner named, by name, so a screen that stopped drawing
+	// one of them is a red guard and not a smaller count.
+	for _, named := range []struct{ tab, label string }{
+		{text.TabOneTarget(), text.FieldTargetID()},
+		{text.TabOneTarget(), text.FieldNameTemplate()},
+		{text.TabPresets(), text.SettingLabel("spread")},
+		{text.TabRecipe(), text.FieldManifest()},
+		{text.TabRecipe(), text.FieldGroup()},
+		{text.TabRecipe(), text.SettingLabel("password")},
+	} {
+		screen := selectTab(t, host.content, named.tab)
+		layOut()
+		control := controlUnder(screen, named.label)
+		if control == nil {
+			t.Errorf("%s: no field is labelled %q, so its width cannot be measured", named.tab, named.label)
+			continue
+		}
+		if width := typedInWidth(control); width == 0 || width > half {
+			t.Errorf("%s: the box under %q is %.0f px wide (nought is a box not on the screen)", named.tab, named.label, width)
+		}
+	}
+	if checked < 6 || paths < 3 {
+		t.Fatalf("checked %d boxes and %d paths across three screens, which is not the whole window", checked, paths)
+	}
+	t.Logf("%d boxes held under half the column, %d paths allowed the row", checked, paths)
+}

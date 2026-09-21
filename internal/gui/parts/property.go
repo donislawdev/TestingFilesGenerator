@@ -253,18 +253,24 @@ func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]Pro
 // was 140. The declaration says which of the two a setting is, so nothing here
 // names a format.
 //
-// Only numbers and sizes. A closed set is as wide as its longest value plus
-// the arrow, and free text has no length to promise.
-// The width is the wider of the number box every other whole number on these
+// Numbers and sizes take the number box, free text takes the text box, and a
+// closed set is as wide as its longest value plus the arrow (see Menu). Free
+// text took the whole row until 2026-09-21 on the sentence that it has no
+// length to promise - an archive's password and a preset's list of sizes
+// were 806 px wide - and the owner asked why. See TextWidth.
+// The width is the wider of the box every other value of that shape on these
 // screens uses and whatever it takes to show this field's own placeholder.
 // Shrinking to the first alone clipped "worked out from the size" mid-word -
 // which is the same defect the other way up, since a box has to be able to
 // show what it is already showing.
 func ShapedFor(p format.Property, control fyne.CanvasObject) fyne.CanvasObject {
-	if !narrowOnAScreen(p) {
-		return control
+	switch {
+	case narrowOnAScreen(p):
+		return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p))), control)
+	case p.Kind == format.PropertyText:
+		return Sized(fyne.Max(TextWidth, roomFor(leftAlone(p))), control)
 	}
-	return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p))), control)
+	return control
 }
 
 // roomFor is how wide a box has to be to show a string without cutting it.

@@ -251,6 +251,24 @@ func panelSurface() *canvas.Rectangle {
 	return rect
 }
 
+// floatingSurface is what anything drawn OVER the form stands on: the list a
+// menu drops down, and the explanation behind a field's button.
+//
+// One function for both since 2026-09-21, and the second of them is why. The
+// explanation stood on panelSurface until then, and it opens over a section -
+// so a box the colour of the thing under it had no edge anywhere, and the
+// owner's report from the running window was a sentence laid straight over
+// the form, covering the row beneath. The list had already met the same
+// question on 2026-08-12 and the palette answers it: the surface that floats
+// is the lightest one, told from a panel by 13.6 L* with no border and no
+// shadow (theme.go, ColorNameMenuBackground). The corner is a field's, not a
+// panel's, because what floats is the size of a control and not of a section.
+func floatingSurface() *canvas.Rectangle {
+	rect := canvas.NewRectangle(PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark))
+	rect.CornerRadius = RadiusField
+	return rect
+}
+
 // Bullets is a list of short statements, drawn as a list.
 //
 // It replaces a run of labels each starting with a dash typed into the string.
@@ -494,8 +512,9 @@ func (i indent) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 
 // Numeric sizes a control to what it holds rather than to the column it is in.
 //
-// Only for boxes taking a number. A path, a name template and an id are all
-// things whose length nobody can predict, so those still take the column.
+// Only for boxes taking a number. A name, a template and an id are short text
+// and take TextWidth (see Text). A path is the one thing whose length nobody
+// can predict, so a path still takes the column.
 //
 // It uses a layout of ours rather than the toolkit's grid wrap, and the reason
 // is the edge that marks a refused box: a stack sized by the slot draws its
@@ -506,6 +525,13 @@ func (i indent) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // is ever seen.
 func Numeric(control fyne.CanvasObject) fyne.CanvasObject {
 	return Sized(NumericWidth, control)
+}
+
+// Text sizes a box for a short piece of text - a name, a template, a file
+// name - to TextWidth rather than to the column it is in. A path is not
+// this case and takes the row, see the token.
+func Text(control fyne.CanvasObject) fyne.CanvasObject {
+	return Sized(TextWidth, control)
 }
 
 // Sized draws a control at a width worked out by the caller.

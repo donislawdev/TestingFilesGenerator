@@ -58,11 +58,11 @@ var LargestOpening = fyne.NewSize(1000, 1000)
 //
 // A first start opens in the middle, because there is nothing to restore and
 // the middle is where a window belongs when nobody has an opinion yet. It
-// opens as tall as the screens WANT - the height at which the tallest work
-// screen shows its whole form without scrolling, worked out by Open from the
-// screens as they are - and no taller than LargestOpening, which is the one
-// fact about somebody else's screen this program knows. A want with a nought
-// in it is no want, and the ceiling stands in for it.
+// opens as tall as the first screen WANTS - the height at which the screen
+// the window opens on shows its whole form without scrolling, worked out by
+// Open from that screen as it is - and no taller than LargestOpening, which
+// is the one fact about somebody else's screen this program knows. A want
+// with a nought in it is no want, and the ceiling stands in for it.
 func HowToOpen(remembered, wanted fyne.Size) (size fyne.Size, centre bool) {
 	if WorthRemembering(remembered) {
 		return remembered, false
@@ -79,12 +79,23 @@ func HowToOpen(remembered, wanted fyne.Size) (size fyne.Size, centre bool) {
 type unscrolled interface{ Unscrolled() float32 }
 
 // firstOpening is the size the window wants on a first start: the room the
-// tab strip keeps above a screen, plus the tallest of the work screens shown
+// tab strip keeps above a screen, plus the screen the window opens on shown
 // whole, at the width the window always opens at.
 //
-// The About screen is left out on purpose. It carries the notices for every
-// module in the build, which is a length that belongs to the dependencies and
-// not to us, and a window sized for it would be sized for nothing else.
+// The screen it opens on, and not the tallest of the three - the owner's
+// decision of 2026-09-21. Until then the height came from the tallest work
+// screen, the batch screen, so that no work screen scrolled from the first
+// frame. What that bought was a window that opened on the single batch
+// screen with a band of nothing between its form and the bar - 70 px in the
+// forms of that day, the same band O202 was about under another number -
+// because the screen a person actually sees first is the shortest. Now the
+// window fits what it shows, and the batch screen scrolls a little when
+// somebody goes there, which it does anyway from the second batch on.
+//
+// The About screen is left out for the same reason it always was. It carries
+// the notices for every module in the build, which is a length that belongs
+// to the dependencies and not to us, and a window sized for it would be sized
+// for nothing else.
 //
 // The content is laid out at the opening width before anything is measured,
 // because a sentence that wraps reports a height for the width it currently
@@ -97,13 +108,9 @@ type unscrolled interface{ Unscrolled() float32 }
 // padded by default and never switched off here. Measured before it was added:
 // the batch screen's form needed 732 px and got 724 at the size worked out
 // without it, eight pixels of padding short of showing whole.
-func firstOpening(tabbed *fyne.Container, screens ...unscrolled) fyne.Size {
+func firstOpening(tabbed *fyne.Container, first unscrolled) fyne.Size {
 	tabbed.Resize(LargestOpening)
-	tallest := float32(0)
-	for _, s := range screens {
-		tallest = fyne.Max(tallest, s.Unscrolled())
-	}
-	return fyne.NewSize(LargestOpening.Width, parts.AboveTheScreens(tabbed)+tallest+2*theme.Padding())
+	return fyne.NewSize(LargestOpening.Width, parts.AboveTheScreens(tabbed)+first.Unscrolled()+2*theme.Padding())
 }
 
 // unscrolledHeight is how tall a screen has to be for the form inside its

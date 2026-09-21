@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -219,4 +221,52 @@ func namedOnScreen(o fyne.CanvasObject) string {
 		return words
 	}
 	return ""
+}
+
+// The explanation floats on the surface an open list does, not on a panel's.
+//
+// Reported by the owner from the running window on 2026-09-21: the tooltips
+// are hard to read because of their background. Measured on the shot: the box
+// was drawn in the panel colour, and it opens over a panel - so it had no
+// edge anywhere, and the sentence lay straight over the form covering the row
+// beneath it. The palette's answer to "what floats over the form" was already
+// in use by the list a menu drops down, and this holds the two to one surface.
+//
+// Held against the palette by name rather than against "not the panel": a box
+// in any third colour would be told from the panel and still be a second
+// floating surface nobody chose.
+func TestTheExplanationFloatsOnTheSurfaceAnOpenListDoes(t *testing.T) {
+	app := test.NewApp()
+	defer test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+
+	content, c := laidOutWindow(t)
+	screen := tabNamed(t, content, text.TabOneTarget())
+	button := detailButtonBeside(screen, text.FieldSize())
+	if button == nil {
+		t.Fatalf("%q has no button that opens its explanation", text.FieldSize())
+	}
+	test.MoveMouse(c, drawnCentre(t, button, text.FieldSize()))
+	box := button.Shown()
+	if box == nil {
+		t.Fatal("hovering the button put nothing on the sheet, so there is no box to measure")
+	}
+
+	var surface *canvas.Rectangle
+	walk(box, func(o fyne.CanvasObject) {
+		if rect, is := o.(*canvas.Rectangle); is && surface == nil {
+			surface = rect
+		}
+	})
+	if surface == nil {
+		t.Fatal("the explanation's box draws no rectangle, so it stands on nothing this guard can measure")
+	}
+	want := parts.PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark)
+	if surface.FillColor != want {
+		t.Errorf("the explanation stands on %v and an open list on %v - a box the colour of the panel it opens over has no edge anywhere",
+			surface.FillColor, want)
+	}
+	if surface.CornerRadius != parts.RadiusField {
+		t.Errorf("the explanation's corner is %.0f and a floating control's is %d", surface.CornerRadius, parts.RadiusField)
+	}
 }

@@ -2,6 +2,7 @@ package parts
 
 import (
 	"image/color"
+	"math"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -355,9 +356,10 @@ func (c *Chooser) useRing(r *Ring) {
 // 2026-08-18: a menu stays painted blue after a value is chosen, and there is
 // nothing left to press that would take the paint off.
 //
-// See PointerFocus for why this is one rule rather than a fix per control.
+// See PointerFocus for why this is one rule rather than a fix per control,
+// and PointerFocus.Draws for the window coming back to the front.
 func (c *Chooser) FocusGained() {
-	if c.from.Quiet() {
+	if !c.from.Draws() {
 		return
 	}
 	c.mark()
@@ -374,12 +376,17 @@ func (c *Chooser) mark() {
 }
 
 func (c *Chooser) FocusLost() {
+	c.from.Lost(c.marked)
 	c.marked = false
 	c.Select.FocusLost()
 	if c.ring != nil {
 		c.ring.Focus(false)
 	}
 }
+
+// WindowReturning is the window saying the next FocusGained is its own
+// return to the front. See PointerFocus.
+func (c *Chooser) WindowReturning() { c.from.WindowReturning() }
 
 // Marked says whether the keyboard mark is drawn, for a guard. The toolkit
 // keeps the same answer in an unexported field of two different widgets, so
@@ -439,7 +446,7 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	// As wide as the box, so the list reads as belonging to that field. How
 	// tall and which side of the box it goes on is worked out from the room
 	// that is actually left - see roomForList.
-	height, top := roomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height)
+	height, top := RoomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height)
 	// Told to the list rather than only to the popup, because a popup is never
 	// laid out smaller than its content's minimum - so resizing alone left the
 	// list its full height and the shortening did nothing.
@@ -453,7 +460,7 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	list.StartOn(c.Selected)
 }
 
-// roomForList decides how tall an open list may be and where its top goes.
+// RoomForList decides how tall an open list may be and where its top goes.
 //
 // It used to go under the box at its full height, always, which is right until
 // the box is near the foot of a form - and every form here is taller than its
@@ -465,40 +472,47 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 // the window and no more (ListCeiling) - the ceiling is about not taking the
 // form away from the person reading it, and it follows the window rather than
 // being a count of rows, which was eight in every window until 2026-09-15
-// (O203). It opens UPWARD when there is more room above the box than below
-// it, which is what every desktop menu does. And it is cut to the room on
-// whichever side it lands, because the ceiling says nothing about a window
-// that has less than that left beside the box.
+// (O203). It opens DOWNWARD whenever a few whole rows fit under the box
+// (listOpensDownwardFrom), cut to that room and scrolling - and upward only
+// when fewer fit there and more fit above, which is a box standing just over
+// the bar at the foot. Until 2026-09-21 it turned upward as soon as the list
+// did not fit below and there was more room above, which is what a desktop
+// menu does and what the owner saw as one list behaving two ways: the format
+// list on the preset screen opened over the question the preset asks, and the
+// same list on the other screens opened under its box. And it is cut to the
+// room on whichever side it lands, in whole rows, because the ceiling says
+// nothing about a window that has less than that left beside the box.
 //
-// Arithmetic rather than widgets so that it can be checked directly. The screen
-// level guard opens a real menu and measures the overlay, which is the half
-// that catches this being wired up wrongly.
-func roomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
+// Whole rows, so that a list ending short of its ceiling ends on a row's edge
+// rather than through the middle of a value - the cut is the everyday case
+// now, not the emergency it was when only a cramped window reached it.
+//
+// Arithmetic rather than widgets so that it can be checked directly, and
+// exported for that check. The screen level guard opens a real menu and
+// measures the overlay, which is the half that catches this being wired up
+// wrongly.
+func RoomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
 	if ceiling := ListCeiling(canvasHeight); wanted > ceiling {
 		wanted = ceiling
 	}
-	below := canvasHeight - (boxTop + boxHeight) - listEdgeGap
-	above := boxTop - listEdgeGap
-	if below < 0 {
-		below = 0
-	}
-	if above < 0 {
-		above = 0
-	}
+	below := wholeRows(canvasHeight - (boxTop + boxHeight) - listEdgeGap)
+	above := wholeRows(boxTop - listEdgeGap)
 
-	if wanted <= below {
-		return wanted, boxTop + boxHeight
+	if wanted <= below || below >= listOpensDownwardFrom*listRowHeight() || below >= above {
+		return fyne.Min(wanted, below), boxTop + boxHeight
 	}
-	if above > below {
-		if wanted > above {
-			wanted = above
-		}
-		return wanted, boxTop - wanted
+	height = fyne.Min(wanted, above)
+	return height, boxTop - height
+}
+
+// wholeRows is as much of a height as whole rows of a list fill, and never
+// less than nothing.
+func wholeRows(height float32) float32 {
+	row := listRowHeight()
+	if height < row {
+		return 0
 	}
-	if wanted > below {
-		wanted = below
-	}
-	return wanted, boxTop + boxHeight
+	return float32(math.Floor(float64(height/row))) * row
 }
 
 // giveBack hands the keyboard back to the box when the list closes.

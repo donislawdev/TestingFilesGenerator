@@ -142,3 +142,66 @@ func popUpIn(o fyne.CanvasObject) *widget.PopUp {
 	})
 	return found
 }
+
+// A list opens downward whenever a few whole rows fit under its box, and
+// upward only when fewer fit there than above it.
+//
+// Decision of the owner, 2026-09-21, from the running window: the format list
+// on the preset screen opened UPWARD - over the question the preset asks -
+// while the same list on the other screens opened downward, because the rule
+// turned upward as soon as the list did not fit below and there was more room
+// above. One control behaving two ways for a reason nobody could see. Now a
+// list that has room for a few rows under its box goes there, shorter and
+// scrolling, and upward is kept for a box standing just over the bar.
+//
+// Asked of the arithmetic directly, in rows, because the rule is about rows.
+// The two guards above open real lists and hold the emergency half - a box at
+// the foot still goes upward, and a cramped window still cuts the list.
+func TestAListOpensDownwardWheneverAFewRowsFitUnderTheBox(t *testing.T) {
+	app := test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+	t.Cleanup(func() { test.NewApp() })
+
+	row := parts.ListRowHeight()
+	const box = 31
+	for _, tc := range []struct {
+		name          string
+		canvas, top   float32
+		wantedRows    float32
+		wantRows      float32
+		wantDownward  bool
+		whyItIsWorthA string
+	}{
+		{"the preset screen's format box in the owner's window", 870, 557, 24, 9, true,
+			"274 px under the box holds nine rows, and that is where the list goes now"},
+		{"a box with the whole list's room under it", 1300, 200, 10, 10, true,
+			"the ordinary case, unchanged"},
+		{"a box against the foot of the window", 240, 240 - box, 24, 4, false,
+			"no row fits below, so upward is the only place (O113), and the ceiling of a 240 px window is four rows"},
+		{"a few rows below and fewer above", 200, 60, 24, 3, true,
+			"three rows below beat one above, whichever side has more"},
+		{"two rows below and sixteen above", 600, 480, 24, 10, false,
+			"fewer than the threshold below, and the ceiling of a 600 px window is ten rows"},
+	} {
+		height, at := parts.RoomForList(tc.canvas, tc.top, box, tc.wantedRows*row)
+		downward := at >= tc.top+box
+		if downward != tc.wantDownward {
+			t.Errorf("%s: the list opens %s and should open %s (%s)", tc.name,
+				direction(downward), direction(tc.wantDownward), tc.whyItIsWorthA)
+		}
+		if height != tc.wantRows*row {
+			t.Errorf("%s: the list is %.0f px tall, which is %.2f rows, and should be %.0f rows (%s)",
+				tc.name, height, height/row, tc.wantRows, tc.whyItIsWorthA)
+		}
+		if !downward && at+height != tc.top {
+			t.Errorf("%s: a list opening upward ends at %.0f and the box starts at %.0f", tc.name, at+height, tc.top)
+		}
+	}
+}
+
+func direction(downward bool) string {
+	if downward {
+		return "downward"
+	}
+	return "upward"
+}

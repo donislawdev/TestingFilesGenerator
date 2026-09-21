@@ -2,6 +2,7 @@ package window
 
 import (
 	"errors"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -96,6 +97,19 @@ type Host interface {
 	// was going to go.
 	OpenLink(url string)
 
+	// Later runs something on the interface thread after a while, and hands
+	// back the way to call it off. What the busy face waits on - see
+	// BusyFaceAfter.
+	//
+	// On the interface rather than a timer in the screens, and it is the
+	// same reason as Canvas: only a real window owns the thread that draws,
+	// and only it can promise that a function fired by a clock lands there.
+	// A stand in keeps the function and fires it when the guard says, which
+	// is what lets a guard see the screen BEFORE the face arrives - under the
+	// test driver a timer's goroutine would be a second writer to widgets
+	// the guard is reading, and the race detector would be right.
+	Later(after time.Duration, then func()) (callOff func())
+
 	// SoftwareRendering reports whether this window is drawn by the software
 	// renderer shipped beside the program rather than by the graphics driver.
 	//
@@ -172,7 +186,7 @@ type Generate struct {
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner(), host: host, tips: parts.NewTips(), settingsFolded: true}
+	g := &Generate{runner: newRunner(host.Later), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = g.settle
 	g.runner.openFolder = host.OpenFolder
 	// This screen is one target and draws its boxes under the bare key, so a
@@ -238,7 +252,8 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 func (g *Generate) Object() fyne.CanvasObject { return g.body }
 
 // Unscrolled is how tall this screen has to be for its form to show whole -
-// what a first start opens at, see firstOpening.
+// what a first start opens at, because this is the screen it opens on. See
+// firstOpening for why the other two screens are not asked.
 func (g *Generate) Unscrolled() float32 { return unscrolledHeight(g.body, g.scroll) }
 
 // FirstField is where the keyboard starts on this screen: the format, because
@@ -351,9 +366,9 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 				parts.Numeric(g.size)),
 			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
-			add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), g.id),
+			add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), parts.Text(g.id)),
 			add(engine.SettingName, text.FieldNameTemplate(), text.HintNameTemplate(),
-				g.tips.Say(text.DetailNameTemplate()), g.name),
+				g.tips.Say(text.DetailNameTemplate()), parts.Text(g.name)),
 			// The settings the chosen format declares land here, under the ones
 			// every format has.
 			g.propBox,

@@ -16,6 +16,27 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Nine things the owner saw in the running window.** A field's
+  explanation opens on the same raised surface as an open list, so it no
+  longer lies flat on the section it covers. A list of formats keeps its
+  tick in front of the picture and the word, the shape it had before the
+  tick moved to the end of every row. A list opens downward whenever a few
+  rows fit under its box, shorter and scrolling, and turns upward only for
+  a box standing just over the bar at the foot. A menu no longer opens
+  marked as holding the keyboard when the window comes to the front, which
+  is what made the first menu on the first screen blue and every other one
+  grey - the mark is drawn for the keyboard alone, as it always was meant to
+  be. A box for a name, a template, a file name, a password or a list of
+  sizes is the width of two number boxes rather than of the whole row, and
+  only a path still takes the row. The tick in a checked box fills its
+  square. The window opens as tall as the screen it opens on wants, not as
+  tall as the tallest screen, so the first screen has no band of nothing
+  under its form. Preview, Choose, Duplicate and Add a batch have a raised
+  face rather than an outline round nothing. And the busy face - the frozen
+  form, Cancel, the bar - waits a moment before it appears, so a preview
+  that is over in a blink no longer flashes it and takes it back, and the
+  run buttons stand where they stood once the work is done.
+
 - **The window draws its own buttons, switches and choosers.** A button now
   has one filled face for the action that does the work and an outline for the
   ones beside it, lightens under the pointer, darkens when pressed, and shows a

@@ -79,7 +79,6 @@ type runner struct {
 
 	previewBtn  *parts.Button
 	generateBtn *parts.Button
-	cancelBtn   *parts.Button
 	// openBtn shows the directory a finished run wrote into.
 	//
 	// It appears when there is something to open and goes away the moment the
@@ -96,7 +95,9 @@ type runner struct {
 	// where the files ACTUALLY went.
 	wroteInto string
 
-	bar     *parts.Progress
+	// busy is whether work owns the screen and the face it wears for it -
+	// the frozen form, Cancel, the bar. See runbusy.go.
+	busy    *busy
 	status  *widget.Label
 	problem *parts.ErrorArea
 
@@ -156,23 +157,6 @@ type runner struct {
 	// as a function rather than reaching for the host, because the runner is
 	// shared by three screens and none of them owns the window.
 	openFolder func(string)
-
-	// running is whether a run owns the screen, and it exists because stop
-	// cannot answer that. Asking stop was a real defect and a quiet one: it is
-	// set on the first Generate and never cleared, so from then on every live
-	// check returned at its first line. Fields stopped being checked while
-	// being typed in and stopped being unmarked once corrected, and the screen
-	// looked exactly the same doing it.
-	//
-	// Only ever touched on the interface thread, which is what makes a plain
-	// bool enough - setRunning is called from there, and the worker gets back
-	// through fyne.Do before it reaches this.
-	running bool
-
-	// alsoDisabled are controls that are neither fields nor run buttons and
-	// still have no business being pressed while a run is going. The batch
-	// screen's "add a batch" is one: pressing it rebuilds the form under a run.
-	alsoDisabled []fyne.Disableable
 
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
@@ -324,7 +308,7 @@ func (r *runner) toneOfOutcome(res *engine.Result, runErr error) {
 // Not while a run owns the screen: its progress is not to be overwritten by
 // a summary, and the form is frozen then anyway.
 func (r *runner) refreshLine() {
-	if r.settle == nil || r.running {
+	if r.settle == nil || r.busy.occupied {
 		return
 	}
 	dir := ""
@@ -339,22 +323,22 @@ func (r *runner) refreshLine() {
 	showOn(r.status, r.line.said(summarise(targets), opt.OutDir))
 }
 
-func newRunner() *runner {
+func newRunner(wait later) *runner {
 	r := &runner{fields: parts.NewFields(), line: &runLine{}}
 	r.fields.LabelColumn(labelColumn())
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
-	r.bar = parts.NewProgress()
+	bar := parts.NewProgress()
 	// Counted as a percentage rather than as bytes, so the arithmetic that keeps
 	// a very large run inside the range of its own type is the one the command
 	// line already uses.
-	r.bar.Max = 100
+	bar.Max = 100
 	// Nothing is written inside the track, which is now a property of the
 	// control rather than a formatter turned off: the line under it ends with
 	// the same percentage already (text.Progress), so the number stood on the
 	// screen twice.
-	r.bar.Hide()
+	bar.Hide()
 
 	r.status = widget.NewLabel("")
 	r.status.Wrapping = fyne.TextWrapWord
@@ -379,9 +363,11 @@ func newRunner() *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	r.cancelBtn = parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel)
-	r.cancelBtn.Disable()
-	r.cancelBtn.Hide()
+	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel)
+	cancel.Disable()
+	cancel.Hide()
+	r.busy = &busy{fields: r.fields, preview: r.previewBtn, generate: r.generateBtn,
+		cancel: cancel, bar: bar, later: wait}
 
 	r.openBtn = parts.NewButton(parts.Secondary, text.ButtonOpenFolder(), func() {
 		if r.wroteInto != "" && r.openFolder != nil {
@@ -412,7 +398,7 @@ func roomToSpeak(bar *parts.Progress, status *widget.Label, problem *parts.Error
 // footer is the bar at the foot of a screen: the buttons, and under them the
 // room a run speaks in - which at rest carries what the form comes to.
 func (r *runner) footer(rail fyne.CanvasObject) fyne.CanvasObject {
-	return parts.ActionBar(rail, r.actions(), roomToSpeak(r.bar, r.status, r.problem))
+	return parts.ActionBar(rail, r.actions(), roomToSpeak(r.busy.bar, r.status, r.problem))
 }
 
 // onPreview says what the run would cost and writes nothing.
@@ -430,6 +416,10 @@ func (r *runner) footer(rail fyne.CanvasObject) fyne.CanvasObject {
 // busy. Nobody measured how long it takes, which is the point - the answer
 // depends on somebody else's disk.
 func (r *runner) onPreview() {
+	// The same refusal as onGenerate, for the same moment.
+	if r.busy.occupied {
+		return
+	}
 	r.clearProblems()
 	targets, opt, err := r.settle()
 	if err != nil {
@@ -452,7 +442,7 @@ func (r *runner) onPreview() {
 	// also meant closing the window waited for the whole of it on the interface
 	// thread. Both halves are gone: preflight checks its context per file, and
 	// planning does too.
-	r.setBusy(true, true)
+	r.busy.set(true, busyFace{stoppable: true})
 	r.say(text.WorkingOutTheCost())
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -520,7 +510,7 @@ func roomOn(dir string) diskRoom {
 // document - see manifestReachNote - so the answer is there for the asking
 // rather than something the window would have to work out for itself.
 func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFile, opt engine.Options, room diskRoom, runErr error) {
-	r.setBusy(false, false)
+	r.busy.set(false, busyFace{})
 	if runErr != nil {
 		r.refuse(runErr)
 		return
@@ -573,6 +563,13 @@ func formatsOf(planned []engine.PlannedFile) []string {
 // What is left here is reading the form, which is the one thing that HAS to be
 // here - the widgets belong to this thread.
 func (r *runner) onGenerate() {
+	// Refused by the state and not only by the button. The button is switched
+	// off with the busy face, which follows the state by a moment - see
+	// BusyFaceAfter - and a second press inside that moment would start a
+	// second run into the directory the first is filling.
+	if r.busy.occupied {
+		return
+	}
 	r.clearProblems()
 	targets, opt, err := r.settle()
 	if err != nil {
@@ -595,8 +592,8 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 	started := time.Now()
 	limit := &throttle{}
 
-	r.setRunning(true)
-	r.bar.SetValue(0)
+	r.busy.set(true, busyFace{stoppable: true, progressing: true})
+	r.busy.bar.SetValue(0)
 	// The plan comes first now, so the first thing said is about working the
 	// cost out rather than about writing files that are not being written yet.
 	r.say(text.WorkingOutTheCost())
@@ -610,7 +607,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		}
 		elapsed := time.Since(started)
 		fyne.Do(func() {
-			r.bar.SetValue(float64(core.Percent(p.BytesDone, p.BytesTotal)))
+			r.busy.bar.SetValue(float64(core.Percent(p.BytesDone, p.BytesTotal)))
 			r.status.SetText(progressText(p, elapsed))
 		})
 	}
@@ -640,7 +637,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 			// run - runFinished would talk about files that never existed.
 			r.holdBeforeFinishing()
 			fyne.Do(func() {
-				r.setRunning(false)
+				r.busy.set(false, busyFace{})
 				r.refuse(planErr)
 			})
 			close(done)
@@ -677,7 +674,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 // Note what it does not do: clear stop. That is deliberate and the reason is at
 // the declaration of the field.
 func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom) {
-	r.setRunning(false)
+	r.busy.set(false, busyFace{})
 	if room.known && r.wroteInto != "" {
 		r.line.measured(r.wroteInto, room.free)
 	}
@@ -703,71 +700,6 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
 	r.offerTheFolder(res)
-}
-
-// setRunning is the screen in one state or the other. Two buttons that both
-// look pressable during a run is a window that invites a second run into a
-// directory the first one is still filling.
-func (r *runner) setRunning(running bool) { r.setBusy(running, running) }
-
-// setBusy is the same thing with the two halves told apart: whether the screen
-// is occupied, and whether there is anything to interrupt.
-//
-// They came apart when the preview stopped blocking the interface thread. A
-// preview occupies the screen exactly as a run does - both buttons off, the
-// form frozen - but it has nothing to show on the bar and nothing to cancel,
-// and both of those are measured rather than assumed:
-//
-//   - A dry run returns before the writing loop, so OnProgress never fires. A
-//     bar shown for it would sit at nought until the answer arrived, which is
-//     what a stuck run looks like.
-//   - preflight takes no context. It is where a preview spends its time, and it
-//     cannot be interrupted, so a Cancel offered here would be a button that
-//     does nothing while looking like the way out.
-func (r *runner) setBusy(busy, stoppable bool) {
-	// The state itself, before any of the controls. Everything below is what
-	// the state looks like - this is the state, and it is what the live check
-	// asks. See the running field.
-	r.running = busy
-	// Cancel is hidden rather than greyed when there is nothing to cancel, asked
-	// for on 2026-08-11 after looking at the window. A permanently dead control
-	// is a question the screen keeps asking and answering itself, and it sat
-	// beside the two buttons that do work - so the row read as three choices
-	// where there were two. It appears with the run and goes with it.
-	// The form goes with them. It stayed editable through a run, so somebody
-	// could change the output directory while files were going into the old
-	// one and nothing said which run that applied to - almost certainly none of
-	// them, which is exactly the answer a person cannot reach from looking
-	// (O106).
-	r.fields.Freeze(busy)
-	for _, control := range r.alsoDisabled {
-		if busy {
-			control.Disable()
-			continue
-		}
-		control.Enable()
-	}
-
-	if busy {
-		r.previewBtn.Disable()
-		r.generateBtn.Disable()
-	} else {
-		r.previewBtn.Enable()
-		r.generateBtn.Enable()
-	}
-
-	// Only a run gets these two. See the note above for why a preview gets
-	// neither, and note that both are put away whenever the screen goes idle -
-	// so a preview started after a run cannot leave a stale bar behind.
-	if busy && stoppable {
-		r.cancelBtn.Enable()
-		r.cancelBtn.Show()
-		r.bar.Show()
-		return
-	}
-	r.cancelBtn.Disable()
-	r.cancelBtn.Hide()
-	r.bar.Hide()
 }
 
 // keepScroll remembers the scrolling area on the way past, so that a refusal
