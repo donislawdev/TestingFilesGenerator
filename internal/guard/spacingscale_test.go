@@ -72,13 +72,14 @@ func TestANameStandsOverItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 		}
 	}
 	// The pairing: a name is nearer the box under it than that box is to the
-	// next name. Asked between neighbours inside one section, because a
-	// section's edge is a bigger gap for a reason of its own.
-	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
-	for i, gap := range nameGaps {
-		if gap >= between {
-			t.Errorf("%q stands %.1f px over its box and the next name stands %.1f px under it, so nothing says which box the name belongs to",
-				names[i], gap, between)
+	// next name. Asked for each pair down the screen rather than once at the
+	// top, after the outside review of #116: measured once, a later pair
+	// could drift while the first still held.
+	for i := 0; i+1 < len(names); i++ {
+		between := gapBelowField(t, generate, names[i], names[i+1])
+		if nameGaps[i] >= between {
+			t.Errorf("%q stands %.1f px over its box and %q stands %.1f px under that box, so nothing says which box the name belongs to",
+				names[i], nameGaps[i], names[i+1], between)
 		}
 	}
 }

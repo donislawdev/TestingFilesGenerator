@@ -35,6 +35,13 @@ const ColorNamePanel fyne.ThemeColorName = "panel"
 // Owner's decision of 2026-09-21 - see docs/GUI-STRUCTURE-2026-09-21.md.
 const ColorNameLabel fyne.ThemeColorName = "label"
 
+// ColorNameTipShade is the shade an explanation casts on the form under it.
+// A name of its own rather than the toolkit's Shadow, which this palette
+// answers with nothing on purpose (see ColorNameShadow): the toolkit lays its
+// shadow under every popup and the format list is where it read as a hard
+// band, while an explanation is the one floating thing that wanted one.
+const ColorNameTipShade fyne.ThemeColorName = "tipshade"
+
 // ColorNameLift is what the pointer does to a face that is itself light - the
 // filled primary button - and ColorNameShade is what a press does to it.
 //
@@ -193,6 +200,7 @@ var (
 		// than as a popup - see parts.Tips - so it never asked the theme for a
 		// shadow and does not lose one.
 		theme.ColorNameShadow: color.Transparent,
+		ColorNameTipShade:     overlay(0x00, 0x00, 0x00, 0x66),
 
 		// The surface a section is drawn on, and the line round its edge.
 		//
@@ -294,6 +302,7 @@ var (
 		// is what separates it.
 		theme.ColorNameMenuBackground: hex(0xFF, 0xFF, 0xFF),
 		theme.ColorNameShadow:         overlay(0x00, 0x00, 0x00, 0x40),
+		ColorNameTipShade:             overlay(0x00, 0x00, 0x00, 0x40),
 
 		// The same two, worked out the same way against a white page. The gap
 		// between page and input is narrower here - 5.6 L* against 7.7 - so the

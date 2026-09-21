@@ -289,7 +289,7 @@ func tipSurface() *canvas.Rectangle {
 // for offsetting shadows. Drawn under tipSurface in a stack, so it shows
 // only past the surface's lower edge.
 func tipShadow() fyne.CanvasObject {
-	rect := canvas.NewRectangle(overlay(0x00, 0x00, 0x00, 0x66))
+	rect := canvas.NewRectangle(PaletteColour(ColorNameTipShade, theme.VariantDark))
 	rect.CornerRadius = RadiusField
 	return container.New(shifted{dy: TipShadowDrop}, rect)
 }

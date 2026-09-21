@@ -202,8 +202,17 @@ func TestTheHeadRowDrawsItsStatesAndTheArrowFollows(t *testing.T) {
 	// form, which is enormous. The row is still the target - the head is as
 	// wide as the row - so the two widths are asked for apart: the head wide,
 	// its fill narrow.
-	if row, fill := head.Size().Width, back.Size().Width; fill >= row || fill < 1 {
-		t.Errorf("under the pointer the fill is %.0f px wide on a head %.0f px wide - the fill has to cover the words and not the row", fill, row)
+	// Bounded from both sides, after the outside review of #116: "narrower
+	// than the row" alone would have let a one pixel fill through. The fill
+	// has to be at least as wide as the title it lights, and narrower than
+	// the row it stands in.
+	title, ok := labelBox(fold.Object(), "Notes for the manifest")
+	if !ok {
+		t.Fatal("the fold's title is not on the screen, so there is nothing to measure the fill against")
+	}
+	if row, fill := head.Size().Width, back.Size().Width; fill >= row || fill < title.Width {
+		t.Errorf("under the pointer the fill is %.0f px wide, the title %.0f and the head %.0f - the fill has to cover the words and stop short of the row",
+			fill, title.Width, row)
 	}
 	if arrow.Resource.Name() == restingArrow {
 		t.Error("the arrow is inked the same under the pointer as at rest, so it does not follow the row")
