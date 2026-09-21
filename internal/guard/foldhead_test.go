@@ -132,6 +132,46 @@ func TestTheKeyboardOpensAndShutsAFoldOncePerPress(t *testing.T) {
 	}
 }
 
+// Reaching for the keyboard after pressing the head row draws the ring on
+// it, the way the first key after a press draws the mark on every other
+// control of the family. The family guard,
+// TestReachingForTheKeyboardTurnsTheMarkOn, asks the menu, and the row was
+// the one control that took the keyboard on a press and then drew nothing on
+// the first key: until 2026-09-17 a fold pressed with the mouse and opened
+// with Space held the keyboard with no ring. Found by asking the row's
+// siblings while an outside review of #110 asked the opposite question -
+// whether a press should take the ring OFF a row the keyboard had marked -
+// which is a rule of the family, not of the row. Read off the drawn ring,
+// not off the flag (GUI rule 10), and both halves of the press are asked:
+// the ring and the fold, because a key that drew the ring and did nothing
+// else would pass the first alone.
+func TestAKeyAfterAPressOnTheHeadRowDrawsTheRing(t *testing.T) {
+	ourTheme(t)
+	fold := parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside"))
+	w := test.NewWindow(fold.Object())
+	t.Cleanup(w.Close)
+	w.Resize(fyne.NewSize(600, 200))
+	head := fold.Head()
+	_, ring := headRectangles(t, head)
+
+	head.Tapped(&fyne.PointEvent{})
+	if w.Canvas().Focused() != head {
+		t.Fatalf("after a press the keyboard is on %T, not on the head row", w.Canvas().Focused())
+	}
+	if ring.StrokeWidth != 0 {
+		t.Fatal("the press already drew the ring, so this guard cannot tell what the key did")
+	}
+	before := head.Open()
+	head.TypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	head.TypedRune(' ')
+	if ring.StrokeWidth == 0 {
+		t.Error("a key was pressed on the head row and it still draws no ring to say the keyboard is in it")
+	}
+	if head.Open() == before {
+		t.Error("the same press of Space left the fold as it was")
+	}
+}
+
 // The row says it is under the pointer with a fill, says it holds the
 // keyboard with a ring, and says neither at rest - read off the drawn
 // rectangles rather than off a flag, because a state set and not painted

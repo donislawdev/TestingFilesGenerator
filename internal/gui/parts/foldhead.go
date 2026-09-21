@@ -67,11 +67,12 @@ func (h *FoldHead) Marked() bool  { return h.marked }
 
 // Tapped opens the fold or puts it away. The keyboard comes to the row
 // quietly first, so the mark meaning "the keyboard is here" is not drawn for
-// somebody using the mouse - see PointerFocus.
+// somebody using the mouse - see PointerFocus. A press on a row that holds
+// the keyboard already, with the mark drawn, leaves the mark: that is what
+// the switch and the segmented switch do, and one rule for the family is
+// worth more than a better rule for one of them.
 func (h *FoldHead) Tapped(*fyne.PointEvent) {
-	if c := fyne.CurrentApp().Driver().CanvasForObject(h); c != nil {
-		h.from.Quietly(func() { c.Focus(h) })
-	}
+	h.from.Take(h)
 	h.fold.Set(!h.fold.open)
 }
 
@@ -106,10 +107,20 @@ func (h *FoldHead) FocusLost() {
 // key and as the character, and a row answering both would open and shut.
 func (h *FoldHead) TypedRune(rune) {}
 
-// TypedKey opens or shuts on the space bar and on both names of Enter.
+// TypedKey opens or shuts on the space bar and on both names of Enter. Any
+// key draws the mark first, the way every control of this family does: a
+// press put the keyboard here quietly, and the first key after it is the
+// moment somebody reaches for the keyboard and needs to see which control is
+// listening - see TestReachingForTheKeyboardTurnsTheMarkOn. Until 2026-09-17
+// the row alone did not, so a fold pressed with the mouse and then opened
+// with Space held the keyboard with nothing drawn to say so.
 func (h *FoldHead) TypedKey(event *fyne.KeyEvent) {
 	if event == nil {
 		return
+	}
+	if !h.marked {
+		h.marked = true
+		h.Refresh()
 	}
 	switch event.Name {
 	case fyne.KeyReturn, fyne.KeyEnter, fyne.KeySpace:

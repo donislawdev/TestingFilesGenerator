@@ -96,24 +96,10 @@ func (s *Segments) Tapped(event *fyne.PointEvent) {
 	if s.Disabled() || event == nil {
 		return
 	}
-	s.takeTheKeyboardQuietly()
+	s.from.Take(s)
 	if at := s.segmentAt(event.Position.X); at >= 0 {
 		s.SetSelected(s.Options[at])
 	}
-}
-
-// takeTheKeyboardQuietly moves the focus here without the mark, unless it is
-// here already.
-func (s *Segments) takeTheKeyboardQuietly() {
-	app := fyne.CurrentApp()
-	if app == nil {
-		return
-	}
-	canvas := app.Driver().CanvasForObject(s)
-	if canvas == nil || canvas.Focused() == s {
-		return
-	}
-	s.from.Quietly(func() { canvas.Focus(s) })
 }
 
 // Quietly runs a focus change without drawing the mark. See PointerFocus and

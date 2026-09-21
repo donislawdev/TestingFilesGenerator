@@ -100,23 +100,8 @@ func (t *Toggle) Tapped(*fyne.PointEvent) {
 	if t.Disabled() {
 		return
 	}
-	t.takeTheKeyboardQuietly()
+	t.from.Take(t)
 	t.SetChecked(!t.Checked)
-}
-
-// takeTheKeyboardQuietly moves the focus here without the mark, unless it is
-// here already - a Space on a focused switch goes through Tapped too, and
-// re-focusing it would run FocusLost and FocusGained for nothing.
-func (t *Toggle) takeTheKeyboardQuietly() {
-	app := fyne.CurrentApp()
-	if app == nil {
-		return
-	}
-	canvas := app.Driver().CanvasForObject(t)
-	if canvas == nil || canvas.Focused() == t {
-		return
-	}
-	t.from.Quietly(func() { canvas.Focus(t) })
 }
 
 // Quietly runs a focus change without drawing the mark. See PointerFocus and
