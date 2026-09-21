@@ -34,6 +34,13 @@ import (
 type FoldHead struct {
 	widget.BaseWidget
 
+	// under is the words this head stands under - the title, the arrow and
+	// the line - so the fill and the ring are drawn to their width rather
+	// than across the whole row. Owner's report from the running window,
+	// 2026-09-21: a hover the width of the form is enormous. The row stays
+	// the target and only the drawing narrows.
+	under fyne.CanvasObject
+
 	fold  *Folding
 	arrow *widget.Icon
 
@@ -175,6 +182,9 @@ type foldHeadRenderer struct {
 }
 
 func (r *foldHeadRenderer) Layout(size fyne.Size) {
+	if r.head.under != nil {
+		size.Width = fyne.Min(size.Width, r.head.under.MinSize().Width)
+	}
 	r.back.Resize(size)
 	r.ring.Resize(size)
 }

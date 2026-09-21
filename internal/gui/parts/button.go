@@ -418,7 +418,10 @@ func buttonFace(look Look, state buttonState) face {
 		// way the palette lightens every dark face (ColorNameHover and
 		// ColorNamePressed), worked out here as one opaque colour each.
 		f := face{ink: theme.ColorNameForeground, edge: PaletteColour(theme.ColorNameInputBorder, dark), edgeWidth: edgeWidth}
-		f.fill = PaletteColour(theme.ColorNameInputBackground, dark)
+		// The button's own surface since 2026-09-21, a step brighter than a
+		// box to type in - the owner's report from the running window was
+		// that a button in the field's colour read as a field.
+		f.fill = PaletteColour(theme.ColorNameButton, dark)
 		if wash := pointerFill(state); wash != color.Transparent {
 			f.fill = blended(f.fill, wash)
 		}

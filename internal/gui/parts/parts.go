@@ -53,7 +53,7 @@ func Prose(text string) fyne.CanvasObject {
 // - and a name is read by where it stands: in the column of names, level with
 // its box.
 func Heading(text string) fyne.CanvasObject {
-	return words(text, TextBody, false, theme.ColorNameForeground)
+	return words(text, TextBody, false, ColorNameLabel)
 }
 
 // Subheading names a block inside a section - the list of what a preset finds,
@@ -248,6 +248,10 @@ func sectionTitle(text string) fyne.CanvasObject {
 func panelSurface() *canvas.Rectangle {
 	rect := canvas.NewRectangle(PaletteColour(ColorNamePanel, theme.VariantDark))
 	rect.CornerRadius = RadiusPanel
+	// A line round the edge again, owner's decision of 2026-09-21 after the
+	// running window: the fill alone did not say where a section ends.
+	rect.StrokeColor = PaletteColour(theme.ColorNameSeparator, theme.VariantDark)
+	rect.StrokeWidth = edgeWidth
 	return rect
 }
 
@@ -267,6 +271,39 @@ func floatingSurface() *canvas.Rectangle {
 	rect := canvas.NewRectangle(PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark))
 	rect.CornerRadius = RadiusField
 	return rect
+}
+
+// tipSurface is what an explanation stands on: the floating surface with a
+// line round it, so it reads as a thing laid over the form and not as a
+// patch of it. Owner's report from the running window, 2026-09-21: without
+// the line it looked like a random rectangle.
+func tipSurface() *canvas.Rectangle {
+	rect := floatingSurface()
+	rect.StrokeColor = PaletteColour(theme.ColorNameInputBorder, theme.VariantDark)
+	rect.StrokeWidth = edgeWidth
+	return rect
+}
+
+// tipShadow is the shade an explanation casts, offset downwards so it reads
+// as depth rather than as a smudge - the same reason Refactoring UI gives
+// for offsetting shadows. Drawn under tipSurface in a stack, so it shows
+// only past the surface's lower edge.
+func tipShadow() fyne.CanvasObject {
+	rect := canvas.NewRectangle(overlay(0x00, 0x00, 0x00, 0x66))
+	rect.CornerRadius = RadiusField
+	return container.New(shifted{dy: TipShadowDrop}, rect)
+}
+
+// shifted lays its one child at an offset from its own origin.
+type shifted struct{ dx, dy float32 }
+
+func (shifted) MinSize([]fyne.CanvasObject) fyne.Size { return fyne.Size{} }
+
+func (s shifted) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Move(fyne.NewPos(s.dx, s.dy))
+		o.Resize(size)
+	}
 }
 
 // Bullets is a list of short statements, drawn as a list.

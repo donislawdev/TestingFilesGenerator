@@ -16,6 +16,16 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window says where things begin and end.** Every field's name now
+  stands above its box rather than beside it, in a lighter ink than the
+  value under it, so a form reads as a column of named boxes. A section
+  draws a line round its edge again. Preview, Choose, Duplicate and Add a
+  batch stand on a surface of their own, brighter than a box to type in, so
+  a button no longer looks like a field. A folded block of settings inside
+  a section is titled at the rank of a subheading rather than a section, and
+  the pointer lights only its words rather than the whole row. A field's
+  explanation opens with an edge and a shadow, so it reads as something laid
+  over the form rather than a patch of it.
 - **Nine things the owner saw in the running window.** A field's
   explanation opens on the same raised surface as an open list, so it no
   longer lies flat on the section it covers. A list of formats keeps its

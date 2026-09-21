@@ -325,7 +325,6 @@ func (r *runner) refreshLine() {
 
 func newRunner(wait later) *runner {
 	r := &runner{fields: parts.NewFields(), line: &runLine{}}
-	r.fields.LabelColumn(labelColumn())
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)

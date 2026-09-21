@@ -197,6 +197,14 @@ func TestTheHeadRowDrawsItsStatesAndTheArrowFollows(t *testing.T) {
 	if want := parts.PaletteColour(theme.ColorNameHover, theme.VariantDark); back.FillColor != want {
 		t.Errorf("under the pointer the row's fill is %v, not the hover colour %v", back.FillColor, want)
 	}
+	// The fill is as wide as the words and no wider, since 2026-09-21: the
+	// owner's report from the running window was a hover the width of the
+	// form, which is enormous. The row is still the target - the head is as
+	// wide as the row - so the two widths are asked for apart: the head wide,
+	// its fill narrow.
+	if row, fill := head.Size().Width, back.Size().Width; fill >= row || fill < 1 {
+		t.Errorf("under the pointer the fill is %.0f px wide on a head %.0f px wide - the fill has to cover the words and not the row", fill, row)
+	}
 	if arrow.Resource.Name() == restingArrow {
 		t.Error("the arrow is inked the same under the pointer as at rest, so it does not follow the row")
 	}

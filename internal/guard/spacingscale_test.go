@@ -13,32 +13,31 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// A name stands level with its box, on one edge with every other box.
+// A name stands over its box, on one edge with it and with every other.
 //
-// GUI rule 13 in the owner's words: a form is a grid with a column of names,
-// values in a second column, names lined up with each other. Until
-// 2026-09-14 a name stood OVER its box, and this guard measured the gap
-// between the two against the gap between two fields, because those were the
-// two distances a stacked form has. A row has one: the space between two
-// rows. What holds a field together in a row is that its name and its box
-// share a line, and what lines the form up is that every box starts where
-// every other box starts.
+// Over since 2026-09-21, on the owner's decision from the running window
+// ("that is prettier"). Beside from 2026-09-14 to that day, in a column of
+// names, when this guard asked for the middle of the name to be the middle
+// of the box. Over before 2026-09-14 too - so the question this asks is the
+// one a stacked form has, written down this time so the third turn of the
+// wheel can read it: a name belongs to the box UNDER it, which means the gap
+// from a name down to its box has to be smaller than the gap from that box
+// down to the next name. A form where those two are equal is a list of
+// words and boxes with no pairing, and a form where the name is nearer the
+// box above it pairs every name with the wrong box.
 //
 // Three things, all read off the laid out screen rather than off the
 // constants, for the reason the section guards give below: a layout is free
 // to put a name anywhere, and reading the numbers back out of the package that
 // declares them proves they were declared, which is not the question.
 //
-// Level means the middle of the name is the middle of the box, to a pixel.
-// "Inside the box's height" was the first version and a mutation laying every
-// name at the top of its row passed it: a name 19 px tall at the top of a 32
-// px row has its middle 6 px above the box's, still inside, and a form where
-// every name floats above its box reads as the stacked form it replaced. One edge means every control of the screen begins
-// at one X, whatever the length of the name beside it - the column of names
-// is worked out from the widest name the window can show, so "Seed" and
-// "Output directory" put their boxes on the same line. Apart means two rows
-// have room between them, or the form is a list with no rhythm.
-func TestANameStandsLevelWithItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
+// Over means the name ends above the box begins. One edge means the name and
+// its box start on one X, and every box on the screen starts on that X - a
+// stacked form has no column of names to line up, so the left edge is the
+// only line there is, and a box indented under its name reads as a child of
+// it rather than as the value it holds. Apart means two fields have room
+// between them, or the form is a list with no rhythm.
+func TestANameStandsOverItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
 	generate := tabContent(t, content, text.TabOneTarget())
@@ -47,24 +46,39 @@ func TestANameStandsLevelWithItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 		text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
 	edges := map[float32][]string{}
 	var boxes []band
+	var nameGaps []float32
 	for _, label := range names {
 		name, box := nameAndBox(t, generate, label)
-		middle, boxMiddle := name.Y+name.Height/2, box.Y+box.Height/2
-		if off := middle - boxMiddle; off > 1 || off < -1 {
-			t.Errorf("%q has its middle at y=%.1f and its box its middle at y=%.1f, so the name is not level with the box",
-				label, middle, boxMiddle)
+		if name.Y+name.Height > box.Y {
+			t.Errorf("%q ends at y=%.1f and its box begins at y=%.1f, so the name does not stand over the box",
+				label, name.Y+name.Height, box.Y)
 		}
+		if off := name.X - box.X; off > 1 || off < -1 {
+			t.Errorf("%q starts at x=%.1f and its box at x=%.1f - a box not on its name's edge reads as indented under it",
+				label, name.X, box.X)
+		}
+		nameGaps = append(nameGaps, box.Y-(name.Y+name.Height))
 		edges[box.X] = append(edges[box.X], label)
 		boxes = append(boxes, box)
 	}
 	if len(edges) != 1 {
-		t.Errorf("the boxes on the generate screen start on %d different edges, and a form is a grid only while they start on one: %v",
+		t.Errorf("the boxes on the generate screen start on %d different edges, and a form lines up only while they start on one: %v",
 			len(edges), edges)
 	}
 	for i := 1; i < len(boxes); i++ {
 		if boxes[i].Y <= boxes[i-1].Y+boxes[i-1].Height {
 			t.Errorf("%q and %q are not apart: one box ends at %.1f and the next begins at %.1f",
 				names[i-1], names[i], boxes[i-1].Y+boxes[i-1].Height, boxes[i].Y)
+		}
+	}
+	// The pairing: a name is nearer the box under it than that box is to the
+	// next name. Asked between neighbours inside one section, because a
+	// section's edge is a bigger gap for a reason of its own.
+	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
+	for i, gap := range nameGaps {
+		if gap >= between {
+			t.Errorf("%q stands %.1f px over its box and the next name stands %.1f px under it, so nothing says which box the name belongs to",
+				names[i], gap, between)
 		}
 	}
 }

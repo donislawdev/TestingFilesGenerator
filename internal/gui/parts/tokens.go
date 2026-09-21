@@ -149,6 +149,8 @@ const (
 	// under the strip across the top. One pixel, and drawn as a filled
 	// rectangle rather than a stroke, so it is one pixel and not a blend.
 	Hairline = 1
+	// TipShadowDrop is how far below an explanation its shade shows.
+	TipShadowDrop = 3
 )
 
 // Widths and heights that are not distances.

@@ -10,24 +10,18 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
-// form is a set of fields with the column of names a screen would give them:
-// measured from the names the catalogue shows, the way a screen measures it
-// from every name it can show, so a row here stands where a row stands there.
-func form() *parts.Fields {
-	s := parts.NewFields()
-	s.LabelColumn(parts.WidestName("Size", "Name", "How many files", "Label in each file", "Compression", "Member size", "Password"))
-	return s
-}
+// form is a set of fields the way a screen builds them.
+func form() *parts.Fields { return parts.NewFields() }
 
-// A row of the form: the name in the column of names, the control beside it,
-// and whatever the row has to say about its value.
+// A field of the form: the name over the control, and under the control
+// whatever the field has to say about its value.
 func fields() Entry {
 	sizeRow := func(s *parts.Fields) fyne.CanvasObject {
 		e := parts.NewEntry()
 		e.SetText("10mb")
 		return s.Add("size", "Size", "10mb", parts.NoDetail, parts.Numeric(e))
 	}
-	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldRow", "RequiredMark", "Table"}, States: []State{
+	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldStack", "RequiredMark", "Table"}, States: []State{
 		{"a row", func() fyne.CanvasObject { return sizeRow(form()) }},
 		{"a row that has to be filled in", func() fyne.CanvasObject {
 			s := form()
