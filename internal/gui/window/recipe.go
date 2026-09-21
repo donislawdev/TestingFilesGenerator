@@ -154,7 +154,7 @@ type content struct {
 // anybody does a press of "Add a batch" to find out what the screen is. One is
 // also what the single batch screen shows, so the two read as one tool.
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
-	r := &Recipe{runner: newRunner(), host: host, tips: parts.NewTips()}
+	r := &Recipe{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
 	r.runner.settle = r.settle
 	r.runner.openFolder = host.OpenFolder
 	// A refusal about a size belongs on the box the switch is showing.
@@ -186,7 +186,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// It is disabled with the rest of the form while a run is going, because
 	// adding a batch mid run would rebuild the form under the run.
 	r.addBtn = parts.NewButton(parts.Secondary, text.ButtonAddBatch(), r.addBatch)
-	r.runner.alsoDisabled = append(r.runner.alsoDisabled, r.addBtn)
+	r.runner.busy.also = append(r.runner.busy.also, r.addBtn)
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
@@ -214,10 +214,6 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
-
-// Unscrolled is how tall this screen has to be for its form to show whole -
-// what a first start opens at, see firstOpening.
-func (r *Recipe) Unscrolled() float32 { return unscrolledHeight(r.body, r.scroll) }
 
 // FirstField is where the keyboard starts: the format of the first batch. There
 // is always a first batch - the last one cannot be removed.
@@ -387,7 +383,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 			// nothing further to add.
 			r.tips.Say(""), b.formatPick),
 		add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
-			r.tips.Say(text.DetailTargetID()), b.id),
+			r.tips.Say(text.DetailTargetID()), parts.Text(b.id)),
 		add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
 		// One way of saying how big, chosen from three, since 2026-08-25.
 		//
@@ -398,7 +394,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		// is a full row wide rather than a third of one.
 		r.sizeWayFor(b, at, add),
 		add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
-			r.tips.Say(text.DetailNameTemplate()), b.name),
+			r.tips.Say(text.DetailNameTemplate()), parts.Text(b.name)),
 	)
 
 	// A format that declares nothing has no settings section at all, so the
@@ -540,7 +536,7 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
 			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir)),
 		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
-			r.tips.Say(text.DetailManifest()), r.manifest),
+			r.tips.Say(text.DetailManifest()), parts.Text(r.manifest)),
 		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
 			r.tips.Say(text.DetailSeed()), parts.Numeric(r.seed)),
 		r.fields.AddToggle(recipe.KeyDefaultsLabel, text.FieldLabel(), "",

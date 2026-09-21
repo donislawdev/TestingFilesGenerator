@@ -167,6 +167,17 @@ const (
 	// number any of these fields accepts - the ceiling on files is seven digits
 	// and the largest size anybody types is eight.
 	NumericWidth = 140
+	// TextWidth is as wide as a box holding a short piece of text gets - a
+	// batch's name, the template its files are named by, the manifest's file
+	// name, an archive's password, a preset's list of sizes. Two number boxes
+	// and the gap between them, so a text box ends where a pair of numbers
+	// standing side by side would, and the column of controls keeps one
+	// right edge for everything but a path. Until 2026-09-21 these boxes
+	// took the whole row on the sentence that free text has no length to
+	// promise, and the owner's report from the running window was the
+	// obvious one: why are they so long. A path is the one value that can
+	// be, so a path still takes the row.
+	TextWidth = NumericWidth*2 + GapColumns
 	// GlyphButton is the side of the small square button that holds one
 	// glyph - the mark beside a field's name that opens its explanation. The
 	// glyph itself is the toolkit's inline icon, 20, and the square keeps two
@@ -201,6 +212,16 @@ const (
 	// gives ten rows at 600 px, eighteen at 1025 and twenty-three at 1300, and
 	// at 600 the list still ends above the buttons at the foot.
 	listShare = 0.5
+	// listOpensDownwardFrom is how many whole rows have to fit under a box
+	// for its list to open downward, cut to that room and scrolling, rather
+	// than upward into the room above. Decision of the owner, 2026-09-21,
+	// from the running window: the format list on the preset screen opened
+	// upward, over the question the preset asks, while the same list on the
+	// other screens opened downward - one control behaving two ways for a
+	// reason nobody could see. Upward is kept for the emergency alone, a box
+	// standing just above the bar at the foot, where fewer rows than this
+	// would fit. Five rows is enough to read a list and to see it scrolls.
+	listOpensDownwardFrom = 5
 	// rowPadding is the room above and below a list row's contents. Ours rather
 	// than the theme's, which is the entire point of that control: the theme's
 	// inner padding is what a box to type in and a button are also built from,

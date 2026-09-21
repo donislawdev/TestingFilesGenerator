@@ -86,7 +86,7 @@ func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
 	b.notes = parts.NewInnerFolding(text.SectionManifestNotes(),
 		parts.Note(text.NoteManifestOnly()),
 		add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
-			r.tips.Say(text.DetailGroup()), b.group),
+			r.tips.Say(text.DetailGroup()), parts.Text(b.group)),
 		add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
 			r.tips.Say(text.DetailExpected()), b.expected),
 		add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),

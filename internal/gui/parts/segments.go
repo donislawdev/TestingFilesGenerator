@@ -144,7 +144,7 @@ func (s *Segments) MouseOut() {
 // FocusGained draws the ring when the keyboard is what brought the focus here.
 // A press brings it quietly and the first key turns the ring on.
 func (s *Segments) FocusGained() {
-	if s.from.Quiet() {
+	if !s.from.Draws() {
 		return
 	}
 	s.mark()
@@ -155,9 +155,14 @@ func (s *Segments) mark() {
 	s.Refresh()
 }
 func (s *Segments) FocusLost() {
+	s.from.Lost(s.marked)
 	s.marked = false
 	s.Refresh()
 }
+
+// WindowReturning is the window saying the next FocusGained is its own
+// return to the front. See PointerFocus.
+func (s *Segments) WindowReturning() { s.from.WindowReturning() }
 
 func (s *Segments) TypedRune(rune) {}
 

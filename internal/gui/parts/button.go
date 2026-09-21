@@ -18,8 +18,9 @@ const (
 	// filled face in the accent colour, so the eye lands on it.
 	Primary Look = iota
 	// Secondary is a button beside the primary one - Preview, Choose, Add a
-	// batch. An outline round nothing, so it reads as a button without
-	// competing with the filled one.
+	// batch. A raised face in the surface a field has, with an edge, so it
+	// reads as a button without competing with the one in the accent colour.
+	// It was an outline round nothing until 2026-09-21 - see buttonFace.
 	Secondary
 	// Quiet is a button that is not about the work in front of you - Donate.
 	// Words with a surface only under the pointer, an outline round
@@ -403,8 +404,24 @@ func buttonFace(look Look, state buttonState) face {
 		}
 		return f
 	case Secondary:
+		// A filled face since 2026-09-21, on the owner's report from the
+		// running window: an outline round nothing, with bold words in it,
+		// read as a bordered word rather than as something to press -
+		// Duplicate, Choose, Preview, Add a batch, all of them. The fill is
+		// the surface a box to type in stands on, with the same edge, and
+		// that is deliberate rather than a shortcut: on the desktop this
+		// runs on a button and a field share a surface and are told apart by
+		// their shape, centred bold words against a value at the left. The
+		// note on Menu about a control you press drawn as one you type in
+		// was about a MENU, whose word sits at the left exactly as a field's
+		// does. The pointer lifts the face and a press lifts it further, the
+		// way the palette lightens every dark face (ColorNameHover and
+		// ColorNamePressed), worked out here as one opaque colour each.
 		f := face{ink: theme.ColorNameForeground, edge: PaletteColour(theme.ColorNameInputBorder, dark), edgeWidth: edgeWidth}
-		f.fill = pointerFill(state)
+		f.fill = PaletteColour(theme.ColorNameInputBackground, dark)
+		if wash := pointerFill(state); wash != color.Transparent {
+			f.fill = blended(f.fill, wash)
+		}
 		return f
 	default: // Quiet and Glyph: no resting edge, a surface only under the pointer.
 		ink := theme.ColorNameForeground

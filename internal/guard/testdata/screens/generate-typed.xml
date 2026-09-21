@@ -180,18 +180,20 @@
 														</widget>
 													</container>
 													<container pos="183,0" size="604x28">
-														<widget size="604x28" type="*parts.Entry">
-															<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="602x26"/>
-															<rectangle radius="6" size="602x27" strokeColor="inputBorder" strokeWidth="1"/>
-															<widget pos="0,1" size="604x26" type="*widget.Scroll">
-																<widget size="604x26" type="*widget.entryContent">
-																	<widget size="604x26" type="*widget.RichText">
-																		<text pos="6,5" size="27x16">files</text>
+														<container size="296x28">
+															<widget size="296x28" type="*parts.Entry">
+																<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="294x26"/>
+																<rectangle radius="6" size="294x27" strokeColor="inputBorder" strokeWidth="1"/>
+																<widget pos="0,1" size="296x26" type="*widget.Scroll">
+																	<widget size="296x26" type="*widget.entryContent">
+																		<widget size="296x26" type="*widget.RichText">
+																			<text pos="6,5" size="27x16">files</text>
+																		</widget>
 																	</widget>
 																</widget>
 															</widget>
-														</widget>
-														<rectangle radius="6" size="604x28"/>
+															<rectangle radius="6" size="296x28"/>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -206,21 +208,23 @@
 														</widget>
 													</container>
 													<container pos="183,0" size="604x28">
-														<widget size="604x28" type="*parts.Entry">
-															<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="602x26"/>
-															<rectangle radius="6" size="602x27" strokeColor="inputBorder" strokeWidth="1"/>
-															<widget pos="0,1" size="604x26" type="*widget.Scroll">
-																<widget size="604x26" type="*widget.entryContent">
-																	<widget size="604x26" type="*widget.RichText">
-																		<text color="placeholder" pos="6,5" size="65x16">files_0001</text>
-																	</widget>
-																	<widget size="604x26" type="*widget.RichText">
-																		<text pos="6,5" size="0x16"></text>
+														<container size="296x28">
+															<widget size="296x28" type="*parts.Entry">
+																<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="294x26"/>
+																<rectangle radius="6" size="294x27" strokeColor="inputBorder" strokeWidth="1"/>
+																<widget pos="0,1" size="296x26" type="*widget.Scroll">
+																	<widget size="296x26" type="*widget.entryContent">
+																		<widget size="296x26" type="*widget.RichText">
+																			<text color="placeholder" pos="6,5" size="65x16">files_0001</text>
+																		</widget>
+																		<widget size="296x26" type="*widget.RichText">
+																			<text pos="6,5" size="0x16"></text>
+																		</widget>
 																	</widget>
 																</widget>
 															</widget>
-														</widget>
-														<rectangle radius="6" size="604x28"/>
+															<rectangle radius="6" size="296x28"/>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -317,7 +321,7 @@
 															</widget>
 															<widget pos="525,0" size="78x28" type="*parts.Button">
 																<rectangle pos="-2,-2" radius="6" size="82x32" strokeColor="hyperlink"/>
-																<rectangle radius="6" size="78x28" strokeColor="inputBorder" strokeWidth="1"/>
+																<rectangle fillColor="inputBackground" radius="6" size="78x28" strokeColor="inputBorder" strokeWidth="1"/>
 																<text alignment="center" bold pos="6,6" size="66x16">Choose...</text>
 															</widget>
 														</container>
@@ -370,7 +374,7 @@
 														<rectangle radius="6" size="24x24"/>
 														<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
 														<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
-														<image fillMode="contain" pos="6,6" rsc="confirmIcon" size="12x12" themed="foregroundOnPrimary"/>
+														<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 													</widget>
 												</container>
 											</container>
@@ -391,7 +395,7 @@
 												<spacer size="320x28"/>
 												<widget pos="320,0" size="67x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="71x32" strokeColor="hyperlink"/>
-													<rectangle radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
+													<rectangle fillColor="inputBackground" radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
 													<text alignment="center" bold pos="6,6" size="55x16">Preview</text>
 												</widget>
 												<widget pos="392,0" size="75x28" type="*parts.Button">

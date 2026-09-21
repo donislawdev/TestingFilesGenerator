@@ -154,6 +154,11 @@ func newDetailButton(detail Detail) *DetailButton {
 // drawn is this type's business.
 func (b *DetailButton) Explanation() string { return b.detail.Text }
 
+// Shown is the box this button has put on the sheet, or nil while there is
+// none - for a guard measuring what the explanation is drawn ON, which the
+// words alone cannot say.
+func (b *DetailButton) Shown() fyne.CanvasObject { return b.shown }
+
 // MouseIn shows the explanation when the pointer arrives.
 func (b *DetailButton) MouseIn(e *desktop.MouseEvent) {
 	b.Button.MouseIn(e)
@@ -211,7 +216,9 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	}
 	driver := app.Driver()
 
-	box := container.NewStack(panelSurface(), Padded(Inset, Prose(detail)))
+	// On the surface an open list floats on, not on a panel's - see
+	// floatingSurface for the report that moved it there.
+	box := container.NewStack(floatingSurface(), Padded(Inset, Prose(detail)))
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the

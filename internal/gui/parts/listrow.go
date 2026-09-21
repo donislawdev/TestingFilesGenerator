@@ -102,26 +102,37 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 	r.back.Resize(size)
 	r.tick.Resize(fyne.NewSquareSize(icon))
 
-	// The tick stands at the far end of the row, and the words start at the
-	// gutter - where the word in the box above the list starts. Until
+	// Two shapes of row, decided by whether the list draws pictures, and both
+	// are the owner's, from the running window.
+	//
+	// A row WITHOUT a picture puts its words at the gutter - where the word
+	// in the box above the list starts - and the tick at the far end. Until
 	// 2026-09-16 the tick was in front, and its column was kept whether or
 	// not anything in the list was ticked, so the words of every list stood a
-	// column to the right of the word in the box. On a list of formats the
-	// picture in front made that look intended, and on a list with no picture
-	// and nothing chosen it read as words floating in a rectangle - the
-	// owner's report from the running window (O220). The column is still
-	// kept, on the right, so a row does not change width when its value is
-	// chosen.
-	r.tick.Move(fyne.NewPos(size.Width-rowGutter-icon, (size.Height-icon)/2))
-	left, right := float32(rowGutter), float32(rowGutter+icon+rowGap)
-
-	// The kind sits in front of the words, and takes no room at all where
-	// there is none - so a list of paper sizes is drawn exactly as it was.
+	// column to the right of the word in the box, and a list with no picture
+	// and nothing chosen read as words floating in a rectangle (O220).
+	//
+	// A row WITH a picture keeps the tick in front, then the picture, then
+	// the words - the shape the list of formats had before that day, which is
+	// the shape the owner had said looked right. Moving its tick to the end
+	// with the others pulled the picture and the word a column to the left,
+	// and the report of 2026-09-21 was that the list had been broken: what
+	// stood in the middle of the box now hugged its edge. The column in front
+	// makes the picture and the word sit where they did, and the tick fills
+	// it or leaves it empty without the row changing width.
+	//
+	// Either way the row is the same width for a chosen value as for any
+	// other, because the tick's column is kept in both shapes.
+	left, right := float32(rowGutter), float32(rowGutter)
 	if r.row.kind != nil {
+		r.tick.Move(fyne.NewPos(left, (size.Height-icon)/2))
+		left += icon + rowGap
 		r.kind.Resize(fyne.NewSquareSize(icon))
 		r.kind.Move(fyne.NewPos(left, (size.Height-icon)/2))
 		left += icon + rowGap
 	} else {
+		r.tick.Move(fyne.NewPos(size.Width-rowGutter-icon, (size.Height-icon)/2))
+		right += icon + rowGap
 		r.kind.Resize(fyne.NewSquareSize(0))
 	}
 

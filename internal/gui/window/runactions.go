@@ -47,7 +47,7 @@ func (r *runner) PressGenerate() { pressIfLive(r.generateBtn) }
 
 func (r *runner) PressPreview() { pressIfLive(r.previewBtn) }
 
-func (r *runner) PressCancel() { pressIfLive(r.cancelBtn) }
+func (r *runner) PressCancel() { pressIfLive(r.busy.cancel) }
 
 // pressIfLive presses a button somebody could have pressed.
 //
@@ -75,8 +75,12 @@ func (r *runner) actions() fyne.CanvasObject {
 	// Everything that is not one of these buttons went to the bar's rail on
 	// 2026-08-19 - see parts.ActionBar. It used to be laid over this row, which
 	// kept it inside the form's column and so a margin away from the edge.
-	return container.NewHBox(
-		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.cancelBtn, r.openBtn, layout.NewSpacer())
+	//
+	// Kept by the busy state as well, because the toolkit does not lay the
+	// row out again when a button in it is hidden - see busy.relay.
+	r.busy.row = container.NewHBox(
+		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.busy.cancel, r.openBtn, layout.NewSpacer())
+	return r.busy.row
 }
 
 // offerTheFolder shows the way to the files, once there are some.
@@ -92,6 +96,7 @@ func (r *runner) offerTheFolder(res *engine.Result) {
 		return
 	}
 	r.openBtn.Show()
+	r.busy.relay()
 }
 
 // hideTheFolder takes the offer away when the next run starts, so the button
@@ -99,4 +104,5 @@ func (r *runner) offerTheFolder(res *engine.Result) {
 func (r *runner) hideTheFolder() {
 	r.wroteInto = ""
 	r.openBtn.Hide()
+	r.busy.relay()
 }

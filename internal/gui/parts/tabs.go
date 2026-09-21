@@ -256,7 +256,7 @@ func (w *TabWord) MouseOut() {
 
 // FocusGained draws the mark only for the keyboard. See PointerFocus.
 func (w *TabWord) FocusGained() {
-	if w.from.Quiet() {
+	if !w.from.Draws() {
 		return
 	}
 	w.mark()
@@ -268,9 +268,14 @@ func (w *TabWord) mark() {
 }
 
 func (w *TabWord) FocusLost() {
+	w.from.Lost(w.marked)
 	w.marked = false
 	w.Refresh()
 }
+
+// WindowReturning is the window saying the next FocusGained is its own
+// return to the front. See PointerFocus.
+func (w *TabWord) WindowReturning() { w.from.WindowReturning() }
 
 // Quietly runs a focus change without drawing the mark. See FocusQuietly.
 func (w *TabWord) Quietly(focus func()) { w.from.Quietly(focus) }

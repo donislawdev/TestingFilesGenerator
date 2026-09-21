@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -224,9 +223,7 @@ func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// The surface is drawn here rather than left to the popup, so that the
 	// colour a guard measures for "an open list is told from the form behind
 	// it" is the colour actually on the screen.
-	back := canvas.NewRectangle(Theme().Color(theme.ColorNameMenuBackground, theme.VariantDark))
-	back.CornerRadius = RadiusField
-	return widget.NewSimpleRenderer(container.NewStack(back, container.NewThemeOverride(l.list, rowTheme{})))
+	return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), container.NewThemeOverride(l.list, rowTheme{})))
 }
 
 // rowTheme is our theme with the room between rows taken out.

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/url"
 	"path/filepath"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -85,6 +86,15 @@ type desktop struct {
 // renderer actually loaded, because a window that says it draws in software
 // while the driver draws it would be saying something untrue.
 func (d desktop) SoftwareRendering() bool { return d.software }
+
+// Later fires on a clock and lands on the interface thread through the
+// toolkit's queue, which is what fyne.Do is for. Calling it off stops the
+// clock, and a function already on its way finds the state it checks
+// before it acts - see busy.set.
+func (d desktop) Later(after time.Duration, then func()) func() {
+	timer := time.AfterFunc(after, func() { fyne.Do(then) })
+	return func() { timer.Stop() }
+}
 
 // Remembered is the window size and output directory, kept by the toolkit in
 // the file its folder picker already writes.
@@ -292,6 +302,13 @@ func run(launch Launch, errOut io.Writer) int {
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
 	host := desktop{Window: w, software: software}
+	// The window coming to the front is not the keyboard arriving, and only
+	// the window can tell the two apart - see WindowReturning for the
+	// measurement. The foreground hook runs just before the driver's call, so
+	// this is where the control is told what is coming. The registration is
+	// behind cgo like the remembering above, so a guard reads this line out
+	// of the source and calls what it registers with a canvas of its own.
+	a.Lifecycle().SetOnEnteredForeground(func() { WindowReturning(w.Canvas()) })
 	// What a first start opens at, if nothing is remembered: nothing for the
 	// catalogue, which opens at the ceiling, and what the screens want for
 	// the ordinary window.

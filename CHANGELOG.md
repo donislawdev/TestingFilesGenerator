@@ -16,6 +16,27 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Nine things the owner saw in the running window.** A field's
+  explanation opens on the same raised surface as an open list, so it no
+  longer lies flat on the section it covers. A list of formats keeps its
+  tick in front of the picture and the word, the shape it had before the
+  tick moved to the end of every row. A list opens downward whenever a few
+  rows fit under its box, shorter and scrolling, and turns upward only for
+  a box standing just over the bar at the foot. A menu no longer opens
+  marked as holding the keyboard when the window comes to the front, which
+  is what made the first menu on the first screen blue and every other one
+  grey - the mark is drawn for the keyboard alone, as it always was meant to
+  be. A box for a name, a template, a file name, a password or a list of
+  sizes is the width of two number boxes rather than of the whole row, and
+  only a path still takes the row. The tick in a checked box fills its
+  square. The first start is sized for the first screen rather than the
+  tallest one - see the entry on the window's height further down. Preview,
+  Choose, Duplicate and Add a batch have a raised
+  face rather than an outline round nothing. And the busy face - the frozen
+  form, Cancel, the bar - waits a moment before it appears, so a preview
+  that is over in a blink no longer flashes it and takes it back, and the
+  run buttons stand where they stood once the work is done.
+
 - **The window draws its own buttons, switches and choosers.** A button now
   has one filled face for the action that does the work and an outline for the
   ones beside it, lightens under the pointer, darkens when pressed, and shows a
@@ -84,13 +105,15 @@ because it turns other people's test suites red.
   binary is about 800 kB larger for it. The command line binary carries no
   font and is unchanged.
 
-- **The window opens as tall as its screens need, and no taller than a
-  1080p screen.** A first start used to open at a height measured against the
-  forms of an earlier version, and left a band of nothing under the form once
-  the forms grew shorter. It now opens exactly tall enough for the tallest
-  screen to show whole - today that is 917 px - and never taller than fits a
-  1080p screen with its taskbar. A window you have resized still comes back at
-  the size you left it.
+- **The window opens as tall as the screen it opens on needs, and no taller
+  than a 1080p screen.** A first start used to open at a height measured
+  against the forms of an earlier version, and left a band of nothing under
+  the form once the forms grew shorter. It now opens exactly tall enough for
+  the first screen to show whole - today that is 851 px - and never taller
+  than fits a 1080p screen with its taskbar. The taller screens scroll a
+  little on arrival, which the batch screen does from the second batch on in
+  any case. A window you have resized still comes back at the size you left
+  it.
 
 - **The files inside an archive are a table with one row of headings.** The
   table on the batch screen named every column again in every row, so two

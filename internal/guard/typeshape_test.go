@@ -35,11 +35,14 @@ import (
 // Down is routine. Up is the owner's decision, the same as every other ceiling
 // in this package.
 const (
-	// Measured 2026-09-07. Both are internal/gui/window.runner, which is the
-	// screen that drives a run - it holds the widgets, the progress state and
-	// the cancel plumbing at once.
-	mostMethods = 28
-	mostFields  = 22
+	// Measured 2026-09-21. Until then both were internal/gui/window.runner,
+	// which is the screen that drives a run - it held the widgets, the
+	// progress state and the cancel plumbing at once, and stood ON both
+	// ceilings. The busy state and its four controls left it that day for a
+	// type of their own (runbusy.go), and the ratchet moved down to the next
+	// widest: parts.Fields by methods, window.batch by fields.
+	mostMethods = 27
+	mostFields  = 21
 
 	// What counts as crowding, in the shape this package already uses
 	// everywhere else: an ABSOLUTE number rather than a percentage of the

@@ -96,6 +96,7 @@ func NotDrawn() []Reason {
 		{"Tab", "data: one screen and the word that leads to it, drawn by Tabs"},
 		{"Look", "an enum: which face a Button wears, every value drawn under Button"},
 		{"PointerFocus", "a piece inside a control, knowing what put the keyboard there - no picture of its own"},
+		{"Returnable", "an interface: a control the window can tell it is coming back to the front, nothing of its own to draw"},
 		{"Shortcuts", "a keyboard map: nothing to draw, and saying so is the point of this row"},
 	}
 }
@@ -111,6 +112,7 @@ func LayoutOnly() []Reason {
 		{"Indented", "the same left edge as the fields inside a panel"},
 		{"Sized", "one width, given"},
 		{"Numeric", "the width a number needs"},
+		{"Text", "the width a short piece of text needs - a name, a template, a file name"},
 		{"Padded", "one distance of the scale round its content"},
 		{"Stacked", "panels one under another"},
 		{"Screen", "the readable width round a head and its sections"},

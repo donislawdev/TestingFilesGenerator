@@ -1,7 +1,7 @@
-<canvas padded size="1100x9527">
+<canvas padded size="1100x9564">
 	<content>
-		<container pos="4,4" size="1092x9519">
-			<container pos="136,0" size="820x9519">
+		<container pos="4,4" size="1092x9556">
+			<container pos="136,0" size="820x9556">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
 						<widget size="788x24" type="*container.ThemeOverride">
@@ -114,7 +114,7 @@
 								<container pos="0,18" size="788x28">
 									<widget size="75x28" type="*parts.Button">
 										<rectangle pos="-2,-2" radius="6" size="79x32" strokeColor="hyperlink"/>
-										<rectangle radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
+										<rectangle fillColor="inputBackground" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
 										<text alignment="center" bold pos="6,6" size="63x16">Generate</text>
 									</widget>
 								</container>
@@ -132,7 +132,7 @@
 								<container pos="0,18" size="788x28">
 									<widget size="75x28" type="*parts.Button">
 										<rectangle pos="-2,-2" radius="6" size="79x32" strokeColor="hyperlink"/>
-										<rectangle fillColor="hover" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
+										<rectangle fillColor="rgba(82,82,87,255)" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
 										<text alignment="center" bold pos="6,6" size="63x16">Generate</text>
 									</widget>
 								</container>
@@ -150,7 +150,7 @@
 								<container pos="0,18" size="788x28">
 									<widget size="75x28" type="*parts.Button">
 										<rectangle pos="-2,-2" radius="6" size="79x32" strokeColor="hyperlink"/>
-										<rectangle fillColor="pressed" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
+										<rectangle fillColor="rgba(106,106,110,255)" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
 										<text alignment="center" bold pos="6,6" size="63x16">Generate</text>
 									</widget>
 								</container>
@@ -168,7 +168,7 @@
 								<container pos="0,18" size="788x28">
 									<widget size="75x28" type="*parts.Button">
 										<rectangle pos="-2,-2" radius="6" size="79x32" strokeColor="hyperlink" strokeWidth="2"/>
-										<rectangle radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
+										<rectangle fillColor="inputBackground" radius="6" size="75x28" strokeColor="inputBorder" strokeWidth="1"/>
 										<text alignment="center" bold pos="6,6" size="63x16">Generate</text>
 									</widget>
 								</container>
@@ -294,7 +294,7 @@
 								<container pos="0,18" size="788x28">
 									<widget size="616x28" type="*parts.Button">
 										<rectangle pos="-2,-2" radius="6" size="620x32" strokeColor="hyperlink"/>
-										<rectangle radius="6" size="616x28" strokeColor="inputBorder" strokeWidth="1"/>
+										<rectangle fillColor="inputBackground" radius="6" size="616x28" strokeColor="inputBorder" strokeWidth="1"/>
 										<text alignment="center" bold pos="6,6" size="604x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
 									</widget>
 								</container>
@@ -698,7 +698,7 @@
 										<rectangle radius="6" size="24x24"/>
 										<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
 										<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
-										<image fillMode="contain" pos="6,6" rsc="confirmIcon" size="12x12" themed="foregroundOnPrimary"/>
+										<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 									</widget>
 								</container>
 							</container>
@@ -735,7 +735,7 @@
 										<rectangle radius="6" size="24x24"/>
 										<rectangle radius="4" size="24x24" strokeColor="hyperlink" strokeWidth="2"/>
 										<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
-										<image fillMode="contain" pos="6,6" rsc="confirmIcon" size="12x12" themed="foregroundOnPrimary"/>
+										<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 									</widget>
 								</container>
 							</container>
@@ -1136,86 +1136,86 @@
 																	<widget size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">avif</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">avif</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,28" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">bmp</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">bmp</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,56" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">csv</text>
+																			<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">csv</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,84" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="112,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-																			<image pos="8,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">docx</text>
+																			<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																			<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">docx</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,112" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">gif</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">gif</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,140" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">html</text>
+																			<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">html</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,168" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">ico</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">ico</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,196" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">jpg</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">jpg</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,224" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">json</text>
+																			<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">json</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,252" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">jxl</text>
+																			<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">jxl</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,280" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">log</text>
+																			<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">log</text>
 																		</widget>
 																	</widget>
 																	<widget pos="0,308" size="140x28" type="*widget.listItem">
 																		<widget size="140x28" type="*parts.ListRow">
 																			<rectangle radius="6" size="140x28"/>
-																			<image pos="8,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																			<text pos="36,5" size="68x16">md</text>
+																			<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																			<text pos="64,5" size="68x16">md</text>
 																		</widget>
 																	</widget>
 																	<widget size="0x0" type="*widget.Separator">
@@ -1729,7 +1729,7 @@
 												<container size="252x28">
 													<widget size="67x28" type="*parts.Button">
 														<rectangle pos="-2,-2" radius="6" size="71x32" strokeColor="hyperlink"/>
-														<rectangle radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
+														<rectangle fillColor="inputBackground" radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
 														<text alignment="center" bold pos="6,6" size="55x16">Remove</text>
 													</widget>
 												</container>
@@ -1774,7 +1774,7 @@
 												<container size="252x28">
 													<widget size="67x28" type="*parts.Button">
 														<rectangle pos="-2,-2" radius="6" size="71x32" strokeColor="hyperlink"/>
-														<rectangle radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
+														<rectangle fillColor="inputBackground" radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
 														<text alignment="center" bold pos="6,6" size="55x16">Remove</text>
 													</widget>
 												</container>
@@ -1821,7 +1821,7 @@
 										</widget>
 										<widget pos="536,0" size="252x28" type="*parts.Button">
 											<rectangle pos="-2,-2" radius="6" size="256x32" strokeColor="hyperlink"/>
-											<rectangle radius="6" size="252x28" strokeColor="inputBorder" strokeWidth="1"/>
+											<rectangle fillColor="inputBackground" radius="6" size="252x28" strokeColor="inputBorder" strokeWidth="1"/>
 											<text alignment="center" bold pos="92,6" size="66x16">Choose...</text>
 										</widget>
 									</container>
@@ -2074,21 +2074,23 @@
 													</widget>
 												</container>
 												<container pos="171,0" size="616x28">
-													<widget size="616x28" type="*parts.Entry">
-														<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="614x26"/>
-														<rectangle radius="6" size="614x27" strokeColor="inputBorder" strokeWidth="1"/>
-														<widget pos="0,1" size="616x26" type="*widget.Scroll">
-															<widget size="616x26" type="*widget.entryContent">
-																<widget size="616x26" type="*widget.RichText">
-																	<text color="placeholder" pos="6,5" size="165x16">worked out from the size</text>
-																</widget>
-																<widget size="616x26" type="*widget.RichText">
-																	<text pos="6,5" size="0x16"></text>
+													<container size="296x28">
+														<widget size="296x28" type="*parts.Entry">
+															<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="294x26"/>
+															<rectangle radius="6" size="294x27" strokeColor="inputBorder" strokeWidth="1"/>
+															<widget pos="0,1" size="296x26" type="*widget.Scroll">
+																<widget size="296x26" type="*widget.entryContent">
+																	<widget size="296x26" type="*widget.RichText">
+																		<text color="placeholder" pos="6,5" size="165x16">worked out from the size</text>
+																	</widget>
+																	<widget size="296x26" type="*widget.RichText">
+																		<text pos="6,5" size="0x16"></text>
+																	</widget>
 																</widget>
 															</widget>
 														</widget>
-													</widget>
-													<rectangle radius="6" size="616x28"/>
+														<rectangle radius="6" size="296x28"/>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -2329,7 +2331,7 @@
 									</container>
 									<container size="788x65">
 										<container size="380x65">
-											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="380x65"/>
+											<rectangle fillColor="menuBackground" radius="6" size="380x65"/>
 											<container size="380x65">
 												<widget pos="16,16" size="348x33" type="*container.ThemeOverride">
 													<container size="348x33">
@@ -3331,7 +3333,7 @@
 															<spacer size="292x28"/>
 															<widget pos="292,0" size="67x28" type="*parts.Button">
 																<rectangle pos="-2,-2" radius="6" size="71x32" strokeColor="hyperlink"/>
-																<rectangle radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
+																<rectangle fillColor="inputBackground" radius="6" size="67x28" strokeColor="inputBorder" strokeWidth="1"/>
 																<text alignment="center" bold pos="6,6" size="55x16">Preview</text>
 															</widget>
 															<widget pos="364,0" size="75x28" type="*parts.Button">
@@ -3423,12 +3425,12 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,8985" size="820x212">
-					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x212"/>
-					<container size="820x212">
-						<container pos="16,16" size="788x180">
+				<container pos="0,8985" size="820x231">
+					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x231"/>
+					<container size="820x231">
+						<container pos="16,16" size="788x199">
 							<text bold size="788x20" textSize="17">Not drawn, and why</text>
-							<container pos="0,36" size="788x144">
+							<container pos="0,36" size="788x162">
 								<container size="788x14">
 									<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
 										<container size="777x14">
@@ -3518,6 +3520,18 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
+													<text color="placeholder" size="631x14" textSize="12">Returnable - an interface: a control the window can tell it is coming back to the front, nothing of its own to draw</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
+									<text color="placeholder" size="6x14" textSize="12">•</text>
+								</container>
+								<container pos="0,148" size="788x14">
+									<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
+										<container size="777x14">
+											<widget size="777x14" type="*widget.Label">
+												<widget size="777x14" type="*widget.RichText">
 													<text color="placeholder" size="469x14" textSize="12">Shortcuts - a keyboard map: nothing to draw, and saying so is the point of this row</text>
 												</widget>
 											</widget>
@@ -3529,12 +3543,12 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,9222" size="820x305">
-					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x305"/>
-					<container size="820x305">
-						<container pos="16,16" size="788x273">
+				<container pos="0,9240" size="820x323">
+					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x323"/>
+					<container size="820x323">
+						<container pos="16,16" size="788x291">
 							<text bold size="788x20" textSize="17">Layout only, and why</text>
-							<container pos="0,36" size="788x236">
+							<container pos="0,36" size="788x255">
 								<container size="788x14">
 									<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
 										<container size="777x14">
@@ -3612,7 +3626,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="297x14" textSize="12">Padded - one distance of the scale round its content</text>
+													<text color="placeholder" size="433x14" textSize="12">Text - the width a short piece of text needs - a name, a template, a file name</text>
 												</widget>
 											</widget>
 										</container>
@@ -3624,7 +3638,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="203x14" textSize="12">Stacked - panels one under another</text>
+													<text color="placeholder" size="297x14" textSize="12">Padded - one distance of the scale round its content</text>
 												</widget>
 											</widget>
 										</container>
@@ -3636,7 +3650,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="328x14" textSize="12">Screen - the readable width round a head and its sections</text>
+													<text color="placeholder" size="203x14" textSize="12">Stacked - panels one under another</text>
 												</widget>
 											</widget>
 										</container>
@@ -3648,7 +3662,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="337x14" textSize="12">BesideFields - the room to the right of the column of names</text>
+													<text color="placeholder" size="328x14" textSize="12">Screen - the readable width round a head and its sections</text>
 												</widget>
 											</widget>
 										</container>
@@ -3660,7 +3674,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="385x14" textSize="12">WithRoomForARun - the room under a form for the bar to speak into</text>
+													<text color="placeholder" size="337x14" textSize="12">BesideFields - the room to the right of the column of names</text>
 												</widget>
 											</widget>
 										</container>
@@ -3672,7 +3686,7 @@
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">
 												<widget size="777x14" type="*widget.RichText">
-													<text color="placeholder" size="411x14" textSize="12">Flush - a label kept by a screen, on the edge every other word stands on</text>
+													<text color="placeholder" size="385x14" textSize="12">WithRoomForARun - the room under a form for the bar to speak into</text>
 												</widget>
 											</widget>
 										</container>
@@ -3680,6 +3694,18 @@
 									<text color="placeholder" size="6x14" textSize="12">•</text>
 								</container>
 								<container pos="0,222" size="788x14">
+									<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
+										<container size="777x14">
+											<widget size="777x14" type="*widget.Label">
+												<widget size="777x14" type="*widget.RichText">
+													<text color="placeholder" size="411x14" textSize="12">Flush - a label kept by a screen, on the edge every other word stands on</text>
+												</widget>
+											</widget>
+										</container>
+									</widget>
+									<text color="placeholder" size="6x14" textSize="12">•</text>
+								</container>
+								<container pos="0,240" size="788x14">
 									<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
 										<container size="777x14">
 											<widget size="777x14" type="*widget.Label">

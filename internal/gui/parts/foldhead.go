@@ -90,7 +90,7 @@ func (h *FoldHead) MouseOut() {
 
 // FocusGained draws the mark only for the keyboard. See PointerFocus.
 func (h *FoldHead) FocusGained() {
-	if h.from.Quiet() {
+	if !h.from.Draws() {
 		return
 	}
 	h.marked = true
@@ -98,9 +98,14 @@ func (h *FoldHead) FocusGained() {
 }
 
 func (h *FoldHead) FocusLost() {
+	h.from.Lost(h.marked)
 	h.marked = false
 	h.Refresh()
 }
+
+// WindowReturning is the window saying the next FocusGained is its own
+// return to the front. See PointerFocus.
+func (h *FoldHead) WindowReturning() { h.from.WindowReturning() }
 
 // TypedRune answers nothing, for the reason Button gives: one press of the
 // space bar reaches a focused control twice from the desktop driver, as the

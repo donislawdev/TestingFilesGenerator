@@ -1,10 +1,14 @@
 package guard
 
 import (
+	"image/color"
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
@@ -209,5 +213,81 @@ func TestASegmentedSwitchMovesTheChoiceWithTheArrows(t *testing.T) {
 	s.TypedKey(&fyne.KeyEvent{Name: fyne.KeyHome})
 	if s.Selected != "one" {
 		t.Errorf("Home left the switch on %q", s.Selected)
+	}
+}
+
+// The tick of a switch is drawn on the whole of its square.
+//
+// Reported by the owner from the running window on 2026-09-21: the mark in a
+// checked box was too small to read as one. Measured: the picture was drawn a
+// step inside the square on every side, 12 px in a square of 20, and the
+// toolkit's glyph fills about half of its own picture - so the tick was 7 px
+// across. The glyph's own margin is all the room it needs, and this holds the
+// picture to the square's edges.
+func TestTheTickOfASwitchFillsItsSquare(t *testing.T) {
+	s := parts.NewToggle(func(bool) {})
+	s.SetChecked(true)
+	s.Resize(s.MinSize())
+	var square *canvas.Rectangle
+	var tick *canvas.Image
+	for _, o := range test.WidgetRenderer(s).Objects() {
+		switch drawn := o.(type) {
+		case *canvas.Rectangle:
+			if drawn.FillColor == parts.PaletteColour(theme.ColorNamePrimary, theme.VariantDark) {
+				square = drawn
+			}
+		case *canvas.Image:
+			tick = drawn
+		}
+	}
+	if square == nil || tick == nil {
+		t.Fatalf("a checked switch draws no filled square or no tick (square %v, tick %v)", square != nil, tick != nil)
+	}
+	if tick.Size() != square.Size() || tick.Position() != square.Position() {
+		t.Errorf("the tick is %v at %v and the square %v at %v - a tick drawn inside a margin of the square is a mark too small to read",
+			tick.Size(), tick.Position(), square.Size(), square.Position())
+	}
+}
+
+// A secondary button wears a face at rest, and the pointer lifts it.
+//
+// Reported by the owner from the running window on 2026-09-21: Duplicate,
+// Choose, Preview and Add a batch looked very weak. Measured on the shot: an
+// outline one pixel wide round nothing, with bold words inside - a bordered
+// word, not a thing to press. The face is the surface a box to type in has,
+// and it lightens under the pointer and again under a press, so the three
+// states are three colours and not one. Asked of the drawn rectangle, so a
+// face computed and not painted goes red.
+func TestASecondaryButtonWearsAFaceAtRest(t *testing.T) {
+	b := parts.NewButton(parts.Secondary, "Preview", func() {})
+	b.Resize(b.MinSize())
+	faceOf := func() color.Color {
+		for _, o := range test.WidgetRenderer(b).Objects() {
+			if rect, is := o.(*canvas.Rectangle); is && rect.StrokeWidth > 0 {
+				return rect.FillColor
+			}
+		}
+		t.Fatal("the button draws no edged rectangle, so it has no face to measure")
+		return nil
+	}
+	rest := faceOf()
+	if want := parts.PaletteColour(theme.ColorNameInputBackground, theme.VariantDark); rest != want {
+		t.Errorf("at rest the face is %v and should be the surface of a box to type in, %v - an outline round nothing reads as a bordered word", rest, want)
+	}
+	b.MouseIn(&desktop.MouseEvent{})
+	hovered := faceOf()
+	if hovered == rest {
+		t.Error("the pointer arriving changed nothing about the face, so nobody can see the button noticed it")
+	}
+	b.MouseDown(&desktop.MouseEvent{})
+	if pressed := faceOf(); pressed == hovered || pressed == rest {
+		t.Errorf("a press draws %v, which is the hovered or the resting face - a press has to be told from the hover it follows", pressed)
+	}
+	b.MouseUp(&desktop.MouseEvent{})
+	b.MouseOut()
+	b.Disable()
+	// No fill is nil or transparent, both of which the toolkit draws as nothing.
+	if off := faceOf(); off != nil && off != color.Transparent {
+		t.Errorf("a disabled button still wears a face (%v), and a face on a control that does nothing is a control that lies", off)
 	}
 }
