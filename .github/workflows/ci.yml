@@ -57,6 +57,15 @@ jobs:
       # Nothing of ours is involved and there is nothing of ours to fix, so that
       # one runner pays for a C toolchain it already has.
       CGO_ENABLED: ${{ matrix.os == 'macos-latest' && '1' || '0' }}
+      # The one guard that builds the window WITH cgo is read by the imports
+      # job below instead, and this asks it to skip here. Measured 2026-09-17:
+      # with CGO off, nothing else in this job compiles the OpenGL binding or
+      # GLFW, so that guard was the run's one cold cgo build - 822 s for the
+      # Windows test step against 434 s warm, four minutes under the timeout,
+      # and cold again after every change to go.sum. The variable is named in
+      # exactly one place, internal/guard/noimport_test.go, and a guard there
+      # holds this job to setting it and the imports job to not setting it.
+      TFG_IMPORT_TABLE_JOB: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
@@ -311,6 +320,54 @@ jobs:
           else
             go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui
           fi
+        shell: bash
+
+  imports:
+    name: import table of the window binary
+    # One guard, in a job of its own, because it is the one guard that builds
+    # the window WITH cgo: TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime
+    # links tfg-gui.exe the way a release does and reads its import table,
+    # which is how the software renderer's whole premise is held (O218). In
+    # the test matrix that build was the run's only cold cgo build - measured
+    # 2026-09-17, 822 s for the Windows test step against 434 s warm, four
+    # minutes under the timeout, and cold again after every change to go.sum,
+    # which is every Dependabot pull request. The matrix asks the guard to
+    # skip there (TFG_IMPORT_TABLE_JOB), and this job runs it.
+    #
+    # The cache is this job's own. setup-go keys its cache on the hash of the
+    # files named here (source of v7.0.0, cache-restore.ts), and the matrix
+    # job on the same runner keys on go.sum alone. Under one key the matrix
+    # would save first, without a single cgo object, and this job would pay
+    # the cold build on every run. The second file is the sum of the patched
+    # OpenGL binding, which is what the cgo build actually compiles - so the
+    # key moves when either input to those objects does.
+    #
+    # Two things make the step fail rather than pass on nothing, and both were
+    # measured before they were written: go test with a -run pattern that
+    # matches no test exits 0 saying "no tests to run", and the guard skips
+    # with exit 0 on a runner without gcc. So the log is read for the PASS
+    # line of the one test this job exists for, under pipefail so a failing
+    # go test is not hidden behind tee. The name in the pattern is held equal
+    # to the function in internal/guard/noimport_test.go by a guard.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            third_party/go-gl-gl/PATCH.md
+
+      - name: the window binary imports no opengl32.dll at load time
+        run: |
+          set -euo pipefail
+          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -run '^TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime$' -v -timeout 12m 2>&1 | tee import-table.log
+          grep -q -- '--- PASS: TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime' import-table.log
         shell: bash
 
   govulncheck:

@@ -330,7 +330,7 @@
   },
   "RendererStartingAgain": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
-    "other": "The graphics driver on this computer offers no OpenGL 2.1. Starting again with the software renderer shipped beside the program."
+    "other": "The first attempt to open a window did not succeed - usually a graphics driver without OpenGL 2.1. Starting again with the software renderer shipped beside the program."
   },
   "SectionCarriedBeside": {
     "description": "The heading over a group of fields.",
