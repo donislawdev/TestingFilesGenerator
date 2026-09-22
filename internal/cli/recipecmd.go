@@ -12,17 +12,28 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
-func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
+// loadRecipe reads a recipe file for a run, through the door that knows
+// presets: a file that builds on one comes back with the preset it built on,
+// so the run can record which numbers were the preset's own.
+//
+// The hash is of the file as written, whether or not it builds on a preset.
+// It answers the question a pipeline asks - was this manifest made from the
+// recipe committed here - and the manifest's preset record, with the tool's
+// version beside it, says the rest. The owner's decision of 2026-09-22, in
+// docs/EXTENDS-WITH-2026-09-22.md section 2.4.
+func loadRecipe(path string, errOut io.Writer) (*preset.Read, string, int) {
 	src, err := readRecipe(path)
 	if err != nil {
 		said, code := recipeReadFailure(path, err)
 		fmt.Fprintf(errOut, "tfg: %s\n", said)
 		return nil, "", code
 	}
-	rec, err := recipe.Parse(src, path)
+	read, err := preset.ReadRecipe(src, path)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, "", classify(err)
@@ -32,7 +43,7 @@ func loadRecipe(path string, errOut io.Writer) (*recipe.Recipe, string, int) {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return nil, "", classify(err)
 	}
-	return rec, hash, ExitOK
+	return read, hash, ExitOK
 }
 
 // validate runs the checks a run would run and writes nothing at all, so it
@@ -66,10 +77,11 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return ExitUsage
 	}
 
-	rec, hash, code := loadRecipeReporting(path, *asJSON, errOut)
+	read, hash, code := loadRecipeReporting(path, *asJSON, errOut)
 	if code != ExitOK {
 		return code
 	}
+	rec := read.Recipe
 
 	// The schema and the semantics both passed. Planning is what proves the
 	// rest: a size below the minimum of its format, a format nobody
@@ -85,11 +97,17 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return planningRefusal(err, path, *asJSON, errOut)
 	}
 
+	// A file that builds on a preset says so here the way the manifest will
+	// say it, and its notes go where they go on a run: to a person, on
+	// standard error, before the files exist as well as after.
+	sayNotes(read.Notes(), errOut)
+
 	if *asJSON {
 		return writeJSON(out, errOut, validateReport{
 			Recipe: path, Valid: true, RecipeHash: hash,
 			Targets: len(rec.Targets), Files: len(planned),
 			TotalBytes: engine.TotalBytes(planned),
+			Preset:     record(read.Expansion),
 			Problems:   []validateProblem{},
 		}, ExitOK)
 	}
@@ -97,6 +115,9 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fmt.Fprintf(out, "%s is valid: %s, %s, %s total\n%s\n",
 		path, core.Count(len(rec.Targets), "target", "targets"), core.Count(len(planned), "file", "files"),
 		core.ExactBytes(engine.TotalBytes(planned)), hash)
+	if read.Expansion != nil {
+		fmt.Fprintf(out, "built on preset %s\n", read.Expansion.Preset.ID)
+	}
 	return ExitOK
 }
 
@@ -138,13 +159,17 @@ func planningOptions(rec *recipe.Recipe) engine.Options {
 // rather than as one blob of prose, because RC7 already reports them all at
 // once and a script should not have to split the message back apart.
 type validateReport struct {
-	Recipe     string            `json:"recipe"`
-	Valid      bool              `json:"valid"`
-	RecipeHash string            `json:"recipe_hash,omitempty"`
-	Targets    int               `json:"targets,omitempty"`
-	Files      int               `json:"files,omitempty"`
-	TotalBytes int64             `json:"total_bytes,omitempty"`
-	Problems   []validateProblem `json:"problems"`
+	Recipe     string `json:"recipe"`
+	Valid      bool   `json:"valid"`
+	RecipeHash string `json:"recipe_hash,omitempty"`
+	Targets    int    `json:"targets,omitempty"`
+	Files      int    `json:"files,omitempty"`
+	TotalBytes int64  `json:"total_bytes,omitempty"`
+	// Preset is the preset the recipe builds on, in the shape the manifest
+	// records it - id, settled parameters, and which of them stood in from
+	// their defaults. Absent when the recipe stands alone.
+	Preset   *manifest.Preset  `json:"preset,omitempty"`
+	Problems []validateProblem `json:"problems"`
 }
 
 // validateProblem carries the three parts every refusal in this tool has: what
@@ -212,7 +237,7 @@ func addressOf(err error) string {
 // loadRecipeReporting is loadRecipe with the option of a machine readable
 // refusal. A recipe with five problems has to arrive as five entries, not as
 // one string a script would have to take apart.
-func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Recipe, string, int) {
+func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*preset.Read, string, int) {
 	if !asJSON {
 		return loadRecipe(path, errOut)
 	}
@@ -222,7 +247,7 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 		return nil, "", writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
 			Problems: []validateProblem{{What: said}}}, code)
 	}
-	rec, err := recipe.Parse(src, path)
+	read, err := preset.ReadRecipe(src, path)
 	if err != nil {
 		report := validateReport{Recipe: path, Valid: false, Problems: []validateProblem{}}
 		var invalid *recipe.ValidationError
@@ -240,7 +265,7 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*recipe.Re
 		return nil, "", writeJSON(errOut, errOut, validateReport{Recipe: path, Valid: false,
 			Problems: []validateProblem{{What: err.Error()}}}, classify(err))
 	}
-	return rec, hash, ExitOK
+	return read, hash, ExitOK
 }
 
 // recipeCmd groups the operations that work on a recipe file itself rather

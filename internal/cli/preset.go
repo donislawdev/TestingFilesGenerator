@@ -28,11 +28,26 @@ import (
 // which is the output contract and no business of an input concept. The drift
 // this invites is watched behaviourally instead - a guard runs the same preset
 // from both surfaces and compares the records they produce.
+//
+// Nil in, nil out: a recipe file that stands alone has no preset to record,
+// and the manifest field is absent rather than empty for it.
 func record(e *preset.Expansion) *manifest.Preset {
+	if e == nil {
+		return nil
+	}
 	return &manifest.Preset{
 		ID:         e.Preset.ID,
 		Parameters: map[string]string(e.Settled),
 		Defaulted:  e.Defaulted,
+	}
+}
+
+// sayNotes tells a person what a preset invented, on standard error, where
+// a run's other asides go. One place for the three roads that say it, so
+// the prefix cannot drift between them.
+func sayNotes(notes []string, errOut io.Writer) {
+	for _, note := range notes {
+		fmt.Fprintf(errOut, "note: %s\n", note)
 	}
 }
 
@@ -270,9 +285,12 @@ func explainUndefinedFlag(fs *flag.FlagSet, args []string, errOut io.Writer) boo
 	if name == "" {
 		return false
 	}
+	// The second sentence names both roads, because since 2026-09-22 a
+	// recipe file can build on the preset too - and beside a file the flag
+	// does not exist either, the file's with section is where the value goes.
 	fmt.Fprintf(errOut,
-		"tfg: --%s is a parameter of the preset %s, so it only exists beside it. Add --preset %s, or drop --%s.\n",
-		name, owner, owner, name)
+		"tfg: --%s is a parameter of the preset %s, so it only exists beside it. Add --preset %s, put %s under with: in a recipe that extends it, or drop --%s.\n",
+		name, owner, owner, name, name)
 	return true
 }
 
@@ -331,9 +349,7 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 		return nil, classify(err)
 	}
 
-	for _, note := range expanded.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	sayNotes(expanded.Notes(), errOut)
 	opt.Preset = record(expanded)
 	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
 }

@@ -53,7 +53,14 @@ type Document struct {
 	Manifest string
 	// Label is defaults.label, and a pointer because a switch has no third
 	// position for silence. Nil leaves the defaults section out.
-	Label   *bool
+	Label *bool
+	// Extends is the id of the preset the recipe builds on, and empty when
+	// it stands alone. With is what the screen typed into that preset's
+	// parameters, by name, with the ones left empty absent - so that a
+	// parameter nobody stated is written nowhere and stands in from its
+	// default, which is what the manifest then records as defaulted.
+	Extends string
+	With    map[string]string
 	Targets []TargetDraft
 }
 
@@ -105,6 +112,14 @@ func Compose(d Document) ([]byte, error) {
 	if d.Seed != "" {
 		doc = append(doc, yaml.MapItem{Key: "seed", Value: d.Seed})
 	}
+	// The preset before the targets, because that is the order the run
+	// takes them in.
+	if d.Extends != "" {
+		doc = append(doc, yaml.MapItem{Key: KeyExtends, Value: presetScheme + d.Extends})
+	}
+	if with := withSection(d); len(with) > 0 {
+		doc = append(doc, yaml.MapItem{Key: KeyWith, Value: with})
+	}
 	if d.Label != nil {
 		doc = append(doc, yaml.MapItem{Key: "defaults",
 			Value: yaml.MapSlice{{Key: "label", Value: *d.Label}}})
@@ -124,6 +139,18 @@ func Compose(d Document) ([]byte, error) {
 	doc = append(doc, yaml.MapItem{Key: "targets", Value: targets})
 
 	return yaml.Marshal(doc)
+}
+
+// withSection is the preset's parameters, sorted for the reason properties
+// are: this text is hashed into the manifest. Written whenever the map holds
+// anything, extends or no extends - a with section without extends is a
+// refusal Parse words, and dropping it here would turn that into silence.
+func withSection(d Document) yaml.MapSlice {
+	var with yaml.MapSlice
+	for _, name := range sortedKeys(d.With) {
+		with = append(with, yaml.MapItem{Key: name, Value: d.With[name]})
+	}
+	return with
 }
 
 func outputSection(d Document) yaml.MapSlice {
@@ -244,6 +271,10 @@ func refuseUnwritable(d Document) error {
 	check("seed", d.Seed)
 	check("output.dir", d.OutDir)
 	check("output.manifest", d.Manifest)
+	check(KeyExtends, d.Extends)
+	for _, name := range sortedKeys(d.With) {
+		check(KeyWith+"."+name, d.With[name])
+	}
 
 	for i, t := range d.Targets {
 		where := targetSpot(i, t.ID)

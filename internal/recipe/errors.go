@@ -161,6 +161,11 @@ func (p *problems) notYetIn(where spot, setting, why, fix string) {
 type spot struct {
 	says string
 	key  string
+	// whole means the address is the whole of this spot whatever setting is
+	// named under it. A preset's target has no boxes of its own on any
+	// screen, so every refusal about it lands on the one box that is about
+	// the preset - see presetTargetSpot.
+	whole bool
 }
 
 func (s spot) String() string { return s.says }
@@ -169,6 +174,9 @@ func (s spot) String() string { return s.says }
 // targets[2].size. A dotted setting is passed through, for the settings that
 // have a part of their own such as expected.reason.
 func (s spot) of(setting string) string {
+	if s.whole {
+		return s.key
+	}
 	if s.key == "" {
 		return setting
 	}
@@ -178,10 +186,31 @@ func (s spot) of(setting string) string {
 // entry names one item of a list inside this spot, counted from one the way the
 // prose counts, so the two halves agree about which entry is meant.
 func (s spot) entry(list string, index int) spot {
+	if s.whole {
+		return spot{says: fmt.Sprintf("%s: %s entry %d", s.says, list, index+1), key: s.key, whole: true}
+	}
 	return spot{
 		says: fmt.Sprintf("%s: %s entry %d", s.says, list, index+1),
 		key:  fmt.Sprintf("%s.%s[%d]", s.key, list, index+1),
 	}
+}
+
+// presetTargetSpot is where one target the preset contributed is.
+//
+// Its prose says whose the target is, because a person looking at the file
+// will not find it there, and its address is the extends key - the one box a
+// screen has that is about the preset. The position counts inside the
+// preset's own list, which is what "tfg preset eject" prints.
+func presetTargetSpot(index int, id string) spot {
+	s := spot{
+		says:  fmt.Sprintf("the preset's target %d", index+1),
+		key:   KeyExtends,
+		whole: true,
+	}
+	if id != "" {
+		s.says = fmt.Sprintf("the preset's target %q", id)
+	}
+	return s
 }
 
 // targetSpot is where one entry of the targets list is.

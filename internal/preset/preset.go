@@ -122,8 +122,12 @@ func (p Preset) Check(args Args) error {
 		}
 		if raw := args[name]; raw != "" {
 			if bad := param.Allows(raw); bad != "" {
+				// The remedy comes from the declaration, as it does for a
+				// format's property. Error leaves it out, so the command
+				// line reads as it always did, and a form gets the fourth
+				// part of the refusal under the box.
 				return &format.PropertyValueError{
-					Format: p.ID, Key: name, Value: raw, Reason: bad,
+					Format: p.ID, Key: name, Value: raw, Reason: bad, Remedy: param.Instead(),
 				}
 			}
 		}

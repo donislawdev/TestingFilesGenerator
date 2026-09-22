@@ -172,14 +172,31 @@ func (e *TooLargeError) Error() string {
 // once rather than the first one. Fixing a recipe one error per run is the
 // cheapest way to make someone stop using the tool.
 func Parse(src []byte, name string) (*Recipe, error) {
+	raw, err := decode(src, name)
+	if err != nil {
+		return nil, err
+	}
+	p := &problems{name: name}
+	rec := raw.validate(p, 0)
+	if err := p.err(); err != nil {
+		return nil, err
+	}
+	return rec, nil
+}
+
+// decode reads a file into the raw recipe, refusing what is not a recipe
+// document at all: too big, not UTF-8, nested past the limit, more than one
+// document, a key no version of the schema has. Every door comes through here,
+// so the two that read a file - Parse and ParseExtending - cannot come to
+// accept different files.
+func decode(src []byte, name string) (rawRecipe, error) {
+	var raw rawRecipe
 	// Checked here as well as before the read, because this is the door every
 	// caller comes through - including the fuzz target, which hands over bytes
 	// that never were a file.
 	if int64(len(src)) > MaxBytes {
-		return nil, &TooLargeError{Name: name, Bytes: int64(len(src))}
+		return raw, &TooLargeError{Name: name, Bytes: int64(len(src))}
 	}
-
-	var raw rawRecipe
 
 	// A recipe is UTF-8, and anything else is refused rather than read as best
 	// it can be.
@@ -196,7 +213,7 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// one step earlier: what somebody typed is what they get, or they are told
 	// why not.
 	if !utf8.Valid(src) {
-		return nil, &SyntaxError{Name: name, Detail: "this file is not valid UTF-8. Every character that could not be read would come back as a replacement mark, so a name written with accents would produce a file called something else. Save the file as UTF-8 and try again"}
+		return raw, &SyntaxError{Name: name, Detail: "this file is not valid UTF-8. Every character that could not be read would come back as a replacement mark, so a name written with accents would produce a file called something else. Save the file as UTF-8 and try again"}
 	}
 
 	// An editor that writes a byte order mark would otherwise hand the decoder
@@ -209,7 +226,7 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// for the two shapes this and the budget below answer, and why one number
 	// cannot answer both.
 	if depth := nestingDepth(src); depth > MaxNestingDepth {
-		return nil, &TooDeepError{Name: name, Depth: depth}
+		return raw, &TooDeepError{Name: name, Depth: depth}
 	}
 
 	// One file is one recipe. Everything after a document separator would be
@@ -217,22 +234,16 @@ func Parse(src []byte, name string) (*Recipe, error) {
 	// asked for and a run that says it went fine.
 	doc, err := oneDocument(src, name)
 	if err != nil {
-		return nil, err
+		return raw, err
 	}
 
 	// Strict decoding turns an unknown key into an error. A typo in
 	// "siez: 10mb" accepted in silence gives a file of the default size and an
 	// hour spent wondering why the test passes when it should not.
 	if err := decodeStrict(doc, &raw); err != nil {
-		return nil, &SyntaxError{Name: name, Detail: strings.TrimRight(err.Error(), "\n")}
+		return raw, &SyntaxError{Name: name, Detail: strings.TrimRight(err.Error(), "\n")}
 	}
-
-	p := &problems{name: name}
-	rec := raw.validate(p)
-	if err := p.err(); err != nil {
-		return nil, err
-	}
-	return rec, nil
+	return raw, nil
 }
 
 // decodeStrict runs the YAML decoder and turns a crash inside it into an error.
@@ -314,9 +325,9 @@ type rawRecipe struct {
 
 	AllowNondeterministic *scalar `yaml:"allow_nondeterministic"`
 
-	Policy  map[string]any `yaml:"policy"`
-	Extends *scalar        `yaml:"extends"`
-	With    map[string]any `yaml:"with"`
+	Policy  map[string]any    `yaml:"policy"`
+	Extends *scalar           `yaml:"extends"`
+	With    map[string]scalar `yaml:"with"`
 
 	Output *rawOutput `yaml:"output"`
 }
@@ -332,7 +343,12 @@ type rawOutput struct {
 	SplitThreshold *scalar `yaml:"split_threshold"`
 }
 
-func (raw rawRecipe) validate(p *problems) *Recipe {
+// fromPreset is how many of the targets came from the preset the recipe
+// extends, and they are the first ones. It decides two things: the position a
+// refusal about a target of the file carries, which counts from the file's
+// own first target rather than from the merged list, and the words a refusal
+// about a preset's target gets, since there is no line in the file to point at.
+func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 	rec := &Recipe{
 		Version:  SchemaVersion,
 		Defaults: Defaults{Label: true},
@@ -361,6 +377,22 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 	raw.refuseUnsupported(p)
 	raw.applySettings(p, rec)
 
+	// A recipe that builds on a preset is read by ParseExtending, which is
+	// handed the preset's targets and clears the key before coming here.
+	// Reaching this with the key still set means a caller read such a file
+	// with Parse - which cannot expand a preset, because this package cannot
+	// import that one - and the honest answer is that the targets are
+	// missing, not that the key is unknown, and not that the recipe asks for
+	// no files: the sentence below about targets would contradict the
+	// README, which says a recipe of extends alone is legal. Until
+	// 2026-09-22 both keys were refused here as "not in this build yet".
+	if ext := raw.extension(p); ext != nil {
+		p.add(KeyExtends, fmt.Sprintf("this recipe builds on preset:%s, and the preset's targets were not supplied", ext.Preset),
+			"a recipe that builds on a preset is read by a reader that expands the preset first, and this one does not",
+			"read the file with \"tfg generate\" or \"tfg validate\", which do")
+		return rec
+	}
+
 	if len(raw.Targets) == 0 {
 		p.add("targets", "the recipe asks for no files",
 			"a recipe without targets has nothing to produce",
@@ -368,20 +400,55 @@ func (raw rawRecipe) validate(p *problems) *Recipe {
 		return rec
 	}
 
-	seen := map[string]bool{}
+	// Which target first used an id, by position in the merged list. The
+	// position is what tells a clash with the preset's target apart from a
+	// clash with another target of the file - and the two get different
+	// words, because only one of them has a line the reader can change.
+	seen := map[string]int{}
 	for i, rt := range raw.Targets {
-		t := rt.validate(p, i, rec.Defaults)
+		at := spotOfTarget(i, fromPreset)
+		t := rt.validate(p, at, rec.Defaults)
 		if t.ID != "" {
-			if seen[t.ID] {
-				p.add(targetSpot(i, t.ID).of("id"), fmt.Sprintf("target {setting} %q is used twice", t.ID),
-					"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
-					"give one of them a different {setting}")
+			if first, dup := seen[t.ID]; dup {
+				usedTwice(p, at(t.ID), t.ID, first < fromPreset && i >= fromPreset)
+			} else {
+				seen[t.ID] = i
 			}
-			seen[t.ID] = true
 		}
 		rec.Targets = append(rec.Targets, t)
 	}
 	return rec
+}
+
+// usedTwice refuses the second target carrying an id, in one of two wordings:
+// a clash with the preset's target has no line in the file to point at for
+// the first of the two, so it says whose the id is and where the way out
+// lies. ofThePreset says which.
+func usedTwice(p *problems, where spot, id string, ofThePreset bool) {
+	if ofThePreset {
+		p.add(where.of("id"), fmt.Sprintf("%s has the {setting} of a target the preset already builds", where),
+			"the preset's targets come first and every {setting} anchors a seed, so a second one would be a target nobody can tell from the first",
+			"give it a different {setting}, or leave the preset's target out by ejecting the preset and editing the recipe")
+		return
+	}
+	p.add(where.of("id"), fmt.Sprintf("target {setting} %q is used twice", id),
+		"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
+		"give one of them a different {setting}")
+}
+
+// spotOfTarget is where the target at position i of the merged list is, as a
+// function of its id - the id is known only once the target has been read.
+//
+// A target of the file is at its position IN THE FILE, which is i less the
+// preset's targets, so that the address a refusal carries is the box a screen
+// registered and the number in the prose is the one a person counts to. A
+// target of the preset has no line in the file, so its refusal is addressed to
+// extends - the one box that is about it - and its prose says whose it is.
+func spotOfTarget(i, fromPreset int) func(id string) spot {
+	if i < fromPreset {
+		return func(id string) spot { return presetTargetSpot(i, id) }
+	}
+	return func(id string) spot { return targetSpot(i-fromPreset, id) }
 }
 
 // refuseUnsupported names every top level key the document describes and this
@@ -407,18 +474,6 @@ func (raw rawRecipe) refuseUnsupported(p *problems) {
 	if raw.Policy != nil {
 		p.notYet("policy", "unspecified expectations are left in the manifest for the consumer to settle",
 			"remove the section - the expected field on a target already works")
-	}
-	// The reason these two give used to be "presets are not in this build",
-	// and presets arrived on 2026-08-05 while this sentence stayed. A recipe
-	// still cannot name one - that is what is missing - so the key is refused
-	// for the same reason as before and the sentence now says which.
-	if raw.Extends != nil {
-		p.notYet("extends", "a recipe cannot build on a preset yet, though the command line can run one",
-			"run \"tfg preset eject <id> > recipe.yaml\" and edit the targets, or write them out in full")
-	}
-	if raw.With != nil {
-		p.notYet("with", "a recipe cannot build on a preset yet, though the command line can run one",
-			"run \"tfg preset eject <id> > recipe.yaml\" and edit the targets, or write them out in full")
 	}
 }
 

@@ -65,6 +65,16 @@ var reachableFromTheWindow = []string{
 	// menu.
 	"preset:size-boundaries.format",
 
+	// A recipe that builds on a preset, since 2026-09-22: the switch and the
+	// menu on the batch screen are the extends key, and the chosen preset's
+	// parameters under it are the with section, drawn from the declaration
+	// the way the preset screen draws them. Pressed rather than looked at:
+	// TestARecipeBuiltOnAPresetFromTheWindowGivesTheBytesTheFileGives runs
+	// the same recipe from the batch screen and from a file and compares
+	// the manifests.
+	"recipe:extends",
+	"recipe:with",
+
 	// What to break about the files, drawn from the damage registry rather
 	// than listed in the window, with the parameters of whatever is chosen
 	// drawn by the same call that draws a format's settings.
@@ -229,15 +239,16 @@ var reachableFromTheWindow = []string{
 // parity, written down rather than estimated.
 //
 // Some entries are here for a second reason - the engine refuses them too, so
-// neither surface has them. extends, with, policy, engine, targets.fill,
-// defaults.fill and output.split_threshold are all answered today with "not in
-// this build yet".
+// neither surface has them. policy, engine, targets.fill, defaults.fill and
+// output.split_threshold are all answered today with "not in this build yet".
 //
-// That is seven, and it was eight until 2026-09-09: targets.mutations was
-// refused with a message pointing at a module that will never exist, and it is
-// now targets.damage, which both surfaces reach. It left this list rather than
-// moving down it, which is what this list is for - the distance to parity is
-// only allowed to shrink.
+// That is five. It was seven until 2026-09-22, when extends and with were
+// built - engine, command line and the batch screen's base section in one
+// change - and both left this list. It was eight until 2026-09-09:
+// targets.mutations was refused with a message pointing at a module that
+// will never exist, and it is now targets.damage, which both surfaces reach.
+// Each left this list rather than moving down it, which is what this list is
+// for - the distance to parity is only allowed to shrink.
 //
 // The sentence said seven once before, until 2026-08-18, and was wrong: it had
 // left out output.split_threshold, which recipe.go has refused all along.
@@ -252,13 +263,11 @@ var notYetReachable = []string{
 	"recipe:allow_nondeterministic",
 	"recipe:defaults.fill",
 	"recipe:engine",
-	"recipe:extends",
 	"recipe:locale",
 	"recipe:output.split_threshold",
 	"recipe:policy",
 	"recipe:targets.fill",
 	"recipe:version",
-	"recipe:with",
 }
 
 // capabilities is everything the engine can be asked for, gathered from the

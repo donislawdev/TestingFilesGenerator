@@ -241,8 +241,11 @@ func describePreset(e *preset.Expansion, b budget, out io.Writer) {
 			fmt.Fprintf(out, "  - %s\n", c)
 		}
 	}
-	fmt.Fprintf(out, "\nRun \"tfg preset eject %s\" for the recipe, or \"tfg generate --preset %s\" to produce the files.\n",
-		p.ID, p.ID)
+	// Three roads to the same set, and all three are named: the third
+	// arrived on 2026-09-22 and a setting nobody knows they can reach is a
+	// setting that is not there.
+	fmt.Fprintf(out, "\nRun \"tfg preset eject %s\" for the recipe, \"tfg generate --preset %s\" to produce the files, or write \"extends: preset:%s\" in a recipe of your own.\n",
+		p.ID, p.ID, p.ID)
 }
 
 func presetEject(args []string, out, errOut io.Writer) int {
@@ -268,9 +271,7 @@ Usage:
 	// The note goes to the error channel. The recipe is the data here, and a
 	// sentence about a number we chose has no business inside a file somebody
 	// is about to commit.
-	for _, note := range expanded.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	sayNotes(expanded.Notes(), errOut)
 	if _, err := out.Write(expanded.Source); err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot write the recipe: %s\n", describeError(err))
 		return ExitIO

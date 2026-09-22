@@ -489,6 +489,41 @@ func NoteManifestOnly() string {
 		"These describe the case. They go into the manifest and change nothing in the files.")
 }
 
+// SectionBase heads the part of the recipe screen that builds on a preset.
+//
+// A recipe may start from a preset's set and add its own batches after it -
+// the recipe key is extends, and this is the same thing on the screen. It
+// stands above the batches because that is the order the run takes them in:
+// the preset's targets first, then the batches.
+func SectionBase() string { return say("SectionBase", "Build on a preset") }
+
+// NoteBase is the sentence inside that section. It describes the switch,
+// because the switch is the state: a preset is always chosen once the menu
+// is there, and "unchosen" - which the first wording said - was a state the
+// screen does not have. Pointed out by an outside review of #119.
+func NoteBase() string {
+	return say("NoteBase",
+		"With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole recipe.")
+}
+
+// FieldBuildOnPreset names the switch that turns the section on. Off is the
+// ordinary recipe, on is one that carries extends.
+func FieldBuildOnPreset() string { return say("FieldBuildOnPreset", "Start from a preset") }
+func DetailBuildOnPreset() string {
+	return say("DetailBuildOnPreset",
+		"Off, the batches below are the whole recipe. On, the chosen preset's files come first and the batches are added after them.")
+}
+
+// FieldBasePreset names the box choosing the preset to build on. A different
+// name from the preset screen's, because that one asks which set to make and
+// this one asks what to make a set on top of.
+func FieldBasePreset() string { return say("FieldBasePreset", "Preset to build on") }
+func HintBasePreset() string  { return say("HintBasePreset", "Its files come first.") }
+func DetailBasePreset() string {
+	return say("DetailBasePreset",
+		"The settings under it are the preset's own. One left empty takes its default, and the manifest records which ones did.")
+}
+
 // Buttons on the recipe screen.
 func ButtonAddBatch() string       { return say("ButtonAddBatch", "Add a batch") }
 func ButtonRemoveBatch() string    { return say("ButtonRemoveBatch", "Remove") }

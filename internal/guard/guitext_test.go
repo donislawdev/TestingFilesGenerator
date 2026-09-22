@@ -78,7 +78,8 @@ var notWords = map[string]string{
 	`": "`:                 "what joins a file name to what the system said about it, in an error nobody reads as prose",
 	`"GetSystemDirectoryW"`: "the Windows entry point that says where the system keeps its own " +
 		"libraries, asked for by name because that is how the loader takes it",
-	`"preset"`: "the key the preset field is registered under, not a label",
+	`"preset"`:            "the key the preset field is registered under, not a label",
+	`"start_from_preset"`: "the key the batch screen's switch to build on a preset is registered under, not a label",
 	`"outputDirectory"`: "the name the window files the last output directory under, never shown. " +
 		"Translating a storage key would lose what was kept the day somebody changed language",
 	`"windowWidth"`:  "the name the window files its width under, never shown",

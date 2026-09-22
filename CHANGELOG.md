@@ -175,6 +175,28 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A recipe can build on a preset.** Two keys the recipe reader used to
+  refuse as not built yet now work: `extends: preset:<id>` names the preset
+  and `with:` fills its parameters, written the way the flags take them
+  (`limit: 5mb`, `spread: 1B,1kb,1mb`, `format: png`). The preset's files
+  come first and the recipe's own `targets` are added after them, so the
+  file is the same run as `tfg preset eject` with the extra targets typed
+  under it, byte for byte, and shorter. A target whose `id` the preset
+  already uses is refused rather than replaced, `with` without `extends` is
+  refused, and `extends` names a preset and nothing else yet - not another
+  file. A recipe with `extends` and no `targets` of its own is legal, which
+  is how a preset run is committed to a repository. The manifest records the
+  preset under `run.preset` with the parameters left out listed as
+  `defaulted`, as a `--preset` run does, and `run.recipe_hash` is the hash
+  of the file as written. `tfg validate --json` carries the same `preset`
+  block. On the desktop window, the batch screen has a section "Build on a
+  preset": a switch, the preset, and its parameters drawn under it. A preset
+  flag beside a recipe file (`tfg generate r.yaml --limit 5mb`) is refused
+  with a sentence saying the value goes under `with`.
+- **The batch screen's "Label in each file" switch starts on.** It started
+  off, while the single batch screen and a recipe file with no `defaults`
+  section both have the label on - so the same recipe run from that screen
+  gave different bytes. All three now agree.
 - **Every control shows where the keyboard is and answers the pointer.** Every
   place the keyboard can land - a box, a menu, a switch, a button, the
   segmented switch, a word on the tab strip - draws the same 2 px ring when a

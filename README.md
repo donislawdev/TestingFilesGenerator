@@ -428,6 +428,8 @@ tfg generate fixtures.yaml
 | `seed` | the number that makes a run repeatable. Same seed, same bytes |
 | `defaults.label` | write the self describing label inside each file. Default `true` |
 | `targets` | the list of things to produce. See below |
+| `extends` | a preset to build on, as `preset:size-boundaries`. Its files come first and your `targets` are added after them. See [Building on a preset](#building-on-a-preset) |
+| `with` | the preset's parameters, written the way the flags take them: `limit: 5mb`, `spread: 1B,1kb,1mb`, `format: png`. One left out stands in from its default, and the manifest says so |
 | `output.dir` | where the files and the manifest go. A relative path is read from the directory you run in, not from the one the recipe sits in |
 | `output.manifest` | manifest file name. Default `manifest.json` |
 
@@ -483,11 +485,39 @@ A reason names **the rule in play**, not the verdict. That is why the same
 reason can sit under either outcome - a file one byte under a limit is
 `accept`, and the rule it is about is still `size_limit`.
 
+### Building on a preset
+
+A recipe can start from a preset's set and add its own files:
+
+```yaml
+version: 1
+seed: 7
+extends: preset:size-boundaries
+with:
+  limit: 5mb
+  format: png
+targets:
+  - id: our-legacy-format
+    format: tiff
+    count: 1
+    size: 3mb
+```
+
+This is the same run as `tfg preset eject size-boundaries --limit 5mb --format png`
+with the extra target typed under it, byte for byte. The file is shorter, it
+says which question the set answers, and the manifest records the preset under
+`run.preset` with the parameters you left out listed as `defaulted`. A target
+whose `id` the preset already uses is refused, never silently replaced. A
+recipe with `extends` and no `targets` of its own is legal, and it is how a
+preset run is committed to a repository. The `--limit` and other preset flags
+do not apply beside a recipe file, and the recipe's `with` is where they go.
+
 ### Not built yet
 
 These keys are recognised and **refused with a message saying so**, never
-ignored quietly: `extends`, `with`, `policy`, `engine`, `defaults.fill`,
-`fill` on a target, `mutations`, `output.split_threshold`.
+ignored quietly: `policy`, `engine`, `defaults.fill`, `fill` on a target,
+`output.split_threshold`. `extends` names a preset and nothing else yet, so a
+recipe cannot build on another file.
 
 ## 📁 Formats in detail
 

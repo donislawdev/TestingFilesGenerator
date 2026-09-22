@@ -10,6 +10,8 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
+	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -56,13 +58,18 @@ type Recipe struct {
 
 	host Host
 
+	// base is the preset the recipe builds on, if it builds on one. Drawn
+	// above the batches because the run takes the preset's targets first.
+	base *base
+
 	batches []*batch
 
-	// batchBox and outBox are refilled together by rebuild, and they have to be:
+	// baseBox, batchBox and outBox are refilled together by rebuild, and they have to be:
 	// the address of a setting carries the position of its batch, so the whole
 	// registry is built again whenever the list changes. A section built once and
 	// left alone would hold controls the registry had forgotten, which is a
 	// control whose refusal has nowhere to go.
+	baseBox  *fyne.Container
 	batchBox *fyne.Container
 	outBox   *fyne.Container
 
@@ -176,9 +183,16 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// must fill this in" looked the same. See the note on newBatch.
 	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
 	r.label = parts.NewToggle(nil)
+	// On, as on the single batch screen and as in a recipe file with no
+	// defaults section. It started off until 2026-09-22, so the three
+	// surfaces had two defaults and the same recipe gave different bytes
+	// from this screen - found by the guard that compares them, O231.
+	r.label.SetChecked(true)
 
+	r.baseBox = parts.FieldColumn()
 	r.batchBox = parts.FieldColumn()
 	r.outBox = parts.FieldColumn()
+	r.base = newBase(r)
 	r.batches = []*batch{r.newBatch()}
 
 	// In the bar rather than in the list, so the one control that makes this
@@ -192,7 +206,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		nil,
 		r.footer(rail(append([]fyne.CanvasObject{donateButton(host), parts.Divider(), r.addBtn}, links...)...)),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.batchBox, r.outBox)))),
+		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -215,9 +229,15 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
 
-// FirstField is where the keyboard starts: the format of the first batch. There
-// is always a first batch - the last one cannot be removed.
-func (r *Recipe) FirstField() fyne.Focusable { return r.batches[0].formatPick }
+// FirstField is where the keyboard starts: the format of the first batch,
+// or the switch above it on a screen that has removed its last batch to run
+// a preset's set alone - see base.carriesTheRun.
+func (r *Recipe) FirstField() fyne.Focusable {
+	if len(r.batches) == 0 {
+		return r.base.on
+	}
+	return r.batches[0].formatPick
+}
 
 // OutDir is where this screen would write, for the screen somebody moves to.
 func (r *Recipe) OutDir() string { return r.outDir.Text }
@@ -299,8 +319,13 @@ func (r *Recipe) newBatch() *batch {
 // without a second place remembering which index a widget belongs to.
 func (r *Recipe) rebuild() {
 	r.fields.KeepFirst(0)
+	r.baseBox.RemoveAll()
 	r.batchBox.RemoveAll()
 	r.outBox.RemoveAll()
+
+	// Before the batches, so that Tab walks the screen in the order it is
+	// read and the order the run takes the targets in.
+	r.baseBox.Add(r.base.section(r.fields, r.tips))
 
 	panels := make([]fyne.CanvasObject, 0, len(r.batches)+1)
 	for i, b := range r.batches {
@@ -320,6 +345,7 @@ func (r *Recipe) rebuild() {
 	// After the batches, so that Tab walks the screen in the order it is read.
 	r.outBox.Add(r.outputSection())
 
+	r.baseBox.Refresh()
 	r.batchBox.Refresh()
 	r.outBox.Refresh()
 	// A batch added, copied or taken away changes what the form comes to,
@@ -421,7 +447,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	head := []fyne.CanvasObject{
 		parts.NewButton(parts.Secondary, text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
 	}
-	if len(r.batches) > 1 {
+	if len(r.batches) > 1 || r.base.carriesTheRun() {
 		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
@@ -554,9 +580,10 @@ func (r *Recipe) addBatch() {
 	r.rebuild()
 }
 
-// removeBatch drops one batch. The last cannot go: a screen with no batches can
-// produce nothing, and would answer a press with a refusal about a document
-// rather than about anything anybody did.
+// removeBatch drops one batch. The last cannot go, unless the screen builds
+// on a preset (base.carriesTheRun): a screen with no batches and no preset
+// can produce nothing, and would answer a press with a refusal about a
+// document rather than about anything anybody did.
 // duplicateBatch copies one batch and puts the copy under it.
 //
 // Batches usually differ from each other in one setting - a size, a format, a
@@ -595,7 +622,10 @@ func (r *Recipe) duplicateBatch(index int) {
 }
 
 func (r *Recipe) removeBatch(index int) {
-	if len(r.batches) <= 1 || index < 0 || index >= len(r.batches) {
+	if index < 0 || index >= len(r.batches) {
+		return
+	}
+	if len(r.batches) <= 1 && !r.base.carriesTheRun() {
 		return
 	}
 	r.batches = append(r.batches[:index], r.batches[index+1:]...)
@@ -644,34 +674,57 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 		Manifest: r.manifest.Text,
 		Label:    &r.label.Checked,
 	}
+	doc.Extends, doc.With = r.base.draft()
 	for _, b := range r.batches {
 		doc.Targets = append(doc.Targets, b.draft())
 	}
+
+	// Cleared before the reading rather than after it, for the reason the
+	// preset screen gives: a form that does not settle carries no notes.
+	r.notes = nil
 
 	src, err := recipe.Compose(doc)
 	if err != nil {
 		return nil, none, err
 	}
-	rec, err := recipe.Parse(src, text.TabRecipe())
+	// Through the door that knows presets, the same one the command line
+	// reads a file through. A document with no extends comes back with no
+	// expansion and nothing below changes for it.
+	read, err := preset.ReadRecipe(src, text.TabRecipe())
 	if err != nil {
 		return nil, none, err
 	}
+	rec := read.Recipe
 	hash, err := recipe.Hash(src)
 	if err != nil {
 		return nil, none, err
 	}
 
+	// What the run has to say out loud about a preset's value nobody gave.
+	r.notes = read.Notes()
+
 	targets := make([]engine.Target, 0, len(rec.Targets))
 	for _, t := range rec.Targets {
 		targets = append(targets, engineTarget(t))
 	}
-	return targets, engine.Options{
+	opt := engine.Options{
 		OutDir:       statedDirectory(r.outDir.Text, rec.Output.Dir),
 		Seed:         rec.Seed,
 		Command:      "tfg-gui",
 		ManifestName: manifestName(rec.Output.Manifest),
 		RecipeHash:   hash,
-	}, nil
+	}
+	// Which numbers were the preset's own rather than only which preset the
+	// recipe built on - the same record the preset screen writes, because it
+	// is the same fact.
+	if e := read.Expansion; e != nil {
+		opt.Preset = &manifest.Preset{
+			ID:         e.Preset.ID,
+			Parameters: map[string]string(e.Settled),
+			Defaulted:  e.Defaulted,
+		}
+	}
+	return targets, opt, nil
 }
 
 // statedDirectory is where this screen would write, with an emptied box left

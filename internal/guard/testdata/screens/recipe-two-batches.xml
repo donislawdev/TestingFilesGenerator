@@ -32,8 +32,8 @@
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
 					<widget size="1092x1115" type="*widget.Scroll">
-						<container size="1092x1705">
-							<container pos="136,0" size="820x1705">
+						<container size="1092x1899">
+							<container pos="136,0" size="820x1899">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
 										<widget size="788x24" type="*container.ThemeOverride">
@@ -56,7 +56,44 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x1253">
+								<container pos="0,73" size="820x169">
+									<container size="820x169">
+										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x169" strokeColor="separator" strokeWidth="1"/>
+										<container size="820x169">
+											<container pos="16,16" size="788x137">
+												<text bold size="788x20" textSize="17">Build on a preset</text>
+												<widget pos="0,36" size="788x29" type="*container.ThemeOverride">
+													<container size="788x29">
+														<widget size="788x29" type="*widget.Label">
+															<widget size="788x29" type="*widget.RichText">
+																<text color="placeholder" size="782x14" textSize="12">With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole</text>
+																<text color="placeholder" pos="0,14" size="39x14" textSize="12">recipe.</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
+												<container pos="0,81" size="788x56">
+													<container size="788x56">
+														<container size="788x24">
+															<text color="rgba(207,211,216,255)" pos="0,3" size="124x16">Start from a preset</text>
+															<widget pos="132,0" size="24x24" type="*parts.DetailButton">
+																<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
+																<rectangle radius="6" size="24x24"/>
+																<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
+															</widget>
+														</container>
+														<widget pos="0,32" size="788x24" type="*parts.Toggle">
+															<rectangle radius="6" size="24x24"/>
+															<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
+															<rectangle fillColor="inputBackground" pos="2,2" radius="4" size="20x20" strokeColor="inputBorder" strokeWidth="1"/>
+														</widget>
+													</container>
+												</container>
+											</container>
+										</container>
+									</container>
+								</container>
+								<container pos="0,266" size="820x1253">
 									<container size="820x1253">
 										<container size="820x614">
 											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x614" strokeColor="separator" strokeWidth="1"/>
@@ -594,7 +631,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,1350" size="820x355">
+								<container pos="0,1544" size="820x355">
 									<container size="820x355">
 										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x355" strokeColor="separator" strokeWidth="1"/>
 										<container size="820x355">
@@ -711,7 +748,8 @@
 														<widget pos="0,32" size="788x24" type="*parts.Toggle">
 															<rectangle radius="6" size="24x24"/>
 															<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
-															<rectangle fillColor="inputBackground" pos="2,2" radius="4" size="20x20" strokeColor="inputBorder" strokeWidth="1"/>
+															<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
+															<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 														</widget>
 													</container>
 												</container>
@@ -725,8 +763,8 @@
 							<linearGradient pos="0,-8" size="1092x8"/>
 						</widget>
 						<widget pos="1086,0" size="6x1115" type="*widget.scrollBarArea">
-							<widget pos="3,0" size="3x728" type="*widget.scrollBar">
-								<rectangle fillColor="scrollbar" radius="3" size="3x728"/>
+							<widget pos="3,0" size="3x654" type="*widget.scrollBar">
+								<rectangle fillColor="scrollbar" radius="3" size="3x654"/>
 							</widget>
 						</widget>
 					</widget>
