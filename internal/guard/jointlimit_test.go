@@ -146,4 +146,3 @@ func countsIn(sentence string) []counted {
 	flush("")
 	return found
 }
-
