@@ -26,6 +26,15 @@ import (
 // Both variants are asked about. The light one is computed and not installed,
 // and a page that quietly showed only the installed half would leave that work
 // exactly as invisible as it was before this page existed.
+//
+// What this guard does NOT cover, named because a control that is quiet
+// about its limits is worse than no control: it asks whether a measurement is
+// THERE, never whether it was taken against the right surface. Proved by
+// mutation on 2026-09-23 - putting the hint's ratio back against a panel,
+// which is the very mistake the review of #124 found, leaves this green. That
+// question needs to know where each ink is drawn, which is a fact about the
+// window rather than about this page, and it is asked in
+// TestEachSurfaceIsToldFromTheOneUnderIt, where the pairs are named.
 func TestThePalettePageShowsEveryColourAndHowToReadIt(t *testing.T) {
 	shown := textIn(catalogue.Page())
 
@@ -34,18 +43,58 @@ func TestThePalettePageShowsEveryColourAndHowToReadIt(t *testing.T) {
 		t.Fatalf("the palette answers for %d names, too few to be the real palette", len(names))
 	}
 
+	// Line by line rather than over the whole page, and that correction came
+	// from the review of #124. Asking whether a name and a value appear
+	// SOMEWHERE on the page is a question a broken page answers just as well:
+	// proved by mutation on 2026-09-23, deleting the purpose from every row
+	// and then deleting the measurement from every row both left this guard
+	// green, because the names and the values were still there. A row is two
+	// lines - "name - what it is for" and "value - what it measures" - and
+	// both halves are what the page is for.
+	lines := strings.Split(shown, "\n")
+	lineWith := func(prefix string) (string, bool) {
+		for _, line := range lines {
+			if strings.HasPrefix(line, prefix) {
+				return strings.TrimPrefix(line, prefix), true
+			}
+		}
+		return "", false
+	}
+
 	for _, name := range names {
 		if !strings.Contains(shown, string(name)) {
 			t.Errorf("the palette page never names %s", name)
+		}
+
+		// What the colour is for, on the row that names it.
+		if what, found := lineWith(string(name) + " - "); !found || len(strings.TrimSpace(what)) < 10 {
+			t.Errorf("the palette page shows %s with nothing saying what it is for - "+
+				"a swatch and a name is a colour chart, and the reason this page exists "+
+				"is the sentence beside it", name)
 		}
 		if !parts.PaletteRanked(name) {
 			t.Errorf("%s has no place in the order colours are read in, so it lands at the end of the page "+
 				"where nobody decided it should be - give it a rank in parts/palette.go", name)
 		}
 		for _, variant := range []fyne.ThemeVariant{theme.VariantDark, theme.VariantLight} {
-			if value := hexOf(parts.PaletteColour(name, variant)); !strings.Contains(shown, value) {
+			value := hexOf(parts.PaletteColour(name, variant))
+			if !strings.Contains(shown, value) {
 				t.Errorf("the palette page never prints %s, which is what %s holds in the %s variant",
 					value, name, variantName(variant))
+				continue
+			}
+			if measuredAgainstNothing[name] {
+				continue
+			}
+			// And the measurement, on the row that prints the value. Either a
+			// ratio or a distance in lightness, because those are the two
+			// units this palette is held to - a surface is asked for L* and
+			// anything read is asked for a ratio.
+			reading, found := lineWith(value + " - ")
+			if !found || (!strings.Contains(reading, ":1") && !strings.Contains(reading, "L*")) {
+				t.Errorf("the palette page prints %s for %s in the %s variant with no measurement beside it - "+
+					"a value without the number that decides whether it works is the half of this page "+
+					"that a document could have carried", value, name, variantName(variant))
 			}
 		}
 	}
@@ -101,4 +150,18 @@ func variantName(v fyne.ThemeVariant) string {
 		return "light"
 	}
 	return "dark"
+}
+
+// The two colours that are measured against nothing, and why each is right to
+// be. Written out rather than inferred, so that a THIRD colour losing its
+// measurement is a red test rather than a quiet exemption.
+//
+//   - The page is the floor of the ladder. Every surface above it is quoted as
+//     a distance from the one under it, and the floor has nothing under it.
+//   - The shadow is transparent on purpose since 2026-08-24 - it read as a
+//     hard band under the open format list - so there is no colour to measure.
+//     The page says that in words where a value would be.
+var measuredAgainstNothing = map[fyne.ThemeColorName]bool{
+	theme.ColorNameBackground: true,
+	theme.ColorNameShadow:     true,
 }

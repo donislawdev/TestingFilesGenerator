@@ -83,6 +83,12 @@ func reading(name fyne.ThemeColorName, role paletteRole, variant fyne.ThemeVaria
 	}
 	against := parts.PaletteColour(role.against, variant)
 	switch role.measure {
+	case byNothing:
+		// A colour that is not measured against anything names no surface
+		// either, so this is unreachable rather than empty - and it is written
+		// out because the linter asks every switch on this type to say what it
+		// does with every value, which is the correct thing to ask.
+		return ""
 	case byContrast:
 		return fmt.Sprintf(" - %.2f:1 on %s", parts.Contrast(parts.PaletteColour(name, variant), against), role.on)
 	case byStep:
@@ -161,14 +167,26 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 	theme.ColorNameInputBorder: {ladder, "the edge that says where the typing goes",
 		theme.ColorNameInputBackground, "its own fill", byStep},
 
+	// Each ink is measured against the LIGHTEST surface it is actually drawn
+	// on, which for three of these four is not the panel. A ratio taken
+	// against the wrong surface is the one mistake this page exists to stop
+	// somebody making, and it was made here first: measured 2026-09-22, the
+	// hint in an empty box reads 5.56:1 against a panel and 4.52:1 against the
+	// box it is really in, which is 0.02 over the 4.5 a reader needs. The
+	// comfortable number was the wrong number.
+	//
+	// The surface each one is drawn on is read from the code rather than
+	// assumed: a list row draws its words in Foreground on the floating
+	// surface (parts/listrow.go), a value and a hint sit inside a box, and a
+	// field's name stands on the panel beside it.
 	theme.ColorNameForeground: {inks, "a value, and everything read at rest",
-		parts.ColorNamePanel, "a panel", byContrast},
+		theme.ColorNameMenuBackground, "an open list", byContrast},
 	parts.ColorNameLabel: {inks, "the name of a field, a step quieter than its value",
 		parts.ColorNamePanel, "a panel", byContrast},
 	theme.ColorNameDisabled: {inks, "a value in a box switched off for the length of a run",
-		parts.ColorNamePanel, "a panel", byContrast},
+		theme.ColorNameInputBackground, "a box to type in", byContrast},
 	theme.ColorNamePlaceHolder: {inks, "a hint in a box nobody has typed in",
-		parts.ColorNamePanel, "a panel", byContrast},
+		theme.ColorNameInputBackground, "a box to type in", byContrast},
 
 	theme.ColorNamePrimary: {meaning, "the action a screen is for, and the line round a focused control",
 		theme.ColorNameBackground, "the page", byContrast},

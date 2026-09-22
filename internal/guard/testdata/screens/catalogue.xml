@@ -3714,7 +3714,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="159x14" textSize="12">#E6E6E8 - 11.31:1 on a panel</text>
+													<text color="placeholder" size="182x14" textSize="12">#E6E6E8 - 5.74:1 on an open list</text>
 												</widget>
 											</widget>
 										</container>
@@ -3760,7 +3760,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="163x14" textSize="12">#C7C7CC - 8.37:1 on a panel</text>
+													<text color="placeholder" size="207x14" textSize="12">#C7C7CC - 6.81:1 on a box to type in</text>
 												</widget>
 											</widget>
 										</container>
@@ -3783,7 +3783,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="162x14" textSize="12">#A2A2A9 - 5.56:1 on a panel</text>
+													<text color="placeholder" size="208x14" textSize="12">#A2A2A9 - 4.52:1 on a box to type in</text>
 												</widget>
 											</widget>
 										</container>
@@ -4420,7 +4420,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="160x14" textSize="12">#1A1A1C - 14.99:1 on a panel</text>
+													<text color="placeholder" size="181x14" textSize="12">#1A1A1C - 17.38:1 on an open list</text>
 												</widget>
 											</widget>
 										</container>
@@ -4466,7 +4466,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="160x14" textSize="12">#3D3D42 - 9.31:1 on a panel</text>
+													<text color="placeholder" size="207x14" textSize="12">#3D3D42 - 7.90:1 on a box to type in</text>
 												</widget>
 											</widget>
 										</container>
@@ -4489,7 +4489,7 @@
 										<container size="0x14">
 											<widget size="0x14" type="*widget.Label">
 												<widget size="0x14" type="*widget.RichText">
-													<text color="placeholder" size="159x14" textSize="12">#585860 - 6.08:1 on a panel</text>
+													<text color="placeholder" size="202x14" textSize="12">#585860 - 5.15:1 on a box to type in</text>
 												</widget>
 											</widget>
 										</container>

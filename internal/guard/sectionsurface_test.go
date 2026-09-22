@@ -142,11 +142,44 @@ func TestEachSurfaceIsToldFromTheOneUnderIt(t *testing.T) {
 		// is on the page any more - it is on a panel, which is lighter. That is
 		// the same shape as the defect the palette guard caught on its first
 		// day: a colour measured against the wrong thing.
-		for _, name := range []fyne.ThemeColorName{theme.ColorNameForeground, theme.ColorNamePlaceHolder} {
-			if got := contrast(parts.PaletteColour(name, variant.v), panel); got < 4.5 {
-				t.Errorf("%s: %s is %.2f:1 on a panel, under the 4.5 a reader needs",
-					variant.name, name, got)
+		//
+		// And it moved again, twice, without this guard noticing either time -
+		// found in the review of #124 and measured on 2026-09-23. An ink is
+		// asked about against the LIGHTEST surface it is drawn on, which for
+		// three of these is not the panel:
+		//
+		//   - a hint and a switched-off value sit INSIDE a box, which is a
+		//     rank lighter than the panel. The hint reads 5.56:1 against the
+		//     panel and 4.52:1 against the box it is really in. The panel
+		//     number has a whole ratio of slack over the threshold and the
+		//     real one has 0.02, so the comfortable measurement was hiding
+		//     exactly the margin somebody would want to know about.
+		//   - a value is also drawn on the floating surface, because that is
+		//     what a row of an open list is (parts/listrow.go draws its words
+		//     in Foreground). That surface went up 6.4 L* when the ladder
+		//     arrived, which took this ratio from 7.27 to 5.74 - still over,
+		//     and nothing here was watching it.
+		//
+		// The pairs are named rather than derived, because where an ink is
+		// drawn is a fact about the window rather than about the palette. A
+		// new ink with no pair here is not measured by this guard at all,
+		// which is the limit of it and is why it says so out loud.
+		for _, ink := range []struct {
+			name    fyne.ThemeColorName
+			surface fyne.ThemeColorName
+			where   string
+		}{
+			{theme.ColorNameForeground, theme.ColorNameMenuBackground, "a row of an open list"},
+			{parts.ColorNameLabel, parts.ColorNamePanel, "a panel"},
+			{theme.ColorNameDisabled, theme.ColorNameInputBackground, "a box to type in"},
+			{theme.ColorNamePlaceHolder, theme.ColorNameInputBackground, "a box to type in"},
+		} {
+			got := contrast(parts.PaletteColour(ink.name, variant.v), parts.PaletteColour(ink.surface, variant.v))
+			if got < 4.5 {
+				t.Errorf("%s: %s is %.2f:1 on %s, which is the lightest surface it is drawn on, "+
+					"under the 4.5 a reader needs", variant.name, ink.name, got, ink.where)
 			}
+			t.Logf("%s: %s on %s is %.2f:1", variant.name, ink.name, ink.where, got)
 		}
 
 		t.Logf("%s: page to panel %.1f L*, panel to input %.1f L*, of %.1f available",

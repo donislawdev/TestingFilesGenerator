@@ -27,17 +27,6 @@ because it turns other people's test suites red.
   generated file changes in any way. The old values met every contrast
   threshold and the new ones meet the same thresholds, checked the same way.
 
-### Added
-
-- **The palette is something you can open.** `tfg --catalogue`, the hidden
-  screen that shows every control the window is built from, now ends with the
-  palette itself: every colour, what it is for, the value it holds and the
-  measurement that decides whether it is doing its job - the contrast ratio
-  for anything read, the distance in lightness for a surface. The light
-  palette is shown beside it and labelled: it is worked out and held to the
-  same thresholds, and the window does not use it, because this program has
-  one look.
-
 - **The window opens on a preset that was chosen rather than sorted.** The
   Presets tab, and the "Build on a preset" section of the batches screen,
   used to start on whichever preset came first alphabetically - so what you
@@ -216,6 +205,15 @@ because it turns other people's test suites red.
   row now, and the picture of a file kind stays in front where it was.
 
 ### Added
+
+- **The palette is something you can open.** `tfg --catalogue`, the hidden
+  screen that shows every control the window is built from, now ends with the
+  palette itself: every colour, what it is for, the value it holds and the
+  measurement that decides whether it is doing its job - the contrast ratio
+  for anything read, the distance in lightness for a surface. The light
+  palette is shown beside it and labelled: it is worked out and held to the
+  same thresholds, and the window does not use it, because this program has
+  one look.
 
 - **Two more formats, both for configuration: `yaml` and `toml`.** A config
   file at an exact size is what a size-limited upload is for a picture, and

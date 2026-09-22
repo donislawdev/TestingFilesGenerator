@@ -287,16 +287,6 @@ func labToRGB(l, c, h float64) color.Color {
 	return color.NRGBA{R: to8(r), G: to8(g), B: to8(b), A: 0xFF}
 }
 
-// angle is how far apart two hues are on a wheel, so 359 and 1 are two
-// degrees apart rather than three hundred and fifty eight.
-func angle(one, two float64) float64 {
-	d := math.Mod(math.Abs(one-two), 360)
-	if d > 180 {
-		return 360 - d
-	}
-	return d
-}
-
 func rounded(values []float64) []float64 {
 	out := make([]float64, len(values))
 	for i, v := range values {
