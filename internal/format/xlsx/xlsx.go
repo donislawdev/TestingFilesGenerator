@@ -94,7 +94,7 @@ func init() {
 		},
 		JointLimits: []format.JointLimit{{
 			Of: "rows", By: "columns", Max: maxCells,
-			Unit: "million cells", Per: 1_000_000,
+			Unit: "million cells", Per: 1_000_000, Base: "cells",
 			Why: "the sheet is built in memory before it is packaged",
 		}},
 		GeneratorVersion: generatorVersion,

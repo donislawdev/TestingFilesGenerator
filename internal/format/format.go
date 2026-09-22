@@ -214,6 +214,16 @@ type JointLimit struct {
 	// "400000000 and the limit is 40000000" is not. Per of nought means one.
 	Unit string
 	Per  int64
+	// Base is what the product itself counts, for the sentence that has to be
+	// exact: "pixels", "cells".
+	//
+	// It exists because the readable form above cannot always be used. Rounding
+	// two counts that differ can land them on one number, and then the refusal
+	// says "they come to 40 megapixels and the limit is 40" - measured on
+	// 2026-09-22 for a picture of 20000x2001, which is 40 020 000 pixels
+	// against a limit of 40 000 000. A person reading that has been told
+	// nothing. See Allows.
+	Base string
 	// Why is the reason, in the words the refusal uses.
 	Why string
 }
@@ -228,11 +238,37 @@ type JointLimit struct {
 // be a branch nothing could ever reach, and an unreachable branch reads as a
 // protection somebody is relying on.
 func (j JointLimit) Allows(of, by int64) (bad string) {
-	if of*by <= j.Max {
+	got := of * by
+	if got <= j.Max {
 		return ""
 	}
-	return fmt.Sprintf("together they come to %d %s and the limit is %d, because %s",
-		of*by/j.per(), j.Unit, j.Max/j.per(), j.Why)
+	asked, allowed := j.readably(got)
+	return fmt.Sprintf("together they come to %s and the limit is %s, because %s",
+		asked, allowed, j.Why)
+}
+
+// readably is the pair of counts as a person reads them, and it never puts two
+// different counts on one number.
+//
+// The rounded form is offered first, because that is the one worth reading:
+// "400 megapixels and the limit is 40 megapixels" is a sentence somebody can
+// act on. It is stood down when both counts round to the same text, which is
+// not a corner case - it is what a request just over the limit looks like.
+// Measured on 2026-09-22 (O232): 20000x2001 is 40 020 000 pixels, the limit is
+// 40 000 000, and the sentence read "they come to 40 megapixels and the limit
+// is 40". Two identical numbers, and no way to tell how far over it was.
+//
+// Both halves carry the unit now. Only the first one did, so the limit was a
+// bare number taking its noun from four words earlier.
+//
+// Adding decimal places was the other way out and it does not work: 40 000 001
+// against 40 000 000 collides at every fixed number of places.
+func (j JointLimit) readably(got int64) (asked, allowed string) {
+	if j.per() > 1 && got/j.per() != j.Max/j.per() {
+		return fmt.Sprintf("%d %s", got/j.per(), j.Unit),
+			fmt.Sprintf("%d %s", j.Max/j.per(), j.Unit)
+	}
+	return core.Exactly(got) + " " + j.Base, core.Exactly(j.Max) + " " + j.Base
 }
 
 // Describe is the rule as one sentence, for the format list and for a window.

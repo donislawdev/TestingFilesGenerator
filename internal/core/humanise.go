@@ -52,7 +52,20 @@ func HumanBytes(n int64) string {
 // Machine output is untouched on purpose. Nothing in a manifest or under --json
 // goes through here, because a number there is a number and not a sentence.
 func ExactBytes(n int64) string {
-	return groupedInThrees(strconv.FormatInt(n, 10)) + " B"
+	return Exactly(n) + " B"
+}
+
+// Exactly is a whole number with a space every three digits, for a count that
+// has to be read precisely rather than approximately.
+//
+// ExactBytes above it is this with a unit after it. Split out on 2026-09-22,
+// when a refusal about a joint limit had to print two counts that the rounded
+// form had put on one number: a picture of 20000x2001 comes to 40 020 000
+// pixels against a limit of 40 000 000, and the sentence read "they come to 40
+// megapixels and the limit is 40" - two identical numbers and a refusal nobody
+// could answer. See format.JointLimit and O232.
+func Exactly(n int64) string {
+	return groupedInThrees(strconv.FormatInt(n, 10))
 }
 
 // groupedInThrees puts a space every three digits, counting from the right.

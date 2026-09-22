@@ -114,8 +114,11 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// What a preset declares comes after this mark and is replaced with it.
 	p.fixed = p.fields.Len()
 
-	if len(ids) > 0 {
-		p.pick.SetSelected(ids[0])
+	// The preset that declares itself the one to open on, rather than the
+	// first in the list - the list is alphabetical, so "the first" is whoever
+	// is written next. See preset.Landing.
+	if landing := preset.Landing(); landing != "" {
+		p.pick.SetSelected(landing)
 	}
 
 	// Said last, once every box it reads exists.

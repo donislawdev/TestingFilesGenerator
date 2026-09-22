@@ -45,6 +45,16 @@ func init() {
 			},
 		},
 
+		// The preset the window opens on, and the reason is a number rather
+		// than a preference. Pressing Generate on it without touching anything
+		// writes 32 214 B, where size-boundaries at its defaults writes
+		// 73 400 320 - and somebody who has just opened the program should not
+		// have seventy megabytes as their first result. It also means
+		// something without being told anything: size-boundaries says out loud
+		// that its 10mb is our placeholder and not the limit of the system
+		// under test, so an untouched run of it describes nothing.
+		Landing: true,
+
 		Requires: []string{"MVP"},
 		Catches: []string{
 			"a valid file turned away for being too small, where the check counts bytes instead of reading them",

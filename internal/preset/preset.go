@@ -57,6 +57,23 @@ type Preset struct {
 	// that is not there.
 	Reads []string
 
+	// Landing marks the preset a surface opens on before anybody has chosen
+	// one. Exactly one preset sets it, and Register refuses a second.
+	//
+	// Declared rather than worked out, because the only thing a surface could
+	// work out is "the first id in order" - and that is alphabetical, so it
+	// moves whenever a preset is added. It moved on 2026-09-22, when
+	// empty-and-minimal arrived and sorted before size-boundaries: the window
+	// opened on a different preset than the day before, and nine guards
+	// reaching for a field of the old one went red at once without one of them
+	// saying why. The catalogue in docs/PRESETS.md has fourteen entries, so
+	// that would have happened again.
+	//
+	// What it is NOT: a ranking, or an order. It answers one question - where
+	// does somebody who has chosen nothing start - and a second preset claiming
+	// it is a mistake in the build rather than a preference to resolve.
+	Landing bool
+
 	// Requires are the modules this preset needs, from docs/BACKLOG.md.
 	Requires []string
 	// Catches is what this preset typically finds, for the explain mode.
@@ -320,6 +337,29 @@ func (e *ImpossibleError) AboutSetting() string { return e.Setting }
 // comes back and this file goes through that gate.
 var registry = map[string]Preset{}
 
+// landing is the id of the preset that declared itself the one to open on,
+// written at init beside the registry and read after.
+var landing string
+
+// Landing is the preset a surface opens on before anybody has chosen one.
+//
+// It falls back to the first registered id when nothing claims it, and that
+// fallback is deliberate rather than tidy: a window that would not open because
+// a declaration went missing is worse than a window opening on the wrong
+// preset. TestExactlyOnePresetOpensTheWindow is what turns the missing
+// declaration red, so the fallback never has to be the thing anybody relies on.
+//
+// Empty only when this build registers no preset at all.
+func Landing() string {
+	if landing != "" {
+		return landing
+	}
+	if ids := ids(); len(ids) > 0 {
+		return ids[0]
+	}
+	return ""
+}
+
 // Register adds a preset. It panics on a mistake that a build should not
 // survive, the same way the format registry does.
 func Register(p Preset) {
@@ -331,6 +371,12 @@ func Register(p Preset) {
 	}
 	if _, taken := registry[p.ID]; taken {
 		panic(fmt.Sprintf("preset: %s is registered twice", p.ID))
+	}
+	if p.Landing {
+		if first := landing; first != "" {
+			panic(fmt.Sprintf("preset: %s and %s both open the window, and only one can", first, p.ID))
+		}
+		landing = p.ID
 	}
 	// A parameter IS a format.Property, so a closed set of values is put in the
 	// same order here as it is over there. One rule for both, in the place each
