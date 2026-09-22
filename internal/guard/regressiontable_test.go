@@ -48,7 +48,6 @@ import (
 // would quietly become the place drift hides.
 var notYetJustified = []string{
 	"actionbar_test.go",
-	"compose_test.go",
 	"darkmenus_test.go",
 	"doccomments_test.go",
 	"dropdown_test.go",

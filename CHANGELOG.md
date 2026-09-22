@@ -16,6 +16,18 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A recipe this program writes for you reads like one written by hand.**
+  Where the tool composes a recipe - the batch screen, and `tfg preset eject`
+  - a count and a size are now written as bare numbers (`size: 1024`) rather
+  than quoted (`size: "1024"`), and the entries of `targets` are indented
+  under their key. Both are what every example in the documentation looks
+  like, which matters because the header of an ejected recipe invites you to
+  edit it: a target pasted in from the documentation used to land at a
+  different indent and the file stopped parsing. A name made of digits stays
+  text, so a file called `007` keeps its name. The files a recipe produces are
+  unchanged to the byte. What does change is the `recipe_hash` recorded in the
+  manifest of a run started from the batch screen, because that hash is taken
+  from the text of the recipe.
 - **The line before the second start says what was checked, not what was
   guessed.** When the window's first attempt gives no window and the program
   starts again with the software renderer shipped beside it (Windows), the
@@ -174,6 +186,29 @@ because it turns other people's test suites red.
   row now, and the picture of a file kind stays in front where it was.
 
 ### Added
+
+- **A second preset: `empty-and-minimal`.** It answers "does a file that is
+  valid and as small as the format allows get through?" and builds the
+  smallest legal file of every format this build has, plus a file of nought
+  bytes for every format that has a legal empty form. The whole set is 26
+  files and 32 214 B, so it checks twenty-four paths through your reader for
+  the price of thirty-two kilobytes. Run it with `tfg generate --preset
+  empty-and-minimal`, or pick it on the Presets screen.
+
+  The set comes in two groups, because two different answers are honest. Every
+  file in `minimal` is valid, so it expects `accept` - those are the positive
+  control, and if they are turned away the refusals in any other set mean
+  nothing. Every file in `empty` is legal and nought bytes long, so it expects
+  `unspecified` with the reason `size_zero`: whether an empty file should be
+  kept or turned away is your policy, and the manifest does not invent it.
+
+  `--formats` narrows the set, written as a list with commas - `--formats
+  png,jpg,gif` for an image pipeline. It takes `all` on its own for every
+  format. Two things to expect from a run: several lines about files too small
+  to carry the label this tool writes into them, which is the tool saying so
+  rather than going quiet, and, for a set built only from formats that cannot
+  be empty, a line saying it has no empty files and naming the formats that
+  can.
 
 - **A recipe can build on a preset.** Two keys the recipe reader used to
   refuse as not built yet now work: `extends: preset:<id>` names the preset

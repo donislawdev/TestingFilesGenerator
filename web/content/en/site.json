@@ -95,6 +95,7 @@
     "143": "Stopped by a signal, which is what a CI timeout looks like."
   },
   "presets": {
+    "empty-and-minimal": "Does a file that is valid and as small as the format allows get through?",
     "size-boundaries": "Is a size limit enforced exactly where it is declared?"
   },
   "commands": {

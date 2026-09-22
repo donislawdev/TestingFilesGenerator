@@ -95,6 +95,7 @@ func TestTheMarkGoesWhenTheValueIsFixed(t *testing.T) {
 // left undone the last time a refusal moved.
 func TestTheBoxARefusalIsAboutIsMarkedOnThePresetScreenToo(t *testing.T) {
 	_, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")
 
@@ -167,6 +168,7 @@ func TestTheMenuTheKeyboardIsInDrawsALine(t *testing.T) {
 // A refusal outranks the keyboard, because one of the two stops the run.
 func TestARefusedBoxStaysRedWhileTheKeyboardIsInIt(t *testing.T) {
 	_, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")
 

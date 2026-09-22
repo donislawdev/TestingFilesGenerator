@@ -59,6 +59,12 @@ var reachableFromTheWindow = []string{
 	"preset:size-boundaries",
 	"preset:size-boundaries.limit",
 	"preset:size-boundaries.spread",
+	// The second preset and its one parameter. Pressed on the screen by
+	// TestThePresetScreenBuildsTheMinimalSetTheCommandLineBuilds, which types
+	// a list of formats into the box and compares the run with the one the
+	// command line makes from the same list.
+	"preset:empty-and-minimal",
+	"preset:empty-and-minimal.formats",
 	// The global flag this preset supplies a value for, drawn from
 	// preset.Global and pressed by TestThePresetScreenCanBuildTheSetInAnyFormat,
 	// which runs the set and reads the bytes back rather than looking at the

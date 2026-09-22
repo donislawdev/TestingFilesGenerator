@@ -83,7 +83,17 @@ func TestOnlyABoxHoldingASizeCarriesACount(t *testing.T) {
 
 func byteCountBeside(t *testing.T, o fyne.CanvasObject, label string) *parts.ByteCount {
 	t.Helper()
-	count := byteCountIn(fieldBox(o, label))
+	// The box is looked for first, and that is not tidiness. fieldBox answers
+	// with a typed nil when nothing is labelled that way, which is not nil as
+	// an interface - so it walked into the tree walker and took the whole test
+	// binary down with a nil dereference on 2026-09-22, in a panic naming
+	// whichever test happened to be running. A guard that cannot find its box
+	// has to say so in a sentence.
+	box := fieldBox(o, label)
+	if box == nil {
+		t.Fatalf("no field is labelled %q on this screen, so nothing beside it can be counted", label)
+	}
+	count := byteCountIn(box)
 	if count == nil {
 		t.Fatalf("there is no count of bytes beside %q", label)
 	}
@@ -137,6 +147,9 @@ func TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne(t *testing.T) {
 
 	t.Run("a preset parameter", func(t *testing.T) {
 		_, content := presetScreen(t)
+		// The parameter measured here is a size, and size-boundaries is the
+		// preset that declares one.
+		choosePreset(t, content, "size-boundaries")
 
 		label := text.SettingLabel("limit")
 		count := byteCountBeside(t, content, label)

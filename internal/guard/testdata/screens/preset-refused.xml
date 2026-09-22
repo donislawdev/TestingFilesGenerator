@@ -72,18 +72,18 @@
 														</widget>
 													</container>
 													<container pos="0,32" size="788x26">
-														<container size="151x26">
-															<widget size="151x26" type="*parts.Chooser">
-																<rectangle fillColor="inputBackground" radius="6" size="151x26"/>
+														<container size="173x26">
+															<widget size="173x26" type="*parts.Chooser">
+																<rectangle fillColor="inputBackground" radius="6" size="173x26"/>
 																<rectangle size="0x0"/>
-																<widget pos="4,3" size="121x20" type="*widget.RichText">
+																<widget pos="4,3" size="143x20" type="*widget.RichText">
 																	<text pos="2,2" size="107x16">size-boundaries</text>
 																</widget>
-																<widget pos="125,3" size="20x20" type="*widget.Icon">
+																<widget pos="147,3" size="20x20" type="*widget.Icon">
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="foreground"/>
 																</widget>
 															</widget>
-															<rectangle radius="6" size="151x26" strokeColor="inputBorder" strokeWidth="1"/>
+															<rectangle radius="6" size="173x26" strokeColor="inputBorder" strokeWidth="1"/>
 														</container>
 													</container>
 												</container>

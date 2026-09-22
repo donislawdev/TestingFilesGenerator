@@ -159,7 +159,16 @@ func TestEveryMenuOfferingEveryFormatDrawsTheKindPictures(t *testing.T) {
 	// hide behind a screen with two, which is the shape of the defect itself -
 	// two menus were missed for twenty days while a third had the pictures.
 	for _, tab := range []string{text.TabOneTarget(), text.TabRecipe(), text.TabPresets()} {
-		if n := look(tab, tabNamed(t, host.content, tab)); n != 1 {
+		root := tabNamed(t, host.content, tab)
+		if tab == text.TabPresets() {
+			// The menu counted here belongs to the preset that reads the global
+			// format flag, and only size-boundaries does. The screen opens on
+			// the first preset in order, which moved the day one sorting
+			// earlier arrived - and a preset declaring no menu would leave this
+			// guard counting nothing on a screen that has one.
+			choosePreset(t, root, "size-boundaries")
+		}
+		if n := look(tab, root); n != 1 {
 			t.Errorf("the %s screen has %d menu(s) offering every format and this guard expects 1", tab, n)
 		}
 	}

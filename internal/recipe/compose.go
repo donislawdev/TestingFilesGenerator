@@ -2,6 +2,7 @@ package recipe
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/goccy/go-yaml"
 
@@ -138,7 +139,18 @@ func Compose(d Document) ([]byte, error) {
 	}
 	doc = append(doc, yaml.MapItem{Key: "targets", Value: targets})
 
-	return yaml.Marshal(doc)
+	// Sequences are indented under their key, which is not the marshaller's
+	// default and is what every recipe in docs/RECIPE.md looks like.
+	//
+	// It matters because of what somebody does with a composed recipe next. The
+	// header of an ejected one says "edit it, commit it, it is an ordinary
+	// recipe from here on", so a target gets pasted in from the documents - and
+	// at the flat default, that paste sits at a different indent from the
+	// entries above it and the file stops parsing, with the error pointing at
+	// the line the person just added. Caught by
+	// TestARecipeBuildingOnAPresetGivesTheBytesOfTheEjectedOneWithItsTargetsAppended
+	// on 2026-09-22, which appends a target the way a person would.
+	return yaml.MarshalWithOptions(doc, yaml.IndentSequence(true))
 }
 
 // withSection is the preset's parameters, sorted for the reason properties
@@ -173,13 +185,19 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 			entry = append(entry, yaml.MapItem{Key: key, Value: value})
 		}
 	}
+	// The keys where a number belongs are written as a number. See bareNumber.
+	addNumber := func(key, value string) {
+		if value != "" {
+			entry = append(entry, yaml.MapItem{Key: key, Value: bareNumber(value)})
+		}
+	}
 
 	add("id", t.ID)
 	add("format", t.Format)
-	add("count", t.Count)
-	add("size", t.Size)
+	addNumber("count", t.Count)
+	addNumber("size", t.Size)
 	add("size-range", t.SizeRange)
-	add("boundary", t.Boundary)
+	addNumber("boundary", t.Boundary)
 	add("name", t.Name)
 	add("group", t.Group)
 
@@ -204,16 +222,41 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 				one = append(one, yaml.MapItem{Key: "format", Value: c.Format})
 			}
 			if c.Count != "" {
-				one = append(one, yaml.MapItem{Key: "count", Value: c.Count})
+				one = append(one, yaml.MapItem{Key: "count", Value: bareNumber(c.Count)})
 			}
 			if c.Size != "" {
-				one = append(one, yaml.MapItem{Key: "size", Value: c.Size})
+				one = append(one, yaml.MapItem{Key: "size", Value: bareNumber(c.Size)})
 			}
 			inside = append(inside, one)
 		}
 		entry = append(entry, yaml.MapItem{Key: "contains", Value: inside})
 	}
 	return entry
+}
+
+// bareNumber is a value written the way a person writes it - 1024 rather than
+// "1024".
+//
+// Everything in a Document is text, because a screen holds text and Parse is
+// the one thing allowed to judge it. Marshalling that text straight gives
+// size: "1024" - correct YAML, read back as the same number, and not what this
+// project's own documents show. RECIPE.md writes count: 25 and size: 2mb, and a
+// recipe this program composed is a document somebody then edits and commits,
+// so it has to look like the ones they have already read. Noticed 2026-09-22,
+// when the first preset to compose its recipe rather than print it put
+// size: "74" in front of somebody.
+//
+// Only a plain decimal is turned, and only where a number belongs. A size may
+// be "2mb" and a name may be "007" - a name quietly becoming the number seven
+// would be this doing harm rather than tidying. The round trip through
+// FormatInt is what refuses "007", "+5" and " 5": they parse, and they are not
+// how the number is written.
+func bareNumber(value string) any {
+	n, err := strconv.ParseInt(value, 10, 64)
+	if err != nil || n < 0 || value != strconv.FormatInt(n, 10) {
+		return value
+	}
+	return n
 }
 
 // expectationEntry writes the short form when there is no reason and the long

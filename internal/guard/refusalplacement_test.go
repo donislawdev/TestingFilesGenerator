@@ -82,6 +82,7 @@ func TestARefusalAboutTheSizeAppearsUnderIt(t *testing.T) {
 // generate screen's refusals were moved on 2026-08-11.
 func TestARefusalAboutAPresetSettingAppearsUnderIt(t *testing.T) {
 	content, w := screenInAWindow(t, text.TabPresets())
+	choosePreset(t, content, "size-boundaries")
 
 	fill(t, content, text.SettingLabel("limit"), "512")
 	press(t, content, "Preview")

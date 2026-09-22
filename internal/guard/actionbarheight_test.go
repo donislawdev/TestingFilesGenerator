@@ -169,6 +169,13 @@ func TestTheFormDoesNotMoveWhenARunStarts(t *testing.T) {
 func TestWhatARunSaysComesBeforeWhatSettlingSaid(t *testing.T) {
 	content, w, host := screenInAWindowWithHost(t, text.TabPresets())
 
+	// size-boundaries by name, because this guard needs a preset whose default
+	// is a number about SOMEBODY ELSE'S system - that is what produces a note
+	// at all. The screen opens on the first preset in order, which moved the
+	// day a preset sorting earlier arrived, and that one invents nothing and so
+	// says nothing.
+	choosePreset(t, content, "size-boundaries")
+
 	// Nothing is filled in. A note is what the run says about a value nobody
 	// gave it, so leaving the settings alone is what produces one at all.
 	press(t, content, text.ButtonPreview())
