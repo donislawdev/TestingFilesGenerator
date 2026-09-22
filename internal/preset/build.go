@@ -2,6 +2,7 @@ package preset
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -130,6 +131,76 @@ func knownFormat(item string) string {
 
 // lower is the keep for a list of names the registry spells in lower case.
 func lower(item string) string { return strings.ToLower(item) }
+
+// setFile is one file of a preset's set: which format writes it, what it is
+// called, what settings make it what it is, and what a reasonably built system
+// should do with it.
+//
+// Shared because two presets lay their sets out this way and a third is the
+// point at which a shape becomes a type. What it is NOT is every file of every
+// preset: the minimal set and the encoding set each name their files from one
+// varying part and compute the rest, which is a rule of their own rather than a
+// field here.
+type setFile struct {
+	id, name, group string
+	desc            format.Descriptor
+	props           map[string]string
+	// count is how many files this one entry stands for. Nought and one both
+	// mean a single file, because a set with one of something says "1" and a
+	// set with none of it leaves the entry out entirely.
+	count int
+	size  int64
+	// atFloor asks for the smallest size this format takes for these settings,
+	// whatever that turns out to be. A separate field rather than a nought in
+	// size, because nought is a real size and a file of no bytes is a case two
+	// of these presets are about - the sentinel that collides with a legal
+	// value is how a guard ends up testing the wrong thing.
+	atFloor          bool
+	expected, reason string
+}
+
+// bytes is the size this file is asked for.
+func (f setFile) bytes() int64 {
+	if f.atFloor {
+		return f.desc.SmallestAccepted(format.Request{Label: true, Properties: f.props})
+	}
+	return f.size
+}
+
+// refused is what the format says about this file before anything is written,
+// or nil when it will produce it.
+//
+// Every set built from setFile asks this of every file it holds, which is PR7
+// one level down: a set missing the three files the run was about still looks
+// like a set.
+func (f setFile) refused() error {
+	r := format.Request{Label: true, Properties: f.props}
+	r.Bytes = f.bytes()
+	_, err := f.desc.Generator.Plan(r)
+	return err
+}
+
+func (f setFile) draft() recipe.TargetDraft {
+	count := "1"
+	if f.count > 1 {
+		count = strconv.Itoa(f.count)
+	}
+	return recipe.TargetDraft{
+		ID: f.id, Format: f.desc.ID, Count: count,
+		Size: strconv.FormatInt(f.bytes(), 10), Name: f.name, Group: f.group,
+		Expected: f.expected, ExpectedReason: f.reason,
+		Properties: f.props,
+	}
+}
+
+// draftsOf is a whole set as targets, ready for the composer.
+func draftsOf(files []setFile) []recipe.TargetDraft {
+	out := make([]recipe.TargetDraft, 0, len(files))
+	for _, f := range files {
+		out = append(out, f.draft())
+	}
+	return out
+}
 
 // plan is the set a preset lays out, ready to be written.
 //

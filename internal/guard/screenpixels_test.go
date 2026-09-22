@@ -442,12 +442,28 @@ func screenScenes() []screenScene {
 		// else on the form.
 		{name: "preset-menu-setting", tab: text.TabPresets(),
 			set: func(t *testing.T, s scene) {
-				// The only preset that reads a global flag, so it is the only
-				// one with a menu among its settings.
+				// The only preset that reads a GLOBAL flag, so the menu this
+				// opens is one drawn from preset.Global rather than from the
+				// preset's own declaration. upload-validation has a menu among
+				// its settings too since 2026-09-22 - see the screen below,
+				// which is where a menu the preset declares itself is looked at.
 				menuUnder(t, s.tab, text.FieldPreset()).SetSelected("size-boundaries")
 			},
 			after: func(t *testing.T, s scene) {
 				menuUnder(t, s.tab, text.SettingLabel("format")).Tapped(&fyne.PointEvent{})
+			}},
+		// The widest form this screen can be asked to draw: five settings, of
+		// four different kinds, one of them a closed set the preset declares
+		// itself.
+		//
+		// It is here because nobody had looked. Every preset until 2026-09-22
+		// declared one setting or two, so "what does this form do with five"
+		// was answered by reading preset.go and finding a VScroll, which is a
+		// reading rather than a measurement - and UX.md section 7.0 gate 1
+		// counts a state with no picture as a state nobody has seen.
+		{name: "preset-many-settings", tab: text.TabPresets(),
+			set: func(t *testing.T, s scene) {
+				menuUnder(t, s.tab, text.FieldPreset()).SetSelected("upload-validation")
 			}},
 
 		// The recipe screen, which arrived on 2026-08-18. It has states neither

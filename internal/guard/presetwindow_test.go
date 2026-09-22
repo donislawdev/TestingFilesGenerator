@@ -198,10 +198,7 @@ func TestTheWindowDrawsAFieldForEveryPresetParameter(t *testing.T) {
 			if bad := wrongKindOfControl(param, control); bad != "" {
 				t.Errorf("%s.%s is %s", p.ID, param.Name, bad)
 			}
-			if shown := everythingSaid(content); !strings.Contains(shown, param.Allowed()) {
-				t.Errorf("the field for %s.%s does not say what it takes (%q)",
-					p.ID, param.Name, param.Allowed())
-			}
+			saysWhatItTakes(t, everythingSaid(content), p.ID, param)
 			checked++
 		}
 	}

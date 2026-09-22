@@ -2,12 +2,10 @@ package preset
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
-	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 const (
@@ -57,13 +55,6 @@ func init() {
 
 		Expand: expandSizeBoundaries,
 	})
-}
-
-// offset is one step either side of the limit, with the text it was written as
-// so the files can name themselves after it.
-type offset struct {
-	text  string
-	bytes int64
 }
 
 // spreadList is how the distances either side of the limit are written.
@@ -160,30 +151,6 @@ func parseSpread(raw string) ([]offset, error) {
 	return out, nil
 }
 
-// step is one file of the set: how big, what it is called, and what a
-// reasonably built system should do with it.
-type step struct {
-	id     string
-	size   int64
-	accept bool
-}
-
-// steps lays the set out, largest distance below the limit first, then the
-// limit, then upward. The order is the order somebody reads a table in.
-func steps(limit int64, spread []offset) []step {
-	out := make([]step, 0, 2*len(spread)+1)
-	for i := len(spread) - 1; i >= 0; i-- {
-		out = append(out, step{
-			id: "under_" + spread[i].text, size: limit - spread[i].bytes, accept: true,
-		})
-	}
-	out = append(out, step{id: "at_limit", size: limit, accept: true})
-	for _, o := range spread {
-		out = append(out, step{id: "over_" + o.text, size: limit + o.bytes, accept: false})
-	}
-	return out
-}
-
 func expandSizeBoundaries(args Args) ([]byte, error) {
 	limit, err := core.ParseSize(args["limit"])
 	if err != nil {
@@ -233,100 +200,17 @@ func expandSizeBoundaries(args Args) ([]byte, error) {
 		}
 	}
 
-	set := steps(limit, spread)
-	if err := reachable(set, desc, limit); err != nil {
+	around := limitSet{
+		preset: boundariesID, setting: "limit", group: boundariesID,
+		desc: desc, limit: limit, limitText: limitText, spread: spread,
+	}
+	set := around.steps()
+	if err := around.reachable(set); err != nil {
 		return nil, err
 	}
 	return plan{
 		preset:   boundariesID,
 		question: boundariesQuestion,
-		targets:  draftsOfSteps(set, desc, limitText),
+		targets:  around.drafts(set),
 	}.source()
-}
-
-// reachable refuses the whole set when any one file of it is out of reach.
-//
-// PR7, and the untouchable rule about silence. A set missing three of its seven
-// files still looks like a set, and the three that are missing are the ones the
-// run was about - the ones nearest the limit.
-func reachable(plan []step, desc format.Descriptor, limit int64) error {
-	floor := desc.SmallestAccepted(format.Request{Seed: 1, Label: true})
-	for _, s := range plan {
-		if s.size >= floor {
-			continue
-		}
-		what := fmt.Sprintf("%s would be %d B and the smallest %s this build makes is %d B",
-			s.id, s.size, strings.ToUpper(desc.ID), floor)
-		if s.size <= 0 {
-			what = fmt.Sprintf("%s would be %d B, and a file cannot be smaller than nothing", s.id, s.size)
-		}
-		return &ImpossibleError{
-			Preset: boundariesID,
-			// The limit rather than the spread, although the sentence offers
-			// both ways out. The limit is the one number the set is measured
-			// from, so it is where somebody types first - and a message can
-			// only stand beside one box.
-			Setting: "limit",
-			Detail:  what,
-			Hint: fmt.Sprintf(
-				// The settings are named without a leading dash on purpose. This
-				// sentence is built in the engine and both surfaces show it word
-				// for word, so a spelling only one of them has sends the other's
-				// reader translating: the window labels these fields "limit" and
-				// "spread", and there is no "--limit" anywhere on it. Seen on
-				// screen 2026-08-11, O79.
-				"Raise the {setting} above %d B, narrow the spread, or choose a format with a smaller minimum. The {setting} asked for was %d B.",
-				floor+largest(plan, limit), limit),
-		}
-	}
-	return nil
-}
-
-// largest is how far below the limit the set reaches, so the hint can name a
-// limit that would work rather than only the one that did not.
-func largest(plan []step, limit int64) int64 {
-	var deepest int64
-	for _, s := range plan {
-		if d := limit - s.size; d > deepest {
-			deepest = d
-		}
-	}
-	return deepest
-}
-
-// draftsOfSteps is the set as targets, ready for the composer.
-//
-// This used to print the document itself, line by line, with a comment saying
-// that was safe because every value was one the package built itself. The
-// comment was wrong until 2026-08-05: the id carries the caller's own text, so
-// "1\rB" reached the document raw and broke it, because the size parser trims
-// the ends and that carriage return sat in the middle. Found by fuzzing rather
-// than by reading.
-//
-// parseSpread refuses that character now, and this no longer writes YAML at
-// all - plan.source hands the values to the marshaller, which does the quoting
-// and owns the shape of the document. Two defences rather than one, and the
-// second one cannot be forgotten by the next preset.
-func draftsOfSteps(set []step, desc format.Descriptor, limitText string) []recipe.TargetDraft {
-	out := make([]recipe.TargetDraft, 0, len(set))
-	for _, s := range set {
-		draft := recipe.TargetDraft{
-			ID:     s.id,
-			Format: desc.ID,
-			Count:  "1",
-			Size:   strconv.FormatInt(s.size, 10),
-			// The id stays as it was. It derives the seed, so putting the limit
-			// in it would move the bytes of every file in this set for a change
-			// that is about telling two directories apart.
-			Name:     limitText + "_" + s.id + desc.Extension,
-			Group:    boundariesID,
-			Expected: "accept",
-		}
-		if !s.accept {
-			draft.Expected = "reject"
-			draft.ExpectedReason = "size_limit"
-		}
-		out = append(out, draft)
-	}
-	return out
 }

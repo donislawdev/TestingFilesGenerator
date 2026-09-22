@@ -71,6 +71,22 @@ var reachableFromTheWindow = []string{
 	// menu.
 	"preset:size-boundaries.format",
 
+	// The three presets of 2026-09-22, and every parameter of each. Drawn by
+	// the same code as the two above, because a preset parameter IS a
+	// format.Property - which is what made far-over, the first closed set any
+	// preset has declared, arrive as a menu with no window code at all.
+	"preset:text-encoding",
+	"preset:text-encoding.sample",
+	"preset:tabular-import",
+	"preset:tabular-import.rows",
+	"preset:tabular-import.columns",
+	"preset:upload-validation",
+	"preset:upload-validation.limit",
+	"preset:upload-validation.allow",
+	"preset:upload-validation.deny",
+	"preset:upload-validation.far-over",
+	"preset:upload-validation.bulk",
+
 	// A recipe that builds on a preset, since 2026-09-22: the switch and the
 	// menu on the batch screen are the extends key, and the chosen preset's
 	// parameters under it are the with section, drawn from the declaration

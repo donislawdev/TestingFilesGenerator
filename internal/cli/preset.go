@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -233,23 +234,30 @@ func presetNamed(args []string) string {
 // for a flag - a parse that succeeded means every name was defined. Names the
 // command does define are skipped for the same reason: with --preset given,
 // --limit is defined, and the failure was about something else entirely.
-func parameterWithoutItsPreset(fs *flag.FlagSet, args []string) (name, owner string) {
+func parameterWithoutItsPreset(fs *flag.FlagSet, args []string) (name string, owners []string) {
 	for _, a := range args {
 		if a == "--" {
-			return "", ""
+			return "", nil
 		}
-		if !strings.HasPrefix(a, "-") {
-			continue
-		}
-		candidate, _, _ := strings.Cut(strings.TrimLeft(a, "-"), "=")
-		if fs.Lookup(candidate) != nil {
-			continue
-		}
-		if owner := preset.Declaring(candidate); owner != "" {
-			return candidate, owner
+		candidate, declared := presetParameterIn(fs, a)
+		if len(declared) > 0 {
+			return candidate, declared
 		}
 	}
-	return "", ""
+	return "", nil
+}
+
+// presetParameterIn is the preset parameter one argument names, and every
+// preset that declares it.
+func presetParameterIn(fs *flag.FlagSet, arg string) (string, []string) {
+	if !strings.HasPrefix(arg, "-") {
+		return "", nil
+	}
+	candidate, _, _ := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+	if fs.Lookup(candidate) != nil {
+		return "", nil
+	}
+	return candidate, preset.Declaring(candidate)
 }
 
 // addPresetFlags puts the parameters of the named preset on the generate flag
@@ -281,17 +289,54 @@ func addPresetFlags(fs *flag.FlagSet, args []string, errOut io.Writer) int {
 // It reports whether it answered, so the caller knows whether the complaint it
 // held back still has to be let through.
 func explainUndefinedFlag(fs *flag.FlagSet, args []string, errOut io.Writer) bool {
-	name, owner := parameterWithoutItsPreset(fs, args)
+	name, owners := parameterWithoutItsPreset(fs, args)
 	if name == "" {
 		return false
 	}
 	// The second sentence names both roads, because since 2026-09-22 a
 	// recipe file can build on the preset too - and beside a file the flag
 	// does not exist either, the file's with section is where the value goes.
+	//
+	// Every owner is named, because since 2026-09-22 two presets ask for the
+	// limit a system declares and both call it that. Naming one of them sent
+	// the reader who meant the other to add the wrong preset, in a sentence
+	// that read as certain.
 	fmt.Fprintf(errOut,
-		"tfg: --%s is a parameter of the preset %s, so it only exists beside it. Add --preset %s, put %s under with: in a recipe that extends it, or drop --%s.\n",
-		name, owner, owner, name, name)
+		"tfg: --%s is a parameter of %s, so it only exists beside %s. Add %s, put %s under with: in a recipe that extends %s, or drop --%s.\n",
+		name, presetsNamed(owners), oneOfThem(owners), presetFlagsFor(owners),
+		name, oneOfThem(owners), name)
 	return true
+}
+
+// presetsNamed, oneOfThem and presetFlagsFor word one sentence for one owner
+// and for several, so it reads as English either way rather than as a list with
+// a noun beside it that does not agree.
+func presetsNamed(owners []string) string {
+	return core.Noun(len(owners), "the preset ", "the presets ") + joinWithOr(owners)
+}
+
+func oneOfThem(owners []string) string {
+	return core.Noun(len(owners), "it", "one of them")
+}
+
+func presetFlagsFor(owners []string) string {
+	flags := make([]string, 0, len(owners))
+	for _, id := range owners {
+		flags = append(flags, "--preset "+id)
+	}
+	return joinWithOr(flags)
+}
+
+// joinWithOr writes a list the way a sentence takes one. A comma between every
+// pair reads as an enumeration and this sentence is prose.
+func joinWithOr(items []string) string {
+	switch len(items) {
+	case 0:
+		return ""
+	case 1:
+		return items[0]
+	}
+	return strings.Join(items[:len(items)-1], ", ") + " or " + items[len(items)-1]
 }
 
 // describingFlagsBeside is describingFlagsGiven minus what this preset reads.

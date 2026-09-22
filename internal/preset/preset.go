@@ -313,9 +313,16 @@ func (e *ImpossibleError) InTheWordsOf(name string) string {
 	if name == "" {
 		name = e.Setting
 	}
-	return core.InTheWordsOf(
-		fmt.Sprintf("the preset %s cannot build this set - %s. %s", e.Preset, e.Detail, e.Hint),
-		name)
+	said := fmt.Sprintf("the preset %s cannot build this set - %s", e.Preset, e.Detail)
+	// A refusal that came up from the registry already ends with what to do
+	// about it, and a second sentence after that one is worse than no second
+	// sentence: "Ask for fewer rows or fewer columns. Ask for a set the rows
+	// can carry" is the tool saying the same thing twice and vaguer the second
+	// time. Seen on 2026-09-22 while the tabular set was being wired up.
+	if e.Hint == "" {
+		return core.InTheWordsOf(said+".", name)
+	}
+	return core.InTheWordsOf(said+". "+e.Hint, name)
 }
 
 // AboutSetting lets a window put this message beside the box that caused it,
@@ -410,22 +417,36 @@ func IDs() []string {
 	return ids()
 }
 
-// Declaring is the preset that declares a parameter of this name, or empty.
+// Declaring is every preset that declares a parameter of this name, by id.
 //
 // Parameter names and global flag names share one namespace, which is what
 // lets "--preset size-boundaries --limit 10mb" read as one sentence. The cost
 // of that is a flag which exists in one invocation and not in the next, so
 // typing --limit without its preset has to be answered with something better
 // than "not defined". This is how the command line finds out whose it is.
-func Declaring(name string) string {
+//
+// Every owner rather than the first, since 2026-09-22. Two presets ask for the
+// number a system declares as its limit and both call it limit - deliberately,
+// because a reader who learns one word and types it at the other has learnt the
+// right word. Answering with only the first left that reader pointed at the
+// preset they were not using, with a sentence that read as certain.
+func Declaring(name string) []string {
+	var out []string
 	for _, id := range ids() {
-		for _, param := range registry[id].Parameters {
-			if param.Name == name {
-				return id
-			}
+		if declares(registry[id], name) {
+			out = append(out, id)
 		}
 	}
-	return ""
+	return out
+}
+
+func declares(p Preset, name string) bool {
+	for _, param := range p.Parameters {
+		if param.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func ids() []string {
