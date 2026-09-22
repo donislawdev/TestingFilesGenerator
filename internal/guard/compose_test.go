@@ -32,6 +32,80 @@ import (
 // legal has to arrive as itself, byte for byte, because a value quietly altered
 // on the way in is untouchable rule 6 - silence - with the tool doing the
 // altering.
+// A composed recipe looks like one a person would have written by hand.
+//
+// It matters because of what the header of an ejected recipe promises: "edit
+// it, commit it, it is an ordinary recipe from here on". Somebody then pastes
+// a target into it, copied from docs/RECIPE.md - and every example there is
+// indented under its key and writes its numbers bare. A document composed with
+// the marshaller's flat default took that paste and stopped parsing, with the
+// error pointing at the line the person had just added. Caught on 2026-09-22 by
+// TestARecipeBuildingOnAPresetGivesTheBytesOfTheEjectedOneWithItsTargetsAppended,
+// which appends a target the way a person would.
+//
+// The last two cases are the ones that keep this honest rather than merely
+// tidy. A name is text even when it is made of digits, so a file called 123
+// must not become the number one hundred and twenty three.
+//
+// Both spellings are here for a measured reason. "007" alone looked like the
+// same assertion and was not: bareNumber refuses a leading zero on its own
+// account, so a mutation applying it to the name left "007" untouched and this
+// guard stayed green - NOT CAUGHT on 2026-09-22, an entry that found its
+// pattern, compiled, and proved nothing. "123" is the spelling that actually
+// moves, and "007" stays beside it because the two failures are different: one
+// is the tidying reaching a field it should not, the other is the tidying
+// keeping a spelling it should not.
+func TestAComposedRecipeIsWrittenTheWayAPersonWritesOne(t *testing.T) {
+	source, err := recipe.Compose(recipe.Document{
+		Targets: []recipe.TargetDraft{
+			{ID: "first", Format: "txt", Count: "2", Size: "1024", Name: "007", Group: "g"},
+			{ID: "second", Format: "txt", Count: "1", Size: "2mb", Name: "later.txt"},
+			{ID: "third", Format: "txt", Count: "1", Size: "512", Name: "123"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("composing refused a document with nothing wrong in it: %v", err)
+	}
+	got := string(source)
+
+	for _, want := range []string{
+		// Indented under its key, which is what every recipe in the documents
+		// looks like and what a pasted target has to line up with.
+		"targets:\n  - id: first\n",
+		// Bare, because a person writing this by hand writes count: 2.
+		"count: 2\n",
+		"size: 1024\n",
+		// Text, because it is text: a size may be written 2mb and a name may be
+		// made of digits.
+		"size: 2mb\n",
+		`name: "007"`,
+		`name: "123"`,
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("a composed recipe does not hold %q.\nIt reads:\n%s", want, got)
+		}
+	}
+
+	// And it still parses, which is the point of all of the above.
+	if _, err := recipe.Parse(source, "composed.yaml"); err != nil {
+		t.Errorf("a composed recipe does not read back: %v\n%s", err, got)
+	}
+
+	// The names survived the round trip as text rather than as numbers.
+	back, err := recipe.Parse(source, "composed.yaml")
+	if err != nil {
+		return
+	}
+	for i, want := range []string{"007", "later.txt", "123"} {
+		if i >= len(back.Targets) {
+			t.Fatalf("the recipe came back with %d targets and three went in", len(back.Targets))
+		}
+		if got := back.Targets[i].Name; got != want {
+			t.Errorf("a name came back as %q rather than %q - a number took a file's name", got, want)
+		}
+	}
+}
+
 func TestARecipeComposedFromTypedTextSurvivesAnythingTypedIntoIt(t *testing.T) {
 	hostile := []struct {
 		name string

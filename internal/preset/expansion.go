@@ -61,5 +61,10 @@ func (e *Expansion) Notes() []string {
 			out = append(out, said)
 		}
 	}
+	// What those values then laid out, after what we invented, because a
+	// sentence about the set reads as the consequence of the numbers above it.
+	if e.Preset.Says != nil {
+		out = append(out, e.Preset.Says(e.Settled)...)
+	}
 	return out
 }

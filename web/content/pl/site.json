@@ -95,6 +95,7 @@
     "143": "Zatrzymane sygnałem - tak wygląda przekroczony czas w CI."
   },
   "presets": {
+    "empty-and-minimal": "Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?",
     "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?"
   },
   "commands": {

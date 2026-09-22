@@ -414,6 +414,11 @@ func TestOnlyAPathTakesTheWholeRow(t *testing.T) {
 		{text.TabRecipe(), text.SettingLabel("password")},
 	} {
 		screen := selectTab(t, host.content, named.tab)
+		if named.tab == text.TabPresets() {
+			// The box measured here belongs to size-boundaries, so the preset
+			// is named rather than left to whichever one the screen opens with.
+			choosePreset(t, screen, "size-boundaries")
+		}
 		layOut()
 		control := controlUnder(screen, named.label)
 		if control == nil {

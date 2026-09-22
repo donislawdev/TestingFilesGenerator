@@ -228,9 +228,10 @@ func describePreset(e *preset.Expansion, b budget, out io.Writer) {
 		fmt.Fprintf(out, "  --%-12s the global flag, this preset gives it a default\n", name)
 	}
 
-	fmt.Fprintf(out, "\nbudget at these values:\n  %s, %s, %s total, format %s\n",
+	fmt.Fprintf(out, "\nbudget at these values:\n  %s, %s, %s total, %s %s\n",
 		core.Count(b.Targets, "target", "targets"), core.Count(b.Files, "file", "files"),
-		core.ExactBytes(b.Bytes), strings.Join(b.Formats, ", "))
+		core.ExactBytes(b.Bytes),
+		core.Noun(len(b.Formats), "format", "formats"), strings.Join(b.Formats, ", "))
 	for _, note := range e.Notes() {
 		fmt.Fprintf(out, "\nnote: %s\n", note)
 	}

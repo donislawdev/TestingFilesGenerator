@@ -191,6 +191,13 @@ func TestARecipeBuiltOnAPresetFromTheWindowGivesTheBytesTheFileGives(t *testing.
 		t.Fatal("there is no switch to build on a preset on the batch screen")
 	}
 	switchOn.SetChecked(true)
+	// Named rather than left to the section's opening choice, which is the
+	// first preset in order and moved the day one sorting earlier arrived.
+	//
+	// Reached through the tree rather than through the registry, because the
+	// control registered at "extends" is the menu inside its width wrapper.
+	// The fields are taken AFTER the choice, because choosing rebuilds them.
+	chooserUnder(t, content, text.FieldBasePreset()).SetSelected("size-boundaries")
 	fields := screen.Fields()
 	setBox(t, fields, recipe.KeyWith+".limit", "4mb")
 	chooserIn(t, fields, recipe.KeyWith+".format").SetSelected("txt")
@@ -258,6 +265,8 @@ func TestTheBatchScreenCanRunAPresetsSetAlone(t *testing.T) {
 		t.Error("with no batch left, the keyboard does not start at the switch")
 	}
 
+	// Named rather than left to the section's opening choice. See above.
+	chooserUnder(t, content, text.FieldBasePreset()).SetSelected("size-boundaries")
 	fields := screen.Fields()
 	setBox(t, fields, recipe.KeyWith+".limit", "4mb")
 	chooserIn(t, fields, recipe.KeyWith+".format").SetSelected("txt")

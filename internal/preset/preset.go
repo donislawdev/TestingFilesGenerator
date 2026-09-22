@@ -73,6 +73,27 @@ type Preset struct {
 	// runs and says which number it invented.
 	SaidWhenDefaulted map[string]string
 
+	// Says is what to say out loud about the set that was actually laid out,
+	// given the values it was settled on.
+	//
+	// SaidWhenDefaulted above speaks about a value nobody gave us. This speaks
+	// about what those values then produced, which is a different question and
+	// had no channel until 2026-09-22. The case that needed one: a preset
+	// called empty-and-minimal, asked for formats that have no legal empty
+	// form, builds the minimal half and no empty half - and a preset named
+	// after both halves that quietly ships one is a promise it did not keep.
+	// Untouchable rule 6 is about exactly that silence.
+	//
+	// It is handed the settled parameters and has to be pure, because every
+	// surface calls Notes when it happens to need it rather than once. Adding a
+	// sentence here reaches the command line, the window, the JSON report and
+	// eject without any of them changing, because all seven consumers already
+	// go through Expansion.Notes - which is what keeps D1 true without a second
+	// wiring to remember.
+	//
+	// Nil for a preset whose set is the same shape whatever it is given.
+	Says func(Args) []string
+
 	// Expand builds the recipe. It returns source rather than a structure, so
 	// what a run consumes is what eject prints.
 	Expand func(Args) ([]byte, error)

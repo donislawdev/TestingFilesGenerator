@@ -2,10 +2,12 @@ package preset
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 const (
@@ -13,13 +15,18 @@ const (
 	defaultLimitText  = "10mb"
 	defaultSpreadText = "1B,1kb,1mb"
 	defaultFormat     = "pdf"
+
+	// boundariesQuestion is announced by the preset AND written into the header
+	// of an ejected recipe. Named once rather than typed twice: the two copies
+	// had already been sitting in this file since it was written.
+	boundariesQuestion = "Is a size limit enforced exactly where it is declared?"
 )
 
 func init() {
 	Register(Preset{
 		ID:       boundariesID,
 		Title:    "Size boundaries",
-		Question: "Is a size limit enforced exactly where it is declared?",
+		Question: boundariesQuestion,
 
 		Parameters: []format.Property{
 			{
@@ -59,18 +66,66 @@ type offset struct {
 	bytes int64
 }
 
-// badSpread is a value the spread parameter does not accept.
+// spreadList is how the distances either side of the limit are written.
 //
-// The same type the format registry raises for a value outside its declaration,
-// rather than a plain error, and that is a repair rather than a preference. A
-// plain error falls through the classifier to RUNTIME, so "--spread notasize"
-// told CI this program had a bug instead of saying the value was wrong -
-// measured on 2026-08-05, exit 1. The same class as "--set width=abc", which
-// was fixed for the same reason two days earlier.
+// The shared parser does the splitting, the duplicate and the refusal, and this
+// says what one distance has to look like. Two equal distances make two steps
+// of the set that are the same file twice and collide on the id built from the
+// distance - found by fuzzing on 2026-08-05, where the collision surfaced as a
+// recipe the parser refused, complaining about target ids nobody typed.
+// Compared as bytes rather than as text, so 1024 and 1kb are caught as well as
+// 1B and 1b.
+var spreadList = commaList{
+	preset:    boundariesID,
+	param:     "spread",
+	empty:     "no distances were given, so there is nothing either side of the limit",
+	check:     checkDistance,
+	same:      sizeKey,
+	keep:      lower,
+	duplicate: repeatedDistance,
+}
+
+func repeatedDistance(first string) string {
+	return fmt.Sprintf(
+		"it is the same distance as %q and the set would hold that step twice. Every distance has to be different, because each one names one file either side of the limit",
+		first)
+}
+
+// badSpread is a value the spread parameter does not accept.
 func badSpread(value, reason string) error {
-	return &format.PropertyValueError{
-		Format: boundariesID, Key: "spread", Value: value, Reason: reason,
+	return spreadList.refuse(value, reason)
+}
+
+// checkDistance answers why a piece of the spread is not a distance.
+func checkDistance(piece string) string {
+	// The text of a distance becomes the id of a target and the name of a
+	// file, so it has to be made of what a size is made of and nothing else.
+	// Found by fuzzing on 2026-08-05: "1\rB" parses as one byte, because the
+	// size parser trims the ends and this carriage return is in the middle -
+	// and the character then reached the recipe source raw and broke the
+	// document.
+	if bad := firstUnusable(piece); bad != "" {
+		return fmt.Sprintf(
+			"it holds %s, and a distance is written with digits, letters and a dot - such as 1kb, 512 or 1.5mb. Its text becomes the name of a file", bad)
 	}
+	n, err := core.ParseSize(piece)
+	if err != nil {
+		return err.Error()
+	}
+	if n <= 0 {
+		return "a distance from the limit has to be more than nothing"
+	}
+	return ""
+}
+
+// sizeKey is what makes two distances the same one, for the duplicate check.
+// Anything checkDistance has passed parses here, so a failure cannot arrive.
+func sizeKey(piece string) string {
+	n, err := core.ParseSize(piece)
+	if err != nil {
+		return piece
+	}
+	return fmt.Sprintf("%d", n)
 }
 
 // firstUnusable names the first character that cannot appear in a distance,
@@ -87,46 +142,20 @@ func firstUnusable(piece string) string {
 }
 
 func parseSpread(raw string) ([]offset, error) {
-	var out []offset
-	seen := map[int64]string{}
-	for _, piece := range strings.Split(raw, ",") {
-		piece = strings.TrimSpace(piece)
-		if piece == "" {
-			continue
-		}
-		// The text of a distance becomes the id of a target and the name of a
-		// file, so it has to be made of what a size is made of and nothing
-		// else. Found by fuzzing on 2026-08-05: "1\rB" parses as one byte,
-		// because the size parser trims the ends and this carriage return is in
-		// the middle - and the character then reached the recipe source raw and
-		// broke the document. The comment on render() claimed no value there
-		// needed quoting. That was true of every value except this one.
-		if bad := firstUnusable(piece); bad != "" {
-			return nil, badSpread(piece, fmt.Sprintf(
-				"it holds %s, and a distance is written with digits, letters and a dot - such as 1kb, 512 or 1.5mb. Its text becomes the name of a file", bad))
-		}
+	pieces, err := spreadList.parse(raw)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]offset, 0, len(pieces))
+	for _, piece := range pieces {
+		// Parsed again rather than carried through the list, because the list
+		// deals in text for every preset and only this one wants the number.
+		// checkDistance has already refused anything that would fail here.
 		n, err := core.ParseSize(piece)
 		if err != nil {
 			return nil, badSpread(piece, err.Error())
 		}
-		if n <= 0 {
-			return nil, badSpread(piece, "a distance from the limit has to be more than nothing")
-		}
-		// Two equal distances make two steps of the set that are the same file
-		// twice, and they collide on the id built from the distance. Found by
-		// fuzzing on 2026-08-05: the collision surfaced as a recipe the parser
-		// refused, complaining about target ids nobody typed. Compared as bytes
-		// rather than as text, so 1024 and 1kb are caught as well as 1B and 1b.
-		if first, repeated := seen[n]; repeated {
-			return nil, badSpread(piece, fmt.Sprintf(
-				"it is the same distance as %q and the set would hold that step twice. Every distance has to be different, because each one names one file either side of the limit",
-				first))
-		}
-		seen[n] = piece
-		out = append(out, offset{text: strings.ToLower(piece), bytes: n})
-	}
-	if len(out) == 0 {
-		return nil, badSpread(raw, "no distances were given, so there is nothing either side of the limit")
+		out = append(out, offset{text: piece, bytes: n})
 	}
 	return out, nil
 }
@@ -204,11 +233,15 @@ func expandSizeBoundaries(args Args) ([]byte, error) {
 		}
 	}
 
-	plan := steps(limit, spread)
-	if err := reachable(plan, desc, limit); err != nil {
+	set := steps(limit, spread)
+	if err := reachable(set, desc, limit); err != nil {
 		return nil, err
 	}
-	return render(plan, desc, limitText), nil
+	return plan{
+		preset:   boundariesID,
+		question: boundariesQuestion,
+		targets:  draftsOfSteps(set, desc, limitText),
+	}.source()
 }
 
 // reachable refuses the whole set when any one file of it is out of reach.
@@ -261,47 +294,39 @@ func largest(plan []step, limit int64) int64 {
 	return deepest
 }
 
-// render writes the recipe.
+// draftsOfSteps is the set as targets, ready for the composer.
 //
-// Source rather than a structure, so eject prints what a run consumes.
+// This used to print the document itself, line by line, with a comment saying
+// that was safe because every value was one the package built itself. The
+// comment was wrong until 2026-08-05: the id carries the caller's own text, so
+// "1\rB" reached the document raw and broke it, because the size parser trims
+// the ends and that carriage return sat in the middle. Found by fuzzing rather
+// than by reading.
 //
-// Nothing here is quoted, and that is safe because of where the values come
-// from rather than because writing YAML by hand is safe: a byte count, a format
-// id the registry knows, and an id built from the text of a distance.
-//
-// That last one is the one to watch, and it was wrong until 2026-08-05. This
-// comment used to say every value was one the package built itself, and the id
-// carries the caller's own text - so "1\rB" reached the document raw and broke
-// it, because the size parser trims the ends and that carriage return sat in
-// the middle. Found by fuzzing, not by reading. parseSpread now refuses any
-// character a size is not written with, which is what makes the sentence above
-// true rather than merely confident.
-func render(plan []step, desc format.Descriptor, limitText string) []byte {
-	var b strings.Builder
-	b.WriteString("# Generated by: tfg preset eject " + boundariesID + "\n")
-	b.WriteString("# " + "Is a size limit enforced exactly where it is declared?" + "\n")
-	b.WriteString("#\n")
-	b.WriteString("# Edit it, commit it, it is an ordinary recipe from here on.\n\n")
-	b.WriteString("version: 1\n")
-	b.WriteString("targets:\n")
-
-	for _, s := range plan {
-		fmt.Fprintf(&b, "  - id: %s\n", s.id)
-		fmt.Fprintf(&b, "    format: %s\n", desc.ID)
-		fmt.Fprintf(&b, "    count: 1\n")
-		fmt.Fprintf(&b, "    size: %d\n", s.size)
-		// The id stays as it was. It derives the seed, so putting the limit in
-		// it would move the bytes of every file in this set for a change that
-		// is about telling two directories apart.
-		fmt.Fprintf(&b, "    name: %s_%s%s\n", limitText, s.id, desc.Extension)
-		fmt.Fprintf(&b, "    group: %s\n", boundariesID)
-		if s.accept {
-			b.WriteString("    expected: accept\n")
-			continue
+// parseSpread refuses that character now, and this no longer writes YAML at
+// all - plan.source hands the values to the marshaller, which does the quoting
+// and owns the shape of the document. Two defences rather than one, and the
+// second one cannot be forgotten by the next preset.
+func draftsOfSteps(set []step, desc format.Descriptor, limitText string) []recipe.TargetDraft {
+	out := make([]recipe.TargetDraft, 0, len(set))
+	for _, s := range set {
+		draft := recipe.TargetDraft{
+			ID:     s.id,
+			Format: desc.ID,
+			Count:  "1",
+			Size:   strconv.FormatInt(s.size, 10),
+			// The id stays as it was. It derives the seed, so putting the limit
+			// in it would move the bytes of every file in this set for a change
+			// that is about telling two directories apart.
+			Name:     limitText + "_" + s.id + desc.Extension,
+			Group:    boundariesID,
+			Expected: "accept",
 		}
-		b.WriteString("    expected:\n")
-		b.WriteString("      outcome: reject\n")
-		b.WriteString("      reason: size_limit\n")
+		if !s.accept {
+			draft.Expected = "reject"
+			draft.ExpectedReason = "size_limit"
+		}
+		out = append(out, draft)
 	}
-	return []byte(b.String())
+	return out
 }

@@ -419,7 +419,11 @@ func screenScenes() []screenScene {
 			flipSwitch(t, s.canvas, s.tab, text.FieldLabel())
 		}},
 		{name: "preset", tab: text.TabPresets()},
+		// The refusal belongs to size-boundaries, so the preset is named rather
+		// than left to whichever one the screen opens with - that is the first
+		// id in order and it moved the day a preset sorting earlier arrived.
 		{name: "preset-refused", tab: text.TabPresets(), set: func(t *testing.T, s scene) {
+			menuUnder(t, s.tab, text.FieldPreset()).SetSelected("size-boundaries")
 			fillField(t, s.tab, text.SettingLabel("limit"), "512")
 			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
@@ -436,9 +440,15 @@ func screenScenes() []screenScene {
 		// The list a preset DECLARES, drawn by the same machinery from the same
 		// kind of declaration as a format's own settings, and landing somewhere
 		// else on the form.
-		{name: "preset-menu-setting", tab: text.TabPresets(), after: func(t *testing.T, s scene) {
-			menuUnder(t, s.tab, text.SettingLabel("format")).Tapped(&fyne.PointEvent{})
-		}},
+		{name: "preset-menu-setting", tab: text.TabPresets(),
+			set: func(t *testing.T, s scene) {
+				// The only preset that reads a global flag, so it is the only
+				// one with a menu among its settings.
+				menuUnder(t, s.tab, text.FieldPreset()).SetSelected("size-boundaries")
+			},
+			after: func(t *testing.T, s scene) {
+				menuUnder(t, s.tab, text.SettingLabel("format")).Tapped(&fyne.PointEvent{})
+			}},
 
 		// The recipe screen, which arrived on 2026-08-18. It has states neither
 		// of the others can be put into, and every one of them is here because a

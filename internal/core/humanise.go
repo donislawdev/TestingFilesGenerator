@@ -126,6 +126,23 @@ func Count(n int, one, many string) string {
 	return fmt.Sprintf("%d %s", n, many)
 }
 
+// Noun is the word alone in the right number, for a line that NAMES the things
+// instead of counting them: "format pdf", "formats jpg, png".
+//
+// Count above it would say the number twice - "24 formats avif, bmp, ..." - and
+// a word written flat says it wrongly. "tfg preset show" printed "format avif,
+// bmp, csv, ..." on 2026-09-22, the day the first preset covering more than one
+// format arrived, because the line had only ever seen a single value.
+//
+// The same warning as Count: nothing in the sentence may agree with the number,
+// because this has no number in it to agree with.
+func Noun(n int, one, many string) string {
+	if n == 1 {
+		return one
+	}
+	return many
+}
+
 // Roughly keeps an estimate at the precision it deserves. Seconds on a two
 // minute estimate are noise that changes every redraw.
 func Roughly(d time.Duration) string {

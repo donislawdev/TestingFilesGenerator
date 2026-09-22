@@ -35,6 +35,7 @@ func TestThePresetScreenCanBuildTheSetInAnyFormat(t *testing.T) {
 	dir := t.TempDir()
 
 	host, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
@@ -88,6 +89,7 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 	}
 
 	host, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 	fill(t, content, text.FieldOutputDir(), fromWindow)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	choose(t, content, text.SettingLabel("format"), "png")
@@ -157,6 +159,9 @@ func TestThePreviewSaysWhatKindOfFilesItWouldWrite(t *testing.T) {
 	}
 
 	presetHost, presets := presetScreen(t)
+	// size-boundaries by name: it is the preset that reads the global format
+	// flag, so it is the one whose screen carries a format menu at all.
+	choosePreset(t, presets, "size-boundaries")
 	fill(t, presets, text.FieldOutputDir(), t.TempDir())
 	choose(t, presets, text.SettingLabel("format"), "wav")
 	press(t, presets, "Preview")

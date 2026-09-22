@@ -38,6 +38,108 @@ import (
 // It returns that tab rather than the window: since 2026-08-11 the window holds
 // every screen at once, and both work screens have a field called "output
 // directory", so a lookup across the whole thing finds whichever comes first.
+// The preset screen builds the minimal set the command line builds, with the
+// formats typed into the box.
+//
+// This is what the two parity entries for empty-and-minimal stand on. The
+// screen draws the parameter from the same declaration the flag comes from, so
+// "it appears on both surfaces" is nearly free - and nearly free is the problem.
+// What is NOT free is that a list typed into a box reaches the engine as the
+// same list the flag carries, in the same order, producing the same bytes.
+//
+// Three formats rather than the default, because the default is the one value
+// that cannot tell a box that works from a box whose contents are dropped: with
+// "all" standing in either way, a screen that sent nothing would pass.
+func TestThePresetScreenBuildsTheMinimalSetTheCommandLineBuilds(t *testing.T) {
+	root := t.TempDir()
+	fromCLI := filepath.Join(root, "cli")
+	fromWindow := filepath.Join(root, "window")
+
+	const chosen = "png,txt,zip"
+
+	var out, errOut bytes.Buffer
+	if code := cli.Run(context.Background(), []string{
+		"generate", "--preset", "empty-and-minimal", "--formats", chosen, "--out", fromCLI,
+	}, &out, &errOut); code != cli.ExitOK {
+		t.Fatalf("the command line refused the preset: exit %d\n%s", code, errOut.String())
+	}
+
+	host, content := presetScreen(t)
+	choosePreset(t, content, "empty-and-minimal")
+	fill(t, content, text.FieldOutputDir(), fromWindow)
+	fill(t, content, text.SettingLabel("formats"), chosen)
+	press(t, content, "Generate")
+	waitForManifest(t, host, fromWindow)
+	join(host)
+
+	cliNames, windowNames := namesIn(t, fromCLI), namesIn(t, fromWindow)
+	if strings.Join(cliNames, " ") != strings.Join(windowNames, " ") {
+		t.Fatalf("the two surfaces produced different files.\n  command line: %v\n  window:       %v",
+			cliNames, windowNames)
+	}
+
+	// png, txt and zip are three minimal files, and txt reaches nought bytes so
+	// it brings an empty one as well. Asserted rather than logged, because an
+	// equality between two empty sets proves nothing.
+	const wanted = 4
+	if len(cliNames) != wanted+1 {
+		t.Fatalf("the preset produced %d thing(s) and %d files plus a manifest was expected: %v",
+			len(cliNames), wanted, cliNames)
+	}
+
+	compared := 0
+	for _, name := range cliNames {
+		if name == "manifest.json" {
+			continue
+		}
+		compared++
+		a, err := os.ReadFile(filepath.Join(fromCLI, name))
+		if err != nil {
+			t.Fatalf("reading %s from the command line run: %v", name, err)
+		}
+		b, err := os.ReadFile(filepath.Join(fromWindow, name))
+		if err != nil {
+			t.Fatalf("reading %s from the window run: %v", name, err)
+		}
+		if !bytes.Equal(a, b) {
+			t.Errorf("%s differs between the surfaces: %d B from the command line, %d B from the window",
+				name, len(a), len(b))
+		}
+	}
+	if compared != wanted {
+		t.Fatalf("%d files were compared and %d were expected", compared, wanted)
+	}
+
+	// The record has to agree too, or two runs that produced the same bytes
+	// would still be described differently to whoever reads the manifest.
+	for _, want := range []string{`"id": "empty-and-minimal"`, `"formats": "` + chosen + `"`} {
+		if !strings.Contains(manifestText(t, fromWindow), want) {
+			t.Errorf("the window's manifest does not carry %s", want)
+		}
+		if !strings.Contains(manifestText(t, fromCLI), want) {
+			t.Errorf("the command line's manifest does not carry %s", want)
+		}
+	}
+}
+
+// choosePreset picks one preset on the screen by name.
+//
+// Explicitly, rather than leaning on the choice the screen opens with. That
+// choice is the first id in order, so it moved the day a preset sorting before
+// size-boundaries arrived - and six guards went red at once, every one of them
+// reporting that a field was not on the screen rather than that they had been
+// looking at a different preset. A guard that names what it is about cannot be
+// moved by the next preset to be written.
+func choosePreset(t *testing.T, content fyne.CanvasObject, id string) {
+	t.Helper()
+	control := controlUnder(content, text.FieldPreset())
+	picker, ok := control.(*parts.Chooser)
+	if !ok {
+		t.Fatalf("the preset field is %T rather than a list to choose from", control)
+	}
+	picker.SetSelected(id)
+}
+
 func presetScreen(t *testing.T) (*fakeHost, fyne.CanvasObject) {
 	t.Helper()
 	host := newFakeHost(t)
@@ -142,6 +244,7 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 	}
 
 	host, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 	fill(t, content, text.FieldOutputDir(), fromWindow)
 	fill(t, content, text.SettingLabel("limit"), "2mb")
 	press(t, content, "Generate")
@@ -228,6 +331,7 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 func TestThePresetScreenSaysWhichNumbersWereOurs(t *testing.T) {
 	dir := t.TempDir()
 	host, content := presetScreen(t)
+	choosePreset(t, content, "size-boundaries")
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	// limit left at its declared default, spread stated by hand.
