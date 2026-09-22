@@ -301,6 +301,26 @@
     "json_8kib_indented": {
       "bytes": 8192,
       "sha256": "9b00c22a11836d66cbf653275bb943b299d6864d391cff8ca13fa8ac7bdcc8c9"
+    },
+    "yaml_8kib": {
+      "bytes": 8192,
+      "sha256": "e320add3591cb6708fc7d8adb786cb26de6237b2759eb6f4587dcfe99b54157f",
+      "measured_on": "2026-09-22"
+    },
+    "yaml_8kib_no_label": {
+      "bytes": 8192,
+      "sha256": "83f0fbcd19fa41d5952226e919cc88f99e8cdd3b8729bf3074b745c0e6b38f05",
+      "measured_on": "2026-09-22"
+    },
+    "toml_8kib": {
+      "bytes": 8192,
+      "sha256": "65c7f12bc32bf311dc89f48ca6f99ded025554cabc40d683f1caa4f4301a7a28",
+      "measured_on": "2026-09-22"
+    },
+    "toml_8kib_no_label": {
+      "bytes": 8192,
+      "sha256": "eae81b32d70ff0380a09aa2d5cfbbbe85e8595c34d66187b9ca30cd7cc668540",
+      "measured_on": "2026-09-22"
     }
   },
   "remeasured": [

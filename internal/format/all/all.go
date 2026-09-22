@@ -26,10 +26,12 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/svgfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/targz"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/tiff"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/tomlfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/wav"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/webp"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xlsx"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xmlfile"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/yamlfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/zip"
 )

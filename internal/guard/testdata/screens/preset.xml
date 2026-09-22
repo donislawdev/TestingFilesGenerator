@@ -308,8 +308,8 @@
 															<container size="788x33">
 																<widget size="788x33" type="*widget.Label">
 																	<widget size="788x33" type="*widget.RichText">
-																		<text size="764x16">26 files · 31.5 KB (32 214 B) · avif, bmp, csv, docx, gif, html, ico, jpg, json, jxl, log, md, pdf, png, pptx, svg, targz, tiff,</text>
-																		<text pos="0,16" size="314x16">txt, wav, webp, xlsx, xml, zip · will go to /tfg/out</text>
+																		<text size="767x16">28 files · 31.9 KB (32 667 B) · avif, bmp, csv, docx, gif, html, ico, jpg, json, jxl, log, md, pdf, png, pptx, svg, targz, tiff,</text>
+																		<text pos="0,16" size="390x16">toml, txt, wav, webp, xlsx, xml, yaml, zip · will go to /tfg/out</text>
 																	</widget>
 																</widget>
 															</container>

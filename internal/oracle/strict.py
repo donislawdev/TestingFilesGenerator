@@ -1715,13 +1715,149 @@ def check_md(data, settings=None):
     ok(f"{len(text)} characters, {fences // 2} fenced block(s), decoded strictly")
 
 
+# The eight fields a record carries, in the order both generators write them.
+# Order is part of the check rather than decoration: a field that moved would
+# still parse, still be the right size and still hash the same way twice.
+RECORD_FIELDS = ("id", "name", "email", "amount", "active", "tags", "address", "note")
+
+WORD = r"[a-z]+"
+AMOUNT = r"[0-9]{6}\.[0-9]{2}"
+BOOL = r"true|false"
+
+
+def scan_records(lines, start, opener, field_line):
+    """Walk record blocks and return how many there were.
+
+    Shared by the two configuration formats because they differ in punctuation
+    and in nothing else. opener is the patterns the lines opening a record have
+    to match, exactly one of which captures the record number, and
+    field_line(name) gives the patterns for one field.
+    """
+    count = 0
+    i = start
+    while i < len(lines):
+        count += 1
+        for pattern in opener:
+            if i >= len(lines):
+                fail(f"record {count} ends while it is still opening")
+            m = re.fullmatch(pattern, lines[i])
+            if not m:
+                fail(f"line {i + 1} is {lines[i]!r} and a record opens with {pattern!r}")
+            if m.groups() and int(m.group(1)) != count:
+                fail(f"record {count} carries the number {m.group(1)} - the numbering skips")
+            i += 1
+        for name in RECORD_FIELDS[1:]:
+            for pattern in field_line(name):
+                if i >= len(lines):
+                    fail(f"record {count} ends before its {name} field")
+                if not re.fullmatch(pattern, lines[i]):
+                    fail(f"record {count}: line {i + 1} is {lines[i]!r} and the {name} "
+                         f"field should read {pattern!r}")
+                i += 1
+    if count < 1:
+        fail("the document carries no records")
+    return count
+
+
+def check_yaml(data):
+    """Block YAML, hand read rather than parsed.
+
+    Written to the specification instead of calling a parser, and here that is
+    worth more than usual: measured on 2026-09-22, PyYAML - the reader beside
+    this one - ACCEPTS a duplicate key. So does no other implementation tried,
+    and this layer is what stands in for them.
+
+    The two things it looks at that no parser would report are indentation by
+    tabs, which YAML forbids outright, and the field ORDER, which a parser
+    throws away before anybody could ask.
+    """
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"the document is not valid UTF-8: {exc}")
+    if "\t" in text:
+        fail("the document indents with a tab, which YAML does not allow")
+    if not text.endswith("\n"):
+        fail("the document does not end with a newline")
+    if "\r" in text:
+        fail("the document carries a carriage return, and it is written with LF endings")
+
+    lines = text.split("\n")[:-1]
+    at = 0
+    if lines and lines[at].startswith("# "):
+        if not lines[at].startswith("# tfg - yaml - "):
+            fail(f"the opening comment is {lines[at]!r} and it should carry the label")
+        at += 1
+    if at >= len(lines) or lines[at] != "records:":
+        fail("the document does not open with the records key")
+    at += 1
+
+    def field(name):
+        return {
+            "name": (rf"    name: {WORD}",),
+            "email": (rf"    email: {WORD}@example\.com",),
+            "amount": (rf"    amount: {AMOUNT}",),
+            "active": (rf"    active: (?:{BOOL})",),
+            "tags": (r"    tags:", rf"      - {WORD}", rf"      - {WORD}"),
+            "address": (r"    address:", rf"      city: {WORD}", r"      zip: [0-9]{5}"),
+            "note": (r'    note: "[^"\\]*"',),
+        }[name]
+
+    count = scan_records(lines, at, (r"  - id: ([0-9]+)",), field)
+    ok(f"{count} records, fields in order, no tabs, ids without a gap")
+
+
+def check_toml(data):
+    """An array of tables, hand read rather than parsed.
+
+    The byte order mark is the check worth naming. TOML says a document is
+    UTF-8 and measured on 2026-09-22 both readers refuse one that opens with a
+    mark - so a mark here is a file no TOML reader would take, and it is
+    exactly the kind of thing a size guard and a hash call correct.
+    """
+    if data.startswith(b"\xef\xbb\xbf"):
+        fail("the document opens with a byte order mark, which no TOML reader accepts")
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"the document is not valid UTF-8: {exc}")
+    if not text.endswith("\n"):
+        fail("the document does not end with a newline")
+    if "\r" in text:
+        fail("the document carries a carriage return, and it is written with LF endings")
+
+    lines = text.split("\n")[:-1]
+    at = 0
+    if lines and lines[at].startswith("# "):
+        if not lines[at].startswith("# tfg - toml - "):
+            fail(f"the opening comment is {lines[at]!r} and it should carry the label")
+        at += 1
+
+    def field(name):
+        return {
+            "name": (rf'name = "{WORD}"',),
+            "email": (rf'email = "{WORD}@example\.com"',),
+            "amount": (rf"amount = {AMOUNT}",),
+            "active": (rf"active = (?:{BOOL})",),
+            "tags": (rf'tags = \["{WORD}", "{WORD}"\]',),
+            "address": (rf'address = {{ city = "{WORD}", zip = [0-9]{{5}} }}',),
+            "note": (r'note = "[^"\\]*"',),
+        }[name]
+
+    # The table header sits on its own line, so a record opens with two lines
+    # here where YAML opens with one.
+    count = scan_records(lines, at, (r"\[\[records\]\]", r"id = ([0-9]+)"), field)
+    ok(f"{count} records, fields in order, no byte order mark")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
           "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
-          "txt": check_txt, "md": check_md}
+          "txt": check_txt, "md": check_md,
+          "yaml": check_yaml, "toml": check_toml}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how

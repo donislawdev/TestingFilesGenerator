@@ -95,10 +95,18 @@ func TestTheSocialPictureShowsTheCardAsItIsNow(t *testing.T) {
 			"nothing else notices it is stale - the site guard copies it rather than "+
 			"rendering it. Measured once already: it sat three formats out of date for "+
 			"three days.\n"+
-			"Take it again, then rewrite the site and the stamp:\n"+
+			"The site is written TWICE and that is not a typo. The camera photographs "+
+			"web/public/social.html as it is on disk, and the site copies the picture "+
+			"back into web/public - so one write puts the new card where the camera can "+
+			"see it, and the second carries the new picture into the site. Measured on "+
+			"2026-09-22, when three lines in the other order left a picture of the old "+
+			"card with a stamp of the new one, and this guard green over both.\n"+
+			"  TFG_WRITE_SITE=1 go test ./internal/guard/ -run TestTheSiteSaysWhatTheToolSays\n"+
 			"  python tools/probes/social-shot.py web/public web/assets/social-preview.png\n"+
 			"  TFG_WRITE_SITE=1 go test ./internal/guard/ -run TestTheSiteSaysWhatTheToolSays\n"+
-			"  TFG_WRITE_SOCIAL_STAMP=1 go test ./internal/guard/ -run TestTheSocialPicture",
+			"  TFG_WRITE_SOCIAL_STAMP=1 go test ./internal/guard/ -run TestTheSocialPicture\n"+
+			"Then LOOK at web/assets/social-preview.png. If git says it did not change, "+
+			"the camera photographed the old card.",
 			was, now)
 	}
 }
