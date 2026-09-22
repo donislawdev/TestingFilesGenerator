@@ -107,6 +107,19 @@ type deniedEntry struct {
 	known bool
 }
 
+// extension is what a file of this entry is named with, dot included.
+//
+// A format the registry has answers for itself, because an extension is not
+// always a dot and an id: targz is written .tar.gz, and denied.targz would be
+// a file no upload form has a rule about - which is the one thing this group
+// exists to test.
+func (e deniedEntry) extension() string {
+	if e.known {
+		return e.desc.Extension
+	}
+	return "." + e.ext
+}
+
 // uploadSet is one survey settled on its parameters.
 type uploadSet struct {
 	limit     int64
@@ -143,6 +156,9 @@ func settleUpload(args Args) (uploadSet, error) {
 	if s.denied, err = deniedExtensions(args[denyParam]); err != nil {
 		return s, err
 	}
+	if err := listsAgree(s.allowed, s.denied); err != nil {
+		return s, err
+	}
 	if s.farOver, err = farOverTimes(args[farOverParam]); err != nil {
 		return s, err
 	}
@@ -151,6 +167,40 @@ func settleUpload(args Args) (uploadSet, error) {
 	}
 	s.filler, err = format.Get(fillerFormat)
 	return s, err
+}
+
+// listsAgree refuses an extension that is allowed and denied at once.
+//
+// Neither list can see the other, so "--allow pdf --deny pdf" laid a set out
+// holding allowed_pdf.pdf expecting accept and denied.pdf expecting reject for
+// extension_rule. Both expectations reach the manifest, so any suite running
+// that set contradicts itself whatever the system under test does - and the run
+// said nothing, which is untouchable rule 6 on the worst kind of silence: the
+// one where nothing fails.
+//
+// The whole set is refused rather than one half dropped, because dropping a
+// half is choosing for somebody which of the two they meant. Found by review on
+// 2026-09-22, not by a guard, and there is one now.
+func listsAgree(allowed []format.Descriptor, denied []deniedEntry) error {
+	turned := make(map[string]string, len(denied))
+	for _, entry := range denied {
+		turned[entry.extension()] = entry.ext
+	}
+	for _, desc := range allowed {
+		written, both := turned[desc.Extension]
+		if !both {
+			continue
+		}
+		return &ImpossibleError{
+			Preset: uploadID, Setting: denyParam,
+			Detail: fmt.Sprintf(
+				"%s is allowed and %s is denied, and both name a file ending %s - so the set would hold one of them to be taken and one to be turned away",
+				desc.ID, written, desc.Extension),
+			Hint: fmt.Sprintf("Take %s out of the %s list, or %s out of the %s list.",
+				desc.ID, allowParam, written, denyParam),
+		}
+	}
+	return nil
 }
 
 // allowedFormats is the allow list in registry order.
@@ -404,7 +454,7 @@ func (s uploadSet) deniedFiles() []setFile {
 	for _, entry := range s.denied {
 		out = append(out, setFile{
 			id: "denied_" + entry.ext, group: deniedGroup, desc: entry.desc,
-			name: "denied." + entry.ext, size: sampleFor(entry.desc),
+			name: "denied" + entry.extension(), size: sampleFor(entry.desc),
 			expected: "reject", reason: "extension_rule",
 		})
 	}
@@ -459,7 +509,7 @@ func (s uploadSet) anomalyFiles() []setFile {
 	if len(s.denied) > 0 {
 		out = append(out, setFile{
 			id: "double_extension", group: anomalyGroup, desc: desc,
-			name: "invoice" + desc.Extension + "." + s.denied[0].ext, size: size,
+			name: "invoice" + desc.Extension + s.denied[0].extension(), size: size,
 			expected: "reject", reason: "extension_rule",
 		})
 	}

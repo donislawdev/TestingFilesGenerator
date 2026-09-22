@@ -97,9 +97,9 @@
   "presets": {
     "empty-and-minimal": "Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?",
     "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?",
-    "tabular-import": "Czy import tabeli przetrwa to, co eksportują prawdziwe narzędzia?",
+    "tabular-import": "Czy import tabeli poradzi sobie z tym, co eksportują prawdziwe narzędzia?",
     "text-encoding": "Czy mój czytnik wie, w jakim kodowaniu jest plik, czy zgaduje?",
-    "upload-validation": "Czy mój formularz uploadu przyjmuje to, co powinien, i odrzuca resztę?"
+    "upload-validation": "Czy mój formularz przesyłania plików przyjmuje to, co powinien, i odrzuca resztę?"
   },
   "commands": {
     "generate": "tworzy pliki, z przepisu albo z flag",
