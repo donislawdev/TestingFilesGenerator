@@ -26,7 +26,13 @@ import (
 // Asked through the YAML parser rather than by searching the text, because
 // `with:` can sit under a comment block and the key can sit anywhere inside
 // it - a regular expression tying the key to the line after `uses:` would read
-// pages.yml wrong today.
+// pages.yml wrong today. The text is still read, once, for a second count of
+// the checkouts: a parser that stopped seeing some of the steps would
+// otherwise report a clean tree over the ones it dropped. Two readers that
+// have to agree replace a number somebody would keep by hand - an outside
+// review of #118 asked for an exact count of twenty four, and that constant
+// would go stale with the next workflow while proving nothing the agreement
+// does not.
 func TestEveryCheckoutTurnsItsTokenOff(t *testing.T) {
 	// Asking the predicate about shapes the tree does not currently contain.
 	// Every checkout DOES turn its token off today, so a change that weakened
@@ -55,15 +61,17 @@ func TestEveryCheckoutTurnsItsTokenOff(t *testing.T) {
 		t.Skipf("the workflows are not here: %v", err)
 	}
 
-	seen := 0
+	seen, inText := 0, 0
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".yml") {
+		name := e.Name()
+		if e.IsDir() || (!strings.HasSuffix(name, ".yml") && !strings.HasSuffix(name, ".yaml")) {
 			continue
 		}
-		body, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		body, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
-			t.Fatalf("reading %s: %v", e.Name(), err)
+			t.Fatalf("reading %s: %v", name, err)
 		}
+		inText += strings.Count(withoutYamlComments(string(body)), "uses: actions/checkout@")
 		var workflow struct {
 			Jobs map[string]struct {
 				Steps []struct {
@@ -73,7 +81,7 @@ func TestEveryCheckoutTurnsItsTokenOff(t *testing.T) {
 			} `yaml:"jobs"`
 		}
 		if err := yaml.Unmarshal(body, &workflow); err != nil {
-			t.Fatalf("reading %s: %v", e.Name(), err)
+			t.Fatalf("reading %s: %v", name, err)
 		}
 		for jobName, job := range workflow.Jobs {
 			for _, step := range job.Steps {
@@ -89,19 +97,24 @@ func TestEveryCheckoutTurnsItsTokenOff(t *testing.T) {
 					"so turn it off:\n"+
 					"    with:\n"+
 					"      persist-credentials: false",
-					e.Name(), jobName)
+					name, jobName)
 			}
 		}
 	}
 
-	// Measured 2026-09-22: twenty four checkouts across eight workflows. A
-	// walk that found far fewer would report a clean tree while reading
-	// nothing - a renamed key, a changed suffix, a parser that stopped seeing
-	// steps - which is the way this guard is most likely to break.
-	if seen < 20 {
-		t.Errorf("only %d checkouts were found under %s, and there are twenty four. Either the "+
-			"workflows moved or the way this reads them stopped working, and this guard "+
-			"checked nothing", seen, dir)
+	// The two readings have to agree, and the text has to have found
+	// something. A parser that stopped seeing steps - a renamed key, a
+	// changed suffix, a shape it does not decode - would otherwise report a
+	// clean tree over the checkouts it dropped, which is the way this guard
+	// is most likely to break. Measured 2026-09-22: twenty four, by both.
+	if inText == 0 {
+		t.Errorf("no checkout was found in the text under %s, so this guard checked nothing. "+
+			"Either the workflows moved or the way this reads them stopped working", dir)
+	}
+	if seen != inText {
+		t.Errorf("the YAML walk found %d checkouts and the text holds %d. The walk is the one "+
+			"that judges them, so every checkout it does not see is one it does not ask "+
+			"- find out which shape it stopped decoding", seen, inText)
 	}
 }
 
