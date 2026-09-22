@@ -37,16 +37,29 @@ func TestNoJointLimitRefusalPrintsTheRequestAndTheLimitAsOneNumber(t *testing.T)
 					l.Of+" times "+l.By, got, l.Max)
 				continue
 			}
-			asked, allowed, ok := twoNumbersIn(bad)
-			if !ok {
+			counts := countsIn(bad)
+			if len(counts) < 2 {
 				t.Errorf("%s: the refusal does not read as two counts: %q",
 					l.Of+" times "+l.By, bad)
 				continue
 			}
-			if asked == allowed {
+			asked, allowed := counts[0], counts[1]
+			if asked.number == allowed.number {
 				t.Errorf("%s: asked for %d against a limit of %d and the refusal says %q - "+
 					"the two counts print as the same thing, so it says nothing",
 					l.Of+" times "+l.By, got, l.Max, bad)
+			}
+			// Both counts carry the same noun. The limit used to be a bare
+			// number taking its noun from four words earlier, which reads as a
+			// count of something else - and nothing said so until a mutation
+			// took the unit off and every guard stayed green.
+			switch {
+			case allowed.unit == "":
+				t.Errorf("%s: the limit in %q is a bare number with no unit after it",
+					l.Of+" times "+l.By, bad)
+			case asked.unit != allowed.unit:
+				t.Errorf("%s: the refusal counts the request in %q and the limit in %q: %q",
+					l.Of+" times "+l.By, asked.unit, allowed.unit, bad)
 			}
 		}
 	}
@@ -91,20 +104,32 @@ func declaredJointLimits(t *testing.T) []format.JointLimit {
 	return out
 }
 
-// twoNumbersIn pulls the two counts out of a refusal, ignoring the spaces that
-// group their digits.
+// counted is one number in a refusal and the word that follows it.
+type counted struct {
+	number string
+	unit   string
+}
+
+// countsIn pulls the counts out of a refusal with the word after each one,
+// ignoring the spaces that group digits.
+//
+// The word is read with firstWordOf from the doc-comment guard, which trims the
+// punctuation a sentence puts after its last noun - so a bare count followed by
+// a comma comes back with no unit at all, which is exactly the state being
+// looked for.
 //
 // Read out of the sentence rather than recomputed, because what is being
 // checked is what a person SEES. A guard comparing the numbers the rule holds
 // would agree with the rule and say nothing about the words it chose.
-func twoNumbersIn(sentence string) (first, second string, ok bool) {
-	found := make([]string, 0, 2)
+func countsIn(sentence string) []counted {
+	var found []counted
 	var digits strings.Builder
-	flush := func() {
-		if digits.Len() > 0 {
-			found = append(found, digits.String())
-			digits.Reset()
+	flush := func(rest string) {
+		if digits.Len() == 0 {
+			return
 		}
+		found = append(found, counted{number: digits.String(), unit: firstWordOf(rest)})
+		digits.Reset()
 	}
 	for i := 0; i < len(sentence); i++ {
 		c := sentence[i]
@@ -115,12 +140,10 @@ func twoNumbersIn(sentence string) (first, second string, ok bool) {
 			sentence[i+1] >= '0' && sentence[i+1] <= '9':
 			// A space inside a grouped number, not the end of one.
 		default:
-			flush()
+			flush(sentence[i:])
 		}
 	}
-	flush()
-	if len(found) < 2 {
-		return "", "", false
-	}
-	return found[0], found[1], true
+	flush("")
+	return found
 }
+
