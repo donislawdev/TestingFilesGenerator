@@ -23,6 +23,11 @@ import (
 // be un-chosen, so a screen with only the menu could turn a preset on and
 // never off again - and "off" is the ordinary state of this screen. The
 // switch is that state, and the menu appears only while it is on.
+//
+// Its own type with its own methods rather than more of the screen's: the
+// screen stood at its ceiling of methods, and what is here answers one
+// question - what the recipe builds on - which the rest of the screen only
+// asks.
 
 // base is the preset the batch screen builds on, as the screen holds it.
 type base struct {
@@ -40,33 +45,46 @@ type base struct {
 
 // newBase builds the controls, without placing them. The switch starts off,
 // which is the recipe with no extends key.
-func (r *Recipe) newBase() *base {
+func newBase(r *Recipe) *base {
 	b := &base{}
-	b.on = parts.NewToggle(func(bool) { r.rebuild() })
+	b.on = parts.NewToggle(func(on bool) {
+		// Off with no batch left is a form that can produce nothing, so a
+		// batch comes back - the one the screen opened with.
+		if !on && len(r.batches) == 0 {
+			r.addBatch()
+			return
+		}
+		r.rebuild()
+	})
 	ids := preset.IDs()
-	b.pick = parts.NewChooser(ids, func(id string) { r.onBaseChosen(b, id) })
+	b.pick = parts.NewChooser(ids, func(id string) {
+		if err := b.choose(id); err != nil {
+			// The registry filled the list, so a press cannot land here. A
+			// build where the two have come apart can, and saying so beats a
+			// section with no settings and no reason given.
+			r.refuse(err)
+			return
+		}
+		// Chosen while the screen is still being built, before the screen
+		// holds the base and before rebuild has anything to lay out.
+		if r.base != nil {
+			r.rebuild()
+		}
+	})
 	// Chosen here rather than left empty, so a switch turned on shows a
 	// preset with its parameters at once rather than a menu asking to be
-	// opened first. Chosen before the screen is built, so the callback's
-	// rebuild has nothing to rebuild yet - see onBaseChosen.
+	// opened first.
 	if len(ids) > 0 {
 		b.pick.SetSelected(ids[0])
 	}
 	return b
 }
 
-// onBaseChosen replaces the chosen preset's settings.
-//
-// The base is handed in rather than read off the screen, because the first
-// choice is made inside newBase, before the screen holds the base at all.
-func (r *Recipe) onBaseChosen(b *base, id string) {
+// choose replaces the chosen preset's settings.
+func (b *base) choose(id string) error {
 	chosen, err := preset.Get(id)
 	if err != nil {
-		// The registry filled the list, so a press cannot land here. A build
-		// where the two have come apart can, and saying so beats a section
-		// with no settings and no reason given.
-		r.refuse(err)
-		return
+		return err
 	}
 	// What the preset declares, then the globals it supplies a value for -
 	// the same order "tfg preset show" prints and the preset screen draws.
@@ -78,36 +96,46 @@ func (r *Recipe) onBaseChosen(b *base, id string) {
 	for _, p := range settings {
 		b.params = append(b.params, parts.FromProperty(p))
 	}
-	// Chosen while the screen is still being built, before the screen holds
-	// the base and before rebuild has anything to lay out - see newBase.
-	if r.base != nil {
-		r.rebuild()
-	}
+	return nil
 }
 
-// baseSection is the section as it appears on the screen, registered under
-// the keys a refusal about it arrives with: extends for the preset itself,
-// and with.<name> for each parameter, which is the line in the recipe the
-// value would be written on.
-func (r *Recipe) baseSection() fyne.CanvasObject {
+// carriesTheRun says whether the preset's files are part of the run, which
+// is when the switch is on. While it is, the screen may stand with no batch
+// at all - a recipe of extends alone is legal, a preset run kept in a
+// repository - and an outside review of #119 pointed out that the screen
+// could not produce one, because the last batch had no Remove button.
+func (b *base) carriesTheRun() bool { return b.on.Checked }
+
+// section is the part as it appears on the screen, registered under the
+// keys a refusal about it arrives with: extends for the preset itself, and
+// with.<name> for each parameter, which is the line in the recipe the value
+// would be written on.
+func (b *base) section(fields *parts.Fields, tips *parts.Tips) fyne.CanvasObject {
 	rows := []fyne.CanvasObject{
 		parts.Note(text.NoteBase()),
-		r.fields.AddToggle(settingBuildOnPreset, text.FieldBuildOnPreset(), "",
-			r.tips.Say(text.DetailBuildOnPreset()), r.base.on),
+		fields.AddToggle(settingBuildOnPreset, text.FieldBuildOnPreset(), "",
+			tips.Say(text.DetailBuildOnPreset()), b.on),
 	}
-	if r.base.on.Checked {
-		rows = append(rows, r.fields.Add(recipe.KeyExtends, text.FieldBasePreset(), text.HintBasePreset(),
-			r.tips.Say(text.DetailBasePreset()), parts.Menu(r.base.pick)))
-		for i, f := range r.base.params {
-			d := r.base.declared[i]
-			if d.Kind == format.PropertySize {
-				r.fields.InBytes(recipe.KeyWith + "." + f.Name)
-			}
-			rows = append(rows, r.fields.Add(recipe.KeyWith+"."+f.Name, text.SettingLabel(f.Name),
-				parts.PropertyDetail(d), r.tips.Say(text.SettingKey(f.Name)), parts.ShapedFor(d, f.Control)))
-		}
+	if b.on.Checked {
+		rows = append(rows, fields.Add(recipe.KeyExtends, text.FieldBasePreset(), text.HintBasePreset(),
+			tips.Say(text.DetailBasePreset()), parts.Menu(b.pick)))
+		rows = append(rows, b.parameterRows(fields, tips)...)
 	}
 	return parts.Section(text.SectionBase(), rows...)
+}
+
+// parameterRows draws the chosen preset's parameters.
+func (b *base) parameterRows(fields *parts.Fields, tips *parts.Tips) []fyne.CanvasObject {
+	rows := make([]fyne.CanvasObject, 0, len(b.params))
+	for i, f := range b.params {
+		d := b.declared[i]
+		if d.Kind == format.PropertySize {
+			fields.InBytes(recipe.KeyWith + "." + f.Name)
+		}
+		rows = append(rows, fields.Add(recipe.KeyWith+"."+f.Name, text.SettingLabel(f.Name),
+			parts.PropertyDetail(d), tips.Say(text.SettingKey(f.Name)), parts.ShapedFor(d, f.Control)))
+	}
+	return rows
 }
 
 // settingBuildOnPreset is the key the switch goes under.

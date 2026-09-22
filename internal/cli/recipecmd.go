@@ -98,13 +98,9 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	}
 
 	// A file that builds on a preset says so here the way the manifest will
-	// say it, so a pipeline reading this report and one reading the manifest
-	// see one record. The notes go where they go on a run: to a person, on
-	// standard error, because a number the preset invented is something to
-	// know before the files exist as well as after.
-	for _, note := range read.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	// say it, and its notes go where they go on a run: to a person, on
+	// standard error, before the files exist as well as after.
+	sayNotes(read.Notes(), errOut)
 
 	if *asJSON {
 		return writeJSON(out, errOut, validateReport{

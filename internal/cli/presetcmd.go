@@ -271,9 +271,7 @@ Usage:
 	// The note goes to the error channel. The recipe is the data here, and a
 	// sentence about a number we chose has no business inside a file somebody
 	// is about to commit.
-	for _, note := range expanded.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	sayNotes(expanded.Notes(), errOut)
 	if _, err := out.Write(expanded.Source); err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot write the recipe: %s\n", describeError(err))
 		return ExitIO

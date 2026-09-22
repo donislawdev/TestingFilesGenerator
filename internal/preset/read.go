@@ -62,7 +62,8 @@ func ReadRecipe(src []byte, name string) (*Read, error) {
 	if err != nil {
 		return nil, aboutTheFile(name, ext.Preset, err)
 	}
-	rec, err := recipe.ParseExtending(src, name, expanded.Source)
+	// On the extension rather than on src, so the file is decoded once.
+	rec, err := ext.Parse(expanded.Source)
 	if err != nil {
 		return nil, err
 	}

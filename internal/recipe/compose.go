@@ -113,17 +113,12 @@ func Compose(d Document) ([]byte, error) {
 		doc = append(doc, yaml.MapItem{Key: "seed", Value: d.Seed})
 	}
 	// The preset before the targets, because that is the order the run
-	// takes them in. The with map is sorted for the reason properties are:
-	// this text is hashed into the manifest.
+	// takes them in.
 	if d.Extends != "" {
 		doc = append(doc, yaml.MapItem{Key: KeyExtends, Value: presetScheme + d.Extends})
-		if len(d.With) > 0 {
-			with := yaml.MapSlice{}
-			for _, name := range sortedKeys(d.With) {
-				with = append(with, yaml.MapItem{Key: name, Value: d.With[name]})
-			}
-			doc = append(doc, yaml.MapItem{Key: KeyWith, Value: with})
-		}
+	}
+	if with := withSection(d); len(with) > 0 {
+		doc = append(doc, yaml.MapItem{Key: KeyWith, Value: with})
 	}
 	if d.Label != nil {
 		doc = append(doc, yaml.MapItem{Key: "defaults",
@@ -144,6 +139,18 @@ func Compose(d Document) ([]byte, error) {
 	doc = append(doc, yaml.MapItem{Key: "targets", Value: targets})
 
 	return yaml.Marshal(doc)
+}
+
+// withSection is the preset's parameters, sorted for the reason properties
+// are: this text is hashed into the manifest. Written whenever the map holds
+// anything, extends or no extends - a with section without extends is a
+// refusal Parse words, and dropping it here would turn that into silence.
+func withSection(d Document) yaml.MapSlice {
+	var with yaml.MapSlice
+	for _, name := range sortedKeys(d.With) {
+		with = append(with, yaml.MapItem{Key: name, Value: d.With[name]})
+	}
+	return with
 }
 
 func outputSection(d Document) yaml.MapSlice {

@@ -42,6 +42,15 @@ func record(e *preset.Expansion) *manifest.Preset {
 	}
 }
 
+// sayNotes tells a person what a preset invented, on standard error, where
+// a run's other asides go. One place for the three roads that say it, so
+// the prefix cannot drift between them.
+func sayNotes(notes []string, errOut io.Writer) {
+	for _, note := range notes {
+		fmt.Fprintf(errOut, "note: %s\n", note)
+	}
+}
+
 // budget is what a preset would produce, counted by the planner.
 //
 // Not a declared number beside the code. The one that used to sit in
@@ -340,9 +349,7 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 		return nil, classify(err)
 	}
 
-	for _, note := range expanded.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	sayNotes(expanded.Notes(), errOut)
 	opt.Preset = record(expanded)
 	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
 }

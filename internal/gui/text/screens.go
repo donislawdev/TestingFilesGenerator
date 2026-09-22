@@ -497,10 +497,13 @@ func NoteManifestOnly() string {
 // the preset's targets first, then the batches.
 func SectionBase() string { return say("SectionBase", "Build on a preset") }
 
-// NoteBase is the sentence inside that section.
+// NoteBase is the sentence inside that section. It describes the switch,
+// because the switch is the state: a preset is always chosen once the menu
+// is there, and "unchosen" - which the first wording said - was a state the
+// screen does not have. Pointed out by an outside review of #119.
 func NoteBase() string {
 	return say("NoteBase",
-		"The preset's files come first and the batches below are added after them. Leave the preset unchosen to run the batches on their own.")
+		"With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole recipe.")
 }
 
 // FieldBuildOnPreset names the switch that turns the section on. Off is the
@@ -508,7 +511,7 @@ func NoteBase() string {
 func FieldBuildOnPreset() string { return say("FieldBuildOnPreset", "Start from a preset") }
 func DetailBuildOnPreset() string {
 	return say("DetailBuildOnPreset",
-		"Off, the batches below are the whole recipe. On, the recipe carries extends and the preset's files come first.")
+		"Off, the batches below are the whole recipe. On, the chosen preset's files come first and the batches are added after them.")
 }
 
 // FieldBasePreset names the box choosing the preset to build on. A different
@@ -518,7 +521,7 @@ func FieldBasePreset() string { return say("FieldBasePreset", "Preset to build o
 func HintBasePreset() string  { return say("HintBasePreset", "Its files come first.") }
 func DetailBasePreset() string {
 	return say("DetailBasePreset",
-		"The settings under it fill the preset's parameters. One left empty stands in from its default, and the manifest records that it did.")
+		"The settings under it are the preset's own. One left empty takes its default, and the manifest records which ones did.")
 }
 
 // Buttons on the recipe screen.

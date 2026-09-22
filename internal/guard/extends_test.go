@@ -202,12 +202,13 @@ func TestARecipeBuiltOnAPresetFromTheWindowGivesTheBytesTheFileGives(t *testing.
 	press(t, content, text.ButtonGenerate())
 	join(host)
 
-	// The label switch on this screen starts off, so the file says so too -
-	// a recipe with no defaults section has the label on, and the two would
-	// differ in every byte for a reason that is not this section's.
+	// No defaults section: the label switch on this screen starts on, as a
+	// recipe file with no such section has it. It started off until
+	// 2026-09-22, and this guard was what showed it - every byte differed
+	// between the two roads for a reason that was not this section's (O231).
 	file := filepath.Join(root, "same.yaml")
 	if err := os.WriteFile(file, []byte(
-		"version: 1\nseed: 7\ndefaults:\n  label: false\nextends: preset:size-boundaries\nwith:\n  limit: 4mb\n  format: txt\n"+
+		"version: 1\nseed: 7\nextends: preset:size-boundaries\nwith:\n  limit: 4mb\n  format: txt\n"+
 			"targets:\n  - id: mine\n    format: txt\n    count: 1\n    size: 100\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -228,6 +229,53 @@ func TestARecipeBuiltOnAPresetFromTheWindowGivesTheBytesTheFileGives(t *testing.
 			t.Errorf("file %d: the window wrote %s %s and the file %s %s", i,
 				a.Files[i].Path, a.Files[i].Hashes.SHA256, b.Files[i].Path, b.Files[i].Hashes.SHA256)
 		}
+	}
+}
+
+// The batch screen can run a preset's set alone: the switch on, the only
+// batch removed, and Generate pressed.
+//
+// A recipe of extends and nothing else is legal - it is a preset run kept in
+// a repository - and the screen could not produce one until an outside
+// review of #119 said so: the last batch had no Remove button. Pressed
+// rather than looked at, and the manifest read back: seven files, all the
+// preset's, and the preset recorded. Then the switch goes off again and a
+// batch is back, because a form with nothing on it can produce nothing.
+func TestTheBatchScreenCanRunAPresetsSetAlone(t *testing.T) {
+	dir := t.TempDir()
+	host := newFakeHost(t)
+	screen := window.NewRecipe(host)
+	content := screen.Object()
+	t.Cleanup(func() { join(host) })
+
+	if buttonNamed(content, text.ButtonRemoveBatch()) != nil {
+		t.Fatal("the only batch offers Remove before the switch is on, and a screen with nothing on it can produce nothing")
+	}
+	switchOn := checkNamed(content, text.FieldBuildOnPreset())
+	switchOn.SetChecked(true)
+	press(t, content, text.ButtonRemoveBatch())
+	if screen.FirstField() != switchOn {
+		t.Error("with no batch left, the keyboard does not start at the switch")
+	}
+
+	fields := screen.Fields()
+	setBox(t, fields, recipe.KeyWith+".limit", "4mb")
+	chooserIn(t, fields, recipe.KeyWith+".format").SetSelected("txt")
+	entryUnder(t, content, text.FieldOutputDir()).SetText(dir)
+	press(t, content, text.ButtonGenerate())
+	join(host)
+
+	m := wholeManifest(t, filepath.Join(dir, "manifest.json"))
+	if len(m.Files) != 7 {
+		t.Fatalf("the window wrote %d files, and the preset's set alone is seven", len(m.Files))
+	}
+	if m.Run.Preset == nil || m.Run.Preset.ID != "size-boundaries" {
+		t.Errorf("the manifest records run.preset %+v", m.Run.Preset)
+	}
+
+	switchOn.SetChecked(false)
+	if screen.FirstField() == switchOn {
+		t.Error("with the switch off and no batch, the screen has nothing to produce and no batch came back")
 	}
 }
 
@@ -279,6 +327,13 @@ func TestEveryRefusalAboutThePresetSideOfARecipeNamesItsLine(t *testing.T) {
 				if p.Why == "" || p.Fix == "" {
 					t.Errorf("the problem %q arrives without all four parts (D6): why=%q fix=%q", p.What, p.Why, p.Fix)
 				}
+			}
+			// One sentence, not two. A file of extends alone handed to the
+			// plain reader used to collect a second refusal about asking for
+			// no files, which contradicts the README - such a recipe is legal.
+			// Pointed out by an outside review of #119.
+			if len(invalid.Problems) != 1 {
+				t.Errorf("%d problems, and this case has exactly one thing wrong:\n%v", len(invalid.Problems), err)
 			}
 		})
 	}

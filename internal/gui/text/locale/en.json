@@ -65,7 +65,7 @@
   },
   "DetailBasePreset": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "The settings under it fill the preset's parameters. One left empty stands in from its default, and the manifest records that it did."
+    "other": "The settings under it are the preset's own. One left empty takes its default, and the manifest records which ones did."
   },
   "DetailBoundary": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -73,7 +73,7 @@
   },
   "DetailBuildOnPreset": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "Off, the batches below are the whole recipe. On, the recipe carries extends and the preset's files come first."
+    "other": "Off, the batches below are the whole recipe. On, the chosen preset's files come first and the batches are added after them."
   },
   "DetailDamage": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -290,7 +290,7 @@
   },
   "NoteBase": {
     "description": "Shown in the window.",
-    "other": "The preset's files come first and the batches below are added after them. Leave the preset unchosen to run the batches on their own."
+    "other": "With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole recipe."
   },
   "NoteManifestOnly": {
     "description": "Shown in the window.",

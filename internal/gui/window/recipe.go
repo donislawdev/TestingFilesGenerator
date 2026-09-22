@@ -183,11 +183,16 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// must fill this in" looked the same. See the note on newBatch.
 	r.seed.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultSeed)))
 	r.label = parts.NewToggle(nil)
+	// On, as on the single batch screen and as in a recipe file with no
+	// defaults section. It started off until 2026-09-22, so the three
+	// surfaces had two defaults and the same recipe gave different bytes
+	// from this screen - found by the guard that compares them, O231.
+	r.label.SetChecked(true)
 
 	r.baseBox = parts.FieldColumn()
 	r.batchBox = parts.FieldColumn()
 	r.outBox = parts.FieldColumn()
-	r.base = r.newBase()
+	r.base = newBase(r)
 	r.batches = []*batch{r.newBatch()}
 
 	// In the bar rather than in the list, so the one control that makes this
@@ -224,9 +229,15 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 // Object is the screen, to put in the window.
 func (r *Recipe) Object() fyne.CanvasObject { return r.body }
 
-// FirstField is where the keyboard starts: the format of the first batch. There
-// is always a first batch - the last one cannot be removed.
-func (r *Recipe) FirstField() fyne.Focusable { return r.batches[0].formatPick }
+// FirstField is where the keyboard starts: the format of the first batch,
+// or the switch above it on a screen that has removed its last batch to run
+// a preset's set alone - see base.carriesTheRun.
+func (r *Recipe) FirstField() fyne.Focusable {
+	if len(r.batches) == 0 {
+		return r.base.on
+	}
+	return r.batches[0].formatPick
+}
 
 // OutDir is where this screen would write, for the screen somebody moves to.
 func (r *Recipe) OutDir() string { return r.outDir.Text }
@@ -314,7 +325,7 @@ func (r *Recipe) rebuild() {
 
 	// Before the batches, so that Tab walks the screen in the order it is
 	// read and the order the run takes the targets in.
-	r.baseBox.Add(r.baseSection())
+	r.baseBox.Add(r.base.section(r.fields, r.tips))
 
 	panels := make([]fyne.CanvasObject, 0, len(r.batches)+1)
 	for i, b := range r.batches {
@@ -436,7 +447,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	head := []fyne.CanvasObject{
 		parts.NewButton(parts.Secondary, text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
 	}
-	if len(r.batches) > 1 {
+	if len(r.batches) > 1 || r.base.carriesTheRun() {
 		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
@@ -569,9 +580,10 @@ func (r *Recipe) addBatch() {
 	r.rebuild()
 }
 
-// removeBatch drops one batch. The last cannot go: a screen with no batches can
-// produce nothing, and would answer a press with a refusal about a document
-// rather than about anything anybody did.
+// removeBatch drops one batch. The last cannot go, unless the screen builds
+// on a preset (base.carriesTheRun): a screen with no batches and no preset
+// can produce nothing, and would answer a press with a refusal about a
+// document rather than about anything anybody did.
 // duplicateBatch copies one batch and puts the copy under it.
 //
 // Batches usually differ from each other in one setting - a size, a format, a
@@ -610,7 +622,10 @@ func (r *Recipe) duplicateBatch(index int) {
 }
 
 func (r *Recipe) removeBatch(index int) {
-	if len(r.batches) <= 1 || index < 0 || index >= len(r.batches) {
+	if index < 0 || index >= len(r.batches) {
+		return
+	}
+	if len(r.batches) <= 1 && !r.base.carriesTheRun() {
 		return
 	}
 	r.batches = append(r.batches[:index], r.batches[index+1:]...)

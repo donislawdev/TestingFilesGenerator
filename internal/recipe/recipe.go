@@ -377,6 +377,22 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 	raw.refuseUnsupported(p)
 	raw.applySettings(p, rec)
 
+	// A recipe that builds on a preset is read by ParseExtending, which is
+	// handed the preset's targets and clears the key before coming here.
+	// Reaching this with the key still set means a caller read such a file
+	// with Parse - which cannot expand a preset, because this package cannot
+	// import that one - and the honest answer is that the targets are
+	// missing, not that the key is unknown, and not that the recipe asks for
+	// no files: the sentence below about targets would contradict the
+	// README, which says a recipe of extends alone is legal. Until
+	// 2026-09-22 both keys were refused here as "not in this build yet".
+	if ext := raw.extension(p); ext != nil {
+		p.add(KeyExtends, fmt.Sprintf("this recipe builds on preset:%s, and the preset's targets were not supplied", ext.Preset),
+			"a recipe that builds on a preset is read by a reader that expands the preset first, and this one does not",
+			"read the file with \"tfg generate\" or \"tfg validate\", which do")
+		return rec
+	}
+
 	if len(raw.Targets) == 0 {
 		p.add("targets", "the recipe asks for no files",
 			"a recipe without targets has nothing to produce",
@@ -393,17 +409,8 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 		at := spotOfTarget(i, fromPreset)
 		t := rt.validate(p, at, rec.Defaults)
 		if t.ID != "" {
-			where := at(t.ID)
 			if first, dup := seen[t.ID]; dup {
-				if first < fromPreset && i >= fromPreset {
-					p.add(where.of("id"), fmt.Sprintf("%s has the {setting} of a target the preset already builds", where),
-						"the preset's targets come first and every {setting} anchors a seed, so a second one would be a target nobody can tell from the first",
-						"give it a different {setting}, or leave the preset's target out by ejecting the preset and editing the recipe")
-				} else {
-					p.add(where.of("id"), fmt.Sprintf("target {setting} %q is used twice", t.ID),
-						"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
-						"give one of them a different {setting}")
-				}
+				usedTwice(p, at(t.ID), t.ID, first < fromPreset && i >= fromPreset)
 			} else {
 				seen[t.ID] = i
 			}
@@ -411,6 +418,22 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 		rec.Targets = append(rec.Targets, t)
 	}
 	return rec
+}
+
+// usedTwice refuses the second target carrying an id, in one of two wordings:
+// a clash with the preset's target has no line in the file to point at for
+// the first of the two, so it says whose the id is and where the way out
+// lies. ofThePreset says which.
+func usedTwice(p *problems, where spot, id string, ofThePreset bool) {
+	if ofThePreset {
+		p.add(where.of("id"), fmt.Sprintf("%s has the {setting} of a target the preset already builds", where),
+			"the preset's targets come first and every {setting} anchors a seed, so a second one would be a target nobody can tell from the first",
+			"give it a different {setting}, or leave the preset's target out by ejecting the preset and editing the recipe")
+		return
+	}
+	p.add(where.of("id"), fmt.Sprintf("target {setting} %q is used twice", id),
+		"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
+		"give one of them a different {setting}")
 }
 
 // spotOfTarget is where the target at position i of the merged list is, as a
@@ -451,18 +474,6 @@ func (raw rawRecipe) refuseUnsupported(p *problems) {
 	if raw.Policy != nil {
 		p.notYet("policy", "unspecified expectations are left in the manifest for the consumer to settle",
 			"remove the section - the expected field on a target already works")
-	}
-	// A recipe that builds on a preset is read by ParseExtending, which is
-	// handed the preset's targets and never comes through here with the key
-	// still set. Reaching this branch means a caller read such a file with
-	// Parse - which cannot expand a preset, because this package cannot
-	// import that one - and the honest answer is that the targets are
-	// missing, not that the key is unknown. Until 2026-09-22 both keys were
-	// refused here as "not in this build yet".
-	if ext := raw.extension(p); ext != nil {
-		p.add(KeyExtends, fmt.Sprintf("this recipe builds on preset:%s, and the preset's targets were not supplied", ext.Preset),
-			"a recipe that builds on a preset is read by a reader that expands the preset first, and this one does not",
-			"read the file with \"tfg generate\" or \"tfg validate\", which do")
 	}
 }
 

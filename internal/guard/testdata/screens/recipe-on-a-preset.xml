@@ -32,8 +32,8 @@
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
 					<widget size="1092x1115" type="*widget.Scroll">
-						<container size="1092x1572">
-							<container pos="136,0" size="820x1572">
+						<container size="1092x1587">
+							<container pos="136,0" size="820x1587">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
 										<widget size="788x24" type="*container.ThemeOverride">
@@ -56,22 +56,23 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x481">
-									<container size="820x481">
-										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x481" strokeColor="separator" strokeWidth="1"/>
-										<container size="820x481">
-											<container pos="16,16" size="788x449">
+								<container pos="0,73" size="820x495">
+									<container size="820x495">
+										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x495" strokeColor="separator" strokeWidth="1"/>
+										<container size="820x495">
+											<container pos="16,16" size="788x463">
 												<text bold size="788x20" textSize="17">Build on a preset</text>
-												<widget pos="0,36" size="788x14" type="*container.ThemeOverride">
-													<container size="788x14">
-														<widget size="788x14" type="*widget.Label">
-															<widget size="788x14" type="*widget.RichText">
-																<text color="placeholder" size="758x14" textSize="12">The preset's files come first and the batches below are added after them. Leave the preset unchosen to run the batches on their own.</text>
+												<widget pos="0,36" size="788x29" type="*container.ThemeOverride">
+													<container size="788x29">
+														<widget size="788x29" type="*widget.Label">
+															<widget size="788x29" type="*widget.RichText">
+																<text color="placeholder" size="782x14" textSize="12">With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole</text>
+																<text color="placeholder" pos="0,14" size="39x14" textSize="12">recipe.</text>
 															</widget>
 														</widget>
 													</container>
 												</widget>
-												<container pos="0,67" size="788x56">
+												<container pos="0,81" size="788x56">
 													<container size="788x56">
 														<container size="788x24">
 															<text color="rgba(207,211,216,255)" pos="0,3" size="124x16">Start from a preset</text>
@@ -89,7 +90,7 @@
 														</widget>
 													</container>
 												</container>
-												<container pos="0,139" size="788x58">
+												<container pos="0,153" size="788x58">
 													<container size="788x58">
 														<container size="788x24">
 															<text color="rgba(207,211,216,255)" pos="0,3" size="116x16">Preset to build on</text>
@@ -116,7 +117,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,214" size="788x83">
+												<container pos="0,228" size="788x83">
 													<container size="788x83">
 														<container size="788x24">
 															<text color="rgba(207,211,216,255)" pos="0,3" size="31x16">Limit</text>
@@ -156,7 +157,7 @@
 														</widget>
 													</container>
 												</container>
-												<container pos="0,313" size="788x60">
+												<container pos="0,327" size="788x60">
 													<container size="788x60">
 														<container size="788x24">
 															<text color="rgba(207,211,216,255)" pos="0,3" size="47x16">Spread</text>
@@ -187,7 +188,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,390" size="788x58">
+												<container pos="0,404" size="788x58">
 													<container size="788x58">
 														<container size="788x24">
 															<text color="rgba(207,211,216,255)" pos="0,3" size="46x16">Format</text>
@@ -218,7 +219,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,578" size="820x614">
+								<container pos="0,593" size="820x614">
 									<container size="820x614">
 										<container size="820x614">
 											<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x614" strokeColor="separator" strokeWidth="1"/>
@@ -226,13 +227,13 @@
 												<container pos="16,16" size="788x582">
 													<container size="788x36">
 														<container pos="-8,0" size="796x36">
-															<container size="714x36">
-																<widget size="714x36" type="*parts.FoldHead">
+															<container size="643x36">
+																<widget size="643x36" type="*parts.FoldHead">
 																	<rectangle radius="6" size="127x36"/>
 																	<rectangle radius="6" size="127x36" strokeColor="hyperlink"/>
 																</widget>
-																<container size="714x36">
-																	<container pos="8,8" size="698x20">
+																<container size="643x36">
+																	<container pos="8,8" size="627x20">
 																		<text bold size="59x20" textSize="17">Batch 1</text>
 																		<widget pos="63,0" size="20x20" type="*widget.Icon">
 																			<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
@@ -244,11 +245,16 @@
 																	</container>
 																</container>
 															</container>
-															<container pos="718,0" size="77x36">
+															<container pos="647,0" size="148x36">
 																<widget size="77x36" type="*parts.Button">
 																	<rectangle pos="-2,-2" radius="6" size="81x40" strokeColor="hyperlink"/>
 																	<rectangle fillColor="button" radius="6" size="77x36" strokeColor="inputBorder" strokeWidth="1"/>
 																	<text alignment="center" bold pos="6,9" size="65x16">Duplicate</text>
+																</widget>
+																<widget pos="81,0" size="67x36" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="71x40" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="67x36" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="6,9" size="55x16">Remove</text>
 																</widget>
 															</container>
 														</container>
@@ -484,7 +490,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,1217" size="820x355">
+								<container pos="0,1231" size="820x355">
 									<container size="820x355">
 										<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x355" strokeColor="separator" strokeWidth="1"/>
 										<container size="820x355">
@@ -601,7 +607,8 @@
 														<widget pos="0,32" size="788x24" type="*parts.Toggle">
 															<rectangle radius="6" size="24x24"/>
 															<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
-															<rectangle fillColor="inputBackground" pos="2,2" radius="4" size="20x20" strokeColor="inputBorder" strokeWidth="1"/>
+															<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
+															<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 														</widget>
 													</container>
 												</container>
@@ -615,8 +622,8 @@
 							<linearGradient pos="0,-8" size="1092x8"/>
 						</widget>
 						<widget pos="1086,0" size="6x1115" type="*widget.scrollBarArea">
-							<widget pos="3,0" size="3x790" type="*widget.scrollBar">
-								<rectangle fillColor="scrollbar" radius="3" size="3x790"/>
+							<widget pos="3,0" size="3x783" type="*widget.scrollBar">
+								<rectangle fillColor="scrollbar" radius="3" size="3x783"/>
 							</widget>
 						</widget>
 					</widget>

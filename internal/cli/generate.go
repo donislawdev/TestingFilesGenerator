@@ -200,13 +200,9 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 		return nil, ExitUsage
 	}
 
-	// A file that builds on a preset is recorded the way a --preset run is,
-	// and says the same things out loud - which of the preset's numbers were
-	// invented because the file did not give them. Nil for a file that stands
-	// alone, and the manifest field stays absent.
-	for _, note := range read.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", note)
-	}
+	// A file that builds on a preset is recorded and heard the way a --preset
+	// run is. Nil for a file that stands alone, and the field stays absent.
+	sayNotes(read.Notes(), errOut)
 	opt.Preset = record(read.Expansion)
 	return targetsFromParsedRecipe(read.Recipe, hash, g, given, opt), ExitOK
 }
