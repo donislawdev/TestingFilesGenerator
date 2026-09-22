@@ -67,7 +67,7 @@ func TestExactlyOnePresetOpensTheWindow(t *testing.T) {
 // through it, and the two screens reached for the first id separately. A guard
 // calling Landing directly would agree with Landing and prove nothing.
 //
-// 🔴 What this one CANNOT tell apart today, and it was named by CodeRabbit on
+// What this one CANNOT tell apart today, and it was named by CodeRabbit on
 // 2026-09-22 rather than noticed here: the declared preset is also the first id
 // in alphabetical order, so a screen going back to picking by position would
 // satisfy every assertion below. The mutation that "proved" this guard picked
