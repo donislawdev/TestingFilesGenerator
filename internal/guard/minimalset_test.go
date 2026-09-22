@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -113,6 +114,59 @@ func TestTheMinimalSetSitsOnEveryFormatsFloor(t *testing.T) {
 	if len(empties) != len(canBeEmpty) {
 		t.Errorf("the set holds %d empty files and %d formats in this build can be empty",
 			len(empties), len(canBeEmpty))
+	}
+	// The targets themselves, because the two counts above are counts of MAPS
+	// keyed by format - a second minimal png would overwrite the first and
+	// leave both of them reading exactly as they do now. Named by CodeRabbit on
+	// 2026-09-22, and it is the shape this project calls a guard that stopped
+	// reaching the state it guards.
+	if want := len(format.IDs()) + len(canBeEmpty); len(doc.Targets) != want {
+		t.Errorf("the set holds %d targets and %d were expected - one per format, plus one more "+
+			"for every format that can be empty", len(doc.Targets), want)
+	}
+}
+
+// The same formats in two orders build the same set.
+//
+// The order somebody types is not part of what they asked for. It used to be:
+// "--formats png,zip" and "--formats zip,png" produced different recipe text,
+// so the same selection carried two different recipe_hash values into two
+// manifests and listed the files the other way round. Measured on 2026-09-22 -
+// f76a3883e against 073157029 - after a comment in this package had claimed
+// registry order for weeks without anything walking the registry.
+//
+// The bytes of the files never moved, because a seed comes from the id of a
+// target rather than from its place in the list. That is what made this quiet:
+// every file was right and only the record of them disagreed.
+func TestTheMinimalSetIsTheSameWhateverOrderTheFormatsAreNamedIn(t *testing.T) {
+	// Two formats far apart in the registry, so a walk that kept the typing
+	// cannot pass by accident.
+	first, err := preset.Expand("empty-and-minimal", preset.Args{"formats": "png,bmp,zip"})
+	if err != nil {
+		t.Fatalf("the preset refused three formats: %v", err)
+	}
+	second, err := preset.Expand("empty-and-minimal", preset.Args{"formats": "zip,png,bmp"})
+	if err != nil {
+		t.Fatalf("the preset refused the same three in another order: %v", err)
+	}
+	if !bytes.Equal(first.Source, second.Source) {
+		t.Errorf("the same formats in two orders built two recipes.\n--- png,bmp,zip ---\n%s\n--- zip,png,bmp ---\n%s",
+			first.Source, second.Source)
+	}
+
+	// And the order they come out in is the registry's, rather than merely
+	// being the same both times - two runs agreeing on a wrong order would
+	// satisfy the check above and still put bmp after zip.
+	doc, err := recipe.Parse(first.Source, "empty-and-minimal.yaml")
+	if err != nil {
+		t.Fatalf("the preset wrote a recipe this build cannot read: %v", err)
+	}
+	seen := make([]string, 0, len(doc.Targets))
+	for _, target := range doc.Targets {
+		seen = append(seen, target.Format)
+	}
+	if want := []string{"bmp", "png", "zip"}; strings.Join(seen, ",") != strings.Join(want, ",") {
+		t.Errorf("the set is laid out as %v and the registry names them %v", seen, want)
 	}
 }
 

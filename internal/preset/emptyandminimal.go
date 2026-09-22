@@ -90,10 +90,20 @@ func checkSetFormat(item string) string {
 
 // chosenFormats is the formats this set covers, in registry order.
 //
-// Registry order rather than the order somebody typed, because the order of the
-// set is the order of the manifest and of the directory listing, and two people
-// asking for the same formats should get the same set. SortChoices holds the
-// same rule for a closed set of values one level down.
+// Registry order rather than the order somebody typed, and the registry is
+// walked here rather than the typing, which is the difference between the
+// sentence being true and merely being written down. It was written down and
+// false until 2026-09-22: this loop ran over the ids as they arrived, so
+// "--formats png,zip" and "--formats zip,png" asked for one set and produced
+// two - different recipe text, a different recipe_hash in the manifest, and the
+// files listed the other way round. The bytes of the files themselves never
+// moved, because a seed comes from the id of a target rather than from its
+// place in the list. Found by review, not by a guard, and there is one now.
+//
+// Why it matters at all: the manifest answers "did this record come from that
+// recipe", and two people asking for the same thing have to be able to compare
+// their answers. SortChoices holds the same rule for a closed set of values one
+// level down.
 func chosenFormats(raw string) ([]format.Descriptor, error) {
 	ids, err := formatsList.parse(raw)
 	if err != nil {
@@ -103,12 +113,19 @@ func chosenFormats(raw string) ([]format.Descriptor, error) {
 	if err != nil {
 		return nil, err
 	}
+	wanted := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		wanted[id] = true
+	}
 
 	// The keyword shadows a format of the same name, and no format is called
 	// all - TestNoFormatIsCalledByTheWordThatMeansAllOfThem holds that, so the
 	// shadow cannot appear without something going red.
 	out := make([]format.Descriptor, 0, len(ids))
-	for _, id := range ids {
+	for _, id := range format.IDs() {
+		if !wanted[id] {
+			continue
+		}
 		desc, err := format.Get(id)
 		if err != nil {
 			return nil, err
