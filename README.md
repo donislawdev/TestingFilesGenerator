@@ -76,7 +76,7 @@ reference is below it.
 
 ## 📁 Formats it generates
 
-Twenty four, and every one is a **real file of that format** - it opens in the
+Twenty six, and every one is a **real file of that format** - it opens in the
 software that owns it, at the exact size you asked for:
 
 | group | formats |
@@ -84,6 +84,7 @@ software that owns it, at the exact size you asked for:
 | 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
 | 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
+| ⚙️ **Configuration** | `yaml`, `toml` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 
@@ -555,6 +556,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `json` | `formatting` |
 | `svg` | `width`, `height` |
 | `html` | `structure` |
+| `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |
 
 ```
 tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85

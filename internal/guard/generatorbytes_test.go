@@ -289,6 +289,16 @@ func goldenCases() map[string]engine.Target {
 		// would pin the same file.
 		"xml_8kib_no_label": {ID: "g", Format: "xml", Sizes: engine.Uniform(1, 8192), Label: false},
 
+		// The two configuration formats. Both carry the label inside the file,
+		// in a comment, so like XML the switch moves their bytes and both
+		// positions are pinned. Unlike XML the comment sits in front of
+		// everything, so what the second case pins is the whole document
+		// shifting rather than a line coming out of the middle.
+		"yaml_8kib":          {ID: "g", Format: "yaml", Sizes: engine.Uniform(1, 8192), Label: true},
+		"yaml_8kib_no_label": {ID: "g", Format: "yaml", Sizes: engine.Uniform(1, 8192), Label: false},
+		"toml_8kib":          {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: true},
+		"toml_8kib_no_label": {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: false},
+
 		// The label is a byte affecting switch, not a cosmetic one, so it is
 		// pinned in both positions.
 		"txt_4kib_no_label": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: false},

@@ -108,8 +108,10 @@ var fileKinds = map[string]fileKind{
 	"json":  kindWords,
 	"log":   kindWords,
 	"md":    kindWords,
+	"toml":  kindWords,
 	"txt":   kindWords,
 	"xml":   kindWords,
+	"yaml":  kindWords,
 }
 
 // FileKinds is the table, for the guard that keeps it in step with the

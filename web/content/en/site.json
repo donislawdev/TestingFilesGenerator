@@ -15,7 +15,7 @@
       "slug": "formats",
       "nav": "Formats",
       "title": "{{ .Facts.FormatCount }} Supported File Formats - PDF, DOCX, PNG, ZIP and More",
-      "description": "Every file format this generator produces, the smallest file each one can be, and the settings each one accepts. All twenty open in the software that owns them."
+      "description": "Every file format this generator produces, the smallest file each one can be, and the settings each one accepts. All {{ .Facts.FormatCount }} open in the software that owns them."
     },
     {
       "key": "docs",
@@ -51,7 +51,7 @@
     "navLabel": "Main",
     "breadcrumbHome": "Home",
     "imageAlt": "Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one",
-    "schemaDescription": "A free and open source generator of test files for QA. It produces real files of twenty formats at any exact size and writes a manifest saying how the system under test should react to each one.",
+    "schemaDescription": "A free and open source generator of test files for QA. It produces real files of {{ .Facts.FormatCount }} formats at any exact size and writes a manifest saying how the system under test should react to each one.",
     "ctaDownload": "Download",
     "ctaSource": "View the source",
     "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning.",

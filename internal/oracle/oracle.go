@@ -271,6 +271,26 @@ var checkers = map[string]Checker{
 		accept: expectOK("the Python XML parser"),
 	},
 
+	// PyYAML, which is a different implementation in a different language from
+	// the parser this module links. It is not a witness for a duplicate key -
+	// measured, it takes one - and the structural guard carries that half.
+	"python-yaml": {
+		Name:   "python-yaml",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", pythonYAMLScript, p} },
+		accept: expectOK("the Python YAML parser"),
+	},
+
+	// tomllib, which has been in the standard library since Python 3.11 - so
+	// unlike every other entry here, this one cannot be missing from a machine
+	// that has Python at all.
+	"python-toml": {
+		Name:   "python-toml",
+		find:   inPath("python"),
+		args:   func(p string) []string { return []string{"-c", pythonTOMLScript, p} },
+		accept: expectOK("the Python TOML parser"),
+	},
+
 	// The strongest reference tool in this project. Everything else answers
 	// "did it parse" - this one answers "did it draw", by rendering the file to
 	// a bitmap and then looking at the pixels. A drawing that parses and paints
@@ -398,7 +418,12 @@ func StrictKnows(formatID string) bool {
 		// encoding. Before that there was nothing here to check against
 		// beyond "these are the bytes we meant" - a claim about UTF-16 is a
 		// claim somebody else's decoder can settle.
-		"txt", "md":
+		"txt", "md",
+		// The two configuration formats, from the day they arrived. This layer
+		// carries more of them than usual: measured 2026-09-22, PyYAML takes a
+		// duplicate key that every other implementation refuses, and neither a
+		// parser nor a hash would report a field that moved.
+		"yaml", "toml":
 		return true
 	}
 	return false

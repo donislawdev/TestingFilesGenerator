@@ -21,7 +21,7 @@ because it turns other people's test suites red.
   used to start on whichever preset came first alphabetically - so what you
   saw when you opened the tab changed whenever a preset was added. A preset
   says now whether it is the one to start on, and `empty-and-minimal` is it:
-  pressing Generate without touching anything writes 32 214 B rather than the
+  pressing Generate without touching anything writes 32 667 B rather than the
   73 MB the size-boundaries defaults come to, and its set means something
   without a number from you first.
 - **A recipe this program writes for you reads like one written by hand.**
@@ -195,6 +195,33 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Two more formats, both for configuration: `yaml` and `toml`.** A config
+  file at an exact size is what a size-limited upload is for a picture, and
+  neither format had a way to ask for one. Run `tfg formats` for all twenty
+  six, or `tfg formats yaml` for what one takes.
+
+  Both write records: a `records` block of entries carrying an id, a name, an
+  email, an amount, a flag, a list of tags, a nested address and a note. YAML
+  comes out in block style rather than flow style, so it reads like a YAML
+  file rather than like JSON with a different extension. TOML comes out as an
+  array of `[[records]]` tables.
+
+  **The smallest yaml is 241 B and the smallest toml is 212 B**, each one
+  whole record. An empty file is legal in both - and it stays something you
+  ask for by shape rather than by byte count, the same answer `json` gives
+  about an empty array.
+
+  **The label rides in a comment**, which is new: these are the first record
+  formats whose label sits inside the file without touching the data being
+  tested. `csv` and `json` label from the outside because an extra field
+  changes the very structure under test, and a comment is not data. Ask for a
+  file at exactly the minimum and there is no room for it beside a whole
+  record, so it is left out and the run says so.
+
+  **TOML takes no `encoding` or `bom` setting and says why rather than
+  calling it an unknown option.** TOML is UTF-8 by its own specification, and
+  both readers tested refuse a TOML file that opens with a byte order mark.
+
 - **Three more presets: `upload-validation`, `text-encoding` and
   `tabular-import`.** Run `tfg preset list` for all five, or
   `tfg preset show <id>` for what one takes and what it would produce before
@@ -246,8 +273,8 @@ because it turns other people's test suites red.
 - **A second preset: `empty-and-minimal`.** It answers "does a file that is
   valid and as small as the format allows get through?" and builds the
   smallest legal file of every format this build has, plus a file of nought
-  bytes for every format that has a legal empty form. The whole set is 26
-  files and 32 214 B, so it checks twenty-four paths through your reader for
+  bytes for every format that has a legal empty form. The whole set is 28
+  files and 32 667 B, so it checks twenty-six paths through your reader for
   the price of thirty-two kilobytes. Run it with `tfg generate --preset
   empty-and-minimal`, or pick it on the Presets screen.
 

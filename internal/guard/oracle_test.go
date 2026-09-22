@@ -163,6 +163,10 @@ var structurallyChecked = map[string]bool{
 	// Since 2026-09-07, when a text file gained something to be checked
 	// against: the encoding it declares.
 	"txt": true, "md": true,
+	// Since 2026-09-22, and these two carry more here than most: the reader
+	// beside YAML accepts a duplicate key, and field order is something a
+	// parser throws away before anybody could ask about it.
+	"yaml": true, "toml": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

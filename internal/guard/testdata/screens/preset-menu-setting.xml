@@ -403,7 +403,7 @@
 							<container size="140x560">
 								<widget size="140x560" type="*widget.List">
 									<widget size="140x560" type="*widget.Scroll">
-										<container size="140x672">
+										<container size="140x728">
 											<widget size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="6" size="140x28"/>
@@ -535,21 +535,21 @@
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="6" size="140x28"/>
 													<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="64,5" size="68x16">txt</text>
+													<text pos="64,5" size="68x16">toml</text>
 												</widget>
 											</widget>
 											<widget pos="0,532" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="6" size="140x28"/>
-													<image pos="36,4" rsc="media-music.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="64,5" size="68x16">wav</text>
+													<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="64,5" size="68x16">txt</text>
 												</widget>
 											</widget>
 											<widget pos="0,560" size="140x28" type="*widget.listItem">
 												<widget size="140x28" type="*parts.ListRow">
 													<rectangle radius="6" size="140x28"/>
-													<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-													<text pos="64,5" size="68x16">webp</text>
+													<image pos="36,4" rsc="media-music.svg" size="iconInlineSize" themed="foreground"/>
+													<text pos="64,5" size="68x16">wav</text>
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">
@@ -620,8 +620,8 @@
 											<linearGradient pos="0,-8" size="140x8"/>
 										</widget>
 										<widget pos="134,0" size="6x560" type="*widget.scrollBarArea">
-											<widget pos="3,0" size="3x466" type="*widget.scrollBar">
-												<rectangle fillColor="scrollbar" radius="3" size="3x466"/>
+											<widget pos="3,0" size="3x430" type="*widget.scrollBar">
+												<rectangle fillColor="scrollbar" radius="3" size="3x430"/>
 											</widget>
 										</widget>
 									</widget>

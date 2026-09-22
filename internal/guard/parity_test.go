@@ -132,6 +132,8 @@ var reachableFromTheWindow = []string{
 	"format:txt",
 	"format:wav",
 	"format:xml",
+	"format:yaml",
+	"format:toml",
 	"format:zip",
 
 	// Drawn from the declaration and nothing else, which is what declaring

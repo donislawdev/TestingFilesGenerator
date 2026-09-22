@@ -444,7 +444,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 // This is the shape docs/OBSERVATIONS.md now calls out: an audit of
 // completeness has to run FROM THE SOURCE towards the list. Walking the entries
 // already written down cannot, by construction, find what is missing from them.
-var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg"}
+var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg", "yaml", "toml"}
 
 var binaryFormats = []string{"avif", "bmp", "docx", "gif", "ico", "jpg", "jxl", "pdf", "png", "pptx", "targz", "tiff", "wav", "webp", "xlsx", "zip"}
 
@@ -683,6 +683,8 @@ func TestRecordNumbersRunFromOneWithoutAGap(t *testing.T) {
 		{"csv", regexp.MustCompile(`(?m)^(\d+),`)},
 		{"json", regexp.MustCompile(`\{"id":(\d+),`)},
 		{"xml", regexp.MustCompile(`<record id="(\d+)"`)},
+		{"yaml", regexp.MustCompile(`(?m)^  - id: (\d+)$`)},
+		{"toml", regexp.MustCompile(`(?m)^id = (\d+)$`)},
 	}
 
 	for _, c := range cases {
