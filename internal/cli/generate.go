@@ -186,7 +186,7 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 
 // targetsFromRecipe reads the recipe and settles what the flags override.
 func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt *engine.Options, errOut io.Writer) ([]engine.Target, int) {
-	rec, hash, code := loadRecipe(path, errOut)
+	read, hash, code := loadRecipe(path, errOut)
 	if code != ExitOK {
 		return nil, code
 	}
@@ -200,7 +200,15 @@ func targetsFromRecipe(path string, g *generateOpts, given map[string]bool, opt 
 		return nil, ExitUsage
 	}
 
-	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
+	// A file that builds on a preset is recorded the way a --preset run is,
+	// and says the same things out loud - which of the preset's numbers were
+	// invented because the file did not give them. Nil for a file that stands
+	// alone, and the manifest field stays absent.
+	for _, note := range read.Notes() {
+		fmt.Fprintf(errOut, "note: %s\n", note)
+	}
+	opt.Preset = record(read.Expansion)
+	return targetsFromParsedRecipe(read.Recipe, hash, g, given, opt), ExitOK
 }
 
 // targetsFromParsedRecipe settles what the flags take away from a recipe that

@@ -485,6 +485,12 @@ func screenScenes() []screenScene {
 			chooseFormat(t, s.tab, "zip")
 			pressNamed(t, s.tab, text.ButtonAddContents())
 		}},
+		// A recipe built on a preset, since 2026-09-22: the switch on, and
+		// the preset's menu and parameters drawn under it. The state the
+		// section exists for, and the one a fresh screen never shows.
+		{name: "recipe-on-a-preset", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			flipSwitch(t, s.canvas, s.tab, text.FieldBuildOnPreset())
+		}},
 	}
 }
 

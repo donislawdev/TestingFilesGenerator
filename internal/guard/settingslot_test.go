@@ -186,6 +186,10 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"paragraphs": "a", "rows": "a", "columns": "a", "slides": "a",
 		"depth": "a", "colours": "a", "records": "a", "lines": "a",
 		"damage": "a", "bytes": "a",
+		// The batch screen's base section: the switch, and the two recipe
+		// keys behind it. The parameters under with.<name> arrive as the
+		// preset's own names, which are above.
+		"start_from_preset": "a", "extends": "an", "with": "a",
 		// Labels, which is what a window shows.
 		"Batch name": "a", "How many files": "a", "File names": "a", "Size": "a",
 		"Damage": "a",
@@ -194,7 +198,8 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"Limit to test": "a", "One size": "a", "A range": "a",
 		"Rule being tested": "a", "Manifest file name": "a", "Preset": "a",
 		"Limit": "a", "Spread": "a", "Width": "a", "Height": "a", "Quality": "a",
-		"Label in each file": "a",
+		"Label in each file":  "a",
+		"Start from a preset": "a", "Preset to build on": "a",
 	}
 
 	check := func(name, source string) {

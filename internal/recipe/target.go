@@ -65,14 +65,19 @@ type rawTarget struct {
 // that put one answer in tfg formats and another in the generator once already.
 const DefaultCount = 1
 
-func (rt rawTarget) validate(p *problems, index int, def Defaults) Target {
+// validate reads one target and reports everything wrong with it.
+//
+// at is where this target is, as a function of its id - see spotOfTarget. It
+// is a function rather than a position because the prose names a target by
+// its id as soon as one is read, and the id is read here.
+func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults) Target {
 	t := Target{Label: def.Label}
 	count := DefaultCount
 
-	where := targetSpot(index, "")
+	where := at("")
 	if id, ok := oneValue(p, where.of("id"), where.String()+" {setting}", "id: invoices", rt.ID); ok && id != "" {
 		t.ID = id
-		where = targetSpot(index, t.ID)
+		where = at(t.ID)
 	} else {
 		p.add(where.of("id"), fmt.Sprintf("%s has no {setting}", where),
 			"{a} {setting} anchors the seed of a target, so editing one target never moves the bytes of another",

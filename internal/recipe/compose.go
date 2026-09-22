@@ -53,7 +53,14 @@ type Document struct {
 	Manifest string
 	// Label is defaults.label, and a pointer because a switch has no third
 	// position for silence. Nil leaves the defaults section out.
-	Label   *bool
+	Label *bool
+	// Extends is the id of the preset the recipe builds on, and empty when
+	// it stands alone. With is what the screen typed into that preset's
+	// parameters, by name, with the ones left empty absent - so that a
+	// parameter nobody stated is written nowhere and stands in from its
+	// default, which is what the manifest then records as defaulted.
+	Extends string
+	With    map[string]string
 	Targets []TargetDraft
 }
 
@@ -104,6 +111,19 @@ func Compose(d Document) ([]byte, error) {
 
 	if d.Seed != "" {
 		doc = append(doc, yaml.MapItem{Key: "seed", Value: d.Seed})
+	}
+	// The preset before the targets, because that is the order the run
+	// takes them in. The with map is sorted for the reason properties are:
+	// this text is hashed into the manifest.
+	if d.Extends != "" {
+		doc = append(doc, yaml.MapItem{Key: KeyExtends, Value: presetScheme + d.Extends})
+		if len(d.With) > 0 {
+			with := yaml.MapSlice{}
+			for _, name := range sortedKeys(d.With) {
+				with = append(with, yaml.MapItem{Key: name, Value: d.With[name]})
+			}
+			doc = append(doc, yaml.MapItem{Key: KeyWith, Value: with})
+		}
 	}
 	if d.Label != nil {
 		doc = append(doc, yaml.MapItem{Key: "defaults",
@@ -244,6 +264,10 @@ func refuseUnwritable(d Document) error {
 	check("seed", d.Seed)
 	check("output.dir", d.OutDir)
 	check("output.manifest", d.Manifest)
+	check(KeyExtends, d.Extends)
+	for _, name := range sortedKeys(d.With) {
+		check(KeyWith+"."+name, d.With[name])
+	}
 
 	for i, t := range d.Targets {
 		where := targetSpot(i, t.ID)
