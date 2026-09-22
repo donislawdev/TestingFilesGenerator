@@ -185,6 +185,11 @@ const (
 	// glyph itself is the toolkit's inline icon, 20, and the square keeps two
 	// pixels round it, which is what makes it a target and not a letter.
 	GlyphButton = 24
+	// SwatchSide is the side of the square of colour on the palette page. Off
+	// the ladder of controls on purpose: this square is not a target and not a
+	// mark beside a word, it is the thing being looked at, and at the size of
+	// a switch's tick two neighbouring surfaces six L* apart read as one.
+	SwatchSide = space6
 	// markSide is the side of the square of a switch: the toolkit's inline
 	// icon, the same 20 the glyph above is built round, so a switch and the
 	// button that explains it are one size and stand in one 24 px box.

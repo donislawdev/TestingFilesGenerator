@@ -21,6 +21,41 @@ import (
 // L* rather than at a contrast ratio at all. A single ratio threshold on
 // subtle surfaces measures something different in each variant, because the
 // ratio compresses against a light background.
+//
+// Since 2026-09-22 every value below comes from a RULE rather than from being
+// picked one at a time, and that is the difference between a palette and a
+// table of colours that each passed a threshold. Measured on 2026-09-22, on
+// the palette as it stood: the surfaces sat at hue 291, the inks at 251 to
+// 262, and the page and the main ink were pure neutral - three different
+// greys in one window. The steps between surfaces were 5.9, 6.5, 1.4, 0.9 and
+// 4.7 in L*, so the separator, the menu and a button's face were one colour in
+// three names. The four colours carrying meaning had chroma 35.9, 53.8, 55.0
+// and 64.4, which is why the accent was the quietest thing on a screen it is
+// supposed to lead.
+//
+// The rule has four parts and TestThePaletteIsTheOneTheRuleProduces holds the
+// table to it:
+//
+//   - One hue for every neutral, surface and ink alike. A window is one
+//     material.
+//   - Chroma on one curve, Cmax * sin(pi * L / 100), so the tint is strongest
+//     in the middle of the ladder and fades at both ends rather than being
+//     chosen per colour.
+//   - Lightness in even steps: 11.3, 17.7, 24.2, 30.8, 37.2 and 43.0 in the
+//     dark variant, which is a step of about 6.4. A line is not a surface, so
+//     it takes the rank of the face beside it rather than inventing one - the
+//     separator and a button's face are deliberately the same value, and a one
+//     pixel line arrives darker anyway because it is anti-aliased.
+//   - The accent and the three status colours share one lightness (70.1) and
+//     one SHARE of the chroma their hue can reach in sRGB (0.85), not one
+//     chroma. A common chroma is not available: at that lightness red reaches
+//     49.5 and green 80.1, and asking both for 45 left the amber looking like
+//     mud. Measured 2026-09-22.
+//
+// The generator is tools/probes/palette/design.py and the reader that prints
+// every number this file's prose quotes is tools/probes/palette/measure.py.
+// Neither is needed to build the window: they are how the values were reached
+// and how a sentence here is checked against the file it stands in.
 // ColorNamePanel is the surface a section is drawn on.
 //
 // A name of ours rather than one of the toolkit's, because the toolkit has
@@ -52,8 +87,13 @@ const ColorNameTipShade fyne.ThemeColorName = "tipshade"
 // seen. To move the primary face by the 10 L* this palette calls noticeable
 // takes white at 0x66, and that same alpha on a dark face would move it by
 // twenty five. One name cannot be right for both faces, so the light face has
-// its own two. Measured on 2026-09-15: 83.0 L* under the pointer and 58.5
-// pressed, against 71.9 at rest, with the ink on every one of them above 4.5.
+// its own two.
+//
+// Measured on 2026-09-22, on the ladder this palette now stands on: the
+// primary face is 70.1 L* at rest, 81.5 under the pointer and 57.0 pressed,
+// with the ink on it at 10.67:1 and 4.96:1 - both above the 4.5 a reader
+// needs, and the pressed one is the tighter of the two because a press is
+// what darkens the face the ink was chosen for.
 const (
 	ColorNameLift  fyne.ThemeColorName = "lift"
 	ColorNameShade fyne.ThemeColorName = "shade"
@@ -61,9 +101,9 @@ const (
 
 var (
 	darkColours = map[fyne.ThemeColorName]color.Color{
-		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x1E),
-		theme.ColorNameForeground:  hex(0xE6, 0xE6, 0xE6),
-		theme.ColorNamePlaceHolder: hex(0x9D, 0xA3, 0xA8),
+		theme.ColorNameBackground:  hex(0x1E, 0x1E, 0x20),
+		theme.ColorNameForeground:  hex(0xE6, 0xE6, 0xE8),
+		theme.ColorNamePlaceHolder: hex(0xA2, 0xA2, 0xA9),
 		// A step of its own between a value and a hint, since 2026-08-20.
 		//
 		// It was the placeholder colour exactly, so a box switched off for the
@@ -74,7 +114,7 @@ var (
 		// the width box read #9DA3A8 for "worked out from the size".
 		//
 		// Three steps now, and the gaps are what was picked rather than the
-		// values: 91.3, 80.3 and 66.7 in L*, which is 11.0 and 13.6 apart. The
+		// values: 91.3, 80.4 and 66.8 in L*, which is 10.9 and 13.6 apart. The
 		// palette's own yardstick for "noticeable" is 10.
 		//
 		// Brighter rather than dimmer, because a disabled value is content
@@ -82,12 +122,12 @@ var (
 		// made the one thing a person wants to re-read during a run the hardest
 		// thing on the screen to read. A button loses its fill when it is
 		// disabled, so it does not need the text to carry the whole message.
-		theme.ColorNameDisabled:  hex(0xC2, 0xC8, 0xCD),
-		theme.ColorNameError:     hex(0xF1, 0x70, 0x7A),
-		theme.ColorNameSuccess:   hex(0x6F, 0xCF, 0x7F),
-		theme.ColorNameWarning:   hex(0xE8, 0xB3, 0x3E),
-		theme.ColorNamePrimary:   hex(0x6F, 0xB7, 0xF0),
-		theme.ColorNameHyperlink: hex(0x6F, 0xB7, 0xF0),
+		theme.ColorNameDisabled:  hex(0xC7, 0xC7, 0xCC),
+		theme.ColorNameError:     hex(0xF4, 0x8F, 0x8D),
+		theme.ColorNameSuccess:   hex(0x42, 0xC2, 0x60),
+		theme.ColorNameWarning:   hex(0xDA, 0xA1, 0x31),
+		theme.ColorNamePrimary:   hex(0x5A, 0xB3, 0xF2),
+		theme.ColorNameHyperlink: hex(0x5A, 0xB3, 0xF2),
 		// Translucent, for the reason the hover below it is - and this one was
 		// left opaque when that was corrected on 2026-08-11, so the same defect
 		// stayed on the screen in a second place for a day.
@@ -103,12 +143,15 @@ var (
 		//
 		// The value is 0x66 rather than the toolkit's own 0x2a because ours has
 		// to work over an input box rather than over the page: blue at 0x66
-		// over #2E2E30 comes out at #3A5A7D, which leaves the value on it at
-		// 5.73:1. What it can no longer do is say WHERE the keyboard is - a
+		// over the input box comes out at #226486, which leaves the value on it
+		// at 5.21:1 - measured 2026-09-22, and the lightness of this blue is
+		// SEARCHED for that number rather than typed, because it is the one
+		// value in the palette pinned from both sides at once. What it can no
+		// longer do is say WHERE the keyboard is - a
 		// wash that text survives is a wash nothing else can see either, and
 		// that is arithmetic rather than a compromise. See parts.Ring, which is
 		// what carries the state instead.
-		theme.ColorNameFocus: overlay(0x4C, 0x9D, 0xF0, 0x66),
+		theme.ColorNameFocus: overlay(0x00, 0xA5, 0xF0, 0x66),
 		// Translucent, and that is the fix for a defect somebody saw rather
 		// than a preference. The toolkit does not paint this colour, it BLENDS
 		// it over whatever is underneath - so an opaque grey replaced the blue
@@ -121,13 +164,15 @@ var (
 		// as the background of a row and the toolkit uses it on anything.
 		theme.ColorNameHover: overlay(0xFF, 0xFF, 0xFF, 0x22),
 		// What a press does to a dark face: more of the same white, because a
-		// press has to be told from the hover it follows and black over
-		// #2A2A2D moves it by 3.9 L*, which nobody sees. Measured 2026-09-15.
+		// press has to be told from the hover it follows and black over a
+		// surface this dark moves it by 3.9 L*, which nobody sees - measured
+		// 2026-09-15 on the panel colour of the day. On today's ladder the two
+		// read 40.9 and 49.8 L* on a button's face, against 30.8 at rest.
 		theme.ColorNamePressed: overlay(0xFF, 0xFF, 0xFF, 0x40),
 		// The two for the light face, see ColorNameLift.
 		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
 		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
-		theme.ColorNameSelection: hex(0x2C, 0x4A, 0x6B),
+		theme.ColorNameSelection: hex(0x22, 0x4B, 0x69),
 		// A box to type in has to be findable without reading a word, and until
 		// 2026-08-23 it was not. Measured on the palette as it stood: a field
 		// sat 8 of 255 above the panel it is drawn on, a ratio of 1.11, and its
@@ -135,18 +180,20 @@ var (
 		// surfaces within sixteen steps of each other, so the eye had nothing
 		// to count fields by.
 		//
-		// The step is 18 now against the panel and 29 from fill to border,
-		// which is 2.3 and 2.6 times what it was. Deliberately still a raised
-		// surface rather than a sunken one: a well reads well on a card and
+		// The step is one rank of the ladder against the panel - 6.5 L*, which
+		// the guard reads as a third of the room between page and field - and
+		// the border stands 18.9 L* off the fill, two ranks up. Deliberately
+		// still a raised surface rather than a sunken one: a well reads well on
+		// a card and
 		// disappears where there is no card, and a field measured at 1.06
 		// against the window background would be worse than what it replaced.
-		theme.ColorNameInputBackground: hex(0x38, 0x38, 0x3D),
-		theme.ColorNameInputBorder:     hex(0x55, 0x55, 0x5C),
+		theme.ColorNameInputBackground: hex(0x39, 0x39, 0x3F),
+		theme.ColorNameInputBorder:     hex(0x65, 0x65, 0x6D),
 		// A button is no longer the same colour as a box to type in. It was,
 		// exactly, and that is half of why a menu and a field were one object
 		// with an arrow on the end of it - see the note on Chooser.
-		theme.ColorNameButton: hex(0x4A, 0x4A, 0x52),
-		ColorNameLabel:        hex(0xCF, 0xD3, 0xD8),
+		theme.ColorNameButton: hex(0x48, 0x48, 0x4E),
+		ColorNameLabel:        hex(0xD3, 0xD3, 0xD7),
 
 		// A menu floats over everything, so it is the LIGHTEST surface rather
 		// than another one at the height of an input box.
@@ -173,11 +220,19 @@ var (
 		// REQUIRED, and reading the prose for the threshold got it wrong by a
 		// margin no one would see by looking.
 		//
-		// #48484F is 30.8 L*, which puts it 7.1 above an input and 15.6 above
-		// the panel. The stack reads page 11.3, panel 15.2, input 23.7, menu
-		// 30.8: each one told from the one under it, and the one that floats
-		// furthest from all of them.
-		theme.ColorNameMenuBackground: hex(0x48, 0x48, 0x4F),
+		// And the sentence at the top of this note was not true until
+		// 2026-09-22, which is the whole argument for a ladder. A button's face
+		// arrived later at #4A4A52, 31.7 L*, while the menu stood at 30.8 - so
+		// the LIGHTEST surface was a button, the thing that floats over
+		// everything was under it, and every guard was green because no guard
+		// compares those two. Nobody added a wrong value: two right values were
+		// chosen a month apart against different neighbours.
+		//
+		// #57575F is 37.2 L*, one rank clear of a button's face and 13.1 above
+		// an input. The stack reads page 11.3, panel 17.7, input 24.2, face and
+		// line 30.8, menu 37.2, the edge of a field 43.0: each one told from
+		// the one under it, and the one that floats furthest from all of them.
+		theme.ColorNameMenuBackground: hex(0x57, 0x57, 0x5F),
 
 		// And what it casts, which is the other half of floating. The toolkit
 		// draws a shadow under every popup and asks the theme for its colour -
@@ -216,8 +271,10 @@ var (
 		// taking the surface value section 8.2 already records. That value is
 		// what an input box is - a panel painted with it would swallow every
 		// field standing on it. Three surfaces stack here and each has to be
-		// told from the one under it: page 11.3, panel 17.2, input 23.7 in L*,
-		// which is +5.9 and +6.5.
+		// told from the one under it: page 11.3, panel 17.7, input 24.2 in L*,
+		// which is +6.3 and +6.5 - two ranks of the ladder, and the ladder is
+		// where those numbers come from rather than from this stack being
+		// solved on its own.
 		//
 		// It used to be 15.2, and the line round the edge did the work the fill
 		// could not - four L* is a surface you sense rather than see. That line
@@ -231,20 +288,27 @@ var (
 		// TestASectionDrawsItsOwnSurface holds the fill against the page with
 		// no edge to fall back on.
 		//
-		// The colour is 29.4 L* and what gets drawn is not. Measured off the
-		// render on 2026-08-12: a one pixel stroke lands between pixels and is
-		// anti-aliased, so the brightest pixel of the edge comes out at 22.3 -
-		// which is +7.1 from the panel and +11.0 from the page. It reads, and
-		// it reads because of the gap to the page rather than the one to the
-		// panel. Worth keeping straight, because the number in a palette is a
-		// claim about a colour and only the render is a claim about a line.
+		// The colour is 30.8 L* and what gets drawn is not. Measured off the
+		// render on 2026-08-12, when this colour was 29.4: a one pixel stroke
+		// lands between pixels and is anti-aliased, so the brightest pixel of
+		// the edge came out at 22.3 - about three quarters of the value it was
+		// given. It reads, and it reads because of the gap to the page rather
+		// than the one to the panel. Worth keeping straight, because the number
+		// in a palette is a claim about a colour and only the render is a claim
+		// about a line.
+		//
+		// That is also why this line shares the rank of a button's face instead
+		// of taking one of its own. The first cut of the ladder gave it 29.0
+		// beside a face at 30.8 - 1.7 L* apart, which is the very crowding at
+		// the top of the old palette this rule was written to end. A rank is
+		// for a surface. A line borrows one.
 		//
 		// It is no longer the panel's edge - see the note above - so the only
 		// thing drawn with it now is parts.Divider. The measurement stays
 		// because it is about a one pixel line on this page, which is what a
 		// divider is.
-		theme.ColorNameSeparator: hex(0x45, 0x45, 0x49),
-		ColorNamePanel:           hex(0x2A, 0x2A, 0x2D),
+		theme.ColorNameSeparator: hex(0x48, 0x48, 0x4E),
+		ColorNamePanel:           hex(0x2B, 0x2B, 0x2F),
 
 		// What is written ON one of those colours, which is a different
 		// question from what they contrast with. Section 8 computed them as
@@ -264,20 +328,20 @@ var (
 
 	lightColours = map[fyne.ThemeColorName]color.Color{
 		theme.ColorNameBackground:  hex(0xFF, 0xFF, 0xFF),
-		theme.ColorNameForeground:  hex(0x1A, 0x1A, 0x1A),
-		theme.ColorNamePlaceHolder: hex(0x59, 0x59, 0x59),
+		theme.ColorNameForeground:  hex(0x1A, 0x1A, 0x1C),
+		theme.ColorNamePlaceHolder: hex(0x58, 0x58, 0x60),
 		// The same three steps the other way up: on a white page "closer to
-		// the value" means darker. 9.3, 25.8 and 37.8 in L*, 16.5 and 12.1
+		// the value" means darker. 9.3, 25.9 and 37.7 in L*, 16.6 and 11.8
 		// apart.
-		theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x3D),
-		theme.ColorNameError:     hex(0xB3, 0x12, 0x1F),
-		theme.ColorNameSuccess:   hex(0x10, 0x6B, 0x2E),
-		theme.ColorNameWarning:   hex(0x8A, 0x5A, 0x00),
-		theme.ColorNamePrimary:   hex(0x0F, 0x5F, 0xA8),
-		theme.ColorNameHyperlink: hex(0x0F, 0x5F, 0xA8),
+		theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x42),
+		theme.ColorNameError:     hex(0xBB, 0x29, 0x3B),
+		theme.ColorNameSuccess:   hex(0x23, 0x71, 0x35),
+		theme.ColorNameWarning:   hex(0x80, 0x5D, 0x18),
+		theme.ColorNamePrimary:   hex(0x28, 0x68, 0x93),
+		theme.ColorNameHyperlink: hex(0x28, 0x68, 0x93),
 		// The same correction as the dark variant above, at the same alpha:
 		// this is blended over whatever it lands on rather than painted.
-		theme.ColorNameFocus: overlay(0x0F, 0x62, 0xFE, 0x66),
+		theme.ColorNameFocus: overlay(0x00, 0x7F, 0xBA, 0x66),
 		// Black rather than white here: this page is white, so its hover is
 		// DARKER than what is under it. 0x20 over white comes out at #DFDFDF,
 		// which is what section 8.3 measured.
@@ -288,15 +352,15 @@ var (
 		theme.ColorNamePressed:   overlay(0x00, 0x00, 0x00, 0x33),
 		ColorNameLift:            overlay(0xFF, 0xFF, 0xFF, 0x66),
 		ColorNameShade:           overlay(0x00, 0x00, 0x00, 0x33),
-		theme.ColorNameSelection: hex(0xCF, 0xE4, 0xF7),
-		// The same step, worked out the same way against a white page. Here a
+		theme.ColorNameSelection: hex(0xC1, 0xE0, 0xFF),
+		// The same rank, worked out the same way against a white page. Here a
 		// field is the sunken one - on white there is nowhere lighter to go -
-		// so it sits below the panel rather than above it, 16 of 255 down
-		// instead of the 8 it was, with a border 63 below the fill.
-		theme.ColorNameInputBackground: hex(0xE7, 0xE7, 0xEA),
-		theme.ColorNameInputBorder:     hex(0xA8, 0xA8, 0xB0),
-		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
-		ColorNameLabel:                 hex(0x44, 0x44, 0x48),
+		// so it sits below the panel rather than above it, one rank down, with
+		// a border two ranks further at 18.0 L* below the fill.
+		theme.ColorNameInputBackground: hex(0xDC, 0xDC, 0xE0),
+		theme.ColorNameInputBorder:     hex(0xAB, 0xAA, 0xB2),
+		theme.ColorNameButton:          hex(0xCC, 0xCB, 0xD1),
+		ColorNameLabel:                 hex(0x43, 0x43, 0x49),
 		// The same reasoning the other way up: on a white page a floating
 		// surface is the lightest thing there is, so it is white and the shadow
 		// is what separates it.
@@ -304,13 +368,15 @@ var (
 		theme.ColorNameShadow:         overlay(0x00, 0x00, 0x00, 0x40),
 		ColorNameTipShade:             overlay(0x00, 0x00, 0x00, 0x40),
 
-		// The same two, worked out the same way against a white page. The gap
-		// between page and input is narrower here - 5.6 L* against 7.7 - so the
-		// panel splits it at 2.8 either side, and the line again carries the
-		// edge at 11.5 L*. Computed rather than installed, like the rest of this
-		// palette.
-		theme.ColorNameSeparator: hex(0xD6, 0xD6, 0xD9),
-		ColorNamePanel:           hex(0xF4, 0xF4, 0xF5),
+		// The same two, worked out the same way against a white page. White
+		// leaves 30 L* down to the edge of a field where the dark variant has
+		// 31.7 up to it, so the rank here is 6.0 rather than 6.4 - the step is
+		// even within a variant, which is the rule, and the two variants are
+		// not asked to share a number they do not have the room for. The line
+		// takes the rank of a button's face, exactly as it does above.
+		// Computed rather than installed, like the rest of this palette.
+		theme.ColorNameSeparator: hex(0xCC, 0xCB, 0xD1),
+		ColorNamePanel:           hex(0xEE, 0xEE, 0xEF),
 
 		// The other way round here, for the same reason: these are dark enough
 		// to read on a white page, so what is written on them is white.

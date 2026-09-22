@@ -1,7 +1,7 @@
 <canvas padded size="1100x1300">
 	<content>
 		<container pos="4,4" size="1092x1292">
-			<rectangle fillColor="separator" pos="0,45" size="1092x1"/>
+			<rectangle fillColor="button" pos="0,45" size="1092x1"/>
 			<container pos="0,12" size="1092x34">
 				<container pos="136,0" size="820x34">
 					<widget pos="16,0" size="788x34" type="*parts.Tabs">
@@ -56,7 +56,7 @@
 								</widget>
 							</container>
 							<container pos="0,89" size="820x373">
-								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x373" strokeColor="separator" strokeWidth="1"/>
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x373" strokeColor="button" strokeWidth="1"/>
 								<container size="820x373">
 									<container pos="16,16" size="788x341">
 										<text bold size="788x20" textSize="17">Licence</text>
@@ -90,7 +90,7 @@
 								</container>
 							</container>
 							<container pos="0,486" size="820x118">
-								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x118" strokeColor="separator" strokeWidth="1"/>
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x118" strokeColor="button" strokeWidth="1"/>
 								<container size="820x118">
 									<container pos="16,16" size="788x86">
 										<text bold size="788x20" textSize="17">Support</text>
@@ -116,7 +116,7 @@
 								</container>
 							</container>
 							<container pos="0,629" size="820x610">
-								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x610" strokeColor="separator" strokeWidth="1"/>
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x610" strokeColor="button" strokeWidth="1"/>
 								<container size="820x610">
 									<container pos="16,16" size="788x578">
 										<text bold size="788x20" textSize="17">Third party code compiled in</text>
@@ -164,7 +164,7 @@
 								</container>
 							</container>
 							<container pos="0,1263" size="820x221">
-								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x221" strokeColor="separator" strokeWidth="1"/>
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x221" strokeColor="button" strokeWidth="1"/>
 								<container size="820x221">
 									<container pos="16,16" size="788x189">
 										<text bold size="788x20" textSize="17">Files compiled in that are not code</text>
@@ -189,7 +189,7 @@
 								</container>
 							</container>
 							<container pos="0,1508" size="820x102">
-								<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x102" strokeColor="separator" strokeWidth="1"/>
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 								<container size="820x102">
 									<container pos="16,16" size="788x70">
 										<text bold size="788x20" textSize="17">Shipped beside the program on Windows</text>
@@ -218,7 +218,7 @@
 					</widget>
 				</widget>
 				<container pos="0,1168" size="1092x52">
-					<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1092x52" strokeColor="separator" strokeWidth="1"/>
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="1092x52" strokeColor="button" strokeWidth="1"/>
 					<container size="1092x52">
 						<container pos="12,12" size="1068x28">
 							<container size="1068x28">

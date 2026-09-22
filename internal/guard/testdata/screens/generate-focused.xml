@@ -1,7 +1,7 @@
 <canvas padded size="1100x1300">
 	<content>
 		<container pos="4,4" size="1092x1292">
-			<rectangle fillColor="separator" pos="0,45" size="1092x1"/>
+			<rectangle fillColor="button" pos="0,45" size="1092x1"/>
 			<container pos="0,12" size="1092x34">
 				<container pos="136,0" size="820x34">
 					<widget pos="16,0" size="788x34" type="*parts.Tabs">
@@ -57,14 +57,14 @@
 									</container>
 								</container>
 								<container pos="0,73" size="820x593">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x593" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x593" strokeColor="button" strokeWidth="1"/>
 									<container size="820x593">
 										<container pos="16,16" size="788x561">
 											<text bold size="788x20" textSize="17">File configuration</text>
 											<container pos="0,36" size="788x58">
 												<container size="788x58">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="46x16">Format</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="46x16">Format</text>
 														<widget pos="54,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
@@ -91,7 +91,7 @@
 											<container pos="0,111" size="788x83">
 												<container size="788x83">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="28x16">Size</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Size</text>
 														<widget pos="32,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -132,7 +132,7 @@
 											<container pos="0,210" size="788x53">
 												<container size="788x53">
 													<container size="788x16">
-														<text color="rgba(207,211,216,255)" size="101x16">How many files</text>
+														<text color="rgba(211,211,215,255)" size="101x16">How many files</text>
 														<widget pos="105,0" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -158,7 +158,7 @@
 											<container pos="0,280" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="78x16">Batch name</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="78x16">Batch name</text>
 														<widget pos="82,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -189,7 +189,7 @@
 											<container pos="0,357" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="71x16">File names</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="71x16">File names</text>
 														<widget pos="79,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
@@ -248,7 +248,7 @@
 											<container pos="0,486" size="788x58">
 												<container size="788x58">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="54x16">Damage</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="54x16">Damage</text>
 														<widget pos="62,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
@@ -278,14 +278,14 @@
 									</container>
 								</container>
 								<container pos="0,690" size="820x278">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x278" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x278" strokeColor="button" strokeWidth="1"/>
 									<container size="820x278">
 										<container pos="16,16" size="788x246">
 											<text bold size="788x20" textSize="17">Output</text>
 											<container pos="0,36" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="108x16">Output directory</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="108x16">Output directory</text>
 														<widget pos="112,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -321,7 +321,7 @@
 											<container pos="0,113" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="33x16">Seed</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="33x16">Seed</text>
 														<widget pos="37,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -352,7 +352,7 @@
 											<container pos="0,190" size="788x56">
 												<container size="788x56">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="111x16">Label in each file</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="111x16">Label in each file</text>
 														<widget pos="119,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
@@ -374,7 +374,7 @@
 						</container>
 					</widget>
 					<container pos="0,1119" size="1092x101">
-						<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1092x101" strokeColor="separator" strokeWidth="1"/>
+						<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="1092x101" strokeColor="button" strokeWidth="1"/>
 						<container size="1092x101">
 							<container pos="12,12" size="1068x77">
 								<container size="1068x77">

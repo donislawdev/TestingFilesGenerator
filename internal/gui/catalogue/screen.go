@@ -28,6 +28,10 @@ func Page() fyne.CanvasObject {
 	for _, e := range entries {
 		sections = append(sections, section(e))
 	}
+	// The palette stands before the two sections that say what is left out,
+	// because it is what every control above it is painted with rather than
+	// another thing in the list.
+	sections = append(sections, paletteSections()...)
 	sections = append(sections,
 		parts.Section("Not drawn, and why", parts.Bullets(sentences(NotDrawn()))),
 		parts.Section("Layout only, and why", parts.Bullets(sentences(LayoutOnly()))),
