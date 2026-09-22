@@ -56,6 +56,12 @@ const (
 
 	// maxIDDigits bounds the width of the record number, so the shortest whole
 	// record holds for every draw rather than for the lucky one.
+	//
+	// A constant rather than the width of the next id, for the three reasons
+	// written out beside the same name in internal/format/yamlfile: Shortest is
+	// a worst case bound on three axes, core.FillRecords reads it once so a
+	// growing width goes stale in the loop, and json and xml stand on the same
+	// constant with their minimums published.
 	maxIDDigits = 19
 
 	amountDigits = 9

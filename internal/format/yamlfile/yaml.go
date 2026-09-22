@@ -71,6 +71,24 @@ const (
 	// maxIDDigits bounds the width of the record number, so the shortest whole
 	// record holds for every draw rather than for the lucky one. A document
 	// cannot carry more records than this many digits allow.
+	//
+	// It is a constant rather than the width of the next id, and that is a
+	// decision rather than an oversight. Measured 2026-09-22: at the floor the
+	// closing record carries 27 B of slack, 18 of which is this reserve - so a
+	// yaml floor of 223 B would be reachable. Three things are wrong with
+	// taking it.
+	//
+	// Shortest is a worst case bound on three axes - the id width, the five
+	// word draws and the longer boolean - and dropping one of the three while
+	// keeping two is arbitrary. core.FillRecords reads it ONCE, so a width
+	// that changes as the ids grow goes stale inside the loop: a closing record
+	// with a wide id and five long words can then need more than the cached
+	// bound promised, and AppendExact is asked for a record shorter than the
+	// one it must write. That window is a handful of bytes wide and needs an
+	// unlucky draw beside it - 401 sizes were swept without hitting it, which
+	// says it is rare rather than that it is absent. And json and xml stand on
+	// this same constant with their minimums published, so moving it is a D11
+	// breaking change to two released formats to save 18 B on this one.
 	maxIDDigits = 19
 
 	// The amount is always six digits, a point and two more, and the postcode
