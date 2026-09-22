@@ -96,7 +96,10 @@
   },
   "presets": {
     "empty-and-minimal": "Does a file that is valid and as small as the format allows get through?",
-    "size-boundaries": "Is a size limit enforced exactly where it is declared?"
+    "size-boundaries": "Is a size limit enforced exactly where it is declared?",
+    "tabular-import": "Does my table import survive what real tools export?",
+    "text-encoding": "Does my reader know which encoding a file is in, or is it guessing?",
+    "upload-validation": "Does my upload form take what it should and turn the rest away?"
   },
   "commands": {
     "generate": "produce files, from a recipe or from flags",

@@ -149,24 +149,7 @@ func TestTheWindowDrawsAFieldForEveryDeclaredProperty(t *testing.T) {
 			if bad := wrongKindOfControl(p, control); bad != "" {
 				t.Errorf("%s.%s is %s", d.ID, p.Name, bad)
 			}
-			// A closed set says what it takes with its menu rather than in
-			// prose, since 2026-08-19 (O105). What it still has to say is what
-			// it is FOR - the sentence spelling twenty format names out under
-			// a menu offering the same twenty was two lines of duplication on
-			// a screen that does not fit as it is.
-			want := p.Allowed()
-			if p.Kind == format.PropertyChoice {
-				want = p.Detail
-			}
-			if shown := everythingSaid(content); want != "" && !strings.Contains(shown, want) {
-				t.Errorf("the field for %s.%s does not say %q", d.ID, p.Name, want)
-			}
-			if p.Kind == format.PropertyChoice {
-				if shown := everythingSaid(content); strings.Contains(shown, p.Allowed()) {
-					t.Errorf("the field for %s.%s lists its values in prose (%q) as well as in the "+
-						"menu above them", d.ID, p.Name, p.Allowed())
-				}
-			}
+			saysWhatItTakes(t, everythingSaid(content), d.ID, p)
 			checked++
 		}
 
@@ -201,6 +184,35 @@ func declares(d format.Descriptor, name string) bool {
 		}
 	}
 	return false
+}
+
+// saysWhatItTakes checks the sentence under a field against the declaration it
+// was drawn from.
+//
+// A closed set says what it takes with its menu rather than in prose, since
+// 2026-08-19 (O105). What it still has to say is what it is FOR - the sentence
+// spelling twenty format names out under a menu offering the same twenty was
+// two lines of duplication on a screen that does not fit as it is.
+//
+// Shared with the preset screen since 2026-09-22, when the first preset
+// parameter with a closed set arrived and the screen it is on asked for the
+// prose the other screen had been told not to write. One rule, one place: two
+// screens drawing a field from one declaration cannot be judged by two rules
+// without one of them being wrong.
+func saysWhatItTakes(t *testing.T, shown, owner string, p format.Property) {
+	t.Helper()
+
+	want := p.Allowed()
+	if p.Kind == format.PropertyChoice {
+		want = p.Detail
+	}
+	if want != "" && !strings.Contains(shown, want) {
+		t.Errorf("the field for %s.%s does not say %q", owner, p.Name, want)
+	}
+	if p.Kind == format.PropertyChoice && strings.Contains(shown, p.Allowed()) {
+		t.Errorf("the field for %s.%s lists its values in prose (%q) as well as in the "+
+			"menu above them", owner, p.Name, p.Allowed())
+	}
 }
 
 // wrongKindOfControl says when a declaration got a control that cannot express

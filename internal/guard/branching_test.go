@@ -52,7 +52,12 @@ const (
 	// more than the depth does.
 	// Lowered from 52 on 2026-09-05: splitting preflight out took one function
 	// out of the band. The ratchet only tightens.
-	crowdedDepthFunctions = 51
+	// Lowered from 51 on 2026-09-22: the scan for a preset parameter typed
+	// without its preset became two functions when it learnt to answer with
+	// every owner, and the loop left behind is two deep rather than three. The
+	// four presets that arrived the same day were flattened to hold the number
+	// where it was - this is the one that went below it.
+	crowdedDepthFunctions = 50
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.

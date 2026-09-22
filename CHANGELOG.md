@@ -195,6 +195,54 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Three more presets: `upload-validation`, `text-encoding` and
+  `tabular-import`.** Run `tfg preset list` for all five, or
+  `tfg preset show <id>` for what one takes and what it would produce before
+  it writes anything.
+
+  **`upload-validation`** answers "does my upload form take what it should and
+  turn the rest away?" - 71 files in eight groups at its defaults, 115 MB. A
+  file a byte under your limit, one at it, one a byte over and one twice it. A
+  real file of every type you allow, which is the positive control. A file for
+  every extension you deny, an SVG and an HTML among them, because both are
+  routinely taken for a picture and for plain text. A PDF named `.jpg`. A file
+  with no extension, one named `PHOTO.JPG` and one named `invoice.jpg.exe`. A
+  name 204 characters long, a name outside ASCII, and a name with spaces and
+  brackets that is perfectly legal. And fifty files at once.
+
+  `--limit` is the size your form declares, and the run says out loud when you
+  did not give one, because a set built around our placeholder says nothing
+  about your form. `--allow` and `--deny` are lists with commas. An extension
+  in `--deny` that this build has no format for - `exe`, `sh` - still gets a
+  file under that name, holding plain text, and the run says so: it tests a
+  form reading the end of a name, not one reading what is inside.
+  `--far-over 10x` asks for a file ten times the limit rather than twice it,
+  `--far-over off` leaves it out, and `--bulk 0` leaves the mass upload out.
+  Anything a setting empties is named in the output rather than quietly
+  missing. What this set does **not** do is put a path in a file name:
+  `../../etc/passwd` is not a name this tool will write, deliberately.
+
+  **`text-encoding`** answers "does my reader know which encoding a file is
+  in, or is it guessing?" - 20 files, 80 kB. TXT, MD and XML in UTF-8,
+  UTF-16LE and UTF-16BE, each with and without a byte order mark, plus CSV and
+  LOG with LF and with CRLF endings. UTF-8 expects `accept` with or without a
+  mark. UTF-16 expects `unspecified`: whether your system handles it at all is
+  your policy, and the manifest does not invent it. Two combinations are left
+  out and said out loud, because XML in UTF-16 has to open with a mark. No
+  format in this build carries an encoding and a line ending at once, so the
+  two halves are separate files rather than one grid - the run says that too.
+  `--sample` sets how big each file is, and refuses an odd number, because a
+  file in UTF-16 always has an even number of bytes.
+
+  **`tabular-import`** answers "does my table import survive what real tools
+  export?" - 13 files, 2.9 MB. One CSV per dialect: comma, semicolon, pipe and
+  tab, LF and CRLF, with and without a header row, and three quoting styles,
+  one setting at a time against a base so a failure names its cause. A CSV
+  with more columns than a spreadsheet will show, which expects `unspecified`
+  with `count_limit`. A spreadsheet of `--rows` by `--columns`, written at
+  exactly the size that many cells package to. And the same JSON records
+  written indented, minified and one to a line.
+
 - **A second preset: `empty-and-minimal`.** It answers "does a file that is
   valid and as small as the format allows get through?" and builds the
   smallest legal file of every format this build has, plus a file of nought

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
@@ -45,6 +46,22 @@ func TestEveryPresetExpandsIntoARecipeThisBuildAccepts(t *testing.T) {
 			for _, target := range rec.Targets {
 				if target.Group == "" {
 					t.Errorf("target %q carries no group, so nothing can assert about the class it belongs to", target.ID)
+				}
+				// The parser does not resolve formats - the engine does, and
+				// "tfg validate" answers with exit 4 and the list of known
+				// ones. So a preset naming a format nobody registered produces
+				// a recipe that PARSES and a run that cannot start, and this
+				// guard read "the recipe it produced does not parse" and said
+				// nothing about it.
+				//
+				// Measured on 2026-09-22 by mutation: putting an x on the end
+				// of the format id in the boundary set left this guard green,
+				// and it had been green against that mutation on the commit
+				// before as well. The entry was proving nothing rather than
+				// something breaking.
+				if _, err := format.Get(target.Format); err != nil {
+					t.Errorf("target %q asks for the format %q and this build has none: %v",
+						target.ID, target.Format, err)
 				}
 			}
 		})
