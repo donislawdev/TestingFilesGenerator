@@ -33,9 +33,13 @@ version: 2
 #      every one of them, and GPL-3.0 makes that a real question rather than
 #      a formality.
 #
-# None of these are merged on a green tick alone. Every one is checked locally
-# first, with the full suite, before it is accepted - the owner's rule, and the
-# reason the two points above are written here rather than left to be
+# None of these are merged on a green tick alone. Every one is read before it
+# is accepted: which files of the module changed between the two versions
+# (diff the two copies in the module cache, not the release notes), whether
+# anything the command line binary links is among them, and what the byte
+# stability guards said. The full suite runs in CI on the pull request, on
+# three systems - the owner's decision of 2026-09-22, replacing the earlier
+# rule that it ran locally first. Written here rather than left to be
 # rediscovered on a Monday morning by whoever opens the pull request.
 #
 # Grouped for actions and ungrouped for Go on purpose. An action bump is one
