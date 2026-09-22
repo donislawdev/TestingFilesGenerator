@@ -1,6 +1,12 @@
 package guard
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -60,6 +66,18 @@ func TestExactlyOnePresetOpensTheWindow(t *testing.T) {
 // of it: the declaration being right says nothing about whether a screen went
 // through it, and the two screens reached for the first id separately. A guard
 // calling Landing directly would agree with Landing and prove nothing.
+//
+// 🔴 What this one CANNOT tell apart today, and it was named by CodeRabbit on
+// 2026-09-22 rather than noticed here: the declared preset is also the first id
+// in alphabetical order, so a screen going back to picking by position would
+// satisfy every assertion below. The mutation that "proved" this guard picked
+// the LAST id, which is not a regression anybody would write.
+//
+// The pair to it is TestNoScreenChoosesAPresetByItsPlaceInTheList, which reads
+// the source instead, because the two cannot be told apart by behaviour while
+// one preset is both. The day a preset sorting before empty-and-minimal is
+// written, this guard starts telling them apart on its own and the other one
+// becomes the belt rather than the braces.
 func TestBothScreensOpenOnTheDeclaredPreset(t *testing.T) {
 	want := preset.Landing()
 	if want == "" {
@@ -89,6 +107,99 @@ func TestBothScreensOpenOnTheDeclaredPreset(t *testing.T) {
 	if got := basePresetOn(t, batches); got != want {
 		t.Errorf("the batch screen opens on %q and %q is the declared one", got, want)
 	}
+}
+
+// No screen picks a preset by where it sits in the list.
+//
+// The source rather than the behaviour, and that is a confession rather than a
+// preference. TestBothScreensOpenOnTheDeclaredPreset above cannot separate "it
+// asked preset.Landing" from "it took the first id", because empty-and-minimal
+// is both - so a screen reverting to the line it had until 2026-09-22 would
+// keep that guard green. Named by CodeRabbit, and it was right.
+//
+// The list a preset chooser is built from is preset.IDs(). So the rule is about
+// THAT list: whatever a file binds it to may be offered whole and may not be
+// indexed. The format menu beside it indexes its own list on purpose
+// (generate.go picks the first format), which is why this asks where the list
+// came from rather than looking for a shape.
+func TestNoScreenChoosesAPresetByItsPlaceInTheList(t *testing.T) {
+	dir := filepath.Join(repoRoot(t), "internal", "gui", "window")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("reading the window package: %v", err)
+	}
+
+	looked := 0
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		looked++
+		checkNoPresetListIndexing(t, filepath.Join(dir, name))
+	}
+	if looked == 0 {
+		t.Fatal("no source file was read, so this guard would pass against anything")
+	}
+}
+
+// checkNoPresetListIndexing reports every place one file indexes the list of
+// preset ids.
+func checkNoPresetListIndexing(t *testing.T, path string) {
+	t.Helper()
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, path, nil, 0)
+	if err != nil {
+		t.Fatalf("parsing %s: %v", path, err)
+	}
+
+	lists := map[string]bool{}
+	ast.Inspect(file, func(n ast.Node) bool {
+		assign, ok := n.(*ast.AssignStmt)
+		if !ok || len(assign.Lhs) != 1 || len(assign.Rhs) != 1 {
+			return true
+		}
+		if !callsPresetIDs(assign.Rhs[0]) {
+			return true
+		}
+		if name, ok := assign.Lhs[0].(*ast.Ident); ok {
+			lists[name.Name] = true
+		}
+		return true
+	})
+	if len(lists) == 0 {
+		return
+	}
+
+	ast.Inspect(file, func(n ast.Node) bool {
+		index, ok := n.(*ast.IndexExpr)
+		if !ok {
+			return true
+		}
+		name, ok := index.X.(*ast.Ident)
+		if !ok || !lists[name.Name] {
+			return true
+		}
+		t.Errorf("%s:%d takes a preset out of the list by its place. A preset says which one "+
+			"a surface opens on - see preset.Landing - and the list is in alphabetical order, "+
+			"so a position is whichever preset gets written next",
+			filepath.Base(path), fset.Position(index.Pos()).Line)
+		return true
+	})
+}
+
+// callsPresetIDs reports whether an expression is the call preset.IDs().
+func callsPresetIDs(e ast.Expr) bool {
+	call, ok := e.(*ast.CallExpr)
+	if !ok {
+		return false
+	}
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "IDs" {
+		return false
+	}
+	pkg, ok := sel.X.(*ast.Ident)
+	return ok && pkg.Name == "preset"
 }
 
 // basePresetOn is the preset chosen in the batch screen's base section.
