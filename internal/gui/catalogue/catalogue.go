@@ -74,7 +74,7 @@ func Entries() []Entry {
 		button(), chooser(), entry(), toggle(), segments(),
 		openList(), tabs(),
 		fields(), propertyField(), byteCount(), tips(), errorArea(), progress(), folding(),
-		textRanks(), structure(),
+		textRanks(), structure(), swatch(),
 	}
 }
 

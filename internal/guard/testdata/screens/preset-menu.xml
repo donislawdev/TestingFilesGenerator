@@ -1,7 +1,7 @@
 <canvas padded size="1100x1300">
 	<content>
 		<container pos="4,4" size="1092x1292">
-			<rectangle fillColor="separator" pos="0,45" size="1092x1"/>
+			<rectangle fillColor="button" pos="0,45" size="1092x1"/>
 			<container pos="0,12" size="1092x34">
 				<container pos="136,0" size="820x34">
 					<widget pos="16,0" size="788x34" type="*parts.Tabs">
@@ -57,14 +57,14 @@
 									</container>
 								</container>
 								<container pos="0,73" size="820x279">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x279" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x279" strokeColor="button" strokeWidth="1"/>
 									<container size="820x279">
 										<container pos="16,16" size="788x247">
 											<text bold size="788x20" textSize="17">The question</text>
 											<container pos="0,36" size="788x58">
 												<container size="788x58">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="42x16">Preset</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="42x16">Preset</text>
 														<widget pos="50,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
@@ -162,7 +162,7 @@
 									</container>
 								</container>
 								<container pos="0,376" size="820x129">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x129" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x129" strokeColor="button" strokeWidth="1"/>
 									<container size="820x129">
 										<container pos="16,16" size="788x97">
 											<text bold size="788x20" textSize="17">Settings</text>
@@ -170,7 +170,7 @@
 												<container size="788x60">
 													<container size="788x60">
 														<container size="788x24">
-															<text color="rgba(207,211,216,255)" pos="0,3" size="53x16">Formats</text>
+															<text color="rgba(211,211,215,255)" pos="0,3" size="53x16">Formats</text>
 															<widget pos="61,0" size="24x24" type="*parts.DetailButton">
 																<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																<rectangle radius="6" size="24x24"/>
@@ -203,14 +203,14 @@
 									</container>
 								</container>
 								<container pos="0,530" size="820x206">
-									<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="820x206" strokeColor="separator" strokeWidth="1"/>
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x206" strokeColor="button" strokeWidth="1"/>
 									<container size="820x206">
 										<container pos="16,16" size="788x174">
 											<text bold size="788x20" textSize="17">Output</text>
 											<container pos="0,36" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="108x16">Output directory</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="108x16">Output directory</text>
 														<widget pos="112,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -246,7 +246,7 @@
 											<container pos="0,113" size="788x60">
 												<container size="788x60">
 													<container size="788x24">
-														<text color="rgba(207,211,216,255)" pos="0,3" size="33x16">Seed</text>
+														<text color="rgba(211,211,215,255)" pos="0,3" size="33x16">Seed</text>
 														<widget pos="37,3" size="7x16" type="*parts.RequiredMark">
 															<text bold color="error" size="7x16">*</text>
 														</widget>
@@ -281,7 +281,7 @@
 						</container>
 					</widget>
 					<container pos="0,1119" size="1092x101">
-						<rectangle fillColor="rgba(42,42,45,255)" radius="8" size="1092x101" strokeColor="separator" strokeWidth="1"/>
+						<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="1092x101" strokeColor="button" strokeWidth="1"/>
 						<container size="1092x101">
 							<container pos="12,12" size="1068x77">
 								<container size="1068x77">
@@ -382,19 +382,19 @@
 												</widget>
 											</widget>
 											<widget size="0x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="0x0"/>
+												<rectangle fillColor="button" size="0x0"/>
 											</widget>
 											<widget pos="0,28" size="173x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="173x0"/>
+												<rectangle fillColor="button" size="173x0"/>
 											</widget>
 											<widget pos="0,56" size="173x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="173x0"/>
+												<rectangle fillColor="button" size="173x0"/>
 											</widget>
 											<widget pos="0,84" size="173x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="173x0"/>
+												<rectangle fillColor="button" size="173x0"/>
 											</widget>
 											<widget pos="0,112" size="173x0" type="*widget.Separator">
-												<rectangle fillColor="separator" size="173x0"/>
+												<rectangle fillColor="button" size="173x0"/>
 											</widget>
 										</container>
 									</widget>

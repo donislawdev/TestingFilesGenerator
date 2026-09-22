@@ -16,6 +16,28 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window is painted from one system rather than from colours chosen one
+  at a time.** Every surface and every piece of text now comes from a single
+  ladder: one hue, an even step between one surface and the next, and one
+  lightness shared by the accent and the three colours that carry meaning.
+  What you see is a window that reads the same way it did, with the things
+  that were nearly the same colour no longer nearly the same colour - the list
+  that drops down from the format box stands clear of the form behind it,
+  where it used to sit almost exactly as light as the box it came from. No
+  generated file changes in any way. The old values met every contrast
+  threshold and the new ones meet the same thresholds, checked the same way.
+
+### Added
+
+- **The palette is something you can open.** `tfg --catalogue`, the hidden
+  screen that shows every control the window is built from, now ends with the
+  palette itself: every colour, what it is for, the value it holds and the
+  measurement that decides whether it is doing its job - the contrast ratio
+  for anything read, the distance in lightness for a surface. The light
+  palette is shown beside it and labelled: it is worked out and held to the
+  same thresholds, and the window does not use it, because this program has
+  one look.
+
 - **The window opens on a preset that was chosen rather than sorted.** The
   Presets tab, and the "Build on a preset" section of the batches screen,
   used to start on whichever preset came first alphabetically - so what you
