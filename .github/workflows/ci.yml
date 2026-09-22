@@ -926,7 +926,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            p7zip-full ffmpeg poppler-utils inkscape python3-pil
+            p7zip-full ffmpeg poppler-utils inkscape python3-pil python3-yaml
 
           # The distribution's Pillow cannot open an AVIF - measured on this
           # runner, PIL.UnidentifiedImageError on a file the structural checker
