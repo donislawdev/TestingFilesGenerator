@@ -41,7 +41,7 @@ const (
 	// ceilings. The busy state and its four controls left it that day for a
 	// type of their own (runbusy.go), and the ratchet moved down to the next
 	// widest: parts.Fields by methods, window.batch by fields.
-	mostMethods = 27
+	mostMethods = 26
 	mostFields  = 21
 
 	// What counts as crowding, in the shape this package already uses

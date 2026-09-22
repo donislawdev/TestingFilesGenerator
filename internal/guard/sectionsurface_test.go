@@ -65,28 +65,30 @@ func TestASectionDrawsItsOwnSurface(t *testing.T) {
 				subject.what, surface.FillColor, want)
 		}
 
-		// No line round it, and the protection that line used to give has moved
-		// rather than gone. Both halves matter and they are checked together.
+		// A line round it, since 2026-09-21, and the fill under it - both, and
+		// both are checked.
 		//
-		// It used to be drawn with one, because the fill on its own was 4.0 L*
-		// off the page - a surface you sense rather than see - and a panel with
-		// no boundary is where this started. What changed on 2026-08-23 is that
-		// the same one pixel line was also what every box to type in used to
-		// say "your value goes here". One mark meaning two things means
-		// neither, and the field is the one that needs it.
-		//
-		// So the fill has to do the work alone now, and that is asserted here
-		// rather than assumed: a border removed without lifting the surface
-		// would leave exactly the panel this file was written about.
-		if surface.StrokeWidth != 0 {
-			t.Errorf("%s draws a line round itself %.1f px wide.\n"+
-				"Reason: a border is what a box to type in uses, so a container wearing one makes the mark mean nothing.\n"+
-				"What to do: let the surface group by being a surface.", subject.what, surface.StrokeWidth)
+		// The line was taken away on 2026-08-23 on the argument that the same
+		// one pixel line was what a box to type in used to say "your value
+		// goes here", and a mark meaning two things means neither. The owner's
+		// report from the running window a month later was the other half of
+		// that trade: with the fill 5.9 L* off the page and nothing round it,
+		// the whole window ran together and nobody could tell where a section
+		// ended. The line is back on the owner's decision, in the separator's
+		// colour, and the field keeps its own edge in its own colour - two
+		// marks, two colours, and the surface still does its share.
+		if surface.StrokeWidth == 0 {
+			t.Errorf("%s draws no line round itself.\n"+
+				"Reason: the fill alone was measured at 5.9 L* off the page and read as nothing, 2026-09-21.\n"+
+				"What to do: stroke the surface in the separator's colour, one edge wide.", subject.what)
+		}
+		if want := parts.PaletteColour(theme.ColorNameSeparator, theme.VariantDark); surface.StrokeColor != want {
+			t.Errorf("%s draws its edge in %v and the palette says a separator is %v", subject.what, surface.StrokeColor, want)
 		}
 		page := parts.PaletteColour(theme.ColorNameBackground, theme.VariantDark)
 		if gap := lightnessGap(surface.FillColor, page); gap < 5 {
-			t.Errorf("%s is %.1f L* off the page with no line round it, and 5 is the least that reads as a surface.\n"+
-				"Reason: the edge used to carry this and no longer does, so the fill is all there is.", subject.what, gap)
+			t.Errorf("%s is %.1f L* off the page, and 5 is the least that reads as a surface even with a line round it.\n"+
+				"Reason: the line says where the edge is, the fill says there is a thing inside it.", subject.what, gap)
 		}
 	}
 }

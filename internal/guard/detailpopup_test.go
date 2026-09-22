@@ -252,21 +252,37 @@ func TestTheExplanationFloatsOnTheSurfaceAnOpenListDoes(t *testing.T) {
 		t.Fatal("hovering the button put nothing on the sheet, so there is no box to measure")
 	}
 
-	var surface *canvas.Rectangle
+	// Two rectangles since 2026-09-21: the shade the box casts, then the
+	// surface it stands on. The owner's report from the running window was
+	// that a flat box with no edge read as a random rectangle, so the
+	// surface wears a line and a shade shows below it. Each is asked for by
+	// what it is rather than by its place in the tree.
+	var surface, shade *canvas.Rectangle
+	want := parts.PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark)
 	walk(box, func(o fyne.CanvasObject) {
-		if rect, is := o.(*canvas.Rectangle); is && surface == nil {
+		rect, is := o.(*canvas.Rectangle)
+		if !is {
+			return
+		}
+		if rect.FillColor == want && surface == nil {
 			surface = rect
+		} else if _, _, _, a := rect.FillColor.RGBA(); a > 0 && a < 0xFFFF && shade == nil {
+			shade = rect
 		}
 	})
 	if surface == nil {
-		t.Fatal("the explanation's box draws no rectangle, so it stands on nothing this guard can measure")
-	}
-	want := parts.PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark)
-	if surface.FillColor != want {
-		t.Errorf("the explanation stands on %v and an open list on %v - a box the colour of the panel it opens over has no edge anywhere",
-			surface.FillColor, want)
+		t.Fatal("the explanation's box draws no rectangle in the colour of an open list, so it stands on nothing that floats")
 	}
 	if surface.CornerRadius != parts.RadiusField {
 		t.Errorf("the explanation's corner is %.0f and a floating control's is %d", surface.CornerRadius, parts.RadiusField)
+	}
+	if surface.StrokeWidth == 0 {
+		t.Error("the explanation's surface has no line round it, which is the random rectangle the owner saw")
+	}
+	if shade == nil {
+		t.Error("the explanation casts no shade, so nothing says it lies over the form rather than in it")
+	} else if shade.Position().Y <= surface.Position().Y {
+		t.Errorf("the shade sits at y=%.0f and the surface at y=%.0f - a shade that is not below the box it belongs to reads as a smudge",
+			shade.Position().Y, surface.Position().Y)
 	}
 }

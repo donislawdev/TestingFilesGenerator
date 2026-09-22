@@ -30,6 +30,18 @@ import (
 // colours at call sites.
 const ColorNamePanel fyne.ThemeColorName = "panel"
 
+// ColorNameLabel is the ink of a field's name, a step quieter than the value
+// in the box under it, so the value is the brightest thing in the field.
+// Owner's decision of 2026-09-21 - see docs/GUI-STRUCTURE-2026-09-21.md.
+const ColorNameLabel fyne.ThemeColorName = "label"
+
+// ColorNameTipShade is the shade an explanation casts on the form under it.
+// A name of its own rather than the toolkit's Shadow, which this palette
+// answers with nothing on purpose (see ColorNameShadow): the toolkit lays its
+// shadow under every popup and the format list is where it read as a hard
+// band, while an explanation is the one floating thing that wanted one.
+const ColorNameTipShade fyne.ThemeColorName = "tipshade"
+
 // ColorNameLift is what the pointer does to a face that is itself light - the
 // filled primary button - and ColorNameShade is what a press does to it.
 //
@@ -133,7 +145,8 @@ var (
 		// A button is no longer the same colour as a box to type in. It was,
 		// exactly, and that is half of why a menu and a field were one object
 		// with an arrow on the end of it - see the note on Chooser.
-		theme.ColorNameButton: hex(0x2E, 0x2E, 0x30),
+		theme.ColorNameButton: hex(0x4A, 0x4A, 0x52),
+		ColorNameLabel:        hex(0xCF, 0xD3, 0xD8),
 
 		// A menu floats over everything, so it is the LIGHTEST surface rather
 		// than another one at the height of an input box.
@@ -187,6 +200,7 @@ var (
 		// than as a popup - see parts.Tips - so it never asked the theme for a
 		// shadow and does not lose one.
 		theme.ColorNameShadow: color.Transparent,
+		ColorNameTipShade:     overlay(0x00, 0x00, 0x00, 0x66),
 
 		// The surface a section is drawn on, and the line round its edge.
 		//
@@ -282,11 +296,13 @@ var (
 		theme.ColorNameInputBackground: hex(0xE7, 0xE7, 0xEA),
 		theme.ColorNameInputBorder:     hex(0xA8, 0xA8, 0xB0),
 		theme.ColorNameButton:          hex(0xEF, 0xEF, 0xEF),
+		ColorNameLabel:                 hex(0x44, 0x44, 0x48),
 		// The same reasoning the other way up: on a white page a floating
 		// surface is the lightest thing there is, so it is white and the shadow
 		// is what separates it.
 		theme.ColorNameMenuBackground: hex(0xFF, 0xFF, 0xFF),
 		theme.ColorNameShadow:         overlay(0x00, 0x00, 0x00, 0x40),
+		ColorNameTipShade:             overlay(0x00, 0x00, 0x00, 0x40),
 
 		// The same two, worked out the same way against a white page. The gap
 		// between page and input is narrower here - 5.6 L* against 7.7 - so the

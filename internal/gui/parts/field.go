@@ -51,15 +51,15 @@ import (
 // as the sentence is there. Two marks rather than one on purpose - a colour on
 // its own says nothing to somebody who cannot tell it from the others, and a
 // sentence on its own leaves them looking for which of eight boxes it means.
-func FieldSaying(names float32, label string, detail Detail, required bool, trailing, control fyne.CanvasObject) Built {
+func FieldSaying(label string, detail Detail, required bool, trailing, control fyne.CanvasObject) Built {
 	marked, ring := WithRing(shapedForItsValues(control))
-	area := newErrorArea(names)
+	area := NewErrorArea()
 	area.edge = ring
-	cells := []fyne.CanvasObject{headingRow(label, detail, required), marked}
+	pieces := []fyne.CanvasObject{headingRow(label, detail, required), marked}
 	if trailing != nil {
-		cells = append(cells, trailing)
+		pieces = append(pieces, trailing)
 	}
-	body := FieldRow(names, cells...)
+	body := FieldStack(pieces...)
 	return Built{Object: Column(GapTight, body, area.Object()), Body: body, Area: area}
 }
 
@@ -91,7 +91,7 @@ type Built struct {
 // names the box by it - it is just not drawn here.
 func CellSaying(control fyne.CanvasObject) Built {
 	marked, ring := WithRing(shapedForItsValues(control))
-	area := newErrorArea(0)
+	area := NewErrorArea()
 	area.edge = ring
 	return Built{Object: Column(GapTight, marked, area.Object()), Body: marked, Area: area}
 }
@@ -153,23 +153,14 @@ type ErrorArea struct {
 
 // NewErrorArea builds one that stands on its own, for the line at the foot of
 // the form that speaks for the whole run.
-func NewErrorArea() *ErrorArea { return newErrorArea(0) }
-
-// newErrorArea builds one for a field whose names stand in a column that
-// wide, so the sentence starts under the control it is about rather than
-// under the name. Nought for a cell of a table, where the sentence starts
-// under the cell.
-func newErrorArea(names float32) *ErrorArea {
+func NewErrorArea() *ErrorArea {
 	label := widget.NewLabel("")
 	label.Wrapping = fyne.TextWrapWord
 	label.Importance = widget.DangerImportance
-	var box fyne.CanvasObject
-	if names > 0 {
-		box = FieldRow(names, Clear(), inkTight(label))
-	} else {
-		box = container.NewVBox(inkTight(label))
-	}
-	area := &ErrorArea{label: label, box: box}
+	// The sentence starts under the control it is about, on the edge the
+	// control starts on - which is the field's edge since the name stands
+	// over the control rather than beside it.
+	area := &ErrorArea{label: label, box: container.NewVBox(inkTight(label))}
 	area.Clear()
 	return area
 }

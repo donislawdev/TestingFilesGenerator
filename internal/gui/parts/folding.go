@@ -61,7 +61,7 @@ type Folding struct {
 // that could not be removed or copied would be a batch somebody has to open to
 // do the two things they are most likely to want from a list of them.
 func NewFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
-	f := newFolding(title, head, content...)
+	f := newFolding(title, sectionTitle(title), head, content...)
 	f.object = container.NewStack(panelSurface(), Padded(Inset, f.inside))
 	return f
 }
@@ -79,12 +79,14 @@ func NewFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 // and Duplicate, which act on the batch - a section of it is not a thing
 // anybody removes or copies on its own.
 func NewInnerFolding(title string, content ...fyne.CanvasObject) *Folding {
-	f := newFolding(title, nil, content...)
+	// At the rank of a subheading rather than a section's title since
+	// 2026-09-21: drawn as a section, it read as one (owner, running window).
+	f := newFolding(title, words(title, TextBody, true, theme.ColorNameForeground), nil, content...)
 	f.object = f.inside
 	return f
 }
 
-func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
+func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
 	f := &Folding{open: true, title: title}
 
 	f.line = widget.NewLabel("")
@@ -113,7 +115,8 @@ func newFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 	// the same amount so the title's ink does not move - see overhang.
 	arrow := widget.NewIcon(theme.MenuDropDownIcon())
 	f.head = newFoldHead(f, arrow)
-	words := Padded(TabInset, container.NewHBox(sectionTitle(title), arrow, quiet(f.line)))
+	words := Padded(TabInset, container.NewHBox(titled, arrow, quiet(f.line)))
+	f.head.under = words
 	row := container.NewBorder(nil, nil, nil, container.NewHBox(head...), container.NewStack(f.head, words))
 
 	f.inside = Column(GapField, container.New(overhang{by: TabInset}, row), f.body)

@@ -72,6 +72,24 @@ func TestNoSectionIsNamedAfterAFieldInsideIt(t *testing.T) {
 	}
 }
 
+// fieldNamesOn is every field name a screen draws, read off the fields
+// themselves - a field is the one container laid out as a field, and its
+// first thing is its name. Asked by the layout rather than by the weight of
+// the words, for the reason the guard above gives.
+func fieldNamesOn(screen fyne.CanvasObject) []string {
+	var out []string
+	walk(screen, func(obj fyne.CanvasObject) {
+		box, ok := obj.(*fyne.Container)
+		if !ok || !parts.IsField(box) || len(box.Objects) < 2 {
+			return
+		}
+		if name, named := headingOf(box.Objects[0]); named && name != "" {
+			out = append(out, name)
+		}
+	})
+	return out
+}
+
 // And the preset card still says what it is for.
 //
 // The half that stops the guard above being satisfied by deleting the title.

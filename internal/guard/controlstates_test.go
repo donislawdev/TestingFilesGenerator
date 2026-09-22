@@ -271,8 +271,17 @@ func TestASecondaryButtonWearsAFaceAtRest(t *testing.T) {
 		return nil
 	}
 	rest := faceOf()
-	if want := parts.PaletteColour(theme.ColorNameInputBackground, theme.VariantDark); rest != want {
-		t.Errorf("at rest the face is %v and should be the surface of a box to type in, %v - an outline round nothing reads as a bordered word", rest, want)
+	// The button's own surface since 2026-09-21, and a step brighter than a
+	// box to type in: the owner's report from the running window was that a
+	// button wearing the field's surface read as a field. Asked as a
+	// relationship, not only as a name, so a palette edit that lowers the
+	// button under the field goes red here rather than on the screen.
+	if want := parts.PaletteColour(theme.ColorNameButton, theme.VariantDark); rest != want {
+		t.Errorf("at rest the face is %v and should be the button's own surface, %v - a button in the field's colour reads as a field", rest, want)
+	}
+	field := parts.PaletteColour(theme.ColorNameInputBackground, theme.VariantDark)
+	if gap := lightnessGap(rest, field); gap < 5 {
+		t.Errorf("the button's face is %.1f L* off a box to type in, and 5 is the least that tells a thing to press from a thing to type in", gap)
 	}
 	b.MouseIn(&desktop.MouseEvent{})
 	hovered := faceOf()

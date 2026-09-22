@@ -105,12 +105,6 @@ type Fields struct {
 	// nobody would find by looking.
 	shortcuts func(fyne.Shortcut)
 
-	// names is how wide the column of names is, so every field on the screen
-	// puts its control on the same edge. Set once by the screen from the
-	// widest name the window can ever show - see LabelColumn - and nought
-	// until then, which lays a name out at its own width.
-	names float32
-
 	// bare are the controls on the form that have no setting and no name of
 	// their own and are still part of the form - the switch between the three
 	// ways of stating a size. Each remembers how many fields stood before it,
@@ -129,19 +123,6 @@ type bareControl struct {
 	control fyne.Disableable
 	after   int
 }
-
-// LabelColumn says how wide the column of names is on this screen.
-//
-// Every field built after this stands its control on that edge. Handed in
-// rather than measured from the fields as they arrive, because the settings a
-// chosen format declares arrive after the screen is built, and a column that
-// widened to fit them would move every control on the screen the moment
-// somebody chose a format with a long setting name.
-func (s *Fields) LabelColumn(width float32) { s.names = width }
-
-// Names is the width of the column of names, for a screen laying out a row
-// of its own beside the fields.
-func (s *Fields) Names() float32 { return s.names }
 
 // PassShortcutsTo says where the boxes of this screen should send a shortcut
 // they have no use for. Called once, before the fields are built.
@@ -252,7 +233,7 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// field that still carries one is not something anybody can write.
 	explained := alsoSaying(hint, detail)
 	return s.register(setting, label, explained, control,
-		FieldSaying(s.names, label, explained, s.required[setting], s.counter(setting, control), control))
+		FieldSaying(label, explained, s.required[setting], s.counter(setting, control), control))
 }
 
 // register is what every kind of field goes through once it is built.
@@ -276,7 +257,7 @@ func (s *Fields) Unlabelled(control fyne.CanvasObject) fyne.CanvasObject {
 	if d, ok := control.(fyne.Disableable); ok {
 		s.bare = append(s.bare, bareControl{control: d, after: len(s.list)})
 	}
-	return FieldRow(s.names, Clear(), control)
+	return control
 }
 
 // AddToggle is a switch, and since 2026-09-15 it is a field like any other: its

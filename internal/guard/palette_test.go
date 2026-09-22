@@ -50,6 +50,21 @@ func TestThePaletteMeetsTheContrastItWasComputedFor(t *testing.T) {
 			}
 		}
 
+		// A field's name, since 2026-09-21 in an ink of its own a step under
+		// the value's, is still read - on the panel it stands on, which is
+		// lighter than the page and so the harder of the two.
+		panel := parts.PaletteColour(parts.ColorNamePanel, variant.v)
+		if got := contrast(parts.PaletteColour(parts.ColorNameLabel, variant.v), panel); got < 4.5 {
+			t.Errorf("%s: a field's name is %.2f:1 against the panel, under the 4.5 a reader needs", variant.name, got)
+		}
+		// And it is a step under the value, or the two inks are one ink with
+		// two names - the owner accepted the quieter name on 2026-09-21 and
+		// then asked for it brighter, so the step is small and it is asked
+		// for as a step rather than as a number.
+		if label, value := parts.PaletteColour(parts.ColorNameLabel, variant.v), parts.PaletteColour(theme.ColorNameForeground, variant.v); lightnessGap(label, value) < 3 {
+			t.Errorf("%s: a field's name is %.1f L* off the value under it, so nothing tells the name from the value", variant.name, lightnessGap(label, value))
+		}
+
 		// Recognised as a state: 3.0, from WCAG 1.4.11. What carries it is the
 		// LINE round a control - parts.Ring - and not the focus colour, which
 		// is a wash the toolkit lays over whatever the control already is.
