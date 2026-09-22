@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window opens on a preset that was chosen rather than sorted.** The
+  Presets tab, and the "Build on a preset" section of the batches screen,
+  used to start on whichever preset came first alphabetically - so what you
+  saw when you opened the tab changed whenever a preset was added. A preset
+  says now whether it is the one to start on, and `empty-and-minimal` is it:
+  pressing Generate without touching anything writes 32 214 B rather than the
+  73 MB the size-boundaries defaults come to, and its set means something
+  without a number from you first.
 - **A recipe this program writes for you reads like one written by hand.**
   Where the tool composes a recipe - the batch screen, and `tfg preset eject`
   - a count and a size are now written as bare numbers (`size: 1024`) rather
@@ -272,6 +280,17 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **A refusal about two settings that bound each other now says how far over
+  you are.** Asking for a picture of 20000 by 2001 pixels was turned down with
+  "together they come to 40 megapixels and the limit is 40" - the same number
+  twice, because the counts were rounded to whole megapixels and the request
+  is 40.02 of them. The limit had no unit after it either. Both counts are
+  written out exactly when rounding would put them on one number ("together
+  they come to 40 020 000 pixels and the limit is 40 000 000 pixels"), and the
+  readable form is kept where it still tells you something ("400 megapixels
+  and the limit is 40 megapixels"). The same sentence is used by every format
+  with a rule of this kind: `avif`, `gif`, `jpg`, `jxl`, `png` and `xlsx`.
 
 - **The whole head row of a section opens and closes it.** Until now only the
   small arrow after a section's title was the target, so a click on "Notes

@@ -120,7 +120,7 @@ func init() {
 		},
 		JointLimits: []format.JointLimit{{
 			Of: "width", By: "height", Max: maxPixels,
-			Unit: "megapixels", Per: 1_000_000,
+			Unit: "megapixels", Per: 1_000_000, Base: "pixels",
 			Why: "the picture is held in memory while it is encoded",
 		}},
 		GeneratorVersion: generatorVersion,

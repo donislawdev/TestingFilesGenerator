@@ -74,8 +74,12 @@ func newBase(r *Recipe) *base {
 	// Chosen here rather than left empty, so a switch turned on shows a
 	// preset with its parameters at once rather than a menu asking to be
 	// opened first.
-	if len(ids) > 0 {
-		b.pick.SetSelected(ids[0])
+	//
+	// The one the preset declares, not the first in the list. The list is in
+	// alphabetical order, so "the first" moved the day a preset sorting
+	// earlier was written - see preset.Landing.
+	if landing := preset.Landing(); landing != "" {
+		b.pick.SetSelected(landing)
 	}
 	return b
 }
