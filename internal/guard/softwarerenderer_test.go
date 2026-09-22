@@ -284,3 +284,28 @@ func TestTheAboutScreenSaysWhenTheWindowIsDrawnInSoftware(t *testing.T) {
 		t.Errorf("the About screen of a window drawn in software does not say so.\nIt shows:\n%s", shown)
 	}
 }
+
+// The line before the second start says what was checked, and names the
+// cause as the usual one rather than as a fact.
+//
+// The program has checked exactly one thing when it writes this line: the
+// first attempt gave no window. The sentence used to state that the driver
+// offers no OpenGL 2.1, which is the usual cause and the measured one (O218)
+// and is still more than the code knows - the owner asked on 2026-09-17 for
+// a note, not a finding. The guard above reads the expected text from the
+// function it tests, so it would be green after a revert of the wording. This
+// one holds the two words that make it a note, and was asked for by an
+// outside review of #117.
+func TestTheSecondStartSpeaksAsANoteNotAFinding(t *testing.T) {
+	line := text.StartingAgainWithSoftwareRenderer()
+	if !strings.Contains(line, "usually") {
+		t.Errorf("the line before the second start names the cause without saying it is the usual one:\n  %s\n"+
+			"The program has only checked that the first attempt gave no window, so the driver is the usual cause, not a finding.", line)
+	}
+	if !strings.Contains(line, "first attempt") {
+		t.Errorf("the line before the second start does not say what was actually checked - that the first attempt gave no window:\n  %s", line)
+	}
+	if strings.Contains(line, "offers no OpenGL") {
+		t.Errorf("the line before the second start states as a fact that the driver offers no OpenGL, which the program never checked:\n  %s", line)
+	}
+}
