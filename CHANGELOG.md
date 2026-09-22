@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The line before the second start says what was checked, not what was
+  guessed.** When the window's first attempt gives no window and the program
+  starts again with the software renderer shipped beside it (Windows), the
+  line on standard error used to state that the graphics driver offers no
+  OpenGL 2.1. That is the usual cause and the one measured, but the only
+  thing the program has checked at that point is that the first attempt did
+  not succeed. The line now says that, names the usual cause as usual rather
+  than as fact, and then says what is being done about it.
 - **Two names are compared with a corrected Unicode normaliser.** The
   library that decides whether two file names are one name spelled two ways,
   `golang.org/x/text`, moves from 0.41.0 to 0.42.0, and that release fixes how

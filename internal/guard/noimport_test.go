@@ -38,8 +38,26 @@ import (
 // when it has none rather than passing. It is a skip and not a failure on
 // the runners that are not Windows, and on a Windows machine without gcc,
 // because a guard that cannot be run is not a guard that passed - the one
-// that can run is the Windows job of CI, which has the compiler.
+// that can run is a Windows job of CI, which has the compiler.
+//
+// Which Windows job is the point of the variable below. Measured on
+// 2026-09-17 (docs/GUI-SOFTWARE-RENDERER-2026-09-17.md section 6.1): the test
+// matrix runs with CGO_ENABLED=0, so nothing else in that job compiles the
+// OpenGL binding or GLFW, and the build here was the one cold cgo build of
+// the run - 822 s for the Windows test step against 434 s with a warm cache,
+// with four minutes left under the step's timeout. Every change to go.sum
+// makes the cache cold again. So CI runs this guard in a job of its own, with
+// a cache of its own, and asks the matrix to skip it. The skip is not a
+// preference and is never taken by itself: it is taken only when that job
+// exists to run the guard instead, and a guard in internal/guard holds the
+// workflow to that - the job names this test, the matrix sets this variable,
+// and the job does not.
+const importTableJobVariable = "TFG_IMPORT_TABLE_JOB"
+
 func TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime(t *testing.T) {
+	if os.Getenv(importTableJobVariable) != "" {
+		t.Skipf("skipped here on purpose: %s is set, so the import table is read by the CI job that builds the window with cgo and a warm cache - see ci.yml", importTableJobVariable)
+	}
 	if runtime.GOOS != "windows" {
 		t.Skipf("the import table being read is a Windows one, and a Windows binary with cgo cannot be built on %s", runtime.GOOS)
 	}

@@ -283,10 +283,18 @@ func WindowRefused(cause string) string {
 // rather than words and are not translated.
 
 // StartingAgainWithSoftwareRenderer is the line the first process writes to
-// standard error before it starts the second one: the driver refused, and
-// this is what is being done about it.
+// standard error before it starts the second one: the first attempt gave no
+// window, and this is what is being done about it.
+//
+// Written as a note rather than a finding, and the owner asked for that on
+// 2026-09-17. The sentence used to state that the driver offers no OpenGL
+// 2.1, which is the usual cause and the one measured (O218) - but the only
+// thing the program has actually checked at this point is that the toolkit
+// refused a window. Stating the cause as a fact would be a claim the code
+// never made, on the one machine where somebody is reading standard error
+// to find out what happened.
 func StartingAgainWithSoftwareRenderer() string {
-	return say("RendererStartingAgain", "The graphics driver on this computer offers no OpenGL 2.1. Starting again with the software renderer shipped beside the program.")
+	return say("RendererStartingAgain", "The first attempt to open a window did not succeed - usually a graphics driver without OpenGL 2.1. Starting again with the software renderer shipped beside the program.")
 }
 
 // DrawingWithSoftwareRenderer is what a window drawn in software says about
