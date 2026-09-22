@@ -105,10 +105,13 @@ type Fields struct {
 	// nobody would find by looking.
 	shortcuts func(fyne.Shortcut)
 
-	// bare are the controls on the form that have no setting and no name of
-	// their own and are still part of the form - the switch between the three
-	// ways of stating a size. Each remembers how many fields stood before it,
-	// so that KeepFirst can throw it away with the fields it arrived with.
+	// bare are the controls on the form that have no SETTING behind them and
+	// are still part of the form - the switch between the three ways of
+	// stating a size. They carry a name like everything else in the column
+	// since 2026-09-23, so what is bare about them is the registry entry
+	// rather than the label - see Named. Each remembers how many fields stood
+	// before it, so that KeepFirst can throw it away with the fields it
+	// arrived with.
 	//
 	// A second list rather than an entry in list with an empty key, because
 	// list is what a refusal is addressed against and what the guards compare
@@ -249,15 +252,28 @@ func (s *Fields) register(setting, label string, detail Detail, control fyne.Can
 	return built.Object
 }
 
-// Unlabelled is a row of the form for something that is not a field and has
-// no name of its own - the switch that chooses between three ways of saying
-// how big - so it stands in the column of controls like everything else, and
-// freezes with them.
-func (s *Fields) Unlabelled(control fyne.CanvasObject) fyne.CanvasObject {
+// Named is a row of the form for a control that is not a field: it has a name
+// and an explanation like everything else in the column, and no setting behind
+// it, so nothing is ever refused about it and nothing of it reaches a recipe.
+// The switch that chooses between three ways of saying how big is the one.
+//
+// It was Unlabelled until 2026-09-23, and drew the control with no name over
+// it at all - which left the one control on the batch screen whose subject
+// came from where it sat rather than from anything written. The registration
+// is the half that did not change: a control that goes on the form has to
+// freeze with the form, and that is what this list is for.
+//
+// The name is drawn here rather than by registering a field, and the
+// difference is load bearing. A field carries the address a refusal is placed
+// by, and a switch cannot be refused - one of its three is always chosen -
+// so registering one would put a key in the registry that no message can ever
+// arrive for, and every guard comparing the registry with what a run refuses
+// would have an entry to explain.
+func (s *Fields) Named(label string, detail Detail, control fyne.CanvasObject) fyne.CanvasObject {
 	if d, ok := control.(fyne.Disableable); ok {
 		s.bare = append(s.bare, bareControl{control: d, after: len(s.list)})
 	}
-	return control
+	return FieldStack(headingRow(label, detail, false), control)
 }
 
 // AddToggle is a switch, and since 2026-09-15 it is a field like any other: its

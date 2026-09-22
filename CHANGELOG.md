@@ -16,6 +16,23 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **`Generate` means the same thing on every screen.** The `Several batches`
+  screen used to open with `Batch name` and `Size` empty under a red star
+  each, so the button that works straight away on `Single batch` turned you
+  down on the third tab. The first batch now arrives with the same two values
+  the single batch screen has always had, `files` and `10mb`, and the summary
+  at the foot of the screen says what the run would come to instead of only
+  where it would go. Nothing else on that screen is filled in: a count, a kind
+  of case and an expected outcome left alone still reach the run unstated,
+  which is what lets the manifest record that you did not state them. A batch
+  you add yourself still arrives empty, because two batches under one name is
+  refused.
+
+- **The first screen says what this tool gives you that a file generator does
+  not.** The sentence under `Single batch` read "Files of one format and one
+  size, as many as you need", which describes the mechanism. It now names the
+  manifest and what it is for.
+
 - **The window is painted from one system rather than from colours chosen one
   at a time.** Every surface and every piece of text now comes from a single
   ladder: one hue, an even step between one surface and the next, and one
@@ -205,6 +222,29 @@ because it turns other people's test suites red.
   row now, and the picture of a file kind stays in front where it was.
 
 ### Added
+
+- **The window says where the manifest went, and opens it.** A finished run
+  used to say `3 files written.` and nothing else, while the same run from the
+  command line printed the path of the manifest beside the count. The line now
+  names the file - `3 files written. Manifest: manifest.json` - and a second
+  button, `Open manifest`, stands beside `Open folder` for as long as there is
+  a record to open. The manifest is what carries the expected outcome of every
+  file, its hash and the seed it was made from, so it is the part of a run a
+  test suite reads. Neither button appears after a preview, because a preview
+  writes nothing.
+
+- **The About screen says what to do with the program, in three steps.** It
+  opened with one sentence about what this tool is and ran straight into the
+  licence notice. A short section above the licence now says how to get from
+  an empty window to files and a manifest a test can read.
+
+- **The switch that chooses how a batch states its size has a name.** On
+  `Several batches` the row of `One size | A range | Around a limit` stood
+  between two fields with nothing over it, so what it was about had to be
+  guessed from its neighbours. It reads `How the size is given` now, with the
+  same explanation button every other setting has - and that explanation says
+  what each of the three does, including `Around a limit`, which makes three
+  files: one byte under the limit, one on it, one over.
 
 - **The palette is something you can open.** `tfg --catalogue`, the hidden
   screen that shows every control the window is built from, now ends with the

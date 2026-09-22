@@ -15,10 +15,10 @@ func textRanks() Entry {
 	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Note", "Caption", "Bullets"}, States: []State{
 		{"the title of a screen", func() fyne.CanvasObject { return parts.Title("Single batch") }},
 		{"the sentence under a title", func() fyne.CanvasObject {
-			return parts.Subtitle("Files of one format and one size, as many as you need.")
+			return parts.Subtitle("Files of one format and one size, with a manifest that says how the system under test should react to them.")
 		}},
 		{"a title with its sentence", func() fyne.CanvasObject {
-			return parts.Titled("Single batch", "Files of one format and one size, as many as you need.")
+			return parts.Titled("Single batch", "Files of one format and one size, with a manifest that says how the system under test should react to them.")
 		}},
 		{"the name of a field", func() fyne.CanvasObject { return parts.Heading("Output directory") }},
 		{"the name of a block inside a section", func() fyne.CanvasObject { return parts.Subheading("Typically finds") }},
@@ -30,6 +30,19 @@ func textRanks() Entry {
 		}},
 		{"a list of short statements", func() fyne.CanvasObject {
 			return parts.Bullets([]string{"Upload validators", "Size limits", "Archive handling"})
+		}},
+		{"a list whose items do not fit on one line", func() fyne.CanvasObject {
+			// Here because the list above could not show it and the window
+			// now draws one: the About screen's three steps, where the third
+			// runs to two lines. Rule 4 of the owner's list asks every
+			// component to be in this catalogue with a very long text in it,
+			// and a marker beside a wrapped item is exactly the case that
+			// list of short statements cannot ask about (O235).
+			// Twice the long line rather than once: measured off the stored
+			// tree, one of them is 504 px inside 777 px of room and does not
+			// wrap at all, so a state built from it would have been a state
+			// that cannot show the thing it is named after.
+			return parts.Bullets([]string{"One line", longText + " " + longText})
 		}},
 		{"a caption, the smallest rank", func() fyne.CanvasObject {
 			return parts.Caption("10 485 760 B")

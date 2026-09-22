@@ -5,7 +5,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
@@ -79,30 +78,7 @@ func (r *runner) actions() fyne.CanvasObject {
 	// Kept by the busy state as well, because the toolkit does not lay the
 	// row out again when a button in it is hidden - see busy.relay.
 	r.busy.row = container.NewHBox(
-		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.busy.cancel, r.openBtn, layout.NewSpacer())
+		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.busy.cancel,
+		r.offer.folderBtn, r.offer.manifestBtn, layout.NewSpacer())
 	return r.busy.row
-}
-
-// offerTheFolder shows the way to the files, once there are some.
-//
-// Asked of the RESULT rather than of the box on the screen: a run that wrote
-// nothing has nothing to show, and a run that was stopped after three files has
-// three files somebody may well want to look at. The manifest is what knows.
-func (r *runner) offerTheFolder(res *engine.Result) {
-	if res == nil || res.Manifest == nil || len(res.Manifest.Files) == res.Failures {
-		return
-	}
-	if r.wroteInto == "" {
-		return
-	}
-	r.openBtn.Show()
-	r.busy.relay()
-}
-
-// hideTheFolder takes the offer away when the next run starts, so the button
-// never points at the results of the run before this one.
-func (r *runner) hideTheFolder() {
-	r.wroteInto = ""
-	r.openBtn.Hide()
-	r.busy.relay()
 }

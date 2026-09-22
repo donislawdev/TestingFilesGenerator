@@ -53,7 +53,7 @@ type Preset struct {
 // NewPreset builds the screen. links are the buttons to the other screens.
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
-	p.runner.openFolder = host.OpenFolder
+	p.runner.offer.through(host)
 	p.runner.settle = p.settle
 	// No readdress here, and that is the boundary of this screen rather than an
 	// omission. The other two screens draw boxes for the settings of a target,

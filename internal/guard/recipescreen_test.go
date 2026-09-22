@@ -56,6 +56,20 @@ func TestEveryRefusalAboutABatchMarksTheBoxOfThatBatch(t *testing.T) {
 			fields := screen.Fields()
 			setBox(t, fields, recipe.TargetAddress(c.fill, recipe.KeyID), "filled")
 			setBox(t, fields, recipe.TargetAddress(c.fill, recipe.KeySize), "1kb")
+			// The other batch is EMPTIED rather than assumed empty, and that
+			// is the difference between a guard and a green one. The screen
+			// arrives with its first batch filled in since 2026-09-23 - so
+			// the case that puts the empty batch first went from asking about
+			// a misplaced refusal to asking about a run with nothing wrong
+			// with it, and passed by producing no refusal at all.
+			setBox(t, fields, recipe.TargetAddress(c.wantMarked, recipe.KeyID), "")
+			setBox(t, fields, recipe.TargetAddress(c.wantMarked, recipe.KeySize), "")
+			for _, setting := range []string{recipe.KeyID, recipe.KeySize} {
+				at := recipe.TargetAddress(c.wantMarked, setting)
+				if got := boxText(t, fields, at); got != "" {
+					t.Fatalf("%q still holds %q, so the batch this case is about is not the empty one", at, got)
+				}
+			}
 
 			pressNamed(t, body, text.ButtonPreview())
 

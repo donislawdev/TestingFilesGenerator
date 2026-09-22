@@ -163,7 +163,7 @@ type content struct {
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r := &Recipe{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
 	r.runner.settle = r.settle
-	r.runner.openFolder = host.OpenFolder
+	r.runner.offer.through(host)
 	// A refusal about a size belongs on the box the switch is showing.
 	r.runner.readdress = r.readdressSizeWay
 	// A box inside a folded batch cannot be brought into view by scrolling, so
@@ -213,6 +213,12 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// to exist, and choosing it is what fills them in. The same ordering the
 	// single batch screen needs, and for the same reason.
 	r.batches[0].formatPick.SetSelected(format.IDs()[0])
+	// And the two settings a run refuses without, so that Generate means the
+	// same thing here as it does on the first screen. Only the batch the
+	// screen opens with - see formdefaults.go for why not the ones added
+	// after it, and for why it is these two and nothing else.
+	r.batches[0].id.SetText(startingBatchName)
+	r.batches[0].size.SetText(startingSize)
 	r.rebuild()
 
 	// Said last, once every box it reads exists.

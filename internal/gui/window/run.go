@@ -3,6 +3,7 @@ package window
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -79,21 +80,13 @@ type runner struct {
 
 	previewBtn  *parts.Button
 	generateBtn *parts.Button
-	// openBtn shows the directory a finished run wrote into.
-	//
-	// It appears when there is something to open and goes away the moment the
-	// next run starts, which is the owner's decision of 2026-08-25. A button
-	// leading to a directory that does not exist yet is a button that does
-	// nothing, and this window has been getting rid of those.
+	// offer is what the finished run left and the way to each of it: the
+	// folder, the record, and the rule about when each is on the bar.
 	//
 	// In the row of actions rather than beside the output box, so the bar keeps
 	// its height and the form does not move - the property
-	// TestTheFormDoesNotMoveWhenARunStarts holds.
-	openBtn *parts.Button
-	// wroteInto is the directory of the run that just finished, kept because
-	// the box on the screen can be edited afterwards and the button has to open
-	// where the files ACTUALLY went.
-	wroteInto string
+	// TestTheFormDoesNotMoveWhenARunStarts holds. See offers.
+	offer *offers
 
 	// busy is whether work owns the screen and the face it wears for it -
 	// the frozen form, Cancel, the bar. See runbusy.go.
@@ -152,11 +145,6 @@ type runner struct {
 	// right for closing the window and for Esc and wrong for anybody who wants
 	// to read the answer.
 	settled chan struct{}
-
-	// openFolder is how this screen asks the desktop to show a directory. Held
-	// as a function rather than reaching for the host, because the runner is
-	// shared by three screens and none of them owns the window.
-	openFolder func(string)
 
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
@@ -368,12 +356,7 @@ func newRunner(wait later) *runner {
 	r.busy = &busy{fields: r.fields, preview: r.previewBtn, generate: r.generateBtn,
 		cancel: cancel, bar: bar, later: wait}
 
-	r.openBtn = parts.NewButton(parts.Secondary, text.ButtonOpenFolder(), func() {
-		if r.wroteInto != "" && r.openFolder != nil {
-			r.openFolder(r.wroteInto)
-		}
-	})
-	r.openBtn.Hide()
+	r.offer = newOffers(r.busy.relay)
 	return r
 }
 
@@ -579,8 +562,8 @@ func (r *runner) onGenerate() {
 	// screen can be edited while a run is going and the button has to open
 	// where the files ACTUALLY went. Hidden first, so a run that produces
 	// nothing does not leave the offer from the run before it standing.
-	r.hideTheFolder()
-	r.wroteInto = opt.OutDir
+	r.offer.forget()
+	r.offer.wroteInto = opt.OutDir
 	r.startRun(targets, opt)
 }
 
@@ -655,7 +638,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// The manifest is written here rather than after crossing back, because
 		// it is disk work and the interface thread is the one thing that must
 		// not wait on a disk.
-		saveErr := saveManifest(res, opt)
+		savedTo, saveErr := saveManifest(res, opt)
 		// The room left on the disk is the room left AFTER the files, which
 		// is not the number a preview measured before them.
 		room := roomOn(opt.OutDir)
@@ -663,7 +646,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// stop, waiting on the channel closed below, and a worker waiting for
 		// that thread to run something would be both of them waiting.
 		r.holdBeforeFinishing()
-		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room) })
+		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room, savedTo) })
 		close(done)
 	}()
 }
@@ -672,10 +655,14 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 //
 // Note what it does not do: clear stop. That is deliberate and the reason is at
 // the declaration of the field.
-func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom) {
+//
+// savedTo is where the record went, or nothing at all when no record was
+// written - which is a refused run, a preview, and a run whose manifest could
+// not be saved. The screen says nothing about a manifest in any of those.
+func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom, savedTo string) {
 	r.busy.set(false, busyFace{})
-	if room.known && r.wroteInto != "" {
-		r.line.measured(r.wroteInto, room.free)
+	if room.known && r.offer.wroteInto != "" {
+		r.line.measured(r.offer.wroteInto, room.free)
 	}
 
 	switch {
@@ -695,10 +682,27 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// learned on 2026-09-06: it is the one line standing between somebody and a
 	// directory nothing in this toolset can ever clean up, and it was being
 	// buried under notes about a label that did not fit.
-	said := append([]string{outcomeText(res, runErr)}, manifestReachNote(res)...)
+	//
+	// The record is named on the same line as the outcome rather than on one of
+	// its own, because it is part of the same fact: what this run produced. The
+	// command line has printed it since there was a manifest, and the window
+	// said only how many files - so the one thing this tool makes that others
+	// do not was, from a window, something you found in the folder afterwards.
+	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(savedTo))
+	said := append([]string{outcome}, manifestReachNote(res)...)
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
-	r.offerTheFolder(res)
+	r.offer.theFolder(res)
+	r.offer.theManifest(savedTo)
+}
+
+// manifestNameOf is the file's own name, for a sentence that stands beside a
+// button opening the folder it is in. Nothing where no record was written.
+func manifestNameOf(path string) string {
+	if path == "" {
+		return ""
+	}
+	return filepath.Base(path)
 }
 
 // keepScroll remembers the scrolling area on the way past, so that a refusal

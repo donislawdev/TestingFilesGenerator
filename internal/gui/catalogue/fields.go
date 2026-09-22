@@ -44,6 +44,15 @@ func fields() Entry {
 			s := form()
 			return s.AddToggle("label", "Label in each file", "", parts.NoDetail, parts.NewToggle(func(bool) {}))
 		}},
+		{"a named control with no setting behind it", func() fyne.CanvasObject {
+			// It looks like a field and is not one: nothing is ever refused
+			// about it, so it carries no room for a message and no star. The
+			// one in the application chooses between three ways of stating a
+			// size - see parts.Fields.Named.
+			s := form()
+			return s.Named("How the size is given", parts.NoDetail,
+				parts.NewSegments([]string{"One size", "A range", "Around a limit"}, nil))
+		}},
 		{"a table: the names once over the columns, cells under them", func() fyne.CanvasObject {
 			// Two rows, because one row cannot show what the header is for:
 			// until 2026-09-16 every cell drew its own name, and the second

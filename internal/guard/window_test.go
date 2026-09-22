@@ -78,6 +78,12 @@ type fakeHost struct {
 	canvas      fyne.Canvas
 	folder      string
 	folderCount int
+	// file and fileCount are the same for the one FILE the window offers to
+	// open, which is the manifest of a finished run. Kept apart from the
+	// folder above rather than counted together, because the guard's question
+	// is which of the two buttons was pressed and what each of them pointed at.
+	file      string
+	fileCount int
 
 	kept *keptInMemory
 
@@ -305,6 +311,14 @@ func (h *fakeHost) Canvas() fyne.Canvas {
 func (h *fakeHost) OpenFolder(path string) {
 	h.folder = path
 	h.folderCount++
+}
+
+// OpenFile records the file a screen asked to have opened, for the same reason
+// and with the same restraint: a stand in that really opened one would put an
+// editor on somebody's screen for every guard that finishes a run.
+func (h *fakeHost) OpenFile(path string) {
+	h.file = path
+	h.fileCount++
 }
 
 // Remembered is a store in memory, which is the whole reason the screens take

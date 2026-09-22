@@ -49,7 +49,7 @@
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
 													<widget size="788x16" type="*widget.RichText">
-														<text color="placeholder" size="364x16">Files of one format and one size, as many as you need.</text>
+														<text color="placeholder" size="708x16">Files of one format and one size, with a manifest that says how the system under test should react to them.</text>
 													</widget>
 												</widget>
 											</container>

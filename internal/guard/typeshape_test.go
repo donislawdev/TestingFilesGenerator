@@ -41,7 +41,14 @@ const (
 	// ceilings. The busy state and its four controls left it that day for a
 	// type of their own (runbusy.go), and the ratchet moved down to the next
 	// widest: parts.Fields by methods, window.batch by fields.
-	mostMethods = 26
+	//
+	// Lowered from 26 on 2026-09-23. The runner was one method past this and
+	// one field past the one below when the manifest got a button beside the
+	// folder's, and the ceiling is a ratchet - so what a finished run leaves
+	// behind and the way to each of it left for a type of their own
+	// (runoffers.go), taking two buttons, two paths and two ways to open
+	// them with it. The widest type by methods is parts.Fields now.
+	mostMethods = 25
 	mostFields  = 21
 
 	// What counts as crowding, in the shape this package already uses
