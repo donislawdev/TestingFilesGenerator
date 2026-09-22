@@ -43,15 +43,24 @@ import (
 // TestARecipeBuildingOnAPresetGivesTheBytesOfTheEjectedOneWithItsTargetsAppended,
 // which appends a target the way a person would.
 //
-// The third case is the one that keeps this honest rather than merely tidy. A
-// name is text even when it is made of digits, and "007" turned into the number
-// seven would be a file with a different name - so the tidying is asserted to
-// stop exactly where it should.
+// The last two cases are the ones that keep this honest rather than merely
+// tidy. A name is text even when it is made of digits, so a file called 123
+// must not become the number one hundred and twenty three.
+//
+// Both spellings are here for a measured reason. "007" alone looked like the
+// same assertion and was not: bareNumber refuses a leading zero on its own
+// account, so a mutation applying it to the name left "007" untouched and this
+// guard stayed green - NOT CAUGHT on 2026-09-22, an entry that found its
+// pattern, compiled, and proved nothing. "123" is the spelling that actually
+// moves, and "007" stays beside it because the two failures are different: one
+// is the tidying reaching a field it should not, the other is the tidying
+// keeping a spelling it should not.
 func TestAComposedRecipeIsWrittenTheWayAPersonWritesOne(t *testing.T) {
 	source, err := recipe.Compose(recipe.Document{
 		Targets: []recipe.TargetDraft{
 			{ID: "first", Format: "txt", Count: "2", Size: "1024", Name: "007", Group: "g"},
 			{ID: "second", Format: "txt", Count: "1", Size: "2mb", Name: "later.txt"},
+			{ID: "third", Format: "txt", Count: "1", Size: "512", Name: "123"},
 		},
 	})
 	if err != nil {
@@ -70,6 +79,7 @@ func TestAComposedRecipeIsWrittenTheWayAPersonWritesOne(t *testing.T) {
 		// made of digits.
 		"size: 2mb\n",
 		`name: "007"`,
+		`name: "123"`,
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("a composed recipe does not hold %q.\nIt reads:\n%s", want, got)
@@ -81,11 +91,18 @@ func TestAComposedRecipeIsWrittenTheWayAPersonWritesOne(t *testing.T) {
 		t.Errorf("a composed recipe does not read back: %v\n%s", err, got)
 	}
 
-	// The name survived the round trip as text rather than as seven.
+	// The names survived the round trip as text rather than as numbers.
 	back, err := recipe.Parse(source, "composed.yaml")
-	if err == nil && len(back.Targets) > 0 && back.Targets[0].Name != "007" {
-		t.Errorf("the name came back as %q rather than %q - a number took a file's name",
-			back.Targets[0].Name, "007")
+	if err != nil {
+		return
+	}
+	for i, want := range []string{"007", "later.txt", "123"} {
+		if i >= len(back.Targets) {
+			t.Fatalf("the recipe came back with %d targets and three went in", len(back.Targets))
+		}
+		if got := back.Targets[i].Name; got != want {
+			t.Errorf("a name came back as %q rather than %q - a number took a file's name", got, want)
+		}
 	}
 }
 
