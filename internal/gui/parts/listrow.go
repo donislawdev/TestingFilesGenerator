@@ -32,6 +32,10 @@ type ListRow struct {
 	// kind is the picture drawn in front of the words, or nil for a list whose
 	// values are not things of different kinds.
 	kind fyne.Resource
+	// heading says this row names the kind of the values under it, or says
+	// that the filter left nothing. It draws its words and nothing else, and
+	// answers neither the pointer nor a press.
+	heading bool
 
 	hovered bool
 }
@@ -53,6 +57,10 @@ func (r *ListRow) Marked() bool { return r.marked }
 // Nil where the list does not sort its values into kinds.
 func (r *ListRow) Kind() fyne.Resource { return r.kind }
 
+// Heading says whether this row is a heading or the notice that nothing
+// matched, rather than a value somebody can take - for a guard.
+func (r *ListRow) Heading() bool { return r.heading }
+
 func newListRow() *ListRow {
 	r := &ListRow{}
 	r.ExtendBaseWidget(r)
@@ -65,7 +73,12 @@ func (r *ListRow) Tapped(*fyne.PointEvent) {
 	}
 }
 
+// MouseIn lights a value up under the pointer. A heading stays dark: lit, it
+// would say a press there takes something.
 func (r *ListRow) MouseIn(*desktop.MouseEvent) {
+	if r.heading {
+		return
+	}
 	r.hovered = true
 	r.Refresh()
 }
@@ -124,6 +137,18 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 	// Either way the row is the same width for a chosen value as for any
 	// other, because the tick's column is kept in both shapes.
 	left, right := float32(rowGutter), float32(rowGutter)
+	if r.row.heading {
+		// A heading is its words at the gutter, as wide as the row. It has no
+		// tick column: nothing under it is chosen, and a column kept empty in
+		// front of a heading would move it off the edge the values' ticks
+		// stand on.
+		r.tick.Move(fyne.NewPos(left, (size.Height-icon)/2))
+		r.kind.Resize(fyne.NewSquareSize(0))
+		text := r.label.MinSize()
+		r.label.Move(fyne.NewPos(left, (size.Height-text.Height)/2))
+		r.label.Resize(fyne.NewSize(size.Width-left-right, text.Height))
+		return
+	}
 	if r.row.kind != nil {
 		r.tick.Move(fyne.NewPos(left, (size.Height-icon)/2))
 		left += icon + rowGap
@@ -142,7 +167,28 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 }
 
 func (r *listRowRenderer) MinSize() fyne.Size {
+	if r.row.heading {
+		return fyne.NewSize(HeadingRowWidthFor(r.label.MinSize().Width), ListRowHeight())
+	}
 	return fyne.NewSize(RowWidthFor(r.label.MinSize().Width, r.row.kind != nil), ListRowHeight())
+}
+
+// headingText and headingStyle are how a heading in an open list is drawn:
+// the caption size, in bold. Named once, because the menu that opens the list
+// measures a heading with them to know how wide the box has to be.
+const headingText = TextCaption
+
+var headingStyle = fyne.TextStyle{Bold: true}
+
+// HeadingRowWidthFor is the room a heading row needs for words that wide:
+// the words between two gutters and nothing else.
+func HeadingRowWidthFor(words float32) float32 {
+	return rowGutter + words + rowGutter
+}
+
+// headingWidth is how wide one heading's words are drawn.
+func headingWidth(heading string) float32 {
+	return fyne.MeasureText(heading, headingText, headingStyle).Width
 }
 
 // RowWidthFor is the room one row of an open list needs for a word that wide.
@@ -181,8 +227,19 @@ func (r *listRowRenderer) Refresh() {
 	r.kind.Resource = r.row.kind
 	r.label.Color = Theme().Color(theme.ColorNameForeground, theme.VariantDark)
 	r.label.TextSize = Theme().Size(theme.SizeNameText)
+	r.label.TextStyle = fyne.TextStyle{}
+	if r.row.heading {
+		// The look a field's name has - a step quieter than a value - in
+		// bold at the caption size, so a heading reads as the name over a
+		// group and not as one more value to take.
+		r.label.Color = PaletteColour(ColorNameLabel, theme.VariantDark)
+		r.label.TextSize = headingText
+		r.label.TextStyle = headingStyle
+	}
 
 	switch {
+	case r.row.heading:
+		r.back.FillColor = color.Transparent
 	case r.row.active:
 		r.back.FillColor = Theme().Color(theme.ColorNameSelection, theme.VariantDark)
 	case r.row.hovered:

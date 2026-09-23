@@ -3,6 +3,8 @@ package parts
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // KindOfFile is the picture drawn in front of a format in a menu.
@@ -13,12 +15,15 @@ import (
 // abbreviations, and eight of the twenty fit on the screen at once. Reported in
 // the design audit of 2026-08-20.
 //
-// A picture rather than a grouping, and that is a constraint rather than a
-// preference. The order of a closed set is a written rule with a guard behind
-// it - one order in every surface, so the menu, "tfg formats" and the wording
-// of a refusal cannot describe one format three ways. Grouping the menu would
-// break that. An icon changes nothing about the order and nothing about the
-// height of a row.
+// The list is grouped by these kinds as well since 2026-09-23, under a heading
+// each (KindHeading), and that reverses a sentence this comment used to carry:
+// "grouping the menu would break one order in every surface". It would not,
+// and the owner decided so when the formats reached twenty six. The order that
+// rule protects is the REGISTERED order - the registry, "tfg formats", its
+// JSON and the wording of a refusal all keep one alphabetical order, held by
+// TestEveryClosedSetIsRegisteredInOrder - and nothing here touches it. What
+// changes is where the window draws a value, which is presentation (D1 is
+// about what a surface can DO). Recorded in docs/FORMAT-MENU-2026-09-23.md.
 //
 // The toolkit's own file icons were tried first and are useless for this: at
 // the size a row draws them, FileImageIcon, FileTextIcon and DocumentIcon are
@@ -44,7 +49,13 @@ func KindOfFile(id string) fyne.Resource {
 	case kindDocument:
 		return theme.DocumentIcon()
 	case kindArchive:
-		return theme.StorageIcon()
+		// A folder, because an archive is a thing that holds other files.
+		// It was StorageIcon until 2026-09-23, and on the render that is
+		// three stacked bars - the same shape as ListIcon, which the text
+		// formats draw, so targz read as one more kind of text. The guard
+		// compared the two by NAME and stayed green, which is why it now
+		// compares the pixels.
+		return theme.FolderIcon()
 	case kindSound:
 		return theme.MediaMusicIcon()
 	case kindMoving:
@@ -57,6 +68,33 @@ func KindOfFile(id string) fyne.Resource {
 		// and a kind added later reddens the linter rather than landing here.
 	}
 	return nil
+}
+
+// KindHeading is the heading a format stands under in an open list, or the
+// empty string for a format whose kind nobody declared - which the list draws
+// with no heading rather than under a made up one.
+//
+// The same switch as KindOfFile rather than a second table, so a kind cannot
+// have a picture and no heading, or the other way round: a kind added to the
+// type reddens the exhaustive switch in both places at once.
+func KindHeading(id string) string {
+	switch fileKinds[id] {
+	case kindPicture:
+		return text.ListKindPictures()
+	case kindDocument:
+		return text.ListKindDocuments()
+	case kindArchive:
+		return text.ListKindArchives()
+	case kindSound:
+		return text.ListKindSound()
+	case kindMoving:
+		return text.ListKindVideo()
+	case kindWords:
+		return text.ListKindText()
+	case kindUnknown:
+		// See the same case in KindOfFile.
+	}
+	return ""
 }
 
 type fileKind int

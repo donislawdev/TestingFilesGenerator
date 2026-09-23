@@ -183,7 +183,7 @@ func TestAListOpensDownwardWheneverAFewRowsFitUnderTheBox(t *testing.T) {
 		{"two rows below and sixteen above", 600, 480, 24, 10, false,
 			"fewer than the threshold below, and the ceiling of a 600 px window is ten rows"},
 	} {
-		height, at := parts.RoomForList(tc.canvas, tc.top, box, tc.wantedRows*row)
+		height, at := parts.RoomForList(tc.canvas, tc.top, box, tc.wantedRows*row, 0)
 		downward := at >= tc.top+box
 		if downward != tc.wantDownward {
 			t.Errorf("%s: the list opens %s and should open %s (%s)", tc.name,

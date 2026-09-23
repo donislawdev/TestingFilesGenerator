@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -77,6 +78,19 @@ type OpenList struct {
 	// whose values are not things of different kinds. Set from outside, because
 	// only the screen putting values in knows what they are.
 	KindOf func(string) fyne.Resource
+
+	// headingOf is the heading a value stands under, or nil for a list with no
+	// headings. See GroupUnder.
+	headingOf func(string) string
+	// filter is the box at the top that narrows the list, or nil for a list
+	// without one, and typed is what is in it. See WithFilter.
+	filter *FilterBox
+	typed  string
+	// entries is what the list draws now - headings, values and the notice
+	// that nothing matched - worked out by arrange. Every row number in this
+	// file is a position in entries, never in options, because the two part
+	// the moment a list has a heading.
+	entries []listEntry
 }
 
 // NewOpenList builds the list. take is called with the value somebody settled
@@ -84,8 +98,9 @@ type OpenList struct {
 func NewOpenList(options []string, chosen string, take func(string, bool), close func(bool)) *OpenList {
 	l := &OpenList{options: options, chosen: chosen, active: -1, take: take, close: close,
 		rows: map[widget.ListItemID]*ListRow{}}
+	l.entries = arrange(options, nil, "")
 	l.list = widget.NewList(
-		func() int { return len(l.options) },
+		func() int { return len(l.entries) },
 		func() fyne.CanvasObject { return newListRow() },
 		l.fill,
 	)
@@ -93,37 +108,109 @@ func NewOpenList(options []string, chosen string, take func(string, bool), close
 	return l
 }
 
-// fill puts one option into one row. The row it is given is recycled, so every
-// field is set every time - a row left holding the last value it had is the
-// classic defect of a list that only builds what it can see.
-func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
-	r, ok := row.(*ListRow)
-	if !ok || id < 0 || id >= len(l.options) {
+// GroupUnder puts every value under a heading, the one headingOf gives it.
+// Called before the list is shown, the way KindOf is set.
+func (l *OpenList) GroupUnder(headingOf func(string) string) {
+	l.headingOf = headingOf
+	l.rearrange()
+}
+
+// WithFilter gives the list a box at the top that narrows it to the values
+// holding what is typed there. The box takes the keyboard when the list
+// opens - see Keyboard.
+//
+// Only a long list gets one, and which lists are long is the Chooser's call,
+// not this list's: a filter over five values is a box to type in that
+// answers a question nobody has.
+func (l *OpenList) WithFilter() {
+	l.filter = newFilterBox(l)
+}
+
+// Keyboard is what the keyboard goes to when the list opens: the filter box
+// when there is one, the list itself when there is not.
+func (l *OpenList) Keyboard() fyne.Focusable {
+	if l.filter != nil {
+		return l.filter
+	}
+	return l
+}
+
+// Filter is the box at the top of the list, or nil, for a guard to type into.
+func (l *OpenList) Filter() *FilterBox { return l.filter }
+
+// rearrange works out the rows again after the filter or the grouping
+// changed, and forgets the rows it recorded: a row built for the old
+// arrangement can still hold a label the list no longer draws, and
+// RowShowing would report it.
+func (l *OpenList) rearrange() {
+	l.entries = arrange(l.options, l.headingOf, l.typed)
+	l.rows = map[widget.ListItemID]*ListRow{}
+}
+
+// narrowTo is the filter box reporting what it now holds. The keyboard lands
+// where landing says and the bar is drawn, because typing is using the
+// keyboard - except when the box has been emptied, where the list goes back
+// to how it opened: on the value in the box, with nothing drawn.
+func (l *OpenList) narrowTo(typed string) {
+	l.typed = typed
+	l.rearrange()
+	l.list.ScrollToTop()
+	if strings.TrimSpace(typed) == "" {
+		l.active = -1
+		l.StartOn(l.chosen)
 		return
 	}
-	value := l.options[id]
-	r.label = value
-	r.kind = nil
-	if l.KindOf != nil {
-		r.kind = l.KindOf(value)
+	if at := landing(l.entries, typed); at >= 0 {
+		l.moveTo(at)
+		return
 	}
-	r.marked = l.isChosen(value)
-	r.active = l.shown && id == l.active
-	r.onTap = func() { l.take(value, false) }
+	l.active = -1
+	l.list.Refresh()
+}
+
+// fill puts one row of the arrangement into one row of the list. The row it is
+// given is recycled, so every field is set every time - a row left holding the
+// last value it had is the classic defect of a list that only builds what it
+// can see.
+func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
+	r, ok := row.(*ListRow)
+	if !ok || id < 0 || id >= len(l.entries) {
+		return
+	}
+	entry := l.entries[id]
+	r.label = entry.text
+	r.heading = entry.kind != entryValue
+	r.kind = nil
+	r.marked = false
+	r.active = false
+	r.onTap = nil
+	r.hovered = r.hovered && !r.heading
+	if entry.kind == entryValue {
+		value := entry.text
+		if l.KindOf != nil {
+			r.kind = l.KindOf(value)
+		}
+		r.marked = l.isChosen(value)
+		r.active = l.shown && id == l.active
+		r.onTap = func() { l.take(value, false) }
+	}
 	l.rows[id] = r
 	r.Refresh()
 }
 
-// Rows is what this list is showing, for a guard to read.
+// Rows is what this list is showing, for a guard to read, in the order it is
+// drawn - headings and the notice included, so that a position from Active
+// is a position here.
 //
 // The toolkit's menu turned items into widgets of an unexported type, so what
 // was marked could not be read back off the canvas - only that something was
 // open. This is the half of that pair we own, and it says what is in the list
 // and which row carries the tick.
 func (l *OpenList) Rows() []Choice {
-	out := make([]Choice, 0, len(l.options))
-	for _, value := range l.options {
-		out = append(out, Choice{Label: value, Marked: l.isChosen(value)})
+	out := make([]Choice, 0, len(l.entries))
+	for _, e := range l.entries {
+		value := e.kind == entryValue
+		out = append(out, Choice{Label: e.text, Marked: value && l.isChosen(e.text), Choosable: value})
 	}
 	return out
 }
@@ -162,10 +249,12 @@ func (l *OpenList) RowShowing(label string) *ListRow {
 	return nil
 }
 
-// Choice is one row of an open list, for a guard to read.
+// Choice is one row of an open list, for a guard to read. Choosable is false
+// on a heading and on the notice that nothing matched.
 type Choice struct {
-	Label  string
-	Marked bool
+	Label     string
+	Marked    bool
+	Choosable bool
 }
 
 // MinSize is as wide as the widest value and as tall as all of them, cut to
@@ -178,12 +267,19 @@ type Choice struct {
 // that opens it does, and tells it through LimitTo. Until 2026-09-15 a count
 // of rows lived here instead, which made the list 224 px tall in every window
 // there is (O203).
+//
+// All of them means the whole arrangement with nothing typed, and not what the
+// filter has left. The list does not shrink while somebody types into it: a
+// list that opened upward would pull its bottom edge away from the box it
+// belongs to with every letter, and nothing on this screen jumps under a
+// person's hands (GUI rule 3).
 func (l *OpenList) MinSize() fyne.Size {
-	rows := len(l.options)
+	rows := len(arrange(l.options, l.headingOf, ""))
 	if rows < 1 {
 		rows = 1
 	}
-	height := float32(rows) * listRowHeight()
+	head := l.HeadHeight()
+	height := head + float32(rows)*listRowHeight()
 	// The room the window has left is the whole of the ceiling, and this has
 	// to happen in MinSize rather than by resizing the popup afterwards,
 	// because a popup is never laid out smaller than its content's minimum.
@@ -192,10 +288,20 @@ func (l *OpenList) MinSize() fyne.Size {
 	if l.room > 0 && height > l.room {
 		height = l.room
 	}
-	if height < listRowHeight() {
-		height = listRowHeight()
+	if height < head+listRowHeight() {
+		height = head + listRowHeight()
 	}
 	return fyne.NewSize(l.list.MinSize().Width, height)
+}
+
+// HeadHeight is the room the filter box takes at the top of the list, with
+// the space round it, or nought for a list without one. RoomForList is told
+// it, so that the rows under it still end on a row's edge.
+func (l *OpenList) HeadHeight() float32 {
+	if l.filter == nil {
+		return 0
+	}
+	return l.filter.MinSize().Height + 2*filterInset
 }
 
 // LimitTo tells the list how much room it has - the share of the window it
@@ -223,7 +329,12 @@ func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// The surface is drawn here rather than left to the popup, so that the
 	// colour a guard measures for "an open list is told from the form behind
 	// it" is the colour actually on the screen.
-	return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), container.NewThemeOverride(l.list, rowTheme{})))
+	rows := container.NewThemeOverride(l.list, rowTheme{})
+	if l.filter == nil {
+		return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), rows))
+	}
+	head := container.New(layout.NewCustomPaddedLayout(filterInset, filterInset, filterInset, filterInset), l.filter)
+	return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), container.NewBorder(head, nil, nil, nil, rows)))
 }
 
 // rowTheme is our theme with the room between rows taken out.
@@ -293,24 +404,36 @@ func listRowHeight() float32 {
 func (l *OpenList) FocusGained() {}
 func (l *OpenList) FocusLost()   {}
 
-// TypedKey moves, takes and closes.
+// TypedKey moves, takes and closes. Headings and the notice are stepped over:
+// the keyboard only ever stands on a value somebody can take.
 func (l *OpenList) TypedKey(event *fyne.KeyEvent) {
 	switch event.Name {
 	case fyne.KeyDown:
-		l.moveTo(l.active + 1)
+		l.step(+1)
 	case fyne.KeyUp:
-		l.moveTo(l.active - 1)
+		l.step(-1)
 	case fyne.KeyHome:
-		l.moveTo(0)
+		l.moveTo(edgeValue(l.entries, +1))
 	case fyne.KeyEnd:
-		l.moveTo(len(l.options) - 1)
+		l.moveTo(edgeValue(l.entries, -1))
 	case fyne.KeyEscape:
 		l.close(true)
 	case fyne.KeyReturn, fyne.KeyEnter, fyne.KeySpace:
-		if l.active >= 0 && l.active < len(l.options) {
-			l.take(l.options[l.active], true)
+		if l.active >= 0 && l.active < len(l.entries) && l.entries[l.active].kind == entryValue {
+			l.take(l.entries[l.active].text, true)
 		}
 	}
+}
+
+// step moves the keyboard one value up or down. From nowhere, either arrow
+// goes to the first value - which is where Down went before this list had
+// headings, and Up from nowhere was clamped to the same row.
+func (l *OpenList) step(by int) {
+	if l.active < 0 {
+		l.moveTo(edgeValue(l.entries, +1))
+		return
+	}
+	l.moveTo(nextValue(l.entries, l.active, by))
 }
 
 // TypedRune jumps to the next value starting with the letter typed.
@@ -320,14 +443,25 @@ func (l *OpenList) TypedKey(event *fyne.KeyEvent) {
 // menu. One letter rather than a typed prefix: a prefix needs a timer to know
 // when the word ended, and a timer in a control is a thing that behaves
 // differently on a slow machine.
+//
+// A list with a filter box has a better answer than one letter, so a letter
+// that reaches the list itself - the keyboard moved off the box with Tab - is
+// put in the box, and the box gets the keyboard back.
 func (l *OpenList) TypedRune(r rune) {
-	want := strings.ToLower(string(r))
-	for step := 1; step <= len(l.options); step++ {
-		at := (l.active + step) % len(l.options)
-		if at < 0 {
-			at += len(l.options)
+	if l.filter != nil {
+		l.filter.TypedRune(r)
+		if surface := fyne.CurrentApp().Driver().CanvasForObject(l); surface != nil {
+			surface.Focus(l.filter)
 		}
-		if strings.HasPrefix(strings.ToLower(l.options[at]), want) {
+		return
+	}
+	want := strings.ToLower(string(r))
+	for step := 1; step <= len(l.entries); step++ {
+		at := (l.active + step) % len(l.entries)
+		if at < 0 {
+			at += len(l.entries)
+		}
+		if e := l.entries[at]; e.kind == entryValue && strings.HasPrefix(strings.ToLower(e.text), want) {
 			l.moveTo(at)
 			return
 		}
@@ -337,18 +471,21 @@ func (l *OpenList) TypedRune(r rune) {
 // moveTo puts the keyboard on one row and scrolls it into view. Clamped rather
 // than wrapped, because a list that jumps from the last value to the first
 // under a held arrow key is a list somebody overshoots in both directions.
+//
+// A value standing first under its heading brings the heading into view with
+// it, so arrowing up to the top of a kind shows what kind it was.
 func (l *OpenList) moveTo(at int) {
-	if len(l.options) == 0 {
+	if at < 0 || len(l.entries) == 0 {
 		return
 	}
-	if at < 0 {
-		at = 0
-	}
-	if at >= len(l.options) {
-		at = len(l.options) - 1
+	if at >= len(l.entries) {
+		at = len(l.entries) - 1
 	}
 	l.active = at
 	l.shown = true
+	if at > 0 && l.entries[at-1].kind == entryHeading {
+		l.list.ScrollTo(at - 1)
+	}
 	l.list.ScrollTo(at)
 	l.list.Refresh()
 }
@@ -360,8 +497,8 @@ func (l *OpenList) Active() int { return l.active }
 // it, so that opening a list of thirteen and pressing Down once does not go to
 // the first value while the box shows the ninth.
 func (l *OpenList) StartOn(value string) {
-	for i, option := range l.options {
-		if option == value {
+	for i, e := range l.entries {
+		if e.kind == entryValue && e.text == value {
 			l.moveTo(i)
 			l.shown = false
 			l.list.Refresh()

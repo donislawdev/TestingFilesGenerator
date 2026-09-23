@@ -305,6 +305,34 @@
     "description": "Shown in the window.",
     "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
   },
+  "ListKindArchives": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Archives"
+  },
+  "ListKindDocuments": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Documents"
+  },
+  "ListKindPictures": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Pictures"
+  },
+  "ListKindSound": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Sound"
+  },
+  "ListKindText": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Text and data"
+  },
+  "ListKindVideo": {
+    "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "other": "Video"
+  },
+  "ListNothingMatches": {
+    "description": "Shown inside an open list somebody chooses from.",
+    "other": "Nothing matches"
+  },
   "ManifestNamed": {
     "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",
     "other": "Manifest: {{.Name}}"
@@ -332,6 +360,10 @@
   "NothingProduced": {
     "description": "Shown in the window.",
     "other": "Nothing was produced."
+  },
+  "PlaceholderFilter": {
+    "description": "Stands in an empty box, in a quieter colour than a value.",
+    "other": "type to filter"
   },
   "PlaceholderLeftEmpty": {
     "description": "Stands in an empty box, in a quieter colour than a value. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
