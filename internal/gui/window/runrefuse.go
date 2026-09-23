@@ -215,11 +215,20 @@ func (r *runner) recheck(setting string) {
 	if r.busy.occupied {
 		return
 	}
+	// The form is read ONCE, for the line and for the box below. It was read
+	// twice until 2026-09-23 - through refreshLine here and again after the
+	// early return - and on the preset screen each reading expanded the
+	// preset: 271-295 ms of the window's thread for every key typed with
+	// upload-validation chosen, half of it spent working out an answer the
+	// line had just been given (docs/GUI-MEMORY-2026-09-23.md section 4h).
+	// Nothing settle reads is changed between the two places it was called,
+	// so the one reading is the answer both of them got.
+	targets, opt, err := r.settle()
 	// Whatever changed, the line says what the form comes to now - over an
 	// outcome or a preview, which described a form that no longer exists.
 	// Before the early return below, because a box emptied to be retyped
 	// changes the count as surely as a box filled in.
-	r.refreshLine()
+	lineFrom(r, targets, opt, err)
 	// Only this box, in both directions. What the other boxes were told is
 	// about values nobody has just changed, and it is still true - including
 	// the parts of it this cannot see, because a format minimum and a name
@@ -228,7 +237,6 @@ func (r *runner) recheck(setting string) {
 	if r.fields.Blank(setting) {
 		return
 	}
-	_, _, err := r.settle()
 	for _, one := range spread(err) {
 		var about interface{ AboutSetting() string }
 		if errors.As(one, &about) && r.placeOf(about.AboutSetting()) == setting {

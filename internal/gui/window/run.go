@@ -291,11 +291,16 @@ func (r *runner) toneOfOutcome(res *engine.Result, runErr error) {
 
 // refreshLine works out what the form comes to and puts it on the line.
 //
-// From settle rather than from a plan: settle is what the form parses to and
-// costs nothing, and planning is what the engine does with it and can cost
-// seconds (see onPreview). A form that does not settle falls back to naming
-// the destination alone, which is read off its own box because it is the one
-// fact worth having whatever the other boxes say.
+// From settle rather than from a plan: settle is what the form parses to, and
+// planning is what the engine does with it and can cost seconds (see
+// onPreview).
+//
+// Settling is not free either, and this comment said it was until 2026-09-23.
+// On the preset screen it expands the preset, which for upload-validation
+// encodes images - 157-180 ms and 60 MB each time, measured that day
+// (docs/GUI-MEMORY-2026-09-23.md section 4h). That is why a change of a box
+// reads the form once for the line and for the box (recheck), and why the
+// preset screen remembers what it expanded last (lastExpansion).
 //
 // Not while a run owns the screen: its progress is not to be overwritten by
 // a summary, and the form is frozen then anyway.
@@ -303,12 +308,24 @@ func (r *runner) refreshLine() {
 	if r.settle == nil || r.busy.occupied {
 		return
 	}
-	dir := ""
-	if r.destination != nil {
-		dir = r.destination()
-	}
 	targets, opt, err := r.settle()
+	lineFrom(r, targets, opt, err)
+}
+
+// lineFrom puts on the line what one reading of the form came to. A form that
+// does not settle falls back to naming the destination alone, which is read
+// off its own box because it is the one fact worth having whatever the other
+// boxes say.
+//
+// Apart from refreshLine so that recheck can hand it the reading it has
+// already made. A function rather than a method, because the runner stands
+// one method under its ceiling.
+func lineFrom(r *runner, targets []engine.Target, opt engine.Options, err error) {
 	if err != nil {
+		dir := ""
+		if r.destination != nil {
+			dir = r.destination()
+		}
 		showOn(r.status, r.line.fallback(dir))
 		return
 	}

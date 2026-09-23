@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -446,5 +447,36 @@ func offerHolding(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
 	}
 	for _, screen := range screens {
 		screen.HoldBeforeFinishing(hold)
+	}
+}
+
+// countedSettle is a screen's reading of its form, told to a host that counts
+// the readings and handed back untouched to any other.
+//
+// The same shape as the two above - an optional interface, checked rather than
+// required, and nothing in the shipped program implements it. It is here for a
+// number a guard cannot read off the screen: how many times one change of a
+// box read the form. It was two until 2026-09-23, once for the line and once
+// for the box, and on the preset screen every reading expanded the preset -
+// 271-295 ms of the window's thread per key for upload-validation, measured
+// in docs/GUI-MEMORY-2026-09-23.md section 4h.
+func countedSettle(h Host, settle settler) settler {
+	c, ok := h.(interface{ Settling() })
+	if !ok {
+		return settle
+	}
+	return func() ([]engine.Target, engine.Options, error) {
+		c.Settling()
+		return settle()
+	}
+}
+
+// tellExpanding says to a host that counts them that a preset is being
+// expanded rather than taken from what the screen remembers - see
+// lastExpansion. The same kind of seam as countedSettle, for the other half
+// of the same question.
+func tellExpanding(h Host) {
+	if c, ok := h.(interface{ ExpandingPreset() }); ok {
+		c.ExpandingPreset()
 	}
 }
