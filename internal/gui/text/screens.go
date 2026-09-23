@@ -272,6 +272,14 @@ func ListKindSound() string     { return say("ListKindSound", "Sound") }
 func ListKindText() string      { return say("ListKindText", "Text and data") }
 func ListKindVideo() string     { return say("ListKindVideo", "Video") }
 
+// ListHeadingCount is one of those headings with how many formats stand under
+// it in the list as it is drawn - after the filter, so the number is what the
+// eye can count below it. The separator is the one the line at the foot of a
+// screen uses between the parts of what a run comes to.
+func ListHeadingCount(kind string, count int) string {
+	return sayf("ListHeadingCount", "{{.Kind}} · {{.Count}}", map[string]any{"Kind": kind, "Count": count})
+}
+
 // UseSmallestSize is the button under a refusal about a size below what the
 // format can make. It puts the smallest size that works into the box, so the
 // count of bytes in the refusal does not have to be copied by hand.

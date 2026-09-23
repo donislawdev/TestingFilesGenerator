@@ -298,9 +298,13 @@ func menuWidth(c *Chooser) float32 {
 	// Nothing of ours ever sets a placeholder on a menu - it would be a word a
 	// person reads coming from outside the text package - so there is no
 	// placeholder of ours to measure either.
+	// In bold on a menu with a filter, because the filter draws the part of a
+	// value that matched in bold, and bold letters are wider - so a value
+	// typed in full is the widest that value is ever drawn.
+	style := fyne.TextStyle{Bold: c.Filtered}
 	var widest float32
 	for _, option := range c.Options {
-		if w := fyne.MeasureText(option, size, fyne.TextStyle{}).Width; w > widest {
+		if w := fyne.MeasureText(option, size, style).Width; w > widest {
 			widest = w
 		}
 	}
@@ -373,8 +377,14 @@ func menuWidth(c *Chooser) float32 {
 func openListWidth(c *Chooser) float32 {
 	var widest float32
 	if c.HeadingOf != nil {
+		// With the count each heading carries when nothing is typed, which is
+		// the most it ever carries.
+		counts := map[string]int{}
 		for _, option := range c.Options {
-			widest = fyne.Max(widest, HeadingRowWidthFor(headingWidth(c.HeadingOf(option))))
+			counts[c.HeadingOf(option)]++
+		}
+		for heading, count := range counts {
+			widest = fyne.Max(widest, HeadingRowWidthFor(headingWidth(text.ListHeadingCount(heading, count))))
 		}
 	}
 	if c.Filtered {
@@ -563,7 +573,12 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 // enough, and then the list is cut to it exactly as before there was a head.
 func RoomForList(canvasHeight, boxTop, boxHeight, wanted, head float32) (height, top float32) {
 	rows := wanted - head
-	ceiling := wholeRows(ListCeiling(canvasHeight) - head)
+	// From the share itself rather than from ListCeiling, which is the share
+	// already cut to whole rows - cutting twice, once for the share and once
+	// for what the head leaves, lost up to a row more than "no less than the
+	// share less a row" allows. Measured on a 650 px canvas: 292 px of list
+	// against a promise of 297. With no head this is ListCeiling exactly.
+	ceiling := wholeRows(canvasHeight*listShare - head)
 	if ceiling < listRowHeight() {
 		ceiling = listRowHeight()
 	}
@@ -663,6 +678,18 @@ func (c *Chooser) TypedRune(r rune) {
 	}
 	if !c.marked {
 		c.mark()
+	}
+	// A menu with a filter opens with the letter in it instead. One letter at
+	// a time walked the values starting with each letter in turn, so "jxl"
+	// typed at the shut format menu ended on log - j to jpg, x to xlsx, l to
+	// log. Read off this function on 2026-09-23 and ordered by the owner with
+	// the filter: typing at the shut menu is the same as typing into it.
+	if c.Filtered {
+		c.Tapped(nil)
+		if c.opened != nil && c.opened.Filter() != nil {
+			c.opened.Filter().TypedRune(r)
+		}
+		return
 	}
 	want := strings.ToLower(string(r))
 	from := c.SelectedIndex()

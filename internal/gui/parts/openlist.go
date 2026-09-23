@@ -180,6 +180,7 @@ func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
 	entry := l.entries[id]
 	r.label = entry.text
 	r.heading = entry.kind != entryValue
+	r.from, r.to = entry.from, entry.to
 	r.kind = nil
 	r.marked = false
 	r.active = false

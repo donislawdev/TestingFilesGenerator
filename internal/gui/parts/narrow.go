@@ -28,10 +28,13 @@ const (
 	entryNotice
 )
 
-// listEntry is one row of an open list.
+// listEntry is one row of an open list. On a value, from and to are where
+// what was typed stands in its words, drawn in bold - equal when nothing in
+// the words matched, which is a value kept for the heading it stands under.
 type listEntry struct {
-	kind entryKind
-	text string
+	kind     entryKind
+	text     string
+	from, to int
 }
 
 // arrange is what an open list draws: the values the typed text keeps, each
@@ -47,7 +50,7 @@ type listEntry struct {
 // one the filter emptied. A value whose heading is empty stands first, with no
 // heading over it, rather than under a heading made up here.
 func arrange(values []string, headingOf func(string) string, typed string) []listEntry {
-	kept := narrow(values, typed)
+	kept := narrow(values, headingOf, typed)
 	if len(kept) == 0 {
 		if strings.TrimSpace(typed) == "" {
 			return nil
@@ -57,7 +60,7 @@ func arrange(values []string, headingOf func(string) string, typed string) []lis
 	if headingOf == nil {
 		out := make([]listEntry, 0, len(kept))
 		for _, v := range kept {
-			out = append(out, listEntry{kind: entryValue, text: v})
+			out = append(out, valueEntry(v, typed))
 		}
 		return out
 	}
@@ -76,13 +79,30 @@ func arrange(values []string, headingOf func(string) string, typed string) []lis
 	out := make([]listEntry, 0, len(kept)+len(headings))
 	for _, h := range headings {
 		if h != "" {
-			out = append(out, listEntry{kind: entryHeading, text: h})
+			out = append(out, listEntry{kind: entryHeading, text: text.ListHeadingCount(h, len(groups[h]))})
 		}
 		for _, v := range groups[h] {
-			out = append(out, listEntry{kind: entryValue, text: v})
+			out = append(out, valueEntry(v, typed))
 		}
 	}
 	return out
+}
+
+// valueEntry is one value's row, with what was typed found in its words.
+// Found only where lowering the words keeps their length, so the span marks
+// the same letters in the words as drawn - true of every format name, and a
+// value for which it is not simply gets no bold.
+func valueEntry(v, typed string) listEntry {
+	e := listEntry{kind: entryValue, text: v}
+	want := strings.ToLower(strings.TrimSpace(typed))
+	lower := strings.ToLower(v)
+	if want == "" || len(lower) != len(v) {
+		return e
+	}
+	if at := strings.Index(lower, want); at >= 0 {
+		e.from, e.to = at, at+len(want)
+	}
+	return e
 }
 
 // narrow keeps the values holding what was typed, in the order they came in.
@@ -92,14 +112,19 @@ func arrange(values []string, headingOf func(string) string, typed string) []lis
 // keyboard lands is a separate and stricter question - see landing. Space
 // around what was typed is not part of it: a filter holding only a space keeps
 // everything rather than nothing.
-func narrow(values []string, typed string) []string {
+//
+// A value is kept for its heading as well - "pict" keeps every picture - but
+// only where a WORD of the heading starts with what was typed. Anywhere in the
+// heading, one letter would keep nearly every kind: "t" is in Pictures,
+// Documents, Text and data. Decided by the owner on 2026-09-23.
+func narrow(values []string, headingOf func(string) string, typed string) []string {
 	want := strings.ToLower(strings.TrimSpace(typed))
 	if want == "" {
 		return values
 	}
 	out := make([]string, 0, len(values))
 	for _, v := range values {
-		if strings.Contains(strings.ToLower(v), want) {
+		if strings.Contains(strings.ToLower(v), want) || (headingOf != nil && aWordStartsWith(headingOf(v), want)) {
 			out = append(out, v)
 		}
 	}
@@ -153,4 +178,15 @@ func edgeValue(entries []listEntry, step int) int {
 		return at
 	}
 	return -1
+}
+
+// aWordStartsWith says whether a word of a heading starts with what was typed,
+// which is already lower case.
+func aWordStartsWith(heading, want string) bool {
+	for _, word := range strings.Fields(strings.ToLower(heading)) {
+		if strings.HasPrefix(word, want) {
+			return true
+		}
+	}
+	return false
 }

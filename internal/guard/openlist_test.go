@@ -121,8 +121,16 @@ func TestTheOpenListMarksTheValueThatIsChosen(t *testing.T) {
 	// other: this one reaches the values below the ceiling, which no picture
 	// can show, and the picture reaches the drawing, which no list can promise.
 	rows := list.Rows()
-	if len(rows) != len(picker.Options) {
-		t.Errorf("the list holds %d values and the menu offers %d", len(rows), len(picker.Options))
+	// Values only: since 2026-09-23 the list of formats carries a heading
+	// over each kind, which is a row and not a value.
+	values := 0
+	for _, row := range rows {
+		if row.Choosable {
+			values++
+		}
+	}
+	if values != len(picker.Options) {
+		t.Errorf("the list holds %d values and the menu offers %d", values, len(picker.Options))
 	}
 	marked := 0
 	for _, row := range rows {

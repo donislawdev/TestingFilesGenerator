@@ -36,6 +36,9 @@ type ListRow struct {
 	// that the filter left nothing. It draws its words and nothing else, and
 	// answers neither the pointer nor a press.
 	heading bool
+	// from and to are where what was typed into the list's filter stands in
+	// the words, drawn in bold. Equal when nothing is to be bold.
+	from, to int
 
 	hovered bool
 }
@@ -97,17 +100,26 @@ func (r *ListRow) CreateRenderer() fyne.WidgetRenderer {
 	kind := canvas.NewImageFromResource(nil)
 	label := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))
 	label.TextSize = Theme().Size(theme.SizeNameText)
-	rr := &listRowRenderer{row: r, back: back, tick: tick, kind: kind, label: label}
+	strong := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))
+	strong.TextStyle = fyne.TextStyle{Bold: true}
+	rest := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))
+	rr := &listRowRenderer{row: r, back: back, tick: tick, kind: kind, label: label, strong: strong, rest: rest}
 	rr.Refresh()
 	return rr
 }
 
+// listRowRenderer draws a row's words as up to three pieces: label holds all
+// of them, or only what comes before the part that matched the filter, which
+// strong draws in bold, with rest after it. One text when nothing matched, so
+// a list nobody typed into draws exactly what it drew before the filter.
 type listRowRenderer struct {
-	row   *ListRow
-	back  *canvas.Rectangle
-	tick  *canvas.Image
-	kind  *canvas.Image
-	label *canvas.Text
+	row    *ListRow
+	back   *canvas.Rectangle
+	tick   *canvas.Image
+	kind   *canvas.Image
+	label  *canvas.Text
+	strong *canvas.Text
+	rest   *canvas.Text
 }
 
 func (r *listRowRenderer) Layout(size fyne.Size) {
@@ -161,16 +173,61 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 		r.kind.Resize(fyne.NewSquareSize(0))
 	}
 
+	r.placeWords(left, size.Width-left-right, size.Height)
+}
+
+// placeWords lays the pieces of the words end to end from left, the last of
+// them taking what is left of the row.
+func (r *listRowRenderer) placeWords(left, room, height float32) {
 	text := r.label.MinSize()
-	r.label.Move(fyne.NewPos(left, (size.Height-text.Height)/2))
-	r.label.Resize(fyne.NewSize(size.Width-left-right, text.Height))
+	y := (height - text.Height) / 2
+	if !r.strong.Visible() {
+		r.label.Move(fyne.NewPos(left, y))
+		r.label.Resize(fyne.NewSize(room, text.Height))
+		return
+	}
+	before, match := text.Width, r.strong.MinSize().Width
+	r.label.Move(fyne.NewPos(left, y))
+	r.label.Resize(fyne.NewSize(before, text.Height))
+	r.strong.Move(fyne.NewPos(left+before, y))
+	r.strong.Resize(fyne.NewSize(match, text.Height))
+	r.rest.Move(fyne.NewPos(left+before+match, y))
+	r.rest.Resize(fyne.NewSize(fyne.Max(0, room-before-match), text.Height))
+}
+
+// splitWords cuts the words where the filter matched them, or leaves them
+// whole. A span that does not fit the words - a row refilled with a shorter
+// value - is no span, rather than a slice out of range.
+func (r *listRowRenderer) splitWords() {
+	words, from, to := r.row.label, r.row.from, r.row.to
+	if r.row.heading || from < 0 || to <= from || to > len(words) {
+		r.strong.Text, r.rest.Text = "", ""
+		r.strong.Hide()
+		r.rest.Hide()
+		return
+	}
+	r.label.Text, r.strong.Text, r.rest.Text = words[:from], words[from:to], words[to:]
+	for _, piece := range []*canvas.Text{r.strong, r.rest} {
+		piece.Color = r.label.Color
+		piece.TextSize = r.label.TextSize
+		piece.Show()
+	}
+}
+
+// wordsWidth is how wide the words are drawn, all pieces together.
+func (r *listRowRenderer) wordsWidth() float32 {
+	width := r.label.MinSize().Width
+	if r.strong.Visible() {
+		width += r.strong.MinSize().Width + r.rest.MinSize().Width
+	}
+	return width
 }
 
 func (r *listRowRenderer) MinSize() fyne.Size {
 	if r.row.heading {
 		return fyne.NewSize(HeadingRowWidthFor(r.label.MinSize().Width), ListRowHeight())
 	}
-	return fyne.NewSize(RowWidthFor(r.label.MinSize().Width, r.row.kind != nil), ListRowHeight())
+	return fyne.NewSize(RowWidthFor(r.wordsWidth(), r.row.kind != nil), ListRowHeight())
 }
 
 // headingText and headingStyle are how a heading in an open list is drawn:
@@ -236,6 +293,7 @@ func (r *listRowRenderer) Refresh() {
 		r.label.TextSize = headingText
 		r.label.TextStyle = headingStyle
 	}
+	r.splitWords()
 
 	switch {
 	case r.row.heading:
@@ -262,14 +320,14 @@ func (r *listRowRenderer) Refresh() {
 		r.kind.Hide()
 	}
 
-	redraw(r.back, r.tick, r.kind, r.label)
+	redraw(r.back, r.tick, r.kind, r.label, r.strong, r.rest)
 	// The width a row asks for changes with the picture, and the row is laid
 	// out by the list rather than by this renderer.
 	r.Layout(r.row.Size())
 }
 
 func (r *listRowRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.back, r.tick, r.kind, r.label}
+	return []fyne.CanvasObject{r.back, r.tick, r.kind, r.label, r.strong, r.rest}
 }
 
 func (r *listRowRenderer) Destroy() {}

@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
@@ -32,7 +33,7 @@ func openList() Entry {
 	// value the state is given, like the words above, not a look. Tall enough
 	// for a few rows of the list and not for all twelve.
 	const shortWindow = 240
-	return Entry{Name: "OpenList", Covers: []string{"ListRow", "KindOfFile"}, Natural: true, States: []State{
+	return Entry{Name: "OpenList", Covers: []string{"ListRow", "KindOfFile", "FilterBox", "KindHeading"}, Natural: true, States: []State{
 		{"a few values, one chosen", func() fyne.CanvasObject {
 			return asWideAsItsBox(few, parts.NewOpenList(few, "jpg", func(string, bool) {}, func(bool) {}))
 		}},
@@ -56,8 +57,38 @@ func openList() Entry {
 			values := []string{longText, "png"}
 			return asWideAsItsBox(values, parts.NewOpenList(values, "png", func(string, bool) {}, func(bool) {}))
 		}},
+		{"every format, under the heading of its kind, with a box to filter", func() fyne.CanvasObject {
+			return everyFormat("")
+		}},
+		{"typed into, with the letters that matched in bold", func() fyne.CanvasObject {
+			return everyFormat("p")
+		}},
+		{"typed into, with nothing left", func() fyne.CanvasObject {
+			return everyFormat("zz")
+		}},
 	}}
 }
+
+// everyFormat is the list the format menu drops down - every format, grouped,
+// with its filter - holding what was typed into the filter. As tall as a short
+// window lets it be, the way the form's own list is.
+func everyFormat(typed string) fyne.CanvasObject {
+	ids := format.IDs()
+	l := parts.NewOpenList(ids, "png", func(string, bool) {}, func(bool) {})
+	l.KindOf = parts.KindOfFile
+	l.GroupUnder(parts.KindHeading)
+	l.WithFilter()
+	l.LimitTo(parts.ListCeiling(everyFormatWindow))
+	if typed != "" {
+		l.Filter().SetText(typed)
+	}
+	return asWideAsItsBox(ids, l)
+}
+
+// everyFormatWindow is the height of the window the list of every format
+// stands in here - a value the state is given, like the words above, not a
+// look. Tall enough to show a few headings and the rows under them.
+const everyFormatWindow = 640
 
 // asWideAsItsBox gives an open list the width of the menu it would drop from:
 // the box a Chooser of the same values is given by parts.Menu, which is as

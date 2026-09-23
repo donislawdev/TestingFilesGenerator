@@ -305,6 +305,10 @@
     "description": "Shown in the window.",
     "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
   },
+  "ListHeadingCount": {
+    "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",
+    "other": "{{.Kind}} · {{.Count}}"
+  },
   "ListKindArchives": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
     "other": "Archives"
