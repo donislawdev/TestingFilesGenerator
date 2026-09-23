@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 // The screen that says what this program is also says what to do with it.
@@ -62,4 +63,36 @@ func TestTheAboutScreenSaysHowToUseTheProgram(t *testing.T) {
 	if !strings.Contains(said, text.AboutTagline()) {
 		t.Errorf("the About screen no longer says what this program is:\n%s", said)
 	}
+}
+
+// TestTheStepsNameEveryOutcomeTheManifestCanRecord.
+//
+// The third step tells somebody what they will find in the manifest, which
+// makes it a list copied out of a closed set - and a list copied by hand that
+// nothing compares with its source goes stale on green. The set is
+// recipe.Outcomes(), four values today, and the first version of that step
+// named two of them, invented a third word for one ("turn it away" for
+// reject) and left sanitize out altogether. Nothing in the tree would have
+// said so.
+//
+// Read from the REGISTRY rather than from a list here, so a fifth outcome is
+// caught by being declared. That is the whole reason this is a guard and not
+// a proofread.
+func TestTheStepsNameEveryOutcomeTheManifestCanRecord(t *testing.T) {
+	content, _ := laidOutWindow(t)
+	about := tabContent(t, content, text.TabAbout())
+	said := shownText(about)
+
+	outcomes := recipe.Outcomes()
+	if len(outcomes) < 2 {
+		t.Fatalf("the recipe package declares %d outcome(s), which is too few for this to compare anything", len(outcomes))
+	}
+	for _, outcome := range outcomes {
+		if !strings.Contains(said, outcome) {
+			t.Errorf("the manifest can record outcome %q and the About screen never uses that word, "+
+				"so somebody reading the steps meets it for the first time in the JSON.\nThe screen says:\n%s",
+				outcome, said)
+		}
+	}
+	t.Logf("%d outcome(s) named on the screen: %v", len(outcomes), outcomes)
 }

@@ -90,8 +90,8 @@
 													<container size="777x29">
 														<widget size="777x29" type="*widget.Label">
 															<widget size="777x29" type="*widget.RichText">
-																<text color="placeholder" size="753x14" textSize="12">Point your test at the manifest. For every file it says what the system under test should do with it - accept it, turn it away, or leave the</text>
-																<text color="placeholder" pos="0,14" size="220x14" textSize="12">answer to the application's own policy.</text>
+																<text color="placeholder" size="751x14" textSize="12">Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or</text>
+																<text color="placeholder" pos="0,14" size="570x14" textSize="12">records the outcome as unspecified, where the right answer belongs to the application's own policy.</text>
 															</widget>
 														</widget>
 													</container>

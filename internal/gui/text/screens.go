@@ -61,6 +61,15 @@ func SectionHowToUse() string { return say("SectionHowToUse", "How to use it") }
 // application's own policy (manifest rule MF5), and a person writing a test
 // against the file would otherwise meet that for the first time in the JSON.
 //
+// It names the outcomes with the SPELLING THE MANIFEST USES, and both halves
+// of that were wrong when this was written on 2026-09-23. It said "turn it
+// away" for an outcome the document calls reject, which is a second word for
+// a contract value somebody is about to read - and it left "sanitize" out
+// altogether, so the list promised three answers where the closed set has
+// four (internal/recipe: accept, reject, sanitize, unspecified). The first
+// half came from an outside review of #125, the second was found while
+// checking it. American spelling because that is the value, not a preference.
+//
 // A list of sentences rather than one paragraph per step: the window draws
 // these as the bullets the preset screen already uses for what a set
 // typically finds, so the three steps are read at a glance rather than read.
@@ -68,7 +77,7 @@ func HowToUseSteps() []string {
 	return []string{
 		say("HowToUseChoose", "Choose a preset, or fill in one batch on the first screen."),
 		say("HowToUsePress", "Press Generate. The files and a manifest land in the output folder."),
-		say("HowToUseRead", "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, turn it away, or leave the answer to the application's own policy."),
+		say("HowToUseRead", "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."),
 	}
 }
 

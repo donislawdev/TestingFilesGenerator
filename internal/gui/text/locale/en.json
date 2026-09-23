@@ -298,7 +298,7 @@
   },
   "HowToUseRead": {
     "description": "Shown in the window.",
-    "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, turn it away, or leave the answer to the application's own policy."
+    "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
   },
   "ManifestNamed": {
     "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",
