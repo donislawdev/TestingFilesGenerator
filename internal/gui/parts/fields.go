@@ -235,6 +235,13 @@ func (s *Fields) Add(setting, label, hint string, detail Detail, control fyne.Ca
 	// alsoSaying. Folded here rather than at the thirty-two call sites, so a
 	// field that still carries one is not something anybody can write.
 	explained := alsoSaying(hint, detail)
+	// A box to tick is drawn with its name beside it wherever it comes from -
+	// a screen's own switch or a setting a format declares (the prototype of
+	// 2026-09-23 reached only the first, and a format's Header stayed a
+	// square under its name).
+	if check, is := control.(*Toggle); is {
+		return s.register(setting, label, explained, check, ToggleSaying(label, explained, check))
+	}
 	return s.register(setting, label, explained, control,
 		FieldSaying(label, explained, s.required[setting], s.counter(setting, control), control))
 }
@@ -273,7 +280,7 @@ func (s *Fields) Named(label string, detail Detail, control fyne.CanvasObject) f
 	if d, ok := control.(fyne.Disableable); ok {
 		s.bare = append(s.bare, bareControl{control: d, after: len(s.list)})
 	}
-	return FieldStack(headingRow(label, detail, false), control)
+	return cellOf(FieldStack(headingRow(label, detail, false), control))
 }
 
 // AddToggle is a switch, and since 2026-09-15 it is a field like any other: its
@@ -284,6 +291,9 @@ func (s *Fields) Named(label string, detail Detail, control fyne.CanvasObject) f
 // name stands beside the square like every other name, so this is Add with no
 // special case: WithRing leaves the square alone because it draws its own edge,
 // and the switch cannot be refused so its error area never speaks.
+//
+// Its name stands BESIDE the square since the prototype of 2026-09-23 - see
+// ToggleSaying.
 func (s *Fields) AddToggle(setting, name, hint string, detail Detail, check *Toggle) fyne.CanvasObject {
 	return s.Add(setting, name, hint, detail, check)
 }

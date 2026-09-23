@@ -54,13 +54,13 @@ func newOffers(relay func()) *offers {
 			o.openFolder(o.wroteInto)
 		}
 	})
-	o.folderBtn.Hide()
+	o.folderBtn.InTheBar().Hide()
 	o.manifestBtn = parts.NewButton(parts.Secondary, text.ButtonOpenManifest(), func() {
 		if o.wroteManifest != "" && o.openFile != nil {
 			o.openFile(o.wroteManifest)
 		}
 	})
-	o.manifestBtn.Hide()
+	o.manifestBtn.InTheBar().Hide()
 	return o
 }
 

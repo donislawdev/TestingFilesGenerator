@@ -179,7 +179,40 @@ const (
 	// promise, and the owner's report from the running window was the
 	// obvious one: why are they so long. A path is the one value that can
 	// be, so a path still takes the row.
-	TextWidth = NumericWidth*2 + GapColumns
+	//
+	// One column of the grid since the prototype of 2026-09-23, the same as a
+	// number: in a form of GridColumns columns a name sized for two numbers
+	// took two columns, and the owner's report from the running window was
+	// boxes far wider than what they hold. A placeholder longer than this
+	// still widens it (ShapedFor), and in the grid it fills its columns.
+	TextWidth = NumericWidth
+	// GridColumns is how many columns a section's fields are laid in. Four
+	// gives 185 px a column in the form's 788 px (ColumnWidth less a panel's
+	// inset on each side), which holds a number box with room for a short
+	// menu. Chosen for the prototype of 2026-09-23, not measured against
+	// five - five would leave a number box 4.8 px to spare.
+	GridColumns = 4
+	// GroupInset is the room inside the frame drawn round a group of
+	// settings a section folds away - see NewInnerFolding.
+	GroupInset = space3
+	// GroupInsetY is the same room above and below, smaller because the
+	// head of a fold keeps room of its own round its words.
+	GroupInsetY = space1
+	// BarButtonInsetX and BarButtonInsetY are the room inside a button that
+	// stands in the bar at the foot, around its words. Bigger than the room
+	// inside a field on purpose, prototype of 2026-09-23: measured in the
+	// real window, Generate was 26 px tall - one of the smallest things on a
+	// screen whose whole purpose is that one press. The first prototype gave
+	// it 12 above and below and the owner's verdict from the running window
+	// was "gigantic", so the height is a field's again and only the sides
+	// keep more room: the button is told apart by its width and its colour.
+	BarButtonInsetX = space4
+	BarButtonInsetY = ControlInset
+	// GapButtons is the space between two buttons side by side - in that bar
+	// and in the head of a batch (ButtonRow). It was the toolkit's padding,
+	// about 4 px, so Preview and Generate, and Duplicate and Remove, each read
+	// as one control with two words in it.
+	GapButtons = space3
 	// GlyphButton is the side of the small square button that holds one
 	// glyph - the mark beside a field's name that opens its explanation. The
 	// glyph itself is the toolkit's inline icon, 20, and the square keeps two

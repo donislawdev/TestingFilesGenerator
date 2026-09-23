@@ -70,9 +70,12 @@ func (r *runner) refuse(err error) {
 	// 2026-08-18 answered rather than dodged: refusals about a batch that is
 	// not on the screen were the reason a list with one batch open at a time
 	// was rejected.
-	if r.unfold != nil {
-		for _, marked := range r.fields.Marked() {
+	for _, marked := range r.fields.Marked() {
+		if r.unfold != nil {
 			r.unfold(marked)
+		}
+		if field := r.fields.Lookup(marked); field != nil {
+			r.sections.openHolding(field.Control)
 		}
 	}
 	if field := r.fields.Lookup(first); field != nil {

@@ -60,7 +60,7 @@ func FieldSaying(label string, detail Detail, required bool, trailing, control f
 		pieces = append(pieces, trailing)
 	}
 	body := FieldStack(pieces...)
-	return Built{Object: Column(GapTight, body, area.Object()), Body: body, Area: area}
+	return Built{Object: cellOf(body, area.Object()), Body: body, Area: area}
 }
 
 // Built is what building a field comes to, in one hand: the whole thing to

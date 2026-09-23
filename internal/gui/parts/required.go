@@ -72,9 +72,11 @@ func headingRow(label string, detail Detail, required bool) fyne.CanvasObject {
 	if detail.Text != "" && detail.on != nil {
 		row = append(row, newDetailButton(detail))
 	}
-	if len(row) == 1 {
-		return head
-	}
+	// Always the line, even for a name alone, since the prototype of
+	// 2026-09-23: two fields side by side have to start their boxes on one
+	// height, and a name with no button beside it was a line shorter by the
+	// button - so its box stood higher than its neighbour's. See
+	// headingLine.MinSize.
 	return container.New(headingLine{}, row...)
 }
 
@@ -119,7 +121,9 @@ func gapBefore(o fyne.CanvasObject) float32 {
 }
 
 func (h headingLine) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	size := fyne.NewSize(0, 0)
+	// As tall as the explanation button whether or not there is one, so every
+	// name line on a form is one height - see headingRow.
+	size := fyne.NewSize(0, GlyphButton)
 	first := true
 	for _, o := range objects {
 		if !o.Visible() {

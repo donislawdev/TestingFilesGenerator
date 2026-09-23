@@ -365,11 +365,18 @@ func (c *Chooser) FocusGained() {
 	c.mark()
 }
 
-// mark turns the drawn state on: the toolkit's own first, because the widget's
-// appearance depends on it, and then the edge.
+// mark turns the drawn state on: the edge, and nothing else.
+//
+// It told the toolkit as well until the prototype of 2026-09-23, and the
+// toolkit answers by filling the whole menu with the focus colour
+// (select.go, bgColor) - measured in the real window after Ctrl+P as
+// (26,92,124) across the box, and on two of the owner's screenshots the same
+// day. Every other control here marks the keyboard with a ring standing
+// clear of it, which is what the note on Chooser asks for, so the menu does
+// too. Keys still reach it: the canvas routes them by its own focus, not by
+// the widget's flag.
 func (c *Chooser) mark() {
 	c.marked = true
-	c.Select.FocusGained()
 	if c.ring != nil {
 		c.ring.Focus(true)
 	}

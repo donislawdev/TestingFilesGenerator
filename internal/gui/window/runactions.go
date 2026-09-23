@@ -2,8 +2,6 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
@@ -77,8 +75,10 @@ func (r *runner) actions() fyne.CanvasObject {
 	//
 	// Kept by the busy state as well, because the toolkit does not lay the
 	// row out again when a button in it is hidden - see busy.relay.
-	r.busy.row = container.NewHBox(
-		layout.NewSpacer(), r.previewBtn, r.generateBtn, r.busy.cancel,
-		r.offer.folderBtn, r.offer.manifestBtn, layout.NewSpacer())
+	//
+	// A row of ours with a wider gap since the prototype of 2026-09-23 - see
+	// parts.ButtonRow.
+	r.busy.row = parts.ButtonRow(r.previewBtn, r.generateBtn, r.busy.cancel,
+		r.offer.folderBtn, r.offer.manifestBtn)
 	return r.busy.row
 }

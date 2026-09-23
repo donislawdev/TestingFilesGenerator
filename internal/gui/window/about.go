@@ -64,7 +64,7 @@ func About(h Host) fyne.CanvasObject {
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
-		parts.Section(text.SectionLicence(), parts.Prose(version.LicenceNotice)),
+		parts.Section(text.SectionLicence(), parts.Prose(paragraphs(version.LicenceNotice))),
 		// The support address, in words, on the one screen somebody reads when
 		// they are deciding what this program costs them.
 		//
@@ -77,27 +77,29 @@ func About(h Host) fyne.CanvasObject {
 		// one use in the whole tree, as the button's destination, so a person
 		// whose desktop did nothing had nowhere to go. The comment beside
 		// OpenLink said this screen carried it. This is that screen carrying it.
+		//
+		// The Donate button stands here, in the card, since the prototype of
+		// 2026-09-23 - the bar at the foot of this screen held nothing else, a
+		// whole strip of the window for one quiet word, while this card named
+		// the same address as words nobody could press. The address stays
+		// under the button for the reason above.
 		parts.Section(text.SectionSupport(),
-			parts.Prose(text.DetailDonate()), parts.Prose(text.SupportURL)),
+			parts.Prose(text.DetailDonate()),
+			container.NewHBox(parts.NewButton(parts.Secondary, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })),
+			parts.Prose(text.SupportURL)),
 	)
 	sections = append(sections, carried()...)
 	page := parts.Screen(parts.Title(text.HeadingAbout(version.Version)), sections...)
 
-	// The same bar the work screens carry, holding only the Donate button.
-	//
-	// This screen starts no run and has nothing else to put there, so the bar is
-	// almost empty - and it is here anyway, because the button moved into that
-	// bar on 2026-08-19 and a button asking for money that is missing from one
-	// screen in four is one people conclude they imagined. It is also the screen
-	// somebody reads when deciding what this program costs them, which is the
-	// worst one to leave it off.
+	// No bar at the foot, since the prototype of 2026-09-23. It held only the
+	// Donate button, which is in the Support card now - so the button is still
+	// on every screen, and this one gives the strip back to the page.
 	//
 	// The page is scrolled, which the other three screens have been from the
 	// start and this one did not need while it held four paragraphs. It holds
 	// the list of what the binary carries now, and a licence notice that cannot
 	// be read to the end is the one kind of notice that fails at its only job.
-	return container.NewBorder(
-		nil, parts.ActionBar(rail(donateButton(h))), nil, nil, container.NewVScroll(page))
+	return container.NewVScroll(page)
 }
 
 // carried is what this binary contains that somebody else wrote, read out of
@@ -133,20 +135,53 @@ func carried() []fyne.CanvasObject {
 		{text.SectionCarriedBeside(), func(i legal.Item) bool { return i.Beside }},
 	}
 	for _, g := range groups {
-		if lines := carriedLines(items, g.in); lines != "" {
-			out = append(out, parts.Section(g.heading, parts.Prose(lines)))
+		if rows := carriedRows(items, g.in); len(rows) > 0 {
+			out = append(out, parts.Section(g.heading, parts.Ledger(rows)))
 		}
 	}
 	return out
 }
 
-// carriedLines writes one group as text, in the order internal/legal settled.
-func carriedLines(items []legal.Item, in func(legal.Item) bool) string {
-	var lines []string
+// carriedRows is one group as rows of a table - what it is, under which
+// licence, and whose - in the order internal/legal settled. A table since the
+// prototype of 2026-09-23: the same three things as one line each, told apart
+// by two spaces, read as a wall of text in the real window.
+func carriedRows(items []legal.Item, in func(legal.Item) bool) [][3]string {
+	var rows [][3]string
 	for _, item := range items {
-		if in(item) {
-			lines = append(lines, item.Line())
+		if !in(item) {
+			continue
 		}
+		name := item.Name
+		if item.Version != "" {
+			name += "  " + item.Version
+		}
+		rows = append(rows, [3]string{name, item.SPDX, item.Copyright})
 	}
-	return strings.Join(lines, "\n")
+	return rows
+}
+
+// paragraphs joins the lines of each paragraph of a notice written for a
+// terminal, so the window wraps it to its own width instead of drawing a
+// narrow column of lines broken for eighty characters. A short line stays a
+// line of its own - the name and the copyright at the head of the notice are
+// two lines on purpose, and they are the only lines shorter than this.
+//
+// The command line prints the notice as it is written.
+func paragraphs(notice string) string {
+	const wrapped = 40
+	var out []string
+	for _, para := range strings.Split(strings.TrimSpace(notice), "\n\n") {
+		lines := strings.Split(para, "\n")
+		joined := lines[0]
+		for i := 1; i < len(lines); i++ {
+			if len(lines[i-1]) >= wrapped {
+				joined += " " + lines[i]
+			} else {
+				joined += "\n" + lines[i]
+			}
+		}
+		out = append(out, joined)
+	}
+	return strings.Join(out, "\n\n")
 }

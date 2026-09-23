@@ -195,11 +195,11 @@ func Titled(name, sentence string) fyne.CanvasObject {
 // plain container, so anything that walks the tree already knows what it is -
 // and a walk that does not know one type stops seeing every field below it,
 // which is exactly what happened when cards arrived.
+//
+// The content is a Grid since the prototype of 2026-09-23: fields two to a
+// row, anything else across the row.
 func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
-	body := make([]fyne.CanvasObject, 0, len(content)+1)
-	body = append(body, sectionTitle(title))
-	body = append(body, content...)
-	return container.NewStack(panelSurface(), Padded(Inset, Column(GapField, body...)))
+	return container.NewStack(panelSurface(), Padded(Inset, Column(GapField, sectionTitle(title), Grid(content...))))
 }
 
 // FieldColumn stacks fields the way a section stacks them, for the boxes a screen
@@ -317,11 +317,18 @@ func (s shifted) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // The marker is its own column, so a wrapped item hangs under its own text
 // rather than under the marker. These items wrap: one of them is a sentence
 // about MB against MiB that runs past the width of this card.
+//
+// At the size and colour of ordinary text since the prototype of 2026-09-23.
+// It was drawn as a caption - the smallest rank, in the hint's colour - and
+// measured in the real window that made the most useful words on two screens
+// the faintest: what a preset typically finds, and how to use the program,
+// under a licence drawn in full white. The marker stands level with the FIRST
+// line of its item rather than in the middle of all of them (O235).
 func Bullets(items []string) fyne.CanvasObject {
 	rows := make([]fyne.CanvasObject, 0, len(items))
 	for _, item := range items {
-		marker := words(bulletMarker, TextCaption, false, theme.ColorNamePlaceHolder)
-		rows = append(rows, container.NewBorder(nil, nil, marker, nil, Note(item)))
+		marker := words(bulletMarker, TextBody, false, ColorNameLabel)
+		rows = append(rows, container.New(hanging{}, marker, Prose(item)))
 	}
 	// Tight, because these items are one list rather than a run of separate
 	// statements. Measured on 2026-08-20 at the toolkit's padding: 35 px
@@ -597,13 +604,15 @@ func (f fixedWidth) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	if len(objects) == 0 {
 		return
 	}
-	// The width asked for, whatever room the parent offers. Clamping it to the
-	// room was tried on 2026-08-25 and taken straight back out: MinSize above
-	// already reports this width, so a parent that lays out properly never
-	// offers less - and the parents that offer nought are the ones part way
-	// through being built, where clamping collapsed every declared setting to a
-	// box of nought or minus three pixels. A guard said so within the minute.
-	objects[0].Resize(fyne.NewSize(f.width, size.Height))
+	// At least the width asked for, and the whole of the room when the parent
+	// offers more: since the prototype of 2026-09-23 a field stands in a
+	// column of a Grid and fills it, so the right edge of a form is one line.
+	// The width is a floor now, not a size. Clamping it DOWN to the room was
+	// tried on 2026-08-25 and taken straight back out: the parents that offer
+	// nought are the ones part way through being built, where clamping
+	// collapsed every declared setting to a box of nought or minus three
+	// pixels.
+	objects[0].Resize(fyne.NewSize(fyne.Max(f.width, size.Width), size.Height))
 	objects[0].Move(fyne.NewPos(0, 0))
 }
 

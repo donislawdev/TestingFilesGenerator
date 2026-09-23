@@ -260,13 +260,14 @@ func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked 
 // untouchable rule 5 needs that difference - it is what tells a limit somebody
 // chose from a placeholder we invented.
 //
-// The value alone since 2026-08-12, where it used to read "left empty: 10mb".
-// That the value is what happens when nothing is typed is what a placeholder
-// already means, and the sentence under the field says "default 10mb" in words
-// - so the box was carrying a third copy in the one place that vanishes as soon
-// as anybody uses it.
+// The value alone from 2026-08-12, where it used to read "left empty: 10mb",
+// on the reason that the sentence under the field said "default 10mb" in
+// words. That sentence moved behind the field's explanation button on
+// 2026-08-25, so the box became the only place on the screen saying it - and
+// the owner's review of the prototype of 2026-09-23 found a grey "60" or "1"
+// read as a value somebody had already typed. So the word is back, once.
 func PlaceholderLeftEmpty(declared string) string {
-	return declared
+	return sayf("PlaceholderLeftEmpty", "default: {{.Value}}", map[string]any{"Value": declared})
 }
 
 // ChoiceLeftAlone is gone, and the reason it existed is worth keeping because
@@ -573,7 +574,7 @@ func SectionBase() string { return say("SectionBase", "Build on a preset") }
 // screen does not have. Pointed out by an outside review of #119.
 func NoteBase() string {
 	return say("NoteBase",
-		"With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole recipe.")
+		"With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole recipe.")
 }
 
 // FieldBuildOnPreset names the switch that turns the section on. Off is the
@@ -581,7 +582,7 @@ func NoteBase() string {
 func FieldBuildOnPreset() string { return say("FieldBuildOnPreset", "Start from a preset") }
 func DetailBuildOnPreset() string {
 	return say("DetailBuildOnPreset",
-		"Off, the batches below are the whole recipe. On, the chosen preset's files come first and the batches are added after them.")
+		"Unticked, the batches below are the whole recipe. Ticked, the chosen preset's files come first and the batches are added after them.")
 }
 
 // FieldBasePreset names the box choosing the preset to build on. A different
