@@ -45,6 +45,9 @@ type Toggle struct {
 	// from knows whether the keyboard arrived by press or by key, so that a
 	// press can put the keyboard here without drawing the mark that says so.
 	from PointerFocus
+	// reports is the address a flip is told to the screen under - see
+	// wiredOnce in fields.go.
+	reports wiredOnce[string]
 }
 
 var (

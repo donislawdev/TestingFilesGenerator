@@ -57,7 +57,11 @@ const (
 	// every owner, and the loop left behind is two deep rather than three. The
 	// four presets that arrived the same day were flattened to hold the number
 	// where it was - this is the one that went below it.
-	crowdedDepthFunctions = 50
+	// Lowered from 50 on 2026-09-23: Fields.listen wrapped each of three kinds
+	// of control in its own closure and went one deeper when it learnt to wrap
+	// only once - the three became one function, chainOnce, and listen came
+	// out of the band.
+	crowdedDepthFunctions = 49
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.

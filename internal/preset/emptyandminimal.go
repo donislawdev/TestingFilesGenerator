@@ -255,8 +255,11 @@ func layOut(descs []format.Descriptor) []minimalFile {
 // MinBytes beside it is the structural floor with no label, and it is NOT the
 // same number - docx, pdf, targz, wav and zip all differ, measured 2026-09-22.
 // Asking for MinBytes is refused.
+//
+// Remembered per format for the life of the process - see
+// format.SmallestWithLabel for the measurement behind it.
 func smallest(d format.Descriptor) int64 {
-	return d.SmallestAccepted(format.Request{Label: true})
+	return format.SmallestWithLabel(d)
 }
 
 // saidAboutTheMinimalSet says when the set came out with only one of its halves.

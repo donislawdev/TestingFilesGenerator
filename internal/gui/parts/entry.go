@@ -34,6 +34,13 @@ type Entry struct {
 	// the screen, because the screen is what knows the canvas.
 	onOurs func(fyne.Shortcut)
 
+	// reports and counts are the two things a field does when this box
+	// changes - tell the screen under which address, and count the bytes into
+	// which caption. Wired once and re-pointed on every registration, see
+	// wiredOnce in fields.go.
+	reports wiredOnce[string]
+	counts  wiredOnce[*ByteCount]
+
 	// ring is the edge a field draws round this box when the keyboard is in it
 	// or a run refused it, so a box carries the same 2 px mark as the menu and
 	// the switch beside it rather than only the toolkit's own 1 px border -

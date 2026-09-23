@@ -217,13 +217,9 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 	count := newByteCount()
 	for _, b := range boxesIn(control) {
 		b := b
-		already := b.OnChanged
-		b.OnChanged = func(value string) {
-			if already != nil {
-				already(value)
-			}
-			count.show(value)
-		}
+		// Into the caption drawn now, whichever registration this is - see
+		// wiredOnce for why the box is wrapped only the first time.
+		chainOnce(&b.OnChanged, &b.counts, count, func(value string, into *ByteCount) { into.show(value) })
 		// And once now, for a box that arrives with a size already in it.
 		count.show(b.Text)
 	}
@@ -353,6 +349,12 @@ func (s *Fields) WhenTypedIn(tell func(setting string)) {
 // reacting. The chain runs the control's own work FIRST, so what is reported
 // is read off a screen that has already changed.
 //
+// Chained ONCE per control, and the address read at the moment of the change.
+// The batch screen registers every field again on every rebuild and keeps the
+// controls, and until 2026-09-23 each registration added a link: after k
+// rebuilds one change was reported k times, under every address the control
+// had ever had. See wiredOnce.
+//
 // Menus and switches since 2026-09-14. Only boxes reported until then, which
 // was enough while the only listener was the live check and the only thing a
 // menu could be wrong about was nothing. It stopped being enough when the
@@ -360,40 +362,69 @@ func (s *Fields) WhenTypedIn(tell func(setting string)) {
 // the menu changed the run and the line went on naming the old one.
 func (s *Fields) listen(setting string, control fyne.CanvasObject) {
 	// Read at the moment somebody types rather than at the moment this is
-	// wired, so a listener asked for after the field exists still hears it.
-	report := func() {
+	// wired, so a listener asked for after the field exists still hears it -
+	// and so does the address, so a control registered again reports under
+	// the address it has now.
+	report := func(_ string, at string) {
 		if s.tell != nil {
-			s.tell(setting)
+			s.tell(at)
 		}
 	}
 	walkControls(control, func(o fyne.CanvasObject) {
 		switch it := o.(type) {
 		case *Entry:
-			already := it.OnChanged
-			it.OnChanged = func(value string) {
-				if already != nil {
-					already(value)
-				}
-				report()
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, report)
 		case *Chooser:
-			already := it.OnChanged
-			it.OnChanged = func(value string) {
-				if already != nil {
-					already(value)
-				}
-				report()
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, report)
 		case *Toggle:
-			already := it.OnChanged
-			it.OnChanged = func(on bool) {
-				if already != nil {
-					already(on)
-				}
-				report()
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, func(_ bool, at string) { report("", at) })
 		}
 	})
+}
+
+// wiredOnce is one thing a field does when its control changes, put into the
+// control ONCE and pointed at a new target on every registration.
+//
+// Kept on the control rather than in a map on Fields, because the control is
+// what outlives a rebuild: the batch screen builds its panels again and keeps
+// the boxes, so what was typed survives. A map here would also keep the boxes
+// of a batch that was removed, for as long as the screen lives.
+//
+// Measured before it existed, in the real window on 2026-09-23 (tools/probes/
+// guilag, docs/GUI-MEMORY-2026-09-23.md section 2.2): every registration
+// wrapped the callback again, so the preset switch on the batch screen took
+// 0.7 s at its first press and 6.1 s at its twentieth, and a size box counted
+// into every caption it had ever been drawn with.
+type wiredOnce[T any] struct {
+	wired  bool
+	target T
+}
+
+// point says where the handler reports from now on, and answers true the
+// first time only - when the handler has still to be put in.
+func (w *wiredOnce[T]) point(target T) (first bool) {
+	w.target = target
+	first = !w.wired
+	w.wired = true
+	return first
+}
+
+// chainOnce points one of a control's change handlers at target, and the
+// first time only puts it in: the control's own callback runs first, then
+// then, with the value and whatever target is pointed at by the time the
+// change happens. One function for the three kinds of control and the count
+// of bytes, so the rule cannot hold for some of them and not the others.
+func chainOnce[V, T any](handler *func(V), to *wiredOnce[T], target T, then func(value V, at T)) {
+	if !to.point(target) {
+		return
+	}
+	already := *handler
+	*handler = func(value V) {
+		if already != nil {
+			already(value)
+		}
+		then(value, to.target)
+	}
 }
 
 // walkControls visits a control and everything inside it, containers included.

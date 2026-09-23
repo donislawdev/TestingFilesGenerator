@@ -198,6 +198,9 @@ type Chooser struct {
 	// in it. Neither alone is worth anything - a list built correctly and never
 	// shown looks right from the widget's side.
 	opened *OpenList
+	// reports is the address a choice is told to the screen under - see
+	// wiredOnce in fields.go.
+	reports wiredOnce[string]
 }
 
 // Opened is the list this menu last dropped down, or nil if it never has.
