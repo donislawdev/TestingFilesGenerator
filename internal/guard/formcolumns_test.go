@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -15,9 +16,11 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 // The layout of 2026-09-23 and what it promises, asked of the running
@@ -107,6 +110,56 @@ func TestASizeBelowTheMinimumOffersTheSmallestSize(t *testing.T) {
 	if said := field.Saying(); said != "" {
 		t.Errorf("the size the button put in the box is still refused: %q", said)
 	}
+}
+
+// TestALimitBelowTheMinimumOffersNoButtonThatLeadsBackToItself is the same
+// refusal under "Around a limit", where the box is not the size refused.
+//
+// The set is built one byte under the limit, on it and one over, so a limit
+// of 74 for a PNG refuses the file of 73. The button used to put the minimum,
+// 74, back in the box - the same 73, the same refusal, and a person pressing
+// it saw nothing change. Measured on 2026-09-23 after an outside review of
+// #126 (docs/REVIEW-126-2026-09-23.md). The smallest limit whose three files
+// all exist is the engine's to answer and it cannot yet, so the promise is
+// the modest one: this box gets the sentence and no button. The day the
+// engine answers, this guard is the one to rewrite into "one press, and the
+// limit is no longer refused".
+func TestALimitBelowTheMinimumOffersNoButtonThatLeadsBackToItself(t *testing.T) {
+	host := newFakeHost(t)
+	screen := window.NewRecipe(host)
+	body := screen.Object()
+	chooseFormat(t, body, "png")
+	chooseSizeWay(t, body, text.SizeWayBoundary())
+	fields := screen.Fields()
+	at := recipe.TargetAddress(1, recipe.KeyBoundary)
+	minimum := minimumOf(t, "png")
+	setBox(t, fields, at, strconv.FormatInt(minimum, 10))
+	pressNamed(t, body, text.ButtonPreview())
+	join(host)
+
+	field := fields.Lookup(at)
+	if field == nil {
+		t.Fatalf("the screen registers no box at %q", at)
+	}
+	if field.Saying() == "" {
+		t.Fatalf("a limit of %d B builds a file of %d B for a format whose smallest is %d B and was not refused, "+
+			"so there is nothing to offer a fix for.\n%s", minimum, minimum-1, minimum, allSaid(fields))
+	}
+	if offered := field.Offered(); offered != "" {
+		t.Errorf("the limit box offers %q under a refusal about the file one byte below the limit.\n"+
+			"Reason: the button puts the format's smallest size in the box, the box is the LIMIT, and\n"+
+			"the file under it is refused again - measured, the button led back to itself.", offered)
+	}
+}
+
+// minimumOf is the smallest file a format can make, asked of the registry.
+func minimumOf(t *testing.T, id string) int64 {
+	t.Helper()
+	d, err := format.Get(id)
+	if err != nil {
+		t.Fatalf("the registry has no %s: %v", id, err)
+	}
+	return d.MinBytes
 }
 
 // TestARefusalAboutWhatIsInTheDirectoryStandsUnderItAndOpensIt runs a
