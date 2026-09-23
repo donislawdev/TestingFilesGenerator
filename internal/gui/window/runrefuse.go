@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -27,12 +28,31 @@ import (
 // here, which is a second copy of rules the engine owns and the copy that
 // drifts.
 func (r *runner) refuse(err error) {
+	// A refusal replaces what the status line said about work under way. Seen
+	// in the real window on 2026-09-23: a preview refused for a manifest
+	// already in the directory left "Working out what this would cost..."
+	// standing over the refusal, as if it were still working. Both ways into
+	// a refusal from planning - a preview and Generate - set that line first
+	// and neither took it down.
+	showOn(r.status, "")
 	var loose []string
 	// The first box a refusal lands on, so the form can be brought to it. A
 	// refusal that marks a box the person cannot see reads as a button that did
 	// nothing - see parts.Reveal and O107.
 	first := ""
 	for _, one := range spread(err) {
+		// About what is already in the output directory: put under that box,
+		// with the way to the directory under the sentence - see
+		// offers.inTheWay.
+		if dir := inTheWay(one); dir != "" {
+			if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
+				r.fields.Offer(where, text.ButtonOpenFolder(), func() { r.offer.openFolder(dir) })
+				if first == "" {
+					first = where
+				}
+				continue
+			}
+		}
 		// An interface rather than a case per error type, so a screen shown a
 		// kind of refusal nobody thought about here still gets it placed. The
 		// engine, the format registry and the preset package all answer this

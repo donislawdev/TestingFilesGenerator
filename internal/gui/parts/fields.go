@@ -481,6 +481,9 @@ func (s *Fields) Mark(setting string, err error) bool {
 		return false
 	}
 	f.Say(inTheWordsOnScreen(f, err))
+	if label, apply := fixFor(f, err); apply != nil {
+		f.area.Offer(label, apply)
+	}
 	return true
 }
 
@@ -519,6 +522,18 @@ func inTheWordsOnScreen(f *Field, err error) string {
 		return reworded.InTheWordsOf(f.Label)
 	}
 	return err.Error()
+}
+
+// Offer puts a button under what one field is complaining about, for a
+// screen that knows how to put it right - the way to a directory whose
+// contents a run refused. Says whether the field was there to take it.
+func (s *Fields) Offer(setting, label string, apply func()) bool {
+	f, ok := s.by[setting]
+	if !ok {
+		return false
+	}
+	f.area.Offer(label, apply)
+	return true
 }
 
 // Clear takes back whatever one field was complaining about.

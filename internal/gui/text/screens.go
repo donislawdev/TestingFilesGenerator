@@ -252,6 +252,13 @@ func PresetCatchesHeading() string { return say("PresetCatchesHeading", "Typical
 // comes from the size that was asked for.
 func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked out from the size") }
 
+// UseSmallestSize is the button under a refusal about a size below what the
+// format can make. It puts the smallest size that works into the box, so the
+// count of bytes in the refusal does not have to be copied by hand.
+func UseSmallestSize(size string) string {
+	return sayf("UseSmallestSize", "Use the smallest size, {{.Size}}", map[string]any{"Size": size})
+}
+
 // PlaceholderLeftEmpty stands in a format setting that has a declared default,
 // showing what happens if the field is not touched.
 //

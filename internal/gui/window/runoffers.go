@@ -1,6 +1,9 @@
 package window
 
 import (
+	"errors"
+	"path/filepath"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -106,6 +109,34 @@ func (o *offers) theManifest(path string) {
 	o.wroteManifest = path
 	o.manifestBtn.Show()
 	o.relay()
+}
+
+// inTheWay is the directory a refusal is about when it is about something
+// already in it - a file or a manifest the run will not write over, or
+// another run still writing there - or nothing.
+//
+// Reported by the owner from the running window on 2026-09-23: the refusal
+// named the file and the directory, and the only way to go and look was to
+// find it by hand in a file manager. And it was read in a one line strip at
+// the foot of the window, scrolled, because a path and two sentences do not
+// fit there. The refusal carries the path as a field, so the directory is
+// taken from there rather than from the box on the screen, which may name a
+// different one by the time somebody presses.
+//
+// The window places it under the output directory box rather than the engine
+// addressing it there, and that is on purpose: the command line reads the
+// same address into its machine readable reports, and a refusal about the
+// contents of a directory is not a refusal about a setting in a recipe.
+func inTheWay(err error) string {
+	var collision *engine.CollisionError
+	var busy *engine.RunInProgressError
+	switch {
+	case errors.As(err, &collision):
+		return filepath.Dir(collision.Path)
+	case errors.As(err, &busy):
+		return busy.Dir
+	}
+	return ""
 }
 
 // forget takes both offers away when the next run starts.

@@ -149,6 +149,12 @@ type ErrorArea struct {
 	// edge is the line round the control, if it has one. Marked and cleared
 	// with the sentence, so the two never disagree.
 	edge *Ring
+	// fix is a button under the sentence that puts right what it is about,
+	// when the refusal carries the value that would - see Offer. fixRow is
+	// what is shown and hidden, so a field with nothing to offer keeps no
+	// room for a button.
+	fix    *Button
+	fixRow fyne.CanvasObject
 }
 
 // NewErrorArea builds one that stands on its own, for the line at the foot of
@@ -160,7 +166,10 @@ func NewErrorArea() *ErrorArea {
 	// The sentence starts under the control it is about, on the edge the
 	// control starts on - which is the field's edge since the name stands
 	// over the control rather than beside it.
-	area := &ErrorArea{label: label, box: container.NewVBox(inkTight(label))}
+	fix := NewButton(Secondary, "", nil)
+	fixRow := container.NewHBox(fix)
+	area := &ErrorArea{label: label, fix: fix, fixRow: fixRow,
+		box: Column(GapLabel, inkTight(label), fixRow)}
 	area.Clear()
 	return area
 }
@@ -175,13 +184,33 @@ func (a *ErrorArea) Say(text string) {
 		return
 	}
 	a.label.SetText(text)
+	a.fixRow.Hide()
 	a.box.Show()
 	a.mark(true)
+}
+
+// Offer puts a button under the sentence that does what the sentence asks
+// for, so nobody has to copy a number out of a refusal into the box above it.
+// Called after Say, and taken away by the next Say or Clear.
+func (a *ErrorArea) Offer(label string, apply func()) {
+	a.fix.SetText(label)
+	a.fix.OnTapped = apply
+	a.fixRow.Show()
+}
+
+// Offered is the words on the button under the sentence, or nothing, for a
+// guard.
+func (a *ErrorArea) Offered() string {
+	if !a.fixRow.Visible() {
+		return ""
+	}
+	return a.fix.Text
 }
 
 // Clear takes the sentence away and gives the room back.
 func (a *ErrorArea) Clear() {
 	a.label.SetText("")
+	a.fixRow.Hide()
 	a.box.Hide()
 	a.mark(false)
 }

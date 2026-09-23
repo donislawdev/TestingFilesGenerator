@@ -186,7 +186,7 @@ func spanOf(o fyne.CanvasObject, column float32) int {
 	if IsWide(o) || !isGridCell(o) {
 		return GridColumns
 	}
-	need := o.MinSize().Width
+	need := cellWidthNeed(o)
 	for span := 1; span < GridColumns; span++ {
 		if column*float32(span)+GapColumns*float32(span-1) >= need {
 			return span
@@ -274,7 +274,7 @@ func (g *formGrid) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	var minWidth, height float32
 	for _, o := range objects {
 		if o.Visible() {
-			minWidth = fyne.Max(minWidth, o.MinSize().Width)
+			minWidth = fyne.Max(minWidth, cellWidthNeed(o))
 		}
 	}
 	items := pack(objects, width)
@@ -345,4 +345,16 @@ func holdsGroup(o fyne.CanvasObject) bool {
 		}
 	}
 	return false
+}
+
+// cellWidthNeed is how wide an item asks to be in a grid. A field asks with
+// its body alone: its refusal is laid under the row, across it, so a long
+// sentence or the button under it must not widen the field's column -
+// measured on the prototype, the button offering the smallest size pushed the
+// size box to two columns and the field after it to the next row.
+func cellWidthNeed(o fyne.CanvasObject) float32 {
+	if cell, _ := refusalOf(o); cell != nil {
+		return o.(*fyne.Container).Objects[0].MinSize().Width
+	}
+	return o.MinSize().Width
 }
