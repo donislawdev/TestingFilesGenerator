@@ -494,7 +494,7 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	// mistake rather than as an indent.
 	column := container.New(readableWidth{}, Indented(Column(GapLabel, content...)))
 	standing := fyne.CanvasObject(column)
-	if rail != nil {
+	if rail != nil && len(content) > 0 {
 		// Laid over the column rather than beside it. Sharing the row, the rail
 		// would take width from one side only and the buttons the column
 		// centres would sit off centre by half of it.
@@ -502,9 +502,45 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 		// The vertical box is what keeps the rail one row tall. Handed straight
 		// to a stack it would be resized to the whole bar, and a Donate button
 		// as tall as the bar is what the first attempt drew.
-		standing = container.NewStack(column, container.NewVBox(rail))
+		standing = container.New(railOver{centred: content[0]}, column, container.NewVBox(rail))
 	}
 	return container.NewStack(panelSurface(), Padded(InsetBar, standing))
+}
+
+// railOver is the rail laid over the column, and a bar that cannot be made
+// narrower than the width at which the two stop meeting.
+//
+// A stack until 2026-09-23, and a stack's minimum is the larger of its two
+// children rather than what they need side by side - so the window could be
+// narrowed until the centred buttons slid under the rail. Measured with
+// guirender on the batch screen: "Add a batch" covered Preview from about
+// 495 px on main and from about 588 px once the buttons grew their gaps on
+// #126, and Preview was gone altogether at 495. Found while checking an
+// outside review of #126 (docs/REVIEW-126-2026-09-23.md). GUI rule 21 asks
+// exactly this of the smallest window.
+//
+// The buttons are centred in the bar, so the room they leave either side is
+// half of what is left over. That half has to hold the rail and a gap, which
+// makes the smallest bar the buttons plus twice the rail and the gap.
+type railOver struct{ centred fyne.CanvasObject }
+
+func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize())
+	}
+	if len(objects) > 1 {
+		need := r.centred.MinSize().Width + 2*(objects[1].MinSize().Width+GapColumns)
+		size.Width = fyne.Max(size.Width, need)
+	}
+	return size
+}
+
+func (railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(size)
+		o.Move(fyne.NewPos(0, 0))
+	}
 }
 
 // Screen stacks sections under a head - a Title, or a Titled pair.

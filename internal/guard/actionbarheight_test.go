@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -380,4 +381,54 @@ func progressUnder(o fyne.CanvasObject) *parts.Progress {
 		}
 	})
 	return found
+}
+
+// TestTheBarsButtonsClearItsRailInTheNarrowestWindow narrows the window as far
+// as it goes and asks whether the centred buttons still stand clear of the
+// rail at the left of the bar.
+//
+// Measured before it existed, with guirender on the batch screen: "Add a
+// batch" covered Preview from about 495 px on main and from about 588 px on
+// #126, whose buttons grew wider gaps - and Preview was gone altogether at
+// 495, while the window let itself be made that narrow. The bar laid its rail
+// over the column in a stack, and a stack's minimum is the larger of its two
+// children rather than what they need side by side. Found while checking an
+// outside review of #126 (docs/REVIEW-126-2026-09-23.md).
+//
+// The narrowest window is asked of the window rather than typed here: it is
+// the minimum of everything the window holds plus the padding the window
+// draws round it, which is what the system will not let a person go below.
+// The padding is added by hand because the test window does not hold its
+// minimum - asked for 1 px it lays the screen out in 1 px - and the first
+// run of this guard went red on a window 8 px narrower than any real one.
+// Positions are read off the laid out screen, because the promise is about
+// what is drawn (GUI rule 10).
+func TestTheBarsButtonsClearItsRailInTheNarrowestWindow(t *testing.T) {
+	content, w := screenInAWindow(t, text.TabRecipe())
+	width := w.Content().MinSize().Width
+	if w.Padded() {
+		width += 2 * theme.Padding()
+	}
+	narrowest := fyne.NewSize(width, window.LargestOpening.Height)
+	w.Resize(narrowest)
+	content.Refresh()
+	w.Resize(narrowest)
+
+	rail := buttonNamed(content, text.ButtonAddBatch())
+	first := buttonNamed(content, text.ButtonPreview())
+	if rail == nil || first == nil {
+		t.Fatalf("the batch screen has no %q or no %q button, so there is no rail and no row to hold apart",
+			text.ButtonAddBatch(), text.ButtonPreview())
+	}
+	drv := fyne.CurrentApp().Driver()
+	railEnds := drv.AbsolutePositionForObject(rail).X + rail.Size().Width
+	rowStarts := drv.AbsolutePositionForObject(first).X
+	if gap := rowStarts - railEnds; gap < parts.GapColumns-0.5 {
+		t.Errorf("in a window %.0f px wide, the narrowest it allows, %q ends at x=%.1f and %q starts at x=%.1f - "+
+			"a gap of %.1f px where the bar keeps %d.\n"+
+			"Reason: the buttons are centred and the rail stands over the same row, so a bar allowed to be\n"+
+			"narrower than the two side by side draws one button over the other.",
+			narrowest.Width, text.ButtonAddBatch(), railEnds, text.ButtonPreview(), rowStarts, gap, parts.GapColumns)
+	}
+	t.Logf("narrowest window %.0f px: the rail ends at %.1f, the row starts at %.1f", narrowest.Width, railEnds, rowStarts)
 }
