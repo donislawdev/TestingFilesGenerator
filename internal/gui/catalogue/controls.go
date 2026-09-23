@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
@@ -124,6 +125,14 @@ func chooser() Entry {
 		{"long value", func() fyne.CanvasObject {
 			c := parts.NewChooser([]string{longText, "png"}, func(string) {})
 			c.SetSelected(longText)
+			return parts.Menu(c)
+		}},
+		{"every format, showing the kind of its value", func() fyne.CanvasObject {
+			// The one menu that draws a picture in the shut box - see
+			// menuLook.placeKind - and the widest, because its open list
+			// carries headings, a filter and letters in bold.
+			c := parts.NewChooser(format.IDs(), func(string) {})
+			c.SetSelected("zip")
 			return parts.Menu(c)
 		}},
 	}}

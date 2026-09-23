@@ -10,6 +10,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // Ring is the line round a control that says something about its state.
@@ -185,6 +187,12 @@ type Chooser struct {
 	// KindOf says what picture goes in front of a value. Nil on a menu whose
 	// values are not things of different kinds, which is most of them.
 	KindOf func(string) fyne.Resource
+	// HeadingOf is the heading a value stands under in the open list, and
+	// Filtered says the list opens with a box to narrow it. Both are set on
+	// the one menu that is long - the whole list of formats - and on no other.
+	// See NewChooser.
+	HeadingOf func(string) string
+	Filtered  bool
 	// opened is the list this menu last dropped down, and it is here for a
 	// guard: the canvas says whether a list appeared, and this says what was
 	// in it. Neither alone is worth anything - a list built correctly and never
@@ -223,6 +231,13 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 	c.OnChanged = changed
 	if IsEveryFormat(options) {
 		c.KindOf = KindOfFile
+		// Grouped and filtered for the same reason and on the same test as
+		// the pictures, decided by the owner on 2026-09-23 with twenty six
+		// formats of which eighteen fitted in the open list: every list of
+		// formats in the window gets it at once, including the ones that did
+		// not exist when it was written.
+		c.HeadingOf = KindHeading
+		c.Filtered = true
 	}
 	c.ExtendBaseWidget(c)
 	return c
@@ -283,9 +298,13 @@ func menuWidth(c *Chooser) float32 {
 	// Nothing of ours ever sets a placeholder on a menu - it would be a word a
 	// person reads coming from outside the text package - so there is no
 	// placeholder of ours to measure either.
+	// In bold on a menu with a filter, because the filter draws the part of a
+	// value that matched in bold, and bold letters are wider - so a value
+	// typed in full is the widest that value is ever drawn.
+	style := fyne.TextStyle{Bold: c.Filtered}
 	var widest float32
 	for _, option := range c.Options {
-		if w := fyne.MeasureText(option, size, fyne.TextStyle{}).Width; w > widest {
+		if w := fyne.MeasureText(option, size, style).Width; w > widest {
 			widest = w
 		}
 	}
@@ -321,8 +340,16 @@ func menuWidth(c *Chooser) float32 {
 	// guard about a preference.
 	pad := th.Size(theme.SizeNameInnerPadding)
 	box := widest + pad*4 + th.Size(theme.SizeNameInlineIcon)
+	if c.KindOf != nil {
+		// The closed box draws the picture of its value in front of the word
+		// - see menuLook.placeKind.
+		box += th.Size(theme.SizeNameInlineIcon) + rowGap
+	}
 	if row := RowWidthFor(widest, c.KindOf != nil); row > box {
 		box = row
+	}
+	if open := openListWidth(c); open > box {
+		box = open
 	}
 	// And never narrower than the narrowest box on these screens.
 	//
@@ -338,6 +365,37 @@ func menuWidth(c *Chooser) float32 {
 	// values is as wide as its values, which is what the arithmetic above is
 	// for.
 	return fyne.Max(NumericWidth, box)
+}
+
+// openListWidth is the room the rows of an open list need that are not
+// values: the headings, the notice that nothing matched and the filter box
+// with the words standing in it. Nought for a list that has none of them.
+//
+// The box has to cover these for the reason it covers a row - the list opens
+// at the box's width - and they are measured here rather than read off the
+// list, because the list does not exist until somebody presses the box.
+func openListWidth(c *Chooser) float32 {
+	var widest float32
+	if c.HeadingOf != nil {
+		// With the count each heading carries when nothing is typed, which is
+		// the most it ever carries.
+		counts := map[string]int{}
+		for _, option := range c.Options {
+			counts[c.HeadingOf(option)]++
+		}
+		for heading, count := range counts {
+			widest = fyne.Max(widest, HeadingRowWidthFor(headingWidth(text.ListHeadingCount(heading, count))))
+		}
+	}
+	if c.Filtered {
+		// The words in the empty box, inside the box's own room on both
+		// sides, inside the room round the box.
+		inner := Theme().Size(theme.SizeNameInnerPadding)
+		words := fyne.MeasureText(text.PlaceholderFilter(), theme.TextSize(), fyne.TextStyle{}).Width
+		widest = fyne.Max(widest, words+4*inner+2*filterInset)
+		widest = fyne.Max(widest, HeadingRowWidthFor(headingWidth(text.ListNothingMatches())))
+	}
+	return widest
 }
 
 // useRing takes the ring and asks it for a line at rest as well as the two it
@@ -446,6 +504,12 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 			c.giveBack(surface, byKeyboard)
 		})
 	list.KindOf = c.KindOf
+	if c.HeadingOf != nil {
+		list.GroupUnder(c.HeadingOf)
+	}
+	if c.Filtered {
+		list.WithFilter()
+	}
 	pop = widget.NewPopUp(list, surface)
 	c.opened = list
 
@@ -453,7 +517,7 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	// As wide as the box, so the list reads as belonging to that field. How
 	// tall and which side of the box it goes on is worked out from the room
 	// that is actually left - see roomForList.
-	height, top := RoomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height)
+	height, top := RoomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height, list.HeadHeight())
 	// Told to the list rather than only to the popup, because a popup is never
 	// laid out smaller than its content's minimum - so resizing alone left the
 	// list its full height and the shortening did nothing.
@@ -461,7 +525,7 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	pop.Resize(fyne.NewSize(c.Size().Width, height))
 	pop.ShowAtPosition(fyne.NewPos(at.X, top))
 
-	surface.Focus(list)
+	surface.Focus(list.Keyboard())
 	// On the value already in the box, so that pressing Down once does not go
 	// to the first value while the box shows the ninth.
 	list.StartOn(c.Selected)
@@ -498,17 +562,36 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 // exported for that check. The screen level guard opens a real menu and
 // measures the overlay, which is the half that catches this being wired up
 // wrongly.
-func RoomForList(canvasHeight, boxTop, boxHeight, wanted float32) (height, top float32) {
-	if ceiling := ListCeiling(canvasHeight); wanted > ceiling {
-		wanted = ceiling
+//
+// head is the filter box at the top of a list that has one, and nought for the
+// rest. It is taken off the room before the rows are counted, so everything
+// above still holds for the rows under it - they end on a row's edge, and the
+// whole list, box and rows together, stays inside the share of the window.
+// The ceiling never falls under one row, for the reason ListCeiling keeps
+// one: a filter over no rows is a box that narrows nothing anybody can see.
+// The room beside the box can still be less than that in a window cramped
+// enough, and then the list is cut to it exactly as before there was a head.
+func RoomForList(canvasHeight, boxTop, boxHeight, wanted, head float32) (height, top float32) {
+	rows := wanted - head
+	// From the share itself rather than from ListCeiling, which is the share
+	// already cut to whole rows - cutting twice, once for the share and once
+	// for what the head leaves, lost up to a row more than "no less than the
+	// share less a row" allows. Measured on a 650 px canvas: 292 px of list
+	// against a promise of 297. With no head this is ListCeiling exactly.
+	ceiling := wholeRows(canvasHeight*listShare - head)
+	if ceiling < listRowHeight() {
+		ceiling = listRowHeight()
 	}
-	below := wholeRows(canvasHeight - (boxTop + boxHeight) - listEdgeGap)
-	above := wholeRows(boxTop - listEdgeGap)
+	if rows > ceiling {
+		rows = ceiling
+	}
+	below := wholeRows(canvasHeight - (boxTop + boxHeight) - listEdgeGap - head)
+	above := wholeRows(boxTop - listEdgeGap - head)
 
-	if wanted <= below || below >= listOpensDownwardFrom*listRowHeight() || below >= above {
-		return fyne.Min(wanted, below), boxTop + boxHeight
+	if rows <= below || below >= listOpensDownwardFrom*listRowHeight() || below >= above {
+		return head + fyne.Min(rows, below), boxTop + boxHeight
 	}
-	height = fyne.Min(wanted, above)
+	height = head + fyne.Min(rows, above)
 	return height, boxTop - height
 }
 
@@ -595,6 +678,18 @@ func (c *Chooser) TypedRune(r rune) {
 	}
 	if !c.marked {
 		c.mark()
+	}
+	// A menu with a filter opens with the letter in it instead. One letter at
+	// a time walked the values starting with each letter in turn, so "jxl"
+	// typed at the shut format menu ended on log - j to jpg, x to xlsx, l to
+	// log. Read off this function on 2026-09-23 and ordered by the owner with
+	// the filter: typing at the shut menu is the same as typing into it.
+	if c.Filtered {
+		c.Tapped(nil)
+		if c.opened != nil && c.opened.Filter() != nil {
+			c.opened.Filter().TypedRune(r)
+		}
+		return
 	}
 	want := strings.ToLower(string(r))
 	from := c.SelectedIndex()

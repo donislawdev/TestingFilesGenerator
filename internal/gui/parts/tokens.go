@@ -273,6 +273,10 @@ const (
 	// its second step now, so a row is 4 px wider than it was.
 	rowGutter = space2
 	rowGap    = space2
+	// filterInset is the room round the filter box at the top of an open
+	// list, so the box reads as standing inside the list rather than as a
+	// second field glued onto its top edge.
+	filterInset = space1
 )
 
 // EdgeWidth is the line round a control at rest, for a guard measuring

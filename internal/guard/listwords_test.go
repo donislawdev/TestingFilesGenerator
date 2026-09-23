@@ -72,6 +72,11 @@ func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 			t.Fatalf("the %s list is drawing no row at all", tc.field)
 		}
 		for _, row := range rows {
+			// A heading is its words at the gutter and nothing else - no tick,
+			// no picture. Its shape is TestTheFormatListStandsUnderAHeadingForEachKind's.
+			if row.Heading() {
+				continue
+			}
 			words, tick, picture := piecesOfARow(t, row)
 			if tc.pictured {
 				// Tick, picture, words: each starts where the one before it
@@ -133,7 +138,12 @@ func piecesOfARow(t *testing.T, row *parts.ListRow) (words *canvas.Text, tick, p
 	for _, o := range test.WidgetRenderer(row).Objects() {
 		switch drawn := o.(type) {
 		case *canvas.Text:
-			words = drawn
+			// The first text, which holds the words whole while nothing is
+			// typed into the list's filter. Two more follow it for the bold
+			// part and the rest, empty and hidden at rest.
+			if words == nil {
+				words = drawn
+			}
 		case *canvas.Image:
 			if drawn.Resource != nil && drawn.Resource.Name() == theme.ConfirmIcon().Name() {
 				tick = drawn

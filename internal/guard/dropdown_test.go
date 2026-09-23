@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/test"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -24,11 +26,10 @@ import (
 // starting with it, collapsed or expanded - and NN/g lists typing a letter
 // among the things a dropdown has to support.
 func TestALetterTypedAtTheShutListMovesToThatValue(t *testing.T) {
-	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat())
+	menu, _ := aMenuWithoutAFilter(t)
 
-	// csv is where a fresh screen starts, so p has to reach pdf and png rather
-	// than the first value in the list.
+	// csv is where it starts, so p has to reach pdf and png rather than the
+	// first value in the list.
 	menu.TypedRune('p')
 	if menu.Selected != "pdf" {
 		t.Errorf("p was typed at a list showing csv and it holds %q, where pdf is the first value starting with p", menu.Selected)
@@ -46,7 +47,7 @@ func TestALetterTypedAtTheShutListMovesToThatValue(t *testing.T) {
 	// clearing it.
 	menu.TypedRune('q')
 	if menu.Selected != "png" {
-		t.Errorf("a letter no format starts with changed the value to %q", menu.Selected)
+		t.Errorf("a letter no value starts with changed the value to %q", menu.Selected)
 	}
 }
 
@@ -56,8 +57,7 @@ func TestALetterTypedAtTheShutListMovesToThatValue(t *testing.T) {
 // nothing is settled until Enter, which is what the ARIA practices ask for and
 // what stops a held key from committing a value nobody looked at.
 func TestALetterTypedAtTheOpenListMovesTheKeyboard(t *testing.T) {
-	_, content := screenOnACanvas(t)
-	menu := chooserUnder(t, content, text.FieldFormat())
+	menu, _ := aMenuWithoutAFilter(t)
 	menu.Tapped(&fyne.PointEvent{})
 
 	list := menu.Opened()
@@ -74,6 +74,31 @@ func TestALetterTypedAtTheOpenListMovesTheKeyboard(t *testing.T) {
 	if menu.Selected != before {
 		t.Errorf("typing a letter at an OPEN list settled the value on %q, and nothing is settled until Enter", menu.Selected)
 	}
+}
+
+// aMenuWithoutAFilter is a menu of a few values sharing first letters, in a
+// window, showing csv.
+//
+// A menu of its own rather than the format menu on a screen, since
+// 2026-09-23: the list of formats has a filter now, and a letter typed at it
+// goes into the filter (formatlist_test.go). Every other menu in the window
+// keeps the jump these two guards are about - and a subset of the formats is
+// exactly a menu without one, which this asserts rather than assumes.
+func aMenuWithoutAFilter(t *testing.T) (*parts.Chooser, fyne.Window) {
+	t.Helper()
+	app := test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+	t.Cleanup(func() { test.NewApp() })
+
+	menu := parts.NewChooser([]string{"csv", "pdf", "png", "txt", "wav"}, nil)
+	if menu.Filtered {
+		t.Fatal("a menu of five values opens with a filter, so these guards would be asking about the filter")
+	}
+	menu.SetSelected("csv")
+	w := test.NewWindow(container.NewVBox(menu))
+	t.Cleanup(w.Close)
+	w.Resize(fyne.NewSize(400, 600))
+	return menu, w
 }
 
 // A press opens the list without painting the keyboard's place in it.
@@ -154,11 +179,13 @@ func formatListRowsShownIn(t *testing.T, height float32) float32 {
 	menu := chooserUnder(t, content, text.FieldFormat())
 	menu.Tapped(&fyne.PointEvent{})
 	pop := popUpIn(canvas.Overlays().Top())
-	if pop == nil {
+	if pop == nil || menu.Opened() == nil {
 		t.Fatalf("the press opened no list on the canvas %.0f px tall", height)
 	}
+	// The filter box at the top is not a row, so the rows are what is under
+	// it. Since 2026-09-23 - see parts.RoomForList for the head.
 	tall := pop.Size().Height
-	shown := tall / row
+	shown := (tall - menu.Opened().HeadHeight()) / row
 	if tall > height/2+0.5 {
 		t.Errorf("the open list is %.0f px tall in a window %.0f px tall, which is more than half of it.\n"+
 			"Reason: an open list that covers the form takes the context away from the person reading it.\n"+

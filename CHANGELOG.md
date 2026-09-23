@@ -16,6 +16,19 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The list of formats is grouped by kind and can be filtered.** The open
+  list stands under headings - Archives, Documents, Pictures, Sound, Text and
+  data - each saying how many formats are under it, and a box at its top
+  narrows it to the formats whose name holds what is typed, or whose kind
+  has a word that starts with it (`gz` finds `targz`, `pict` every picture,
+  `data` every text and data format). The letters that
+  matched are drawn in bold, the arrows step over the headings, and typing
+  at the shut `Format` menu opens the list with those letters in the box, so
+  `jxl` typed there ends on `jxl`. The shut menu draws the kind of the format
+  it holds, and archives are drawn as a folder rather than as three bars that
+  looked like text. The command line lists the formats in one alphabetical
+  order as before.
+
 - **The window lays its forms out in columns.** A field now takes as many
   columns of the form as its value needs and no more, so `Format`, `Size`,
   `How many files` and `Damage` stand in one row instead of one under another,

@@ -50,8 +50,26 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 	// a press and leaves focusing to the widget, and the switch left it.
 	// On the list the press opened, which is where the arrows have to work.
 	// Closing it hands the keyboard back to the menu (see Chooser.giveBack).
-	if list := menu.Opened(); list == nil || c.Focused() != fyne.Focusable(list) {
-		t.Errorf("the format menu was pressed and the keyboard is on %T, not on the list it opened", c.Focused())
+	//
+	// "On the list" is where the list says the keyboard goes, since the list
+	// of 2026-09-23 took a filter: the box at its top has the keyboard and
+	// hands the arrows on (FilterBox.TypedKey). Asked of OpenList.Keyboard
+	// rather than of a type, and then the arrow is pressed on whatever has the
+	// keyboard - so the guard holds the promise, not the shape it took.
+	list := menu.Opened()
+	if list == nil {
+		t.Fatal("the format menu was pressed and opened no list")
+	}
+	if c.Focused() != list.Keyboard() {
+		t.Errorf("the format menu was pressed and the keyboard is on %T, not where the list it opened takes it (%T)",
+			c.Focused(), list.Keyboard())
+	}
+	if focused := c.Focused(); focused != nil {
+		before := list.Active()
+		focused.TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
+		if list.Active() == before {
+			t.Errorf("Down pressed on %T moved nothing in the list the press opened - the keyboard is somewhere the arrows do not work", focused)
+		}
 	}
 
 	// The list the press opened is taken away first. A real press respects what

@@ -252,6 +252,34 @@ func PresetCatchesHeading() string { return say("PresetCatchesHeading", "Typical
 // comes from the size that was asked for.
 func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked out from the size") }
 
+// PlaceholderFilter stands in the box at the top of an open list of formats,
+// where typing narrows the list to the formats whose name holds what was
+// typed.
+func PlaceholderFilter() string { return say("PlaceholderFilter", "type to filter") }
+
+// ListNothingMatches stands in an open list whose filter left no value. It is
+// a row nobody can choose, so the list does not look broken while it is
+// empty.
+func ListNothingMatches() string { return say("ListNothingMatches", "Nothing matches") }
+
+// The headings inside an open list of formats, one over each kind of file.
+// The list puts the kinds in the order of these words, so a translation
+// reorders the headings with it rather than leaving them in English order.
+func ListKindArchives() string  { return say("ListKindArchives", "Archives") }
+func ListKindDocuments() string { return say("ListKindDocuments", "Documents") }
+func ListKindPictures() string  { return say("ListKindPictures", "Pictures") }
+func ListKindSound() string     { return say("ListKindSound", "Sound") }
+func ListKindText() string      { return say("ListKindText", "Text and data") }
+func ListKindVideo() string     { return say("ListKindVideo", "Video") }
+
+// ListHeadingCount is one of those headings with how many formats stand under
+// it in the list as it is drawn - after the filter, so the number is what the
+// eye can count below it. The separator is the one the line at the foot of a
+// screen uses between the parts of what a run comes to.
+func ListHeadingCount(kind string, count int) string {
+	return sayf("ListHeadingCount", "{{.Kind}} · {{.Count}}", map[string]any{"Kind": kind, "Count": count})
+}
+
 // UseSmallestSize is the button under a refusal about a size below what the
 // format can make. It puts the smallest size that works into the box, so the
 // count of bytes in the refusal does not have to be copied by hand.

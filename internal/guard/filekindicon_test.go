@@ -105,9 +105,19 @@ func TestTheFormatMenuDrawsThePictureOfEachKind(t *testing.T) {
 	if len(rows) == 0 {
 		t.Fatal("the list that dropped down is drawing no rows")
 	}
+	values := 0
 	for _, row := range rows {
+		// A heading names a kind and draws no picture of one, on purpose -
+		// see TestTheFormatListStandsUnderAHeadingForEachKind.
+		if row.Heading() {
+			continue
+		}
+		values++
 		if row.Kind() == nil {
 			t.Errorf("the row for %q draws no picture, so the kinds stop at the table", row.Label())
 		}
+	}
+	if values == 0 {
+		t.Fatal("the list drew headings and no value, so no picture was asked about")
 	}
 }
