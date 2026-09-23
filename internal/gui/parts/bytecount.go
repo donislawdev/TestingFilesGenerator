@@ -2,7 +2,6 @@ package parts
 
 import (
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -28,18 +27,21 @@ import (
 // Spelled by core.ExactBytes, which is what the command line prints. The
 // window had a spelling of its own without the grouping until 2026-09-14, so
 // one number came out as 10485760 B here and 10 485 760 B there.
+//
+// Quiet words since 2026-09-23, rather than a low importance label under a
+// theme override - see QuietText for what the override cost.
 type ByteCount struct {
-	widget.Label
+	QuietText
 }
 
 func newByteCount() *ByteCount {
 	c := &ByteCount{}
+	c.start("")
 	c.ExtendBaseWidget(c)
 	// The same rank as the line explaining a field, because it is the same kind
 	// of thing: something quiet beside a control that the eye should skip until
 	// it wants it.
 	c.SizeName = theme.SizeNameCaptionText
-	c.Importance = widget.LowImportance
 	return c
 }
 

@@ -36,21 +36,17 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="121x24" textSize="20">Single batch</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="121x24" textSize="20">Single batch</text>
 												</widget>
-											</container>
-										</widget>
-										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
+											</widget>
+										</container>
+										<widget pos="0,32" size="788x16" type="*parts.QuietText">
 											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text color="placeholder" size="708x16">Files of one format and one size, with a manifest that says how the system under test should react to them.</text>
-													</widget>
+												<widget pos="-6,-6" size="800x28" type="*widget.RichText">
+													<text color="placeholder" pos="6,6" size="708x16">Files of one format and one size, with a manifest that says how the system under test should react to them.</text>
 												</widget>
 											</container>
 										</widget>
@@ -73,10 +69,8 @@
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																</widget>
 																<text bold pos="24,0" size="145x20" textSize="17">File configuration</text>
-																<widget pos="173,0" size="0x20" type="*container.ThemeOverride">
-																	<container size="0x20">
-																	</container>
-																</widget>
+																<container pos="173,0" size="0x20">
+																</container>
 															</container>
 														</container>
 													</container>
@@ -143,12 +137,10 @@
 																<rectangle radius="6" size="185x28" strokeColor="hyperlink" strokeWidth="2"/>
 															</container>
 														</container>
-														<widget pos="0,68" size="185x14" type="*container.ThemeOverride">
+														<widget pos="0,68" size="185x14" type="*parts.ByteCount">
 															<container size="185x14">
-																<widget size="185x14" type="*parts.ByteCount">
-																	<widget size="185x14" type="*widget.RichText">
-																		<text color="placeholder" size="74x14" textSize="12">10 485 760 B</text>
-																	</widget>
+																<widget pos="-6,-6" size="197x26" type="*widget.RichText">
+																	<text color="placeholder" pos="6,6" size="74x14" textSize="12">10 485 760 B</text>
 																</widget>
 															</container>
 														</widget>
@@ -291,10 +283,8 @@
 																							<image fillMode="contain" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
 																						</widget>
 																						<text bold pos="24,0" size="109x20">Settings for avif</text>
-																						<widget pos="137,0" size="0x20" type="*container.ThemeOverride">
-																							<container size="0x20">
-																							</container>
-																						</widget>
+																						<container pos="137,0" size="0x20">
+																						</container>
 																					</container>
 																				</container>
 																			</container>
@@ -330,10 +320,8 @@
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																</widget>
 																<text bold pos="24,0" size="57x20" textSize="17">Output</text>
-																<widget pos="85,0" size="0x20" type="*container.ThemeOverride">
-																	<container size="0x20">
-																	</container>
-																</widget>
+																<container pos="85,0" size="0x20">
+																</container>
 															</container>
 														</container>
 													</container>
@@ -463,15 +451,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="356x16">1 file · 10.0 MB (10 485 760 B) · avif · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="356x16">1 file · 10.0 MB (10 485 760 B) · avif · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

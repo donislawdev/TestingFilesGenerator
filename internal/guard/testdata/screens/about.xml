@@ -33,26 +33,22 @@
 				<container size="1092x2069">
 					<container pos="136,0" size="820x2069">
 						<container size="820x24">
-							<widget pos="16,0" size="788x24" type="*container.ThemeOverride">
-								<container size="788x24">
-									<widget size="788x24" type="*widget.Label">
-										<widget size="788x24" type="*widget.RichText">
-											<text bold size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
-										</widget>
+							<container pos="16,0" size="788x24">
+								<widget pos="-6,-6" size="800x36" type="*widget.Label">
+									<widget size="800x36" type="*widget.RichText">
+										<text bold pos="6,6" size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
 									</widget>
-								</container>
-							</widget>
+								</widget>
+							</container>
 						</container>
 						<container pos="0,48" size="820x16">
-							<widget pos="16,0" size="788x16" type="*container.ThemeOverride">
-								<container size="788x16">
-									<widget size="788x16" type="*widget.Label">
-										<widget size="788x16" type="*widget.RichText">
-											<text size="517x16">Generate test files, and know how the system under test should react to them.</text>
-										</widget>
+							<container pos="16,0" size="788x16">
+								<widget pos="-6,-6" size="800x28" type="*widget.Label">
+									<widget size="800x28" type="*widget.RichText">
+										<text pos="6,6" size="517x16">Generate test files, and know how the system under test should react to them.</text>
 									</widget>
-								</container>
-							</widget>
+								</widget>
+							</container>
 						</container>
 						<container pos="0,89" size="820x161">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x161" strokeColor="button" strokeWidth="1"/>
@@ -63,41 +59,35 @@
 										<container size="788x92">
 											<container size="788x16">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
-												<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-													<container size="772x16">
-														<widget size="772x16" type="*widget.Label">
-															<widget size="772x16" type="*widget.RichText">
-																<text size="363x16">Choose a preset, or fill in one batch on the first screen.</text>
-															</widget>
+												<container pos="15,0" size="772x16">
+													<widget pos="-6,-6" size="784x28" type="*widget.Label">
+														<widget size="784x28" type="*widget.RichText">
+															<text pos="6,6" size="363x16">Choose a preset, or fill in one batch on the first screen.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,20" size="788x16">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
-												<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-													<container size="772x16">
-														<widget size="772x16" type="*widget.Label">
-															<widget size="772x16" type="*widget.RichText">
-																<text size="434x16">Press Generate. The files and a manifest land in the output folder.</text>
-															</widget>
+												<container pos="15,0" size="772x16">
+													<widget pos="-6,-6" size="784x28" type="*widget.Label">
+														<widget size="784x28" type="*widget.RichText">
+															<text pos="6,6" size="434x16">Press Generate. The files and a manifest land in the output folder.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,41" size="788x50">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
-												<widget pos="15,0" size="772x50" type="*container.ThemeOverride">
-													<container size="772x50">
-														<widget size="772x50" type="*widget.Label">
-															<widget size="772x50" type="*widget.RichText">
-																<text size="764x16">Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it</text>
-																<text pos="0,16" size="729x16">or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own</text>
-																<text pos="0,33" size="43x16">policy.</text>
-															</widget>
+												<container pos="15,0" size="772x50">
+													<widget pos="-6,-6" size="784x62" type="*widget.Label">
+														<widget size="784x62" type="*widget.RichText">
+															<text pos="6,6" size="764x16">Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it</text>
+															<text pos="6,22" size="729x16">or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own</text>
+															<text pos="6,39" size="43x16">policy.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 										</container>
 									</container>
@@ -110,28 +100,26 @@
 								<container pos="16,16" size="788x273">
 									<text bold size="788x20" textSize="17">Licence</text>
 									<container pos="0,36" size="788x237">
-										<widget size="788x237" type="*container.ThemeOverride">
-											<container size="788x237">
-												<widget size="788x237" type="*widget.Label">
-													<widget size="788x237" type="*widget.RichText">
-														<text size="154x16">Testing Files Generator</text>
-														<text pos="0,16" size="218x16">Copyright (C) 2026 DonislawDev</text>
-														<text pos="0,33" size="0x16"></text>
-														<text pos="0,50" size="505x16">Released under the GNU General Public License, version 3. The full text is at</text>
-														<text pos="0,67" size="715x16">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have the source or the full release.</text>
-														<text pos="0,84" size="0x16"></text>
-														<text pos="0,101" size="329x16">There is no warranty, to the extent the law allows.</text>
-														<text pos="0,118" size="0x16"></text>
-														<text pos="0,135" size="762x16">The files you generate are yours. Generated files, recipes and manifests are output of this program and not derived</text>
-														<text pos="0,152" size="785x16">works of it, so this licence does not reach them. You can generate fixtures, commit them and ship them inside a closed</text>
-														<text pos="0,169" size="303x16">source product with no obligation of any kind.</text>
-														<text pos="0,186" size="0x16"></text>
-														<text pos="0,203" size="651x16">Code from other projects is compiled into this program. Their licences and copyright notices are in</text>
-														<text pos="0,220" size="555x16">THIRD-PARTY-NOTICES.md, which comes with the source and with the full release.</text>
-													</widget>
+										<container size="788x237">
+											<widget pos="-6,-6" size="800x249" type="*widget.Label">
+												<widget size="800x249" type="*widget.RichText">
+													<text pos="6,6" size="154x16">Testing Files Generator</text>
+													<text pos="6,22" size="218x16">Copyright (C) 2026 DonislawDev</text>
+													<text pos="6,39" size="0x16"></text>
+													<text pos="6,56" size="505x16">Released under the GNU General Public License, version 3. The full text is at</text>
+													<text pos="6,73" size="715x16">https://www.gnu.org/licenses/gpl-3.0.html, and in the LICENSE file if you have the source or the full release.</text>
+													<text pos="6,90" size="0x16"></text>
+													<text pos="6,107" size="329x16">There is no warranty, to the extent the law allows.</text>
+													<text pos="6,124" size="0x16"></text>
+													<text pos="6,141" size="762x16">The files you generate are yours. Generated files, recipes and manifests are output of this program and not derived</text>
+													<text pos="6,158" size="785x16">works of it, so this licence does not reach them. You can generate fixtures, commit them and ship them inside a closed</text>
+													<text pos="6,175" size="303x16">source product with no obligation of any kind.</text>
+													<text pos="6,192" size="0x16"></text>
+													<text pos="6,209" size="651x16">Code from other projects is compiled into this program. Their licences and copyright notices are in</text>
+													<text pos="6,226" size="555x16">THIRD-PARTY-NOTICES.md, which comes with the source and with the full release.</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 							</container>
@@ -142,15 +130,13 @@
 								<container pos="16,16" size="788x131">
 									<text bold size="788x20" textSize="17">Support</text>
 									<container pos="0,36" size="788x94">
-										<widget size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text size="737x16">Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it.</text>
-													</widget>
+										<container size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="737x16">Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it.</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<container pos="0,32" size="788x28">
 											<widget size="61x28" type="*parts.Button">
 												<rectangle pos="-2,-2" radius="6" size="65x32" strokeColor="hyperlink"/>
@@ -158,15 +144,13 @@
 												<text alignment="center" bold pos="6,6" size="49x16">Donate</text>
 											</widget>
 										</container>
-										<widget pos="0,77" size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text size="224x16">https://donislawdev.com/support/</text>
-													</widget>
+										<container pos="0,77" size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="224x16">https://donislawdev.com/support/</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 							</container>
@@ -179,904 +163,718 @@
 									<container pos="0,36" size="788x782">
 										<container size="788x782">
 											<container size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="209x16">Go runtime and standard library</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="209x16">Go runtime and standard library</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="211x16">Copyright 2009 The Go Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="211x16">Copyright 2009 The Go Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,24" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="101x16">fyne.io/fyne/v2</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="101x16">fyne.io/fyne/v2</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,49" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="98x16">fyne.io/systray</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="98x16">fyne.io/systray</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="77x16">Apache-2.0</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="77x16">Apache-2.0</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="254x16">2014 Brave New Software Project, Inc.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="254x16">2014 Brave New Software Project, Inc.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,74" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="184x16">github.com/BurntSushi/toml</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="184x16">github.com/BurntSushi/toml</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="152x16">(c) 2013 TOML authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="152x16">(c) 2013 TOML authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,99" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="185x16">github.com/FyshOS/fancyfs</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="185x16">github.com/FyshOS/fancyfs</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="301x16">(C) 2025 FyshOS developers (see AUTHORS)</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="301x16">(C) 2025 FyshOS developers (see AUTHORS)</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,124" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="209x16">github.com/anthonynsimon/bild</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="209x16">github.com/anthonynsimon/bild</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="200x16">(c) 2021 Anthony Najjar Simon</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="200x16">(c) 2021 Anthony Najjar Simon</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,149" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="232x16">github.com/clipperhouse/uax29/v2</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="232x16">github.com/clipperhouse/uax29/v2</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="153x16">(c) 2020 Matt Sherman</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="153x16">(c) 2020 Matt Sherman</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,174" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="185x16">github.com/fsnotify/fsnotify</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="185x16">github.com/fsnotify/fsnotify</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="208x16">Copyright 2012 The Go Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="208x16">Copyright 2012 The Go Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,199" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="172x16">github.com/fyne-io/image</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="172x16">github.com/fyne-io/image</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="112x16">(c) 2022, Fyne.io</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="112x16">(c) 2022, Fyne.io</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,224" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="172x16">github.com/fyne-io/oksvg</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="172x16">github.com/fyne-io/oksvg</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="161x16">(c) 2018, Steven R Wiley</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="161x16">(c) 2018, Steven R Wiley</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,249" size="788x33">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="189x16">github.com/gen2brain/gav1d</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="189x16">github.com/gen2brain/gav1d</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-2-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-2-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x33" type="*container.ThemeOverride">
-													<container size="420x33">
-														<widget size="420x33" type="*widget.Label">
-															<widget size="420x33" type="*widget.RichText">
-																<text size="407x16">(c) 2018-2025 VideoLAN and dav1d authors, (c) 2016 Alliance</text>
-																<text pos="0,16" size="103x16">for Open Media</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x33">
+													<widget pos="-6,-6" size="432x45" type="*widget.Label">
+														<widget size="432x45" type="*widget.RichText">
+															<text pos="6,6" size="407x16">(c) 2018-2025 VideoLAN and dav1d authors, (c) 2016 Alliance</text>
+															<text pos="6,22" size="103x16">for Open Media</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,291" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="165x16">github.com/gen2brain/jxl</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="165x16">github.com/gen2brain/jxl</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="210x16">(c) the JPEG XL Project Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="210x16">(c) the JPEG XL Project Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,316" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="131x16">github.com/go-gl/gl</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="131x16">github.com/go-gl/gl</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="158x16">(c) 2014 Eric Woroshow</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="158x16">(c) 2014 Eric Woroshow</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,341" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="216x16">github.com/go-gl/glfw/v3.4/glfw</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="216x16">github.com/go-gl/glfw/v3.4/glfw</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="336x16">(c) 2012 The glfw3-go Authors. All rights reserved.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="336x16">(c) 2012 The glfw3-go Authors. All rights reserved.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,366" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="176x16">github.com/go-text/render</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="176x16">github.com/go-text/render</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="167x16">2021 The go-text authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="167x16">2021 The go-text authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,391" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="207x16">github.com/go-text/typesetting</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="207x16">github.com/go-text/typesetting</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="167x16">2021 The go-text authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="167x16">2021 The go-text authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,415" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="180x16">github.com/goccy/go-yaml</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="180x16">github.com/goccy/go-yaml</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="174x16">(c) 2019 Masaaki Goshima</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="174x16">(c) 2019 Masaaki Goshima</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,440" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="188x16">github.com/godbus/dbus/v5</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="188x16">github.com/godbus/dbus/v5</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-2-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-2-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="402x16">(c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="402x16">(c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,465" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="218x16">github.com/jeandeaual/go-locale</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="218x16">github.com/jeandeaual/go-locale</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="169x16">(c) 2020 Alexis Jeandeau</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="169x16">(c) 2020 Alexis Jeandeau</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,490" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="195x16">github.com/jsummers/gobmp</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="195x16">github.com/jsummers/gobmp</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="201x16">(c) 2012-2015 Jason Summers</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="201x16">(c) 2012-2015 Jason Summers</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,515" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="211x16">github.com/mattn/go-runewidth</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="211x16">github.com/mattn/go-runewidth</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="194x16">(c) 2016 Yasuhiro Matsumoto</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="194x16">(c) 2016 Yasuhiro Matsumoto</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,540" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="150x16">github.com/nfnt/resize</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="150x16">github.com/nfnt/resize</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="22x16">ISC</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="22x16">ISC</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="142x16">(c) 2012, Jan Schlicht</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="142x16">(c) 2012, Jan Schlicht</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,565" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="228x16">github.com/nicksnyder/go-i18n/v2</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="228x16">github.com/nicksnyder/go-i18n/v2</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="342x16">(c) 2014 Nick Snyder https://github.com/nicksnyder</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="342x16">(c) 2014 Nick Snyder https://github.com/nicksnyder</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,590" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="183x16">github.com/rymdport/portal</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="183x16">github.com/rymdport/portal</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="77x16">Apache-2.0</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="77x16">Apache-2.0</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="0x16"></text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="0x16"></text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,615" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="171x16">github.com/srwiley/oksvg</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="171x16">github.com/srwiley/oksvg</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="161x16">(c) 2018, Steven R Wiley</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="161x16">(c) 2018, Steven R Wiley</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,640" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="177x16">github.com/srwiley/rasterx</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="177x16">github.com/srwiley/rasterx</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="161x16">(c) 2018, Steven R Wiley</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="161x16">(c) 2018, Steven R Wiley</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,665" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="174x16">github.com/yuin/goldmark</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="174x16">github.com/yuin/goldmark</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="162x16">(c) 2019 Yusuke Inuzuka</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="162x16">(c) 2019 Yusuke Inuzuka</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,690" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="129x16">golang.org/x/image</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="129x16">golang.org/x/image</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="146x16">2009 The Go Authors.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="146x16">2009 The Go Authors.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,715" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="110x16">golang.org/x/net</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="110x16">golang.org/x/net</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="146x16">2009 The Go Authors.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="146x16">2009 The Go Authors.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,740" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="111x16">golang.org/x/sys</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="111x16">golang.org/x/sys</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="146x16">2009 The Go Authors.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="146x16">2009 The Go Authors.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,765" size="788x16">
-												<widget size="236x16" type="*container.ThemeOverride">
-													<container size="236x16">
-														<widget size="236x16" type="*widget.Label">
-															<widget size="236x16" type="*widget.RichText">
-																<text size="114x16">golang.org/x/text</text>
-															</widget>
+												<container size="236x16">
+													<widget pos="-6,-6" size="248x28" type="*widget.Label">
+														<widget size="248x28" type="*widget.RichText">
+															<text pos="6,6" size="114x16">golang.org/x/text</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="252,0" size="98x16" type="*container.ThemeOverride">
-													<container size="98x16">
-														<widget size="98x16" type="*widget.Label">
-															<widget size="98x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="252,0" size="98x16">
+													<widget pos="-6,-6" size="110x28" type="*widget.Label">
+														<widget size="110x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="367,0" size="420x16" type="*container.ThemeOverride">
-													<container size="420x16">
-														<widget size="420x16" type="*widget.Label">
-															<widget size="420x16" type="*widget.RichText">
-																<text size="211x16">Copyright 2009 The Go Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="367,0" size="420x16">
+													<widget pos="-6,-6" size="432x28" type="*widget.Label">
+														<widget size="432x28" type="*widget.RichText">
+															<text pos="6,6" size="211x16">Copyright 2009 The Go Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 										</container>
 									</container>
@@ -1091,237 +889,189 @@
 									<container pos="0,36" size="788x208">
 										<container size="788x208">
 											<container size="788x33">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="217x16">DejaVu Sans Mono for Powerline</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="217x16">DejaVu Sans Mono for Powerline</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="100x16">Bitstream-Vera</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="100x16">Bitstream-Vera</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x33" type="*container.ThemeOverride">
-													<container size="430x33">
-														<widget size="430x33" type="*widget.Label">
-															<widget size="430x33" type="*widget.RichText">
-																<text size="381x16">Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.</text>
-																<text pos="0,16" size="245x16">DejaVu changes are in public domain</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x33">
+													<widget pos="-6,-6" size="442x45" type="*widget.Label">
+														<widget size="442x45" type="*widget.RichText">
+															<text pos="6,6" size="381x16">Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.</text>
+															<text pos="6,22" size="245x16">DejaVu changes are in public domain</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,41" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="102x16">EmojiOne Color</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="102x16">EmojiOne Color</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="25x16">MIT</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="25x16">MIT</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="297x16">Copyright 2016 Adobe Systems Incorporated</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="297x16">Copyright 2016 Adobe Systems Incorporated</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,66" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="88x16">Fyne icon set</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="88x16">Fyne icon set</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,91" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="88x16">Fyne shaders</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="88x16">Fyne shaders</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,116" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="112x16">Fyne translations</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="112x16">Fyne translations</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="94x16">BSD-3-Clause</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="94x16">BSD-3-Clause</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="295x16">(C) 2018 Fyne.io developers (see AUTHORS)</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,141" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="30x16">Inter</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="30x16">Inter</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="47x16">OFL-1.1</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="47x16">OFL-1.1</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="270x16">Copyright 2016 The Inter Project Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="270x16">Copyright 2016 The Inter Project Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,166" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="90x16">Inter Symbols</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="90x16">Inter Symbols</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="47x16">OFL-1.1</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="47x16">OFL-1.1</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="226x16">(c) 2020 The Inter Project Authors</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="226x16">(c) 2020 The Inter Project Authors</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 											<container pos="0,191" size="788x16">
-												<widget size="221x16" type="*container.ThemeOverride">
-													<container size="221x16">
-														<widget size="221x16" type="*widget.Label">
-															<widget size="221x16" type="*widget.RichText">
-																<text size="68x16">Noto Sans</text>
-															</widget>
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="68x16">Noto Sans</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="237,0" size="104x16" type="*container.ThemeOverride">
-													<container size="104x16">
-														<widget size="104x16" type="*widget.Label">
-															<widget size="104x16" type="*widget.RichText">
-																<text size="47x16">OFL-1.1</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="47x16">OFL-1.1</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="357,0" size="430x16" type="*container.ThemeOverride">
-													<container size="430x16">
-														<widget size="430x16" type="*widget.Label">
-															<widget size="430x16" type="*widget.RichText">
-																<text size="315x16">Copyright 2015 Google Inc. All Rights Reserved.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="315x16">Copyright 2015 Google Inc. All Rights Reserved.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 										</container>
 									</container>
@@ -1336,36 +1086,30 @@
 									<container pos="0,36" size="788x33">
 										<container size="788x33">
 											<container size="788x33">
-												<widget size="219x33" type="*container.ThemeOverride">
-													<container size="219x33">
-														<widget size="219x33" type="*widget.Label">
-															<widget size="219x33" type="*widget.RichText">
-																<text size="183x16">Mesa 3D, llvmpipe software</text>
-																<text pos="0,16" size="106x16">renderer  26.2.0</text>
-															</widget>
+												<container size="219x33">
+													<widget pos="-6,-6" size="231x45" type="*widget.Label">
+														<widget size="231x45" type="*widget.RichText">
+															<text pos="6,6" size="183x16">Mesa 3D, llvmpipe software</text>
+															<text pos="6,22" size="106x16">renderer  26.2.0</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="235,0" size="284x33" type="*container.ThemeOverride">
-													<container size="284x33">
-														<widget size="284x33" type="*widget.Label">
-															<widget size="284x33" type="*widget.RichText">
-																<text size="182x16">MIT AND Apache-2.0 WITH</text>
-																<text pos="0,16" size="198x16">LLVM-exception AND BSL-1.0</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="235,0" size="284x33">
+													<widget pos="-6,-6" size="296x45" type="*widget.Label">
+														<widget size="296x45" type="*widget.RichText">
+															<text pos="6,6" size="182x16">MIT AND Apache-2.0 WITH</text>
+															<text pos="6,22" size="198x16">LLVM-exception AND BSL-1.0</text>
 														</widget>
-													</container>
-												</widget>
-												<widget pos="536,0" size="252x33" type="*container.ThemeOverride">
-													<container size="252x33">
-														<widget size="252x33" type="*widget.Label">
-															<widget size="252x33" type="*widget.RichText">
-																<text size="239x16">Copyright (C) 1999-2007 Brian Paul,</text>
-																<text pos="0,16" size="219x16">Copyright (C) 2008 VMware, Inc.</text>
-															</widget>
+													</widget>
+												</container>
+												<container pos="536,0" size="252x33">
+													<widget pos="-6,-6" size="264x45" type="*widget.Label">
+														<widget size="264x45" type="*widget.RichText">
+															<text pos="6,6" size="239x16">Copyright (C) 1999-2007 Brian Paul,</text>
+															<text pos="6,22" size="219x16">Copyright (C) 2008 VMware, Inc.</text>
 														</widget>
-													</container>
-												</widget>
+													</widget>
+												</container>
 											</container>
 										</container>
 									</container>

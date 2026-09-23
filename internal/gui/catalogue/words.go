@@ -13,7 +13,7 @@ import (
 // thing a person looks at as a whole, which is why every rank is here once,
 // one under another, and once more with a long line to see where it wraps.
 func textRanks() Entry {
-	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Note", "Caption", "Bullets", "Ledger"}, States: []State{
+	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Note", "Caption", "QuietText", "Bullets", "Ledger"}, States: []State{
 		{"the title of a screen", func() fyne.CanvasObject { return parts.Title("Single batch") }},
 		{"the sentence under a title", func() fyne.CanvasObject {
 			return parts.Subtitle("Files of one format and one size, with a manifest that says how the system under test should react to them.")

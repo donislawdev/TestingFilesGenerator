@@ -130,16 +130,15 @@ func shapedForItsValues(control fyne.CanvasObject) fyne.CanvasObject {
 // worse than the italics it was replacing. So it went in as ordinary text
 // until the palette arrived.
 //
-// It goes through quiet rather than inkTight since 2026-09-15, which is O213:
+// It is QuietText since 2026-09-23 and was a quiet label before, which is O213:
 // widget.LowImportance draws in ColorNameDisabled, #C2C8CD at 80 L*, a step
-// brighter than the hint a caption is meant to be. quiet remaps it to the
+// brighter than the hint a caption is meant to be. QuietText draws the
 // placeholder, #9DA3A8 at 66.7 L*, 5.61:1 on a panel. O70 and O71.
 func Note(content string) fyne.CanvasObject {
-	label := widget.NewLabel(content)
-	label.Wrapping = fyne.TextWrapWord
-	label.Importance = widget.LowImportance
-	label.SizeName = theme.SizeNameCaptionText
-	return quiet(label)
+	note := NewQuietText(content)
+	note.Wrapping = fyne.TextWrapWord
+	note.SizeName = theme.SizeNameCaptionText
+	return note
 }
 
 // ErrorArea is where a field says what a run said about it.

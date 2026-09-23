@@ -35,14 +35,49 @@ func words(text string, size float32, bold bool, colour fyne.ThemeColorName) *ca
 // inkTight takes the toolkit's own padding off a label, so a sentence that
 // wraps stands on the scale like everything else.
 //
-// A theme override rather than a widget of ours, because the label keeps
-// everything a sentence needs - wrapping, the caption size, the colour an
-// importance gives it - and the only thing wrong with it is the room it keeps
-// around itself. The override is the toolkit's one public door into a
-// subtree's theme, and it is used bare rather than wrapped in a type of ours,
-// because the driver casts to it.
+// A layout rather than a theme, since 2026-09-23. The label keeps everything a
+// sentence needs - wrapping, the caption size, the colour an importance gives
+// it - and the only thing wrong with it is the room it keeps around itself, so
+// the layout gives it that room outside its own edge: one inner padding larger
+// on every side and one inner padding up and to the left. The words land where
+// a label with no inner padding would put them and wrap at the same width -
+// all 28 stored screens came out pixel for pixel the same.
+//
+// It was a container.ThemeOverride until then, and that is the reason it is
+// not one now. Fyne gives an override a NEW scope at construction, at
+// CreateRenderer and at every Refresh, and keys its parsed fonts by scope - so
+// every rebuild of a screen followed by a new string in one of these labels
+// parsed another ~7.4 MB set of fonts that nothing ever frees. Measured in the
+// real window: 19 of the 26 sets after visiting the tabs were this override's,
+// and the live heap there went from 205 MB to 64 MB without it
+// (docs/GUI-MEMORY-2026-09-23.md section 4c).
 func inkTight(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewThemeOverride(o, noInnerPadding{Theme()})
+	return container.New(inkTightLayout{}, o)
+}
+
+// inkTightLayout places a label so that its inner padding falls outside the
+// room it is given - see inkTight. A hidden label takes no room, as it did
+// inside the override it replaced.
+type inkTightLayout struct{}
+
+func (inkTightLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	pad := Theme().Size(theme.SizeNameInnerPadding)
+	size := fyne.NewSize(0, 0)
+	for _, o := range objects {
+		if !o.Visible() {
+			continue
+		}
+		size = size.Max(o.MinSize().Subtract(fyne.NewSquareSize(2 * pad)))
+	}
+	return size
+}
+
+func (inkTightLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	pad := Theme().Size(theme.SizeNameInnerPadding)
+	for _, o := range objects {
+		o.Move(fyne.NewPos(-pad, -pad))
+		o.Resize(size.Add(fyne.NewSquareSize(2 * pad)))
+	}
 }
 
 // Flush puts a label a screen keeps hold of on the edge every other word
@@ -50,18 +85,6 @@ func inkTight(o fyne.CanvasObject) fyne.CanvasObject {
 // runner writes to for the whole life of a screen - the line a run speaks on
 // - which has to be built by the runner and placed by the bar.
 func Flush(label *widget.Label) fyne.CanvasObject { return inkTight(label) }
-
-// noInnerPadding is the window's theme with the room inside a label taken out.
-// Only that one size, so a box to type in under the same override would still
-// be a box.
-type noInnerPadding struct{ fyne.Theme }
-
-func (n noInnerPadding) Size(name fyne.ThemeSizeName) float32 {
-	if name == theme.SizeNameInnerPadding {
-		return 0
-	}
-	return n.Theme.Size(name)
-}
 
 // Padded keeps one distance from the scale between its edge and its content.
 //

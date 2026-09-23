@@ -36,7 +36,7 @@ type Folding struct {
 	open  bool
 	title string
 	body  fyne.CanvasObject
-	line  *widget.Label
+	line  *QuietText
 	// head is the one control the whole head row is - see FoldHead.
 	head *FoldHead
 
@@ -167,8 +167,7 @@ type groupCell struct{ wideCell }
 func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
 	f := &Folding{open: true, title: title}
 
-	f.line = widget.NewLabel("")
-	f.line.Importance = widget.LowImportance
+	f.line = NewQuietText("")
 	f.line.Hide()
 
 	f.body = Grid(content...)
@@ -182,7 +181,7 @@ func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject
 	// (TestEverythingAPersonReadsStartsOnOneLeftEdge). Indenting the section's
 	// contents to match would put its fields off that edge instead, which is
 	// worse - there are more of them and they are what somebody is reading.
-	// The summary line goes through quiet, so it recedes to the hint's colour
+	// The summary line is QuietText, so it recedes to the hint's colour
 	// rather than the brighter disabled one widget.LowImportance draws (O213).
 	//
 	// The whole row is the control, since O221, and the arrow is its mark
@@ -198,7 +197,14 @@ func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject
 	// words it was a 6 px triangle at the end of a heading, and the heading
 	// read as an orphaned subtitle rather than as something that opens. The
 	// arrow now stands on the left edge and the words start after it.
-	words := Padded(TabInset, container.NewHBox(arrow, titled, quiet(f.line)))
+	//
+	// The line stands in a container of its own that never hides, so the row
+	// keeps the gap before it even while the line is hidden - which is how the
+	// head of an open section gets as much room after its title as before its
+	// arrow. The line sat inside a theme override until 2026-09-23, and it was
+	// the override that stayed visible. Taking the override away took 4 px off
+	// the right of every open head, measured on the stored catalogue.
+	words := Padded(TabInset, container.NewHBox(arrow, titled, container.NewStack(f.line)))
 	f.head.under = words
 	row := container.NewBorder(nil, nil, nil, ButtonRow(head...), container.NewStack(f.head, words))
 
