@@ -66,9 +66,11 @@ func (q *QuietText) SetText(text string) {
 }
 
 // Refresh carries the fields into the segment before anything is redrawn.
+// The rich text is refreshed once, by the renderer through its container -
+// widget.Label refreshes its own twice, which a count redrawn on every key
+// has no need of.
 func (q *QuietText) Refresh() {
 	q.sync()
-	q.rich.Refresh()
 	q.BaseWidget.Refresh()
 }
 

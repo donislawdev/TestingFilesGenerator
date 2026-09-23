@@ -475,7 +475,8 @@ because it turns other people's test suites red.
 
 ### Fixed
 
-- **The window uses far less memory, and no longer grows with use.** Every
+- **The window uses far less memory, and rebuilding a screen no longer adds
+  to it.** Every
   quiet line on a screen - a subtitle, a caption, the count of bytes beside a
   size, the line a folded section keeps, the message under a field - parsed
   its own copy of the fonts, and parsed another each time the screen was
