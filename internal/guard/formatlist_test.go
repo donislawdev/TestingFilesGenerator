@@ -235,6 +235,110 @@ func TestTheArrowsInTheFormatListStepOverTheHeadings(t *testing.T) {
 	}
 }
 
+// TestTheRowTheKeyboardIsOnIsAlwaysInSight walks the keyboard through a list
+// taller than the room it was given and asks, after every key, whether the
+// row it stands on is drawn whole inside that room - and, on the first value
+// of a kind, whether the heading over it is too, since arrowing up to the top
+// of a kind is meant to show what kind it was (OpenList.moveTo).
+//
+// Written 2026-09-23 before the rows left widget.List, because the scrolling
+// had no guard of its own: no stored screen scrolls the list, so a list that
+// kept the keyboard on a row out of sight would have passed every picture.
+// Read off the canvas, row against list, so it asks what a person sees and
+// not what the list says it did.
+func TestTheRowTheKeyboardIsOnIsAlwaysInSight(t *testing.T) {
+	_, _, list, _ := openFormatList(t)
+	entries := list.Rows()
+	room := list.Size().Height - list.HeadHeight()
+	if room >= float32(len(entries))*parts.ListRowHeight() {
+		t.Fatalf("the list has %.0f px for %d rows of %.0f, so it never scrolls and nothing here is asked",
+			room, len(entries), parts.ListRowHeight())
+	}
+	drv := fyne.CurrentApp().Driver()
+	inSight := func(label string) bool {
+		row := list.RowShowing(label)
+		if row == nil {
+			return false
+		}
+		top := drv.AbsolutePositionForObject(list).Y + list.HeadHeight()
+		at := drv.AbsolutePositionForObject(row).Y
+		return at >= top-0.5 && at+row.Size().Height <= top+room+0.5
+	}
+	check := func(key fyne.KeyName) {
+		t.Helper()
+		list.TypedKey(&fyne.KeyEvent{Name: key})
+		at := list.Active()
+		if at < 0 || at >= len(entries) {
+			t.Fatalf("after %s the keyboard stands on no row", key)
+		}
+		if !inSight(entries[at].Label) {
+			t.Fatalf("after %s the keyboard is on %q, which is not drawn whole inside the list", key, entries[at].Label)
+		}
+		if at > 0 && !entries[at-1].Choosable && !inSight(entries[at-1].Label) {
+			t.Fatalf("after %s the keyboard is on %q, the first of its kind, and the heading %q over it is out of sight",
+				key, entries[at].Label, entries[at-1].Label)
+		}
+	}
+
+	check(fyne.KeyEnd)
+	check(fyne.KeyHome)
+	values := 0
+	for _, e := range entries {
+		if e.Choosable {
+			values++
+		}
+	}
+	for i := 1; i < values; i++ {
+		check(fyne.KeyDown)
+	}
+	if last := entries[len(entries)-1].Label; activeLabel(list) != last {
+		t.Fatalf("Down %d times from the first value ended on %q, not on the last one, %s", values-1, activeLabel(list), last)
+	}
+	for i := 1; i < values; i++ {
+		check(fyne.KeyUp)
+	}
+}
+
+// TestEmptyingTheFilterOfAListWithNothingChosenDrawsEveryRowAgain types a
+// filter that keeps nothing into a list whose box holds no value yet, empties
+// it, and asks what is drawn.
+//
+// An emptied filter puts the keyboard back on the value in the box - and with
+// no value in the box that found nothing, and nothing redrew the rows either:
+// the list went on drawing the one row saying nothing matched while it held
+// every format again. Found on 2026-09-23 reading the four states of the rows
+// leaving widget.List, and red on widget.List as well. A box holding no value
+// is real: a chooser starts that way (the catalogue has one of the formats).
+func TestEmptyingTheFilterOfAListWithNothingChosenDrawsEveryRowAgain(t *testing.T) {
+	app := test.NewApp()
+	app.Settings().SetTheme(parts.Theme())
+	t.Cleanup(func() { test.NewApp() })
+
+	list := parts.NewOpenList(format.IDs(), "", func(string, bool) {}, func(bool) {})
+	list.KindOf = parts.KindOfFile
+	list.GroupUnder(parts.KindHeading)
+	list.WithFilter()
+	w := test.NewWindow(list)
+	t.Cleanup(w.Close)
+	w.Resize(fyne.NewSize(300, 600))
+
+	typeInto(list.Filter(), "zz")
+	if rows := list.DrawnRows(); len(rows) != 1 || !rows[0].Heading() {
+		t.Fatalf("zz was typed and %d row(s) are drawn, not the one saying nothing matches - the state this asks about was not reached", len(rows))
+	}
+	list.Filter().SetText("")
+	first := ""
+	for _, row := range list.Rows() {
+		if row.Choosable {
+			first = row.Label
+			break
+		}
+	}
+	if list.RowShowing(first) == nil {
+		t.Errorf("the filter was emptied and the list draws %d row(s), none of them %s, its first value", len(list.DrawnRows()), first)
+	}
+}
+
 // TestTypingAtTheShutFormatMenuOpensItsFilter types a whole name at the menu
 // with its list shut. One letter at a time used to walk the values starting
 // with each letter in turn, so "jxl" ended on log. Now the first letter opens

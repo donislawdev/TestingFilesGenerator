@@ -395,59 +395,28 @@
 				<widget size="185x140" type="*parts.OpenList">
 					<container size="185x140">
 						<rectangle fillColor="menuBackground" radius="6" size="185x140"/>
-						<widget size="185x140" type="*container.ThemeOverride">
+						<widget size="185x140" type="*widget.Scroll">
 							<container size="185x140">
-								<widget size="185x140" type="*widget.List">
-									<widget size="185x140" type="*widget.Scroll">
-										<container size="185x140">
-											<widget size="185x28" type="*widget.listItem">
-												<widget size="185x28" type="*parts.ListRow">
-													<rectangle radius="6" size="185x28"/>
-													<image pos="157,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-													<text pos="8,5" size="141x16">empty-and-minimal</text>
-												</widget>
-											</widget>
-											<widget pos="0,28" size="185x28" type="*widget.listItem">
-												<widget size="185x28" type="*parts.ListRow">
-													<rectangle radius="6" size="185x28"/>
-													<text pos="8,5" size="141x16">size-boundaries</text>
-												</widget>
-											</widget>
-											<widget pos="0,56" size="185x28" type="*widget.listItem">
-												<widget size="185x28" type="*parts.ListRow">
-													<rectangle radius="6" size="185x28"/>
-													<text pos="8,5" size="141x16">tabular-import</text>
-												</widget>
-											</widget>
-											<widget pos="0,84" size="185x28" type="*widget.listItem">
-												<widget size="185x28" type="*parts.ListRow">
-													<rectangle radius="6" size="185x28"/>
-													<text pos="8,5" size="141x16">text-encoding</text>
-												</widget>
-											</widget>
-											<widget pos="0,112" size="185x28" type="*widget.listItem">
-												<widget size="185x28" type="*parts.ListRow">
-													<rectangle radius="6" size="185x28"/>
-													<text pos="8,5" size="141x16">upload-validation</text>
-												</widget>
-											</widget>
-											<widget size="0x0" type="*widget.Separator">
-												<rectangle fillColor="button" size="0x0"/>
-											</widget>
-											<widget pos="0,28" size="185x0" type="*widget.Separator">
-												<rectangle fillColor="button" size="185x0"/>
-											</widget>
-											<widget pos="0,56" size="185x0" type="*widget.Separator">
-												<rectangle fillColor="button" size="185x0"/>
-											</widget>
-											<widget pos="0,84" size="185x0" type="*widget.Separator">
-												<rectangle fillColor="button" size="185x0"/>
-											</widget>
-											<widget pos="0,112" size="185x0" type="*widget.Separator">
-												<rectangle fillColor="button" size="185x0"/>
-											</widget>
-										</container>
-									</widget>
+								<widget size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<image pos="157,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+									<text pos="8,5" size="141x16">empty-and-minimal</text>
+								</widget>
+								<widget pos="0,28" size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<text pos="8,5" size="141x16">size-boundaries</text>
+								</widget>
+								<widget pos="0,56" size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<text pos="8,5" size="141x16">tabular-import</text>
+								</widget>
+								<widget pos="0,84" size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<text pos="8,5" size="141x16">text-encoding</text>
+								</widget>
+								<widget pos="0,112" size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<text pos="8,5" size="141x16">upload-validation</text>
 								</widget>
 							</container>
 						</widget>

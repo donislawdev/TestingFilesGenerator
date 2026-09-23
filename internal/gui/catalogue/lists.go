@@ -20,12 +20,12 @@ import (
 // list about a short window.
 //
 // Nor has it a width of its own. On a form the list is as wide as the box it
-// drops from, and the toolkit's list measures its width off an empty template
-// row, so a list stood here bare was a 42 px strip with the first letter of
-// each value on it - seen on the render of 2026-09-15, and accepted with the
-// rest of the catalogue before anybody read it at that height. Each state
-// is drawn as wide as the box a menu of the same values would be, which is
-// the rule the form follows.
+// drops from, and on its own it is as wide as a row with no words, so a list
+// stood here bare was a 42 px strip with the first letter of each value on
+// it - seen on the render of 2026-09-15, and accepted with the rest of the
+// catalogue before anybody read it at that height. Each state is drawn as
+// wide as the box a menu of the same values would be, which is the rule the
+// form follows.
 func openList() Entry {
 	few := []string{"png", "jpg", "avif"}
 	many := []string{"avif", "bmp", "csv", "docx", "gif", "html", "ico", "jpg", "json", "jxl", "log", "md"}

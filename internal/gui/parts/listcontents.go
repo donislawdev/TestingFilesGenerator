@@ -1,12 +1,8 @@
 package parts
 
-import (
-	"fyne.io/fyne/v2/widget"
-)
-
 // listContents is what an open list holds and what it has drawn: the values,
 // how they are grouped and narrowed, the rows that arrangement comes to, and
-// the rows the toolkit has actually built for it.
+// the rows on the screen showing it.
 //
 // Its own type rather than more of OpenList, since the list of 2026-09-23
 // took headings and a filter. OpenList stood at 24 methods, the fourth type in
@@ -33,25 +29,21 @@ type listContents struct {
 	// the moment a list has a heading.
 	entries []listEntry
 
-	// rows is the row showing each position, recorded as the list fills them.
-	//
-	// A registry rather than a walk, because a walk cannot get in: widget.List
-	// keeps the rows it built inside its renderer, so a tree walk stops at the
-	// list and reports an open list with nothing in it. Measured on 2026-08-18
-	// while trying to photograph a row under the pointer.
-	//
-	// Every entry is current whatever the list has scrolled past, because a
-	// recycled row is refilled before it is shown and fill is what writes here.
-	rows map[widget.ListItemID]*ListRow
+	// view is the rows on the screen. Asked rather than walked, because a
+	// walk cannot get in: the rows are inside the list's renderer, so a tree
+	// walk stops at the list and reports an open list with nothing in it.
+	// Measured on 2026-08-18 while trying to photograph a row under the
+	// pointer, when the rows were widget.List's.
+	view *rowView
 }
 
 // rearrange works out the rows again after the filter or the grouping
-// changed, and forgets the rows it recorded: a row built for the old
-// arrangement can still hold a label the list no longer draws, and
-// RowShowing would report it.
+// changed, and forgets the rows on the screen until they are filled again: a
+// row filled for the old arrangement can still hold a label the list no
+// longer draws, and RowShowing would report it.
 func (c *listContents) rearrange() {
 	c.entries = arrange(c.options, c.headingOf, c.typed)
-	c.rows = map[widget.ListItemID]*ListRow{}
+	c.view.shown = 0
 }
 
 // Rows is what this list is showing, for a guard to read, in the order it is
@@ -80,16 +72,18 @@ func (c *listContents) Rows() []Choice {
 // copy. A rule with two homes is a rule no test can pin down.
 func (c *listContents) isChosen(value string) bool { return value == c.chosen }
 
-// DrawnRows is every row the list has actually built, for a guard that has to
-// ask what is on the screen rather than what the list holds.
+// DrawnRows is every row in sight, for a guard that has to ask what is on the
+// screen rather than what the list holds.
 //
 // Rows above answers from the options, which is the right half for "what is in
 // this list" and the wrong half for "what does a row draw". A picture that
 // never reaches a row would pass the first and fail this one.
 func (c *listContents) DrawnRows() []*ListRow {
-	out := make([]*ListRow, 0, len(c.rows))
-	for _, row := range c.rows {
-		out = append(out, row)
+	var out []*ListRow
+	for at, row := range c.view.built[:c.view.shown] {
+		if c.view.inSight(at) {
+			out = append(out, row)
+		}
 	}
 	return out
 }
@@ -97,7 +91,7 @@ func (c *listContents) DrawnRows() []*ListRow {
 // RowShowing is the row currently drawing one value, or nil if that value is
 // scrolled out of sight. For a guard that needs to press or hover a real row.
 func (c *listContents) RowShowing(label string) *ListRow {
-	for _, row := range c.rows {
+	for _, row := range c.DrawnRows() {
 		if row.Label() == label {
 			return row
 		}
