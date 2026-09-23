@@ -70,6 +70,10 @@ type Button struct {
 
 	look Look
 
+	// inBar is whether this button stands in the bar at the foot, where it
+	// keeps more room round its words - see InTheBar.
+	inBar bool
+
 	// The pointer's state and the keyboard's, kept here because the toolkit
 	// keeps its own in unexported fields a renderer of ours cannot read.
 	//
@@ -98,6 +102,15 @@ var (
 func NewButton(look Look, label string, tapped func()) *Button {
 	b := &Button{look: look, Text: label, OnTapped: tapped}
 	b.ExtendBaseWidget(b)
+	return b
+}
+
+// InTheBar gives a button the size of the bar at the foot of a screen, where
+// the buttons that run something stand. A parameter of the one button rather
+// than a second kind of button, so every look can stand there.
+func (b *Button) InTheBar() *Button {
+	b.inBar = true
+	b.Refresh()
 	return b
 }
 
@@ -291,6 +304,9 @@ func (r *buttonRenderer) MinSize() fyne.Size {
 	if r.button.Icon != nil {
 		size.Width += Theme().Size(theme.SizeNameInlineIcon) + GapInline
 	}
+	if r.button.inBar {
+		return size.Add(fyne.NewSize(BarButtonInsetX*2, BarButtonInsetY*2))
+	}
 	// The room inside a box to type in, on both axes, so a button stands the
 	// same height as the field beside it.
 	return size.Add(fyne.NewSquareSize(ControlInset * 2))
@@ -309,6 +325,12 @@ func (r *buttonRenderer) Refresh() {
 	r.label.Text = r.button.Text
 	r.label.Color = PaletteColour(f.ink, theme.VariantDark)
 	r.label.TextSize = TextBody
+	// A quiet button is words rather than a face, so it drops the weight and
+	// a rank of size - the prototype of 2026-09-23, see buttonFace.
+	r.label.TextStyle = fyne.TextStyle{Bold: r.button.look != Quiet}
+	if r.button.look == Quiet {
+		r.label.TextSize = TextCaption
+	}
 	if r.button.Icon != nil {
 		// Coloured by the same ink as the words, so a glyph follows the state
 		// of the button it stands in - the toolkit's own way of tinting a
@@ -428,7 +450,9 @@ func buttonFace(look Look, state buttonState) face {
 		return f
 	default: // Quiet and Glyph: no resting edge, a surface only under the pointer.
 		ink := theme.ColorNameForeground
-		if look == Glyph && state == stateRest {
+		// Quiet as well since the prototype of 2026-09-23: Donate in bold
+		// white at rest read as a heading of the bar, as loud as Generate.
+		if (look == Glyph || look == Quiet) && state == stateRest {
 			ink = theme.ColorNamePlaceHolder
 		}
 		return face{fill: pointerFill(state), ink: ink}

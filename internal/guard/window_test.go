@@ -430,9 +430,14 @@ func TestTheAboutScreenSaysWhoOwnsTheGeneratedFiles(t *testing.T) {
 // each other, which is exactly the shape in which a second copy gets written
 // and nobody compares the two again.
 func TestTheWindowAndTheCommandQuoteTheSameLicence(t *testing.T) {
-	shown := textIn(window.About(newFakeHost(t)))
-	if !strings.Contains(shown, strings.TrimSpace(version.LicenceNotice)) {
-		t.Error("the window does not show the licence notice verbatim, so it is a second copy now")
+	// Word for word rather than line for line since 2026-09-23. The notice
+	// is broken into lines for a terminal, and the window joins the lines of
+	// each paragraph so it wraps to its own width instead of drawing a
+	// narrow ragged column - so the breaks differ and the words must not.
+	shown := strings.Join(strings.Fields(textIn(window.About(newFakeHost(t)))), " ")
+	notice := strings.Join(strings.Fields(version.LicenceNotice), " ")
+	if !strings.Contains(shown, notice) {
+		t.Error("the window does not show the words of the licence notice, so it is a second copy now")
 	}
 }
 
@@ -705,6 +710,19 @@ func controlUnder(o fyne.CanvasObject, label string) fyne.CanvasObject {
 		// inside it and the last match wins, so without this every field
 		// carrying an explanation reports the button as its control.
 		if isHeadingExtra(box.Objects[1]) {
+			return
+		}
+		// The name beside a box to tick is its words with a NameTap over
+		// them, which is a label followed by something - see parts.NameTap.
+		if _, tap := box.Objects[1].(*parts.NameTap); tap {
+			return
+		}
+		// A box to tick carries its name BESIDE the square since 2026-09-23 -
+		// parts.ToggleSaying - so its line is the square and then the name.
+		if check, isToggle := box.Objects[0].(*parts.Toggle); isToggle {
+			if head, named := headingOf(box.Objects[1]); named && head == label {
+				found = check
+			}
 			return
 		}
 		if head, named := headingOf(box.Objects[0]); named && head == label {

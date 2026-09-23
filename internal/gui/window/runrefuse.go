@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -27,24 +28,24 @@ import (
 // here, which is a second copy of rules the engine owns and the copy that
 // drifts.
 func (r *runner) refuse(err error) {
+	// A refusal replaces what the status line said about work under way. Seen
+	// in the real window on 2026-09-23: a preview refused for a manifest
+	// already in the directory left "Working out what this would cost..."
+	// standing over the refusal, as if it were still working. Both ways into
+	// a refusal from planning - a preview and Generate - set that line first
+	// and neither took it down.
+	showOn(r.status, "")
 	var loose []string
 	// The first box a refusal lands on, so the form can be brought to it. A
 	// refusal that marks a box the person cannot see reads as a button that did
 	// nothing - see parts.Reveal and O107.
 	first := ""
 	for _, one := range spread(err) {
-		// An interface rather than a case per error type, so a screen shown a
-		// kind of refusal nobody thought about here still gets it placed. The
-		// engine, the format registry and the preset package all answer this
-		// and none of them had to be imported for the question to be asked.
-		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && about.AboutSetting() != "" {
-			if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
-				if first == "" {
-					first = where
-				}
-				continue
+		if where := placed(r, one); where != "" {
+			if first == "" {
+				first = where
 			}
+			continue
 		}
 		// About the run rather than about one box, or about a setting this
 		// screen does not draw. The foot of the form is where those belong.
@@ -70,13 +71,53 @@ func (r *runner) refuse(err error) {
 	// 2026-08-18 answered rather than dodged: refusals about a batch that is
 	// not on the screen were the reason a list with one batch open at a time
 	// was rejected.
-	if r.unfold != nil {
-		for _, marked := range r.fields.Marked() {
+	for _, marked := range r.fields.Marked() {
+		if r.unfold != nil {
 			r.unfold(marked)
+		}
+		if field := r.fields.Lookup(marked); field != nil {
+			r.sections.openHolding(field.Control)
 		}
 	}
 	if field := r.fields.Lookup(first); field != nil {
 		parts.Reveal(r.scroll, field.Control)
+	}
+}
+
+// placed puts one refusal under the box it is about and says which, or says
+// nothing when it is about no box this screen draws. A function rather than a
+// method, because the runner stands at its ceiling of methods, and out of
+// refuse because the two ways of placing nested it past the ceiling of depth.
+func placed(r *runner, one error) string {
+	// About what is already in the output directory: put under that box,
+	// with the way to the directory under the sentence - see inTheWay.
+	if dir := inTheWay(one); dir != "" {
+		if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
+			r.fields.Lookup(where).Offer(text.ButtonOpenFolder(), openIn(r.offer, dir))
+			return where
+		}
+	}
+	// An interface rather than a case per error type, so a screen shown a
+	// kind of refusal nobody thought about here still gets it placed. The
+	// engine, the format registry and the preset package all answer this
+	// and none of them had to be imported for the question to be asked.
+	var about interface{ AboutSetting() string }
+	if !errors.As(one, &about) || about.AboutSetting() == "" {
+		return ""
+	}
+	if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
+		return where
+	}
+	return ""
+}
+
+// openIn is what the button under a refusal about a directory does: ask the
+// desktop to show that directory.
+func openIn(o *offers, dir string) func() {
+	return func() {
+		if o.openFolder != nil {
+			o.openFolder(dir)
+		}
 	}
 }
 

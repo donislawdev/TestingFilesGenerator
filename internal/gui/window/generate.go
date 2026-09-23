@@ -364,7 +364,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 	// in recipe keys, and it is what a refusal is matched against.
 	add := g.fields.Add
 	return []fyne.CanvasObject{
-		parts.Section(text.SectionConfiguration(),
+		g.sections.section(sectionConfiguration, text.SectionConfiguration(),
 			// The format used to be a section of its own holding one field.
 			// A grouping of one groups nothing, and it cost a title, a surface
 			// and two gaps - measured at about 60 px on a screen that was 119
@@ -376,27 +376,26 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 				// moved there, so an empty detail here is what puts that line
 				// on screen at all.
 				g.tips.Say(""), g.formatPick),
-			// Side by side, because each pair is one thought: how big and how
-			// many, then what the group is called and what the files are called.
+			// In the grid's columns since the prototype of 2026-09-23
+			// (parts.Grid): the format, how big, how many and whether damaged
+			// share one row of four, then what the group is called and what
+			// the files are called.
 			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 				parts.Numeric(g.size)),
 			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
+			add(recipe.KeyDamage, text.FieldDamage(), text.HintDamage(),
+				g.tips.Say(text.DetailDamage()), g.damage.pick),
 			add(engine.SettingID, text.FieldTargetID(), text.HintTargetID(), g.tips.Say(text.DetailTargetID()), parts.Text(g.id)),
 			add(engine.SettingName, text.FieldNameTemplate(), text.HintNameTemplate(),
 				g.tips.Say(text.DetailNameTemplate()), parts.Text(g.name)),
 			// The settings the chosen format declares land here, under the ones
-			// every format has.
+			// every format has, across the whole row.
 			g.propBox,
-			// Damage sits under them rather than beside the format, because it
-			// is a question about the finished file rather than about which
-			// file to make.
-			add(recipe.KeyDamage, text.FieldDamage(), text.HintDamage(),
-				g.tips.Say(text.DetailDamage()), g.damage.pick),
 			g.damage.box,
 		),
-		parts.Section(text.SectionOutput(),
-			add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
-				chooserFor(g.host, g.outDir)),
+		g.sections.section(sectionOutput, text.SectionOutput(),
+			parts.Wide(add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
+				chooserFor(g.host, g.outDir))),
 			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
 				parts.Numeric(g.seed)),
 			g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
@@ -521,7 +520,7 @@ func (g *Generate) rebuildDamageFields() {
 		return
 	}
 
-	g.damage.fold = parts.NewInnerFolding(text.DamageSettingsFor(d.ID), objects...)
+	g.damage.fold = parts.NewInnerFoldingOf(parts.GroupDamage, text.DamageSettingsFor(d.ID), objects...)
 	g.damage.fold.OnChange = func(open bool) { g.damage.folded = !open }
 	g.damage.fold.Set(!g.damage.folded)
 	g.damage.box.Add(g.damage.fold.Object())

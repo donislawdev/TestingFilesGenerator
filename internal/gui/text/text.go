@@ -107,13 +107,30 @@ func RunLine(count int, total string, formats []string, destination string) stri
 	if total != "" {
 		facts = append(facts, total)
 	}
-	if len(formats) > 0 {
+	switch {
+	case len(formats) > namedFormats:
+		facts = append(facts, formatCount(len(formats)))
+	case len(formats) > 0:
 		facts = append(facts, Formats(formats))
 	}
 	if destination != "" {
 		facts = append(facts, WillGoTo(destination))
 	}
 	return strings.Join(facts, separator)
+}
+
+// namedFormats is how many kinds of file the line names before it counts them
+// instead. The prototype of 2026-09-23 found a preset's line naming all
+// twenty-six and running to two lines at the foot of the window - a list
+// nobody reads in a place meant to be scanned, and the preset's own settings
+// say which formats it takes. Three is a choice, not a measurement: few
+// enough to take in at a glance.
+const namedFormats = 3
+
+// formatCount is the kinds of file on the line when there are too many to
+// name.
+func formatCount(n int) string {
+	return sayN("FormatCount", "1 format", "{{.Count}} formats", n, nil)
 }
 
 // WillGoTo is the destination, as one fact among the others on the line.

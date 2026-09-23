@@ -78,7 +78,9 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// untouchable rule 5 and the one thing this screen must never take away.
 	p.fields.Require(engine.SettingOutDir, engine.SettingSeed)
 
-	p.paramBox = parts.FieldColumn()
+	// A grid, so each of a preset's settings takes the fewest of the grid's
+	// columns that hold it, like every other field (prototype of 2026-09-23).
+	p.paramBox = parts.Grid()
 	p.about = parts.FieldColumn()
 
 	ids := preset.IDs()
@@ -95,15 +97,15 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		nil, nil,
 		(p.keepScroll(container.NewVScroll(parts.Screen(
 			parts.Titled(text.TabPresets(), text.SubtitlePreset()),
-			parts.Section(text.SectionPreset(),
+			p.sections.section(sectionPreset, text.SectionPreset(),
 				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
 					p.tips.Say(text.DetailPreset()), p.pick),
 				p.about,
 			),
-			parts.Section(text.SectionSettings(), p.paramBox),
-			parts.Section(text.SectionOutput(),
-				p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
-					p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir)),
+			p.sections.section(sectionSettings, text.SectionSettings(), p.paramBox),
+			p.sections.section(sectionOutput, text.SectionOutput(),
+				parts.Wide(p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
+					p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir))),
 				p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
 					p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 			),

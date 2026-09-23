@@ -64,15 +64,22 @@ type Item struct {
 // A licence cannot be absent - Carried lists only what the registry knows, and
 // the registry cannot hold an entry without one.
 func (i Item) Line() string {
-	line := i.Name
-	if i.Version != "" {
-		line += "  " + i.Version
-	}
-	line += "  " + i.SPDX
+	line := i.Title() + "  " + i.SPDX
 	if i.Copyright != "" {
 		line += "  " + i.Copyright
 	}
 	return line
+}
+
+// Title is what an item is: its name, and its version where it has one, two
+// spaces apart like the rest of Line. Its own method since 2026-09-23, when
+// the window started drawing these as a table and needed the first column
+// without the other two - values only, for the reason Line gives.
+func (i Item) Title() string {
+	if i.Version == "" {
+		return i.Name
+	}
+	return i.Name + "  " + i.Version
 }
 
 // Carried reports what this build contains, from the build's own record.

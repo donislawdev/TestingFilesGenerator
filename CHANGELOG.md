@@ -16,6 +16,52 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window lays its forms out in columns.** A field now takes as many
+  columns of the form as its value needs and no more, so `Format`, `Size`,
+  `How many files` and `Damage` stand in one row instead of one under another,
+  and a box for a number is no longer as wide as a box for a path. The window
+  opens at the height of the form it shows, and an open list is as wide as
+  the menu it drops from.
+
+- **Every section of a form folds away, and the settings of a format and of a
+  damage stand in groups of their own.** Each group is framed, with a line
+  down its left edge in the colour of what it is about - blue for a format's
+  settings, amber for a damage's, grey for notes to the manifest - so opening
+  both no longer runs them into the fields above them and into each other. A
+  refusal about a field inside a folded section opens that section.
+
+- **A refusal about a field is written under its row, across the form.** It
+  used to wrap inside the width of the field, three lines deep for one
+  sentence.
+
+- **A size below what a format can make comes with a button that uses the
+  smallest size that works.** The refusal names that size to the byte, and
+  the button puts it in the box. Nothing is filled in by itself.
+
+- **When a run will not write because a file, a manifest or another run is
+  already in the output directory, the refusal stands under `Output directory`
+  with a button that opens it.** It used to be one line at the foot of the
+  window, scrolled, with no way to the directory but a file manager.
+
+- **A menu shows its arrow in the accent colour**, so it can be told from a
+  box to type in and from a button, which it matched to the pixel.
+
+- **A box to tick carries its name beside it**, and pressing the name ticks the
+  box. The sentence about building on a preset says "with the box ticked"
+  instead of "with the switch on".
+
+- **A grey value in an empty box says it is a default**, as in `default: 60`,
+  because a grey `60` read as a value somebody had typed.
+
+- **Smaller things:** `Preview` and `Generate` stand apart, and so do
+  `Duplicate` and `Remove`. `Donate` is quieter, and on `About` it stands in
+  the Support card instead of a bar of its own. The line at the foot counts
+  formats past three instead of naming all twenty-six. What a preset typically
+  finds and how to use the program are written in ordinary text instead of
+  the smallest grey. The licence on `About` wraps to the window, and the code
+  carried in the program is listed as a table. A menu holding the keyboard is
+  marked with a ring instead of being filled blue.
+
 - **`Generate` means the same thing on every screen.** The `Several batches`
   screen used to open with `Batch name` and `Size` empty under a red star
   each, so the button that works straight away on `Single batch` turned you
@@ -415,6 +461,9 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **A preview or a run refused while it was being planned no longer leaves
+  "Working out what this would cost..." standing over the refusal.**
 
 - **A refusal about two settings that bound each other now says how far over
   you are.** Asking for a picture of 20000 by 2001 pixels was turned down with

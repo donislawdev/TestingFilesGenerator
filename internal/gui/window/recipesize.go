@@ -30,7 +30,7 @@ import (
 // screen whose subject had to be guessed from what stood next to it.
 func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	add func(setting, label, hint string, detail parts.Detail, control fyne.CanvasObject) fyne.CanvasObject,
-) fyne.CanvasObject {
+) []fyne.CanvasObject {
 	// Half a row wide, like every other short box on this screen. A size is
 	// "10mb" and the three used to share one row between them, so a box across
 	// the whole form would be the only wide box holding four characters - and
@@ -68,7 +68,11 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 		boxes = append(boxes, b.sizeBoxes[key])
 	}
 	named := r.fields.Named(text.FieldSizeWay(), r.tips.Say(text.DetailSizeWay()), b.sizeWay)
-	return parts.FieldColumn(append([]fyne.CanvasObject{named}, boxes...)...)
+	// The switch and the box it leaves are cells of one row since the
+	// prototype of 2026-09-23 - see parts.Grid. All three boxes go in, and
+	// the grid skips the two that are hidden, so the one shown takes the
+	// place beside the switch.
+	return append([]fyne.CanvasObject{named}, boxes...)
 }
 
 // newSizeWaySwitch is the control itself, built with the batch rather than with

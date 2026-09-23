@@ -100,12 +100,19 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 		if screenName == "generate" {
 			numeric = []string{text.FieldSize(), text.FieldCount(), text.FieldSeed()}
 		}
+		// One column of the form's grid since 2026-09-23 rather than the
+		// exact width of a number: a field fills the columns it takes, and a
+		// number takes one (parts.Grid) - 185 px at this width, which the
+		// owner looked at in the running window and kept. Two number boxes
+		// side by side is the most a single column may be, so a box wider
+		// than that has taken two columns, which is the stretching this is
+		// about coming back.
 		for _, label := range numeric {
 			box := entryUnder(t, content, label)
-			if got := box.Size().Width; got > parts.NumericWidth {
-				t.Errorf("%s: the box for %q is %.0f px wide, over the %d a number needs.\n"+
-					"A box that size promises a value the field does not take.",
-					screenName, label, got, parts.NumericWidth)
+			if got := box.Size().Width; got > parts.NumericWidth*2 {
+				t.Errorf("%s: the box for %q is %.0f px wide, over two numbers (%d px), so it has taken more "+
+					"than one column of the form.\nA box that size promises a value the field does not take.",
+					screenName, label, got, parts.NumericWidth*2)
 			}
 		}
 		w.Close()

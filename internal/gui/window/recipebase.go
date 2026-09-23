@@ -110,11 +110,12 @@ func (b *base) choose(id string) error {
 // could not produce one, because the last batch had no Remove button.
 func (b *base) carriesTheRun() bool { return b.on.Checked }
 
-// section is the part as it appears on the screen, registered under the
-// keys a refusal about it arrives with: extends for the preset itself, and
+// rows are the part as it appears on the screen, registered under the keys a
+// refusal about it arrives with: extends for the preset itself, and
 // with.<name> for each parameter, which is the line in the recipe the value
-// would be written on.
-func (b *base) section(fields *parts.Fields, tips *parts.Tips) fyne.CanvasObject {
+// would be written on. The screen puts them in a section that folds - see
+// sections.go.
+func (b *base) rows(fields *parts.Fields, tips *parts.Tips) []fyne.CanvasObject {
 	rows := []fyne.CanvasObject{
 		parts.Note(text.NoteBase()),
 		fields.AddToggle(settingBuildOnPreset, text.FieldBuildOnPreset(), "",
@@ -125,7 +126,7 @@ func (b *base) section(fields *parts.Fields, tips *parts.Tips) fyne.CanvasObject
 			tips.Say(text.DetailBasePreset()), parts.Menu(b.pick)))
 		rows = append(rows, b.parameterRows(fields, tips)...)
 	}
-	return parts.Section(text.SectionBase(), rows...)
+	return rows
 }
 
 // parameterRows draws the chosen preset's parameters.

@@ -173,6 +173,10 @@ type runner struct {
 	// about it can be seen. Nil on a screen that folds nothing.
 	unfold func(string)
 
+	// sections are the screen's panels, each of which folds away - see
+	// sections.go. Opened by a refusal as unfold is.
+	sections *sections
+
 	// destination is where this screen would write, asked for rather than
 	// stored, because the box it comes from is edited after this is wired.
 	// Read for the line even when the rest of the form does not settle, so
@@ -312,7 +316,7 @@ func (r *runner) refreshLine() {
 }
 
 func newRunner(wait later) *runner {
-	r := &runner{fields: parts.NewFields(), line: &runLine{}}
+	r := &runner{fields: parts.NewFields(), line: &runLine{}, sections: newSections()}
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
@@ -333,8 +337,8 @@ func newRunner(wait later) *runner {
 	r.status.Hide()
 	r.problem = parts.NewErrorArea()
 
-	r.previewBtn = parts.NewButton(parts.Secondary, text.ButtonPreview(), r.onPreview)
-	r.generateBtn = parts.NewButton(parts.Primary, text.ButtonGenerate(), r.onGenerate)
+	r.previewBtn = parts.NewButton(parts.Secondary, text.ButtonPreview(), r.onPreview).InTheBar()
+	r.generateBtn = parts.NewButton(parts.Primary, text.ButtonGenerate(), r.onGenerate).InTheBar()
 	// Three ranks, so the eye lands on the one that does the work: Generate
 	// filled, Preview plain beside it, Cancel receding until there is something
 	// to cancel. They were three identical buttons in a row, which is a choice
@@ -350,7 +354,7 @@ func newRunner(wait later) *runner {
 	// button. The rank it needs is "as pressable as Preview and not competing
 	// with Generate", and Generate is disabled while this one is showing
 	// anyway.
-	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel)
+	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel).InTheBar()
 	cancel.Disable()
 	cancel.Hide()
 	r.busy = &busy{fields: r.fields, preview: r.previewBtn, generate: r.generateBtn,

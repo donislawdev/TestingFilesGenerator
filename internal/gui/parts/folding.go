@@ -1,8 +1,12 @@
 package parts
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -79,12 +83,86 @@ func NewFolding(title string, head []fyne.CanvasObject, content ...fyne.CanvasOb
 // and Duplicate, which act on the batch - a section of it is not a thing
 // anybody removes or copies on its own.
 func NewInnerFolding(title string, content ...fyne.CanvasObject) *Folding {
+	return NewInnerFoldingOf(GroupSettings, title, content...)
+}
+
+// NewInnerFoldingOf is NewInnerFolding for a group of a named kind, which is
+// what colours the rail down its left edge.
+func NewInnerFoldingOf(kind GroupKind, title string, content ...fyne.CanvasObject) *Folding {
 	// At the rank of a subheading rather than a section's title since
 	// 2026-09-21: drawn as a section, it read as one (owner, running window).
+	// White like every other heading: the owner's verdict on a coloured title
+	// was that one blue title among white ones looked strange, so the colour
+	// lives in the rail alone.
 	f := newFolding(title, words(title, TextBody, true, theme.ColorNameForeground), nil, content...)
-	f.object = f.inside
+	// Framed, with a rail in the colour of what the group is about, since the
+	// prototype of 2026-09-23 - the owner chose this of three drawn side by
+	// side (wells, bands, accent). Opened, the settings of a format and the
+	// settings of a damage ran into the fields above them and into each other,
+	// and nothing said where one group ended or which was which.
+	//
+	// Less room above and below than at the sides, because the head row keeps
+	// TabInset round its words already for the pointer's fill to draw in.
+	padded := container.New(layout.NewCustomPaddedLayout(GroupInsetY, GroupInsetY, GroupInset, GroupInset), f.inside)
+	rail := canvas.NewRectangle(PaletteColour(groupInk(kind), theme.VariantDark))
+	rail.CornerRadius = RadiusMark
+	f.object = container.New(groupCell{}, container.NewStack(groupFrame(), container.New(leftRail{}, rail), padded))
 	return f
 }
+
+// GroupKind is what a group of settings is about, and it decides the colour
+// of the rail down the group's left edge.
+type GroupKind int
+
+const (
+	// GroupSettings is a format's own settings - the primary colour.
+	GroupSettings GroupKind = iota
+	// GroupDamage is the settings of a damage - the warning colour, because
+	// what it does to a file is the one thing on the form that breaks it.
+	GroupDamage
+	// GroupNotes is the notes a batch leaves in the manifest - neutral.
+	GroupNotes
+)
+
+// groupFrame is the line drawn round a group of settings inside a section.
+func groupFrame() *canvas.Rectangle {
+	rect := canvas.NewRectangle(color.Transparent)
+	rect.CornerRadius = RadiusPanel
+	rect.StrokeColor = PaletteColour(theme.ColorNameSeparator, theme.VariantDark)
+	rect.StrokeWidth = edgeWidth
+	return rect
+}
+
+// groupInk is the colour of a group's rail.
+func groupInk(kind GroupKind) fyne.ThemeColorName {
+	switch kind {
+	case GroupDamage:
+		return theme.ColorNameWarning
+	case GroupNotes:
+		return ColorNameLabel
+	case GroupSettings:
+		return theme.ColorNamePrimary
+	}
+	return theme.ColorNamePrimary
+}
+
+// leftRail lays its one child as a narrow bar down the left edge.
+type leftRail struct{}
+
+func (leftRail) MinSize([]fyne.CanvasObject) fyne.Size { return fyne.Size{} }
+
+func (leftRail) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Resize(fyne.NewSize(RadiusMark, size.Height))
+		o.Move(fyne.NewPos(0, 0))
+	}
+}
+
+// groupCell marks a group of settings for the grid, which keeps GapSection
+// round it rather than the gap between two rows of fields - measured on the
+// prototype, a group 16 px from the fields above it read as one more row of
+// them. Lays its one child out whole.
+type groupCell struct{ wideCell }
 
 func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject, content ...fyne.CanvasObject) *Folding {
 	f := &Folding{open: true, title: title}
@@ -93,7 +171,7 @@ func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject
 	f.line.Importance = widget.LowImportance
 	f.line.Hide()
 
-	f.body = Column(GapField, content...)
+	f.body = Grid(content...)
 
 	// The title first and the arrow after it, which is not where a disclosure
 	// arrow usually goes and is not a preference either. An arrow in front of
@@ -115,9 +193,14 @@ func newFolding(title string, titled fyne.CanvasObject, head []fyne.CanvasObject
 	// the same amount so the title's ink does not move - see overhang.
 	arrow := widget.NewIcon(theme.MenuDropDownIcon())
 	f.head = newFoldHead(f, arrow)
-	words := Padded(TabInset, container.NewHBox(titled, arrow, quiet(f.line)))
+	// The arrow in FRONT since the prototype of 2026-09-23, reversing the
+	// choice above on the owner's decision from the real window: after the
+	// words it was a 6 px triangle at the end of a heading, and the heading
+	// read as an orphaned subtitle rather than as something that opens. The
+	// arrow now stands on the left edge and the words start after it.
+	words := Padded(TabInset, container.NewHBox(arrow, titled, quiet(f.line)))
 	f.head.under = words
-	row := container.NewBorder(nil, nil, nil, container.NewHBox(head...), container.NewStack(f.head, words))
+	row := container.NewBorder(nil, nil, nil, ButtonRow(head...), container.NewStack(f.head, words))
 
 	f.inside = Column(GapField, container.New(overhang{by: TabInset}, row), f.body)
 	return f

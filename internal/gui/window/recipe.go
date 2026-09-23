@@ -199,7 +199,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// screen what it is does not depend on scrolling to reach - see rebuild.
 	// It is disabled with the rest of the form while a run is going, because
 	// adding a batch mid run would rebuild the form under the run.
-	r.addBtn = parts.NewButton(parts.Secondary, text.ButtonAddBatch(), r.addBatch)
+	r.addBtn = parts.NewButton(parts.Secondary, text.ButtonAddBatch(), r.addBatch).InTheBar()
 	r.runner.busy.also = append(r.runner.busy.also, r.addBtn)
 
 	r.body = r.tips.Over(container.NewBorder(
@@ -331,7 +331,7 @@ func (r *Recipe) rebuild() {
 
 	// Before the batches, so that Tab walks the screen in the order it is
 	// read and the order the run takes the targets in.
-	r.baseBox.Add(r.base.section(r.fields, r.tips))
+	r.baseBox.Add(r.sections.section(sectionBase, text.SectionBase(), r.base.rows(r.fields, r.tips)...))
 
 	panels := make([]fyne.CanvasObject, 0, len(r.batches)+1)
 	for i, b := range r.batches {
@@ -408,23 +408,28 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// field label rather than as something to press.
 	var rows []fyne.CanvasObject
 
+	// In the grid's columns since the prototype of 2026-09-23 (parts.Grid):
+	// the format, how many and the way of saying how big share the first row,
+	// and the box that way leaves shares the second with what the group is
+	// called and what the files are called.
 	rows = append(rows,
 		add(recipe.KeyFormat, text.FieldFormat(), text.HintFormat(),
 			// Empty for the reason the other screen gives: the button carries
 			// the line under the label, so it has to exist even when there is
 			// nothing further to add.
 			r.tips.Say(""), b.formatPick),
+		add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
+	)
+	// One way of saying how big, chosen from three, since 2026-08-25.
+	//
+	// They were three boxes side by side with a sentence above them saying
+	// that only one might be filled in - O114, and a sentence because the
+	// screen let somebody fill in two and learn it from a refusal. A switch
+	// takes the state away rather than describing it.
+	rows = append(rows, r.sizeWayFor(b, at, add)...)
+	rows = append(rows,
 		add(recipe.KeyID, text.FieldTargetID(), text.HintTargetID(),
 			r.tips.Say(text.DetailTargetID()), parts.Text(b.id)),
-		add(recipe.KeyCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(b.count)),
-		// One way of saying how big, chosen from three, since 2026-08-25.
-		//
-		// They were three boxes side by side with a sentence above them saying
-		// that only one might be filled in - O114, and a sentence because the
-		// screen let somebody fill in two and learn it from a refusal. A switch
-		// takes the state away rather than describing it, and the box it leaves
-		// is a full row wide rather than a third of one.
-		r.sizeWayFor(b, at, add),
 		add(recipe.KeyName, text.FieldNameTemplate(), text.HintNameTemplate(),
 			r.tips.Say(text.DetailNameTemplate()), parts.Text(b.name)),
 	)
@@ -564,9 +569,9 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	// The manifest name and the seed both say what they fall back to, so this
 	// section has one box that has to be answered.
 	r.fields.Require(recipe.KeyOutputDir)
-	return parts.Section(text.SectionOutput(),
-		r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
-			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir)),
+	return r.sections.section(sectionOutput, text.SectionOutput(),
+		parts.Wide(r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
+			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir))),
 		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
 			r.tips.Say(text.DetailManifest()), parts.Text(r.manifest)),
 		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),

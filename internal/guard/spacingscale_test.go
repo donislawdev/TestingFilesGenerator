@@ -32,11 +32,11 @@ import (
 // declares them proves they were declared, which is not the question.
 //
 // Over means the name ends above the box begins. One edge means the name and
-// its box start on one X, and every box on the screen starts on that X - a
-// stacked form has no column of names to line up, so the left edge is the
-// only line there is, and a box indented under its name reads as a child of
-// it rather than as the value it holds. Apart means two fields have room
-// between them, or the form is a list with no rhythm.
+// its box start on one X - a box indented under its name reads as a child of
+// it rather than as the value it holds - and every box starts on the edge of
+// one of the grid's columns (since 2026-09-23, parts.Grid - before that there
+// was one column and one edge). Apart means two fields in one column have
+// room between them, or the form is a list with no rhythm.
 func TestANameStandsOverItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
@@ -61,27 +61,61 @@ func TestANameStandsOverItsBoxOnOneEdgeWithEveryOther(t *testing.T) {
 		edges[box.X] = append(edges[box.X], label)
 		boxes = append(boxes, box)
 	}
-	if len(edges) != 1 {
-		t.Errorf("the boxes on the generate screen start on %d different edges, and a form lines up only while they start on one: %v",
-			len(edges), edges)
+	// Columns since 2026-09-23 (parts.Grid): the boxes start on the edges of
+	// the grid's columns rather than on one, and the first of those is the
+	// edge the first field stands on. More edges than the grid has columns
+	// is a box standing between two of them.
+	if len(edges) > parts.GridColumns {
+		t.Errorf("the boxes on the generate screen start on %d different edges, more than the %d columns the form "+
+			"is laid in, so some box stands off every column: %v", len(edges), parts.GridColumns, edges)
 	}
-	for i := 1; i < len(boxes); i++ {
-		if boxes[i].Y <= boxes[i-1].Y+boxes[i-1].Height {
-			t.Errorf("%q and %q are not apart: one box ends at %.1f and the next begins at %.1f",
-				names[i-1], names[i], boxes[i-1].Y+boxes[i-1].Height, boxes[i].Y)
+	if first := boxes[0].X; len(edges[first]) == 0 || boxes[0].X > minEdge(edges)+1 {
+		t.Errorf("the first box starts at x=%.1f and the leftmost at x=%.1f - the form's first column is where it begins",
+			first, minEdge(edges))
+	}
+	// Apart, and the pairing, asked down each column: a field stands under
+	// the one above it in its own column, while the one beside it shares its
+	// row. The pairing - a name is nearer the box under it than that box is
+	// to the next name - is asked for each pair down the screen rather than
+	// once at the top, after the outside review of #116: measured once, a
+	// later pair could drift while the first still held.
+	for i := 0; i < len(names); i++ {
+		j := nextInColumn(boxes, i)
+		if j < 0 {
+			continue
 		}
-	}
-	// The pairing: a name is nearer the box under it than that box is to the
-	// next name. Asked for each pair down the screen rather than once at the
-	// top, after the outside review of #116: measured once, a later pair
-	// could drift while the first still held.
-	for i := 0; i+1 < len(names); i++ {
-		between := gapBelowField(t, generate, names[i], names[i+1])
+		if boxes[j].Y <= boxes[i].Y+boxes[i].Height {
+			t.Errorf("%q and %q are not apart: one box ends at %.1f and the next begins at %.1f",
+				names[i], names[j], boxes[i].Y+boxes[i].Height, boxes[j].Y)
+		}
+		between := gapBelowField(t, generate, names[i], names[j])
 		if nameGaps[i] >= between {
 			t.Errorf("%q stands %.1f px over its box and %q stands %.1f px under that box, so nothing says which box the name belongs to",
-				names[i], nameGaps[i], names[i+1], between)
+				names[i], nameGaps[i], names[j], between)
 		}
 	}
+}
+
+// nextInColumn is the first field after i that starts on i's column, or -1.
+func nextInColumn(boxes []band, i int) int {
+	for j := i + 1; j < len(boxes); j++ {
+		if off := boxes[j].X - boxes[i].X; off <= 1 && off >= -1 {
+			return j
+		}
+	}
+	return -1
+}
+
+// minEdge is the leftmost of the edges boxes start on.
+func minEdge(edges map[float32][]string) float32 {
+	first := true
+	var least float32
+	for x := range edges {
+		if first || x < least {
+			least, first = x, false
+		}
+	}
+	return least
 }
 
 // Two sections are the same distance apart wherever they are.

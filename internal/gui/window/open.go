@@ -327,7 +327,8 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // program fetches nothing and sends nothing, which is what keeps untouchable
 // rule 8 intact - see the carve out written into it on 2026-08-18.
 func donateButton(h Host) fyne.CanvasObject {
-	return parts.NewButton(parts.Quiet, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })
+	// The bar's size, so its words stand level with the buttons beside them.
+	return parts.NewButton(parts.Quiet, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) }).InTheBar()
 }
 
 // chooserFor is the output directory box with a way to browse to one.

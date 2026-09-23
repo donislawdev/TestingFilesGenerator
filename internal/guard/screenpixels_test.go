@@ -482,7 +482,16 @@ func screenScenes() []screenScene {
 		// size. Both marks belong to the first batch and both have to appear,
 		// which is the rule reported on 2026-08-18 - every bad box, not the
 		// first one.
+		//
+		// EMPTIED rather than assumed empty. The screen opens with its first
+		// batch filled in since #125, so from that day this scene pressed
+		// Preview on a recipe with nothing wrong in it and stored a picture of
+		// a successful preview under the name "refused" - green, and about
+		// nothing. Found by an outside review of #126 and confirmed on the
+		// stored tree: no refusal in it. The runner now refuses to store or
+		// compare a picture named after a refusal that shows none.
 		{name: "recipe-refused", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			emptyTheFirstBatch(t, s.tab)
 			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
 		// One batch filled in and one not, so the marks are in one block and the
@@ -500,6 +509,9 @@ func screenScenes() []screenScene {
 			pressNamed(t, s.tab, text.ButtonAddBatch())
 			fillField(t, s.tab, text.FieldTargetID(), "second")
 			fillField(t, s.tab, text.FieldSize(), "1kb")
+			// The same repair as the scene above: the first batch arrives
+			// filled in, so it has to be emptied to be the one refused.
+			emptyTheFirstBatch(t, s.tab)
 			pressNamed(t, s.tab, text.ButtonPreview())
 		}},
 		// What an archive holds, which is the one nested repeating thing in this
@@ -577,6 +589,15 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 	for _, sc := range screenScenes() {
 		t.Run(sc.name, func(t *testing.T) {
 			got, markup := renderScene(t, sc)
+			// Before anything is compared OR written, so a scene that stopped
+			// reaching its state cannot store a new reference of the wrong
+			// one. See showsARefusal.
+			if strings.Contains(sc.name, "refused") && !showsARefusal(markup) {
+				t.Fatalf("the picture %q is named after a refusal and the screen it drew refuses nothing.\n"+
+					"Reason: a scene that stops reaching its state stays green honestly - this one\n"+
+					"stored a successful preview as \"refused\" for a whole pull request (#125).\n"+
+					"What to do: make the scene put something wrong on the screen before it presses.", sc.name)
+			}
 			picture := filepath.Join("testdata", "screens", sc.name+".png")
 			tree := filepath.Join("testdata", "screens", sc.name+".xml")
 			if writing {

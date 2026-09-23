@@ -312,7 +312,13 @@ func TestADeclaredSettingStandsOnTheSameEdgeAsTheFieldsAboveIt(t *testing.T) {
 			if !ok {
 				t.Fatal("the format list is not laid out")
 			}
-			for _, name := range []string{"width", "height"} {
+			// Since 2026-09-23 the settings a format declares stand in a group
+			// framed inside the section, laid in the same grid of columns the
+			// section uses - so the first of them begins on the group's inner
+			// edge, the format list's edge moved in by the frame's room, and
+			// none of them begins before it.
+			edge := format.X + parts.GroupInset
+			for i, name := range []string{"width", "height"} {
 				control := controlUnder(screen, text.SettingLabel(name))
 				if control == nil {
 					t.Fatalf("bmp declares %s and no field on this screen holds it", name)
@@ -321,9 +327,12 @@ func TestADeclaredSettingStandsOnTheSameEdgeAsTheFieldsAboveIt(t *testing.T) {
 				if !ok {
 					t.Fatalf("the box for %s is not laid out", name)
 				}
-				if off := box.X - format.X; off > 1 || off < -1 {
-					t.Errorf("the box for %s begins at x=%.0f and the format list at x=%.0f, so the settings a "+
-						"format declares do not stand in the column of controls", name, box.X, format.X)
+				if off := box.X - edge; i == 0 && (off > 1 || off < -1) {
+					t.Errorf("the box for %s begins at x=%.0f and the group's inner edge is at x=%.0f, so the "+
+						"first setting a format declares does not stand where its group begins", name, box.X, edge)
+				}
+				if box.X < edge-1 {
+					t.Errorf("the box for %s begins at x=%.0f, before the group's inner edge at x=%.0f", name, box.X, edge)
 				}
 			}
 		})

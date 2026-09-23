@@ -98,6 +98,8 @@ func NotDrawn() []Reason {
 		{"PointerFocus", "a piece inside a control, knowing what put the keyboard there - no picture of its own"},
 		{"Returnable", "an interface: a control the window can tell it is coming back to the front, nothing of its own to draw"},
 		{"Shortcuts", "a keyboard map: nothing to draw, and saying so is the point of this row"},
+		{"GroupKind", "an enum: what a group of settings is about, every value drawn under Folding as the colour of its rail"},
+		{"NameTap", "an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its own to draw"},
 	}
 }
 
@@ -120,6 +122,9 @@ func LayoutOnly() []Reason {
 		{"WithRoomForARun", "the room under a form for the bar to speak into"},
 		{"Flush", "a label kept by a screen, on the edge every other word stands on"},
 		{"Clear", "a shape that takes room and draws nothing"},
+		{"Grid", "lays a section's fields in columns, each taking the columns its value needs - drawn under Section"},
+		{"Wide", "marks something that takes a whole row of a Grid"},
+		{"ButtonRow", "buttons side by side, one gap of the scale apart and centred - drawn under Section"},
 	}
 }
 

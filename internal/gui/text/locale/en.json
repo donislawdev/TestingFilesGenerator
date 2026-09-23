@@ -77,7 +77,7 @@
   },
   "DetailBuildOnPreset": {
     "description": "The longer explanation behind the button beside a field name.",
-    "other": "Off, the batches below are the whole recipe. On, the chosen preset's files come first and the batches are added after them."
+    "other": "Unticked, the batches below are the whole recipe. Ticked, the chosen preset's files come first and the batches are added after them."
   },
   "DetailDamage": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -224,6 +224,11 @@
     "one": "1 file",
     "other": "{{.Count}} files"
   },
+  "FormatCount": {
+    "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
+    "one": "1 format",
+    "other": "{{.Count}} formats"
+  },
   "HintBasePreset": {
     "description": "The line under a field name, saying what the field does.",
     "other": "Its files come first."
@@ -318,7 +323,7 @@
   },
   "NoteBase": {
     "description": "Shown in the window.",
-    "other": "With the switch on, the chosen preset's files come first and the batches below are added after them. With it off, the batches are the whole recipe."
+    "other": "With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole recipe."
   },
   "NoteManifestOnly": {
     "description": "Shown in the window.",
@@ -327,6 +332,10 @@
   "NothingProduced": {
     "description": "Shown in the window.",
     "other": "Nothing was produced."
+  },
+  "PlaceholderLeftEmpty": {
+    "description": "Stands in an empty box, in a quieter colour than a value. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
+    "other": "default: {{.Value}}"
   },
   "PlaceholderNotStated": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
@@ -503,6 +512,10 @@
   "TooManyFiles": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
     "other": "this run asks for {{.Count}} files - {{.Reason}}"
+  },
+  "UseSmallestSize": {
+    "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
+    "other": "Use the smallest size, {{.Size}}"
   },
   "WillGoTo": {
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",

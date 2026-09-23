@@ -265,15 +265,28 @@ func TestTheHeadRowOverhangsTheColumnAndTheTitleDoesNot(t *testing.T) {
 	if !ok {
 		t.Fatalf("the recipe screen has no field named %q", text.FieldFormat())
 	}
-	if off := title.X - field.X; off > 1 || off < -1 {
-		t.Errorf("the title of batch 1 starts at %.1f px and the name of its first field at %.1f px - one edge for everything a person reads", title.X, field.X)
+	// The arrow in FRONT of the title since 2026-09-23, on the owner's word
+	// from the running window, so it is the arrow that stands on the edge the
+	// fields stand on and the title follows it.
+	arrow := arrowIn(t, screen, head)
+	arrowAt, ok := absoluteOf(screen, arrow)
+	if !ok {
+		t.Fatal("the arrow is not on the screen it was found in")
+	}
+	if off := arrowAt.X - field.X; off > 1 || off < -1 {
+		t.Errorf("the arrow of batch 1 starts at %.1f px and the name of its first field at %.1f px - "+
+			"the arrow stands on the edge everything else starts on", arrowAt.X, field.X)
+	}
+	if title.X < arrowAt.X+arrow.Size().Width {
+		t.Errorf("the title of batch 1 starts at %.1f px, over its arrow, which ends at %.1f px",
+			title.X, arrowAt.X+arrow.Size().Width)
 	}
 	headAt, ok := absoluteOf(screen, head)
 	if !ok {
 		t.Fatal("the head row is not on the screen it was found in")
 	}
-	if got := title.X - headAt.X; got < parts.TabInset-1 || got > parts.TabInset+1 {
-		t.Errorf("the row starts %.1f px left of its title, and it has to start TabInset (%v) left of it - the room the fill and the ring draw in", got, parts.TabInset)
+	if got := arrowAt.X - headAt.X; got < parts.TabInset-1 || got > parts.TabInset+1 {
+		t.Errorf("the row starts %.1f px left of its arrow, and it has to start TabInset (%v) left of it - the room the fill and the ring draw in", got, parts.TabInset)
 	}
 }
 
