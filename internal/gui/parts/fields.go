@@ -219,15 +219,7 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 		b := b
 		// Into the caption drawn now, whichever registration this is - see
 		// wiredOnce for why the box is wrapped only the first time.
-		if b.counts.point(count) {
-			already := b.OnChanged
-			b.OnChanged = func(value string) {
-				if already != nil {
-					already(value)
-				}
-				b.counts.target.show(value)
-			}
-		}
+		chainOnce(&b.OnChanged, &b.counts, count, func(value string, into *ByteCount) { into.show(value) })
 		// And once now, for a box that arrives with a size already in it.
 		count.show(b.Text)
 	}
@@ -373,43 +365,19 @@ func (s *Fields) listen(setting string, control fyne.CanvasObject) {
 	// wired, so a listener asked for after the field exists still hears it -
 	// and so does the address, so a control registered again reports under
 	// the address it has now.
-	report := func(to *wiredOnce[string]) {
+	report := func(_ string, at string) {
 		if s.tell != nil {
-			s.tell(to.target)
+			s.tell(at)
 		}
 	}
 	walkControls(control, func(o fyne.CanvasObject) {
 		switch it := o.(type) {
 		case *Entry:
-			if it.reports.point(setting) {
-				already := it.OnChanged
-				it.OnChanged = func(value string) {
-					if already != nil {
-						already(value)
-					}
-					report(&it.reports)
-				}
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, report)
 		case *Chooser:
-			if it.reports.point(setting) {
-				already := it.OnChanged
-				it.OnChanged = func(value string) {
-					if already != nil {
-						already(value)
-					}
-					report(&it.reports)
-				}
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, report)
 		case *Toggle:
-			if it.reports.point(setting) {
-				already := it.OnChanged
-				it.OnChanged = func(on bool) {
-					if already != nil {
-						already(on)
-					}
-					report(&it.reports)
-				}
-			}
+			chainOnce(&it.OnChanged, &it.reports, setting, func(_ bool, at string) { report("", at) })
 		}
 	})
 }
@@ -439,6 +407,24 @@ func (w *wiredOnce[T]) point(target T) (first bool) {
 	first = !w.wired
 	w.wired = true
 	return first
+}
+
+// chainOnce points one of a control's change handlers at target, and the
+// first time only puts it in: the control's own callback runs first, then
+// then, with the value and whatever target is pointed at by the time the
+// change happens. One function for the three kinds of control and the count
+// of bytes, so the rule cannot hold for some of them and not the others.
+func chainOnce[V, T any](handler *func(V), to *wiredOnce[T], target T, then func(value V, at T)) {
+	if !to.point(target) {
+		return
+	}
+	already := *handler
+	*handler = func(value V) {
+		if already != nil {
+			already(value)
+		}
+		then(value, to.target)
+	}
 }
 
 // walkControls visits a control and everything inside it, containers included.
