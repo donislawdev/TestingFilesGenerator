@@ -15,6 +15,38 @@ import (
 // the day it was not asked, two pictures named "refused" held a successful
 // preview for a whole pull request (#125, found on #126).
 
+// TestEveryPictureNamedAfterARefusalShowsOne renders the scenes whose name
+// says "refused" and asks each drawn tree for a refusal.
+//
+// The stored pictures ask it too, before they compare or write anything, and
+// that half is what keeps a wrong reference from being stored. This half is
+// the one that can be proven: the stored pictures render every screen, and
+// the mutation runner stops them at its 4 GB ceiling before they finish - so a
+// mutation there comes back CAPPED rather than caught, measured on 2026-09-23.
+// Six scenes fit under the ceiling.
+func TestEveryPictureNamedAfterARefusalShowsOne(t *testing.T) {
+	scenes := screenScenes()
+	// The first render of a process lays out differently - see O148 and the
+	// same call in TestEveryScreenStillDrawsItsStoredPicture.
+	renderScene(t, scenes[0])
+	checked := 0
+	for _, sc := range scenes {
+		if !strings.Contains(sc.name, "refused") {
+			continue
+		}
+		checked++
+		t.Run(sc.name, func(t *testing.T) {
+			if _, markup := renderScene(t, sc); !showsARefusal(markup) {
+				t.Errorf("the picture %q is named after a refusal and the screen it drew refuses nothing.\n"+
+					"What to do: make the scene put something wrong on the screen before it presses.", sc.name)
+			}
+		})
+	}
+	if checked == 0 {
+		t.Fatal("no scene is named after a refusal, so this guard asked nothing")
+	}
+}
+
 // emptyTheFirstBatch clears the two boxes the first batch cannot do without,
 // by position rather than by label - two batches mean two boxes of each name,
 // and the first of them is the one this empties.
