@@ -1,14 +1,19 @@
 package guard
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 // Every box that is wrong is marked, not the first one.
@@ -253,6 +258,152 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 // has to know. Its own documentation promises the call works "before or after
 // the fields exist". Found by an outside review of the whole tree on
 // 2026-08-23, docs/CODE-REVIEW-2026-08-23.md section 2.
+// A control registered again reports a change once, under the address it was
+// registered at last, and counts into the caption drawn with it last.
+//
+// The batch screen registers every field again on every rebuild, because an
+// address carries the batch's position - and it keeps the controls, so what
+// was typed survives. listen and counter used to wrap the control's callback
+// on every registration, so after k rebuilds one change was reported k times,
+// under every address the control had ever had, and k captions nobody could
+// see were counted into. Measured in the real window on 2026-09-23: the
+// preset switch took 0.7 s at the first press and 6.1 s at the twentieth,
+// docs/GUI-MEMORY-2026-09-23.md section 2.2.
+func TestAControlRegisteredAgainReportsOnceUnderItsLatestAddress(t *testing.T) {
+	test.NewApp()
+	t.Cleanup(func() { test.NewApp() })
+
+	box := parts.NewEntry()
+	menu := parts.NewChooser([]string{"one", "two"}, nil)
+	toggle := parts.NewToggle(nil)
+	for _, c := range []struct {
+		name    string
+		control fyne.CanvasObject
+		change  func()
+	}{
+		{"a box", box, func() { box.SetText("1kb") }},
+		{"a menu", menu, func() { menu.SetSelected("two") }},
+		{"a switch", toggle, func() { toggle.SetChecked(true) }},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			fields := parts.NewFields()
+			var told []string
+			fields.WhenTypedIn(func(setting string) { told = append(told, setting) })
+			var drawn []fyne.CanvasObject
+			for i := 1; i <= 5; i++ {
+				address := fmt.Sprintf("targets[%d].size", i)
+				fields.KeepFirst(0)
+				fields.InBytes(address)
+				drawn = append(drawn, fields.Add(address, "Size", "", parts.Detail{}, c.control))
+			}
+			c.change()
+			if want := []string{"targets[5].size"}; !reflect.DeepEqual(told, want) {
+				t.Errorf("one change after five registrations told the screen %q, expected %q", told, want)
+			}
+			if c.control != fyne.CanvasObject(box) {
+				return
+			}
+			last, first := byteCountIn(drawn[len(drawn)-1]), byteCountIn(drawn[0])
+			if last == nil || first == nil {
+				t.Fatal("a size box was registered and no count of bytes was drawn with it, so this guard is not in the state it asks about")
+			}
+			if last.Text == "" {
+				t.Error("the caption drawn with the box last says nothing about the size typed into it")
+			}
+			if first.Text != "" {
+				t.Errorf("the caption from the first registration, which is no longer on any screen, was counted into: %q", first.Text)
+			}
+		})
+	}
+}
+
+// No control stands under two addresses at once, on any screen.
+//
+// The fix above rests on it. A control registered again reports under the
+// address it was registered at LAST, which is right when the second
+// registration replaces the first - a rebuild - and wrong if one control were
+// ever registered under two addresses in the same pass, because the first
+// would then stop hearing about it. Asked of the registry of every work
+// screen, the batch screen in the fullest state it has: three batches, the
+// files inside an archive, and a preset with its parameters.
+func TestNoControlIsRegisteredUnderTwoAddressesAtOnce(t *testing.T) {
+	host := newFakeHost(t)
+	gen, pre, rec := window.NewGenerate(host), window.NewPreset(host), window.NewRecipe(host)
+
+	body := rec.Object()
+	for i := 0; i < 2; i++ {
+		add := buttonNamed(body, text.ButtonAddBatch())
+		if add == nil {
+			t.Fatal("the batch screen has no button to add a batch, so this guard cannot reach three")
+		}
+		add.OnTapped()
+	}
+	chooserIn(t, rec.Fields(), recipe.TargetAddress(1, recipe.KeyFormat)).SetSelected("zip")
+	contents := buttonNamed(body, text.ButtonAddContents())
+	if contents == nil {
+		t.Fatal("a zip batch offers no way to say what it holds, so this guard cannot reach the table of contents")
+	}
+	contents.OnTapped()
+	for _, f := range rec.Fields().All() {
+		if toggle, is := f.Control.(*parts.Toggle); is && !toggle.Checked {
+			toggle.SetChecked(true)
+			break
+		}
+	}
+
+	for _, s := range []struct {
+		name   string
+		fields *parts.Fields
+		must   []string
+	}{
+		{"single batch", gen.Fields(), []string{"size"}},
+		{"presets", pre.Fields(), nil},
+		{"several batches", rec.Fields(), []string{
+			recipe.TargetAddress(3, recipe.KeyID),
+			recipe.ContentAddress(1, 1, recipe.KeySize),
+			recipe.KeyExtends,
+		}},
+	} {
+		t.Run(s.name, func(t *testing.T) {
+			under := map[fyne.CanvasObject]string{}
+			settings := map[string]bool{}
+			for _, f := range s.fields.All() {
+				settings[f.Setting] = true
+				for _, c := range reportingControls(f.Control) {
+					if was, seen := under[c]; seen && was != f.Setting {
+						t.Errorf("one %T stands under %q and under %q, and a change would be told under the second alone", c, was, f.Setting)
+					}
+					under[c] = f.Setting
+				}
+			}
+			for _, want := range s.must {
+				if !settings[want] {
+					t.Fatalf("the registry has no %q, so this guard is not in the state it asks about", want)
+				}
+			}
+			if len(under) == 0 {
+				t.Fatal("no control on this screen reports a change, so nothing was asked")
+			}
+		})
+	}
+}
+
+// reportingControls are the controls under one field that tell the screen
+// about a change - the three kinds Fields.listen wires.
+func reportingControls(o fyne.CanvasObject) []fyne.CanvasObject {
+	switch it := o.(type) {
+	case *parts.Entry, *parts.Chooser, *parts.Toggle:
+		return []fyne.CanvasObject{it}
+	case *fyne.Container:
+		var out []fyne.CanvasObject
+		for _, child := range it.Objects {
+			out = append(out, reportingControls(child)...)
+		}
+		return out
+	}
+	return nil
+}
+
 func TestAFieldWiredBeforeTheScreenListensReportsOnce(t *testing.T) {
 	for _, order := range []string{"the field first", "the listener first"} {
 		t.Run(order, func(t *testing.T) {

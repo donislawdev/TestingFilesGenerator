@@ -475,6 +475,15 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The `Several batches` screen no longer slows down the longer it is
+  used.** Every batch added, removed or copied, every format chosen and every
+  press of `Start from a preset` made each box on the screen report a change
+  one more time, so the switch took 0.7 seconds at its first press and 6
+  seconds at its twentieth. With a preset switched on, every key typed took
+  about 0.4 seconds, because the smallest file of every format was worked out
+  again for each one. Both are now done once, and the window uses less memory
+  while you type.
+
 - **A preview or a run refused while it was being planned no longer leaves
   "Working out what this would cost..." standing over the refusal.**
 

@@ -2,6 +2,7 @@ package guard
 
 import (
 	"bytes"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -138,6 +139,43 @@ func TestTheMinimalSetSitsOnEveryFormatsFloor(t *testing.T) {
 // The bytes of the files never moved, because a seed comes from the id of a
 // target rather than from its place in the list. That is what made this quiet:
 // every file was right and only the record of them disagreed.
+// The smallest size of each format is worked out once, not at every expansion.
+//
+// Finding it means planning the format at growing sizes, and for a picture
+// that means encoding one. The window expands this set on every change while
+// the batch screen builds on it, so a set worked out afresh each time made a
+// keystroke there cost 380 ms and ~379 MB of garbage in the real window on
+// 2026-09-23 (docs/GUI-MEMORY-2026-09-23.md section 2.3). Measured here the
+// same day, least of five: 50.4 MB per expansion afresh, 0.51 MB remembered.
+// The line sits a factor of ten from each.
+//
+// The least of several readings, because the counter is the whole process's
+// and a reading can only be too high - the lesson of tools/probes/alloccount.
+// That the remembered sizes are the RIGHT ones is
+// TestTheMinimalSetSitsOnEveryFormatsFloor's question, not this one's.
+func TestTheMinimalSetIsWorkedOutOnceAndNotAtEveryExpansion(t *testing.T) {
+	const ceiling = 5 << 20
+	if _, err := preset.Expand("empty-and-minimal", preset.Args{}); err != nil {
+		t.Fatalf("the set did not expand, so nothing was asked: %v", err)
+	}
+	least := ^uint64(0)
+	for i := 0; i < 5; i++ {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		if _, err := preset.Expand("empty-and-minimal", preset.Args{}); err != nil {
+			t.Fatal(err)
+		}
+		runtime.ReadMemStats(&after)
+		if spent := after.TotalAlloc - before.TotalAlloc; spent < least {
+			least = spent
+		}
+	}
+	if least > ceiling {
+		t.Errorf("expanding the minimal set a second time allocated %d bytes, over %d - "+
+			"the smallest size of every format is being worked out again", least, ceiling)
+	}
+}
+
 func TestTheMinimalSetIsTheSameWhateverOrderTheFormatsAreNamedIn(t *testing.T) {
 	// Two formats far apart in the registry, so a walk that kept the typing
 	// cannot pass by accident.
