@@ -475,6 +475,15 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The window uses far less memory, and no longer grows with use.** Every
+  quiet line on a screen - a subtitle, a caption, the count of bytes beside a
+  size, the line a folded section keeps, the message under a field - parsed
+  its own copy of the fonts, and parsed another each time the screen was
+  rebuilt and the line said something new. After visiting the four tabs the
+  window held about 290 MB and it now holds about 120 MB, and rebuilding a
+  screen no longer adds to it. Nothing on the screen looks different. The open
+  list of formats still does this when you type into its filter, and is next.
+
 - **The `Several batches` screen no longer slows down the longer it is
   used.** Every batch added, removed or copied, every format chosen and every
   press of `Start from a preset` made each box on the screen report a change
