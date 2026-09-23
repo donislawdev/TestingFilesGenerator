@@ -38,6 +38,42 @@ func Register(d Descriptor) {
 	registry[d.ID] = d
 }
 
+// SmallestWithLabel is d.SmallestAccepted(Request{Label: true}), worked out
+// once per format per process and remembered.
+//
+// The request is the same every time, so the answer is too - and finding it
+// means planning the format at growing sizes, which for a picture means
+// encoding one. The minimal preset asks it of every format at every
+// expansion, and the window expands that preset on every change while the
+// batch screen builds on it: measured on 2026-09-23, 50.4 MB allocated per
+// expansion afresh against 0.51 MB remembered, and a keystroke that cost
+// 380 ms in the real window (docs/GUI-MEMORY-2026-09-23.md section 2.3).
+//
+// Keyed by id, which is safe because Register refuses a second descriptor
+// under one. Here rather than beside its caller because this file is already
+// where the registry's reads meet its writes: the window settles from its
+// worker as well as from its own goroutine. The size is worked out without
+// the lock held, because planning an archive reads the registry itself.
+func SmallestWithLabel(d Descriptor) int64 {
+	smallestMu.Lock()
+	known, ok := smallestKnown[d.ID]
+	smallestMu.Unlock()
+	if ok {
+		return known
+	}
+	size := d.SmallestAccepted(Request{Label: true})
+	smallestMu.Lock()
+	smallestKnown[d.ID] = size
+	smallestMu.Unlock()
+	return size
+}
+
+// smallestKnown is what SmallestWithLabel has worked out, by format id.
+var (
+	smallestMu    sync.Mutex
+	smallestKnown = map[string]int64{}
+)
+
 // SortChoices puts a closed set in the order somebody looks for a value in.
 //
 // Here rather than in the menu that draws them, and that is the whole point:

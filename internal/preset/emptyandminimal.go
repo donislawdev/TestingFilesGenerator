@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
@@ -257,26 +256,11 @@ func layOut(descs []format.Descriptor) []minimalFile {
 // same number - docx, pdf, targz, wav and zip all differ, measured 2026-09-22.
 // Asking for MinBytes is refused.
 //
-// Worked out once per format per process and remembered. The request is the
-// same every time, so the answer is too - and finding it means planning the
-// format at growing sizes, which for the pictures means encoding them. The
-// window expands this set on every change while the batch screen builds on
-// it, and measured on 2026-09-23 that was ~95 ms and ~95 MB of garbage per
-// expansion, a keystroke costing 380 ms (docs/GUI-MEMORY-2026-09-23.md
-// section 2.3). Keyed by id, which is safe because format.Register refuses a
-// second descriptor under one id. A sync.Map, because the window settles
-// from its worker as well as from its own goroutine.
+// Remembered per format for the life of the process - see
+// format.SmallestWithLabel for the measurement behind it.
 func smallest(d format.Descriptor) int64 {
-	if known, ok := smallestKnown.Load(d.ID); ok {
-		return known.(int64)
-	}
-	size := d.SmallestAccepted(format.Request{Label: true})
-	smallestKnown.Store(d.ID, size)
-	return size
+	return format.SmallestWithLabel(d)
 }
-
-// smallestKnown is what smallest has worked out, by format id.
-var smallestKnown sync.Map
 
 // saidAboutTheMinimalSet says when the set came out with only one of its halves.
 //
