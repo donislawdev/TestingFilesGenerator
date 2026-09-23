@@ -877,41 +877,20 @@
 											<widget size="140x84" type="*parts.OpenList">
 												<container size="140x84">
 													<rectangle fillColor="menuBackground" radius="6" size="140x84"/>
-													<widget size="140x84" type="*container.ThemeOverride">
+													<widget size="140x84" type="*widget.Scroll">
 														<container size="140x84">
-															<widget size="140x84" type="*widget.List">
-																<widget size="140x84" type="*widget.Scroll">
-																	<container size="140x84">
-																		<widget size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">png</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,28" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="112,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-																				<text pos="8,5" size="96x16">jpg</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,56" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">avif</text>
-																			</widget>
-																		</widget>
-																		<widget size="0x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="0x0"/>
-																		</widget>
-																		<widget pos="0,28" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,56" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																	</container>
-																</widget>
+															<widget size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">png</text>
+															</widget>
+															<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="112,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																<text pos="8,5" size="96x16">jpg</text>
+															</widget>
+															<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">avif</text>
 															</widget>
 														</container>
 													</widget>
@@ -933,40 +912,19 @@
 											<widget size="140x84" type="*parts.OpenList">
 												<container size="140x84">
 													<rectangle fillColor="menuBackground" radius="6" size="140x84"/>
-													<widget size="140x84" type="*container.ThemeOverride">
+													<widget size="140x84" type="*widget.Scroll">
 														<container size="140x84">
-															<widget size="140x84" type="*widget.List">
-																<widget size="140x84" type="*widget.Scroll">
-																	<container size="140x84">
-																		<widget size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">png</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,28" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">jpg</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,56" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">avif</text>
-																			</widget>
-																		</widget>
-																		<widget size="0x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="0x0"/>
-																		</widget>
-																		<widget pos="0,28" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,56" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																	</container>
-																</widget>
+															<widget size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">png</text>
+															</widget>
+															<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">jpg</text>
+															</widget>
+															<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">avif</text>
 															</widget>
 														</container>
 													</widget>
@@ -988,68 +946,66 @@
 											<widget size="140x112" type="*parts.OpenList">
 												<container size="140x112">
 													<rectangle fillColor="menuBackground" radius="6" size="140x112"/>
-													<widget size="140x112" type="*container.ThemeOverride">
-														<container size="140x112">
-															<widget size="140x112" type="*widget.List">
-																<widget size="140x112" type="*widget.Scroll">
-																	<container size="140x336">
-																		<widget size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">avif</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,28" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">bmp</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,56" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">csv</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,84" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">docx</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,112" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<text pos="8,5" size="96x16">gif</text>
-																			</widget>
-																		</widget>
-																		<widget size="0x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="0x0"/>
-																		</widget>
-																		<widget pos="0,28" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,56" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,84" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,112" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																	</container>
-																	<widget pos="0,112" size="140x0" type="*widget.Shadow">
-																		<linearGradient pos="0,-8" size="140x8"/>
-																	</widget>
-																	<widget pos="134,0" size="6x112" type="*widget.scrollBarArea">
-																		<widget pos="3,0" size="3x37" type="*widget.scrollBar">
-																			<rectangle fillColor="scrollbar" radius="3" size="3x37"/>
-																		</widget>
-																	</widget>
-																</widget>
+													<widget size="140x112" type="*widget.Scroll">
+														<container size="140x336">
+															<widget size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">avif</text>
+															</widget>
+															<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">bmp</text>
+															</widget>
+															<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">csv</text>
+															</widget>
+															<widget pos="0,84" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">docx</text>
+															</widget>
+															<widget pos="0,112" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">gif</text>
+															</widget>
+															<widget pos="0,140" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">html</text>
+															</widget>
+															<widget pos="0,168" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">ico</text>
+															</widget>
+															<widget pos="0,196" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">jpg</text>
+															</widget>
+															<widget pos="0,224" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="112,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																<text pos="8,5" size="96x16">json</text>
+															</widget>
+															<widget pos="0,252" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">jxl</text>
+															</widget>
+															<widget pos="0,280" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">log</text>
+															</widget>
+															<widget pos="0,308" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<text pos="8,5" size="96x16">md</text>
 															</widget>
 														</container>
+														<widget pos="0,112" size="140x0" type="*widget.Shadow">
+															<linearGradient pos="0,-8" size="140x8"/>
+														</widget>
+														<widget pos="134,0" size="6x112" type="*widget.scrollBarArea">
+															<widget pos="3,0" size="3x37" type="*widget.scrollBar">
+																<rectangle fillColor="scrollbar" radius="3" size="3x37"/>
+															</widget>
+														</widget>
 													</widget>
 												</container>
 											</widget>
@@ -1069,134 +1025,68 @@
 											<widget size="140x336" type="*parts.OpenList">
 												<container size="140x336">
 													<rectangle fillColor="menuBackground" radius="6" size="140x336"/>
-													<widget size="140x336" type="*container.ThemeOverride">
+													<widget size="140x336" type="*widget.Scroll">
 														<container size="140x336">
-															<widget size="140x336" type="*widget.List">
-																<widget size="140x336" type="*widget.Scroll">
-																	<container size="140x336">
-																		<widget size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">avif</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,28" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">bmp</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,56" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">csv</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,84" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-																				<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">docx</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,112" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">gif</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,140" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">html</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,168" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">ico</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,196" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">jpg</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,224" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">json</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,252" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">jxl</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,280" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">log</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,308" size="140x28" type="*widget.listItem">
-																			<widget size="140x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="140x28"/>
-																				<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
-																				<text pos="64,5" size="68x16">md</text>
-																			</widget>
-																		</widget>
-																		<widget size="0x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="0x0"/>
-																		</widget>
-																		<widget pos="0,28" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,56" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,84" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,112" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,140" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,168" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,196" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,224" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,252" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,280" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																		<widget pos="0,308" size="140x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="140x0"/>
-																		</widget>
-																	</container>
-																</widget>
+															<widget size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">avif</text>
+															</widget>
+															<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">bmp</text>
+															</widget>
+															<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">csv</text>
+															</widget>
+															<widget pos="0,84" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">docx</text>
+															</widget>
+															<widget pos="0,112" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">gif</text>
+															</widget>
+															<widget pos="0,140" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">html</text>
+															</widget>
+															<widget pos="0,168" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">ico</text>
+															</widget>
+															<widget pos="0,196" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">jpg</text>
+															</widget>
+															<widget pos="0,224" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">json</text>
+															</widget>
+															<widget pos="0,252" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">jxl</text>
+															</widget>
+															<widget pos="0,280" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">log</text>
+															</widget>
+															<widget pos="0,308" size="140x28" type="*parts.ListRow">
+																<rectangle radius="6" size="140x28"/>
+																<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																<text pos="64,5" size="68x16">md</text>
 															</widget>
 														</container>
 													</widget>
@@ -1218,32 +1108,16 @@
 											<widget size="632x56" type="*parts.OpenList">
 												<container size="632x56">
 													<rectangle fillColor="menuBackground" radius="6" size="632x56"/>
-													<widget size="632x56" type="*container.ThemeOverride">
+													<widget size="632x56" type="*widget.Scroll">
 														<container size="632x56">
-															<widget size="632x56" type="*widget.List">
-																<widget size="632x56" type="*widget.Scroll">
-																	<container size="632x56">
-																		<widget size="632x28" type="*widget.listItem">
-																			<widget size="632x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="632x28"/>
-																				<text pos="8,5" size="588x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
-																			</widget>
-																		</widget>
-																		<widget pos="0,28" size="632x28" type="*widget.listItem">
-																			<widget size="632x28" type="*parts.ListRow">
-																				<rectangle radius="6" size="632x28"/>
-																				<image pos="604,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-																				<text pos="8,5" size="588x16">png</text>
-																			</widget>
-																		</widget>
-																		<widget size="0x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="0x0"/>
-																		</widget>
-																		<widget pos="0,28" size="632x0" type="*widget.Separator">
-																			<rectangle fillColor="button" size="632x0"/>
-																		</widget>
-																	</container>
-																</widget>
+															<widget size="632x28" type="*parts.ListRow">
+																<rectangle radius="6" size="632x28"/>
+																<text pos="8,5" size="588x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
+															</widget>
+															<widget pos="0,28" size="632x28" type="*parts.ListRow">
+																<rectangle radius="6" size="632x28"/>
+																<image pos="604,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																<text pos="8,5" size="588x16">png</text>
 															</widget>
 														</container>
 													</widget>
@@ -1266,130 +1140,168 @@
 												<container size="140x308">
 													<rectangle fillColor="menuBackground" radius="6" size="140x308"/>
 													<container size="140x308">
-														<widget pos="0,40" size="140x267" type="*container.ThemeOverride">
-															<container size="140x267">
-																<widget size="140x267" type="*widget.List">
-																	<widget size="140x267" type="*widget.Scroll">
-																		<container size="140x868">
-																			<widget size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Archives · 2</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,28" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="folderIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">targz</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,56" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="folderIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">zip</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,84" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Documents · 4</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,112" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">docx</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,140" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">pdf</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,168" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">pptx</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,196" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">xlsx</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,224" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Pictures · 10</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,252" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">avif</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,280" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">bmp</text>
-																				</widget>
-																			</widget>
-																			<widget size="0x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="0x0"/>
-																			</widget>
-																			<widget pos="0,28" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,56" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,84" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,112" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,140" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,168" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,196" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,224" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,252" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,280" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																		</container>
-																		<widget pos="0,267" size="140x0" type="*widget.Shadow">
-																			<linearGradient pos="0,-8" size="140x8"/>
-																		</widget>
-																		<widget pos="134,0" size="6x267" type="*widget.scrollBarArea">
-																			<widget pos="3,0" size="3x82" type="*widget.scrollBar">
-																				<rectangle fillColor="scrollbar" radius="3" size="3x82"/>
-																			</widget>
-																		</widget>
-																	</widget>
+														<widget pos="0,40" size="140x267" type="*widget.Scroll">
+															<container size="140x868">
+																<widget size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Archives · 2</text>
+																</widget>
+																<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="folderIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">targz</text>
+																</widget>
+																<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="folderIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">zip</text>
+																</widget>
+																<widget pos="0,84" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Documents · 4</text>
+																</widget>
+																<widget pos="0,112" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">docx</text>
+																</widget>
+																<widget pos="0,140" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">pdf</text>
+																</widget>
+																<widget pos="0,168" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">pptx</text>
+																</widget>
+																<widget pos="0,196" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">xlsx</text>
+																</widget>
+																<widget pos="0,224" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Pictures · 10</text>
+																</widget>
+																<widget pos="0,252" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">avif</text>
+																</widget>
+																<widget pos="0,280" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">bmp</text>
+																</widget>
+																<widget pos="0,308" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">gif</text>
+																</widget>
+																<widget pos="0,336" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">ico</text>
+																</widget>
+																<widget pos="0,364" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">jpg</text>
+																</widget>
+																<widget pos="0,392" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">jxl</text>
+																</widget>
+																<widget pos="0,420" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">png</text>
+																</widget>
+																<widget pos="0,448" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">svg</text>
+																</widget>
+																<widget pos="0,476" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">tiff</text>
+																</widget>
+																<widget pos="0,504" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">webp</text>
+																</widget>
+																<widget pos="0,532" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Sound · 1</text>
+																</widget>
+																<widget pos="0,560" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-music.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">wav</text>
+																</widget>
+																<widget pos="0,588" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Text and data · 9</text>
+																</widget>
+																<widget pos="0,616" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">csv</text>
+																</widget>
+																<widget pos="0,644" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">html</text>
+																</widget>
+																<widget pos="0,672" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">json</text>
+																</widget>
+																<widget pos="0,700" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">log</text>
+																</widget>
+																<widget pos="0,728" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">md</text>
+																</widget>
+																<widget pos="0,756" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">toml</text>
+																</widget>
+																<widget pos="0,784" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">txt</text>
+																</widget>
+																<widget pos="0,812" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">xml</text>
+																</widget>
+																<widget pos="0,840" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="list.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">yaml</text>
 																</widget>
 															</container>
+															<widget pos="0,267" size="140x0" type="*widget.Shadow">
+																<linearGradient pos="0,-8" size="140x8"/>
+															</widget>
+															<widget pos="134,0" size="6x267" type="*widget.scrollBarArea">
+																<widget pos="3,0" size="3x82" type="*widget.scrollBar">
+																	<rectangle fillColor="scrollbar" radius="3" size="3x82"/>
+																</widget>
+															</widget>
 														</widget>
 														<container size="140x36">
 															<widget pos="4,4" size="132x28" type="*parts.FilterBox">
@@ -1427,144 +1339,109 @@
 												<container size="140x308">
 													<rectangle fillColor="menuBackground" radius="6" size="140x308"/>
 													<container size="140x308">
-														<widget pos="0,40" size="140x267" type="*container.ThemeOverride">
-															<container size="140x267">
-																<widget size="140x267" type="*widget.List">
-																	<widget size="140x267" type="*widget.Scroll">
-																		<container pos="0,-124" size="140x448">
-																			<widget pos="0,112" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="0x16"></text>
-																					<text bold pos="64,5" size="8x16">p</text>
-																					<text pos="72,5" size="59x16">ptx</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,140" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Pictures · 10</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,168" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">avif</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,196" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="20x16">bm</text>
-																					<text bold pos="84,5" size="8x16">p</text>
-																					<text pos="93,5" size="38x16"></text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,224" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">gif</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,252" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">ico</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,280" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="3x16">j</text>
-																					<text bold pos="67,5" size="8x16">p</text>
-																					<text pos="76,5" size="55x16">g</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,308" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">jxl</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,336" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="0x16"></text>
-																					<text bold pos="64,5" size="8x16">p</text>
-																					<text pos="72,5" size="59x16">ng</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,364" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">svg</text>
-																				</widget>
-																			</widget>
-																			<widget pos="0,392" size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
-																					<text pos="64,5" size="68x16">tiff</text>
-																				</widget>
-																			</widget>
-																			<widget size="0x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="0x0"/>
-																			</widget>
-																			<widget pos="0,140" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,168" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,196" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,224" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,252" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,280" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,308" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,336" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,364" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																			<widget pos="0,392" size="140x0" type="*widget.Separator">
-																				<rectangle fillColor="button" size="140x0"/>
-																			</widget>
-																		</container>
-																		<widget size="140x0" type="*widget.Shadow">
-																			<linearGradient size="140x8"/>
-																		</widget>
-																		<widget pos="0,267" size="140x0" type="*widget.Shadow">
-																			<linearGradient pos="0,-8" size="140x8"/>
-																		</widget>
-																		<widget pos="134,0" size="6x267" type="*widget.scrollBarArea">
-																			<widget pos="3,73" size="3x159" type="*widget.scrollBar">
-																				<rectangle fillColor="scrollbar" radius="3" size="3x159"/>
-																			</widget>
-																		</widget>
-																	</widget>
+														<widget pos="0,40" size="140x267" type="*widget.Scroll">
+															<container size="140x448">
+																<widget size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Archives · 1</text>
+																</widget>
+																<widget pos="0,28" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="folderIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="11x16">zi</text>
+																	<text bold pos="75,5" size="8x16">p</text>
+																	<text pos="83,5" size="48x16"></text>
+																</widget>
+																<widget pos="0,56" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Documents · 2</text>
+																</widget>
+																<widget pos="0,84" size="140x28" type="*parts.ListRow">
+																	<rectangle fillColor="selection" radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="0x16"></text>
+																	<text bold pos="64,5" size="8x16">p</text>
+																	<text pos="72,5" size="59x16">df</text>
+																</widget>
+																<widget pos="0,112" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="documentIcon" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="0x16"></text>
+																	<text bold pos="64,5" size="8x16">p</text>
+																	<text pos="72,5" size="59x16">ptx</text>
+																</widget>
+																<widget pos="0,140" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Pictures · 10</text>
+																</widget>
+																<widget pos="0,168" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">avif</text>
+																</widget>
+																<widget pos="0,196" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="20x16">bm</text>
+																	<text bold pos="84,5" size="8x16">p</text>
+																	<text pos="93,5" size="38x16"></text>
+																</widget>
+																<widget pos="0,224" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">gif</text>
+																</widget>
+																<widget pos="0,252" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">ico</text>
+																</widget>
+																<widget pos="0,280" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="3x16">j</text>
+																	<text bold pos="67,5" size="8x16">p</text>
+																	<text pos="76,5" size="55x16">g</text>
+																</widget>
+																<widget pos="0,308" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">jxl</text>
+																</widget>
+																<widget pos="0,336" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="8,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="0x16"></text>
+																	<text bold pos="64,5" size="8x16">p</text>
+																	<text pos="72,5" size="59x16">ng</text>
+																</widget>
+																<widget pos="0,364" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">svg</text>
+																</widget>
+																<widget pos="0,392" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="68x16">tiff</text>
+																</widget>
+																<widget pos="0,420" size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<image pos="36,4" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
+																	<text pos="64,5" size="28x16">web</text>
+																	<text bold pos="92,5" size="8x16">p</text>
+																	<text pos="101,5" size="30x16"></text>
 																</widget>
 															</container>
+															<widget pos="0,267" size="140x0" type="*widget.Shadow">
+																<linearGradient pos="0,-8" size="140x8"/>
+															</widget>
+															<widget pos="134,0" size="6x267" type="*widget.scrollBarArea">
+																<widget pos="3,0" size="3x159" type="*widget.scrollBar">
+																	<rectangle fillColor="scrollbar" radius="3" size="3x159"/>
+																</widget>
+															</widget>
 														</widget>
 														<container size="140x36">
 															<widget pos="4,4" size="132x28" type="*parts.FilterBox">
@@ -1599,19 +1476,11 @@
 												<container size="140x308">
 													<rectangle fillColor="menuBackground" radius="6" size="140x308"/>
 													<container size="140x308">
-														<widget pos="0,40" size="140x267" type="*container.ThemeOverride">
+														<widget pos="0,40" size="140x267" type="*widget.Scroll">
 															<container size="140x267">
-																<widget size="140x267" type="*widget.List">
-																	<widget size="140x267" type="*widget.Scroll">
-																		<container size="140x267">
-																			<widget size="140x28" type="*widget.listItem">
-																				<widget size="140x28" type="*parts.ListRow">
-																					<rectangle radius="6" size="140x28"/>
-																					<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Nothing matches</text>
-																				</widget>
-																			</widget>
-																		</container>
-																	</widget>
+																<widget size="140x28" type="*parts.ListRow">
+																	<rectangle radius="6" size="140x28"/>
+																	<text bold color="rgba(211,211,215,255)" pos="8,6" size="124x14" textSize="12">Nothing matches</text>
 																</widget>
 															</container>
 														</widget>

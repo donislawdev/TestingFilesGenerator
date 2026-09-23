@@ -1,7 +1,6 @@
 package parts
 
 import (
-	"image/color"
 	"math"
 	"strings"
 
@@ -61,8 +60,6 @@ type OpenList struct {
 	take  func(value string, byKeyboard bool)
 	close func(byKeyboard bool)
 
-	list *widget.List
-
 	// KindOf says what picture goes in front of one value, or nil for a list
 	// whose values are not things of different kinds. Set from outside, because
 	// only the screen putting values in knows what they are.
@@ -77,13 +74,8 @@ type OpenList struct {
 // on, and close when they left without settling on one.
 func NewOpenList(options []string, chosen string, take func(string, bool), close func(bool)) *OpenList {
 	l := &OpenList{active: -1, take: take, close: close,
-		listContents: listContents{options: options, chosen: chosen, rows: map[widget.ListItemID]*ListRow{}}}
+		listContents: listContents{options: options, chosen: chosen, view: newRowView()}}
 	l.entries = arrange(options, nil, "")
-	l.list = widget.NewList(
-		func() int { return len(l.entries) },
-		func() fyne.CanvasObject { return newListRow() },
-		l.fill,
-	)
 	l.ExtendBaseWidget(l)
 	return l
 }
@@ -125,12 +117,7 @@ func (l *OpenList) Filter() *FilterBox { return l.filter }
 func (l *OpenList) narrowTo(typed string) {
 	l.typed = typed
 	l.rearrange()
-	// ScrollToOffset rather than ScrollToTop: the toolkit's ScrollToTop reaches
-	// for the list's scroller without asking whether it exists yet, and it does
-	// not until the list is first drawn - fyne v2.8.1 widget/list.go, line 358
-	// against 366. A filter set before that (the catalogue does) took the
-	// process down.
-	l.list.ScrollToOffset(0)
+	l.view.toTop()
 	if strings.TrimSpace(typed) == "" {
 		l.active = -1
 		l.StartOn(l.chosen)
@@ -141,18 +128,15 @@ func (l *OpenList) narrowTo(typed string) {
 		return
 	}
 	l.active = -1
-	l.list.Refresh()
+	l.view.show(len(l.entries), l.fill)
 }
 
 // fill puts one row of the arrangement into one row of the list. The row it is
-// given is recycled, so every field is set every time - a row left holding the
-// last value it had is the classic defect of a list that only builds what it
-// can see.
-func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
-	r, ok := row.(*ListRow)
-	if !ok || id < 0 || id >= len(l.entries) {
-		return
-	}
+// given is recycled - the same row shows whatever stands at its position in
+// the arrangement of the moment - so every field is set every time: a row left
+// holding the last value it had is the classic defect of a list that reuses
+// its rows. It is drawn by whoever asked for the fill.
+func (l *OpenList) fill(id int, r *ListRow) {
 	entry := l.entries[id]
 	r.label = entry.text
 	r.heading = entry.kind != entryValue
@@ -171,8 +155,6 @@ func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
 		r.active = l.shown && id == l.active
 		r.onTap = func() { l.take(value, false) }
 	}
-	l.rows[id] = r
-	r.Refresh()
 }
 
 // Choice is one row of an open list, for a guard to read. Choosable is false
@@ -217,7 +199,7 @@ func (l *OpenList) MinSize() fyne.Size {
 	if height < head+listRowHeight() {
 		height = head + listRowHeight()
 	}
-	return fyne.NewSize(l.list.MinSize().Width, height)
+	return fyne.NewSize(l.view.scroll.MinSize().Width, height)
 }
 
 // HeadHeight is the room the filter box takes at the top of the list, with
@@ -252,10 +234,12 @@ func ListCeiling(canvasHeight float32) float32 {
 }
 
 func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
+	l.view.drawn = true
+	l.view.show(len(l.entries), l.fill)
 	// The surface is drawn here rather than left to the popup, so that the
 	// colour a guard measures for "an open list is told from the form behind
 	// it" is the colour actually on the screen.
-	rows := container.NewThemeOverride(l.list, rowTheme{})
+	rows := l.view.scroll
 	if l.filter == nil {
 		return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), rows))
 	}
@@ -263,52 +247,19 @@ func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), container.NewBorder(head, nil, nil, nil, rows)))
 }
 
-// rowTheme is our theme with the room between rows taken out.
-//
-// It exists because a sentence written in theme.go on 2026-08-12 was wrong,
-// and the way it was wrong is the expensive kind. That note said the theme is
-// asked for a size by NAME and not by widget, so "it is the only knob there
-// is" - and the first half is true while the conclusion is not. A theme can be
-// replaced for a SUBTREE with container.NewThemeOverride, which nobody had
-// looked for, so a list was tightened by moving the padding of the entire form.
-//
-// Measured: widget.List spaces its rows by theme.SizeNamePadding, called
-// separatorThickness in list.go - the same 6 px the form is built from. With
-// the override the rows sit against each other and the row height is the whole
-// of the pitch.
-type rowTheme struct{}
-
-func (rowTheme) Color(n fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
-	return Theme().Color(n, v)
-}
-func (rowTheme) Font(s fyne.TextStyle) fyne.Resource     { return Theme().Font(s) }
-func (rowTheme) Icon(n fyne.ThemeIconName) fyne.Resource { return Theme().Icon(n) }
-func (rowTheme) Size(n fyne.ThemeSizeName) float32 {
-	switch n {
-	case theme.SizeNamePadding:
-		// Rows sit against each other. What separates them is the surface a
-		// row draws when the pointer or the keyboard is on it, which is a
-		// thing somebody can see, rather than a gap, which is not.
-		return 0
-	case theme.SizeNameSeparatorThickness:
-		// And no rule between them either. widget.List draws a hairline
-		// between rows, which the room between them used to hide - with the
-		// room gone it came out as a line every 28 px and the list read as a
-		// ruled table rather than as a menu. Seen on the render, which is the
-		// only place it could have been seen: the tree says a separator is
-		// present either way.
-		return 0
-	}
-	return Theme().Size(n)
-}
-
 // ListRowHeight is one row, for a guard asking how many rows fit in a height.
 func ListRowHeight() float32 { return listRowHeight() }
 
 // listRowHeight is one row, worked out rather than typed: whatever is taller
 // out of the text and the mark, plus our own room above and below.
+//
+// The text measured rather than a label built and asked, since 2026-09-23:
+// every row asks this whenever it is sized, and a label built each time was
+// about 2 MB an opening that stayed for the minute the toolkit keeps a
+// renderer (docs/GUI-MEMORY-2026-09-23.md section 2.5). The same number - a
+// label's height less its inner padding is its text's.
 func listRowHeight() float32 {
-	text := widget.NewLabel("Ag").MinSize().Height - 2*Theme().Size(theme.SizeNameInnerPadding)
+	text := fyne.MeasureText("Ag", Theme().Size(theme.SizeNameText), fyne.TextStyle{}).Height
 	icon := Theme().Size(theme.SizeNameInlineIcon)
 	tall := text
 	if icon > tall {
@@ -410,10 +361,10 @@ func (l *OpenList) moveTo(at int) {
 	l.active = at
 	l.shown = true
 	if at > 0 && l.entries[at-1].kind == entryHeading {
-		l.list.ScrollTo(at - 1)
+		l.view.bringIntoView(at - 1)
 	}
-	l.list.ScrollTo(at)
-	l.list.Refresh()
+	l.view.bringIntoView(at)
+	l.view.show(len(l.entries), l.fill)
 }
 
 // Active is the row the keyboard is on, or -1, for a guard.
@@ -427,10 +378,13 @@ func (l *OpenList) StartOn(value string) {
 		if e.kind == entryValue && e.text == value {
 			l.moveTo(i)
 			l.shown = false
-			l.list.Refresh()
-			return
+			break
 		}
 	}
+	// Drawn whether or not the value was found. A box holding no value finds
+	// nothing, and an emptied filter lands here with the rows of what it had
+	// narrowed to still drawn.
+	l.view.show(len(l.entries), l.fill)
 }
 
 // Showing says whether the keyboard position is drawn, for a guard.

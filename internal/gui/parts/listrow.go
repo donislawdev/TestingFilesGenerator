@@ -17,11 +17,12 @@ import (
 // and draw its own surface for the three states a row has - plain, under the
 // pointer, and holding the keyboard.
 //
-// It is built once per visible row and refilled as the list scrolls, which is
-// what makes the list cost the same at thirteen values and at a hundred
-// thousand. Measured in tools/probes/fynelist on 2026-08-18: widget.List is
-// flat at 0.1 MB across 1000, 10 000 and 100 000 rows, where a box holding
-// every row costs 449 MB at the largest.
+// It is built once per position of the list and refilled when what the list
+// holds changes. Once per VISIBLE row until 2026-09-23, inside widget.List,
+// which is what made a list cost the same at thirteen values and at a hundred
+// thousand - measured in tools/probes/fynelist on 2026-08-18, flat at 0.1 MB
+// where a box holding every row costs 449 MB at the largest. Why every
+// position now, and when that stops being right, is in rowView.
 type ListRow struct {
 	widget.BaseWidget
 

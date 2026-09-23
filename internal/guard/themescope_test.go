@@ -24,10 +24,12 @@ import (
 // area, caption and count of bytes was under one. Without them: 2 sets, 27 MB,
 // and nothing added by the rebuilds.
 //
-// The open list of formats is not on this screen - it is a popup - and it
-// still draws its rows under one (parts/openlist.go, rowTheme). That is the
-// next thing the same document names, and it is named here so that nobody
-// reads this guard as covering it.
+// The open list of formats is asked too, since its rows left one on
+// 2026-09-23 (section 4e): every opening was a new override and the letters
+// its filter makes bold were new strings, so ten openings kept 158 MB. It is
+// a popup rather than part of a screen, and it keeps its rows inside its
+// renderer, where the walk of the screens does not go - so it is opened, typed
+// into, and walked through what it draws.
 func TestNoScreenStandsInAThemeOverride(t *testing.T) {
 	content, _ := laidOutWindow(t)
 
@@ -51,9 +53,21 @@ func TestNoScreenStandsInAThemeOverride(t *testing.T) {
 	cat := test.NewWindow(catalogue.Screen())
 	t.Cleanup(cat.Close)
 
-	for name, root := range map[string]fyne.CanvasObject{"the window": content, "the catalogue": cat.Content()} {
+	_, _, list, filter := openFormatList(t)
+	typeInto(filter, "p")
+	rows := 0
+	walkDrawn(list, func(o fyne.CanvasObject) {
+		if _, is := o.(*parts.ListRow); is {
+			rows++
+		}
+	})
+	if rows == 0 {
+		t.Fatal("the open list of formats draws no row, so its rows were not looked at")
+	}
+
+	for name, root := range map[string]fyne.CanvasObject{"the window": content, "the catalogue": cat.Content(), "the open list of formats": list} {
 		overrides := 0
-		walk(root, func(o fyne.CanvasObject) {
+		walkDrawn(root, func(o fyne.CanvasObject) {
 			if _, is := o.(*container.ThemeOverride); is {
 				overrides++
 			}
@@ -61,6 +75,27 @@ func TestNoScreenStandsInAThemeOverride(t *testing.T) {
 		if overrides > 0 {
 			t.Errorf("%s holds %d theme override(s), and each one parses the fonts again in a scope of its own - "+
 				"take the room off with a layout (inkTight) and name the colour in the words (QuietText)", name, overrides)
+		}
+	}
+}
+
+// walkDrawn visits everything a tree draws: into a container's objects and into
+// every widget's renderer, which is where a widget keeps what it built - the
+// rows of an open list among them. walk stops at a widget it has no case for,
+// and that is the half this guard needs.
+func walkDrawn(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
+	if o == nil {
+		return
+	}
+	visit(o)
+	switch v := o.(type) {
+	case *fyne.Container:
+		for _, child := range v.Objects {
+			walkDrawn(child, visit)
+		}
+	case fyne.Widget:
+		for _, child := range test.WidgetRenderer(v).Objects() {
+			walkDrawn(child, visit)
 		}
 	}
 }
