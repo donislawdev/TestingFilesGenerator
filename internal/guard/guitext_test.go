@@ -54,8 +54,8 @@ import (
 // is not a number, so two sentences a person reads were built outside the text
 // package and no carrier list would ever have named them.
 var notWords = map[string]string{
-	`"10mb"`:              "the size a fresh screen starts at, a value rather than prose",
-	`"1"`:                 "how many files a fresh screen starts at",
+	`"10mb"`: "the size a fresh screen starts at, a value rather than prose",
+	`"1"`:    "how many files a fresh screen starts at",
 	`"-"`: "the hyphen a size range is written with (1kb-8kb), searched for in a box so a range is not " +
 		"offered a single size in its place - a character of the syntax, never shown",
 	`" "`: "the space two lines of one paragraph of the licence are joined with, so the notice wraps to the " +
@@ -84,6 +84,10 @@ var notWords = map[string]string{
 		"libraries, asked for by name because that is how the loader takes it",
 	`"preset"`:            "the key the preset field is registered under, not a label",
 	`"start_from_preset"`: "the key the batch screen's switch to build on a preset is registered under, not a label",
+	`"configuration"`:     "the key a folding section is remembered under across a rebuild, never shown - see window/sections.go",
+	`"output"`:            "the key a folding section is remembered under across a rebuild, never shown",
+	`"settings"`:          "the key a folding section is remembered under across a rebuild, never shown",
+	`"base"`:              "the key a folding section is remembered under across a rebuild, never shown",
 	`"outputDirectory"`: "the name the window files the last output directory under, never shown. " +
 		"Translating a storage key would lose what was kept the day somebody changed language",
 	`"windowWidth"`:  "the name the window files its width under, never shown",

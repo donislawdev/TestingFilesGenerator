@@ -140,6 +140,8 @@ func groupInk(kind GroupKind) fyne.ThemeColorName {
 		return theme.ColorNameWarning
 	case GroupNotes:
 		return ColorNameLabel
+	case GroupSettings:
+		return theme.ColorNamePrimary
 	}
 	return theme.ColorNamePrimary
 }
