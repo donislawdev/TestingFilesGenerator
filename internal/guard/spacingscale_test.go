@@ -239,15 +239,32 @@ func gapBelowField(t *testing.T, screen fyne.CanvasObject, above, below string) 
 //
 // Found by the text on the label rather than by a position handed in, because
 // a guard given coordinates would be a copy of the layout it is checking.
+//
+// A sentence drawn ink tight (parts.inkTight) is measured by the room it was
+// given, not by the label. Since 2026-09-23 the layout places the label one
+// inner padding up and left and one larger on every side, so its padding falls
+// outside the room and its words land on the room's edge - the label's own
+// box is where its padding is, and the room is where the ink is, exactly
+// where the label stood when a theme override took the padding off instead.
 func labelBox(screen fyne.CanvasObject, words string) (band, bool) {
 	found := band{}
 	ok := false
+	tight := map[fyne.CanvasObject]band{}
 	atAbsolute(screen, func(o fyne.CanvasObject, at fyne.Position) {
 		if ok {
 			return
 		}
+		if room, is := o.(*fyne.Container); is && len(room.Objects) == 1 {
+			if p := room.Objects[0].Position(); p.X < 0 && p.X == p.Y {
+				tight[room.Objects[0]] = band{X: at.X, Y: at.Y, Width: room.Size().Width, Height: room.Size().Height}
+			}
+		}
 		shown, is := wordsOf(o)
 		if !is || shown != words {
+			return
+		}
+		if room, drawnTight := tight[o]; drawnTight {
+			found, ok = room, true
 			return
 		}
 		found, ok = band{X: at.X, Y: at.Y, Width: o.Size().Width, Height: o.Size().Height}, true

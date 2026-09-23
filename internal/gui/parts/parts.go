@@ -21,8 +21,6 @@
 package parts
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -118,18 +116,17 @@ func oneLine(text string, size fyne.ThemeSizeName) fyne.CanvasObject {
 // hint rather than of a value, so it reads as an explanation of the word above
 // it and not as a second heading competing with it.
 //
-// A toolkit label rather than canvas words, because a sentence wraps and a
+// Wrapping words rather than canvas words, because a sentence wraps and a
 // name does not - the same split words and Prose make. Its colour is the
 // hint's, the same step the words on the strip stand at when they are not
-// chosen, so the head of a screen has one quiet colour and not two. Asked for
-// through quiet below, because the toolkit draws a low importance label in the
-// DISABLED colour, and this palette keeps that a step brighter than a hint on
-// purpose - see ColorNameDisabled in theme.go.
+// chosen, so the head of a screen has one quiet colour and not two. QuietText,
+// because the toolkit draws a low importance label in the DISABLED colour, and
+// this palette keeps that a step brighter than a hint on purpose - see
+// ColorNameDisabled in theme.go.
 func Subtitle(sentence string) fyne.CanvasObject {
-	label := widget.NewLabel(sentence)
-	label.Wrapping = fyne.TextWrapWord
-	label.Importance = widget.LowImportance
-	return quiet(label)
+	subtitle := NewQuietText(sentence)
+	subtitle.Wrapping = fyne.TextWrapWord
+	return subtitle
 }
 
 // Caption is a short quiet line over or under a thing, at the smallest rank
@@ -138,39 +135,10 @@ func Subtitle(sentence string) fyne.CanvasObject {
 // on 2026-09-15 when a second thing needed it - a rank used twice without a
 // name is GUI rule 7's definition of a missing style.
 func Caption(text string) fyne.CanvasObject {
-	label := widget.NewLabel(text)
-	label.Wrapping = fyne.TextWrapWord
-	label.SizeName = theme.SizeNameCaptionText
-	label.Importance = widget.LowImportance
-	return quiet(label)
-}
-
-// quiet draws a low importance label in the hint's colour rather than the
-// disabled one, and takes the room a label keeps around itself off it.
-//
-// One helper rather than one at each call site, because O213 was four call
-// sites saying different things: a caption under a field, the count of bytes, a
-// folded section's summary and this subtitle were all widget.LowImportance,
-// which the toolkit draws in ColorNameDisabled - #C2C8CD, 80 L*, a step
-// BRIGHTER than a hint. So a caption meant to recede sat louder than the
-// placeholder in an empty box beside it. Owner's decision on 2026-09-15: one
-// quiet, the hint's, and the disabled colour kept for a value that is switched
-// off - which is content somebody may want to re-read and so is right to be the
-// brighter of the two.
-func quiet(o fyne.CanvasObject) fyne.CanvasObject {
-	return container.NewThemeOverride(o, quietInk{noInnerPadding{Theme()}})
-}
-
-// quietInk is the window's theme with a low importance label drawn in the
-// hint's colour rather than the disabled one, and without the room a label
-// keeps around itself.
-type quietInk struct{ noInnerPadding }
-
-func (q quietInk) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-	if name == theme.ColorNameDisabled {
-		return q.noInnerPadding.Color(theme.ColorNamePlaceHolder, variant)
-	}
-	return q.noInnerPadding.Color(name, variant)
+	caption := NewQuietText(text)
+	caption.Wrapping = fyne.TextWrapWord
+	caption.SizeName = theme.SizeNameCaptionText
+	return caption
 }
 
 // Titled is what stands above a screen's sections: its name, and under it the

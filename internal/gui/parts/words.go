@@ -86,18 +86,6 @@ func (inkTightLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // - which has to be built by the runner and placed by the bar.
 func Flush(label *widget.Label) fyne.CanvasObject { return inkTight(label) }
 
-// noInnerPadding is the window's theme with the room inside a label taken out.
-// Only that one size, so a box to type in under the same override would still
-// be a box.
-type noInnerPadding struct{ fyne.Theme }
-
-func (n noInnerPadding) Size(name fyne.ThemeSizeName) float32 {
-	if name == theme.SizeNameInnerPadding {
-		return 0
-	}
-	return n.Theme.Size(name)
-}
-
 // Padded keeps one distance from the scale between its edge and its content.
 //
 // The toolkit's padded container reads the theme's padding, which is the

@@ -43,12 +43,10 @@
 												</widget>
 											</widget>
 										</container>
-										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
+										<widget pos="0,32" size="788x16" type="*parts.QuietText">
 											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text color="placeholder" size="589x16">Ready-made sets of files, each built to answer one question about the system under test.</text>
-													</widget>
+												<widget pos="-6,-6" size="800x28" type="*widget.RichText">
+													<text color="placeholder" pos="6,6" size="589x16">Ready-made sets of files, each built to answer one question about the system under test.</text>
 												</widget>
 											</container>
 										</widget>
@@ -71,10 +69,8 @@
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																</widget>
 																<text bold pos="24,0" size="108x20" textSize="17">The question</text>
-																<widget pos="136,0" size="0x20" type="*container.ThemeOverride">
-																	<container size="0x20">
-																	</container>
-																</widget>
+																<container pos="136,0" size="0x20">
+																</container>
 															</container>
 														</container>
 													</container>
@@ -179,10 +175,8 @@
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																</widget>
 																<text bold pos="24,0" size="69x20" textSize="17">Settings</text>
-																<widget pos="97,0" size="0x20" type="*container.ThemeOverride">
-																	<container size="0x20">
-																	</container>
-																</widget>
+																<container pos="97,0" size="0x20">
+																</container>
 															</container>
 														</container>
 													</container>
@@ -221,12 +215,10 @@
 																	<rectangle radius="6" size="185x28"/>
 																</container>
 															</container>
-															<widget pos="0,68" size="185x14" type="*container.ThemeOverride">
+															<widget pos="0,68" size="185x14" type="*parts.ByteCount">
 																<container size="185x14">
-																	<widget size="185x14" type="*parts.ByteCount">
-																		<widget size="185x14" type="*widget.RichText">
-																			<text color="placeholder" size="0x14" textSize="12"></text>
-																		</widget>
+																	<widget pos="-6,-6" size="197x26" type="*widget.RichText">
+																		<text color="placeholder" pos="6,6" size="0x14" textSize="12"></text>
 																	</widget>
 																</container>
 															</widget>
@@ -313,10 +305,8 @@
 																	<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																</widget>
 																<text bold pos="24,0" size="57x20" textSize="17">Output</text>
-																<widget pos="85,0" size="0x20" type="*container.ThemeOverride">
-																	<container size="0x20">
-																	</container>
-																</widget>
+																<container pos="85,0" size="0x20">
+																</container>
 															</container>
 														</container>
 													</container>

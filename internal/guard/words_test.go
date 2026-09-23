@@ -4,6 +4,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
 // wordsOf is the text an object shows, whichever of the two kinds of object
@@ -19,6 +21,10 @@ import (
 // one place the two kinds are told apart, so the next kind is one more case
 // here rather than a hunt through thirty type assertions.
 //
+// The third kind since 2026-09-23: parts.QuietText, the words that recede -
+// a subtitle, a caption, a folded section's line, the count of bytes - which
+// stopped being toolkit labels under a theme override (see QuietText).
+//
 // A hidden object still answers. Whether something is on the screen is a
 // question about its ancestors as well, and sizechoice_test.go asks it
 // properly. Nothing here filters.
@@ -27,6 +33,10 @@ func wordsOf(o fyne.CanvasObject) (string, bool) {
 	case *widget.Label:
 		return v.Text, true
 	case *canvas.Text:
+		return v.Text, true
+	case *parts.QuietText:
+		return v.Text, true
+	case *parts.ByteCount:
 		return v.Text, true
 	}
 	return "", false
@@ -46,6 +56,20 @@ func boldWordsAt(o fyne.CanvasObject) (text string, bold bool, size float32, ok 
 		return v.Text, v.TextStyle.Bold, fyne.CurrentApp().Settings().Theme().Size(name), true
 	case *canvas.Text:
 		return v.Text, v.TextStyle.Bold, v.TextSize, true
+	case *parts.QuietText:
+		return v.Text, false, quietSize(v), true
+	case *parts.ByteCount:
+		return v.Text, false, quietSize(&v.QuietText), true
 	}
 	return "", false, 0, false
+}
+
+// quietSize is the size quiet words are drawn at: their rank of the scale,
+// the body text when none is named - the rule widget.Label keeps.
+func quietSize(q *parts.QuietText) float32 {
+	name := q.SizeName
+	if name == "" {
+		name = "text"
+	}
+	return fyne.CurrentApp().Settings().Theme().Size(name)
 }

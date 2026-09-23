@@ -43,12 +43,10 @@
 												</widget>
 											</widget>
 										</container>
-										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
+										<widget pos="0,32" size="788x16" type="*parts.QuietText">
 											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text color="placeholder" size="462x16">Batches of different formats and sizes, generated together in one run.</text>
-													</widget>
+												<widget pos="-6,-6" size="800x28" type="*widget.RichText">
+													<text color="placeholder" pos="6,6" size="462x16">Batches of different formats and sizes, generated together in one run.</text>
 												</widget>
 											</container>
 										</widget>
@@ -72,10 +70,8 @@
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																	</widget>
 																	<text bold pos="24,0" size="138x20" textSize="17">Build on a preset</text>
-																	<widget pos="166,0" size="0x20" type="*container.ThemeOverride">
-																		<container size="0x20">
-																		</container>
-																	</widget>
+																	<container pos="166,0" size="0x20">
+																	</container>
 																</container>
 															</container>
 														</container>
@@ -84,13 +80,11 @@
 													</container>
 												</container>
 												<container pos="0,52" size="788x69">
-													<widget size="788x29" type="*container.ThemeOverride">
+													<widget size="788x29" type="*parts.QuietText">
 														<container size="788x29">
-															<widget size="788x29" type="*widget.Label">
-																<widget size="788x29" type="*widget.RichText">
-																	<text color="placeholder" size="786x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole</text>
-																	<text color="placeholder" pos="0,14" size="39x14" textSize="12">recipe.</text>
-																</widget>
+															<widget pos="-6,-6" size="800x41" type="*widget.RichText">
+																<text color="placeholder" pos="6,6" size="786x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole</text>
+																<text color="placeholder" pos="6,20" size="39x14" textSize="12">recipe.</text>
 															</widget>
 														</container>
 													</widget>
@@ -131,8 +125,8 @@
 														<container pos="-8,0" size="796x36">
 															<container size="714x36">
 																<widget size="714x36" type="*parts.FoldHead">
-																	<rectangle radius="6" size="214x36"/>
-																	<rectangle radius="6" size="214x36" strokeColor="hyperlink"/>
+																	<rectangle radius="6" size="103x36"/>
+																	<rectangle radius="6" size="103x36" strokeColor="hyperlink"/>
 																</widget>
 																<container size="714x36">
 																	<container pos="8,8" size="698x20">
@@ -140,10 +134,8 @@
 																			<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																		</widget>
 																		<text bold pos="24,0" size="59x20" textSize="17">Batch 1</text>
-																		<widget pos="87,0" size="111x20" type="*container.ThemeOverride">
-																			<container size="111x20">
-																			</container>
-																		</widget>
+																		<container pos="87,0" size="0x20">
+																		</container>
 																	</container>
 																</container>
 															</container>
@@ -266,12 +258,10 @@
 																		<rectangle radius="6" size="185x28" strokeColor="error" strokeWidth="2"/>
 																	</container>
 																</container>
-																<widget pos="0,68" size="185x14" type="*container.ThemeOverride">
+																<widget pos="0,68" size="185x14" type="*parts.ByteCount">
 																	<container size="185x14">
-																		<widget size="185x14" type="*parts.ByteCount">
-																			<widget size="185x14" type="*widget.RichText">
-																				<text color="placeholder" size="0x14" textSize="12"></text>
-																			</widget>
+																		<widget pos="-6,-6" size="197x26" type="*widget.RichText">
+																			<text color="placeholder" pos="6,6" size="0x14" textSize="12"></text>
 																		</widget>
 																	</container>
 																</widget>
@@ -386,10 +376,8 @@
 																								<image fillMode="contain" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
 																							</widget>
 																							<text bold pos="24,0" size="109x20">Settings for avif</text>
-																							<widget pos="137,0" size="0x20" type="*container.ThemeOverride">
-																								<container size="0x20">
-																								</container>
-																							</widget>
+																							<container pos="137,0" size="0x20">
+																							</container>
 																						</container>
 																					</container>
 																				</container>
@@ -422,10 +410,8 @@
 																								<image fillMode="contain" rsc="menuExpandIcon" size="iconInlineSize" themed="placeholder"/>
 																							</widget>
 																							<text bold pos="24,0" size="152x20">Notes for the manifest</text>
-																							<widget pos="180,0" size="0x20" type="*container.ThemeOverride">
-																								<container size="0x20">
-																								</container>
-																							</widget>
+																							<container pos="180,0" size="0x20">
+																							</container>
 																						</container>
 																					</container>
 																				</container>
@@ -461,10 +447,8 @@
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="20x20" themed="placeholder"/>
 																	</widget>
 																	<text bold pos="24,0" size="57x20" textSize="17">Output</text>
-																	<widget pos="85,0" size="0x20" type="*container.ThemeOverride">
-																		<container size="0x20">
-																		</container>
-																	</widget>
+																	<container pos="85,0" size="0x20">
+																	</container>
 																</container>
 															</container>
 														</container>

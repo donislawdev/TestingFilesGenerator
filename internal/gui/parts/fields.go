@@ -226,10 +226,9 @@ func (s *Fields) counter(setting string, control fyne.CanvasObject) fyne.CanvasO
 	// Beside the box on its own line, with no room of its own around the ink,
 	// so what the row puts between the box and the count is what reaches the
 	// screen. Until 2026-09-14 it stood at the far end of the name's line, 190
-	// px from the box it was counting for. Drawn through quiet since 2026-09-15
-	// - it is a low importance label, so the same O213 that dimmed a caption
-	// dimmed this. See parts.quiet.
-	return quiet(count)
+	// px from the box it was counting for. Quiet words since 2026-09-15 - the
+	// same O213 that dimmed a caption dimmed this. See QuietText.
+	return count
 }
 
 // Add builds a field and hands back the thing to put on the screen.

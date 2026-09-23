@@ -138,7 +138,9 @@ func TestTheActionBarSpeaksOnTheSameEdgeAsTheForm(t *testing.T) {
 	if status == nil {
 		t.Fatal("the bar is not naming the destination at rest, so this guard read the wrong tree")
 	}
-	at, found := absoluteOf(generate, status)
+	// Measured where its words are, which labelBox knows for a line drawn
+	// ink tight - the label itself stands one padding to the left of them.
+	at, found := labelBox(generate, status.Text)
 	if !found {
 		t.Fatal("the status line is not on the screen it was found in")
 	}
