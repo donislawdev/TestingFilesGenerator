@@ -12,8 +12,17 @@ import (
 // one name rather than two. The old titles moved under the new ones first,
 // word for word, and the owner allowed them to be rewritten the same day:
 // "Generate files" under "Single batch" explained nothing the tab had not.
+//
+// SubtitleGenerate names the manifest as of 2026-09-23, and that is the one
+// sentence a first start has in which to say what this tool is. It read
+// "Files of one format and one size, as many as you need", which describes
+// the mechanism and is true of every other generator of test files - so the
+// screen the window opens on looked exactly like the tools this one is not.
+// The thing it does that they do not is the manifest, and the manifest was
+// named on no work screen at all: not in the form, not after a run. Named
+// here it costs a clause on a line that was already there.
 func SubtitleGenerate() string {
-	return say("SubtitleGenerate", "Files of one format and one size, as many as you need.")
+	return say("SubtitleGenerate", "Files of one format and one size, with a manifest that says how the system under test should react to them.")
 }
 
 func SubtitlePreset() string {
@@ -30,6 +39,46 @@ func HeadingAbout(version string) string {
 // thesis in a line: files, and what should happen to them.
 func AboutTagline() string {
 	return say("AboutTagline", "Generate test files, and know how the system under test should react to them.")
+}
+
+// SectionHowToUse heads the three steps under the tagline, and it is there
+// because of what the screen was made of without it.
+//
+// Counted on 2026-09-22: About gave the thesis one sentence and then ran
+// straight into the licence notice and the list of what the binary carries,
+// so four fifths of the screen answered a question about redistribution -
+// which is a real question and not the first one anybody has. Somebody who
+// has just opened this program is asking what to do with it, and the answer
+// was on no screen in the window.
+func SectionHowToUse() string { return say("SectionHowToUse", "How to use it") }
+
+// HowToUseSteps is that answer, in the order somebody does it: choose what to
+// make, make it, and then use what came out.
+//
+// The third step is the one the other two are for. It is also the only place
+// in the window that says the manifest may decline to have an opinion - a run
+// records outcome: unspecified wherever the right answer belongs to the
+// application's own policy (manifest rule MF5), and a person writing a test
+// against the file would otherwise meet that for the first time in the JSON.
+//
+// It names the outcomes with the SPELLING THE MANIFEST USES, and both halves
+// of that were wrong when this was written on 2026-09-23. It said "turn it
+// away" for an outcome the document calls reject, which is a second word for
+// a contract value somebody is about to read - and it left "sanitize" out
+// altogether, so the list promised three answers where the closed set has
+// four (internal/recipe: accept, reject, sanitize, unspecified). The first
+// half came from an outside review of #125, the second was found while
+// checking it. American spelling because that is the value, not a preference.
+//
+// A list of sentences rather than one paragraph per step: the window draws
+// these as the bullets the preset screen already uses for what a set
+// typically finds, so the three steps are read at a glance rather than read.
+func HowToUseSteps() []string {
+	return []string{
+		say("HowToUseChoose", "Choose a preset, or fill in one batch on the first screen."),
+		say("HowToUsePress", "Press Generate. The files and a manifest land in the output folder."),
+		say("HowToUseRead", "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."),
+	}
 }
 
 // The tabs across the top, which are where moving between screens lives.
@@ -371,10 +420,31 @@ func FieldBoundary() string  { return say("FieldBoundary", "Limit to test") }
 func SizeWayExact() string    { return say("SizeWayExact", "One size") }
 func SizeWayRange() string    { return say("SizeWayRange", "A range") }
 func SizeWayBoundary() string { return say("SizeWayBoundary", "Around a limit") }
-func FieldGroup() string      { return say("FieldGroup", "Kind of case") }
-func FieldExpected() string   { return say("FieldExpected", "Expected outcome") }
-func FieldReason() string     { return say("FieldReason", "Rule being tested") }
-func FieldManifest() string   { return say("FieldManifest", "Manifest file name") }
+
+// FieldSizeWay names that switch, and until 2026-09-23 it had no name at all.
+//
+// It was the one control on the batch screen standing between two named
+// fields with nothing over it, so what it was about came from where it sat -
+// which is guessing, and which puts it outside the rule that every element
+// belongs to something. The words say HOW the size is stated, where the
+// label under it says WHAT the box holds, for the reason written above the
+// three words themselves.
+func FieldSizeWay() string { return say("FieldSizeWay", "How the size is given") }
+
+// DetailSizeWay says what each of the three does, and it is behind the button
+// because it is read once.
+//
+// All three in one sentence each, deliberately: the line under a box explains
+// only the way already chosen, so before choosing there is nothing on the
+// screen that compares them - and "Around a limit" is both the least obvious
+// of the three and the one this tool is really for.
+func DetailSizeWay() string {
+	return say("DetailSizeWay", "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over.")
+}
+func FieldGroup() string    { return say("FieldGroup", "Kind of case") }
+func FieldExpected() string { return say("FieldExpected", "Expected outcome") }
+func FieldReason() string   { return say("FieldReason", "Rule being tested") }
+func FieldManifest() string { return say("FieldManifest", "Manifest file name") }
 
 // The line under each of the recipe screen's own fields.
 func HintSizeRange() string { return say("HintSizeRange", "A different size for every file.") }

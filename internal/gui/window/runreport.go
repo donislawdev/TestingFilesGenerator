@@ -66,14 +66,22 @@ func progressText(p engine.Progress, elapsed time.Duration) string {
 	return line + text.TimeLeft(core.Roughly(left))
 }
 
-// saveManifest writes the record of what the run did.
+// saveManifest writes the record of what the run did, and hands back where it
+// put it.
 //
 // A run refused before it wrote anything gets none. Writing one would replace
 // the record of whatever was already in that directory, and that record is the
 // only thing cleanup can work from.
-func saveManifest(res *engine.Result, opt engine.Options) error {
+//
+// The path comes back rather than being worked out again by whoever wants to
+// name it, and that is the whole reason this returns two things. The manifest's
+// name is a field on the batch screen, so "the manifest of this run" is not a
+// constant - and a screen that says one name while the file has another is
+// worse than a screen that says nothing. An empty path means no record was
+// written, which is what the button and the sentence both ask about.
+func saveManifest(res *engine.Result, opt engine.Options) (string, error) {
 	if opt.DryRun || res == nil || !res.Started {
-		return nil
+		return "", nil
 	}
 	// Asked of the engine rather than joined here. This used to be
 	// filepath.Join(opt.OutDir, opt.ManifestName), which is the same answer
@@ -83,7 +91,7 @@ func saveManifest(res *engine.Result, opt engine.Options) error {
 	// reached it.
 	path := engine.ManifestPath(opt)
 	if err := res.Manifest.Save(path); err != nil {
-		return fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
+		return "", fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
 	}
-	return nil
+	return path, nil
 }

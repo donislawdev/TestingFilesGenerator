@@ -50,6 +50,17 @@ func About(h Host) fyne.CanvasObject {
 		sections = append(sections, parts.Indented(parts.Prose(text.DrawingWithSoftwareRenderer())))
 	}
 	sections = append(sections,
+		// What to do with the program, before what may be done with the source
+		// of it. Counted on the stored screen of 2026-09-22: the thesis had one
+		// sentence and everything under it was the licence and the list of what
+		// the binary carries, so four fifths of this screen answered a question
+		// about redistribution - a real question, and not the one somebody has
+		// on the day they open this.
+		//
+		// Bullets rather than paragraphs, and the same ones the preset screen
+		// draws under "Typically finds:" - three steps are read at a glance in
+		// a list and read one by one in prose.
+		parts.Section(text.SectionHowToUse(), parts.Bullets(text.HowToUseSteps())),
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.

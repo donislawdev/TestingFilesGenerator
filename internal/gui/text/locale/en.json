@@ -39,6 +39,10 @@
     "description": "The words on a button.",
     "other": "Open folder"
   },
+  "ButtonOpenManifest": {
+    "description": "The words on a button.",
+    "other": "Open manifest"
+  },
   "ButtonPreview": {
     "description": "The words on a button.",
     "other": "Preview"
@@ -127,6 +131,10 @@
     "description": "The longer explanation behind the button beside a field name.",
     "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
   },
+  "DetailSizeWay": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over."
+  },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
@@ -203,6 +211,10 @@
     "description": "The name above a box somebody fills in.",
     "other": "Size range"
   },
+  "FieldSizeWay": {
+    "description": "The name above a box somebody fills in.",
+    "other": "How the size is given"
+  },
   "FieldTargetID": {
     "description": "The name above a box somebody fills in.",
     "other": "Batch name"
@@ -275,6 +287,22 @@
   "HintTargetID": {
     "description": "The line under a field name, saying what the field does.",
     "other": "A short name for this batch."
+  },
+  "HowToUseChoose": {
+    "description": "Shown in the window.",
+    "other": "Choose a preset, or fill in one batch on the first screen."
+  },
+  "HowToUsePress": {
+    "description": "Shown in the window.",
+    "other": "Press Generate. The files and a manifest land in the output folder."
+  },
+  "HowToUseRead": {
+    "description": "Shown in the window.",
+    "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
+  },
+  "ManifestNamed": {
+    "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",
+    "other": "Manifest: {{.Name}}"
   },
   "ManifestNotSaved": {
     "description": "Shown in the window. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",
@@ -376,6 +404,10 @@
     "description": "The heading over a group of fields.",
     "other": "File configuration"
   },
+  "SectionHowToUse": {
+    "description": "The heading over a group of fields.",
+    "other": "How to use it"
+  },
   "SectionLicence": {
     "description": "The heading over a group of fields.",
     "other": "Licence"
@@ -438,7 +470,7 @@
   },
   "SubtitleGenerate": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
-    "other": "Files of one format and one size, as many as you need."
+    "other": "Files of one format and one size, with a manifest that says how the system under test should react to them."
   },
   "SubtitlePreset": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",

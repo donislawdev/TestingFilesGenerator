@@ -31,8 +31,8 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<widget size="1092x1164" type="*widget.Scroll">
-					<container size="1092x1611">
-						<container pos="136,0" size="820x1611">
+					<container size="1092x1769">
+						<container pos="136,0" size="820x1769">
 							<container size="820x24">
 								<widget pos="16,0" size="788x24" type="*container.ThemeOverride">
 									<container size="788x24">
@@ -55,7 +55,54 @@
 									</container>
 								</widget>
 							</container>
-							<container pos="0,89" size="820x373">
+							<container pos="0,89" size="820x134">
+								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x134" strokeColor="button" strokeWidth="1"/>
+								<container size="820x134">
+									<container pos="16,16" size="788x102">
+										<text bold size="788x20" textSize="17">How to use it</text>
+										<container pos="0,36" size="788x66">
+											<container size="788x14">
+												<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
+													<container size="777x14">
+														<widget size="777x14" type="*widget.Label">
+															<widget size="777x14" type="*widget.RichText">
+																<text color="placeholder" size="311x14" textSize="12">Choose a preset, or fill in one batch on the first screen.</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
+												<text color="placeholder" size="6x14" textSize="12">•</text>
+											</container>
+											<container pos="0,18" size="788x14">
+												<widget pos="10,0" size="777x14" type="*container.ThemeOverride">
+													<container size="777x14">
+														<widget size="777x14" type="*widget.Label">
+															<widget size="777x14" type="*widget.RichText">
+																<text color="placeholder" size="372x14" textSize="12">Press Generate. The files and a manifest land in the output folder.</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
+												<text color="placeholder" size="6x14" textSize="12">•</text>
+											</container>
+											<container pos="0,37" size="788x29">
+												<widget pos="10,0" size="777x29" type="*container.ThemeOverride">
+													<container size="777x29">
+														<widget size="777x29" type="*widget.Label">
+															<widget size="777x29" type="*widget.RichText">
+																<text color="placeholder" size="751x14" textSize="12">Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or</text>
+																<text color="placeholder" pos="0,14" size="570x14" textSize="12">records the outcome as unspecified, where the right answer belongs to the application's own policy.</text>
+															</widget>
+														</widget>
+													</container>
+												</widget>
+												<text color="placeholder" size="6x29" textSize="12">•</text>
+											</container>
+										</container>
+									</container>
+								</container>
+							</container>
+							<container pos="0,247" size="820x373">
 								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x373" strokeColor="button" strokeWidth="1"/>
 								<container size="820x373">
 									<container pos="16,16" size="788x341">
@@ -89,7 +136,7 @@
 									</container>
 								</container>
 							</container>
-							<container pos="0,486" size="820x118">
+							<container pos="0,645" size="820x118">
 								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x118" strokeColor="button" strokeWidth="1"/>
 								<container size="820x118">
 									<container pos="16,16" size="788x86">
@@ -115,7 +162,7 @@
 									</container>
 								</container>
 							</container>
-							<container pos="0,629" size="820x610">
+							<container pos="0,787" size="820x610">
 								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x610" strokeColor="button" strokeWidth="1"/>
 								<container size="820x610">
 									<container pos="16,16" size="788x578">
@@ -163,7 +210,7 @@
 									</container>
 								</container>
 							</container>
-							<container pos="0,1263" size="820x221">
+							<container pos="0,1422" size="820x221">
 								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x221" strokeColor="button" strokeWidth="1"/>
 								<container size="820x221">
 									<container pos="16,16" size="788x189">
@@ -188,7 +235,7 @@
 									</container>
 								</container>
 							</container>
-							<container pos="0,1508" size="820x102">
+							<container pos="0,1667" size="820x102">
 								<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 								<container size="820x102">
 									<container pos="16,16" size="788x70">
@@ -212,8 +259,8 @@
 						<linearGradient pos="0,-8" size="1092x8"/>
 					</widget>
 					<widget pos="1086,0" size="6x1164" type="*widget.scrollBarArea">
-						<widget pos="3,0" size="3x841" type="*widget.scrollBar">
-							<rectangle fillColor="scrollbar" radius="3" size="3x841"/>
+						<widget pos="3,0" size="3x765" type="*widget.scrollBar">
+							<rectangle fillColor="scrollbar" radius="3" size="3x765"/>
 						</widget>
 					</widget>
 				</widget>

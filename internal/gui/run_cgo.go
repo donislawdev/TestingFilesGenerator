@@ -216,7 +216,21 @@ func (d desktop) OpenLink(address string) {
 // A refusal is swallowed for the same reason OpenLink swallows one: there is
 // nothing useful to say to somebody whose desktop has no file manager, and the
 // path is on the screen for anybody who wants to copy it.
-func (d desktop) OpenFolder(path string) {
+func (d desktop) OpenFolder(path string) { openPath(path) }
+
+// OpenFile asks the desktop to open one file with whatever opens that kind.
+//
+// The same address and the same swallowed refusal as the folder above, and
+// two methods rather than one because they are not the same thing to the
+// person pressing. A folder opens in a file manager every desktop has. A
+// file opens in whatever is registered for its kind, or in a dialog asking
+// which, or in nothing at all where neither exists - so this is the one of
+// the two that can quietly do nothing, and the window keeps the folder
+// button beside it for exactly that.
+func (d desktop) OpenFile(path string) { openPath(path) }
+
+// openPath hands one absolute path to the desktop as a file address.
+func openPath(path string) {
 	absolute, err := filepath.Abs(path)
 	if err != nil {
 		return

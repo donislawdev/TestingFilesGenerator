@@ -50,7 +50,17 @@ func ButtonGenerate() string { return say("ButtonGenerate", "Generate") }
 // ButtonOpenFolder shows the directory a finished run wrote into. It is on the
 // bar only while there is something to open.
 func ButtonOpenFolder() string { return say("ButtonOpenFolder", "Open folder") }
-func ButtonCancel() string     { return say("ButtonCancel", "Cancel") }
+
+// ButtonOpenManifest opens the record a finished run wrote, beside the button
+// that opens the folder it wrote into, and under the same rule: on the bar
+// only while there is one.
+//
+// "Manifest" rather than the file's name, because the name is a setting - the
+// batch screen has a box for it - and a button whose words change with a box
+// is a button somebody has to read twice. The name is in the sentence beside
+// it, which is where a value belongs.
+func ButtonOpenManifest() string { return say("ButtonOpenManifest", "Open manifest") }
+func ButtonCancel() string       { return say("ButtonCancel", "Cancel") }
 
 // files is a count with its noun, in the right number.
 //
@@ -394,4 +404,35 @@ func WrittenWithFailures(written, failed int) string {
 // Written is the outcome of a run where everything asked for was produced.
 func Written(written int) string {
 	return sayf("Written", "{{.Files}} written.", map[string]any{"Files": files(written)})
+}
+
+// ManifestNamed is the record a run left, said by name on the line that says
+// the run is over.
+//
+// The command line has printed "manifest: <path>" since there was one, and the
+// window said "3 files written." and nothing else - so the one thing this tool
+// makes that other generators do not was, from a window, something you found
+// in the folder afterwards and wondered about. D1 asks for parity between the
+// two surfaces, and this is the kind that is lost quietly: nothing the engine
+// can do is missing, only the sentence about it.
+//
+// The name alone rather than the whole path, because the folder is named by
+// the button beside this and by the field the run was started from, and a
+// path on the line that says a run succeeded is a line that wraps.
+func ManifestNamed(name string) string {
+	return sayf("ManifestNamed", "Manifest: {{.Name}}", map[string]any{"Name": name})
+}
+
+// SaidWithManifest joins what a run did to the record it left, in that order.
+//
+// Here rather than at the call site for the reason OneExplanation gives: what
+// separates two sentences is a decision about writing rather than about
+// running, and a language that ends a sentence some other way needs one place
+// to change it. Handed back untouched when there is no manifest to name - a
+// run refused before it started leaves none, and it must not be told it did.
+func SaidWithManifest(said, name string) string {
+	if name == "" {
+		return said
+	}
+	return said + " " + ManifestNamed(name)
 }

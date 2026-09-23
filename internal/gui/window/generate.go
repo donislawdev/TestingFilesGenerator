@@ -84,6 +84,21 @@ type Host interface {
 	// address belongs to the one place that knows what system this is.
 	OpenFolder(path string)
 
+	// OpenFile asks the desktop to open one file with whatever it opens that
+	// kind with. The manifest of a finished run is the only thing the window
+	// offers this way.
+	//
+	// Separate from OpenFolder although both end at the same call, because
+	// they are not the same thing to the person pressing: a folder opens in a
+	// file manager every desktop has, and a file opens in whatever is
+	// registered for its kind - which on a machine where nothing is
+	// registered for .json is a dialog asking what to use. Measured on this
+	// machine on 2026-09-23: .json has no association of its own in the
+	// registry and the manifest still opened, in the editor registered for
+	// it. Two names rather than one keep that difference where somebody
+	// reading this can see it.
+	OpenFile(path string)
+
 	// OpenLink hands an address to whatever the desktop uses for the web.
 	//
 	// The program does not fetch it. It asks the system to, on a press somebody
@@ -188,7 +203,7 @@ type Generate struct {
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g := &Generate{runner: newRunner(host.Later), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = g.settle
-	g.runner.openFolder = host.OpenFolder
+	g.runner.offer.through(host)
 	// This screen is one target and draws its boxes under the bare key, so a
 	// refusal that arrives carrying a position belongs to the box of that name.
 	g.runner.readdress = withoutTheTarget
@@ -309,9 +324,9 @@ func (g *Generate) buildFields() {
 		g.onDamageChosen)
 	g.damage.pick.SetSelected(text.DamageNone())
 
-	g.size = entry("10mb", "")
+	g.size = entry(startingSize, "")
 	g.count = entry("1", "")
-	g.id = entry("files", "")
+	g.id = entry(startingBatchName, "")
 	g.name = entry("", text.PlaceholderNameTemplate)
 	g.outDir = entry(startingDirectory(), "")
 	g.seed = entry("0", "")

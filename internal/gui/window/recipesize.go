@@ -25,7 +25,9 @@ import (
 //
 // The switch is drawn above them rather than beside the name of one, because it
 // belongs to all three and a control that belongs to three fields cannot sit
-// inside one of their headings.
+// inside one of their headings. It carries a name of its own since 2026-09-23,
+// for the reason parts.Fields.Named gives: it was the one control on this
+// screen whose subject had to be guessed from what stood next to it.
 func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	add func(setting, label, hint string, detail parts.Detail, control fyne.CanvasObject) fyne.CanvasObject,
 ) fyne.CanvasObject {
@@ -65,7 +67,8 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	for _, key := range sizeWayKeys() {
 		boxes = append(boxes, b.sizeBoxes[key])
 	}
-	return parts.FieldColumn(append([]fyne.CanvasObject{r.fields.Unlabelled(b.sizeWay)}, boxes...)...)
+	named := r.fields.Named(text.FieldSizeWay(), r.tips.Say(text.DetailSizeWay()), b.sizeWay)
+	return parts.FieldColumn(append([]fyne.CanvasObject{named}, boxes...)...)
 }
 
 // newSizeWaySwitch is the control itself, built with the batch rather than with
