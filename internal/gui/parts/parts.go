@@ -196,8 +196,9 @@ func Titled(name, sentence string) fyne.CanvasObject {
 // and a walk that does not know one type stops seeing every field below it,
 // which is exactly what happened when cards arrived.
 //
-// The content is a Grid since the prototype of 2026-09-23: fields two to a
-// row, anything else across the row.
+// The content is a Grid since the prototype of 2026-09-23: fields in
+// GridColumns columns, each taking the fewest columns that hold its value,
+// and anything else across the row.
 func Section(title string, content ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewStack(panelSurface(), Padded(Inset, Column(GapField, sectionTitle(title), Grid(content...))))
 }

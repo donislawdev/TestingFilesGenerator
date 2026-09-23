@@ -408,9 +408,10 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 	// field label rather than as something to press.
 	var rows []fyne.CanvasObject
 
-	// Two to a row since the prototype of 2026-09-23 (parts.Grid): the format
-	// and how many, the way of saying how big and the box it leaves, then
-	// what the group is called and what the files are called.
+	// In the grid's columns since the prototype of 2026-09-23 (parts.Grid):
+	// the format, how many and the way of saying how big share the first row,
+	// and the box that way leaves shares the second with what the group is
+	// called and what the files are called.
 	rows = append(rows,
 		add(recipe.KeyFormat, text.FieldFormat(), text.HintFormat(),
 			// Empty for the reason the other screen gives: the button carries

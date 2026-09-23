@@ -376,9 +376,10 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 				// moved there, so an empty detail here is what puts that line
 				// on screen at all.
 				g.tips.Say(""), g.formatPick),
-			// Two to a row since the prototype of 2026-09-23 (parts.Grid): the
-			// format and how big, how many and whether damaged, then what the
-			// group is called and what the files are called.
+			// In the grid's columns since the prototype of 2026-09-23
+			// (parts.Grid): the format, how big, how many and whether damaged
+			// share one row of four, then what the group is called and what
+			// the files are called.
 			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 				parts.Numeric(g.size)),
 			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),

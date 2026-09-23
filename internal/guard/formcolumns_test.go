@@ -130,7 +130,10 @@ func TestARefusalAboutWhatIsInTheDirectoryStandsUnderItAndOpensIt(t *testing.T) 
 	join(host)
 
 	field := screen.Fields().Lookup(engine.SettingOutDir)
-	if field == nil || !strings.Contains(field.Saying(), engine.DefaultManifestName) {
+	if field == nil {
+		t.Fatal("the screen registers no output directory field, so there is nothing to place the refusal under")
+	}
+	if !strings.Contains(field.Saying(), engine.DefaultManifestName) {
 		t.Fatalf("a manifest already in the directory was not refused under the output directory box - it says %q",
 			field.Saying())
 	}

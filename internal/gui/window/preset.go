@@ -78,8 +78,8 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// untouchable rule 5 and the one thing this screen must never take away.
 	p.fields.Require(engine.SettingOutDir, engine.SettingSeed)
 
-	// A grid, so a preset's settings stand two to a row like every other
-	// field (prototype of 2026-09-23).
+	// A grid, so each of a preset's settings takes the fewest of the grid's
+	// columns that hold it, like every other field (prototype of 2026-09-23).
 	p.paramBox = parts.Grid()
 	p.about = parts.FieldColumn()
 
