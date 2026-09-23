@@ -39,14 +39,13 @@ import (
 type OpenList struct {
 	widget.BaseWidget
 
-	options []string
+	// listContents is what the list holds and what it has drawn - see
+	// listcontents.go for why it is a type of its own.
+	listContents
+
 	// room is how much height the window has left for this list, or nought for
 	// no limit. See LimitTo and MinSize.
 	room float32
-	// chosen is the value in the box, marked with a tick. Empty when the box
-	// shows a default nobody has confirmed - see the note in preset.go about a
-	// filled field making "I did not say" impossible to express.
-	chosen string
 	// active is the row the keyboard is on, or -1 when it has not been used,
 	// and shown is whether that is drawn.
 	//
@@ -63,41 +62,22 @@ type OpenList struct {
 	close func(byKeyboard bool)
 
 	list *widget.List
-	// rows is the row showing each position, recorded as the list fills them.
-	//
-	// A registry rather than a walk, because a walk cannot get in: widget.List
-	// keeps the rows it built inside its renderer, so a tree walk stops at the
-	// list and reports an open list with nothing in it. Measured on 2026-08-18
-	// while trying to photograph a row under the pointer.
-	//
-	// Every entry is current whatever the list has scrolled past, because a
-	// recycled row is refilled before it is shown and fill is what writes here.
-	rows map[widget.ListItemID]*ListRow
 
 	// KindOf says what picture goes in front of one value, or nil for a list
 	// whose values are not things of different kinds. Set from outside, because
 	// only the screen putting values in knows what they are.
 	KindOf func(string) fyne.Resource
 
-	// headingOf is the heading a value stands under, or nil for a list with no
-	// headings. See GroupUnder.
-	headingOf func(string) string
 	// filter is the box at the top that narrows the list, or nil for a list
-	// without one, and typed is what is in it. See WithFilter.
+	// without one. What is typed into it is listContents.typed. See WithFilter.
 	filter *FilterBox
-	typed  string
-	// entries is what the list draws now - headings, values and the notice
-	// that nothing matched - worked out by arrange. Every row number in this
-	// file is a position in entries, never in options, because the two part
-	// the moment a list has a heading.
-	entries []listEntry
 }
 
 // NewOpenList builds the list. take is called with the value somebody settled
 // on, and close when they left without settling on one.
 func NewOpenList(options []string, chosen string, take func(string, bool), close func(bool)) *OpenList {
-	l := &OpenList{options: options, chosen: chosen, active: -1, take: take, close: close,
-		rows: map[widget.ListItemID]*ListRow{}}
+	l := &OpenList{active: -1, take: take, close: close,
+		listContents: listContents{options: options, chosen: chosen, rows: map[widget.ListItemID]*ListRow{}}}
 	l.entries = arrange(options, nil, "")
 	l.list = widget.NewList(
 		func() int { return len(l.entries) },
@@ -137,15 +117,6 @@ func (l *OpenList) Keyboard() fyne.Focusable {
 
 // Filter is the box at the top of the list, or nil, for a guard to type into.
 func (l *OpenList) Filter() *FilterBox { return l.filter }
-
-// rearrange works out the rows again after the filter or the grouping
-// changed, and forgets the rows it recorded: a row built for the old
-// arrangement can still hold a label the list no longer draws, and
-// RowShowing would report it.
-func (l *OpenList) rearrange() {
-	l.entries = arrange(l.options, l.headingOf, l.typed)
-	l.rows = map[widget.ListItemID]*ListRow{}
-}
 
 // narrowTo is the filter box reporting what it now holds. The keyboard lands
 // where landing says and the bar is drawn, because typing is using the
@@ -202,57 +173,6 @@ func (l *OpenList) fill(id widget.ListItemID, row fyne.CanvasObject) {
 	}
 	l.rows[id] = r
 	r.Refresh()
-}
-
-// Rows is what this list is showing, for a guard to read, in the order it is
-// drawn - headings and the notice included, so that a position from Active
-// is a position here.
-//
-// The toolkit's menu turned items into widgets of an unexported type, so what
-// was marked could not be read back off the canvas - only that something was
-// open. This is the half of that pair we own, and it says what is in the list
-// and which row carries the tick.
-func (l *OpenList) Rows() []Choice {
-	out := make([]Choice, 0, len(l.entries))
-	for _, e := range l.entries {
-		value := e.kind == entryValue
-		out = append(out, Choice{Label: e.text, Marked: value && l.isChosen(e.text), Choosable: value})
-	}
-	return out
-}
-
-// isChosen says whether a value is the one in the box.
-//
-// One function rather than the same comparison written where a row is filled
-// and again where the list reports itself. Two copies is what it was for an
-// hour on 2026-08-18, and the mutation runner said so at once: blanking the
-// drawn mark left the guard green, because the guard was reading the other
-// copy. A rule with two homes is a rule no test can pin down.
-func (l *OpenList) isChosen(value string) bool { return value == l.chosen }
-
-// DrawnRows is every row the list has actually built, for a guard that has to
-// ask what is on the screen rather than what the list holds.
-//
-// Rows above answers from the options, which is the right half for "what is in
-// this list" and the wrong half for "what does a row draw". A picture that
-// never reaches a row would pass the first and fail this one.
-func (l *OpenList) DrawnRows() []*ListRow {
-	out := make([]*ListRow, 0, len(l.rows))
-	for _, row := range l.rows {
-		out = append(out, row)
-	}
-	return out
-}
-
-// RowShowing is the row currently drawing one value, or nil if that value is
-// scrolled out of sight. For a guard that needs to press or hover a real row.
-func (l *OpenList) RowShowing(label string) *ListRow {
-	for _, row := range l.rows {
-		if row.Label() == label {
-			return row
-		}
-	}
-	return nil
 }
 
 // Choice is one row of an open list, for a guard to read. Choosable is false

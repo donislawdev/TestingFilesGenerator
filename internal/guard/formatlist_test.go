@@ -131,10 +131,21 @@ func TestTheFormatListStandsUnderAHeadingForEachKind(t *testing.T) {
 	if !sort.StringsAreSorted(titles) {
 		t.Errorf("the headings stand in the order %v, and a closed set is in the order of its words", titles)
 	}
+	// Counted, because a loop over the drawn rows passes just as well when no
+	// heading was drawn at all - an outside review of #127 named it, and it is
+	// trap 1 of CLAUDE.md: the guard has to be in the state it asks about.
+	drawnHeadings := 0
 	for _, row := range list.DrawnRows() {
-		if row.Heading() && (row.Kind() != nil || row.Marked()) {
+		if !row.Heading() {
+			continue
+		}
+		drawnHeadings++
+		if row.Kind() != nil || row.Marked() {
 			t.Errorf("the heading %q draws a picture or a tick, which says it is a value somebody can take", row.Label())
 		}
+	}
+	if drawnHeadings == 0 {
+		t.Fatal("no heading row is drawn, so nothing was asked about how a heading looks")
 	}
 }
 
@@ -249,6 +260,40 @@ func TestTypingAtTheShutFormatMenuOpensItsFilter(t *testing.T) {
 	filter.TypedKey(&fyne.KeyEvent{Name: fyne.KeyReturn})
 	if menu.Selected != "jxl" {
 		t.Errorf("jxl was typed at the shut menu and Enter pressed, and the menu holds %q", menu.Selected)
+	}
+}
+
+// TestTheSpaceThatOpensTheFormatListIsNotTypedIntoItsFilter presses Space at
+// the shut menu the way the driver delivers it: the key to whatever has the
+// keyboard, then the character to whatever has it NOW (fyne v2.8.1
+// internal/driver/glfw/window.go, processKeyPressed and processCharInput both
+// ask canvas.Focused()). The key opens the list and hands the keyboard to the
+// box, so the character landed in the box.
+//
+// Reported by an outside review of #127 and seen in the real window through
+// tools/pilot.py before this was written: after Space the box lost its
+// placeholder and the caret stood one space in, with nothing visible typed.
+func TestTheSpaceThatOpensTheFormatListIsNotTypedIntoItsFilter(t *testing.T) {
+	c, content := screenOnACanvas(t)
+	menu := chooserUnder(t, content, text.FieldFormat())
+	c.Focus(menu)
+	c.Focused().TypedKey(&fyne.KeyEvent{Name: fyne.KeySpace})
+	list := menu.Opened()
+	if list == nil || list.Filter() == nil {
+		t.Fatal("Space at the shut format menu opened no list with a box to narrow it, so this guard is not in the state it asks about")
+	}
+	if c.Focused() != fyne.Focusable(list.Filter()) {
+		t.Fatalf("after Space the keyboard is on %T rather than in the box, so the character would not reach it", c.Focused())
+	}
+	c.Focused().TypedRune(' ')
+	if got := list.Filter().Text; got != "" {
+		t.Errorf("the Space that opened the list left %q in its box, which hides the placeholder and moves the caret", got)
+	}
+	// A space between words is still a space: only an empty box drops one.
+	c.Focused().TypedRune('t')
+	c.Focused().TypedRune(' ')
+	if got := list.Filter().Text; got != "t " {
+		t.Errorf("t then Space typed into the box left %q, and a space after a letter is somebody typing", got)
 	}
 }
 

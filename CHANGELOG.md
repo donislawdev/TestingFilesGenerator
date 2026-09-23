@@ -20,7 +20,8 @@ because it turns other people's test suites red.
   list stands under headings - Archives, Documents, Pictures, Sound, Text and
   data - each saying how many formats are under it, and a box at its top
   narrows it to the formats whose name holds what is typed, or whose kind
-  starts with it (`gz` finds `targz`, `pict` every picture). The letters that
+  has a word that starts with it (`gz` finds `targz`, `pict` every picture,
+  `data` every text and data format). The letters that
   matched are drawn in bold, the arrows step over the headings, and typing
   at the shut `Format` menu opens the list with those letters in the box, so
   `jxl` typed there ends on `jxl`. The shut menu draws the kind of the format

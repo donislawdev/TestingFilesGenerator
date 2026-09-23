@@ -1,6 +1,8 @@
 package parts
 
 import (
+	"unicode"
+
 	"fyne.io/fyne/v2"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -46,4 +48,26 @@ func (f *FilterBox) TypedKey(event *fyne.KeyEvent) {
 		return
 	}
 	f.Entry.Entry.TypedKey(event)
+}
+
+// TypedRune drops white space typed into an empty box, and takes everything
+// else as the box it is.
+//
+// The case it is for is the Space that OPENS the list. The driver hands the
+// key to whatever has the keyboard and then the character to whatever has it
+// after that - and the key is what moved the keyboard here (Chooser.TypedKey
+// opens the list, the list hands the keyboard to this box). So the character
+// of the same press landed in the box: no placeholder, the caret one space in,
+// and nothing on screen saying why. Reported by an outside review of #127,
+// seen in the real window, held by
+// TestTheSpaceThatOpensTheFormatListIsNotTypedIntoItsFilter.
+//
+// Only while the box is empty, because a space after a word is somebody
+// typing - and a leading one means nothing to the list anyway, which trims
+// what it narrows by (narrowTo).
+func (f *FilterBox) TypedRune(r rune) {
+	if f.Text == "" && unicode.IsSpace(r) {
+		return
+	}
+	f.Entry.TypedRune(r)
 }
