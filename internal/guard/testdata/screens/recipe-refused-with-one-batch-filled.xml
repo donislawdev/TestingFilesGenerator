@@ -179,12 +179,13 @@
 																		<widget size="185x26" type="*parts.Chooser">
 																			<rectangle fillColor="inputBackground" radius="6" size="185x26"/>
 																			<rectangle size="0x0"/>
-																			<widget pos="4,3" size="155x20" type="*widget.RichText">
+																			<widget pos="32,3" size="127x20" type="*widget.RichText">
 																				<text pos="2,2" size="24x16">avif</text>
 																			</widget>
 																			<widget pos="159,3" size="20x20" type="*widget.Icon">
 																				<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
 																			</widget>
+																			<image fillMode="contain" pos="8,3" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
 																		</widget>
 																		<rectangle radius="6" size="185x26" strokeColor="inputBorder" strokeWidth="1"/>
 																	</container>
@@ -505,12 +506,13 @@
 																		<widget size="185x26" type="*parts.Chooser">
 																			<rectangle fillColor="inputBackground" radius="6" size="185x26"/>
 																			<rectangle size="0x0"/>
-																			<widget pos="4,3" size="155x20" type="*widget.RichText">
+																			<widget pos="32,3" size="127x20" type="*widget.RichText">
 																				<text pos="2,2" size="24x16">avif</text>
 																			</widget>
 																			<widget pos="159,3" size="20x20" type="*widget.Icon">
 																				<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
 																			</widget>
+																			<image fillMode="contain" pos="8,3" rsc="media-photo.svg" size="iconInlineSize" themed="foreground"/>
 																		</widget>
 																		<rectangle radius="6" size="185x26" strokeColor="inputBorder" strokeWidth="1"/>
 																	</container>

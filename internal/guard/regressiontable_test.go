@@ -50,7 +50,6 @@ var notYetJustified = []string{
 	"actionbar_test.go",
 	"darkmenus_test.go",
 	"doccomments_test.go",
-	"dropdown_test.go",
 	"everyfield_test.go",
 	"exeproperties_test.go",
 	"foldedsections_test.go",

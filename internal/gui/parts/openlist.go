@@ -154,7 +154,12 @@ func (l *OpenList) rearrange() {
 func (l *OpenList) narrowTo(typed string) {
 	l.typed = typed
 	l.rearrange()
-	l.list.ScrollToTop()
+	// ScrollToOffset rather than ScrollToTop: the toolkit's ScrollToTop reaches
+	// for the list's scroller without asking whether it exists yet, and it does
+	// not until the list is first drawn - fyne v2.8.1 widget/list.go, line 358
+	// against 366. A filter set before that (the catalogue does) took the
+	// process down.
+	l.list.ScrollToOffset(0)
 	if strings.TrimSpace(typed) == "" {
 		l.active = -1
 		l.StartOn(l.chosen)
