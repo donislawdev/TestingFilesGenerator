@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="121x24" textSize="20">Single batch</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="121x24" textSize="20">Single batch</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -154,18 +152,16 @@
 														</widget>
 													</container>
 													<container pos="0,87" size="587x104">
-														<widget size="587x67" type="*container.ThemeOverride">
-															<container size="587x67">
-																<widget size="587x67" type="*widget.Label">
-																	<widget size="587x67" type="*widget.RichText">
-																		<text color="error" size="576x16">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303</text>
-																		<text color="error" pos="0,16" size="559x16">B at worst, and the file always carries a free box, which costs 8 B even when it holds</text>
-																		<text color="error" pos="0,33" size="560x16">nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller width and height, or a</text>
-																		<text color="error" pos="0,50" size="84x16">lower quality</text>
-																	</widget>
+														<container size="587x67">
+															<widget pos="-6,-6" size="599x79" type="*widget.Label">
+																<widget size="599x79" type="*widget.RichText">
+																	<text color="error" pos="6,6" size="576x16">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303</text>
+																	<text color="error" pos="6,22" size="559x16">B at worst, and the file always carries a free box, which costs 8 B even when it holds</text>
+																	<text color="error" pos="6,39" size="560x16">nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller width and height, or a</text>
+																	<text color="error" pos="6,56" size="84x16">lower quality</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 														<container pos="0,75" size="587x28">
 															<widget size="197x28" type="*parts.Button">
 																<rectangle pos="-2,-2" radius="6" size="201x32" strokeColor="hyperlink"/>
@@ -484,15 +480,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="221x16">1 file · 1 B · avif · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="221x16">1 file · 1 B · avif · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

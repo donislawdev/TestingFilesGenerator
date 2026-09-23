@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1283">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="157x24" textSize="20">Several batches</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="157x24" textSize="20">Several batches</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -912,15 +910,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="147x16">Files will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="147x16">Files will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="157x24" textSize="20">Several batches</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="157x24" textSize="20">Several batches</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -279,17 +277,15 @@
 																</widget>
 															</container>
 															<container pos="0,87" size="788x50">
-																<widget size="788x50" type="*container.ThemeOverride">
-																	<container size="788x50">
-																		<widget size="788x50" type="*widget.Label">
-																			<widget size="788x50" type="*widget.RichText">
-																				<text color="error" size="779x16">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
-																				<text color="error" pos="0,16" size="113x16">reaches the disk.</text>
-																				<text color="error" pos="0,33" size="573x16">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
-																			</widget>
+																<container size="788x50">
+																	<widget pos="-6,-6" size="800x62" type="*widget.Label">
+																		<widget size="800x62" type="*widget.RichText">
+																			<text color="error" pos="6,6" size="779x16">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
+																			<text color="error" pos="6,22" size="113x16">reaches the disk.</text>
+																			<text color="error" pos="6,39" size="573x16">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
 																		</widget>
-																	</container>
-																</widget>
+																	</widget>
+																</container>
 															</container>
 														</container>
 														<container pos="201,76" size="185x193">
@@ -327,17 +323,15 @@
 																</container>
 															</container>
 															<container pos="0,142" size="587x50">
-																<widget size="587x50" type="*container.ThemeOverride">
-																	<container size="587x50">
-																		<widget size="587x50" type="*widget.Label">
-																			<widget size="587x50" type="*widget.RichText">
-																				<text color="error" size="575x16">target 1 has no Batch name - a Batch name anchors the seed of a target, so editing one</text>
-																				<text color="error" pos="0,16" size="270x16">target never moves the bytes of another.</text>
-																				<text color="error" pos="0,33" size="311x16">  give it a Batch name, for example id: invoices.</text>
-																			</widget>
+																<container size="587x50">
+																	<widget pos="-6,-6" size="599x62" type="*widget.Label">
+																		<widget size="599x62" type="*widget.RichText">
+																			<text color="error" pos="6,6" size="575x16">target 1 has no Batch name - a Batch name anchors the seed of a target, so editing one</text>
+																			<text color="error" pos="6,22" size="270x16">target never moves the bytes of another.</text>
+																			<text color="error" pos="6,39" size="311x16">  give it a Batch name, for example id: invoices.</text>
 																		</widget>
-																	</container>
-																</widget>
+																	</widget>
+																</container>
 															</container>
 														</container>
 														<container pos="402,76" size="185x193">
@@ -632,15 +626,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="147x16">Files will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="147x16">Files will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

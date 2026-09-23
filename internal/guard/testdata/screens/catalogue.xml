@@ -4,15 +4,13 @@
 			<container pos="136,0" size="820x16252">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
-						<widget size="788x24" type="*container.ThemeOverride">
-							<container size="788x24">
-								<widget size="788x24" type="*widget.Label">
-									<widget size="788x24" type="*widget.RichText">
-										<text bold size="100x24" textSize="20">Catalogue</text>
-									</widget>
+						<container size="788x24">
+							<widget pos="-6,-6" size="800x36" type="*widget.Label">
+								<widget size="800x36" type="*widget.RichText">
+									<text bold pos="6,6" size="100x24" textSize="20">Catalogue</text>
 								</widget>
-							</container>
-						</widget>
+							</widget>
+						</container>
 						<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 							<container size="788x16">
 								<widget size="788x16" type="*widget.Label">
@@ -1889,15 +1887,13 @@
 												</widget>
 											</container>
 										</container>
-										<widget pos="0,70" size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text size="99x16">the first screen</text>
-													</widget>
+										<container pos="0,70" size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="99x16">the first screen</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 								<container pos="0,330" size="788x53">
@@ -2038,15 +2034,13 @@
 											</container>
 										</container>
 										<container pos="0,64" size="788x16">
-											<widget size="788x16" type="*container.ThemeOverride">
-												<container size="788x16">
-													<widget size="788x16" type="*widget.Label">
-														<widget size="788x16" type="*widget.RichText">
-															<text color="error" size="348x16">a size of 3 B is below the smallest png, which is 73 B</text>
-														</widget>
+											<container size="788x16">
+												<widget pos="-6,-6" size="800x28" type="*widget.Label">
+													<widget size="800x28" type="*widget.RichText">
+														<text color="error" pos="6,6" size="348x16">a size of 3 B is below the smallest png, which is 73 B</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 									</container>
 								</container>
@@ -2324,15 +2318,13 @@
 									</widget>
 									<container pos="0,18" size="788x28">
 										<container size="788x28">
-											<widget size="252x28" type="*container.ThemeOverride">
-												<container size="252x28">
-													<widget size="252x28" type="*widget.Label">
-														<widget size="252x28" type="*widget.RichText">
-															<text size="58x16">Anything</text>
-														</widget>
+											<container size="252x28">
+												<widget pos="-6,-6" size="264x40" type="*widget.Label">
+													<widget size="264x40" type="*widget.RichText">
+														<text pos="6,6" size="58x16">Anything</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 											<widget pos="268,0" size="252x28" type="*parts.Entry">
 												<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="250x26"/>
 												<rectangle radius="6" size="250x27" strokeColor="inputBorder" strokeWidth="1"/>
@@ -2883,16 +2875,14 @@
 												</container>
 												<rectangle fillColor="menuBackground" radius="6" size="380x65" strokeColor="inputBorder" strokeWidth="1"/>
 												<container size="380x65">
-													<widget pos="16,16" size="348x33" type="*container.ThemeOverride">
-														<container size="348x33">
-															<widget size="348x33" type="*widget.Label">
-																<widget size="348x33" type="*widget.RichText">
-																	<text size="345x16">10mb The exact size every file will have, to the byte.</text>
-																	<text pos="0,16" size="306x16">Units count in 1024s, so 10mb is 10 485 760 B.</text>
-																</widget>
+													<container pos="16,16" size="348x33">
+														<widget pos="-6,-6" size="360x45" type="*widget.Label">
+															<widget size="360x45" type="*widget.RichText">
+																<text pos="6,6" size="345x16">10mb The exact size every file will have, to the byte.</text>
+																<text pos="6,22" size="306x16">Units count in 1024s, so 10mb is 10 485 760 B.</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -2930,15 +2920,13 @@
 										</container>
 									</widget>
 									<container pos="0,18" size="788x16">
-										<widget size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text color="error" size="319x16">size 3 B is below the smallest png, which is 73 B</text>
-													</widget>
+										<container size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text color="error" pos="6,6" size="319x16">size 3 B is below the smallest png, which is 73 B</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 								<container pos="0,81" size="788x52">
@@ -2952,16 +2940,14 @@
 										</container>
 									</widget>
 									<container pos="0,18" size="788x33">
-										<widget size="788x33" type="*container.ThemeOverride">
-											<container size="788x33">
-												<widget size="788x33" type="*widget.Label">
-													<widget size="788x33" type="*widget.RichText">
-														<text color="error" size="757x16">Write a label inside each generated file, including the ones that are far too small to hold it. Write a label inside each</text>
-														<text color="error" pos="0,16" size="422x16">generated file, including the ones that are far too small to hold it</text>
-													</widget>
+										<container size="788x33">
+											<widget pos="-6,-6" size="800x45" type="*widget.Label">
+												<widget size="800x45" type="*widget.RichText">
+													<text color="error" pos="6,6" size="757x16">Write a label inside each generated file, including the ones that are far too small to hold it. Write a label inside each</text>
+													<text color="error" pos="6,22" size="422x16">generated file, including the ones that are far too small to hold it</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 								<container pos="0,150" size="788x72">
@@ -2975,15 +2961,13 @@
 										</container>
 									</widget>
 									<container pos="0,18" size="788x53">
-										<widget size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text color="error" size="327x16">AVIF cannot be smaller than 311 B. Requested: 1 B</text>
-													</widget>
+										<container size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text color="error" pos="6,6" size="327x16">AVIF cannot be smaller than 311 B. Requested: 1 B</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<container pos="0,24" size="788x28">
 											<widget size="197x28" type="*parts.Button">
 												<rectangle pos="-2,-2" radius="6" size="201x32" strokeColor="hyperlink"/>
@@ -3097,15 +3081,13 @@
 													</container>
 												</container>
 												<container pos="0,52" size="756x16">
-													<widget size="756x16" type="*container.ThemeOverride">
-														<container size="756x16">
-															<widget size="756x16" type="*widget.Label">
-																<widget size="756x16" type="*widget.RichText">
-																	<text size="93x16">inside the fold</text>
-																</widget>
+													<container size="756x16">
+														<widget pos="-6,-6" size="768x28" type="*widget.Label">
+															<widget size="768x28" type="*widget.RichText">
+																<text pos="6,6" size="93x16">inside the fold</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -3243,15 +3225,13 @@
 														</container>
 													</container>
 													<container pos="0,52" size="764x16">
-														<widget size="764x16" type="*container.ThemeOverride">
-															<container size="764x16">
-																<widget size="764x16" type="*widget.Label">
-																	<widget size="764x16" type="*widget.RichText">
-																		<text size="130x16">inside the inner fold</text>
-																	</widget>
+														<container size="764x16">
+															<widget pos="-6,-6" size="776x28" type="*widget.Label">
+																<widget size="776x28" type="*widget.RichText">
+																	<text pos="6,6" size="130x16">inside the inner fold</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -3348,15 +3328,13 @@
 														</container>
 													</container>
 													<container pos="0,52" size="764x16">
-														<widget size="764x16" type="*container.ThemeOverride">
-															<container size="764x16">
-																<widget size="764x16" type="*widget.Label">
-																	<widget size="764x16" type="*widget.RichText">
-																		<text size="130x16">inside the inner fold</text>
-																	</widget>
+														<container size="764x16">
+															<widget pos="-6,-6" size="776x28" type="*widget.Label">
+																<widget size="776x28" type="*widget.RichText">
+																	<text pos="6,6" size="130x16">inside the inner fold</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -3406,15 +3384,13 @@
 														</container>
 													</container>
 													<container pos="0,52" size="764x16">
-														<widget size="764x16" type="*container.ThemeOverride">
-															<container size="764x16">
-																<widget size="764x16" type="*widget.Label">
-																	<widget size="764x16" type="*widget.RichText">
-																		<text size="130x16">inside the inner fold</text>
-																	</widget>
+														<container size="764x16">
+															<widget pos="-6,-6" size="776x28" type="*widget.Label">
+																<widget size="776x28" type="*widget.RichText">
+																	<text pos="6,6" size="130x16">inside the inner fold</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -3460,15 +3436,13 @@
 													</container>
 												</container>
 												<container pos="0,52" size="756x16">
-													<widget size="756x16" type="*container.ThemeOverride">
-														<container size="756x16">
-															<widget size="756x16" type="*widget.Label">
-																<widget size="756x16" type="*widget.RichText">
-																	<text size="93x16">inside the fold</text>
-																</widget>
+													<container size="756x16">
+														<widget pos="-6,-6" size="768x28" type="*widget.Label">
+															<widget size="768x28" type="*widget.RichText">
+																<text pos="6,6" size="93x16">inside the fold</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -3513,15 +3487,13 @@
 													</container>
 												</container>
 												<container pos="0,52" size="756x16">
-													<widget size="756x16" type="*container.ThemeOverride">
-														<container size="756x16">
-															<widget size="756x16" type="*widget.Label">
-																<widget size="756x16" type="*widget.RichText">
-																	<text size="93x16">inside the fold</text>
-																</widget>
+													<container size="756x16">
+														<widget pos="-6,-6" size="768x28" type="*widget.Label">
+															<widget size="768x28" type="*widget.RichText">
+																<text pos="6,6" size="93x16">inside the fold</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -3566,15 +3538,13 @@
 													</container>
 												</container>
 												<container pos="0,52" size="756x16">
-													<widget size="756x16" type="*container.ThemeOverride">
-														<container size="756x16">
-															<widget size="756x16" type="*widget.Label">
-																<widget size="756x16" type="*widget.RichText">
-																	<text size="93x16">inside the fold</text>
-																</widget>
+													<container size="756x16">
+														<widget pos="-6,-6" size="768x28" type="*widget.Label">
+															<widget size="768x28" type="*widget.RichText">
+																<text pos="6,6" size="93x16">inside the fold</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 												</container>
 											</container>
 										</container>
@@ -3647,15 +3617,13 @@
 											</widget>
 										</container>
 									</widget>
-									<widget pos="0,18" size="788x24" type="*container.ThemeOverride">
-										<container size="788x24">
-											<widget size="788x24" type="*widget.Label">
-												<widget size="788x24" type="*widget.RichText">
-													<text bold size="121x24" textSize="20">Single batch</text>
-												</widget>
+									<container pos="0,18" size="788x24">
+										<widget pos="-6,-6" size="800x36" type="*widget.Label">
+											<widget size="800x36" type="*widget.RichText">
+												<text bold pos="6,6" size="121x24" textSize="20">Single batch</text>
 											</widget>
-										</container>
-									</widget>
+										</widget>
+									</container>
 								</container>
 								<container pos="0,58" size="788x35">
 									<widget size="788x14" type="*container.ThemeOverride">
@@ -3688,15 +3656,13 @@
 										</container>
 									</widget>
 									<container pos="0,18" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="121x24" textSize="20">Single batch</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="121x24" textSize="20">Single batch</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -3730,15 +3696,13 @@
 											</widget>
 										</container>
 									</widget>
-									<widget pos="0,18" size="788x16" type="*container.ThemeOverride">
-										<container size="788x16">
-											<widget size="788x16" type="*widget.Label">
-												<widget size="788x16" type="*widget.RichText">
-													<text bold size="100x16">Typically finds</text>
-												</widget>
+									<container pos="0,18" size="788x16">
+										<widget pos="-6,-6" size="800x28" type="*widget.Label">
+											<widget size="800x28" type="*widget.RichText">
+												<text bold pos="6,6" size="100x16">Typically finds</text>
 											</widget>
-										</container>
-									</widget>
+										</widget>
+									</container>
 								</container>
 								<container pos="0,296" size="788x35">
 									<widget size="788x14" type="*container.ThemeOverride">
@@ -3750,15 +3714,13 @@
 											</widget>
 										</container>
 									</widget>
-									<widget pos="0,18" size="788x16" type="*container.ThemeOverride">
-										<container size="788x16">
-											<widget size="788x16" type="*widget.Label">
-												<widget size="788x16" type="*widget.RichText">
-													<text size="641x16">Every file has exactly the size you ask for, to the byte, or the run refuses before writing anything.</text>
-												</widget>
+									<container pos="0,18" size="788x16">
+										<widget pos="-6,-6" size="800x28" type="*widget.Label">
+											<widget size="800x28" type="*widget.RichText">
+												<text pos="6,6" size="641x16">Every file has exactly the size you ask for, to the byte, or the run refuses before writing anything.</text>
 											</widget>
-										</container>
-									</widget>
+										</widget>
+									</container>
 								</container>
 								<container pos="0,348" size="788x33">
 									<widget size="788x14" type="*container.ThemeOverride">
@@ -3793,39 +3755,33 @@
 									<container pos="0,18" size="788x58">
 										<container size="788x16">
 											<text color="rgba(211,211,215,255)" size="7x16">•</text>
-											<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-												<container size="772x16">
-													<widget size="772x16" type="*widget.Label">
-														<widget size="772x16" type="*widget.RichText">
-															<text size="115x16">Upload validators</text>
-														</widget>
+											<container pos="15,0" size="772x16">
+												<widget pos="-6,-6" size="784x28" type="*widget.Label">
+													<widget size="784x28" type="*widget.RichText">
+														<text pos="6,6" size="115x16">Upload validators</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 										<container pos="0,20" size="788x16">
 											<text color="rgba(211,211,215,255)" size="7x16">•</text>
-											<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-												<container size="772x16">
-													<widget size="772x16" type="*widget.Label">
-														<widget size="772x16" type="*widget.RichText">
-															<text size="66x16">Size limits</text>
-														</widget>
+											<container pos="15,0" size="772x16">
+												<widget pos="-6,-6" size="784x28" type="*widget.Label">
+													<widget size="784x28" type="*widget.RichText">
+														<text pos="6,6" size="66x16">Size limits</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 										<container pos="0,41" size="788x16">
 											<text color="rgba(211,211,215,255)" size="7x16">•</text>
-											<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-												<container size="772x16">
-													<widget size="772x16" type="*widget.Label">
-														<widget size="772x16" type="*widget.RichText">
-															<text size="111x16">Archive handling</text>
-														</widget>
+											<container pos="15,0" size="772x16">
+												<widget pos="-6,-6" size="784x28" type="*widget.Label">
+													<widget size="784x28" type="*widget.RichText">
+														<text pos="6,6" size="111x16">Archive handling</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 									</container>
 								</container>
@@ -3842,28 +3798,24 @@
 									<container pos="0,18" size="788x54">
 										<container size="788x16">
 											<text color="rgba(211,211,215,255)" size="7x16">•</text>
-											<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-												<container size="772x16">
-													<widget size="772x16" type="*widget.Label">
-														<widget size="772x16" type="*widget.RichText">
-															<text size="54x16">One line</text>
-														</widget>
+											<container pos="15,0" size="772x16">
+												<widget pos="-6,-6" size="784x28" type="*widget.Label">
+													<widget size="784x28" type="*widget.RichText">
+														<text pos="6,6" size="54x16">One line</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 										<container pos="0,20" size="788x33">
 											<text color="rgba(211,211,215,255)" size="7x16">•</text>
-											<widget pos="15,0" size="772x33" type="*container.ThemeOverride">
-												<container size="772x33">
-													<widget size="772x33" type="*widget.Label">
-														<widget size="772x33" type="*widget.RichText">
-															<text size="753x16">Write a label inside each generated file, including the ones that are far too small to hold it Write a label inside each</text>
-															<text pos="0,16" size="422x16">generated file, including the ones that are far too small to hold it</text>
-														</widget>
+											<container pos="15,0" size="772x33">
+												<widget pos="-6,-6" size="784x45" type="*widget.Label">
+													<widget size="784x45" type="*widget.RichText">
+														<text pos="6,6" size="753x16">Write a label inside each generated file, including the ones that are far too small to hold it Write a label inside each</text>
+														<text pos="6,22" size="422x16">generated file, including the ones that are far too small to hold it</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 									</container>
 								</container>
@@ -3899,97 +3851,79 @@
 									</widget>
 									<container pos="0,18" size="788x134">
 										<container size="788x33">
-											<widget size="219x16" type="*container.ThemeOverride">
-												<container size="219x16">
-													<widget size="219x16" type="*widget.Label">
-														<widget size="219x16" type="*widget.RichText">
-															<text size="101x16">fyne.io/fyne/v2</text>
-														</widget>
+											<container size="219x16">
+												<widget pos="-6,-6" size="231x28" type="*widget.Label">
+													<widget size="231x28" type="*widget.RichText">
+														<text pos="6,6" size="101x16">fyne.io/fyne/v2</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="235,0" size="284x16" type="*container.ThemeOverride">
-												<container size="284x16">
-													<widget size="284x16" type="*widget.Label">
-														<widget size="284x16" type="*widget.RichText">
-															<text size="94x16">BSD-3-Clause</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="235,0" size="284x16">
+												<widget pos="-6,-6" size="296x28" type="*widget.Label">
+													<widget size="296x28" type="*widget.RichText">
+														<text pos="6,6" size="94x16">BSD-3-Clause</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="536,0" size="252x33" type="*container.ThemeOverride">
-												<container size="252x33">
-													<widget size="252x33" type="*widget.Label">
-														<widget size="252x33" type="*widget.RichText">
-															<text size="218x16">(C) 2018 Fyne.io developers (see</text>
-															<text pos="0,16" size="73x16">AUTHORS)</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="536,0" size="252x33">
+												<widget pos="-6,-6" size="264x45" type="*widget.Label">
+													<widget size="264x45" type="*widget.RichText">
+														<text pos="6,6" size="218x16">(C) 2018 Fyne.io developers (see</text>
+														<text pos="6,22" size="73x16">AUTHORS)</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 										<container pos="0,41" size="788x33">
-											<widget size="219x33" type="*container.ThemeOverride">
-												<container size="219x33">
-													<widget size="219x33" type="*widget.Label">
-														<widget size="219x33" type="*widget.RichText">
-															<text size="183x16">Mesa 3D, llvmpipe software</text>
-															<text pos="0,16" size="106x16">renderer  26.2.0</text>
-														</widget>
+											<container size="219x33">
+												<widget pos="-6,-6" size="231x45" type="*widget.Label">
+													<widget size="231x45" type="*widget.RichText">
+														<text pos="6,6" size="183x16">Mesa 3D, llvmpipe software</text>
+														<text pos="6,22" size="106x16">renderer  26.2.0</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="235,0" size="284x33" type="*container.ThemeOverride">
-												<container size="284x33">
-													<widget size="284x33" type="*widget.Label">
-														<widget size="284x33" type="*widget.RichText">
-															<text size="182x16">MIT AND Apache-2.0 WITH</text>
-															<text pos="0,16" size="198x16">LLVM-exception AND BSL-1.0</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="235,0" size="284x33">
+												<widget pos="-6,-6" size="296x45" type="*widget.Label">
+													<widget size="296x45" type="*widget.RichText">
+														<text pos="6,6" size="182x16">MIT AND Apache-2.0 WITH</text>
+														<text pos="6,22" size="198x16">LLVM-exception AND BSL-1.0</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="536,0" size="252x33" type="*container.ThemeOverride">
-												<container size="252x33">
-													<widget size="252x33" type="*widget.Label">
-														<widget size="252x33" type="*widget.RichText">
-															<text size="239x16">Copyright (C) 1999-2007 Brian Paul,</text>
-															<text pos="0,16" size="219x16">Copyright (C) 2008 VMware, Inc.</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="536,0" size="252x33">
+												<widget pos="-6,-6" size="264x45" type="*widget.Label">
+													<widget size="264x45" type="*widget.RichText">
+														<text pos="6,6" size="239x16">Copyright (C) 1999-2007 Brian Paul,</text>
+														<text pos="6,22" size="219x16">Copyright (C) 2008 VMware, Inc.</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 										<container pos="0,83" size="788x50">
-											<widget size="219x16" type="*container.ThemeOverride">
-												<container size="219x16">
-													<widget size="219x16" type="*widget.Label">
-														<widget size="219x16" type="*widget.RichText">
-															<text size="114x16">golang.org/x/text</text>
-														</widget>
+											<container size="219x16">
+												<widget pos="-6,-6" size="231x28" type="*widget.Label">
+													<widget size="231x28" type="*widget.RichText">
+														<text pos="6,6" size="114x16">golang.org/x/text</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="235,0" size="284x16" type="*container.ThemeOverride">
-												<container size="284x16">
-													<widget size="284x16" type="*widget.Label">
-														<widget size="284x16" type="*widget.RichText">
-															<text size="94x16">BSD-3-Clause</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="235,0" size="284x16">
+												<widget pos="-6,-6" size="296x28" type="*widget.Label">
+													<widget size="296x28" type="*widget.RichText">
+														<text pos="6,6" size="94x16">BSD-3-Clause</text>
 													</widget>
-												</container>
-											</widget>
-											<widget pos="536,0" size="252x50" type="*container.ThemeOverride">
-												<container size="252x50">
-													<widget size="252x50" type="*widget.Label">
-														<widget size="252x50" type="*widget.RichText">
-															<text size="233x16">Write a label inside each generated</text>
-															<text pos="0,16" size="251x16">file, including the ones that are far too</text>
-															<text pos="0,33" size="95x16">small to hold it</text>
-														</widget>
+												</widget>
+											</container>
+											<container pos="536,0" size="252x50">
+												<widget pos="-6,-6" size="264x62" type="*widget.Label">
+													<widget size="264x62" type="*widget.RichText">
+														<text pos="6,6" size="233x16">Write a label inside each generated</text>
+														<text pos="6,22" size="251x16">file, including the ones that are far too</text>
+														<text pos="6,39" size="95x16">small to hold it</text>
 													</widget>
-												</container>
-											</widget>
+												</widget>
+											</container>
 										</container>
 									</container>
 								</container>
@@ -4004,34 +3938,28 @@
 										</container>
 									</widget>
 									<container pos="0,18" size="788x153">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="783x24" textSize="20">Write a label inside each generated file, including the ones that are far too sma…</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="783x24" textSize="20">Write a label inside each generated file, including the ones that are far too sma…</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<text color="rgba(211,211,215,255)" pos="0,40" size="788x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
-										<widget pos="0,73" size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text bold size="604x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
-													</widget>
+										<container pos="0,73" size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text bold pos="6,6" size="604x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
 												</widget>
-											</container>
-										</widget>
-										<widget pos="0,106" size="788x16" type="*container.ThemeOverride">
-											<container size="788x16">
-												<widget size="788x16" type="*widget.Label">
-													<widget size="788x16" type="*widget.RichText">
-														<text size="588x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
-													</widget>
+											</widget>
+										</container>
+										<container pos="0,106" size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="588x16">Write a label inside each generated file, including the ones that are far too small to hold it</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,139" size="788x14" type="*container.ThemeOverride">
 											<container size="788x14">
 												<widget size="788x14" type="*widget.Label">
@@ -4420,15 +4348,13 @@
 															</container>
 														</container>
 														<container pos="0,64" size="756x16">
-															<widget size="756x16" type="*container.ThemeOverride">
-																<container size="756x16">
-																	<widget size="756x16" type="*widget.Label">
-																		<widget size="756x16" type="*widget.RichText">
-																			<text color="error" size="319x16">size 3 B is below the smallest png, which is 73 B</text>
-																		</widget>
+															<container size="756x16">
+																<widget pos="-6,-6" size="768x28" type="*widget.Label">
+																	<widget size="768x28" type="*widget.RichText">
+																		<text color="error" pos="6,6" size="319x16">size 3 B is below the smallest png, which is 73 B</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 													</container>
 													<container pos="193,0" size="177x119">
@@ -4457,16 +4383,14 @@
 															</container>
 														</container>
 														<container pos="0,85" size="563x33">
-															<widget size="563x33" type="*container.ThemeOverride">
-																<container size="563x33">
-																	<widget size="563x33" type="*widget.Label">
-																		<widget size="563x33" type="*widget.RichText">
-																			<text color="error" size="543x16">Write a label inside each generated file, including the ones that are far too small to</text>
-																			<text color="error" pos="0,16" size="40x16">hold it</text>
-																		</widget>
+															<container size="563x33">
+																<widget pos="-6,-6" size="575x45" type="*widget.Label">
+																	<widget size="575x45" type="*widget.RichText">
+																		<text color="error" pos="6,6" size="543x16">Write a label inside each generated file, including the ones that are far too small to</text>
+																		<text color="error" pos="6,22" size="40x16">hold it</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 													</container>
 													<container pos="386,0" size="177x119">
@@ -4668,15 +4592,13 @@
 										</widget>
 									</container>
 								</widget>
-								<widget pos="0,30" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="154x16">The ladder of surfaces</text>
-											</widget>
+								<container pos="0,30" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="154x16">The ladder of surfaces</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,63" size="788x33">
 									<rectangle fillColor="background" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -4838,15 +4760,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,406" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="58x16">The inks</text>
-											</widget>
+								<container pos="0,406" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="58x16">The inks</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,439" size="788x33">
 									<rectangle fillColor="foreground" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -4939,15 +4859,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,635" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="150x16">What carries meaning</text>
-											</widget>
+								<container pos="0,635" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="150x16">What carries meaning</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,668" size="788x33">
 									<rectangle fillColor="hyperlink" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5086,15 +5004,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,962" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="315x16">What the pointer, a press and the keyboard do</text>
-											</widget>
+								<container pos="0,962" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="315x16">What the pointer, a press and the keyboard do</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,995" size="788x33">
 									<rectangle fillColor="rgba(60,60,61,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5256,15 +5172,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,1339" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="206x16">What is written on a filled face</text>
-											</widget>
+								<container pos="0,1339" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="206x16">What is written on a filled face</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,1371" size="788x33">
 									<rectangle fillColor="foregroundOnError" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5376,15 +5290,13 @@
 										</widget>
 									</container>
 								</widget>
-								<widget pos="0,30" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="154x16">The ladder of surfaces</text>
-											</widget>
+								<container pos="0,30" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="154x16">The ladder of surfaces</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,63" size="788x33">
 									<rectangle fillColor="rgba(255,255,255,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5546,15 +5458,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,406" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="58x16">The inks</text>
-											</widget>
+								<container pos="0,406" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="58x16">The inks</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,439" size="788x33">
 									<rectangle fillColor="rgba(26,26,28,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5647,15 +5557,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,635" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="150x16">What carries meaning</text>
-											</widget>
+								<container pos="0,635" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="150x16">What carries meaning</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,668" size="788x33">
 									<rectangle fillColor="rgba(40,104,147,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5794,15 +5702,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,962" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="315x16">What the pointer, a press and the keyboard do</text>
-											</widget>
+								<container pos="0,962" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="315x16">What the pointer, a press and the keyboard do</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,995" size="788x33">
 									<rectangle fillColor="rgba(223,223,223,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -5964,15 +5870,13 @@
 										</widget>
 									</container>
 								</container>
-								<widget pos="0,1339" size="788x16" type="*container.ThemeOverride">
-									<container size="788x16">
-										<widget size="788x16" type="*widget.Label">
-											<widget size="788x16" type="*widget.RichText">
-												<text bold size="206x16">What is written on a filled face</text>
-											</widget>
+								<container pos="0,1339" size="788x16">
+									<widget pos="-6,-6" size="800x28" type="*widget.Label">
+										<widget size="800x28" type="*widget.RichText">
+											<text bold pos="6,6" size="206x16">What is written on a filled face</text>
 										</widget>
-									</container>
-								</widget>
+									</widget>
+								</container>
 								<container pos="0,1371" size="788x33">
 									<rectangle fillColor="rgba(255,255,255,255)" radius="4" size="32x33" strokeColor="button" strokeWidth="1"/>
 									<container pos="36,0" size="0x33">
@@ -6078,136 +5982,114 @@
 								<container size="788x243">
 									<container size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="416x16">Choice - a value: one row of an open list, read back by a guard</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="416x16">Choice - a value: one row of an open list, read back by a guard</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,20" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="469x16">Detail - data: the longer explanation of a field and the sheet it opens on</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="469x16">Detail - data: the longer explanation of a field and the sheet it opens on</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,41" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="364x16">Field - the model of one row of a form, drawn by Fields</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="364x16">Field - the model of one row of a form, drawn by Fields</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,62" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="535x16">Built - a value: what building a field comes to, handed to the registry in one piece</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="535x16">Built - a value: what building a field comes to, handed to the registry in one piece</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,83" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="445x16">Tab - data: one screen and the word that leads to it, drawn by Tabs</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="445x16">Tab - data: one screen and the word that leads to it, drawn by Tabs</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,104" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="507x16">Look - an enum: which face a Button wears, every value drawn under Button</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="507x16">Look - an enum: which face a Button wears, every value drawn under Button</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,125" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="659x16">PointerFocus - a piece inside a control, knowing what put the keyboard there - no picture of its own</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="659x16">PointerFocus - a piece inside a control, knowing what put the keyboard there - no picture of its own</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,146" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="736x16">Returnable - an interface: a control the window can tell it is coming back to the front, nothing of its own to draw</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="736x16">Returnable - an interface: a control the window can tell it is coming back to the front, nothing of its own to draw</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,167" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="547x16">Shortcuts - a keyboard map: nothing to draw, and saying so is the point of this row</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="547x16">Shortcuts - a keyboard map: nothing to draw, and saying so is the point of this row</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,188" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="742x16">GroupKind - an enum: what a group of settings is about, every value drawn under Folding as the colour of its rail</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="742x16">GroupKind - an enum: what a group of settings is about, every value drawn under Folding as the colour of its rail</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,209" size="788x33">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x33" type="*container.ThemeOverride">
-											<container size="772x33">
-												<widget size="772x33" type="*widget.Label">
-													<widget size="772x33" type="*widget.RichText">
-														<text size="767x16">NameTap - an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its</text>
-														<text pos="0,16" size="82x16">own to draw</text>
-													</widget>
+										<container pos="15,0" size="772x33">
+											<widget pos="-6,-6" size="784x45" type="*widget.Label">
+												<widget size="784x45" type="*widget.RichText">
+													<text pos="6,6" size="767x16">NameTap - an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its</text>
+													<text pos="6,22" size="82x16">own to draw</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 							</container>
@@ -6223,207 +6105,173 @@
 								<container size="788x351">
 									<container size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="320x16">Column - stacks children at one gap of the scale</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="320x16">Column - stacks children at one gap of the scale</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,20" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="195x16">Row - puts fields side by side</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="195x16">Row - puts fields side by side</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,41" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="496x16">FieldColumn - the column a screen refills at run time, stacked like a section</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="496x16">FieldColumn - the column a screen refills at run time, stacked like a section</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,62" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="375x16">Indented - the same left edge as the fields inside a panel</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="375x16">Indented - the same left edge as the fields inside a panel</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,83" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="160x16">Sized - one width, given</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="160x16">Sized - one width, given</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,104" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="242x16">Numeric - the width a number needs</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="242x16">Numeric - the width a number needs</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,125" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="506x16">Text - the width a short piece of text needs - a name, a template, a file name</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="506x16">Text - the width a short piece of text needs - a name, a template, a file name</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,146" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="347x16">Padded - one distance of the scale round its content</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="347x16">Padded - one distance of the scale round its content</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,167" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="237x16">Stacked - panels one under another</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="237x16">Stacked - panels one under another</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,188" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="382x16">Screen - the readable width round a head and its sections</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="382x16">Screen - the readable width round a head and its sections</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,209" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="393x16">BesideFields - the room to the right of the column of names</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="393x16">BesideFields - the room to the right of the column of names</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,230" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="450x16">WithRoomForARun - the room under a form for the bar to speak into</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="450x16">WithRoomForARun - the room under a form for the bar to speak into</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,251" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="480x16">Flush - a label kept by a screen, on the edge every other word stands on</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="480x16">Flush - a label kept by a screen, on the edge every other word stands on</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,272" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="335x16">Clear - a shape that takes room and draws nothing</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="335x16">Clear - a shape that takes room and draws nothing</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,293" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="684x16">Grid - lays a section's fields in columns, each taking the columns its value needs - drawn under Section</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="684x16">Grid - lays a section's fields in columns, each taking the columns its value needs - drawn under Section</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,314" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="376x16">Wide - marks something that takes a whole row of a Grid</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="376x16">Wide - marks something that takes a whole row of a Grid</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 									<container pos="0,335" size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
-										<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-											<container size="772x16">
-												<widget size="772x16" type="*widget.Label">
-													<widget size="772x16" type="*widget.RichText">
-														<text size="636x16">ButtonRow - buttons side by side, one gap of the scale apart and centred - drawn under Section</text>
-													</widget>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="636x16">ButtonRow - buttons side by side, one gap of the scale apart and centred - drawn under Section</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 									</container>
 								</container>
 							</container>

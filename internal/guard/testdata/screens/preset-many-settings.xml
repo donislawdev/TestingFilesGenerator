@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="74x24" textSize="20">Presets</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="74x24" textSize="20">Presets</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -113,96 +111,80 @@
 													</container>
 												</container>
 												<container pos="0,74" size="788x187">
-													<widget size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text size="430x16">Does my upload form take what it should and turn the rest away?</text>
-																</widget>
+													<container size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text pos="6,6" size="430x16">Does my upload form take what it should and turn the rest away?</text>
 															</widget>
-														</container>
-													</widget>
-													<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text bold size="105x16">Typically finds:</text>
-																</widget>
+														</widget>
+													</container>
+													<container pos="0,32" size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text bold pos="6,6" size="105x16">Typically finds:</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 													<container pos="0,65" size="788x121">
 														<container size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="347x16">a limit enforced in the browser and not on the server</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="347x16">a limit enforced in the browser and not on the server</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,20" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="664x16">an SVG or an HTML file taken for a picture or for plain text, which is a way to get a script past a form</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="664x16">an SVG or an HTML file taken for a picture or for plain text, which is a way to get a script past a form</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,41" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="561x16">a file checked by its extension and never opened, so a PDF named .jpg goes through</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="561x16">a file checked by its extension and never opened, so a PDF named .jpg goes through</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,62" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="504x16">a form that reads the whole body into memory before it looks at how big it is</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="504x16">a form that reads the whole body into memory before it looks at how big it is</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,83" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="611x16">an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="611x16">an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,104" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="557x16">a name with spaces, brackets or characters outside ASCII written to disk unchanged</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="557x16">a name with spaces, brackets or characters outside ASCII written to disk unchanged</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 													</container>
 												</container>
@@ -532,15 +514,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="421x16">71 files · 115.1 MB (120 639 488 B) · 6 formats · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="421x16">71 files · 115.1 MB (120 639 488 B) · 6 formats · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

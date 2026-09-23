@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="74x24" textSize="20">Presets</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="74x24" textSize="20">Presets</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -113,72 +111,60 @@
 													</container>
 												</container>
 												<container pos="0,74" size="788x145">
-													<widget size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text size="460x16">Does a file that is valid and as small as the format allows get through?</text>
-																</widget>
+													<container size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text pos="6,6" size="460x16">Does a file that is valid and as small as the format allows get through?</text>
 															</widget>
-														</container>
-													</widget>
-													<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text bold size="105x16">Typically finds:</text>
-																</widget>
+														</widget>
+													</container>
+													<container pos="0,32" size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text bold pos="6,6" size="105x16">Typically finds:</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 													<container pos="0,65" size="788x79">
 														<container size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="648x16">a valid file turned away for being too small, where the check counts bytes instead of reading them</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="648x16">a valid file turned away for being too small, where the check counts bytes instead of reading them</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,20" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="451x16">an empty file that brings the reader down rather than being reported</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="451x16">an empty file that brings the reader down rather than being reported</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,41" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="466x16">a picture one pixel wide that divides by zero on the way to a thumbnail</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="466x16">a picture one pixel wide that divides by zero on the way to a thumbnail</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,62" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="459x16">storage that reads nought bytes as a failed upload and keeps retrying</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="459x16">storage that reads nought bytes as a failed upload and keeps retrying</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 													</container>
 												</container>
@@ -379,15 +365,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="392x16">28 files · 31.9 KB (32 667 B) · 26 formats · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="392x16">28 files · 31.9 KB (32 667 B) · 26 formats · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

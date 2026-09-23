@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="74x24" textSize="20">Presets</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="74x24" textSize="20">Presets</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -113,60 +111,50 @@
 													</container>
 												</container>
 												<container pos="0,74" size="788x124">
-													<widget size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text size="340x16">Is a size limit enforced exactly where it is declared?</text>
-																</widget>
+													<container size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text pos="6,6" size="340x16">Is a size limit enforced exactly where it is declared?</text>
 															</widget>
-														</container>
-													</widget>
-													<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
-														<container size="788x16">
-															<widget size="788x16" type="*widget.Label">
-																<widget size="788x16" type="*widget.RichText">
-																	<text bold size="105x16">Typically finds:</text>
-																</widget>
+														</widget>
+													</container>
+													<container pos="0,32" size="788x16">
+														<widget pos="-6,-6" size="800x28" type="*widget.Label">
+															<widget size="800x28" type="*widget.RichText">
+																<text bold pos="6,6" size="105x16">Typically finds:</text>
 															</widget>
-														</container>
-													</widget>
+														</widget>
+													</container>
 													<container pos="0,65" size="788x58">
 														<container size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="183x16">off by one errors at the limit</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="183x16">off by one errors at the limit</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,20" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="643x16">MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="643x16">MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 														<container pos="0,41" size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
-															<widget pos="15,0" size="772x16" type="*container.ThemeOverride">
-																<container size="772x16">
-																	<widget size="772x16" type="*widget.Label">
-																		<widget size="772x16" type="*widget.RichText">
-																			<text size="347x16">a limit enforced in the browser and not on the server</text>
-																		</widget>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="347x16">a limit enforced in the browser and not on the server</text>
 																	</widget>
-																</container>
-															</widget>
+																</widget>
+															</container>
 														</container>
 													</container>
 												</container>
@@ -435,15 +423,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="369x16">7 files · 70.0 MB (73 400 320 B) · pdf · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="369x16">7 files · 70.0 MB (73 400 320 B) · pdf · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>

@@ -36,15 +36,13 @@
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
 									<container pos="16,0" size="788x49">
-										<widget size="788x24" type="*container.ThemeOverride">
-											<container size="788x24">
-												<widget size="788x24" type="*widget.Label">
-													<widget size="788x24" type="*widget.RichText">
-														<text bold size="121x24" textSize="20">Single batch</text>
-													</widget>
+										<container size="788x24">
+											<widget pos="-6,-6" size="800x36" type="*widget.Label">
+												<widget size="800x36" type="*widget.RichText">
+													<text bold pos="6,6" size="121x24" textSize="20">Single batch</text>
 												</widget>
-											</container>
-										</widget>
+											</widget>
+										</container>
 										<widget pos="0,32" size="788x16" type="*container.ThemeOverride">
 											<container size="788x16">
 												<widget size="788x16" type="*widget.Label">
@@ -331,15 +329,13 @@
 																				</container>
 																			</container>
 																			<container pos="0,64" size="764x16">
-																				<widget size="764x16" type="*container.ThemeOverride">
-																					<container size="764x16">
-																						<widget size="764x16" type="*widget.Label">
-																							<widget size="764x16" type="*widget.RichText">
-																								<text color="error" size="543x16">png: Width cannot be "99999" - it takes a whole number of pixels from 1 to 20000</text>
-																							</widget>
+																				<container size="764x16">
+																					<widget pos="-6,-6" size="776x28" type="*widget.Label">
+																						<widget size="776x28" type="*widget.RichText">
+																							<text color="error" pos="6,6" size="543x16">png: Width cannot be "99999" - it takes a whole number of pixels from 1 to 20000</text>
 																						</widget>
-																					</container>
-																				</widget>
+																					</widget>
+																				</container>
 																			</container>
 																		</container>
 																		<container pos="390,0" size="374x81">
@@ -544,15 +540,13 @@
 											<container pos="0,36" size="788x40">
 												<widget size="788x40" type="*widget.Scroll">
 													<container size="788x40">
-														<widget size="788x16" type="*container.ThemeOverride">
-															<container size="788x16">
-																<widget size="788x16" type="*widget.Label">
-																	<widget size="788x16" type="*widget.RichText">
-																		<text size="357x16">1 file · 10.0 MB (10 485 760 B) · png · will go to /tfg/out</text>
-																	</widget>
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text pos="6,6" size="357x16">1 file · 10.0 MB (10 485 760 B) · png · will go to /tfg/out</text>
 																</widget>
-															</container>
-														</widget>
+															</widget>
+														</container>
 													</container>
 												</widget>
 											</container>
