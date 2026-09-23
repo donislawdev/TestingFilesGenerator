@@ -94,6 +94,10 @@ type fakeHost struct {
 	// held is what the window asked to run later and has not run yet, when a
 	// guard is holding the clock - see Later. Nil means the clock runs at once.
 	held *heldClock
+
+	// settles and expansions count what Settling and ExpandingPreset were told.
+	settles    int
+	expansions int
 }
 
 // heldClock keeps what the window asked for later, so a guard can look at the
@@ -192,6 +196,13 @@ func (h *fakeHost) holdTheClock() *heldClock {
 // requires - a real window has no use for it and does not implement it.
 func (h *fakeHost) SetWaitForWork(fn func()) { h.waitForWork = fn }
 func (h *fakeHost) Close()                   { h.closed++ }
+
+// Settling and ExpandingPreset are two more optional interfaces a real window
+// does not implement: a screen reading its form, and the preset screen
+// expanding a preset rather than taking what it remembers. Counted for
+// settleonce_test.go, and every other guard runs through them unaware.
+func (h *fakeHost) Settling()        { h.settles++ }
+func (h *fakeHost) ExpandingPreset() { h.expansions++ }
 
 // HoldDuringRun is the other optional interface, and the other direction: the
 // window asks the host for this one rather than handing it over.

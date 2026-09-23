@@ -2,6 +2,8 @@ package window
 
 import (
 	"errors"
+	"maps"
+	"slices"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -47,6 +49,10 @@ type Preset struct {
 	// fixed is how many fields this screen has before a preset declares any.
 	fixed int
 
+	// last is the preset expanded last and what it came to, so that typing in
+	// a box the preset is not given does not expand it again.
+	last lastExpansion
+
 	body fyne.CanvasObject
 }
 
@@ -54,7 +60,7 @@ type Preset struct {
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
 	p.runner.offer.through(host)
-	p.runner.settle = p.settle
+	p.runner.settle = countedSettle(host, p.settle)
 	// No readdress here, and that is the boundary of this screen rather than an
 	// omission. The other two screens draw boxes for the settings of a target,
 	// so a refusal carrying a position has a box to be moved onto. This one
@@ -252,7 +258,8 @@ func (p *Preset) given() preset.Args {
 // Source rather than a structure, and the same parser a handwritten file goes
 // through - PR5. So what this screen runs is what "tfg preset eject" prints and
 // what "tfg generate --preset" consumes, down to the bytes, because there is
-// only one expansion and all three call it.
+// only one expansion and all three call it. Called once per set of values
+// rather than once per reading of the form - see lastExpansion.
 func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	var none engine.Options
 
@@ -278,7 +285,7 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 		bad = append(bad, err)
 	}
 
-	expanded, err := preset.Expand(p.pick.Selected, p.given())
+	expanded, notes, err := p.last.of(p.host, p.pick.Selected, p.given())
 	if err != nil {
 		bad = append(bad, err)
 	}
@@ -296,7 +303,7 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	}
 
 	// What the run has to say out loud about a value nobody gave it.
-	p.notes = expanded.Notes()
+	p.notes = notes
 
 	targets := make([]engine.Target, 0, len(rec.Targets))
 	for _, t := range rec.Targets {
@@ -313,12 +320,63 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 		Command:      "tfg-gui",
 		ManifestName: engine.DefaultManifestName,
 		RecipeHash:   hash,
+		// Copies, because the expansion stays behind for the next reading of
+		// the form while these go to a worker and into a manifest. Nothing
+		// writes to either today - checked 2026-09-23 - and no guard would
+		// notice the day something did, so the copy is the whole defence.
 		Preset: &manifest.Preset{
 			ID:         expanded.Preset.ID,
-			Parameters: map[string]string(expanded.Settled),
-			Defaulted:  expanded.Defaulted,
+			Parameters: maps.Clone(map[string]string(expanded.Settled)),
+			Defaulted:  slices.Clone(expanded.Defaulted),
 		},
 	}, nil
+}
+
+// lastExpansion is the preset this screen expanded last, what it was given and
+// what that came to.
+//
+// The form is read on every key, and reading it on this screen expanded the
+// preset every time: 157-180 ms and 60 MB for upload-validation, which encodes
+// images to find its sizes, and 48-50 ms and 87 MB for tabular-import - while
+// the seed or the output directory was what was being typed, and neither is
+// something a preset is given (measured 2026-09-23,
+// docs/GUI-MEMORY-2026-09-23.md section 4h).
+//
+// Keyed by what Expand reads and nothing else: the preset and the values given
+// to it. The package holding it reads no clock, no randomness, no environment
+// and no disk (checked 2026-09-23), so the same preset given the same values
+// expands to the same bytes - the property eject and D11 already rest on. A
+// refusal is kept as well as an expansion, for the same reason.
+//
+// One entry, because what is typed changes one thing at a time, and a second
+// preset chosen is a new expansion whichever way it is remembered. No lock,
+// because every reading of the form happens on the window's thread - the
+// line, the live check and both presses, which read the form before a worker
+// is handed the result.
+type lastExpansion struct {
+	held  bool
+	id    string
+	given preset.Args
+	got   *preset.Expansion
+	notes []string
+	err   error
+}
+
+// of is the expansion of a preset given these values, worked out only when it
+// is not the one worked out last. The notes come with it, because working
+// them out reads the same values.
+func (l *lastExpansion) of(h Host, id string, given preset.Args) (*preset.Expansion, []string, error) {
+	if l.held && l.id == id && maps.Equal(l.given, given) {
+		return l.got, l.notes, l.err
+	}
+	tellExpanding(h)
+	got, err := preset.Expand(id, given)
+	var notes []string
+	if err == nil {
+		notes = got.Notes()
+	}
+	*l = lastExpansion{held: true, id: id, given: maps.Clone(given), got: got, notes: notes, err: err}
+	return got, notes, err
 }
 
 // engineTarget turns one recipe target into one engine target.

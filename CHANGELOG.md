@@ -494,6 +494,14 @@ because it turns other people's test suites red.
   again for each one. Both are now done once, and the window uses less memory
   while you type.
 
+- **Typing on the `Presets` screen no longer lags.** With `upload-validation`
+  chosen, every key typed into a box held the window for about 0.3 seconds,
+  and about 0.07 seconds with `tabular-import`, because the preset was worked
+  out twice for each key. Typing the seed or the output folder now takes no
+  noticeable time, and changing a setting of the preset itself takes half as
+  long as before. On the `Several batches` screen with a preset switched on,
+  a key typed into a box now works the preset out once rather than twice.
+
 - **A preview or a run refused while it was being planned no longer leaves
   "Working out what this would cost..." standing over the refusal.**
 
