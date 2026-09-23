@@ -6,6 +6,16 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
+// The keys a section is remembered under. Names of places, never shown - kept
+// as constants so that nothing a person reads is a literal on a screen.
+const (
+	sectionConfiguration = "configuration"
+	sectionOutput        = "output"
+	sectionPreset        = "preset"
+	sectionSettings      = "settings"
+	sectionBase          = "base"
+)
+
 // sections are the panels of a work screen, each of which folds away - the
 // prototype of 2026-09-23, on the owner's word from the running window that
 // File configuration should fold like a batch does, and then that every

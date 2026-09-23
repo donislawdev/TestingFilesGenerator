@@ -331,7 +331,7 @@ func (r *Recipe) rebuild() {
 
 	// Before the batches, so that Tab walks the screen in the order it is
 	// read and the order the run takes the targets in.
-	r.baseBox.Add(r.sections.section("base", text.SectionBase(), r.base.rows(r.fields, r.tips)...))
+	r.baseBox.Add(r.sections.section(sectionBase, text.SectionBase(), r.base.rows(r.fields, r.tips)...))
 
 	panels := make([]fyne.CanvasObject, 0, len(r.batches)+1)
 	for i, b := range r.batches {
@@ -568,7 +568,7 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	// The manifest name and the seed both say what they fall back to, so this
 	// section has one box that has to be answered.
 	r.fields.Require(recipe.KeyOutputDir)
-	return r.sections.section("output", text.SectionOutput(),
+	return r.sections.section(sectionOutput, text.SectionOutput(),
 		parts.Wide(r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
 			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir))),
 		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),

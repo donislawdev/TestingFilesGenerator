@@ -197,7 +197,7 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 	var found *parts.DetailButton
 	walk(o, func(obj fyne.CanvasObject) {
 		row, ok := obj.(*fyne.Container)
-		if !ok || len(row.Objects) < 2 || namedOnScreen(row.Objects[0]) != label {
+		if !ok || len(row.Objects) < 2 || nameOfRow(row) != label {
 			return
 		}
 		// Searched rather than taken from position one. A heading row grew a
@@ -211,6 +211,17 @@ func detailButtonBeside(o fyne.CanvasObject, label string) *parts.DetailButton {
 		}
 	})
 	return found
+}
+
+// nameOfRow is the name a heading row carries: its first thing, or - on the
+// line of a box to tick, which is the square and then its name since
+// 2026-09-23 (parts.ToggleSaying) - its second.
+func nameOfRow(row *fyne.Container) string {
+	if _, isToggle := row.Objects[0].(*parts.Toggle); isToggle {
+		head, _ := headingOf(row.Objects[1])
+		return head
+	}
+	return namedOnScreen(row.Objects[0])
 }
 
 // namedOnScreen is the words a heading shows. A switch's name is a heading in

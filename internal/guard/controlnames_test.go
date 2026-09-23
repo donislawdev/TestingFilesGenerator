@@ -48,6 +48,20 @@ func TestEveryControlOnTheFormStandsUnderAName(t *testing.T) {
 		}
 		walk(field.Objects[1], func(inner fyne.CanvasObject) { named[inner] = head })
 	})
+	// A box to tick carries its name BESIDE the square since 2026-09-23 - the
+	// line is the square, then the name (parts.ToggleSaying) - so for a switch
+	// the name is asked of what stands after it rather than over it.
+	walk(batches, func(obj fyne.CanvasObject) {
+		line, ok := obj.(*fyne.Container)
+		if !ok || len(line.Objects) < 2 {
+			return
+		}
+		if check, isToggle := line.Objects[0].(*parts.Toggle); isToggle {
+			if head, is := headingOf(line.Objects[1]); is && head != "" {
+				named[check] = head
+			}
+		}
+	})
 
 	if got, is := named[switchOnIt]; !is {
 		t.Errorf("the switch that chooses between %q, %q and %q stands on the form with no name over it, "+

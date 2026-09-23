@@ -152,11 +152,7 @@ func carriedRows(items []legal.Item, in func(legal.Item) bool) [][3]string {
 		if !in(item) {
 			continue
 		}
-		name := item.Name
-		if item.Version != "" {
-			name += "  " + item.Version
-		}
-		rows = append(rows, [3]string{name, item.SPDX, item.Copyright})
+		rows = append(rows, [3]string{item.Title(), item.SPDX, item.Copyright})
 	}
 	return rows
 }
@@ -172,16 +168,21 @@ func paragraphs(notice string) string {
 	const wrapped = 40
 	var out []string
 	for _, para := range strings.Split(strings.TrimSpace(notice), "\n\n") {
-		lines := strings.Split(para, "\n")
-		joined := lines[0]
-		for i := 1; i < len(lines); i++ {
-			if len(lines[i-1]) >= wrapped {
-				joined += " " + lines[i]
-			} else {
-				joined += "\n" + lines[i]
-			}
-		}
-		out = append(out, joined)
+		out = append(out, unwrapped(strings.Split(para, "\n"), wrapped))
 	}
 	return strings.Join(out, "\n\n")
+}
+
+// unwrapped joins the lines of one paragraph, keeping a break after any line
+// shorter than wrapped - see paragraphs.
+func unwrapped(lines []string, wrapped int) string {
+	joined := lines[0]
+	for i := 1; i < len(lines); i++ {
+		divider := "\n"
+		if len(lines[i-1]) >= wrapped {
+			divider = " "
+		}
+		joined += divider + lines[i]
+	}
+	return joined
 }

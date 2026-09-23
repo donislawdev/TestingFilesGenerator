@@ -64,12 +64,16 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		// The title is the word on the tab since 2026-09-15 and the sentence
 		// under it is what the title used to say - five ranks now, which is
 		// what this is about.
+		//
+		// The titles of sections and of groups of settings are not asked
+		// since 2026-09-23: every one of them folds, with its arrow IN FRONT
+		// of the words on the owner's word from the running window, so it is
+		// the arrow that stands on this edge and the words follow it. That is
+		// asked by TestTheHeadRowOverhangsTheColumnAndTheTitleDoesNot.
 		{text.TabOneTarget(), []string{
 			text.TabOneTarget(),
 			text.SubtitleGenerate(),
-			text.SectionConfiguration(),
 			text.FieldFormat(),
-			text.SettingsFor(firstFormat()),
 		}},
 		// The preset screen names its section and its first field with the
 		// same word, so only one of the two can be found by its text. Asked
@@ -78,7 +82,6 @@ func TestEverythingAPersonReadsStartsOnOneLeftEdge(t *testing.T) {
 		{text.TabPresets(), []string{
 			text.TabPresets(),
 			text.SubtitlePreset(),
-			text.SectionPreset(),
 			text.PresetCatchesHeading(),
 		}},
 		{text.TabRecipe(), []string{

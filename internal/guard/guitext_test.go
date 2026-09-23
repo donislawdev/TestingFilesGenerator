@@ -56,6 +56,10 @@ import (
 var notWords = map[string]string{
 	`"10mb"`:              "the size a fresh screen starts at, a value rather than prose",
 	`"1"`:                 "how many files a fresh screen starts at",
+	`"-"`: "the hyphen a size range is written with (1kb-8kb), searched for in a box so a range is not " +
+		"offered a single size in its place - a character of the syntax, never shown",
+	`" "`: "the space two lines of one paragraph of the licence are joined with, so the notice wraps to the " +
+		"window - the words are the notice's own, from version.LicenceNotice",
 	`"0"`:                 "the seed a fresh screen starts at",
 	`"files"`:             "the group name a fresh screen starts at, and a recipe value",
 	`"tfg-gui"`:           "recorded in the manifest as the command that ran, a contract value",

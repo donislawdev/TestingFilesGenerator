@@ -27,11 +27,14 @@ import (
 // held in a centred column it slides right by half of what the window gained.
 // At 1600 px the old layout put it 300 px further right.
 //
-// Every screen, because the bar is on all four and Donate is the one control
-// that is on all four - see TestTheDonateButtonIsOnEveryScreen.
+// The three work screens. About had the bar too until 2026-09-23, holding
+// Donate and nothing else, and it was taken off that screen on the owner's
+// word from the running window: its Donate stands in the Support card now,
+// inside the page, where standing with the form's column is what it should do.
+// TestTheDonateButtonIsOnEveryScreen still asks that it is there.
 func TestWhatIsNotAboutTheRunStandsAtTheEdgeOfTheBar(t *testing.T) {
 	for _, tab := range []string{
-		text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabAbout(),
+		text.TabOneTarget(), text.TabPresets(), text.TabRecipe(),
 	} {
 		t.Run(tab, func(t *testing.T) {
 			content, w := screenInAWindow(t, tab)

@@ -167,6 +167,7 @@ func NewErrorArea() *ErrorArea {
 	// control starts on - which is the field's edge since the name stands
 	// over the control rather than beside it.
 	fix := NewButton(Secondary, "", nil)
+	fix.Hide()
 	fixRow := container.NewHBox(fix)
 	area := &ErrorArea{label: label, fix: fix, fixRow: fixRow,
 		box: Column(GapLabel, inkTight(label), fixRow)}
@@ -184,7 +185,7 @@ func (a *ErrorArea) Say(text string) {
 		return
 	}
 	a.label.SetText(text)
-	a.fixRow.Hide()
+	a.hideFix()
 	a.box.Show()
 	a.mark(true)
 }
@@ -195,7 +196,16 @@ func (a *ErrorArea) Say(text string) {
 func (a *ErrorArea) Offer(label string, apply func()) {
 	a.fix.SetText(label)
 	a.fix.OnTapped = apply
+	a.fix.Show()
 	a.fixRow.Show()
+}
+
+// hideFix takes the button away with its row. The button itself as well,
+// because a button still marked visible inside a hidden row is a button a
+// guard walking the tree counts as there to press, at 0x0.
+func (a *ErrorArea) hideFix() {
+	a.fix.Hide()
+	a.fixRow.Hide()
 }
 
 // Offered is the words on the button under the sentence, or nothing, for a
@@ -210,7 +220,7 @@ func (a *ErrorArea) Offered() string {
 // Clear takes the sentence away and gives the room back.
 func (a *ErrorArea) Clear() {
 	a.label.SetText("")
-	a.fixRow.Hide()
+	a.hideFix()
 	a.box.Hide()
 	a.mark(false)
 }

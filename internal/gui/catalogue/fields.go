@@ -21,7 +21,7 @@ func fields() Entry {
 		e.SetText("10mb")
 		return s.Add("size", "Size", "10mb", parts.NoDetail, parts.Numeric(e))
 	}
-	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldStack", "RequiredMark", "Table"}, States: []State{
+	return Entry{Name: "Fields", Covers: []string{"FieldSaying", "CellSaying", "FieldStack", "RequiredMark", "Table", "ToggleSaying"}, States: []State{
 		{"a row", func() fyne.CanvasObject { return sizeRow(form()) }},
 		{"a row that has to be filled in", func() fyne.CanvasObject {
 			s := form()
@@ -40,9 +40,15 @@ func fields() Entry {
 			s.Freeze(true)
 			return row
 		}},
-		{"a switch under its name", func() fyne.CanvasObject {
+		{"a box to tick with its name beside it", func() fyne.CanvasObject {
 			s := form()
 			return s.AddToggle("label", "Label in each file", "", parts.NoDetail, parts.NewToggle(func(bool) {}))
+		}},
+		{"a box to tick beside a named field, level with its box", func() fyne.CanvasObject {
+			s := form()
+			return parts.Grid(
+				s.Add("seed", "Seed", "0", parts.NoDetail, parts.Numeric(parts.NewEntry())),
+				s.AddToggle("label", "Label in each file", "", parts.NoDetail, parts.NewToggle(func(bool) {})))
 		}},
 		{"a named control with no setting behind it", func() fyne.CanvasObject {
 			// It looks like a field and is not one: nothing is ever refused
@@ -175,6 +181,12 @@ func errorArea() Entry {
 			a.Say(longText + ". " + longText)
 			return a.Object()
 		}},
+		{"offering the fix it asks for", func() fyne.CanvasObject {
+			a := parts.NewErrorArea()
+			a.Say("AVIF cannot be smaller than 311 B. Requested: 1 B")
+			a.Offer("Use the smallest size, 311 B", func() {})
+			return a.Object()
+		}},
 	}}
 }
 
@@ -200,7 +212,7 @@ func folding() Entry {
 	// keyboard states a control has - and FoldHead is covered here rather
 	// than as an entry of its own, because it is never on a screen without
 	// the fold it heads.
-	return Entry{Name: "Folding", Covers: []string{"InnerFolding", "FoldHead"}, States: []State{
+	return Entry{Name: "Folding", Covers: []string{"InnerFolding", "InnerFoldingOf", "FoldHead"}, States: []State{
 		{"open", func() fyne.CanvasObject {
 			return parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside the fold")).Object()
 		}},
@@ -222,6 +234,16 @@ func folding() Entry {
 			f := parts.NewInnerFolding("Advanced", parts.Prose("inside the inner fold"))
 			f.Set(false)
 			return f.Object()
+		}},
+		// The rail down a group's left edge is the colour of what the group
+		// is about, so all three kinds are drawn.
+		{"inner, a damage's settings", func() fyne.CanvasObject {
+			return parts.NewInnerFoldingOf(parts.GroupDamage, "Settings for zero-head",
+				parts.Prose("inside the inner fold")).Object()
+		}},
+		{"inner, notes for the manifest", func() fyne.CanvasObject {
+			return parts.NewInnerFoldingOf(parts.GroupNotes, "Notes for the manifest",
+				parts.Prose("inside the inner fold")).Object()
 		}},
 		{"a long title", func() fyne.CanvasObject {
 			return parts.NewFolding(longText, nil, parts.Prose("inside the fold")).Object()

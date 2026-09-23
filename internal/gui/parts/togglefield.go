@@ -1,7 +1,10 @@
 package parts
 
 import (
+	"image/color"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
@@ -20,7 +23,7 @@ import (
 // the square stands level with that box rather than with the name - see
 // toggleCell.
 func ToggleSaying(label string, detail Detail, check *Toggle) Built {
-	line := []fyne.CanvasObject{check, newToggleName(label, check)}
+	line := []fyne.CanvasObject{check, container.NewStack(Heading(label), newNameTap(check))}
 	if detail.Text != "" && detail.on != nil {
 		line = append(line, newDetailButton(detail))
 	}
@@ -70,37 +73,46 @@ func (t *toggleCell) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 func levelToggles(items []placed) {
 	named := map[int]bool{}
 	for _, p := range items {
-		if c, ok := p.o.(*fyne.Container); ok {
-			if _, field := c.Layout.(*fieldCell); field {
-				named[p.row] = true
-			}
+		if _, field := layoutOf(p.o).(*fieldCell); field {
+			named[p.row] = true
 		}
 	}
 	for _, p := range items {
-		if c, ok := p.o.(*fyne.Container); ok {
-			if t, toggle := c.Layout.(*toggleCell); toggle {
-				t.level = named[p.row]
-			}
+		if t, toggle := layoutOf(p.o).(*toggleCell); toggle {
+			t.level = named[p.row]
 		}
 	}
 }
 
-// toggleName is the name beside a box to tick, and pressing it ticks the box.
-type toggleName struct {
+// layoutOf is the layout of a container, or nil for anything else - so a
+// question about what kind of cell something is takes one step, not two.
+func layoutOf(o fyne.CanvasObject) fyne.Layout {
+	if c, ok := o.(*fyne.Container); ok {
+		return c.Layout
+	}
+	return nil
+}
+
+// NameTap lies over the name beside a box to tick and ticks the box when
+// the name is pressed. It draws nothing: the name stays plain words, the same
+// kind every other name on the form is, so whatever reads the names off a
+// screen reads this one too. Exported so that a guard walking the tree can
+// tell it from a control: the name and this over it are a stack of words
+// followed by something, which is the shape of a field.
+type NameTap struct {
 	widget.BaseWidget
-	words fyne.CanvasObject
 	check *Toggle
 }
 
-func newToggleName(label string, check *Toggle) *toggleName {
-	n := &toggleName{words: Heading(label), check: check}
-	n.ExtendBaseWidget(n)
-	return n
+func newNameTap(check *Toggle) *NameTap {
+	t := &NameTap{check: check}
+	t.ExtendBaseWidget(t)
+	return t
 }
 
 // Tapped ticks the box the name belongs to.
-func (n *toggleName) Tapped(*fyne.PointEvent) { n.check.Tapped(nil) }
+func (t *NameTap) Tapped(*fyne.PointEvent) { t.check.Tapped(nil) }
 
-func (n *toggleName) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(n.words)
+func (t *NameTap) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(canvas.NewRectangle(color.Transparent))
 }

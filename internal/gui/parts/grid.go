@@ -330,21 +330,25 @@ func rowGaps(items []placed) []float32 {
 // holdsGroup is whether an item is a group of settings, or a box a screen
 // refills that holds one.
 func holdsGroup(o fyne.CanvasObject) bool {
+	if isGroup(o) {
+		return true
+	}
 	c, ok := o.(*fyne.Container)
 	if !ok {
 		return false
 	}
-	if _, group := c.Layout.(groupCell); group {
-		return true
-	}
 	for _, child := range c.Objects {
-		if inner, ok := child.(*fyne.Container); ok && child.Visible() {
-			if _, group := inner.Layout.(groupCell); group {
-				return true
-			}
+		if child.Visible() && isGroup(child) {
+			return true
 		}
 	}
 	return false
+}
+
+// isGroup is whether something is a group of settings itself.
+func isGroup(o fyne.CanvasObject) bool {
+	_, group := layoutOf(o).(groupCell)
+	return group
 }
 
 // cellWidthNeed is how wide an item asks to be in a grid. A field asks with

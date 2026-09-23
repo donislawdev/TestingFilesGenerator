@@ -41,30 +41,11 @@ func (r *runner) refuse(err error) {
 	// nothing - see parts.Reveal and O107.
 	first := ""
 	for _, one := range spread(err) {
-		// About what is already in the output directory: put under that box,
-		// with the way to the directory under the sentence - see
-		// offers.inTheWay.
-		if dir := inTheWay(one); dir != "" {
-			if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
-				r.fields.Offer(where, text.ButtonOpenFolder(), func() { r.offer.openFolder(dir) })
-				if first == "" {
-					first = where
-				}
-				continue
+		if where := placed(r, one); where != "" {
+			if first == "" {
+				first = where
 			}
-		}
-		// An interface rather than a case per error type, so a screen shown a
-		// kind of refusal nobody thought about here still gets it placed. The
-		// engine, the format registry and the preset package all answer this
-		// and none of them had to be imported for the question to be asked.
-		var about interface{ AboutSetting() string }
-		if errors.As(one, &about) && about.AboutSetting() != "" {
-			if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
-				if first == "" {
-					first = where
-				}
-				continue
-			}
+			continue
 		}
 		// About the run rather than about one box, or about a setting this
 		// screen does not draw. The foot of the form is where those belong.
@@ -100,6 +81,43 @@ func (r *runner) refuse(err error) {
 	}
 	if field := r.fields.Lookup(first); field != nil {
 		parts.Reveal(r.scroll, field.Control)
+	}
+}
+
+// placed puts one refusal under the box it is about and says which, or says
+// nothing when it is about no box this screen draws. A function rather than a
+// method, because the runner stands at its ceiling of methods, and out of
+// refuse because the two ways of placing nested it past the ceiling of depth.
+func placed(r *runner, one error) string {
+	// About what is already in the output directory: put under that box,
+	// with the way to the directory under the sentence - see inTheWay.
+	if dir := inTheWay(one); dir != "" {
+		if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
+			r.fields.Lookup(where).Offer(text.ButtonOpenFolder(), openIn(r.offer, dir))
+			return where
+		}
+	}
+	// An interface rather than a case per error type, so a screen shown a
+	// kind of refusal nobody thought about here still gets it placed. The
+	// engine, the format registry and the preset package all answer this
+	// and none of them had to be imported for the question to be asked.
+	var about interface{ AboutSetting() string }
+	if !errors.As(one, &about) || about.AboutSetting() == "" {
+		return ""
+	}
+	if where := r.placeOf(about.AboutSetting()); r.fields.Mark(where, one) {
+		return where
+	}
+	return ""
+}
+
+// openIn is what the button under a refusal about a directory does: ask the
+// desktop to show that directory.
+func openIn(o *offers, dir string) func() {
+	return func() {
+		if o.openFolder != nil {
+			o.openFolder(dir)
+		}
 	}
 }
 

@@ -364,7 +364,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 	// in recipe keys, and it is what a refusal is matched against.
 	add := g.fields.Add
 	return []fyne.CanvasObject{
-		g.sections.section("configuration", text.SectionConfiguration(),
+		g.sections.section(sectionConfiguration, text.SectionConfiguration(),
 			// The format used to be a section of its own holding one field.
 			// A grouping of one groups nothing, and it cost a title, a surface
 			// and two gaps - measured at about 60 px on a screen that was 119
@@ -392,7 +392,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			g.propBox,
 			g.damage.box,
 		),
-		g.sections.section("output", text.SectionOutput(),
+		g.sections.section(sectionOutput, text.SectionOutput(),
 			parts.Wide(add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
 				chooserFor(g.host, g.outDir))),
 			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),

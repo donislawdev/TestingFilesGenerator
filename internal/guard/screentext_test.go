@@ -57,7 +57,9 @@ func TestTheBatchScreenSaysWhatAnEmptyBoxWillDo(t *testing.T) {
 		t.Errorf("the count box arrives holding %q. A box with a value in it cannot say the setting "+
 			"was left unstated, which is what keeps the key out of the recipe.", box.Text)
 	}
-	if want := strconv.Itoa(recipe.DefaultCount); box.PlaceHolder != want {
+	// Worded as a default since 2026-09-23 ("default: 1"): a bare grey "1"
+	// was read in the running window as a value somebody had typed.
+	if want := text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultCount)); box.PlaceHolder != want {
 		t.Errorf("the count box shows %q as what happens if it is left alone and the recipe uses %q",
 			box.PlaceHolder, want)
 	}

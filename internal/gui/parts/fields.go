@@ -54,6 +54,16 @@ func (f *Field) Say(message string) { f.area.Say(message) }
 // Clear takes the refusal and the mark back together.
 func (f *Field) Clear() { f.area.Clear() }
 
+// Offer puts a button under what this field is complaining about, for a
+// screen that knows how to put it right - the way to a directory whose
+// contents a run refused. On the field rather than on Fields, which stands at
+// its ceiling of methods.
+func (f *Field) Offer(label string, apply func()) { f.area.Offer(label, apply) }
+
+// Offered is the words on the button under what this field is complaining
+// about, or nothing, for a guard.
+func (f *Field) Offered() string { return f.area.Offered() }
+
 // Saying is what this field is currently complaining about, for a guard.
 func (f *Field) Saying() string { return f.area.Text() }
 
@@ -522,18 +532,6 @@ func inTheWordsOnScreen(f *Field, err error) string {
 		return reworded.InTheWordsOf(f.Label)
 	}
 	return err.Error()
-}
-
-// Offer puts a button under what one field is complaining about, for a
-// screen that knows how to put it right - the way to a directory whose
-// contents a run refused. Says whether the field was there to take it.
-func (s *Fields) Offer(setting, label string, apply func()) bool {
-	f, ok := s.by[setting]
-	if !ok {
-		return false
-	}
-	f.area.Offer(label, apply)
-	return true
 }
 
 // Clear takes back whatever one field was complaining about.
