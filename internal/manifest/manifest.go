@@ -852,7 +852,10 @@ func (m *Manifest) writeOver(path string) error {
 	// literal until 2026-09-06, which is how verify came to report our own half
 	// written manifest as "extra" - the reading side recognised the other
 	// marker and had never been told about this one.
-	tmp := path + core.WritingMarker
+	//
+	// A sibling rather than a plain join, so a manifest named up to the length
+	// every system stores can be written under its temporary name (O239).
+	tmp := core.SiblingPath(path, core.WritingMarker)
 	// Claimed rather than created, and core.CreateNew says why: this name sits
 	// in a directory the run does not own, nothing else in the tool checks it,
 	// and a create that is not exclusive follows whatever is at the name.

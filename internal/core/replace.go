@@ -52,7 +52,9 @@ func ReplaceFile(path string, content []byte) error {
 		return err
 	}
 
-	tmp := path + writingSuffix
+	// A sibling rather than a plain join, so a recipe whose own name is up to
+	// the length every system stores can still be formatted in place (O239).
+	tmp := SiblingPath(path, writingSuffix)
 	if err := writeWhole(tmp, content, mode); err != nil {
 		// Only what this call created is taken away. A refusal from CreateNew
 		// means the name was already somebody's - a leftover from an

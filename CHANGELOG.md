@@ -16,6 +16,13 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A file name longer than 255 bytes is refused before anything is written,
+  on every system.** Linux stores at most 255 bytes in a name, while Windows
+  and macOS count characters, so a name of 200 Chinese or Japanese characters
+  used to be written on two systems and fail on the third with no reason
+  given. The refusal says how long the name is and how long it may be. A
+  letter outside ASCII takes two to four of those bytes.
+
 - **The window's look, after a review of every screen.** An open list and the
   explanation beside a field stand on a card with an edge and a shade instead
   of a flat grey block, and a list opened under its box shrinks to what the
@@ -499,6 +506,12 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **A file name from 238 to 255 bytes long is written.** Every system stores
+  such a name, and none of them got one: each file is written under a longer
+  temporary name first, and that one was over the limit. The same held for a
+  manifest named that long and for `tfg recipe fmt -w` on a recipe file named
+  that long.
 
 - **The window uses far less memory, and rebuilding a screen or opening a
   list no longer adds to it.** Every quiet line on a screen - a subtitle, a
