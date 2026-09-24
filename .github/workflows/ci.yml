@@ -688,7 +688,10 @@ jobs:
         #
         # So is this file, since 2026-09-24 and the owner's decision. A change
         # to the race job itself used to leave it skipped, so the first run of
-        # a new definition was the weekly sweep, days after it merged.
+        # a new definition was the weekly sweep, days after it merged. And so
+        # is .github/build-tags, which every command of the job reads and which
+        # decides the files it compiles - the same reason as go.mod, named by
+        # an outside review of the pull request that split the job.
         #
         # Anything unclear counts as touched. A first push, a branch with no
         # comparable parent, a pull request event with no before - all answer
@@ -697,7 +700,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go go.mod .github/workflows/ci.yml'
+          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go go.mod .github/workflows/ci.yml .github/build-tags'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because
@@ -765,11 +768,18 @@ jobs:
     #
     # Every part reports. One red part does not cancel the others, whose tests
     # would then go unrun.
+    #
+    # The ceiling is the sum of the limits inside it, with room left over, so
+    # that each of them fires first and names what was slow: about four minutes
+    # to set up and compile (the compile alone took 3m03s on the first run),
+    # twenty for the guards, five for the other packages. Measured on the first
+    # run: 677, 635, 164 and 154 s of guards in the four parts, 14m55s for the
+    # longest part.
     strategy:
       fail-fast: false
       matrix:
         part: [0, 1, 2, 3]
-    timeout-minutes: 30
+    timeout-minutes: 35
     env:
       # The one thing in this project that needs a C toolchain. Linux runners
       # ship one, so this job carries the cost and the matrix above stays on
@@ -823,13 +833,11 @@ jobs:
         # job-index counts from nought, so this asks), a part given no test,
         # and a part that ran fewer tests than it was given.
         #
-        # Every other package runs in part 0. None holds a test today, and one
-        # written there has to reach the detector as well.
-        #
         # The timeout is stated rather than left to Go's ten minutes a package,
         # and stays below the job's ceiling, so a slow part fails as a test with
         # a name rather than as a killed job with no output. Go's ten minutes
         # killed this job on 2026-08-25, before a timeout was stated here.
+        # Twenty minutes is 1.8 times the slowest part measured.
         env:
           PART: ${{ strategy.job-index }}
           PARTS: ${{ strategy.job-total }}
@@ -848,17 +856,32 @@ jobs:
             echo "part $PART was given no test"
             exit 1
           fi
-          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 25m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
+          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
           ran=$(grep -cE '^=== RUN   [^/]+$' part.log || true)
           if [ "$ran" -ne "$planned" ]; then
             echo "part $PART was given $planned tests and ran $ran"
             exit 1
           fi
-          if [ "$PART" -eq 0 ]; then
-            go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
-            mapfile -t others < others.txt
-            go test -tags "$(cat .github/build-tags)" -count=1 -race -timeout 25m "${others[@]}"
-          fi
+        shell: bash
+
+      - name: the other packages under the race detector
+        # Every package outside internal/guard, in part 0 alone. None holds a
+        # test today - the first run took one second for all of them - and one
+        # written there has to reach the detector as well.
+        #
+        # A step of its own with a ceiling of its own, rather than a second
+        # command after the guards. Go's -timeout holds one test binary, so two
+        # commands in one step add up under nothing but the job's ceiling, and
+        # the job would be killed past it with no name in the log - an outside
+        # review of the pull request that split the job. Runs after red guards
+        # as well, so its answer is not lost with theirs.
+        if: ${{ !cancelled() && matrix.part == 0 }}
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
+          mapfile -t others < others.txt
+          go test -tags "$(cat .github/build-tags)" -count=1 -race -timeout 4m "${others[@]}"
         shell: bash
 
   coverage:
