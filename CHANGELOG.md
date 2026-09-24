@@ -16,6 +16,20 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window's look, after a review of every screen.** An open list and the
+  explanation beside a field stand on a card with an edge and a shade instead
+  of a flat grey block, and a list opened under its box shrinks to what the
+  filter left. Every list shows its tick at the end of the row. Controls
+  switched off for a run are never drawn brighter than at rest, and a ticked
+  switch keeps its tick while it is off - it showed an empty square for the
+  length of every run. `Donate` carries a red heart, and it and `Add a batch`
+  stand on the form's left edge. In a narrow window the run buttons move right
+  instead of making the window wider, so it can be narrowed further. Two
+  refusals in one row stand one under the other from the row's edge rather
+  than as a staircase. `Remove` is written in red, the rails beside groups of
+  settings are one grey, `Choose...` is as tall as the box beside it, and the
+  About screen's sentence sits under its title like the other screens'.
+
 - **The list of formats is grouped by kind and can be filtered.** The open
   list stands under headings - Archives, Documents, Pictures, Sound, Text and
   data - each saying how many formats are under it, and a box at its top

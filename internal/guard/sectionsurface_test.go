@@ -169,7 +169,7 @@ func TestEachSurfaceIsToldFromTheOneUnderIt(t *testing.T) {
 			surface fyne.ThemeColorName
 			where   string
 		}{
-			{theme.ColorNameForeground, theme.ColorNameMenuBackground, "a row of an open list"},
+			{theme.ColorNameForeground, theme.ColorNameInputBackground, "a row of an open list, on the card a list floats on"},
 			{parts.ColorNameLabel, parts.ColorNamePanel, "a panel"},
 			{theme.ColorNameDisabled, theme.ColorNameInputBackground, "a box to type in"},
 			{theme.ColorNamePlaceHolder, theme.ColorNameInputBackground, "a box to type in"},

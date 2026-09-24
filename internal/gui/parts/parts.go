@@ -224,43 +224,29 @@ func panelSurface() *canvas.Rectangle {
 	return rect
 }
 
-// floatingSurface is what anything drawn OVER the form stands on: the list a
-// menu drops down, and the explanation behind a field's button.
+// floatingCard is what anything drawn OVER the form stands on - the list a
+// menu drops down and the explanation behind a field's button - back to
+// front: the shade it casts and its face.
 //
-// One function for both since 2026-09-21, and the second of them is why. The
-// explanation stood on panelSurface until then, and it opens over a section -
-// so a box the colour of the thing under it had no edge anywhere, and the
-// owner's report from the running window was a sentence laid straight over
-// the form, covering the row beneath. The list had already met the same
-// question on 2026-08-12 and the palette answers it: the surface that floats
-// is the lightest one, told from a panel by 13.6 L* with no border and no
-// shadow (theme.go, ColorNameMenuBackground). The corner is a field's, not a
-// panel's, because what floats is the size of a control and not of a section.
-func floatingSurface() *canvas.Rectangle {
-	rect := canvas.NewRectangle(PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark))
-	rect.CornerRadius = RadiusField
-	return rect
-}
-
-// tipSurface is what an explanation stands on: the floating surface with a
-// line round it, so it reads as a thing laid over the form and not as a
-// patch of it. Owner's report from the running window, 2026-09-21: without
-// the line it looked like a random rectangle.
-func tipSurface() *canvas.Rectangle {
-	rect := floatingSurface()
-	rect.StrokeColor = PaletteColour(theme.ColorNameInputBorder, theme.VariantDark)
-	rect.StrokeWidth = edgeWidth
-	return rect
-}
-
-// tipShadow is the shade an explanation casts, offset downwards so it reads
-// as depth rather than as a smudge - the same reason Refactoring UI gives
-// for offsetting shadows. Drawn under tipSurface in a stack, so it shows
-// only past the surface's lower edge.
-func tipShadow() fyne.CanvasObject {
-	rect := canvas.NewRectangle(PaletteColour(ColorNameTipShade, theme.VariantDark))
-	rect.CornerRadius = RadiusField
-	return container.New(shifted{dy: TipShadowDrop}, rect)
+// One function for both since 2026-09-21, when the explanation stood on the
+// panel's surface and read as a sentence laid straight over the form. Until
+// 2026-09-24 the face was the lightest surface of the palette (menuBackground)
+// - the list with no edge and no shade, the explanation with an edge - and the
+// owner's report from the running window was that both looked like a plain
+// grey block. Of three looks drawn side by side in the real window he chose
+// this one (docs/GUI-LOOK-REVIEW-2026-09-24.md, round 2, A): the surface of a
+// box to type in with a box's edge, a panel's corner, and a shade offset
+// downward so it reads as depth rather than as a smudge, showing only past the
+// face's lower edge.
+func floatingCard() []fyne.CanvasObject {
+	dark := theme.VariantDark
+	face := canvas.NewRectangle(PaletteColour(theme.ColorNameInputBackground, dark))
+	face.StrokeColor = PaletteColour(theme.ColorNameInputBorder, dark)
+	face.StrokeWidth = edgeWidth
+	face.CornerRadius = RadiusPanel
+	shade := canvas.NewRectangle(PaletteColour(ColorNameTipShade, dark))
+	shade.CornerRadius = RadiusPanel
+	return []fyne.CanvasObject{container.New(shifted{dy: TipShadowDrop}, shade), face}
 }
 
 // shifted lays its one child at an offset from its own origin.
@@ -518,9 +504,15 @@ func (h hungOut) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // outside review of #126 (docs/REVIEW-126-2026-09-23.md). GUI rule 21 asks
 // exactly this of the smallest window.
 //
-// The buttons are centred in the bar, so the room they leave either side is
-// half of what is left over. That half has to hold the rail and a gap, which
-// makes the smallest bar the buttons plus twice the rail and the gap.
+// The buttons are centred in the bar while there is room for that, and give
+// way to the right when there is not, since 2026-09-24. Until then the
+// smallest bar was the buttons plus TWICE the rail and a gap - centred, the
+// room either side of them is half of what is left over, and that half had to
+// hold the rail - so every pixel the rail grew cost the window two. The heart
+// on Donate grew it, and the smallest window went from 695 to 743 px. The
+// owner chose giving way over the wider minimum: the row keeps the rail's
+// room clear at its left (buttonRow.clearLeft) and the smallest bar is the
+// rail, a gap and the buttons once.
 type railOver struct{ centred fyne.CanvasObject }
 
 func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -529,13 +521,19 @@ func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
 		size = size.Max(o.MinSize())
 	}
 	if len(objects) > 1 {
-		need := r.centred.MinSize().Width + 2*(objects[1].MinSize().Width+GapColumns)
+		need := objects[1].MinSize().Width + GapColumns + r.centred.MinSize().Width
 		size.Width = fyne.Max(size.Width, need)
 	}
 	return size
 }
 
-func (railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+func (r railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	// Told before the column is laid out, since laying it out lays the row out.
+	if row, ok := r.centred.(*fyne.Container); ok && len(objects) > 1 {
+		if keep, ours := row.Layout.(*buttonRow); ours {
+			keep.clearLeft = objects[1].MinSize().Width + GapColumns
+		}
+	}
 	for _, o := range objects {
 		o.Resize(size)
 		o.Move(fyne.NewPos(0, 0))

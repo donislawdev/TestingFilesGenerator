@@ -68,6 +68,11 @@ type OpenList struct {
 	// filter is the box at the top that narrows the list, or nil for a list
 	// without one. What is typed into it is listContents.typed. See WithFilter.
 	filter *FilterBox
+
+	// resize is how a list that opened downward tells its popup the height
+	// what the filter left needs, and nil on a list that keeps one height -
+	// see MinSize. Set by the menu that opened it, which owns the popup.
+	resize func(fyne.Size)
 }
 
 // NewOpenList builds the list. take is called with the value somebody settled
@@ -118,6 +123,11 @@ func (l *OpenList) narrowTo(typed string) {
 	l.typed = typed
 	l.rearrange()
 	l.view.toTop()
+	// Before either way out below, so an emptied filter gives a list that
+	// opened downward its whole height back as well.
+	if l.resize != nil {
+		l.resize(fyne.NewSize(l.Size().Width, l.MinSize().Height))
+	}
 	if strings.TrimSpace(typed) == "" {
 		l.active = -1
 		l.StartOn(l.chosen)
@@ -184,13 +194,20 @@ type Choice struct {
 // of rows lived here instead, which made the list 224 px tall in every window
 // there is (O203).
 //
-// All of them means the whole arrangement with nothing typed, and not what the
-// filter has left. The list does not shrink while somebody types into it: a
-// list that opened upward would pull its bottom edge away from the box it
-// belongs to with every letter, and nothing on this screen jumps under a
-// person's hands (GUI rule 3).
+// All of them means the whole arrangement with nothing typed, on a list that
+// opened upward: shrinking there would pull its bottom edge away from the box
+// it belongs to with every letter, and move the filter box at its top under
+// the hands typing into it (GUI rule 3). A list that opened DOWNWARD is as
+// tall as what the filter left, since 2026-09-24 - the owner's report from the
+// running window was a list of one format standing over a slab of empty grey,
+// and downward the box, the filter and every row above the cut stay where
+// they are while only the foot moves up. Which one a list is, the menu that
+// opened it says, by handing it resize.
 func (l *OpenList) MinSize() fyne.Size {
 	rows := len(arrange(l.options, l.labels, ""))
+	if l.resize != nil {
+		rows = len(l.entries)
+	}
 	if rows < 1 {
 		rows = 1
 	}
@@ -249,10 +266,10 @@ func (l *OpenList) CreateRenderer() fyne.WidgetRenderer {
 	// it" is the colour actually on the screen.
 	rows := l.view.scroll
 	if l.filter == nil {
-		return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), rows))
+		return widget.NewSimpleRenderer(container.NewStack(append(floatingCard(), rows)...))
 	}
 	head := container.New(layout.NewCustomPaddedLayout(filterInset, filterInset, filterInset, filterInset), l.filter)
-	return widget.NewSimpleRenderer(container.NewStack(floatingSurface(), container.NewBorder(head, nil, nil, nil, rows)))
+	return widget.NewSimpleRenderer(container.NewStack(append(floatingCard(), container.NewBorder(head, nil, nil, nil, rows))...))
 }
 
 // ListRowHeight is one row, for a guard asking how many rows fit in a height.

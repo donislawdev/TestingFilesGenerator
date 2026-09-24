@@ -482,9 +482,9 @@
 				<container size="1092x1221">
 					<container pos="401,165" size="380x82">
 						<container size="380x82">
-							<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="6" size="380x82"/>
+							<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="380x82"/>
 						</container>
-						<rectangle fillColor="menuBackground" radius="6" size="380x82" strokeColor="inputBorder" strokeWidth="1"/>
+						<rectangle fillColor="inputBackground" radius="8" size="380x82" strokeColor="inputBorder" strokeWidth="1"/>
 						<container size="380x82">
 							<container pos="16,16" size="348x50">
 								<widget pos="-6,-6" size="360x62" type="*widget.Label">

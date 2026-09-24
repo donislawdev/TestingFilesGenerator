@@ -15,12 +15,17 @@ import (
 // read as one control. What is hidden takes no room and no gap, so Cancel and
 // the two offers after a run come and go without leaving a hole.
 func ButtonRow(items ...fyne.CanvasObject) *fyne.Container {
-	return container.New(buttonRow{}, items...)
+	return container.New(&buttonRow{}, items...)
 }
 
-type buttonRow struct{}
+// buttonRow is the layout behind ButtonRow. clearLeft is room at its left the
+// row keeps free of buttons - the rail laid over the action bar, see railOver -
+// and nought everywhere else. A field of the layout rather than a move made
+// from outside, because the row lays itself out again whenever a button in it
+// comes or goes, and a move made once would be undone by the next of those.
+type buttonRow struct{ clearLeft float32 }
 
-func (buttonRow) MinSize(objects []fyne.CanvasObject) fyne.Size {
+func (*buttonRow) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	size := fyne.NewSize(0, 0)
 	shown := 0
 	for _, o := range objects {
@@ -38,8 +43,11 @@ func (buttonRow) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	return size
 }
 
-func (b buttonRow) Layout(objects []fyne.CanvasObject, size fyne.Size) {
-	x := (size.Width - b.MinSize(objects).Width) / 2
+func (b *buttonRow) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	// Centred, and moved right of centre only as far as the room kept clear
+	// asks - so in a wide window nothing changes, and a narrow one does not
+	// have to be wide enough to centre the row clear of the rail.
+	x := fyne.Max((size.Width-b.MinSize(objects).Width)/2, b.clearLeft)
 	for _, o := range objects {
 		if !o.Visible() {
 			continue

@@ -490,7 +490,10 @@
 				<rectangle fillColor="overlayBackground" radius="5" shadowBlurRadius="14" shadowOffset="0,4" size="363x624"/>
 				<widget size="363x624" type="*parts.OpenList">
 					<container size="363x624">
-						<rectangle fillColor="menuBackground" radius="6" size="363x624"/>
+						<container size="363x624">
+							<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="363x624"/>
+						</container>
+						<rectangle fillColor="inputBackground" radius="8" size="363x624" strokeColor="inputBorder" strokeWidth="1"/>
 						<container size="363x624">
 							<widget pos="0,40" size="363x584" type="*widget.Scroll">
 								<container size="363x868">

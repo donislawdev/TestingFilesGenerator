@@ -597,6 +597,11 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	list.LimitTo(height)
 	pop.Resize(fyne.NewSize(width, height))
 	pop.ShowAtPosition(fyne.NewPos(left, top))
+	// Opened downward, the list follows what its filter leaves - see
+	// OpenList.MinSize. The room worked out now stays its ceiling.
+	if top >= at.Y+c.Size().Height {
+		list.resize = pop.Resize
+	}
 
 	surface.Focus(list.Keyboard())
 	// On the value already in the box, so that pressing Down once does not go

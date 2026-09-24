@@ -162,7 +162,7 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 		theme.ColorNameInputBackground, "a box to type in", byStep},
 	theme.ColorNameSeparator: {ladder, "a line that separates and says nothing else",
 		parts.ColorNamePanel, "the panel", byStep},
-	theme.ColorNameMenuBackground: {ladder, "what an open list floats on",
+	theme.ColorNameMenuBackground: {ladder, "what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24",
 		theme.ColorNameInputBackground, "a box to type in", byStep},
 	theme.ColorNameInputBorder: {ladder, "the edge that says where the typing goes",
 		theme.ColorNameInputBackground, "its own fill", byStep},
@@ -176,11 +176,13 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 	// comfortable number was the wrong number.
 	//
 	// The surface each one is drawn on is read from the code rather than
-	// assumed: a list row draws its words in Foreground on the floating
-	// surface (parts/listrow.go), a value and a hint sit inside a box, and a
-	// field's name stands on the panel beside it.
+	// assumed: the words of a secondary button stand on its face, the
+	// lightest surface Foreground is drawn on since the lists moved to a box's
+	// surface on 2026-09-24 (parts/button.go, parts/parts.go floatingCard), a
+	// value and a hint sit inside a box, and a field's name stands on the panel
+	// beside it.
 	theme.ColorNameForeground: {inks, "a value, and everything read at rest",
-		theme.ColorNameMenuBackground, "an open list", byContrast},
+		theme.ColorNameButton, "a button's face", byContrast},
 	parts.ColorNameLabel: {inks, "the name of a field, a step quieter than its value",
 		parts.ColorNamePanel, "a panel", byContrast},
 	theme.ColorNameDisabled: {inks, "a value in a box switched off for the length of a run",

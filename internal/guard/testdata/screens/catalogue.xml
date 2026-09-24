@@ -991,7 +991,10 @@
 										<container size="140x84">
 											<widget size="140x84" type="*parts.OpenList">
 												<container size="140x84">
-													<rectangle fillColor="menuBackground" radius="6" size="140x84"/>
+													<container size="140x84">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x84"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="140x84" strokeColor="inputBorder" strokeWidth="1"/>
 													<widget size="140x84" type="*widget.Scroll">
 														<container size="140x84">
 															<widget size="140x28" type="*parts.ListRow">
@@ -1026,7 +1029,10 @@
 										<container size="140x84">
 											<widget size="140x84" type="*parts.OpenList">
 												<container size="140x84">
-													<rectangle fillColor="menuBackground" radius="6" size="140x84"/>
+													<container size="140x84">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x84"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="140x84" strokeColor="inputBorder" strokeWidth="1"/>
 													<widget size="140x84" type="*widget.Scroll">
 														<container size="140x84">
 															<widget size="140x28" type="*parts.ListRow">
@@ -1060,7 +1066,10 @@
 										<container size="140x112">
 											<widget size="140x112" type="*parts.OpenList">
 												<container size="140x112">
-													<rectangle fillColor="menuBackground" radius="6" size="140x112"/>
+													<container size="140x112">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x112"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="140x112" strokeColor="inputBorder" strokeWidth="1"/>
 													<widget size="140x112" type="*widget.Scroll">
 														<container size="140x336">
 															<widget size="140x28" type="*parts.ListRow">
@@ -1139,7 +1148,10 @@
 										<container size="140x336">
 											<widget size="140x336" type="*parts.OpenList">
 												<container size="140x336">
-													<rectangle fillColor="menuBackground" radius="6" size="140x336"/>
+													<container size="140x336">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x336"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="140x336" strokeColor="inputBorder" strokeWidth="1"/>
 													<widget size="140x336" type="*widget.Scroll">
 														<container size="140x336">
 															<widget size="140x28" type="*parts.ListRow">
@@ -1222,7 +1234,10 @@
 										<container size="632x56">
 											<widget size="632x56" type="*parts.OpenList">
 												<container size="632x56">
-													<rectangle fillColor="menuBackground" radius="6" size="632x56"/>
+													<container size="632x56">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="632x56"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="632x56" strokeColor="inputBorder" strokeWidth="1"/>
 													<widget size="632x56" type="*widget.Scroll">
 														<container size="632x56">
 															<widget size="632x28" type="*parts.ListRow">
@@ -1253,7 +1268,10 @@
 										<container size="363x308">
 											<widget size="363x308" type="*parts.OpenList">
 												<container size="363x308">
-													<rectangle fillColor="menuBackground" radius="6" size="363x308"/>
+													<container size="363x308">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="363x308"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="363x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="363x308">
 														<widget pos="0,40" size="363x267" type="*widget.Scroll">
 															<container size="363x868">
@@ -1478,7 +1496,10 @@
 										<container size="363x308">
 											<widget size="363x308" type="*parts.OpenList">
 												<container size="363x308">
-													<rectangle fillColor="menuBackground" radius="6" size="363x308"/>
+													<container size="363x308">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="363x308"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="363x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="363x308">
 														<widget pos="0,40" size="363x267" type="*widget.Scroll">
 															<container size="363x504">
@@ -1646,7 +1667,10 @@
 										<container size="363x308">
 											<widget size="363x308" type="*parts.OpenList">
 												<container size="363x308">
-													<rectangle fillColor="menuBackground" radius="6" size="363x308"/>
+													<container size="363x308">
+														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="363x308"/>
+													</container>
+													<rectangle fillColor="inputBackground" radius="8" size="363x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="363x308">
 														<widget pos="0,40" size="363x267" type="*widget.Scroll">
 															<container size="363x267">
@@ -2752,9 +2776,9 @@
 										<container size="788x65">
 											<container size="380x65">
 												<container size="380x65">
-													<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="6" size="380x65"/>
+													<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="380x65"/>
 												</container>
-												<rectangle fillColor="menuBackground" radius="6" size="380x65" strokeColor="inputBorder" strokeWidth="1"/>
+												<rectangle fillColor="inputBackground" radius="8" size="380x65" strokeColor="inputBorder" strokeWidth="1"/>
 												<container size="380x65">
 													<container pos="16,16" size="348x33">
 														<widget pos="-6,-6" size="360x45" type="*widget.Label">
@@ -4366,7 +4390,7 @@
 										<widget size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="261x14" textSize="12">menuBackground - what an open list floats on</text>
+													<text color="placeholder" pos="6,6" size="850x14" textSize="12">menuBackground - what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24</text>
 												</widget>
 											</container>
 										</widget>
@@ -4418,7 +4442,7 @@
 										<widget pos="0,18" size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="182x14" textSize="12">#E6E6E8 - 5.74:1 on an open list</text>
+													<text color="placeholder" pos="6,6" size="201x14" textSize="12">#E6E6E8 - 7.29:1 on a button's face</text>
 												</widget>
 											</container>
 										</widget>
@@ -4950,7 +4974,7 @@
 										<widget size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="261x14" textSize="12">menuBackground - what an open list floats on</text>
+													<text color="placeholder" pos="6,6" size="850x14" textSize="12">menuBackground - what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24</text>
 												</widget>
 											</container>
 										</widget>
@@ -5002,7 +5026,7 @@
 										<widget pos="0,18" size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="181x14" textSize="12">#1A1A1C - 17.38:1 on an open list</text>
+													<text color="placeholder" pos="6,6" size="202x14" textSize="12">#1A1A1C - 10.78:1 on a button's face</text>
 												</widget>
 											</container>
 										</widget>

@@ -216,9 +216,9 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 	}
 	driver := app.Driver()
 
-	// On the surface an open list floats on, not on a panel's - see
-	// floatingSurface for the report that moved it there.
-	box := container.NewStack(tipShadow(), tipSurface(), Padded(Inset, Prose(detail)))
+	// On the card an open list floats on, not on a panel's surface - see
+	// floatingCard for the reports that shaped it.
+	box := container.NewStack(append(floatingCard(), Padded(Inset, Prose(detail)))...)
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the
