@@ -853,11 +853,12 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$PART" != "$LISTED" ] || [ "$PART" -ge "$PARTS" ]; then
-            echo "job $PART of $PARTS is part $LISTED in the matrix - the split assumes the index counts from nought in the matrix's order"
+            echo "job $PART of $PARTS is part $LISTED in the matrix, and the split needs the two equal and below the total."
+            echo "List strategy.matrix.part as 0, 1, 2 and on, in order, and check the context names in this step's env."
             exit 1
           fi
           go test -tags "$(cat .github/build-tags)" ./internal/guard/ -race -list '.*' > listed.txt || { cat listed.txt; exit 1; }
-          grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no test"; exit 1; }
+          grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no Test, Fuzz or Example function. What it printed:"; cat listed.txt; exit 1; }
           while IFS= read -r name; do
             read -r sum _ < <(printf '%s' "$name" | cksum)
             if [ $((sum % PARTS)) -eq "$PART" ]; then
@@ -867,13 +868,16 @@ jobs:
           planned=$(wc -l < mine.txt)
           echo "part $PART of $PARTS runs $planned of $(wc -l < names.txt) tests"
           if [ "$planned" -eq 0 ]; then
-            echo "part $PART was given no test"
+            echo "part $PART of $PARTS was given no test - the checksum of no listed name lands here."
+            echo "With this few tests, use fewer parts in strategy.matrix.part."
             exit 1
           fi
           go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
           ran=$(grep -cE '^=== RUN   [^/]+$' part.log || true)
           if [ "$ran" -ne "$planned" ]; then
-            echo "part $PART was given $planned tests and ran $ran"
+            echo "part $PART was given $planned tests and ran $ran. Given and never run:"
+            comm -23 <(sort mine.txt) <(sed -n 's/^=== RUN   \([^/]*\)$/\1/p' part.log | sort)
+            echo "Each of these is a name the -run pattern did not reach, or a test the binary skipped before it started."
             exit 1
           fi
         shell: bash
