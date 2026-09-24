@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
-
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Field is one labelled control that can say it was the one refused.
@@ -561,9 +559,9 @@ func inTheWordsOnScreen(f *Field, err error) string {
 		InTheWordsOf(string) string
 	}
 	if f.Label != "" && errors.As(err, &reworded) {
-		return core.ShownText(reworded.InTheWordsOf(f.Label))
+		return reworded.InTheWordsOf(f.Label)
 	}
-	return core.ShownText(err.Error())
+	return err.Error()
 }
 
 // Clear takes back whatever one field was complaining about.
