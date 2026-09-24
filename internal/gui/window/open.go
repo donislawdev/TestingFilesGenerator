@@ -332,7 +332,14 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // rule 8 intact - see the carve out written into it on 2026-08-18.
 func donateButton(h Host) fyne.CanvasObject {
 	// The bar's size, so its words stand level with the buttons beside them.
-	return parts.NewButton(parts.Quiet, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) }).InTheBar()
+	return donate(h, parts.Quiet).InTheBar()
+}
+
+// donate is the Donate button in the look of the place it stands, with the
+// heart in front of its word. One builder for the bar and the About card, so
+// the two cannot come to look like two different buttons (GUI rule 5).
+func donate(h Host, look parts.Look) *parts.Button {
+	return parts.NewButton(look, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) }).WithHeart()
 }
 
 // chooserFor is the output directory box with a way to browse to one.

@@ -74,6 +74,13 @@ type Button struct {
 	// keeps more room round its words - see InTheBar.
 	inBar bool
 
+	// wordsInk and iconInk hold the words or the icon to an ink of their own
+	// where the look's says the wrong thing - see Removing and WithHeart. Empty
+	// for the look's ink. A switched off button draws both in its own ink
+	// whatever these say, so it stays quieter than at rest.
+	wordsInk fyne.ThemeColorName
+	iconInk  fyne.ThemeColorName
+
 	// The pointer's state and the keyboard's, kept here because the toolkit
 	// keeps its own in unexported fields a renderer of ours cannot read.
 	//
@@ -110,6 +117,16 @@ func NewButton(look Look, label string, tapped func()) *Button {
 // than a second kind of button, so every look can stand there.
 func (b *Button) InTheBar() *Button {
 	b.inBar = true
+	b.Refresh()
+	return b
+}
+
+// Removing draws the words in the error colour, for a button that takes
+// something away with no way back - Remove beside Duplicate, which looked the
+// same until 2026-09-24 (review UI-013, the owner's choice). The face stays the
+// look's, so it is still one of the buttons beside it.
+func (b *Button) Removing() *Button {
+	b.wordsInk = theme.ColorNameError
 	b.Refresh()
 	return b
 }
@@ -264,8 +281,21 @@ type buttonRenderer struct {
 }
 
 func (r *buttonRenderer) Layout(size fyne.Size) {
-	r.bg.Resize(size)
-	r.bg.Move(fyne.NewPos(0, 0))
+	// A face with an edge is drawn inside its bounds the way the toolkit draws
+	// a box to type in (fyne v2.8.1 widget/entry.go, Layout): a stroke is laid
+	// centred on the rectangle's edge, so half of it went outside. Measured on
+	// 2026-09-24 at equal bounds: a box drawn over rows 14 to 42 and the
+	// button beside it over 13 to 43, a pixel taller at each end (review
+	// UI-012). The half pixel off the trailing edge is the toolkit's too, so
+	// the two round the same way at every scale.
+	edge := r.bg.StrokeWidth
+	if edge > 0 {
+		r.bg.Resize(fyne.NewSize(size.Width-edge-.5, size.Height-edge-.5))
+		r.bg.Move(fyne.NewSquareOffsetPos(edge / 2))
+	} else {
+		r.bg.Resize(size)
+		r.bg.Move(fyne.NewPos(0, 0))
+	}
 	// Outside the face on every side, without the face giving up any room -
 	// Fyne clips nothing (the Fyne guide, section 3.3), so a child at a
 	// negative offset is drawn there.
@@ -322,8 +352,17 @@ func (r *buttonRenderer) Refresh() {
 	} else {
 		r.ring.StrokeWidth = 0
 	}
+	words, mark := f.ink, f.ink
+	if r.state() != stateDisabled {
+		if r.button.wordsInk != "" {
+			words = r.button.wordsInk
+		}
+		if r.button.iconInk != "" {
+			mark = r.button.iconInk
+		}
+	}
 	r.label.Text = r.button.Text
-	r.label.Color = PaletteColour(f.ink, theme.VariantDark)
+	r.label.Color = PaletteColour(words, theme.VariantDark)
 	r.label.TextSize = TextBody
 	// A quiet button is words rather than a face, so it drops the weight and
 	// a rank of size - the prototype of 2026-09-23, see buttonFace.
@@ -334,8 +373,8 @@ func (r *buttonRenderer) Refresh() {
 	if r.button.Icon != nil {
 		// Coloured by the same ink as the words, so a glyph follows the state
 		// of the button it stands in - the toolkit's own way of tinting a
-		// resource.
-		r.icon.Resource = theme.NewColoredResource(r.button.Icon, f.ink)
+		// resource - unless WithHeart gave it an ink of its own.
+		r.icon.Resource = theme.NewColoredResource(r.button.Icon, mark)
 		r.icon.Show()
 	} else {
 		r.icon.Hide()
@@ -409,6 +448,14 @@ func buttonFace(look Look, state buttonState) face {
 		border.ink = theme.ColorNameDisabled
 		if look == Quiet || look == Glyph {
 			border.edgeWidth = 0
+			// Except the two looks that are quiet at rest: they rest in the
+			// hint's ink (below), which is darker than the disabled one, so
+			// switched off they came out BRIGHTER than switched on - Donate and
+			// every i beside a field name, measured on the catalogue on
+			// 2026-09-24 at #C7C7CC off against #A2A2A9 on. The edge of a box
+			// to type in is the next ink down the ladder, and the one that
+			// still draws the shape.
+			border.ink = theme.ColorNameInputBorder
 		}
 		return border
 	}

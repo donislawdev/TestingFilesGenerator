@@ -52,10 +52,10 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x421">
-									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x421" strokeColor="button" strokeWidth="1"/>
-									<container size="820x421">
-										<container pos="16,16" size="788x389">
+								<container pos="0,73" size="820x404">
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x404" strokeColor="button" strokeWidth="1"/>
+									<container size="820x404">
+										<container pos="16,16" size="788x372">
 											<container size="788x36">
 												<container pos="-8,0" size="796x36">
 													<container size="792x36">
@@ -78,8 +78,8 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,52" size="788x337">
-												<container size="185x192">
+											<container pos="0,52" size="788x320">
+												<container size="185x175">
 													<container size="185x58">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="46x16">Format</text>
@@ -107,7 +107,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,0" size="185x192">
+												<container pos="201,0" size="185x175">
 													<container size="185x83">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Size</text>
@@ -145,27 +145,26 @@
 															</container>
 														</widget>
 													</container>
-													<container pos="0,87" size="587x104">
-														<container size="587x67">
-															<widget pos="-6,-6" size="599x79" type="*widget.Label">
-																<widget size="599x79" type="*widget.RichText">
-																	<text color="error" pos="6,6" size="576x16">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303</text>
-																	<text color="error" pos="6,22" size="559x16">B at worst, and the file always carries a free box, which costs 8 B even when it holds</text>
-																	<text color="error" pos="6,39" size="560x16">nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller width and height, or a</text>
-																	<text color="error" pos="6,56" size="84x16">lower quality</text>
+													<container pos="-201,87" size="788x87">
+														<container size="788x50">
+															<widget pos="-6,-6" size="800x62" type="*widget.Label">
+																<widget size="800x62" type="*widget.RichText">
+																	<text color="error" pos="6,6" size="778x16">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303 B at worst, and the file always</text>
+																	<text color="error" pos="6,22" size="774x16">carries a free box, which costs 8 B even when it holds nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller</text>
+																	<text color="error" pos="6,39" size="232x16">width and height, or a lower quality</text>
 																</widget>
 															</widget>
 														</container>
-														<container pos="0,75" size="587x28">
+														<container pos="0,58" size="788x28">
 															<widget size="197x28" type="*parts.Button">
 																<rectangle pos="-2,-2" radius="6" size="201x32" strokeColor="hyperlink"/>
-																<rectangle fillColor="button" radius="6" size="197x28" strokeColor="inputBorder" strokeWidth="1"/>
+																<rectangle fillColor="button" radius="6" size="195x27" strokeColor="inputBorder" strokeWidth="1"/>
 																<text alignment="center" bold pos="6,6" size="185x16">Use the smallest size, 311 B</text>
 															</widget>
 														</container>
 													</container>
 												</container>
-												<container pos="402,0" size="185x192">
+												<container pos="402,0" size="185x175">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="101x16">How many files</text>
@@ -191,7 +190,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="603,0" size="185x192">
+												<container pos="603,0" size="185x175">
 													<container size="185x58">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="54x16">Damage</text>
@@ -218,7 +217,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,208" size="185x60">
+												<container pos="0,191" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="78x16">Batch name</text>
@@ -249,7 +248,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,208" size="185x60">
+												<container pos="201,191" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="71x16">File names</text>
@@ -280,12 +279,12 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,293" size="788x44">
+												<container pos="0,276" size="788x44">
 													<container size="788x44">
 														<container size="788x44">
 															<rectangle radius="8" size="788x44" strokeColor="button" strokeWidth="1"/>
 															<container size="788x44">
-																<rectangle fillColor="hyperlink" radius="4" size="4x44"/>
+																<rectangle fillColor="rgba(211,211,215,255)" radius="4" size="4x44"/>
 															</container>
 															<container size="788x44">
 																<container pos="12,4" size="764x36">
@@ -322,7 +321,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,518" size="820x222">
+								<container pos="0,501" size="820x222">
 									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x222" strokeColor="button" strokeWidth="1"/>
 									<container size="820x222">
 										<container pos="16,16" size="788x190">
@@ -378,7 +377,7 @@
 																	</widget>
 																	<widget pos="709,0" size="78x28" type="*parts.Button">
 																		<rectangle pos="-2,-2" radius="6" size="82x32" strokeColor="hyperlink"/>
-																		<rectangle fillColor="button" radius="6" size="78x28" strokeColor="inputBorder" strokeWidth="1"/>
+																		<rectangle fillColor="button" radius="6" size="76x27" strokeColor="inputBorder" strokeWidth="1"/>
 																		<text alignment="center" bold pos="6,6" size="66x16">Choose...</text>
 																	</widget>
 																</container>
@@ -424,7 +423,7 @@
 															<widget size="24x24" type="*parts.Toggle">
 																<rectangle radius="6" size="24x24"/>
 																<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
-																<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20" strokeColor="disabled"/>
+																<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
 																<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
 															</widget>
 															<container pos="32,3" size="111x16">
@@ -452,13 +451,13 @@
 						<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="1092x101" strokeColor="button" strokeWidth="1"/>
 						<container size="1092x101">
 							<container pos="12,12" size="1068x77">
-								<container size="1068x77">
-									<container pos="124,0" size="820x77">
-										<container pos="16,0" size="788x77">
+								<container pos="124,0" size="820x77">
+									<container pos="16,0" size="788x77">
+										<container size="788x77">
 											<container size="788x28">
 												<widget pos="296,0" size="87x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="91x32" strokeColor="hyperlink"/>
-													<rectangle fillColor="button" radius="6" size="87x28" strokeColor="inputBorder" strokeWidth="1"/>
+													<rectangle fillColor="button" radius="6" size="86x27" strokeColor="inputBorder" strokeWidth="1"/>
 													<text alignment="center" bold pos="16,6" size="55x16">Preview</text>
 												</widget>
 												<widget pos="396,0" size="95x28" type="*parts.Button">
@@ -481,15 +480,18 @@
 												</widget>
 											</container>
 										</container>
-									</container>
-								</container>
-								<container size="1068x77">
-									<container size="1068x26">
-										<widget size="72x26" type="*parts.Button">
-											<rectangle pos="-2,-2" radius="6" size="76x30" strokeColor="hyperlink"/>
-											<rectangle radius="6" size="72x26"/>
-											<text alignment="center" color="placeholder" pos="16,6" size="40x14" textSize="12">Donate</text>
-										</widget>
+										<container size="788x77">
+											<container size="788x26">
+												<container pos="-16,0" size="804x26">
+													<widget size="96x26" type="*parts.Button">
+														<rectangle pos="-2,-2" radius="6" size="100x30" strokeColor="hyperlink"/>
+														<rectangle radius="6" size="96x26"/>
+														<image fillMode="contain" pos="16,3" rsc="heart.svg" size="iconInlineSize" themed="error"/>
+														<text alignment="center" color="placeholder" pos="40,6" size="40x14" textSize="12">Donate</text>
+													</widget>
+												</container>
+											</container>
+										</container>
 									</container>
 								</container>
 							</container>

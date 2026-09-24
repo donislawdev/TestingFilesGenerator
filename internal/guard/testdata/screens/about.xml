@@ -30,27 +30,27 @@
 				</container>
 			</container>
 			<widget pos="0,70" size="1092x1221" type="*widget.Scroll">
-				<container size="1092x2069">
-					<container pos="136,0" size="820x2069">
-						<container size="820x24">
-							<container pos="16,0" size="788x24">
-								<widget pos="-6,-6" size="800x36" type="*widget.Label">
-									<widget size="800x36" type="*widget.RichText">
-										<text bold pos="6,6" size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
+				<container size="1092x2053">
+					<container pos="136,0" size="820x2053">
+						<container size="820x49">
+							<container pos="16,0" size="788x49">
+								<container size="788x24">
+									<widget pos="-6,-6" size="800x36" type="*widget.Label">
+										<widget size="800x36" type="*widget.RichText">
+											<text bold pos="6,6" size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
+										</widget>
 									</widget>
+								</container>
+								<widget pos="0,32" size="788x16" type="*parts.QuietText">
+									<container size="788x16">
+										<widget pos="-6,-6" size="800x28" type="*widget.RichText">
+											<text color="placeholder" pos="6,6" size="517x16">Generate test files, and know how the system under test should react to them.</text>
+										</widget>
+									</container>
 								</widget>
 							</container>
 						</container>
-						<container pos="0,48" size="820x16">
-							<container pos="16,0" size="788x16">
-								<widget pos="-6,-6" size="800x28" type="*widget.Label">
-									<widget size="800x28" type="*widget.RichText">
-										<text pos="6,6" size="517x16">Generate test files, and know how the system under test should react to them.</text>
-									</widget>
-								</widget>
-							</container>
-						</container>
-						<container pos="0,89" size="820x161">
+						<container pos="0,73" size="820x161">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x161" strokeColor="button" strokeWidth="1"/>
 							<container size="820x161">
 								<container pos="16,16" size="788x129">
@@ -94,7 +94,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,274" size="820x305">
+						<container pos="0,258" size="820x305">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x305" strokeColor="button" strokeWidth="1"/>
 							<container size="820x305">
 								<container pos="16,16" size="788x273">
@@ -124,7 +124,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,604" size="820x163">
+						<container pos="0,588" size="820x163">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x163" strokeColor="button" strokeWidth="1"/>
 							<container size="820x163">
 								<container pos="16,16" size="788x131">
@@ -138,10 +138,11 @@
 											</widget>
 										</container>
 										<container pos="0,32" size="788x28">
-											<widget size="61x28" type="*parts.Button">
-												<rectangle pos="-2,-2" radius="6" size="65x32" strokeColor="hyperlink"/>
-												<rectangle fillColor="button" radius="6" size="61x28" strokeColor="inputBorder" strokeWidth="1"/>
-												<text alignment="center" bold pos="6,6" size="49x16">Donate</text>
+											<widget size="85x28" type="*parts.Button">
+												<rectangle pos="-2,-2" radius="6" size="89x32" strokeColor="hyperlink"/>
+												<rectangle fillColor="button" radius="6" size="83x27" strokeColor="inputBorder" strokeWidth="1"/>
+												<image fillMode="contain" pos="6,4" rsc="heart.svg" size="iconInlineSize" themed="error"/>
+												<text alignment="center" bold pos="30,6" size="49x16">Donate</text>
 											</widget>
 										</container>
 										<container pos="0,77" size="788x16">
@@ -155,7 +156,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,791" size="820x850">
+						<container pos="0,775" size="820x850">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x850" strokeColor="button" strokeWidth="1"/>
 							<container size="820x850">
 								<container pos="16,16" size="788x818">
@@ -881,7 +882,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1666" size="820x277">
+						<container pos="0,1650" size="820x277">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x277" strokeColor="button" strokeWidth="1"/>
 							<container size="820x277">
 								<container pos="16,16" size="788x245">
@@ -1078,7 +1079,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1967" size="820x102">
+						<container pos="0,1951" size="820x102">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 							<container size="820x102">
 								<container pos="16,16" size="788x70">
@@ -1122,8 +1123,8 @@
 					<linearGradient pos="0,-8" size="1092x8"/>
 				</widget>
 				<widget pos="1086,0" size="6x1221" type="*widget.scrollBarArea">
-					<widget pos="3,0" size="3x720" type="*widget.scrollBar">
-						<rectangle fillColor="scrollbar" radius="3" size="3x720"/>
+					<widget pos="3,0" size="3x726" type="*widget.scrollBar">
+						<rectangle fillColor="scrollbar" radius="3" size="3x726"/>
 					</widget>
 				</widget>
 			</widget>

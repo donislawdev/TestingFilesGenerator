@@ -211,9 +211,16 @@ func TestARefusalAboutWhatIsInTheDirectoryStandsUnderItAndOpensIt(t *testing.T) 
 }
 
 // TestARefusalStandsUnderItsRowAcrossIt asks where the sentence goes: under
-// the field it is about, starting on that field's edge, and reaching past the
-// field's own column - measured in the real window, the same sentence broke
-// into three lines inside a 185 px column and pushed the form down.
+// the row of the field it is about, starting on the row's left edge, and
+// reaching past the field's own column - measured in the real window, the same
+// sentence broke into three lines inside a 185 px column and pushed the form
+// down.
+//
+// The row's edge rather than the field's since 2026-09-24. Started on its own
+// field's edge, a refusal about the second field of a row stood a column in
+// from one about the first, and two of them read as a staircase (review
+// UI-011). The size box is the second field of its row, so this asks the
+// case that moved: the sentence about it starts under Format, not under Size.
 func TestARefusalStandsUnderItsRowAcrossIt(t *testing.T) {
 	ourTheme(t)
 	generate := window.NewGenerate(newFakeHost(t))
@@ -236,8 +243,16 @@ func TestARefusalStandsUnderItsRowAcrossIt(t *testing.T) {
 	if said.Y < box.Y+box.Height {
 		t.Errorf("the refusal starts at y=%.1f, above the bottom of its box at y=%.1f", said.Y, box.Y+box.Height)
 	}
-	if off := said.X - box.X; off > 1 || off < -1 {
-		t.Errorf("the refusal starts at x=%.1f and its box at x=%.1f - it belongs under the field it is about", said.X, box.X)
+	first, ok := objectBox(screen, chooserUnder(t, screen, text.FieldFormat()))
+	if !ok {
+		t.Fatal("the format box, the first of the size box's row, is not laid out")
+	}
+	if first.X >= box.X {
+		t.Fatalf("the format box at x=%.1f is not to the left of the size box at x=%.1f, so this guard is not asking about a field that moved", first.X, box.X)
+	}
+	if off := said.X - first.X; off > 1 || off < -1 {
+		t.Errorf("the refusal starts at x=%.1f and its row at x=%.1f - every refusal of a row starts on the row's edge, or two of them stand as a staircase",
+			said.X, first.X)
 	}
 	if said.Width <= box.Width {
 		t.Errorf("the refusal is %.1f px wide and its box %.1f - it is laid inside the field's column, not across the row",
@@ -303,26 +318,21 @@ func TestAFoldedSectionOpensForARefusalAboutItsField(t *testing.T) {
 	}
 }
 
-// TestAGroupOfSettingsIsFramedWithARailOfItsKind asks each kind of group for
-// the colour of the rail down its left edge: the accent for a format's
-// settings, the warning colour for a damage's, the colour of a name for notes.
-// The rail is what tells the two groups apart once both are open - the
-// owner's report was that nothing did.
-func TestAGroupOfSettingsIsFramedWithARailOfItsKind(t *testing.T) {
-	for _, kind := range []struct {
-		name string
-		kind parts.GroupKind
-		ink  fyne.ThemeColorName
-	}{
-		{"a format's settings", parts.GroupSettings, theme.ColorNamePrimary},
-		{"a damage's settings", parts.GroupDamage, theme.ColorNameWarning},
-		{"notes for the manifest", parts.GroupNotes, parts.ColorNameLabel},
-	} {
-		group := parts.NewInnerFoldingOf(kind.kind, "Settings", parts.Prose("inside")).Object()
-		want := parts.PaletteColour(kind.ink, theme.VariantDark)
-		if !drawsFill(group, want) {
-			t.Errorf("%s: no rail drawn in %s", kind.name, kind.ink)
-		}
+// TestAGroupOfSettingsIsFramedWithTheOneNeutralRail asks a group of settings
+// for the rail down its left edge: drawn, and in the neutral colour of a
+// field's name - the one colour every rail has had since 2026-09-24. Until
+// then the rail carried the kind of the group, the primary colour for a
+// format's settings among them, and that blue read as "this one is chosen"
+// beside the main button and the keyboard's mark (review UI-009, the owner
+// chose grey for all). So the primary colour is asked for as well, and must be
+// absent.
+func TestAGroupOfSettingsIsFramedWithTheOneNeutralRail(t *testing.T) {
+	group := parts.NewInnerFolding("Settings", parts.Prose("inside")).Object()
+	if !drawsFill(group, parts.PaletteColour(parts.ColorNameLabel, theme.VariantDark)) {
+		t.Error("a group of settings draws no rail in the colour of a field's name")
+	}
+	if drawsFill(group, parts.PaletteColour(theme.ColorNamePrimary, theme.VariantDark)) {
+		t.Error("a group of settings draws something in the primary colour, the colour of the main button and the keyboard's mark")
 	}
 }
 

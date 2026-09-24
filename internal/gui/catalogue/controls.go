@@ -26,8 +26,32 @@ func button() Entry {
 	states = append(states, State{"long text", func() fyne.CanvasObject {
 		return parts.NewButton(parts.Secondary, longText, func() {})
 	}})
+	// The two parameters a button takes beyond its look, each at rest and
+	// switched off - off, both give their colour up, as every control here
+	// is quieter off than at rest.
+	states = append(states,
+		State{"quiet, with the heart", func() fyne.CanvasObject {
+			return parts.NewButton(parts.Quiet, "Donate", func() {}).WithHeart()
+		}},
+		State{"secondary, with the heart", func() fyne.CanvasObject {
+			return parts.NewButton(parts.Secondary, "Donate", func() {}).WithHeart()
+		}},
+		State{"quiet, with the heart, disabled", func() fyne.CanvasObject {
+			b := parts.NewButton(parts.Quiet, "Donate", func() {}).WithHeart()
+			b.Disable()
+			return b
+		}},
+		State{"removing", func() fyne.CanvasObject {
+			return parts.NewButton(parts.Secondary, "Remove", func() {}).Removing()
+		}},
+		State{"removing, disabled", func() fyne.CanvasObject {
+			b := parts.NewButton(parts.Secondary, "Remove", func() {}).Removing()
+			b.Disable()
+			return b
+		}},
+	)
 	states = append(states, glyphStates()...)
-	return Entry{Name: "Button", Covers: []string{"GlyphButton"}, Natural: true, States: states}
+	return Entry{Name: "Button", Covers: []string{"GlyphButton", "HeartIcon"}, Natural: true, States: states}
 }
 
 // faceStates is one face of a button in the four states a person can put it
@@ -92,19 +116,26 @@ func glyphStates() []State {
 func chooser() Entry {
 	options := []string{"png", "jpg", "avif"}
 	// On a screen a menu stands inside the ring a field gives it (WithRing),
-	// which is what draws the keyboard's mark round it - so the states with
-	// something to say are built the way a field builds them. A refused menu
-	// holding the keyboard draws as a refused one: the refusal is about what
-	// will happen and wins, by the rule written on Ring, so it is not a state
-	// of its own here.
+	// which is what draws the keyboard's mark round it AND its edge at rest -
+	// so every state is built the way a field builds it. Until 2026-09-24 only
+	// the two states with something to say were, and the rest drew a menu with
+	// no edge at all, which no screen shows: the catalogue was showing a
+	// control the window does not have (GUI rule 4, review UI-004). A refused
+	// menu holding the keyboard draws as a refused one: the refusal is about
+	// what will happen and wins, by the rule written on Ring, so it is not a
+	// state of its own here.
+	onAForm := func(c *parts.Chooser) fyne.CanvasObject {
+		o, _ := parts.WithRing(parts.Menu(c))
+		return o
+	}
 	return Entry{Name: "Chooser", Covers: []string{"Ring", "WithRing", "Menu"}, Natural: true, States: []State{
 		{"at rest", func() fyne.CanvasObject {
-			return parts.Menu(parts.NewChooser(options, func(string) {}))
+			return onAForm(parts.NewChooser(options, func(string) {}))
 		}},
 		{"chosen", func() fyne.CanvasObject {
 			c := parts.NewChooser(options, func(string) {})
 			c.SetSelected("avif")
-			return parts.Menu(c)
+			return onAForm(c)
 		}},
 		{"holding the keyboard", func() fyne.CanvasObject {
 			c := parts.NewChooser(options, func(string) {})
@@ -120,20 +151,20 @@ func chooser() Entry {
 		{"disabled", func() fyne.CanvasObject {
 			c := parts.NewChooser(options, func(string) {})
 			c.Disable()
-			return parts.Menu(c)
+			return onAForm(c)
 		}},
 		{"long value", func() fyne.CanvasObject {
 			c := parts.NewChooser([]string{longText, "png"}, func(string) {})
 			c.SetSelected(longText)
-			return parts.Menu(c)
+			return onAForm(c)
 		}},
 		{"every format, showing the kind of its value", func() fyne.CanvasObject {
 			// The one menu that draws a picture in the shut box - see
-			// menuLook.placeKind - and the widest, because its open list
-			// carries headings, a filter and letters in bold.
+			// menuLook.placeKind. Its open list is wider than it, for the
+			// names, and that width is the list's own (parts.ListWidth).
 			c := parts.NewChooser(format.IDs(), func(string) {})
 			c.SetSelected("zip")
-			return parts.Menu(c)
+			return onAForm(c)
 		}},
 	}}
 }
@@ -189,9 +220,17 @@ func toggle() Entry {
 			t.FocusGained()
 			return t
 		}},
-		{"disabled", func() fyne.CanvasObject {
+		// Both values switched off, because they draw differently: until
+		// 2026-09-24 this one state stood here, ticked, and drew an empty
+		// square - the defect was in the catalogue and nobody named it.
+		{"on, disabled", func() fyne.CanvasObject {
 			t := parts.NewToggle(func(bool) {})
 			t.SetChecked(true)
+			t.Disable()
+			return t
+		}},
+		{"off, disabled", func() fyne.CanvasObject {
+			t := parts.NewToggle(func(bool) {})
 			t.Disable()
 			return t
 		}},

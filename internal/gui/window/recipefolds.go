@@ -83,7 +83,7 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) fyne.CanvasO
 // rule at all. TestNothingInTheManifestNotesChangesAByte holds the line against
 // the engine rather than against this comment.
 func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
-	b.notes = parts.NewInnerFoldingOf(parts.GroupNotes, text.SectionManifestNotes(),
+	b.notes = parts.NewInnerFolding(text.SectionManifestNotes(),
 		parts.Note(text.NoteManifestOnly()),
 		add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
 			r.tips.Say(text.DetailGroup()), parts.Text(b.group)),

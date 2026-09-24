@@ -212,7 +212,7 @@ func folding() Entry {
 	// keyboard states a control has - and FoldHead is covered here rather
 	// than as an entry of its own, because it is never on a screen without
 	// the fold it heads.
-	return Entry{Name: "Folding", Covers: []string{"InnerFolding", "InnerFoldingOf", "FoldHead"}, States: []State{
+	return Entry{Name: "Folding", Covers: []string{"InnerFolding", "FoldHead"}, States: []State{
 		{"open", func() fyne.CanvasObject {
 			return parts.NewFolding("Notes for the manifest", nil, parts.Prose("inside the fold")).Object()
 		}},
@@ -234,16 +234,6 @@ func folding() Entry {
 			f := parts.NewInnerFolding("Advanced", parts.Prose("inside the inner fold"))
 			f.Set(false)
 			return f.Object()
-		}},
-		// The rail down a group's left edge is the colour of what the group
-		// is about, so all three kinds are drawn.
-		{"inner, a damage's settings", func() fyne.CanvasObject {
-			return parts.NewInnerFoldingOf(parts.GroupDamage, "Settings for zero-head",
-				parts.Prose("inside the inner fold")).Object()
-		}},
-		{"inner, notes for the manifest", func() fyne.CanvasObject {
-			return parts.NewInnerFoldingOf(parts.GroupNotes, "Notes for the manifest",
-				parts.Prose("inside the inner fold")).Object()
 		}},
 		{"a long title", func() fyne.CanvasObject {
 			return parts.NewFolding(longText, nil, parts.Prose("inside the fold")).Object()

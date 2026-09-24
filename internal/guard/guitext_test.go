@@ -64,6 +64,7 @@ var notWords = map[string]string{
 	`"files"`:             "the group name a fresh screen starts at, and a recipe value",
 	`"tfg-gui"`:           "recorded in the manifest as the command that ran, a contract value",
 	`"chickpea.png"`:      "the name the toolkit files the icon resource under, never shown",
+	`"heart.svg"`:         "the name the toolkit files the heart resource under, never shown",
 	`"Inter-Regular.ttf"`: "the name the painter files the regular face under, the key of its cache of shaped faces, never shown",
 	`"Inter-Bold.ttf"`:    "the name the painter files the bold face under, never shown",
 	`"github.com/donislawdev/TestingFilesGenerator/internal/gui/font"`: "an import path, spelled the way go list spells it, which the font package " +

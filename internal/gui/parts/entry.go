@@ -2,7 +2,9 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -76,6 +78,44 @@ func (e *Entry) FocusLost() {
 	e.Entry.FocusLost()
 	if e.ring != nil {
 		e.ring.Focus(false)
+	}
+}
+
+// CreateRenderer is the toolkit's own, with the border of a box switched off
+// drawn quieter than the border at rest. See quietWhenOff.
+func (e *Entry) CreateRenderer() fyne.WidgetRenderer {
+	return quietWhenOff{WidgetRenderer: e.Entry.CreateRenderer(), entry: e}
+}
+
+// quietWhenOff recolours the border of a box switched off for a run.
+//
+// The toolkit draws that border in the disabled ink it also writes the value
+// in (fyne v2.8.1 widget/entry.go, Refresh: the border and the text both read
+// ColorNameDisabled) - an ink bright enough to read, and so an edge BRIGHTER
+// than the box has at rest: measured on 2026-09-24, #7F7F85 switched off
+// against #4E4E55 at rest. The form is switched off for every run, so every
+// run it read as more outlined than the form you can type in.
+//
+// Recoloured at the source rather than covered. Laying the field's ring over
+// it was tried first and measured: the toolkit's border stands inside the box,
+// a pixel off the ring's line, and the bright one still showed beside the
+// dark. The border is the one rectangle the renderer strokes. The value keeps
+// the toolkit's disabled ink, which is what keeps it readable.
+type quietWhenOff struct {
+	fyne.WidgetRenderer
+	entry *Entry
+}
+
+func (q quietWhenOff) Refresh() {
+	q.WidgetRenderer.Refresh()
+	if !q.entry.Disabled() {
+		return
+	}
+	for _, o := range q.Objects() {
+		if edge, ok := o.(*canvas.Rectangle); ok && edge.StrokeWidth > 0 {
+			edge.StrokeColor = PaletteColour(theme.ColorNameSeparator, theme.VariantDark)
+			edge.Refresh()
+		}
 	}
 }
 

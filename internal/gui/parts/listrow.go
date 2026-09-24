@@ -160,27 +160,31 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 	r.back.Resize(size)
 	r.tick.Resize(fyne.NewSquareSize(icon))
 
-	// Two shapes of row, decided by whether the list draws pictures, and both
-	// are the owner's, from the running window.
+	// The tick at the far end of every row, and three decisions of the owner's
+	// from the running window are behind that shape.
 	//
 	// A row WITHOUT a picture puts its words at the gutter - where the word
-	// in the box above the list starts - and the tick at the far end. Until
-	// 2026-09-16 the tick was in front, and its column was kept whether or
-	// not anything in the list was ticked, so the words of every list stood a
-	// column to the right of the word in the box, and a list with no picture
-	// and nothing chosen read as words floating in a rectangle (O220).
+	// in the box above the list starts. Until 2026-09-16 the tick was in
+	// front, and its column was kept whether or not anything in the list was
+	// ticked, so the words of every list stood a column to the right of the
+	// word in the box, and a list with no picture and nothing chosen read as
+	// words floating in a rectangle (O220).
 	//
-	// A row WITH a picture keeps the tick in front, then the picture, then
-	// the words - the shape the list of formats had before that day, which is
-	// the shape the owner had said looked right. Moving its tick to the end
-	// with the others pulled the picture and the word a column to the left,
-	// and the report of 2026-09-21 was that the list had been broken: what
-	// stood in the middle of the box now hugged its edge. The column in front
-	// makes the picture and the word sit where they did, and the tick fills
-	// it or leaves it empty without the row changing width.
+	// A row WITH a picture keeps a column in front of the picture. Moving the
+	// list of formats' tick to the end on 2026-09-16 took that column with it
+	// and pulled the picture and the word a column to the left, and the
+	// report of 2026-09-21 was that the list had been broken: what stood in
+	// the middle of the box now hugged its edge. So the tick went back in
+	// front on that list alone.
 	//
-	// Either way the row is the same width for a chosen value as for any
-	// other, because the tick's column is kept in both shapes.
+	// And on 2026-09-24 the owner asked for the tick on one side in every list
+	// (review UI-005), knowing both of the above. It is at the end, and the
+	// pictured row keeps its column in front empty - so the picture and the
+	// word stand where they stood, which was the whole of the 2026-09-21
+	// report, and no list's words move.
+	//
+	// Every row is the same width for a chosen value as for any other,
+	// because the tick's column is kept whether it is filled or not.
 	left, right := float32(rowGutter), float32(rowGutter)
 	if r.row.heading {
 		// A heading is its words at the gutter, as wide as the row. It has no
@@ -194,15 +198,15 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 		r.label.Resize(fyne.NewSize(size.Width-left-right, text.Height))
 		return
 	}
+	r.tick.Move(fyne.NewPos(size.Width-rowGutter-icon, (size.Height-icon)/2))
+	right += icon + rowGap
 	if r.row.kind != nil {
-		r.tick.Move(fyne.NewPos(left, (size.Height-icon)/2))
+		// The column in front, kept empty - see above.
 		left += icon + rowGap
 		r.kind.Resize(fyne.NewSquareSize(icon))
 		r.kind.Move(fyne.NewPos(left, (size.Height-icon)/2))
 		left += icon + rowGap
 	} else {
-		r.tick.Move(fyne.NewPos(size.Width-rowGutter-icon, (size.Height-icon)/2))
-		right += icon + rowGap
 		r.kind.Resize(fyne.NewSquareSize(0))
 	}
 
@@ -336,7 +340,9 @@ func RowWidthFor(word float32, withKind bool) float32 {
 	icon := Theme().Size(theme.SizeNameInlineIcon)
 	width := rowGutter + word + rowGutter + icon + rowGap
 	if withKind {
-		width += icon + rowGap
+		// The picture, and the empty column kept in front of it since the
+		// tick moved to the end of every row (see Layout).
+		width += 2 * (icon + rowGap)
 	}
 	return width
 }

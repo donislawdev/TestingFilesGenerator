@@ -177,22 +177,27 @@ func (t *Toggle) CreateRenderer() fyne.WidgetRenderer {
 	ring.StrokeColor = PaletteColour(theme.ColorNamePrimary, theme.VariantDark)
 	square := canvas.NewRectangle(color.Transparent)
 	square.CornerRadius = RadiusMark
-	tick := canvas.NewImageFromResource(theme.NewColoredResource(theme.ConfirmIcon(), theme.ColorNameForegroundOnPrimary))
+	tickOn := theme.NewColoredResource(theme.ConfirmIcon(), theme.ColorNameForegroundOnPrimary)
+	tick := canvas.NewImageFromResource(tickOn)
 	tick.FillMode = canvas.ImageFillContain
-	r := &toggleRenderer{toggle: t, halo: halo, ring: ring, square: square, tick: tick}
+	r := &toggleRenderer{toggle: t, halo: halo, ring: ring, square: square, tick: tick,
+		tickOn: tickOn, tickOff: theme.NewColoredResource(theme.ConfirmIcon(), theme.ColorNameDisabled)}
 	r.Refresh()
 	return r
 }
 
 // toggleRenderer draws a 20 px square inside a 24 px target, so a switch is the
 // same size as the button that explains a field beside it and stands in the
-// same box.
+// same box. tickOn is the tick on the primary colour and tickOff the one on a
+// switch that is off, made once each rather than on every refresh.
 type toggleRenderer struct {
-	toggle *Toggle
-	halo   *canvas.Rectangle
-	ring   *canvas.Rectangle
-	square *canvas.Rectangle
-	tick   *canvas.Image
+	toggle  *Toggle
+	halo    *canvas.Rectangle
+	ring    *canvas.Rectangle
+	square  *canvas.Rectangle
+	tick    *canvas.Image
+	tickOn  fyne.Resource
+	tickOff fyne.Resource
 }
 
 func (r *toggleRenderer) Layout(size fyne.Size) {
@@ -237,10 +242,24 @@ func (r *toggleRenderer) Refresh() {
 	} else {
 		r.ring.StrokeWidth = 0
 	}
+	r.tick.Resource = r.tickOn
 	switch {
+	case off && r.toggle.Checked:
+		// Still ticked. Until 2026-09-24 a switch that was off hid its tick
+		// whatever its value, so "Label in each file" ticked read as unticked
+		// for the length of every run - the form said the opposite of the run
+		// it was frozen for. Now the tick stays, on the quiet surface of a
+		// switched off control rather than the primary colour.
+		r.square.FillColor = PaletteColour(theme.ColorNameSeparator, dark)
+		r.square.StrokeWidth = 0
+		r.tick.Resource = r.tickOff
+		r.tick.Show()
 	case off:
+		// A step QUIETER than the edge at rest (ColorNameInputBorder), where it
+		// was the disabled ink until 2026-09-24 - a step brighter, so a
+		// switch frozen for a run read as more there than one you could press.
 		r.square.FillColor = color.Transparent
-		r.square.StrokeColor = PaletteColour(theme.ColorNameDisabled, dark)
+		r.square.StrokeColor = PaletteColour(theme.ColorNameSeparator, dark)
 		r.square.StrokeWidth = edgeWidth
 		r.tick.Hide()
 	case r.toggle.Checked:

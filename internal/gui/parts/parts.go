@@ -444,11 +444,14 @@ func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // begin. Until 2026-08-12 they did the latter: the form stopped at 822 px and
 // a refusal about it ran to 1099.
 //
-// The rail is the exception, on the owner's decision of 2026-08-19: it stands
-// at the left edge of the bar rather than in that column. What it holds is
-// what the run is not about - Donate, and adding a batch - so lining it up
-// with the form bought nothing and spent 78 px of margin saying so. Pass nil
-// on a screen that has none.
+// The rail stands in that column too, on its left edge, since 2026-09-24. It
+// stood at the left edge of the bar from the owner's decision of 2026-08-19 -
+// what it holds is what the run is not about, Donate and adding a batch, and
+// lining it up with the form seemed to buy nothing. Looked at again in the
+// review of 2026-09-24 (UI-006), the bar had four left edges - Donate at the
+// window's, Add a batch beside it, the buttons centred and the line under them
+// on the form's - and the owner reversed the decision knowing it: one edge for
+// everything that is not centred. Pass nil on a screen that has none.
 func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
 	// The padding goes inside the column as well as around the bar, and that is
 	// what puts the bar's own words on the same left edge as the form's.
@@ -460,8 +463,7 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	// rather than at its content. The status line and every field name on the
 	// screen above it were 6 px apart, which is the distance that reads as a
 	// mistake rather than as an indent.
-	column := container.New(readableWidth{}, Indented(Column(GapLabel, content...)))
-	standing := fyne.CanvasObject(column)
+	inner := Column(GapLabel, content...)
 	if rail != nil && len(content) > 0 {
 		// Laid over the column rather than beside it. Sharing the row, the rail
 		// would take width from one side only and the buttons the column
@@ -470,9 +472,38 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 		// The vertical box is what keeps the rail one row tall. Handed straight
 		// to a stack it would be resized to the whole bar, and a Donate button
 		// as tall as the bar is what the first attempt drew.
-		standing = container.New(railOver{centred: content[0]}, column, container.NewVBox(rail))
+		//
+		// Hung out to the left by the room a bar button keeps round its words.
+		// The rail opens with Donate, a quiet button - words, with a surface
+		// only under the pointer - so what stands on the edge has to be its
+		// words and not its invisible box, the rule inkTight keeps for a label.
+		// Measured on 2026-09-24 with the box on the edge: the heart stood
+		// 16 px right of the line under it.
+		inner = container.New(railOver{centred: content[0]}, inner,
+			container.NewVBox(container.New(hungOut{by: BarButtonInsetX}, rail)))
 	}
-	return container.NewStack(panelSurface(), Padded(InsetBar, standing))
+	column := container.New(readableWidth{}, Indented(inner))
+	return container.NewStack(panelSurface(), Padded(InsetBar, column))
+}
+
+// hungOut lays its one child that far to the left of where it stands, the part
+// hanging out taking no room - so a thing whose edge is invisible stands with
+// what IS visible on the edge.
+type hungOut struct{ by float32 }
+
+func (h hungOut) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize().Subtract(fyne.NewSize(h.by, 0)))
+	}
+	return size
+}
+
+func (h hungOut) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Move(fyne.NewPos(-h.by, 0))
+		o.Resize(size.Add(fyne.NewSize(h.by, 0)))
+	}
 }
 
 // railOver is the rail laid over the column, and a bar that cannot be made
