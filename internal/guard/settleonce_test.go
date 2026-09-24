@@ -133,6 +133,19 @@ func TestAChangeThatLaysTheBatchScreenOutAgainReadsTheFormOnce(t *testing.T) {
 	})
 	once("adding what an archive holds", press(text.ButtonAddContents()))
 	once("removing what an archive holds", press(text.ButtonRemoveContents()))
+
+	// The base switched off with no batch left, which brings a batch back and
+	// is the one way a switch and a press meet. Raised by the review of #133
+	// (docs/REVIEW-133-2026-09-24.md): the batch came back through the press's
+	// path, which says the line, and the switch's check then said it again.
+	once("switching the base on again", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(true) })
+	for findField(rec.Fields(), recipe.TargetAddress(1, recipe.KeyID)) != nil {
+		once("removing a batch with the base on", press(text.ButtonRemoveBatch()))
+	}
+	once("switching the base off with no batch left", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(false) })
+	if findField(rec.Fields(), recipe.TargetAddress(1, recipe.KeyID)) == nil {
+		t.Error("the base was switched off with no batch left and no batch came back, so the screen can produce nothing")
+	}
 }
 
 // Typing into a box a preset is not given does not expand the preset again.

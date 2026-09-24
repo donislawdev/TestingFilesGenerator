@@ -595,12 +595,21 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 
 // addBatch puts another batch at the end of the list.
 func (r *Recipe) addBatch() {
+	newBatchAtTheEnd(r)
+	afterAPress(r)
+}
+
+// newBatchAtTheEnd puts a batch after the last one, without saying what the
+// form comes to. Apart from addBatch for the one caller that is not a press:
+// the base switched off with no batch left brings one back, and the switch's
+// own check says the line. Through addBatch it was said twice - found by the
+// review of #133 (docs/REVIEW-133-2026-09-24.md).
+func newBatchAtTheEnd(r *Recipe) {
 	r.batches = append(r.batches, r.newBatch())
 	// A new batch has no format until one is chosen, and its declared settings
 	// come with that choice. Chosen here rather than left empty so that a batch
 	// arrives looking like the one above it.
 	r.batches[len(r.batches)-1].formatPick.SetSelected(format.IDs()[0])
-	afterAPress(r)
 }
 
 // removeBatch drops one batch. The last cannot go, unless the screen builds
