@@ -67,6 +67,11 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		{id: "text-encoding", args: preset.Args{"sample": "8kb"}, bytes: 4570, sum: "f87c73864e5f517abb08b50393cd9a1681a90a30560c1d14dfddcf31e8037479"},
 		{id: "empty-and-minimal", args: preset.Args{}, bytes: 3811, sum: "80641962ac9dfb303f812fd78e0a0d1080f714094d159d7b10448291debb9279"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 743, sum: "4fd23e4b06a2e27ede987ab48a2cc302cc2accb9f948c7d5d25f675681f31f69"},
+		// The preset of unusual file names, measured 2026-09-25 on its first
+		// build: the default, and a format whose extension is a byte longer,
+		// since the names about length are made to a length with it.
+		{id: "filename-handling", args: preset.Args{}, bytes: 10324, sum: "fc051b2285c0efed30bc5e19920e6f08e25fc8f95e3b1be0ed8d228a25310e43"},
+		{id: "filename-handling", args: preset.Args{"format": "docx"}, bytes: 10418, sum: "65fcae1471cd3b0111cae3dba14cd7d3d39beb6f998dc665b3dbaec898aade86"},
 	}
 
 	for _, want := range pinned {

@@ -427,10 +427,7 @@ func wouldReach(floor, size, limit int64) int64 {
 // answer: 35% of expanding upload-validation, measured 2026-09-23
 // (docs/GUI-MEMORY-2026-09-23.md section 4j).
 func sampleFor(desc format.Descriptor) int64 {
-	if floor := format.SmallestWithLabel(desc); floor > uploadSample {
-		return floor
-	}
-	return uploadSample
+	return sampleAtLeast(desc, uploadSample)
 }
 
 // farOverFiles is the one file well past the limit, or none when it was turned

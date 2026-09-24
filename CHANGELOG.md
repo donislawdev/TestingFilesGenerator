@@ -14,6 +14,21 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **A preset for unusual file names: `filename-handling`.** It answers "will
+  my system store, show and give back a file name it did not expect?" with
+  fifty names in seven groups: scripts from Polish to Korean, names that look
+  like other names, leading spaces and dots, shell and SQL metacharacters,
+  names that mean something to a web server or a desktop, names read as
+  values, and names at the length limits. Every one is written byte for byte
+  on Windows, Linux and macOS - measured on NTFS, ext4 and APFS. On another
+  file system a name may be refused, and the run then ends with code 8 and
+  names it. The files are `txt` unless `--format` says otherwise, and the
+  names about length count the format's extension in. Four names are
+  expected to be accepted, the rest are left to your system's policy with a
+  reason.
+
 ### Changed
 
 - **A file name longer than 255 bytes is refused before anything is written,

@@ -182,6 +182,18 @@ func (f setFile) refused() error {
 	return err
 }
 
+// sampleAtLeast is how big a file about its name or its insides is: the
+// sample, or the format's own floor with the label where that is larger, so
+// that a format with a high floor cannot turn such a file into a refusal about
+// a size. Shared since 2026-09-24 - upload-validation takes four kilobytes
+// (sampleFor), the preset of unusual file names one.
+func sampleAtLeast(desc format.Descriptor, sample int64) int64 {
+	if floor := format.SmallestWithLabel(desc); floor > sample {
+		return floor
+	}
+	return sample
+}
+
 // request is what refused asks the format - one place, so that a set that
 // skips a question it has already asked keys it by the question itself.
 func (f setFile) request() format.Request {

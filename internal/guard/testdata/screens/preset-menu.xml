@@ -393,16 +393,16 @@
 	</content>
 	<overlay>
 		<widget size="1100x1300" type="*widget.OverlayContainer">
-			<widget pos="156,275" size="185x140" type="*widget.PopUp">
-				<rectangle fillColor="overlayBackground" radius="5" shadowBlurRadius="14" shadowOffset="0,4" size="185x140"/>
-				<widget size="185x140" type="*parts.OpenList">
-					<container size="185x140">
-						<container size="185x140">
-							<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="185x140"/>
+			<widget pos="156,275" size="185x168" type="*widget.PopUp">
+				<rectangle fillColor="overlayBackground" radius="5" shadowBlurRadius="14" shadowOffset="0,4" size="185x168"/>
+				<widget size="185x168" type="*parts.OpenList">
+					<container size="185x168">
+						<container size="185x168">
+							<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="185x168"/>
 						</container>
-						<rectangle fillColor="inputBackground" radius="8" size="185x140" strokeColor="inputBorder" strokeWidth="1"/>
-						<widget size="185x140" type="*widget.Scroll">
-							<container size="185x140">
+						<rectangle fillColor="inputBackground" radius="8" size="185x168" strokeColor="inputBorder" strokeWidth="1"/>
+						<widget size="185x168" type="*widget.Scroll">
+							<container size="185x168">
 								<widget size="185x28" type="*parts.ListRow">
 									<rectangle radius="6" size="185x28"/>
 									<image pos="157,4" rsc="confirmIcon" size="iconInlineSize" themed="foreground"/>
@@ -410,17 +410,21 @@
 								</widget>
 								<widget pos="0,28" size="185x28" type="*parts.ListRow">
 									<rectangle radius="6" size="185x28"/>
-									<text pos="8,5" size="141x16">size-boundaries</text>
+									<text pos="8,5" size="141x16">filename-handling</text>
 								</widget>
 								<widget pos="0,56" size="185x28" type="*parts.ListRow">
 									<rectangle radius="6" size="185x28"/>
-									<text pos="8,5" size="141x16">tabular-import</text>
+									<text pos="8,5" size="141x16">size-boundaries</text>
 								</widget>
 								<widget pos="0,84" size="185x28" type="*parts.ListRow">
 									<rectangle radius="6" size="185x28"/>
-									<text pos="8,5" size="141x16">text-encoding</text>
+									<text pos="8,5" size="141x16">tabular-import</text>
 								</widget>
 								<widget pos="0,112" size="185x28" type="*parts.ListRow">
+									<rectangle radius="6" size="185x28"/>
+									<text pos="8,5" size="141x16">text-encoding</text>
+								</widget>
+								<widget pos="0,140" size="185x28" type="*parts.ListRow">
 									<rectangle radius="6" size="185x28"/>
 									<text pos="8,5" size="141x16">upload-validation</text>
 								</widget>
