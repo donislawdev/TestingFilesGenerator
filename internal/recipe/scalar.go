@@ -47,6 +47,18 @@ type scalar struct {
 	quoted bool
 }
 
+// yamlBlank is what may stand around a value without being part of it: the
+// space and the tab YAML counts as white, and the line break the rendered node
+// ends with.
+//
+// Not strings.TrimSpace, which was here until 2026-09-24 and knows every white
+// space character Unicode has. A name beginning with an ideographic space or a
+// no break space lost it on the way in, and the run wrote a file under a
+// different name than the recipe asked for without a word (O243). The library
+// had handed the character over intact. A space from outside ASCII at the end
+// of a value is part of the value in YAML, so it is part of it here.
+const yamlBlank = " \t\r\n"
+
 // UnmarshalYAML takes the node as it was written.
 //
 // The source text of the node is the whole reason this type works. Measured
@@ -71,7 +83,7 @@ type scalar struct {
 // instead of the node would have shown.
 func (s *scalar) UnmarshalYAML(n ast.Node) error {
 	b := []byte(n.String())
-	t := strings.TrimSpace(string(b))
+	t := strings.Trim(string(b), yamlBlank)
 	if len(t) >= 2 {
 		first, last := t[0], t[len(t)-1]
 		if (first == '"' && last == '"') || (first == '\'' && last == '\'') {

@@ -507,6 +507,12 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A space from outside ASCII at the start or the end of a recipe value is
+  kept.** A file name beginning with an ideographic space or a no break space
+  lost it, and the file was written under a different name than the recipe
+  asked for, with nothing said. A plain space or a tab at the ends of an
+  unquoted value is still not part of it, as in any YAML file.
+
 - **A file name from 238 to 255 bytes long is written.** Every system stores
   such a name, and none of them got one: each file is written under a longer
   temporary name first, and that one was over the limit. The same held for a
