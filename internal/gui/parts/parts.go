@@ -529,15 +529,37 @@ func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
 
 func (r railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	// Told before the column is laid out, since laying it out lays the row out.
-	if row, ok := r.centred.(*fyne.Container); ok && len(objects) > 1 {
-		if keep, ours := row.Layout.(*buttonRow); ours {
-			keep.clearLeft = objects[1].MinSize().Width + GapColumns
-		}
-	}
+	row, moved := r.keepRailClear(objects)
 	for _, o := range objects {
 		o.Resize(size)
 		o.Move(fyne.NewPos(0, 0))
 	}
+	// A rail whose words grow while the bar keeps its size is laid out here
+	// again by the toolkit, and the column handed the size it already has is
+	// not laid out at all - fyne v2.8.1 Container.Resize returns early - so the
+	// row kept the room it cleared for the shorter rail and its buttons stood
+	// under the longer one. Measured with a probe on 2026-09-24 after an outside
+	// review of #136: 16.6 px of overlap for "Donate" grown to "Donate more".
+	if moved {
+		row.Layout.Layout(row.Objects, row.Size())
+	}
+}
+
+// keepRailClear tells the row of centred buttons how much room at its left the
+// rail takes, and says whether that changed since the row was last told.
+func (r railOver) keepRailClear(objects []fyne.CanvasObject) (*fyne.Container, bool) {
+	row, ok := r.centred.(*fyne.Container)
+	if !ok || len(objects) < 2 {
+		return nil, false
+	}
+	keep, ours := row.Layout.(*buttonRow)
+	if !ours {
+		return nil, false
+	}
+	room := objects[1].MinSize().Width + GapColumns
+	moved := keep.clearLeft != room
+	keep.clearLeft = room
+	return row, moved
 }
 
 // Screen stacks sections under a head - a Title, or a Titled pair.

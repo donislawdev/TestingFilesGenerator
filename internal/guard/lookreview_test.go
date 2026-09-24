@@ -168,6 +168,73 @@ func TestABarAtItsNarrowestHoldsTheRailAndTheButtonsSideBySide(t *testing.T) {
 	}
 }
 
+// A rail can grow while the bar keeps its size - its words change - and then
+// the toolkit lays out again only what holds the rail, at the size each
+// already has (fyne v2.8.1 internal/driver/common/canvas.go, updateLayout,
+// called from EnsureMinSize every frame). The row of run buttons is not among
+// them, so it kept the room cleared for the shorter rail: 16.6 px of overlap,
+// found from an outside review of #136 (docs/REVIEW-136-2026-09-24.md).
+//
+// The test driver runs no such pass, so the guard runs it: every container
+// from the rail's button up to the bar, innermost first, at its own size.
+func TestARailThatGrowsInPlaceMovesTheRunButtonsOnWithIt(t *testing.T) {
+	ourTheme(t)
+	donate := parts.NewButton(parts.Quiet, "Donate", func() {}).InTheBar()
+	rail := container.NewHBox(donate)
+	preview := parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar()
+	bar := parts.ActionBar(rail, parts.ButtonRow(preview, parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()))
+	w := test.NewTempWindow(t, container.NewWithoutLayout(bar))
+	// Wide enough for the longer rail, so the bar keeps its size when it grows.
+	donate.SetText("Donate more")
+	wide := bar.MinSize()
+	donate.SetText("Donate")
+	bar.Resize(wide)
+	w.Resize(wide.Add(fyne.NewSquareSize(40)))
+
+	drv := fyne.CurrentApp().Driver()
+	rowBefore := drv.AbsolutePositionForObject(preview).X
+	donate.SetText("Donate more")
+	chain := containersHolding(bar, donate)
+	if len(chain) == 0 {
+		t.Fatal("the rail is not inside the bar it was handed to")
+	}
+	for i := len(chain) - 1; i >= 0; i-- {
+		if chain[i].Layout != nil {
+			chain[i].Layout.Layout(chain[i].Objects, chain[i].Size())
+		}
+	}
+	if bar.Size() != wide {
+		t.Fatalf("the bar went from %v to %v, so this is a resize and not the case in question", wide, bar.Size())
+	}
+	railEnds := drv.AbsolutePositionForObject(rail).X + rail.MinSize().Width
+	if railEnds <= rowBefore {
+		t.Fatalf("the longer rail ends at x=%.1f, short of where the buttons stood (x=%.1f) - "+
+			"the words did not grow it far enough to ask the question", railEnds, rowBefore)
+	}
+	if rowStarts := drv.AbsolutePositionForObject(preview).X; rowStarts < railEnds {
+		t.Errorf("the rail grew in place to end at x=%.1f and the run buttons still start at x=%.1f, under it",
+			railEnds, rowStarts)
+	}
+}
+
+// containersHolding is the path of containers from root down to the one that
+// holds target, outermost first, or nothing when target is not under root.
+func containersHolding(root, target fyne.CanvasObject) []*fyne.Container {
+	c, ok := root.(*fyne.Container)
+	if !ok {
+		return nil
+	}
+	for _, child := range c.Objects {
+		if child == target {
+			return []*fyne.Container{c}
+		}
+		if below := containersHolding(child, target); below != nil {
+			return append([]*fyne.Container{c}, below...)
+		}
+	}
+	return nil
+}
+
 // pixelsNear counts the pixels of a picture within a small distance of one
 // colour - the edge of a shape is blended, its middle is the colour itself.
 func pixelsNear(picture image.Image, want color.Color) int {

@@ -162,7 +162,11 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 		theme.ColorNameInputBackground, "a box to type in", byStep},
 	theme.ColorNameSeparator: {ladder, "a line that separates and says nothing else",
 		parts.ColorNamePanel, "the panel", byStep},
-	theme.ColorNameMenuBackground: {ladder, "what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24",
+	// Our lists and the explanation float on a card since 2026-09-24, so what
+	// is left on this colour is the menu a right press opens in a box. The
+	// sentence is one line in a row beside the square and cannot wrap there -
+	// the longer one ran past its section (docs/REVIEW-136-2026-09-24.md).
+	theme.ColorNameMenuBackground: {ladder, "the toolkit's own menus - the one a right press opens in a box. Our lists float on a card",
 		theme.ColorNameInputBackground, "a box to type in", byStep},
 	theme.ColorNameInputBorder: {ladder, "the edge that says where the typing goes",
 		theme.ColorNameInputBackground, "its own fill", byStep},

@@ -204,9 +204,13 @@ type Choice struct {
 // they are while only the foot moves up. Which one a list is, the menu that
 // opened it says, by handing it resize.
 func (l *OpenList) MinSize() fyne.Size {
-	rows := len(arrange(l.options, l.labels, ""))
-	if l.resize != nil {
-		rows = len(l.entries)
+	// Arranged afresh only for a list that opened upward: a list that opened
+	// downward has its rows in l.entries already, and arranging the whole of
+	// it again on every keystroke only to throw that away was the one cost
+	// here - an outside review of #136 pointed at it.
+	rows := len(l.entries)
+	if l.resize == nil {
+		rows = len(arrange(l.options, l.labels, ""))
 	}
 	if rows < 1 {
 		rows = 1

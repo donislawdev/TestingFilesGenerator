@@ -4390,7 +4390,7 @@
 										<widget size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="850x14" textSize="12">menuBackground - what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24</text>
+													<text color="placeholder" pos="6,6" size="601x14" textSize="12">menuBackground - the toolkit's own menus - the one a right press opens in a box. Our lists float on a card</text>
 												</widget>
 											</container>
 										</widget>
@@ -4974,7 +4974,7 @@
 										<widget size="0x14" type="*parts.QuietText">
 											<container size="0x14">
 												<widget pos="-6,-6" size="12x26" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="850x14" textSize="12">menuBackground - what the toolkit's own menus float on - the one a box opens on a right press. This window's lists float on a card since 2026-09-24</text>
+													<text color="placeholder" pos="6,6" size="601x14" textSize="12">menuBackground - the toolkit's own menus - the one a right press opens in a box. Our lists float on a card</text>
 												</widget>
 											</container>
 										</widget>
