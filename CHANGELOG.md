@@ -507,6 +507,16 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A recipe the tool writes shows a character nobody can see as an escape.**
+  `tfg preset eject` wrote a right to left override, a zero width space or a
+  line separator into the recipe as it was, so the file read as something
+  other than what it held, and a YAML 1.1 reader such as PyYAML refused it at
+  the line separator. Such a value is written in double quotes now, with the
+  character as an escape that every YAML reader turns back into the same
+  character. Every other value is written as before. A run started in the
+  window records a different recipe hash only when a value holds such a
+  character.
+
 - **A space from outside ASCII at the start or the end of a recipe value is
   kept.** A file name beginning with an ideographic space or a no break space
   lost it, and the file was written under a different name than the recipe

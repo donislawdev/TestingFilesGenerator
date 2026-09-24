@@ -3,6 +3,7 @@ package recipe
 import (
 	"fmt"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/goccy/go-yaml"
 
@@ -111,12 +112,12 @@ func Compose(d Document) ([]byte, error) {
 	doc := yaml.MapSlice{{Key: "version", Value: SchemaVersion}}
 
 	if d.Seed != "" {
-		doc = append(doc, yaml.MapItem{Key: "seed", Value: d.Seed})
+		doc = append(doc, yaml.MapItem{Key: "seed", Value: written(d.Seed)})
 	}
 	// The preset before the targets, because that is the order the run
 	// takes them in.
 	if d.Extends != "" {
-		doc = append(doc, yaml.MapItem{Key: KeyExtends, Value: presetScheme + d.Extends})
+		doc = append(doc, yaml.MapItem{Key: KeyExtends, Value: written(presetScheme + d.Extends)})
 	}
 	if with := withSection(d); len(with) > 0 {
 		doc = append(doc, yaml.MapItem{Key: KeyWith, Value: with})
@@ -160,7 +161,7 @@ func Compose(d Document) ([]byte, error) {
 func withSection(d Document) yaml.MapSlice {
 	var with yaml.MapSlice
 	for _, name := range sortedKeys(d.With) {
-		with = append(with, yaml.MapItem{Key: name, Value: d.With[name]})
+		with = append(with, yaml.MapItem{Key: name, Value: written(d.With[name])})
 	}
 	return with
 }
@@ -168,10 +169,10 @@ func withSection(d Document) yaml.MapSlice {
 func outputSection(d Document) yaml.MapSlice {
 	var out yaml.MapSlice
 	if d.OutDir != "" {
-		out = append(out, yaml.MapItem{Key: "dir", Value: d.OutDir})
+		out = append(out, yaml.MapItem{Key: "dir", Value: written(d.OutDir)})
 	}
 	if d.Manifest != "" {
-		out = append(out, yaml.MapItem{Key: "manifest", Value: d.Manifest})
+		out = append(out, yaml.MapItem{Key: "manifest", Value: written(d.Manifest)})
 	}
 	return out
 }
@@ -182,7 +183,7 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 	entry := yaml.MapSlice{}
 	add := func(key, value string) {
 		if value != "" {
-			entry = append(entry, yaml.MapItem{Key: key, Value: value})
+			entry = append(entry, yaml.MapItem{Key: key, Value: written(value)})
 		}
 	}
 	// The keys where a number belongs are written as a number. See bareNumber.
@@ -210,7 +211,7 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 		// hashed into the manifest. Two runs of one screen have to compose the
 		// same bytes or recipe_hash would move on its own.
 		for _, name := range sortedKeys(t.Properties) {
-			props = append(props, yaml.MapItem{Key: name, Value: t.Properties[name]})
+			props = append(props, yaml.MapItem{Key: name, Value: written(t.Properties[name])})
 		}
 		entry = append(entry, yaml.MapItem{Key: "properties", Value: props})
 	}
@@ -219,7 +220,7 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 		for _, c := range t.Contains {
 			one := yaml.MapSlice{}
 			if c.Format != "" {
-				one = append(one, yaml.MapItem{Key: "format", Value: c.Format})
+				one = append(one, yaml.MapItem{Key: "format", Value: written(c.Format)})
 			}
 			if c.Count != "" {
 				one = append(one, yaml.MapItem{Key: "count", Value: bareNumber(c.Count)})
@@ -254,9 +255,51 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 func bareNumber(value string) any {
 	n, err := strconv.ParseInt(value, 10, 64)
 	if err != nil || n < 0 || value != strconv.FormatInt(n, 10) {
-		return value
+		return written(value)
 	}
 	return n
+}
+
+// written is a value the way the document carries it: as itself, unless it
+// holds a character nobody reading the file can see.
+//
+// Such a value is written in double quotes with that character as an escape,
+// and everything else in it as it is. Measured on 2026-09-24 (O244), when the
+// preset of unusual file names put a right to left override, a zero width
+// space, a byte order mark and a line separator into a recipe: the library
+// wrote every one of them raw into an unquoted value. A person editing that
+// recipe - which is what the header of an ejected one invites - could not see
+// what they were editing, and a YAML 1.1 reader (PyYAML 6.0.3) refused the
+// whole document at the line separator, which it takes for a line break.
+//
+// A value with nothing of the kind is written exactly as before, so no recipe
+// this tool composed until then moves by a byte.
+func written(value string) any {
+	if !core.HoldsUnseen(value) || !utf8.ValidString(value) {
+		return value
+	}
+	return escapedText(value)
+}
+
+// escapedText is a value that goes into the document in double quotes, with
+// escapes.
+type escapedText string
+
+// MarshalYAML writes the value the way Go quotes a string, and that is YAML's
+// double quoted form for everything that can reach here. The library takes
+// the bytes as they are rather than choosing a style of its own - measured on
+// 2026-09-24 on ten names, each read back as itself by the library, by Parse
+// and by PyYAML.
+//
+// Go writes a quote and a backslash with a backslash in front, a character it
+// cannot print as a backslash, a u and four hex digits, or a capital U and
+// eight past the first plane, and a control character by its short name or as
+// a backslash, an x and two hex digits. YAML reads every one of those the same
+// way. The one form where they part is a byte that is not UTF-8, which Go
+// writes as an x escape and YAML would read as a character - and written sends
+// such a value on unchanged rather than here.
+func (e escapedText) MarshalYAML() ([]byte, error) {
+	return []byte(strconv.Quote(string(e))), nil
 }
 
 // expectationEntry writes the short form when there is no reason and the long
@@ -271,11 +314,11 @@ func expectationEntry(t TargetDraft) any {
 	case t.Expected == "" && t.ExpectedReason == "":
 		return nil
 	case t.ExpectedReason == "":
-		return t.Expected
+		return written(t.Expected)
 	default:
 		return yaml.MapSlice{
-			{Key: "outcome", Value: t.Expected},
-			{Key: "reason", Value: t.ExpectedReason},
+			{Key: "outcome", Value: written(t.Expected)},
+			{Key: "reason", Value: written(t.ExpectedReason)},
 		}
 	}
 }
