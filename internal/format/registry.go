@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -49,30 +50,92 @@ func Register(d Descriptor) {
 // expansion afresh against 0.51 MB remembered, and a keystroke that cost
 // 380 ms in the real window (docs/GUI-MEMORY-2026-09-23.md section 2.3).
 //
-// Keyed by id, which is safe because Register refuses a second descriptor
-// under one. Here rather than beside its caller because this file is already
-// where the registry's reads meet its writes: the window settles from its
-// worker as well as from its own goroutine. The size is worked out without
-// the lock held, because planning an archive reads the registry itself.
+// Keyed by id and request - see SmallestRemembered - which is safe because
+// Register refuses a second descriptor under one id. Here rather than beside
+// its caller because this file is already where the registry's reads meet its
+// writes: the window settles from its worker as well as from its own
+// goroutine. The size is worked out without the lock held, because planning an
+// archive reads the registry itself.
 func SmallestWithLabel(d Descriptor) int64 {
+	return SmallestRemembered(d, Request{Label: true})
+}
+
+// SmallestRemembered is d.SmallestAccepted(r), worked out once per format and
+// request and remembered.
+//
+// SmallestWithLabel's reasoning, for the questions that carry settings or a
+// seed. The presets ask the floor of a file with its dialect, of a sheet with
+// its rows and columns, of the boundary set with seed 1 - and asked it afresh
+// at every expansion, which on a picture is encoding one. Measured 2026-09-23:
+// 29% of expanding tabular-import (docs/GUI-MEMORY-2026-09-23.md section 4j).
+//
+// The size a request asks for and SizeFromContents are left out, because
+// SmallestAccepted sets both itself. A request with contents is worked out
+// every time - see RequestKey.
+//
+// At most smallestCeiling answers are kept. The key grows with values somebody
+// types - the rows of a sheet - so a long session would otherwise keep one for
+// every number ever typed. Past the ceiling the memory starts again, which
+// costs one working out per question and nothing else.
+func SmallestRemembered(d Descriptor, r Request) int64 {
+	r.Bytes, r.SizeFromContents = 0, false
+	key, ok := RequestKey(d.ID, r)
+	if !ok {
+		return d.SmallestAccepted(r)
+	}
 	smallestMu.Lock()
-	known, ok := smallestKnown[d.ID]
+	known, found := smallestKnown[key]
 	smallestMu.Unlock()
-	if ok {
+	if found {
 		return known
 	}
-	size := d.SmallestAccepted(Request{Label: true})
+	size := d.SmallestAccepted(r)
 	smallestMu.Lock()
-	smallestKnown[d.ID] = size
+	if len(smallestKnown) >= smallestCeiling {
+		smallestKnown = map[string]int64{}
+	}
+	smallestKnown[key] = size
 	smallestMu.Unlock()
 	return size
 }
 
-// smallestKnown is what SmallestWithLabel has worked out, by format id.
+// smallestCeiling is how many answers SmallestRemembered keeps - a few hundred
+// bytes each, so the most it holds is about a megabyte.
+const smallestCeiling = 4096
+
+// smallestKnown is what SmallestRemembered has worked out, by RequestKey.
 var (
 	smallestMu    sync.Mutex
 	smallestKnown = map[string]int64{}
 )
+
+// RequestKey is one request to one format written as text that no other
+// request shares, so that something worked out for it can be kept under it.
+//
+// Every field of Request that can change a plan is in it, and a guard sets
+// each field in turn to hold that true when Request grows. The values are
+// quoted, because a setting's value is text somebody typed and may hold any
+// separator - a CSV delimiter of "|" would otherwise read as the start of a
+// second setting, and two requests sharing a key share an answer.
+//
+// A request with contents has no key. What an archive holds is a list of
+// formats with sizes of their own, and nothing asks such a request twice.
+func RequestKey(id string, r Request) (string, bool) {
+	if len(r.Contains) > 0 {
+		return "", false
+	}
+	names := make([]string, 0, len(r.Properties))
+	for name := range r.Properties {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	var b strings.Builder
+	fmt.Fprintf(&b, "%q %d %t %t %d", id, r.Bytes, r.SizeFromContents, r.Label, r.Seed)
+	for _, name := range names {
+		fmt.Fprintf(&b, " %q=%q", name, r.Properties[name])
+	}
+	return b.String(), true
+}
 
 // SortChoices puts a closed set in the order somebody looks for a value in.
 //

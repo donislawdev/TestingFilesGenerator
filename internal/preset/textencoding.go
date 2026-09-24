@@ -254,7 +254,7 @@ func lineEndingCells() []textFile {
 // about the settings and not about the room they need.
 func refusedOutright(desc format.Descriptor, props map[string]string) string {
 	r := format.Request{Label: true, Properties: props}
-	r.Bytes = desc.SmallestAccepted(r)
+	r.Bytes = format.SmallestRemembered(desc, r)
 	_, err := desc.Generator.Plan(r)
 	var bad *format.PropertyValueError
 	if errors.As(err, &bad) {
@@ -331,7 +331,7 @@ func roomEnough(files []textFile, size int64) error {
 		if _, err := f.desc.Generator.Plan(r); err == nil {
 			continue
 		}
-		if need := f.desc.SmallestAccepted(r); need > floor {
+		if need := format.SmallestRemembered(f.desc, r); need > floor {
 			floor, tallest = need, f
 		}
 	}
