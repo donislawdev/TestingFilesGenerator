@@ -78,6 +78,12 @@ type tidy struct {
 	// newTidy.
 	later   later
 	callOff func()
+	// wait counts the waits called off, so that one called off on its way
+	// does nothing when it arrives. Calling the clock off is not enough: the
+	// real window's clock hands what it fires to the toolkit's queue, and a
+	// call already queued when somebody types still runs. The same as
+	// busy.epoch, and an outside review of the pull request named it.
+	wait int
 }
 
 // newTidy builds the wait for one window.
@@ -100,32 +106,44 @@ func newTidy(h Host, busy func() bool) *tidy {
 // touch is told that something happened, and starts the quiet over.
 func (t *tidy) touch() {
 	t.Stop()
-	t.callOff = t.later(tidyAfterQuiet, t.frame)
+	t.after(tidyAfterQuiet, t.frame)
 }
 
-// Stop calls off whatever is being waited for. Closing the window stops it,
-// along with every screen.
+// Stop calls off whatever is being waited for, a call already on its way
+// included. Closing the window stops it, along with every screen.
 func (t *tidy) Stop() {
+	t.wait++
 	if t.callOff != nil {
 		t.callOff()
 		t.callOff = nil
 	}
 }
 
+// after asks the clock for then, which arrives only if nothing called the
+// wait off in the meantime.
+func (t *tidy) after(d time.Duration, then func()) {
+	mine := t.wait
+	t.callOff = t.later(d, func() {
+		if t.wait != mine {
+			return
+		}
+		t.callOff = nil
+		then()
+	})
+}
+
 // frame asks the toolkit to draw, so that it lets go of what has expired. Even
 // under a run, which costs one frame and nothing else - whether to give memory
 // back is asked once, in release.
 func (t *tidy) frame() {
-	t.callOff = nil
 	if c := t.host.Canvas(); c != nil && c.Content() != nil {
 		c.Refresh(c.Content())
 	}
-	t.callOff = t.later(tidyAfterFrame, t.release)
+	t.after(tidyAfterFrame, t.release)
 }
 
 // release gives the memory back, beside the window.
 func (t *tidy) release() {
-	t.callOff = nil
 	if t.busy() {
 		t.touch()
 		return

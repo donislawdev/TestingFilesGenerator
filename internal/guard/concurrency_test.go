@@ -140,7 +140,11 @@ func TestConcurrencyStaysWhereItWasPutOnPurpose(t *testing.T) {
 	// how a decision gets undone quietly: the window gives memory back on a
 	// goroutine BECAUSE a call on its own thread took 2491 ms once, and taking
 	// the go statement away would leave the file declared and every guard
-	// green. A file the build leaves out on this machine is not asked.
+	// green. A file the build leaves out on this machine is not asked. A file
+	// that is gone is, because the walk above never reaches it and a deleted
+	// file would otherwise keep its declaration and its place on the race
+	// detector's list - an outside review of the pull request named it.
+	idle = append(idle, declaredWithoutAFile(repoRoot(t), mayBeConcurrent)...)
 	if len(idle) > 0 {
 		sort.Strings(idle)
 		t.Errorf("declared as concurrent and running nothing beside anything:\n  %s\n\n"+
@@ -155,6 +159,35 @@ func TestConcurrencyStaysWhereItWasPutOnPurpose(t *testing.T) {
 			"Adding it somewhere new is a decision, not a detail - a race changes nothing this suite can\n"+
 			"otherwise see. Put the file in mayBeConcurrent with the reason, and say so to the owner.",
 			len(found), strings.Join(found, "\n  "))
+	}
+}
+
+// declaredWithoutAFile is every declared path with no file under root, each
+// with what the system said about it.
+func declaredWithoutAFile(root string, declared map[string]string) []string {
+	var gone []string
+	for rel := range declared {
+		if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(rel))); err != nil {
+			gone = append(gone, rel+" ("+err.Error()+")")
+		}
+	}
+	return gone
+}
+
+// A declaration whose file is gone is reported, and one whose file is there
+// is not - asked of a folder made here, because every file the tree declares
+// exists and a check that stopped looking would stay green on it.
+func TestADeclarationWhoseFileIsGoneIsReported(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "a"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "a", "here.go"), []byte("package a\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	got := declaredWithoutAFile(root, map[string]string{"a/here.go": "", "a/gone.go": ""})
+	if len(got) != 1 || !strings.HasPrefix(got[0], "a/gone.go ") {
+		t.Errorf("declared a/here.go, which exists, and a/gone.go, which does not - reported %q, expected a/gone.go alone", got)
 	}
 }
 

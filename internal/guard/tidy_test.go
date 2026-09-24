@@ -88,6 +88,49 @@ func TestSomethingDoneDuringTheWaitStartsTheQuietOver(t *testing.T) {
 	}
 }
 
+// A wait called off on its way does nothing when it arrives.
+//
+// Calling the clock off is not enough, and an outside review of the pull
+// request named why: the real window's clock hands what it fires to the
+// toolkit's queue (desktop.Later, time.AfterFunc then fyne.Do), and a call
+// already queued still runs. If somebody types in that gap, the quiet they
+// broke arrived anyway - it gave memory back twelve seconds later, in the
+// middle of their work, and took the place of the new quiet's handle, so
+// closing the window could no longer call that one off. The same gap as the
+// busy face's (TestAFaceAskedForByEarlierWorkNeverDressesLaterWork).
+//
+// Played out with the held clock: the first quiet is kept aside, a second key
+// calls it off, and then it is fired as if the queue had just got round to it.
+func TestAWaitCalledOffOnItsWayDoesNothingWhenItArrives(t *testing.T) {
+	host := newFakeHost(t)
+	window.Open(host)
+	host.quiet = &quietClock{}
+	content := tabNamed(t, host.content, text.TabOneTarget())
+
+	fill(t, content, text.FieldSeed(), "5")
+	first := host.quiet.waiting()
+	if len(first) != 1 {
+		t.Fatalf("typing into a box left %d wait(s) for quiet, expected one to keep aside", len(first))
+	}
+	fill(t, content, text.FieldSeed(), "6")
+	if !first[0].calledOff {
+		t.Fatal("a second key did not call the first quiet off, so there is no call on its way to ask about")
+	}
+
+	first[0].then() // the first quiet arriving from the queue after all
+	if got := len(host.quiet.waiting()); got != 1 {
+		t.Errorf("a quiet called off on its way arrived and %d wait(s) are left, expected the one quiet of the second key", got)
+	}
+	host.quiet.fireAll() // the second key's quiet
+	if host.releases != 0 {
+		t.Error("memory was given back after a quiet somebody had broken, in the middle of their work")
+	}
+	host.quiet.fireAll()
+	if host.releases != 1 {
+		t.Errorf("after the second key's quiet and its frame memory was given back %d time(s), expected once", host.releases)
+	}
+}
+
 // No memory goes back while work owns the window - the run is what is using it.
 func TestNoMemoryIsGivenBackWhileWorkIsGoing(t *testing.T) {
 	host, content, hold := heldScreen(t)
