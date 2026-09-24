@@ -763,8 +763,8 @@ jobs:
     # the job's from 30 to 45 minutes and Go's from 25 to 40 - for the same
     # reason, and a problem that keeps coming back is the wrong shape rather
     # than a missing notch. The guards run one after another - none calls
-    # t.Parallel - so four processes each take about a quarter of the time, and
-    # every test still runs under the detector once, in one of them.
+    # t.Parallel - so four processes share the time between them, and every
+    # test still runs under the detector once, in one of them.
     #
     # Every part reports. One red part does not cancel the others, whose tests
     # would then go unrun.
@@ -773,8 +773,9 @@ jobs:
     # that each of them fires first and names what was slow: about four minutes
     # to set up and compile (the compile alone took 3m03s on the first run),
     # twenty for the guards, five for the other packages. Measured on the first
-    # run: 677, 635, 164 and 154 s of guards in the four parts, 14m55s for the
-    # longest part.
+    # run, split by a sorted list: 677, 635, 164 and 154 s of guards in the
+    # four parts, 14m55s for the longest part. The two slowest guards take 329
+    # and 222 s, and wherever they land together, that part is the slow one.
     strategy:
       fail-fast: false
       matrix:
@@ -824,8 +825,15 @@ jobs:
         # rather than written down. A list kept by hand would miss the next
         # guard somebody adds, and miss it green. The list is asked with -race,
         # because a file in the package builds only without it, and it keeps
-        # Fuzz and Example because go test runs those as tests too. Sorted, and
-        # every fourth name from this part's index on.
+        # Fuzz and Example because go test runs those as tests too.
+        #
+        # A test's part is the checksum of its name (cksum) modulo the number
+        # of parts, so adding or removing a test moves no other test. It was
+        # every fourth name of a sorted list at first, and one guard added on
+        # this job's own pull request moved every name after it - the part
+        # holding the slowest guards changed from one commit to the next. The
+        # parts are even only on average, and which one is slow now changes only
+        # with what is in it.
         #
         # Three things fail the part rather than let it pass on nothing -
         # go test with a -run pattern that matches no test exits 0. An index the
@@ -849,9 +857,15 @@ jobs:
             exit 1
           fi
           go test -tags "$(cat .github/build-tags)" ./internal/guard/ -race -list '.*' > listed.txt || { cat listed.txt; exit 1; }
-          grep -E '^(Test|Fuzz|Example)' listed.txt | LC_ALL=C sort | awk -v parts="$PARTS" -v part="$PART" 'NR % parts == part' > mine.txt
+          grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no test"; exit 1; }
+          while IFS= read -r name; do
+            read -r sum _ < <(printf '%s' "$name" | cksum)
+            if [ $((sum % PARTS)) -eq "$PART" ]; then
+              echo "$name"
+            fi
+          done < names.txt > mine.txt
           planned=$(wc -l < mine.txt)
-          echo "part $PART of $PARTS runs $planned of $(grep -cE '^(Test|Fuzz|Example)' listed.txt) tests"
+          echo "part $PART of $PARTS runs $planned of $(wc -l < names.txt) tests"
           if [ "$planned" -eq 0 ]; then
             echo "part $PART was given no test"
             exit 1
