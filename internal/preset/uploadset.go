@@ -326,11 +326,8 @@ func (s uploadSet) reachable(files []setFile) error {
 	// file that reached it, because the comparison below is strict.
 	asked := map[string]bool{}
 	for _, f := range files {
-		if key, ok := format.RequestKey(f.desc.ID, f.request()); ok {
-			if asked[key] {
-				continue
-			}
-			asked[key] = true
+		if !firstTimeAsked(asked, f) {
+			continue
 		}
 		short, err := s.shortfallOf(f)
 		if err != nil {
@@ -348,6 +345,21 @@ func (s uploadSet) reachable(files []setFile) error {
 		return nil
 	}
 	return s.cannotReach(worst)
+}
+
+// firstTimeAsked says whether a set is asking this file's question for the
+// first time, and remembers that it now has. A question with no key - a file
+// with contents - counts as asked for the first time, every time.
+func firstTimeAsked(asked map[string]bool, f setFile) bool {
+	key, ok := format.RequestKey(f.desc.ID, f.request())
+	if !ok {
+		return true
+	}
+	if asked[key] {
+		return false
+	}
+	asked[key] = true
+	return true
 }
 
 // shortfall is one file that is smaller than its format will write, and the
