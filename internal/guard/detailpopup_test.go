@@ -234,18 +234,16 @@ func namedOnScreen(o fyne.CanvasObject) string {
 	return ""
 }
 
-// The explanation floats on the surface an open list does, not on a panel's.
+// The explanation floats on the card an open list does, not on a panel's
+// surface.
 //
 // Reported by the owner from the running window on 2026-09-21: the tooltips
 // are hard to read because of their background. Measured on the shot: the box
 // was drawn in the panel colour, and it opens over a panel - so it had no
 // edge anywhere, and the sentence lay straight over the form covering the row
-// beneath it. The palette's answer to "what floats over the form" was already
-// in use by the list a menu drops down, and this holds the two to one surface.
-//
-// Held against the palette by name rather than against "not the panel": a box
-// in any third colour would be told from the panel and still be a second
-// floating surface nobody chose.
+// beneath it. Since then it stands on what the list a menu drops down stands
+// on, and since 2026-09-24 that is the card the owner chose from three drawn
+// side by side (floatsAsACard) - both had been reported as a plain grey block.
 func TestTheExplanationFloatsOnTheSurfaceAnOpenListDoes(t *testing.T) {
 	app := test.NewApp()
 	defer test.NewApp()
@@ -263,37 +261,43 @@ func TestTheExplanationFloatsOnTheSurfaceAnOpenListDoes(t *testing.T) {
 		t.Fatal("hovering the button put nothing on the sheet, so there is no box to measure")
 	}
 
-	// Two rectangles since 2026-09-21: the shade the box casts, then the
-	// surface it stands on. The owner's report from the running window was
-	// that a flat box with no edge read as a random rectangle, so the
-	// surface wears a line and a shade shows below it. Each is asked for by
-	// what it is rather than by its place in the tree.
-	var surface, shade *canvas.Rectangle
-	want := parts.PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark)
-	walk(box, func(o fyne.CanvasObject) {
+	floatsAsACard(t, box, "the explanation")
+}
+
+// floatsAsACard asks something drawn over the form for the card it stands on:
+// a face in the surface of a box to type in, with a box's edge and a panel's
+// corner, and a translucent shade that shows below the face. Each rectangle is
+// asked for by what it is rather than by its place in the tree, and the edge
+// and the shade are what tell it from the form now that the face is a box's
+// colour - the owner's choice of 2026-09-24 over a lighter face with neither.
+func floatsAsACard(t *testing.T, root fyne.CanvasObject, what string) {
+	t.Helper()
+	dark := theme.VariantDark
+	var face, shade *canvas.Rectangle
+	walk(root, func(o fyne.CanvasObject) {
 		rect, is := o.(*canvas.Rectangle)
 		if !is {
 			return
 		}
-		if rect.FillColor == want && surface == nil {
-			surface = rect
+		if sameColour(rect.FillColor, parts.PaletteColour(theme.ColorNameInputBackground, dark)) && rect.StrokeWidth > 0 && face == nil {
+			face = rect
 		} else if _, _, _, a := rect.FillColor.RGBA(); a > 0 && a < 0xFFFF && shade == nil {
 			shade = rect
 		}
 	})
-	if surface == nil {
-		t.Fatal("the explanation's box draws no rectangle in the colour of an open list, so it stands on nothing that floats")
+	if face == nil {
+		t.Fatalf("%s draws no face in the surface of a box to type in with an edge round it, so it stands on nothing that floats", what)
 	}
-	if surface.CornerRadius != parts.RadiusField {
-		t.Errorf("the explanation's corner is %.0f and a floating control's is %d", surface.CornerRadius, parts.RadiusField)
+	if !sameColour(face.StrokeColor, parts.PaletteColour(theme.ColorNameInputBorder, dark)) {
+		t.Errorf("%s's edge is %v and a box's is %v", what, face.StrokeColor, parts.PaletteColour(theme.ColorNameInputBorder, dark))
 	}
-	if surface.StrokeWidth == 0 {
-		t.Error("the explanation's surface has no line round it, which is the random rectangle the owner saw")
+	if face.CornerRadius != parts.RadiusPanel {
+		t.Errorf("%s's corner is %.0f and the card's is %d", what, face.CornerRadius, parts.RadiusPanel)
 	}
 	if shade == nil {
-		t.Error("the explanation casts no shade, so nothing says it lies over the form rather than in it")
-	} else if shade.Position().Y <= surface.Position().Y {
-		t.Errorf("the shade sits at y=%.0f and the surface at y=%.0f - a shade that is not below the box it belongs to reads as a smudge",
-			shade.Position().Y, surface.Position().Y)
+		t.Errorf("%s casts no shade, so nothing but a thin line says it lies over the form rather than in it", what)
+	} else if shade.Position().Y <= face.Position().Y {
+		t.Errorf("%s's shade sits at y=%.0f and its face at y=%.0f - a shade that is not below what casts it reads as a smudge",
+			what, shade.Position().Y, face.Position().Y)
 	}
 }

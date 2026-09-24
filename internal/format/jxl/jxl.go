@@ -139,6 +139,7 @@ var fileType = [20]byte{
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "jxl",
+		Name:        "JPEG XL",
 		Extension:   ".jxl",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

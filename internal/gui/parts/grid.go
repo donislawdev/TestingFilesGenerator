@@ -75,12 +75,19 @@ func (wideCell) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // of 2026-09-23: "Size "abc" has no number: write something like 10mb or
 // 1048576" broke into three lines in a column 185 px wide and pushed the whole
 // form down. So the grid tells the cell where its refusal goes - under the
-// row, from the field's own left edge to the right edge of the row, and under
-// any refusal about a field before it in the same row - and the cell draws it
-// there. The red edge stays on the box it is about.
+// row, across the whole of it, and under any refusal about a field before it
+// in the same row - and the cell draws it there. The red edge stays on the box
+// it is about, and every refusal names its field.
+//
+// From the row's left edge since 2026-09-24. Until then a refusal started at
+// its own field's left edge, so two refusals in one row stood as a staircase -
+// the second one column in and a line down - which the review of that day
+// found reading as an accident (UI-011). Wrapping each in its own column was
+// the other way out, and it is the three lines above.
 type fieldCell struct {
 	column
 	inGrid    bool
+	areaLeft  float32
 	areaTop   float32
 	areaWidth float32
 }
@@ -94,7 +101,7 @@ func (f *fieldCell) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	body.Resize(fyne.NewSize(size.Width, body.MinSize().Height))
 	body.Move(fyne.NewPos(0, 0))
 	area.Resize(fyne.NewSize(f.areaWidth, area.MinSize().Height))
-	area.Move(fyne.NewPos(0, f.areaTop))
+	area.Move(fyne.NewPos(f.areaLeft, f.areaTop))
 }
 
 // cellOf stacks a field's pieces - its body, then its refusal - as one grid
@@ -246,7 +253,9 @@ func rowHeights(items []placed, width float32) []float32 {
 		}
 		x := float32(p.column) * (column + GapColumns)
 		cell.inGrid = true
-		cell.areaWidth = width - x
+		// From the row's left edge, which is x to the left of the cell.
+		cell.areaLeft = -x
+		cell.areaWidth = width
 		cell.areaTop = heights[p.row] + GapTight + under[p.row]
 		if area.Visible() {
 			under[p.row] += area.MinSize().Height + GapTight

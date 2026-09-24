@@ -16,7 +16,11 @@ import (
 // sense at all - how faithful the file will be, whether it repeats to the
 // byte, and how small it can go.
 type formatEntry struct {
-	ID          string `json:"id"`
+	ID string `json:"id"`
+	// Name is what the format is called, beside the identifier a recipe
+	// uses. Added on 2026-09-24, which widens this output and changes the
+	// meaning of no key already in it.
+	Name        string `json:"name"`
 	Extension   string `json:"extension"`
 	Fidelity    string `json:"fidelity"`
 	Determinism string `json:"determinism"`
@@ -96,6 +100,7 @@ func entryFor(d format.Descriptor) formatEntry {
 	}
 	return formatEntry{
 		ID: d.ID, Extension: d.Extension,
+		Name:     d.Name,
 		Fidelity: string(d.Fidelity), Determinism: string(d.Determinism),
 		MinBytes: d.MinBytes, SmallestAccepted: smallestAccepted(d),
 		Padding: d.Padding.Name, PaddingCap: d.Padding.Capacity,
@@ -112,6 +117,7 @@ func entryFor(d format.Descriptor) formatEntry {
 func describeOne(d format.Descriptor, out io.Writer) {
 	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %s\n",
 		d.ID, d.Fidelity, d.Determinism, core.ExactBytes(smallestAccepted(d)))
+	fmt.Fprintf(out, "  name       %s\n", d.Name)
 	fmt.Fprintf(out, "  extension  %s\n", d.Extension)
 	fmt.Fprintf(out, "  padding    %s\n", d.Padding.Name)
 	fmt.Fprintf(out, "  label      %s\n", d.Label)
@@ -203,14 +209,27 @@ Flags:
 		}
 		return renderJSON(list, out, errOut)
 	}
+	printTable(out)
+	return ExitOK
+}
 
-	fmt.Fprintf(out, "%-8s %-10s %-12s %-10s %s\n", "FORMAT", "FIDELITY", "DETERMINISM", "MINIMUM", "PADDING CHANNEL")
+// printTable is the list a person reads: one row a format.
+//
+// The name column is as wide as the longest name rather than a number written
+// here, so the next longer name keeps every column after it in line. Counted
+// in bytes, which is characters: a name is ASCII, held by
+// TestEveryFormatDeclaresTheFullSet.
+func printTable(out io.Writer) {
+	named := len("NAME")
 	for _, d := range format.All() {
-		fmt.Fprintf(out, "%-8s %-10s %-12s %-10d %s\n",
-			d.ID, d.Fidelity, d.Determinism, smallestAccepted(d), d.Padding.Name)
+		named = max(named, len(d.Name))
+	}
+	fmt.Fprintf(out, "%-8s %-*s %-10s %-12s %-10s %s\n", "FORMAT", named, "NAME", "FIDELITY", "DETERMINISM", "MINIMUM", "PADDING CHANNEL")
+	for _, d := range format.All() {
+		fmt.Fprintf(out, "%-8s %-*s %-10s %-12s %-10d %s\n",
+			d.ID, named, d.Name, d.Fidelity, d.Determinism, smallestAccepted(d), d.Padding.Name)
 	}
 	fmt.Fprint(out, "\nRun \"tfg formats <id>\" for what one format accepts.\n")
-	return ExitOK
 }
 
 func renderJSON(v any, out, errOut io.Writer) int {

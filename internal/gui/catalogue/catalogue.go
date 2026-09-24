@@ -98,7 +98,6 @@ func NotDrawn() []Reason {
 		{"PointerFocus", "a piece inside a control, knowing what put the keyboard there - no picture of its own"},
 		{"Returnable", "an interface: a control the window can tell it is coming back to the front, nothing of its own to draw"},
 		{"Shortcuts", "a keyboard map: nothing to draw, and saying so is the point of this row"},
-		{"GroupKind", "an enum: what a group of settings is about, every value drawn under Folding as the colour of its rail"},
 		{"NameTap", "an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its own to draw"},
 	}
 }

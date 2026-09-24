@@ -224,43 +224,29 @@ func panelSurface() *canvas.Rectangle {
 	return rect
 }
 
-// floatingSurface is what anything drawn OVER the form stands on: the list a
-// menu drops down, and the explanation behind a field's button.
+// floatingCard is what anything drawn OVER the form stands on - the list a
+// menu drops down and the explanation behind a field's button - back to
+// front: the shade it casts and its face.
 //
-// One function for both since 2026-09-21, and the second of them is why. The
-// explanation stood on panelSurface until then, and it opens over a section -
-// so a box the colour of the thing under it had no edge anywhere, and the
-// owner's report from the running window was a sentence laid straight over
-// the form, covering the row beneath. The list had already met the same
-// question on 2026-08-12 and the palette answers it: the surface that floats
-// is the lightest one, told from a panel by 13.6 L* with no border and no
-// shadow (theme.go, ColorNameMenuBackground). The corner is a field's, not a
-// panel's, because what floats is the size of a control and not of a section.
-func floatingSurface() *canvas.Rectangle {
-	rect := canvas.NewRectangle(PaletteColour(theme.ColorNameMenuBackground, theme.VariantDark))
-	rect.CornerRadius = RadiusField
-	return rect
-}
-
-// tipSurface is what an explanation stands on: the floating surface with a
-// line round it, so it reads as a thing laid over the form and not as a
-// patch of it. Owner's report from the running window, 2026-09-21: without
-// the line it looked like a random rectangle.
-func tipSurface() *canvas.Rectangle {
-	rect := floatingSurface()
-	rect.StrokeColor = PaletteColour(theme.ColorNameInputBorder, theme.VariantDark)
-	rect.StrokeWidth = edgeWidth
-	return rect
-}
-
-// tipShadow is the shade an explanation casts, offset downwards so it reads
-// as depth rather than as a smudge - the same reason Refactoring UI gives
-// for offsetting shadows. Drawn under tipSurface in a stack, so it shows
-// only past the surface's lower edge.
-func tipShadow() fyne.CanvasObject {
-	rect := canvas.NewRectangle(PaletteColour(ColorNameTipShade, theme.VariantDark))
-	rect.CornerRadius = RadiusField
-	return container.New(shifted{dy: TipShadowDrop}, rect)
+// One function for both since 2026-09-21, when the explanation stood on the
+// panel's surface and read as a sentence laid straight over the form. Until
+// 2026-09-24 the face was the lightest surface of the palette (menuBackground)
+// - the list with no edge and no shade, the explanation with an edge - and the
+// owner's report from the running window was that both looked like a plain
+// grey block. Of three looks drawn side by side in the real window he chose
+// this one (docs/GUI-LOOK-REVIEW-2026-09-24.md, round 2, A): the surface of a
+// box to type in with a box's edge, a panel's corner, and a shade offset
+// downward so it reads as depth rather than as a smudge, showing only past the
+// face's lower edge.
+func floatingCard() []fyne.CanvasObject {
+	dark := theme.VariantDark
+	face := canvas.NewRectangle(PaletteColour(theme.ColorNameInputBackground, dark))
+	face.StrokeColor = PaletteColour(theme.ColorNameInputBorder, dark)
+	face.StrokeWidth = edgeWidth
+	face.CornerRadius = RadiusPanel
+	shade := canvas.NewRectangle(PaletteColour(ColorNameTipShade, dark))
+	shade.CornerRadius = RadiusPanel
+	return []fyne.CanvasObject{container.New(shifted{dy: TipShadowDrop}, shade), face}
 }
 
 // shifted lays its one child at an offset from its own origin.
@@ -444,11 +430,14 @@ func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // begin. Until 2026-08-12 they did the latter: the form stopped at 822 px and
 // a refusal about it ran to 1099.
 //
-// The rail is the exception, on the owner's decision of 2026-08-19: it stands
-// at the left edge of the bar rather than in that column. What it holds is
-// what the run is not about - Donate, and adding a batch - so lining it up
-// with the form bought nothing and spent 78 px of margin saying so. Pass nil
-// on a screen that has none.
+// The rail stands in that column too, on its left edge, since 2026-09-24. It
+// stood at the left edge of the bar from the owner's decision of 2026-08-19 -
+// what it holds is what the run is not about, Donate and adding a batch, and
+// lining it up with the form seemed to buy nothing. Looked at again in the
+// review of 2026-09-24 (UI-006), the bar had four left edges - Donate at the
+// window's, Add a batch beside it, the buttons centred and the line under them
+// on the form's - and the owner reversed the decision knowing it: one edge for
+// everything that is not centred. Pass nil on a screen that has none.
 func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
 	// The padding goes inside the column as well as around the bar, and that is
 	// what puts the bar's own words on the same left edge as the form's.
@@ -460,8 +449,7 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 	// rather than at its content. The status line and every field name on the
 	// screen above it were 6 px apart, which is the distance that reads as a
 	// mistake rather than as an indent.
-	column := container.New(readableWidth{}, Indented(Column(GapLabel, content...)))
-	standing := fyne.CanvasObject(column)
+	inner := Column(GapLabel, content...)
 	if rail != nil && len(content) > 0 {
 		// Laid over the column rather than beside it. Sharing the row, the rail
 		// would take width from one side only and the buttons the column
@@ -470,9 +458,38 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 		// The vertical box is what keeps the rail one row tall. Handed straight
 		// to a stack it would be resized to the whole bar, and a Donate button
 		// as tall as the bar is what the first attempt drew.
-		standing = container.New(railOver{centred: content[0]}, column, container.NewVBox(rail))
+		//
+		// Hung out to the left by the room a bar button keeps round its words.
+		// The rail opens with Donate, a quiet button - words, with a surface
+		// only under the pointer - so what stands on the edge has to be its
+		// words and not its invisible box, the rule inkTight keeps for a label.
+		// Measured on 2026-09-24 with the box on the edge: the heart stood
+		// 16 px right of the line under it.
+		inner = container.New(railOver{centred: content[0]}, inner,
+			container.NewVBox(container.New(hungOut{by: BarButtonInsetX}, rail)))
 	}
-	return container.NewStack(panelSurface(), Padded(InsetBar, standing))
+	column := container.New(readableWidth{}, Indented(inner))
+	return container.NewStack(panelSurface(), Padded(InsetBar, column))
+}
+
+// hungOut lays its one child that far to the left of where it stands, the part
+// hanging out taking no room - so a thing whose edge is invisible stands with
+// what IS visible on the edge.
+type hungOut struct{ by float32 }
+
+func (h hungOut) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize().Subtract(fyne.NewSize(h.by, 0)))
+	}
+	return size
+}
+
+func (h hungOut) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		o.Move(fyne.NewPos(-h.by, 0))
+		o.Resize(size.Add(fyne.NewSize(h.by, 0)))
+	}
 }
 
 // railOver is the rail laid over the column, and a bar that cannot be made
@@ -487,9 +504,15 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 // outside review of #126 (docs/REVIEW-126-2026-09-23.md). GUI rule 21 asks
 // exactly this of the smallest window.
 //
-// The buttons are centred in the bar, so the room they leave either side is
-// half of what is left over. That half has to hold the rail and a gap, which
-// makes the smallest bar the buttons plus twice the rail and the gap.
+// The buttons are centred in the bar while there is room for that, and give
+// way to the right when there is not, since 2026-09-24. Until then the
+// smallest bar was the buttons plus TWICE the rail and a gap - centred, the
+// room either side of them is half of what is left over, and that half had to
+// hold the rail - so every pixel the rail grew cost the window two. The heart
+// on Donate grew it, and the smallest window went from 695 to 743 px. The
+// owner chose giving way over the wider minimum: the row keeps the rail's
+// room clear at its left (buttonRow.clearLeft) and the smallest bar is the
+// rail, a gap and the buttons once.
 type railOver struct{ centred fyne.CanvasObject }
 
 func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -498,17 +521,45 @@ func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
 		size = size.Max(o.MinSize())
 	}
 	if len(objects) > 1 {
-		need := r.centred.MinSize().Width + 2*(objects[1].MinSize().Width+GapColumns)
+		need := objects[1].MinSize().Width + GapColumns + r.centred.MinSize().Width
 		size.Width = fyne.Max(size.Width, need)
 	}
 	return size
 }
 
-func (railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+func (r railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	// Told before the column is laid out, since laying it out lays the row out.
+	row, moved := r.keepRailClear(objects)
 	for _, o := range objects {
 		o.Resize(size)
 		o.Move(fyne.NewPos(0, 0))
 	}
+	// A rail whose words grow while the bar keeps its size is laid out here
+	// again by the toolkit, and the column handed the size it already has is
+	// not laid out at all - fyne v2.8.1 Container.Resize returns early - so the
+	// row kept the room it cleared for the shorter rail and its buttons stood
+	// under the longer one. Measured with a probe on 2026-09-24 after an outside
+	// review of #136: 16.6 px of overlap for "Donate" grown to "Donate more".
+	if moved {
+		row.Layout.Layout(row.Objects, row.Size())
+	}
+}
+
+// keepRailClear tells the row of centred buttons how much room at its left the
+// rail takes, and says whether that changed since the row was last told.
+func (r railOver) keepRailClear(objects []fyne.CanvasObject) (*fyne.Container, bool) {
+	row, ok := r.centred.(*fyne.Container)
+	if !ok || len(objects) < 2 {
+		return nil, false
+	}
+	keep, ours := row.Layout.(*buttonRow)
+	if !ours {
+		return nil, false
+	}
+	room := objects[1].MinSize().Width + GapColumns
+	moved := keep.clearLeft != room
+	keep.clearLeft = room
+	return row, moved
 }
 
 // Screen stacks sections under a head - a Title, or a Titled pair.

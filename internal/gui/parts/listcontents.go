@@ -18,9 +18,15 @@ type listContents struct {
 	// filled field making "I did not say" impossible to express.
 	chosen string
 
-	// headingOf is the heading a value stands under, or nil for a list with no
-	// headings. See OpenList.GroupUnder.
-	headingOf func(string) string
+	// labels are the heading each value stands under and the name each is
+	// called by, either nil where the list has none. See OpenList.GroupUnder
+	// and NameEach.
+	labels
+	// column is how wide the widest value is drawn, in bold, on a list whose
+	// values have names: every name starts that far in, so the names stand in
+	// one column the way a form's values do beside its labels. Nought on a
+	// list with no names.
+	column float32
 	// typed is what is in the filter box, or nothing for a list without one.
 	typed string
 	// entries is what the list draws now - headings, values and the notice
@@ -42,8 +48,17 @@ type listContents struct {
 // row filled for the old arrangement can still hold a label the list no
 // longer draws, and RowShowing would report it.
 func (c *listContents) rearrange() {
-	c.entries = arrange(c.options, c.headingOf, c.typed)
+	c.entries = arrange(c.options, c.labels, c.typed)
 	c.view.shown = 0
+}
+
+// NameEach gives every value the name nameOf says it is called, drawn beside
+// it and searched by the filter. Called before the list is shown, the way
+// GroupUnder is.
+func (c *listContents) NameEach(nameOf func(string) string) {
+	c.nameOf = nameOf
+	c.column = widestValue(c.options)
+	c.rearrange()
 }
 
 // Rows is what this list is showing, for a guard to read, in the order it is
@@ -58,7 +73,7 @@ func (c *listContents) Rows() []Choice {
 	out := make([]Choice, 0, len(c.entries))
 	for _, e := range c.entries {
 		value := e.kind == entryValue
-		out = append(out, Choice{Label: e.text, Marked: value && c.isChosen(e.text), Choosable: value})
+		out = append(out, Choice{Label: e.text, Name: e.name, Marked: value && c.isChosen(e.text), Choosable: value})
 	}
 	return out
 }

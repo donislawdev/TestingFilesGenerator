@@ -471,7 +471,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 		parts.NewButton(parts.Secondary, text.ButtonDuplicateBatch(), func() { r.duplicateBatch(index) }),
 	}
 	if len(r.batches) > 1 || r.base.carriesTheRun() {
-		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }))
+		head = append(head, parts.NewButton(parts.Secondary, text.ButtonRemoveBatch(), func() { r.removeBatch(index) }).Removing())
 	}
 	b.fold = parts.NewFolding(text.BatchHeading(index+1), head, rows...)
 	r.wire(b.fold, &b.folded, b.summary)
@@ -551,7 +551,7 @@ func (r *Recipe) contentCells(table *parts.Table, b *batch, index, j int, c *con
 		// Not a field, so the row would hand it a whole column - see
 		// parts.BesideFields for the numbers that came off this very button.
 		parts.BesideFields(
-			parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, j) })),
+			parts.NewButton(parts.Secondary, text.ButtonRemoveContents(), func() { r.removeContent(b, j) }).Removing()),
 	}
 }
 

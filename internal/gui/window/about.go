@@ -37,9 +37,7 @@ import (
 // replaced the whole window it needed a door, and a door somebody could delete
 // without noticing was the thing worth guarding.
 func About(h Host) fyne.CanvasObject {
-	sections := []fyne.CanvasObject{
-		parts.Indented(parts.Prose(text.AboutTagline())),
-	}
+	var sections []fyne.CanvasObject
 	// Under the tagline and only when it is true: the window is drawn by the
 	// software renderer shipped beside it, not by a driver. Said here rather
 	// than in a title or a dialog because it is a fact about this window for
@@ -85,11 +83,15 @@ func About(h Host) fyne.CanvasObject {
 		// under the button for the reason above.
 		parts.Section(text.SectionSupport(),
 			parts.Prose(text.DetailDonate()),
-			container.NewHBox(parts.NewButton(parts.Secondary, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) })),
+			container.NewHBox(donate(h, parts.Secondary)),
 			parts.Prose(text.SupportURL)),
 	)
 	sections = append(sections, carried()...)
-	page := parts.Screen(parts.Title(text.HeadingAbout(version.Version)), sections...)
+	// The title with its sentence under it, as on the other three screens.
+	// The sentence stood as a section of its own until 2026-09-24 and sat
+	// 16 px further from the title than every other screen's does, measured
+	// on the stored screens (review UI-007).
+	page := parts.Screen(parts.Titled(text.HeadingAbout(version.Version), text.AboutTagline()), sections...)
 
 	// No bar at the foot, since the prototype of 2026-09-23. It held only the
 	// Donate button, which is in the Support card now - so the button is still

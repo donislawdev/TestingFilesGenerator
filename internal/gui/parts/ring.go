@@ -193,6 +193,10 @@ type Chooser struct {
 	// See NewChooser.
 	HeadingOf func(string) string
 	Filtered  bool
+	// NameOf is what a value is called, drawn beside it in the open list and
+	// searched by its filter - set on the same one menu, and making its list
+	// wider than the box it drops from. See listWidth.
+	NameOf func(string) string
 	// opened is the list this menu last dropped down, and it is here for a
 	// guard: the canvas says whether a list appeared, and this says what was
 	// in it. Neither alone is worth anything - a list built correctly and never
@@ -241,6 +245,9 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 		// not exist when it was written.
 		c.HeadingOf = KindHeading
 		c.Filtered = true
+		// And named, decided by the owner on 2026-09-24: "jxl" says nothing
+		// to somebody who has not met it, "JPEG XL" does.
+		c.NameOf = NameOfFormat
 	}
 	c.ExtendBaseWidget(c)
 	return c
@@ -311,10 +318,10 @@ func menuWidth(c *Chooser) float32 {
 			widest = w
 		}
 	}
-	// This one number decides two things, because the list opens at the width of
-	// the box - so the box also has to fit a ROW, which carries a tick column
-	// and, on a list of things of different kinds, a picture in front of the
-	// word.
+	// This one number decides two things, because a list without names opens at
+	// the width of the box - so the box also has to fit a ROW, which carries a
+	// tick column and, on a list of things of different kinds, a picture in
+	// front of the word.
 	//
 	// Both are asked, and the wider wins. It was the closed box alone until
 	// 2026-08-27, on a measurement taken on 2026-08-25 across all six menus then
@@ -351,9 +358,15 @@ func menuWidth(c *Chooser) float32 {
 	if row := RowWidthFor(widest, c.KindOf != nil); row > box {
 		box = row
 	}
-	if open := openListWidth(c); open > box {
-		box = open
-	}
+	// What an open list holds besides its values - headings, the filter box,
+	// the sentence saying nothing matched - is not counted here. It was until
+	// 2026-09-24, when the list of formats started working out a width of its
+	// own (listWidth): a list with names is wider than its box anyway, and the
+	// sentence saying nothing matched grew to 270 px, which counted here would
+	// have widened every format box, the column it stands in and the smallest
+	// window. Measured that day: this function came to 140 with those counted
+	// and 140 without, the floor below, so no box on any screen moved.
+	//
 	// And never narrower than the narrowest box on these screens.
 	//
 	// The owner's report of 2026-08-28, from the running window: the format menu
@@ -370,15 +383,25 @@ func menuWidth(c *Chooser) float32 {
 	return fyne.Max(NumericWidth, box)
 }
 
-// openListWidth is the room the rows of an open list need that are not
-// values: the headings, the notice that nothing matched and the filter box
-// with the words standing in it. Nought for a list that has none of them.
+// ListWidth is how wide the list this menu drops down is drawn, for the
+// catalogue to stand a list at the width the form gives it.
+func ListWidth(c *Chooser) float32 { return listWidth(c, menuWidth(c)) }
+
+// listWidth is how wide the list a menu drops down is: the width of the box it
+// drops from, and wider where what the list holds needs more.
 //
-// The box has to cover these for the reason it covers a row - the list opens
-// at the box's width - and they are measured here rather than read off the
-// list, because the list does not exist until somebody presses the box.
-func openListWidth(c *Chooser) float32 {
-	var widest float32
+// Wider since 2026-09-24, for the list of formats, which names every value
+// beside it - decided by the owner, with the box itself staying as narrow as
+// its values need. Before that day the list was the box's width exactly, and
+// the box was widened to fit the list's headings and filter instead.
+//
+// Measured from what the list will hold rather than read off the list,
+// because the list does not exist until somebody presses the box. Worked out
+// from the words and the scale, never from the window: a width fitted to a
+// window is a width wrong in the next one (GUI rule 14). Where the result goes
+// past the window's edge is ColumnForList's to answer, not this.
+func listWidth(c *Chooser, box float32) float32 {
+	widest := box
 	if c.HeadingOf != nil {
 		// With the count each heading carries when nothing is typed, which is
 		// the most it ever carries.
@@ -396,9 +419,50 @@ func openListWidth(c *Chooser) float32 {
 		inner := Theme().Size(theme.SizeNameInnerPadding)
 		words := fyne.MeasureText(text.PlaceholderFilter(), theme.TextSize(), fyne.TextStyle{}).Width
 		widest = fyne.Max(widest, words+4*inner+2*filterInset)
-		widest = fyne.Max(widest, HeadingRowWidthFor(headingWidth(text.ListNothingMatches())))
+		widest = fyne.Max(widest, HeadingRowWidthFor(noticeWidth(text.ListNothingMatches())))
+	}
+	if c.NameOf != nil {
+		// Every name after the column the values stand in, each measured in
+		// bold: the filter draws what matched in bold, and a name typed in
+		// full is the widest it is ever drawn.
+		column := widestValue(c.Options)
+		for _, option := range c.Options {
+			name := fyne.MeasureText(c.NameOf(option), theme.TextSize(), fyne.TextStyle{Bold: true}).Width
+			widest = fyne.Max(widest, RowWidthFor(column+listNameGap+name, c.KindOf != nil))
+		}
 	}
 	return widest
+}
+
+// ColumnForList decides where the left edge of an open list goes and how wide
+// it is, the way RoomForList decides its top and height.
+//
+// Under the box, from the box's own left edge, is where a list belongs - it
+// reads as that field's list. A list wider than its box can run past the
+// window's right edge from there, which no list could before 2026-09-24,
+// because none was wider than the box it drops from. So a list that would end
+// past the edge, less listEdgeGap, moves left until it does not, and a list
+// wider than the whole window less a gap on each side is cut to it.
+//
+// A list no wider than its box never moves: the box is on the screen, so a
+// list at its width under it is too, and moving one because its box stands
+// closer to the edge than listEdgeGap would shift lists that have always stood
+// where they stand.
+//
+// Arithmetic rather than widgets so that it can be checked directly. Every box
+// with a list wider than itself stands in a form's first column today, so no
+// screen reaches the move - which is exactly why it is asked of this function
+// and not only of a screen.
+func ColumnForList(canvasWidth, boxLeft, boxWidth, wanted float32) (left, width float32) {
+	width = wanted
+	if room := canvasWidth - 2*listEdgeGap; width > room && width > boxWidth {
+		width = fyne.Max(room, boxWidth)
+	}
+	left = boxLeft
+	if end := canvasWidth - listEdgeGap; width > boxWidth && left+width > end {
+		left = fyne.Max(listEdgeGap, end-width)
+	}
+	return left, width
 }
 
 // useRing takes the ring and asks it for a line at rest as well as the two it
@@ -513,20 +577,31 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	if c.Filtered {
 		list.WithFilter()
 	}
+	if c.NameOf != nil {
+		list.NameEach(c.NameOf)
+	}
 	pop = widget.NewPopUp(list, surface)
 	c.opened = list
 
 	at := fyne.CurrentApp().Driver().AbsolutePositionForObject(c)
-	// As wide as the box, so the list reads as belonging to that field. How
-	// tall and which side of the box it goes on is worked out from the room
-	// that is actually left - see roomForList.
+	// From the box's left edge, so the list reads as belonging to that field,
+	// and as wide as the box unless what it holds needs more - see listWidth.
+	// How tall and which side of the box it goes on is worked out from the
+	// room that is actually left - see RoomForList - and where its left edge
+	// goes when it is wider than the room beside the box, by ColumnForList.
 	height, top := RoomForList(surface.Size().Height, at.Y, c.Size().Height, list.MinSize().Height, list.HeadHeight())
+	left, width := ColumnForList(surface.Size().Width, at.X, c.Size().Width, listWidth(c, c.Size().Width))
 	// Told to the list rather than only to the popup, because a popup is never
 	// laid out smaller than its content's minimum - so resizing alone left the
 	// list its full height and the shortening did nothing.
 	list.LimitTo(height)
-	pop.Resize(fyne.NewSize(c.Size().Width, height))
-	pop.ShowAtPosition(fyne.NewPos(at.X, top))
+	pop.Resize(fyne.NewSize(width, height))
+	pop.ShowAtPosition(fyne.NewPos(left, top))
+	// Opened downward, the list follows what its filter leaves - see
+	// OpenList.MinSize. The room worked out now stays its ceiling.
+	if top >= at.Y+c.Size().Height {
+		list.resize = pop.Resize
+	}
 
 	surface.Focus(list.Keyboard())
 	// On the value already in the box, so that pressing Down once does not go

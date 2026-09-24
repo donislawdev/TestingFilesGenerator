@@ -134,6 +134,9 @@ func accountForPackage(t *testing.T, pkg string, files []string, seen, matched, 
 var ownWork = map[string]bool{
 	// Drawn from shapes by tools/appicon.py. docs/LICENSING.md.
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon chickpea.png": true,
+	// Drawn from two circles and a point, the geometry written beside it in
+	// heart.go. The owner's choice over an icon set's heart. docs/LICENSING.md.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts heart.svg": true,
 	// The window's own words.
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/en.json": true,
 }

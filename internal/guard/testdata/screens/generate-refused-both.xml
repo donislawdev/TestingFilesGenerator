@@ -52,10 +52,10 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x371">
-									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x371" strokeColor="button" strokeWidth="1"/>
-									<container size="820x371">
-										<container pos="16,16" size="788x339">
+								<container pos="0,73" size="820x354">
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x354" strokeColor="button" strokeWidth="1"/>
+									<container size="820x354">
+										<container pos="16,16" size="788x322">
 											<container size="788x36">
 												<container pos="-8,0" size="796x36">
 													<container size="792x36">
@@ -78,8 +78,8 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,52" size="788x287">
-												<container size="185x142">
+											<container pos="0,52" size="788x270">
+												<container size="185x125">
 													<container size="185x58">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="46x16">Format</text>
@@ -107,7 +107,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,0" size="185x142">
+												<container pos="201,0" size="185x125">
 													<container size="185x83">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Size</text>
@@ -145,17 +145,17 @@
 															</container>
 														</widget>
 													</container>
-													<container pos="0,87" size="587x16">
-														<container size="587x16">
-															<widget pos="-6,-6" size="599x28" type="*widget.Label">
-																<widget size="599x28" type="*widget.RichText">
+													<container pos="-201,87" size="788x16">
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
 																	<text color="error" pos="6,6" size="430x16">Size "abc" has no number: write something like 10mb or 1048576</text>
 																</widget>
 															</widget>
 														</container>
 													</container>
 												</container>
-												<container pos="402,0" size="185x142">
+												<container pos="402,0" size="185x125">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="101x16">How many files</text>
@@ -180,18 +180,17 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,108" size="386x33">
-														<container size="386x33">
-															<widget pos="-6,-6" size="398x45" type="*widget.Label">
-																<widget size="398x45" type="*widget.RichText">
-																	<text color="error" pos="6,6" size="370x16">How many files is "many", which is not a whole number.</text>
-																	<text color="error" pos="6,22" size="241x16">Write the digits out, such as 1 or 500</text>
+													<container pos="-402,108" size="788x16">
+														<container size="788x16">
+															<widget pos="-6,-6" size="800x28" type="*widget.Label">
+																<widget size="800x28" type="*widget.RichText">
+																	<text color="error" pos="6,6" size="615x16">How many files is "many", which is not a whole number. Write the digits out, such as 1 or 500</text>
 																</widget>
 															</widget>
 														</container>
 													</container>
 												</container>
-												<container pos="603,0" size="185x142">
+												<container pos="603,0" size="185x125">
 													<container size="185x58">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="54x16">Damage</text>
@@ -218,7 +217,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,158" size="185x60">
+												<container pos="0,141" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="78x16">Batch name</text>
@@ -249,7 +248,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,158" size="185x60">
+												<container pos="201,141" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="71x16">File names</text>
@@ -280,12 +279,12 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,243" size="788x44">
+												<container pos="0,226" size="788x44">
 													<container size="788x44">
 														<container size="788x44">
 															<rectangle radius="8" size="788x44" strokeColor="button" strokeWidth="1"/>
 															<container size="788x44">
-																<rectangle fillColor="hyperlink" radius="4" size="4x44"/>
+																<rectangle fillColor="rgba(211,211,215,255)" radius="4" size="4x44"/>
 															</container>
 															<container size="788x44">
 																<container pos="12,4" size="764x36">
@@ -322,7 +321,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,468" size="820x222">
+								<container pos="0,451" size="820x222">
 									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x222" strokeColor="button" strokeWidth="1"/>
 									<container size="820x222">
 										<container pos="16,16" size="788x190">
@@ -378,7 +377,7 @@
 																	</widget>
 																	<widget pos="709,0" size="78x28" type="*parts.Button">
 																		<rectangle pos="-2,-2" radius="6" size="82x32" strokeColor="hyperlink"/>
-																		<rectangle fillColor="button" radius="6" size="78x28" strokeColor="inputBorder" strokeWidth="1"/>
+																		<rectangle fillColor="button" radius="6" size="76x27" strokeColor="inputBorder" strokeWidth="1"/>
 																		<text alignment="center" bold pos="6,6" size="66x16">Choose...</text>
 																	</widget>
 																</container>
@@ -452,13 +451,13 @@
 						<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="1092x101" strokeColor="button" strokeWidth="1"/>
 						<container size="1092x101">
 							<container pos="12,12" size="1068x77">
-								<container size="1068x77">
-									<container pos="124,0" size="820x77">
-										<container pos="16,0" size="788x77">
+								<container pos="124,0" size="820x77">
+									<container pos="16,0" size="788x77">
+										<container size="788x77">
 											<container size="788x28">
 												<widget pos="296,0" size="87x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="91x32" strokeColor="hyperlink"/>
-													<rectangle fillColor="button" radius="6" size="87x28" strokeColor="inputBorder" strokeWidth="1"/>
+													<rectangle fillColor="button" radius="6" size="86x27" strokeColor="inputBorder" strokeWidth="1"/>
 													<text alignment="center" bold pos="16,6" size="55x16">Preview</text>
 												</widget>
 												<widget pos="396,0" size="95x28" type="*parts.Button">
@@ -481,15 +480,18 @@
 												</widget>
 											</container>
 										</container>
-									</container>
-								</container>
-								<container size="1068x77">
-									<container size="1068x26">
-										<widget size="72x26" type="*parts.Button">
-											<rectangle pos="-2,-2" radius="6" size="76x30" strokeColor="hyperlink"/>
-											<rectangle radius="6" size="72x26"/>
-											<text alignment="center" color="placeholder" pos="16,6" size="40x14" textSize="12">Donate</text>
-										</widget>
+										<container size="788x77">
+											<container size="788x26">
+												<container pos="-16,0" size="804x26">
+													<widget size="96x26" type="*parts.Button">
+														<rectangle pos="-2,-2" radius="6" size="100x30" strokeColor="hyperlink"/>
+														<rectangle radius="6" size="96x26"/>
+														<image fillMode="contain" pos="16,3" rsc="heart.svg" size="iconInlineSize" themed="error"/>
+														<text alignment="center" color="placeholder" pos="40,6" size="40x14" textSize="12">Donate</text>
+													</widget>
+												</container>
+											</container>
+										</container>
 									</container>
 								</container>
 							</container>

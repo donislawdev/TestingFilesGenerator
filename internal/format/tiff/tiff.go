@@ -104,6 +104,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "tiff",
+		Name:        "Tagged Image File Format",
 		Extension:   ".tiff",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

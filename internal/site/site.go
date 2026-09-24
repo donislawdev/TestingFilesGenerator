@@ -49,7 +49,12 @@ type Property struct {
 // line prints the accepted one - so the site prints the same, or the two
 // surfaces would answer one question with two numbers.
 type Format struct {
-	ID          string
+	ID string
+	// Name is what the format is called, from the registry and in English on
+	// every page. A proper name is not translated, which is why the registry
+	// can own it - and the two that describe rather than name (plain text and
+	// a log) are the known exception, decided on 2026-09-24.
+	Name        string
 	Extension   string
 	Fidelity    string
 	Determinism string

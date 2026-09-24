@@ -44,6 +44,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "docx",
+		Name:        "Word (Office Open XML)",
 		Extension:   ".docx",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

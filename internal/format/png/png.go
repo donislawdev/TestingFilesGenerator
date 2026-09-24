@@ -73,6 +73,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "png",
+		Name:        "Portable Network Graphics",
 		Extension:   ".png",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

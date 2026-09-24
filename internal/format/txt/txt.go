@@ -34,6 +34,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "txt",
+		Name:        "Plain text",
 		Extension:   ".txt",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

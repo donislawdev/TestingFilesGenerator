@@ -21,46 +21,25 @@ import (
 // defaults to. Three surfaces within four L* of each other, one of them
 // floating.
 //
-// The threshold is the same shape as the one for the stacked surfaces below the
-// page: a menu is the thing furthest from everything, so it has to clear the
-// highest surface it opens over rather than merely differ from the page.
+// Until 2026-09-24 this was held by lightness: the list stood on the lightest
+// surface of the palette with no edge and no shade, and had to clear the
+// highest surface it opens over by half of what separates the page from a box.
+// The owner's report from the running window was that it looked like a plain
+// grey block, and of three looks drawn side by side he chose a card: a box's
+// surface, a box's edge, a panel's corner and a shade below it. So the list is
+// told from the form by its edge and its shade now, and this asks for those on
+// the list as drawn - the palette colour it used to measure is one the list no
+// longer paints, and a guard of it would have gone on passing about nothing.
 func TestAnOpenListIsToldFromTheFormBehindIt(t *testing.T) {
-	for _, variant := range []struct {
-		name string
-		v    fyne.ThemeVariant
-	}{{"dark", theme.VariantDark}, {"light", theme.VariantLight}} {
-		page := parts.PaletteColour(theme.ColorNameBackground, variant.v)
-		panel := parts.PaletteColour(parts.ColorNamePanel, variant.v)
-		input := parts.PaletteColour(theme.ColorNameInputBackground, variant.v)
-		menu := parts.PaletteColour(theme.ColorNameMenuBackground, variant.v)
+	_, _, list, _ := openFormatList(t)
+	floatsAsACard(t, test.WidgetRenderer(list).Objects()[0], "an open list")
 
-		// The furthest surface it can open over. On the dark palette that is an
-		// input box, on the light one it is the page - which is why this is
-		// asked as "the highest of them" rather than named.
-		highest, from := panel, "the panel"
-		if lightnessGap(input, page) > lightnessGap(panel, page) {
-			highest, from = input, "an input box"
-		}
-
-		gap := lightnessGap(menu, highest)
-		// Half of what separates the page from an input box. The stack below is
-		// held to a third each, and a thing that floats has to do better than a
-		// thing that lies flat.
-		least := lightnessGap(input, page) / 2
-		if gap < least {
-			t.Errorf("%s: an open list is %.1f L* from %s it opens over, and %.1f is the least that reads as floating",
-				variant.name, gap, from, least)
-		}
-
-		// And what is written on it stays readable. A surface that moved
-		// without its text being re-measured is the defect the palette guard
-		// caught on its first day.
-		if got := contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), menu); got < 4.5 {
-			t.Errorf("%s: the values in an open list are %.2f:1 on it, under the 4.5 a reader needs",
-				variant.name, got)
-		}
-		t.Logf("%s: an open list is %.1f L* above %s, values on it at %.2f:1",
-			variant.name, gap, from, contrast(parts.PaletteColour(theme.ColorNameForeground, variant.v), menu))
+	// And what is written on it stays readable. A surface that moved without
+	// its text being re-measured is the defect the palette guard caught on its
+	// first day.
+	face := parts.PaletteColour(theme.ColorNameInputBackground, theme.VariantDark)
+	if got := contrast(parts.PaletteColour(theme.ColorNameForeground, theme.VariantDark), face); got < 4.5 {
+		t.Errorf("the values in an open list are %.2f:1 on it, under the 4.5 a reader needs", got)
 	}
 }
 

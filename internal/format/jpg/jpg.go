@@ -70,6 +70,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "jpg",
+		Name:        "JPEG",
 		Extension:   ".jpg",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

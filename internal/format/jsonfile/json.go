@@ -61,6 +61,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "json",
+		Name:        "JavaScript Object Notation",
 		Extension:   ".json",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -95,6 +96,17 @@ func KindHeading(id string) string {
 		// See the same case in KindOfFile.
 	}
 	return ""
+}
+
+// NameOfFormat is what a format is called, drawn beside it in an open list -
+// JPEG XL beside jxl. The registry's, so the window and "tfg formats" say one
+// thing (D1), and empty for a value that is not a registered format.
+func NameOfFormat(id string) string {
+	d, err := format.Get(id)
+	if err != nil {
+		return ""
+	}
+	return d.Name
 }
 
 type fileKind int

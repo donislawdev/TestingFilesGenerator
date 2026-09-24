@@ -79,6 +79,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "wav",
+		Name:        "Waveform Audio",
 		Extension:   ".wav",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

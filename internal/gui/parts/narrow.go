@@ -3,6 +3,8 @@ package parts
 import (
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -31,10 +33,22 @@ const (
 // listEntry is one row of an open list. On a value, from and to are where
 // what was typed stands in its words, drawn in bold - equal when nothing in
 // the words matched, which is a value kept for the heading it stands under.
+// name is what the value is called, drawn beside it, with its own bold span in
+// nameFrom and nameTo - empty on a list whose values have no names.
 type listEntry struct {
-	kind     entryKind
-	text     string
-	from, to int
+	kind             entryKind
+	text             string
+	from, to         int
+	name             string
+	nameFrom, nameTo int
+}
+
+// labels is what a list knows about its values beyond the values themselves:
+// the heading each stands under and the name each is called by. Either may be
+// nil, and on most lists both are.
+type labels struct {
+	headingOf func(string) string
+	nameOf    func(string) string
 }
 
 // arrange is what an open list draws: the values the typed text keeps, each
@@ -49,18 +63,18 @@ type listEntry struct {
 // A heading with nothing under it is not drawn: a kind with no format yet, or
 // one the filter emptied. A value whose heading is empty stands first, with no
 // heading over it, rather than under a heading made up here.
-func arrange(values []string, headingOf func(string) string, typed string) []listEntry {
-	kept := narrow(values, headingOf, typed)
+func arrange(values []string, by labels, typed string) []listEntry {
+	kept := narrow(values, by, typed)
 	if len(kept) == 0 {
 		if strings.TrimSpace(typed) == "" {
 			return nil
 		}
 		return []listEntry{{kind: entryNotice, text: text.ListNothingMatches()}}
 	}
-	if headingOf == nil {
+	if by.headingOf == nil {
 		out := make([]listEntry, 0, len(kept))
 		for _, v := range kept {
-			out = append(out, valueEntry(v, typed))
+			out = append(out, valueEntry(v, by.nameOf, typed))
 		}
 		return out
 	}
@@ -68,7 +82,7 @@ func arrange(values []string, headingOf func(string) string, typed string) []lis
 	groups := map[string][]string{}
 	headings := []string{}
 	for _, v := range kept {
-		h := headingOf(v)
+		h := by.headingOf(v)
 		if _, seen := groups[h]; !seen {
 			headings = append(headings, h)
 		}
@@ -82,25 +96,41 @@ func arrange(values []string, headingOf func(string) string, typed string) []lis
 			out = append(out, listEntry{kind: entryHeading, text: text.ListHeadingCount(h, len(groups[h]))})
 		}
 		for _, v := range groups[h] {
-			out = append(out, valueEntry(v, typed))
+			out = append(out, valueEntry(v, by.nameOf, typed))
 		}
 	}
 	return out
 }
 
-// valueEntry is one value's row, with what was typed found in its words.
-// Found only where lowering the words keeps their length, so the span marks
-// the same letters in the words as drawn - true of every format name, and a
-// value for which it is not simply gets no bold.
-func valueEntry(v, typed string) listEntry {
+// valueEntry is one value's row, with what was typed found in its words and
+// in its name.
+//
+// In the words anywhere, as the filter keeps them. In the name only at the
+// start of a word, as the filter keeps them too - so the bold is always the
+// reason the row is there, and never a match the filter did not count.
+//
+// Found only where lowering keeps the length, so the span marks the same
+// letters as are drawn - true of every format and every format name, which
+// are ASCII (TestEveryFormatDeclaresTheFullSet), and a value for which it is
+// not simply gets no bold.
+func valueEntry(v string, nameOf func(string) string, typed string) listEntry {
 	e := listEntry{kind: entryValue, text: v}
+	if nameOf != nil {
+		e.name = nameOf(v)
+	}
 	want := strings.ToLower(strings.TrimSpace(typed))
-	lower := strings.ToLower(v)
-	if want == "" || len(lower) != len(v) {
+	if want == "" {
 		return e
 	}
-	if at := strings.Index(lower, want); at >= 0 {
-		e.from, e.to = at, at+len(want)
+	if lower := strings.ToLower(v); len(lower) == len(v) {
+		if at := strings.Index(lower, want); at >= 0 {
+			e.from, e.to = at, at+len(want)
+		}
+	}
+	if len(strings.ToLower(e.name)) == len(e.name) {
+		if at := wordStart(e.name, want); at >= 0 {
+			e.nameFrom, e.nameTo = at, at+len(want)
+		}
 	}
 	return e
 }
@@ -117,14 +147,20 @@ func valueEntry(v, typed string) listEntry {
 // only where a WORD of the heading starts with what was typed. Anywhere in the
 // heading, one letter would keep nearly every kind: "t" is in Pictures,
 // Documents, Text and data. Decided by the owner on 2026-09-23.
-func narrow(values []string, headingOf func(string) string, typed string) []string {
+//
+// And for its name, on the same rule and for the same reason, since
+// 2026-09-24: "excel" keeps xlsx and "vector" svg, while "a" does not keep
+// every format whose name has an a somewhere in it.
+func narrow(values []string, by labels, typed string) []string {
 	want := strings.ToLower(strings.TrimSpace(typed))
 	if want == "" {
 		return values
 	}
 	out := make([]string, 0, len(values))
 	for _, v := range values {
-		if strings.Contains(strings.ToLower(v), want) || (headingOf != nil && aWordStartsWith(headingOf(v), want)) {
+		if strings.Contains(strings.ToLower(v), want) ||
+			(by.headingOf != nil && aWordStartsWith(by.headingOf(v), want)) ||
+			(by.nameOf != nil && aWordStartsWith(by.nameOf(v), want)) {
 			out = append(out, v)
 		}
 	}
@@ -180,13 +216,35 @@ func edgeValue(entries []listEntry, step int) int {
 	return -1
 }
 
-// aWordStartsWith says whether a word of a heading starts with what was typed,
-// which is already lower case.
-func aWordStartsWith(heading, want string) bool {
-	for _, word := range strings.Fields(strings.ToLower(heading)) {
+// aWordStartsWith says whether a word of a heading or a name starts with what
+// was typed, which is already lower case.
+func aWordStartsWith(words, want string) bool { return wordStart(words, want) >= 0 }
+
+// wordStart is where in words the first word starting with want begins, or -1.
+//
+// A word is a run of letters and digits, so what stands between words is
+// anything else rather than only a space. Split on spaces alone, "office" did
+// not find "Word (Office Open XML)", whose word is "(office", and "separated"
+// did not find "Comma-Separated Values". The position is in the lowered words,
+// which is the position in the words as drawn wherever lowering keeps the
+// length - see valueEntry.
+func wordStart(words, want string) int {
+	lower := strings.ToLower(words)
+	for at, r := range lower {
+		if !wordRune(r) {
+			continue
+		}
+		if before, _ := utf8.DecodeLastRuneInString(lower[:at]); at > 0 && wordRune(before) {
+			continue
+		}
+		word := lower[at:]
 		if strings.HasPrefix(word, want) {
-			return true
+			return at
 		}
 	}
-	return false
+	return -1
 }
+
+// wordRune says whether a character belongs to a word rather than to what
+// stands between words.
+func wordRune(r rune) bool { return unicode.IsLetter(r) || unicode.IsDigit(r) }

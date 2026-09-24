@@ -188,6 +188,7 @@ func fit(extent, room int) int { return min(extent, room) }
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "svg",
+		Name:        "Scalable Vector Graphics",
 		Extension:   ".svg",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

@@ -53,6 +53,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "pdf",
+		Name:        "Portable Document Format",
 		Extension:   ".pdf",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

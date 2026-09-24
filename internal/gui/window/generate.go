@@ -520,7 +520,7 @@ func (g *Generate) rebuildDamageFields() {
 		return
 	}
 
-	g.damage.fold = parts.NewInnerFoldingOf(parts.GroupDamage, text.DamageSettingsFor(d.ID), objects...)
+	g.damage.fold = parts.NewInnerFolding(text.DamageSettingsFor(d.ID), objects...)
 	g.damage.fold.OnChange = func(open bool) { g.damage.folded = !open }
 	g.damage.fold.Set(!g.damage.folded)
 	g.damage.box.Add(g.damage.fold.Object())

@@ -102,6 +102,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "yaml",
+		Name:        "YAML",
 		Extension:   ".yaml",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

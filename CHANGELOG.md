@@ -16,18 +16,36 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window's look, after a review of every screen.** An open list and the
+  explanation beside a field stand on a card with an edge and a shade instead
+  of a flat grey block, and a list opened under its box shrinks to what the
+  filter left. Every list shows its tick at the end of the row. Controls
+  switched off for a run are never drawn brighter than at rest, and a ticked
+  switch keeps its tick while it is off - it showed an empty square for the
+  length of every run. `Donate` carries a red heart, and it and `Add a batch`
+  stand on the form's left edge. In a narrow window the run buttons move right
+  instead of making the window wider, so it can be narrowed further. Two
+  refusals in one row stand one under the other from the row's edge rather
+  than as a staircase. `Remove` is written in red, the rails beside groups of
+  settings are one grey, `Choose...` is as tall as the box beside it, and the
+  About screen's sentence sits under its title like the other screens'.
+
 - **The list of formats is grouped by kind and can be filtered.** The open
   list stands under headings - Archives, Documents, Pictures, Sound, Text and
   data - each saying how many formats are under it, and a box at its top
-  narrows it to the formats whose name holds what is typed, or whose kind
-  has a word that starts with it (`gz` finds `targz`, `pict` every picture,
-  `data` every text and data format). The letters that
-  matched are drawn in bold, the arrows step over the headings, and typing
-  at the shut `Format` menu opens the list with those letters in the box, so
-  `jxl` typed there ends on `jxl`. The shut menu draws the kind of the format
-  it holds, and archives are drawn as a folder rather than as three bars that
-  looked like text. The command line lists the formats in one alphabetical
-  order as before.
+  narrows it to the formats whose identifier holds what is typed, or whose
+  kind or full name has a word that starts with it (`gz` finds `targz`,
+  `pict` every picture, `data` every text and data format, `excel` finds
+  `xlsx`). Every format stands beside its full name, `jxl` beside JPEG XL, so
+  the open list is wider than the `Format` box, which keeps its width. The
+  letters that matched are drawn in bold, in the identifier and in the name,
+  the arrows step over the headings, and typing at the shut `Format` menu
+  opens the list with those letters in the box, so `jxl` typed there ends on
+  `jxl`. When nothing matches, the list says `No format matches - clear the
+  box to see all`. The shut menu draws the kind of the format it holds, and
+  archives are drawn as a folder rather than as three bars that looked like
+  text. The command line lists the formats in one alphabetical order as
+  before.
 
 - **The window lays its forms out in columns.** A field now takes as many
   columns of the form as its value needs and no more, so `Format`, `Size`,
@@ -281,6 +299,13 @@ because it turns other people's test suites red.
   row now, and the picture of a file kind stays in front where it was.
 
 ### Added
+
+- **Every format has its full name.** `tfg formats` has a `NAME` column
+  (`jxl` is JPEG XL, `png` Portable Network Graphics), `tfg formats jxl`
+  gives it on a `name` line, and `tfg formats --json` carries it under the new
+  key `name`. No key already there changes, and no generated file changes.
+  The formats table on the website has the same column. Names are proper
+  names and stay in English on every page.
 
 - **The window says where the manifest went, and opens it.** A finished run
   used to say `3 files written.` and nothing else, while the same run from the

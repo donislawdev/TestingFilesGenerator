@@ -117,6 +117,7 @@ func blocksFor(shape string) blocks {
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "html",
+		Name:        "HyperText Markup Language",
 		Extension:   ".html",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

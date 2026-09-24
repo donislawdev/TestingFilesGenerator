@@ -56,6 +56,7 @@
     "ctaSource": "Zobacz kod źródłowy",
     "ctaNote": "Darmowe i otwarte, GPL-3.0. Bez zakładania konta. Pliki dla Windows i macOS są podpisane i uruchamiają się bez ostrzeżenia.",
     "colFormat": "Format",
+    "colName": "Nazwa",
     "colExtension": "Rozszerzenie",
     "colSmallest": "Najmniejszy plik",
     "colFidelity": "Wierność",

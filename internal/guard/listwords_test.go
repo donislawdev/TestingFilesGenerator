@@ -14,8 +14,13 @@ import (
 )
 
 // The words in an open list without pictures start where the word in the box
-// does, with the tick at the far end of the row - and a list WITH pictures
-// keeps its tick in front, the picture next and the words after it.
+// does, a list WITH pictures keeps a column in front of the picture and the
+// words after it, and every row has its tick at the far end.
+//
+// The tick was in front on the list with pictures until 2026-09-24, when the
+// owner asked for it on one side in every list (review UI-005) with the two
+// reports below in front of him. Its column in front stays, empty, because
+// that column is what the second report was about.
 //
 // Reported by the owner from the running window on 2026-09-16: the list of
 // formats looked right and the lists of outcomes and rules looked like words
@@ -78,16 +83,21 @@ func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 				continue
 			}
 			words, tick, picture := piecesOfARow(t, row)
+			// The tick after everything the row writes, in both shapes - the
+			// owner's one side, 2026-09-24. Measured against where the words
+			// END as drawn, the name's included, not against the slot a text
+			// is given: the last piece of a row takes what is left of it.
+			if ends := endOfWords(row); tick.Position().X < ends {
+				t.Errorf("%s: the tick of row %q stands at %.1f, in front of words that end at %.1f - the tick stands at the end of every row",
+					tc.field, row.Label(), tick.Position().X, ends)
+			}
 			if tc.pictured {
-				// Tick, picture, words: each starts where the one before it
-				// ends, a gap later, and the first of them at the gutter.
-				if tick.Position().X != parts.RowGutter() {
-					t.Errorf("%s: the tick of row %q stands at %.1f rather than at the gutter (%.1f) - the column that kept the picture and the word off the edge is gone",
-						tc.field, row.Label(), tick.Position().X, parts.RowGutter())
-				}
-				if picture.Position().X <= tick.Position().X+tick.Size().Width {
-					t.Errorf("%s: the picture of row %q stands at %.1f, not after the tick's column ending at %.1f",
-						tc.field, row.Label(), picture.Position().X, tick.Position().X+tick.Size().Width)
+				// An empty column at the gutter, then the picture, then the
+				// words - so the picture and the word stand where they stood
+				// when the tick filled that column (the report of 2026-09-21).
+				if column := parts.RowGutter() + tick.Size().Width; picture.Position().X < column {
+					t.Errorf("%s: the picture of row %q stands at %.1f, inside the column kept in front of it, which ends at %.1f - the picture and the word moved a column to the left",
+						tc.field, row.Label(), picture.Position().X, column)
 				}
 				if words.Position().X <= picture.Position().X+picture.Size().Width {
 					t.Errorf("%s: the words of row %q start at %.1f, not after the picture ending at %.1f",
@@ -101,10 +111,6 @@ func TestTheWordsInAnOpenListStartWhereTheWordInTheBoxDoes(t *testing.T) {
 			}
 			t.Logf("%s: row %q words at %.1f, the box's word at %.1f (the toolkit's inset, logged and not held)",
 				tc.field, row.Label(), drv.AbsolutePositionForObject(words).X, boxWord)
-			if tick.Position().X < words.Position().X+words.Size().Width {
-				t.Errorf("%s: the tick of row %q stands at %.1f, in front of words ending at %.1f - the column it keeps pushes every list's words off the box's word",
-					tc.field, row.Label(), tick.Position().X, words.Position().X+words.Size().Width)
-			}
 		}
 		list.TypedKey(&fyne.KeyEvent{Name: fyne.KeyEscape})
 	}
@@ -128,6 +134,18 @@ func wordsInTheBox(t *testing.T, menu *parts.Chooser) *canvas.Text {
 	}
 	t.Fatal("the closed menu draws no text this guard can find, so it cannot say where the word in the box starts")
 	return nil
+}
+
+// endOfWords is where the last visible piece of text in a row ends as drawn:
+// its position plus the width of its words, not of the slot it was given.
+func endOfWords(row *parts.ListRow) float32 {
+	var end float32
+	for _, o := range test.WidgetRenderer(row).Objects() {
+		if words, ok := o.(*canvas.Text); ok && words.Visible() && words.Text != "" {
+			end = max(end, words.Position().X+fyne.MeasureText(words.Text, words.TextSize, words.TextStyle).Width)
+		}
+	}
+	return end
 }
 
 // piecesOfARow is what one row of a list draws: its words, its tick and its
