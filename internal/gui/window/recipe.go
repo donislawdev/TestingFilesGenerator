@@ -354,8 +354,20 @@ func (r *Recipe) rebuild() {
 	r.baseBox.Refresh()
 	r.batchBox.Refresh()
 	r.outBox.Refresh()
-	// A batch added, copied or taken away changes what the form comes to,
-	// and none of those goes through a box somebody typed in.
+	// Nothing is said here about what the form comes to. Whoever changed the
+	// form says it: a menu or a switch is followed by recheck, which reads the
+	// form once for the line and the box, and a press no box reports goes
+	// through afterAPress. This said it too until 2026-09-24, so a new format,
+	// base or preset read the form twice - and with a base preset, each
+	// reading expanded it (docs/GUI-MEMORY-2026-09-23.md section 4j).
+}
+
+// afterAPress lays the screen out again and says what the form now comes to,
+// for a change no box, menu or switch reports: a batch added, copied or taken
+// away, contents added or taken away. A function rather than a method, because
+// the screen stands near its ceiling of methods.
+func afterAPress(r *Recipe) {
+	r.rebuild()
 	r.runner.refreshLine()
 }
 
@@ -496,7 +508,7 @@ func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 
 	addContents := parts.NewButton(parts.Secondary, text.ButtonAddContents(), func() {
 		b.contents = append(b.contents, r.newContent())
-		r.rebuild()
+		afterAPress(r)
 	})
 	if len(b.contents) == 0 {
 		if !holds {
@@ -588,7 +600,7 @@ func (r *Recipe) addBatch() {
 	// come with that choice. Chosen here rather than left empty so that a batch
 	// arrives looking like the one above it.
 	r.batches[len(r.batches)-1].formatPick.SetSelected(format.IDs()[0])
-	r.rebuild()
+	afterAPress(r)
 }
 
 // removeBatch drops one batch. The last cannot go, unless the screen builds
@@ -629,7 +641,7 @@ func (r *Recipe) duplicateBatch(index int) {
 
 	rest := append([]*batch{to}, r.batches[index+1:]...)
 	r.batches = append(r.batches[:index+1], rest...)
-	r.rebuild()
+	afterAPress(r)
 }
 
 func (r *Recipe) removeBatch(index int) {
@@ -640,7 +652,7 @@ func (r *Recipe) removeBatch(index int) {
 		return
 	}
 	r.batches = append(r.batches[:index], r.batches[index+1:]...)
-	r.rebuild()
+	afterAPress(r)
 }
 
 func (r *Recipe) removeContent(b *batch, index int) {
@@ -648,7 +660,7 @@ func (r *Recipe) removeContent(b *batch, index int) {
 		return
 	}
 	b.contents = append(b.contents[:index], b.contents[index+1:]...)
-	r.rebuild()
+	afterAPress(r)
 }
 
 // onFormatChosen replaces the declared settings of one batch.
