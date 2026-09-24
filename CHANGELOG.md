@@ -494,6 +494,13 @@ because it turns other people's test suites red.
   again for each one. Both are now done once, and the window uses less memory
   while you type.
 
+- **Changing a setting of a preset is about four times faster.** With
+  `upload-validation`, changing one of its settings held the window for
+  about 0.15 seconds, and so did every key typed on `Several batches` built
+  on it. Both now take about 0.03 seconds. Switching the base preset on
+  `Several batches` to `upload-validation` went from about 0.3 to 0.07
+  seconds. The sets the presets build are byte for byte the same as before.
+
 - **Typing on the `Presets` screen no longer lags.** With `upload-validation`
   chosen, every key typed into a box held the window for about 0.3 seconds,
   and about 0.07 seconds with `tabular-import`, because the preset was worked

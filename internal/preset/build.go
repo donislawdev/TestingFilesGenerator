@@ -160,9 +160,13 @@ type setFile struct {
 }
 
 // bytes is the size this file is asked for.
+//
+// A floor is the remembered one, because this is asked more than once for
+// every file - by refused and by draft - and working it out plans the format
+// at growing sizes. See format.SmallestRemembered.
 func (f setFile) bytes() int64 {
 	if f.atFloor {
-		return f.desc.SmallestAccepted(format.Request{Label: true, Properties: f.props})
+		return format.SmallestRemembered(f.desc, format.Request{Label: true, Properties: f.props})
 	}
 	return f.size
 }
@@ -174,10 +178,14 @@ func (f setFile) bytes() int64 {
 // one level down: a set missing the three files the run was about still looks
 // like a set.
 func (f setFile) refused() error {
-	r := format.Request{Label: true, Properties: f.props}
-	r.Bytes = f.bytes()
-	_, err := f.desc.Generator.Plan(r)
+	_, err := f.desc.Generator.Plan(f.request())
 	return err
+}
+
+// request is what refused asks the format - one place, so that a set that
+// skips a question it has already asked keys it by the question itself.
+func (f setFile) request() format.Request {
+	return format.Request{Label: true, Properties: f.props, Bytes: f.bytes()}
 }
 
 func (f setFile) draft() recipe.TargetDraft {
