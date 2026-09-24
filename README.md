@@ -639,7 +639,8 @@ when a number is a placeholder of ours rather than a limit of yours. Presets are
 ordinary recipes underneath - `tfg preset eject size-boundaries` prints the
 recipe and you edit it from there.
 
-One preset ships today, `size-boundaries`. More are designed.
+`tfg preset list` names every preset your build ships, and the Presets
+screen of the window offers the same ones.
 
 ## 🖥️ The desktop window
 

@@ -117,13 +117,13 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 		return writeJSON(out, errOut, report, ExitOK)
 	}
 
-	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), dir)
+	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), core.Shown(dir))
 	for _, c := range cands {
 		if c.Removable(force) {
-			fmt.Fprintf(out, "  remove %s\n", c.Path)
+			fmt.Fprintf(out, "  remove %s\n", core.Shown(c.Path))
 			continue
 		}
-		fmt.Fprintf(out, "  keep   %s - %s\n", c.Path, skipNote(c, force))
+		fmt.Fprintf(out, "  keep   %s - %s\n", core.Shown(c.Path), skipNote(c, force))
 	}
 	fmt.Fprintf(errOut, "Nothing was removed. Run the same command with --yes to remove them.\n")
 	return ExitOK
@@ -153,7 +153,7 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		}
 		report.Files = append(report.Files, cleanupEntry{Path: o.Path, Action: "kept", Reason: o.Reason})
 		if !asJSON {
-			fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
+			fmt.Fprintf(errOut, "kept %s - %s\n", core.Shown(o.Path), core.Shown(o.Reason))
 		}
 	}
 	// Kept counts every entry that is not removed, which is what the entries
@@ -179,7 +179,7 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		if blocked > 0 {
 			fmt.Fprintf(errOut, "tfg: the manifest was kept. It is the only record of %s still on disk.\n", core.Count(blocked, "file", "files"))
 		} else if err := os.Remove(path); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %s\n", path, describeError(err))
+			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %s\n", core.Shown(path), describeError(err))
 			return ExitIO
 		}
 	}
@@ -194,7 +194,7 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return writeJSON(out, errOut, report, ExitOK)
 	}
 
-	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), dir)
+	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), core.Shown(dir))
 
 	// A file left behind is not a silent outcome. It was reported above, and
 	// the exit code has to carry it too or a script never learns.

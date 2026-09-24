@@ -97,6 +97,7 @@
   },
   "presets": {
     "empty-and-minimal": "Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?",
+    "filename-handling": "Czy mój system zapisze, pokaże i odda nazwę pliku, której się nie spodziewał?",
     "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?",
     "tabular-import": "Czy import tabeli poradzi sobie z tym, co eksportują prawdziwe narzędzia?",
     "text-encoding": "Czy mój czytnik wie, w jakim kodowaniu jest plik, czy zgaduje?",

@@ -307,6 +307,19 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A preset for unusual file names: `filename-handling`.** It answers "will
+  my system store, show and give back a file name it did not expect?" with
+  fifty names in seven groups: scripts from Polish to Korean, names that look
+  like other names, leading spaces and dots, shell and SQL metacharacters,
+  names that mean something to a web server or a desktop, names read as
+  values, and names at the length limits. Every one is written byte for byte
+  on Windows, Linux and macOS - measured on NTFS, ext4 and APFS. On another
+  file system a name may be refused, and the run then ends with code 8 and
+  names it. The files are `txt` unless `--format` says otherwise, and the
+  names about length count the format's extension in. Four names are
+  expected to be accepted, the rest are left to your system's policy with a
+  reason.
+
 - **Every format has its full name.** `tfg formats` has a `NAME` column
   (`jxl` is JPEG XL, `png` Portable Network Graphics), `tfg formats jxl`
   gives it on a `name` line, and `tfg formats --json` carries it under the new
@@ -506,6 +519,32 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **A report shows a character nobody can see in a file name as an escape.**
+  `verify`, `cleanup`, the notes of a run, every error message and the
+  refusals in the window printed such a character as it was, in a file name
+  and in the name of a folder. A right to left override then made the terminal draw
+  another name than the one on the disk, and a zero width space made two
+  names look the same. Such a character is printed as an escape now, such as
+  `\u202e` for a right to left override. A name without one is printed
+  as before. The manifest and every `--json` report still carry the
+  exact name.
+
+- **A recipe the tool writes shows a character nobody can see as an escape.**
+  `tfg preset eject` wrote a right to left override, a zero width space or a
+  line separator into the recipe as it was, so the file read as something
+  other than what it held, and a YAML 1.1 reader such as PyYAML refused it at
+  the line separator. Such a value is written in double quotes now, with the
+  character as an escape that every YAML reader turns back into the same
+  character. Every other value is written as before. A run started in the
+  window records a different recipe hash only when a value holds such a
+  character.
+
+- **A space from outside ASCII at the start or the end of a recipe value is
+  kept.** A file name beginning with an ideographic space or a no break space
+  lost it, and the file was written under a different name than the recipe
+  asked for, with nothing said. A plain space or a tab at the ends of an
+  unquoted value is still not part of it, as in any YAML file.
 
 - **A file name from 238 to 255 bytes long is written.** Every system stores
   such a name, and none of them got one: each file is written under a longer

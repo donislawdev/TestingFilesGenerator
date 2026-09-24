@@ -467,9 +467,9 @@ func (n *noteGroups) add(detail, name string) {
 // to make the large case better.
 func (g *noteGroup) line(detail string) string {
 	if g.count == 1 {
-		return fmt.Sprintf("%s: %s", g.first[0], detail)
+		return fmt.Sprintf("%s: %s", core.Shown(g.first[0]), detail)
 	}
-	named := strings.Join(g.first, ", ")
+	named := strings.Join(core.ShownEach(g.first), ", ")
 	if hidden := g.count - len(g.first); hidden > 0 {
 		return fmt.Sprintf("%s: %s Named: %s. %s not named here.",
 			core.Count(g.count, "file", "files"), detail, named,

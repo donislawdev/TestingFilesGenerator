@@ -70,7 +70,7 @@ Flags:
 		dir = filepath.Dir(path)
 	}
 	if info, statErr := os.Stat(dir); statErr != nil || !info.IsDir() {
-		fmt.Fprintf(errOut, "tfg: cannot read the directory %s. Check the path and that you have permission to read it.\n", dir)
+		fmt.Fprintf(errOut, "tfg: cannot read the directory %s. Check the path and that you have permission to read it.\n", core.Shown(dir))
 		return ExitIO
 	}
 
@@ -150,7 +150,7 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 	}
 
 	if wrong > 0 {
-		fmt.Fprintf(errOut, "tfg: %s does not match %s - %s:\n", dir, path, core.Count(wrong, "difference", "differences"))
+		fmt.Fprintf(errOut, "tfg: %s does not match %s - %s:\n", core.Shown(dir), core.Shown(path), core.Count(wrong, "difference", "differences"))
 		echoMismatches(diffs, errOut)
 		echoOtherRuns(diffs, errOut)
 		return ExitVerify
@@ -160,11 +160,11 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 	// "everything is fine" about zero files invites somebody to trust a run
 	// that never happened.
 	if claimed == 0 {
-		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", path)
+		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", core.Shown(path))
 		echoOtherRuns(diffs, errOut)
 		return ExitOK
 	}
-	fmt.Fprintf(out, "%s matches %s: %s checked\n", dir, path, core.Count(claimed, "file", "files"))
+	fmt.Fprintf(out, "%s matches %s: %s checked\n", core.Shown(dir), core.Shown(path), core.Count(claimed, "file", "files"))
 	echoOtherRuns(diffs, errOut)
 	return ExitOK
 }
@@ -215,11 +215,11 @@ func echoOtherRuns(diffs []audit.Difference, errOut io.Writer) {
 	for _, name := range names {
 		files := byRecord[name]
 		if len(files) == 0 {
-			fmt.Fprintf(errOut, "note: %s is another run's record, and nothing else here belongs to it.\n", name)
+			fmt.Fprintf(errOut, "note: %s is another run's record, and nothing else here belongs to it.\n", core.Shown(name))
 			continue
 		}
 		fmt.Fprintf(errOut, "note: %s is another run's record. %s here %s to it: %s.\n",
-			name, core.Count(len(files), "file", "files"), belongs(len(files)), someOf(files))
+			core.Shown(name), core.Count(len(files), "file", "files"), belongs(len(files)), someOf(files))
 	}
 }
 
@@ -249,6 +249,7 @@ func groupedByRecord(diffs []audit.Difference) map[string][]string {
 
 // someOf names the first few and counts the rest.
 func someOf(names []string) string {
+	names = core.ShownEach(names)
 	if len(names) <= otherRunExamples {
 		return strings.Join(names, ", ")
 	}

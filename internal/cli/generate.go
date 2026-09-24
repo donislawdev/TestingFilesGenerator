@@ -564,7 +564,7 @@ func echoBoundaries(targets []engine.Target, planned []engine.PlannedFile, errOu
 		fmt.Fprintf(errOut, "boundary %q around %s:\n", t.ID, core.ExactBytes(t.BoundaryLimit))
 		for _, f := range planned {
 			if f.Target == t {
-				fmt.Fprintf(errOut, "  %-26s %s\n", f.Name, core.ExactBytes(f.Plan.Bytes))
+				fmt.Fprintf(errOut, "  %-26s %s\n", core.Shown(f.Name), core.ExactBytes(f.Plan.Bytes))
 			}
 		}
 
@@ -656,7 +656,7 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 	// way is a chance for the saver and the claim to mean different files.
 	path := engine.ManifestPath(opt)
 	if err := res.Manifest.Save(path); err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", path, describeError(err))
+		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", core.Shown(path), describeError(err))
 		// What that leaves behind, because the line above is about the manifest
 		// and the person's problem is the files. Rule 6: a run that wrote files
 		// nothing can remove says so rather than leaving it to be discovered by
@@ -667,10 +667,10 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 		if n := len(res.Manifest.Files); n > 0 {
 			fmt.Fprintf(errOut,
 				"tfg: %s written and nothing to record what this run left. Cleanup works from a manifest, so clearing %s is a job by hand.\n",
-				core.Count(n, "file", "files"), opt.OutDir)
+				core.Count(n, "file", "files"), core.Shown(opt.OutDir))
 		}
 		return ExitIO
 	}
-	fmt.Fprintf(errOut, "manifest: %s\n", path)
+	fmt.Fprintf(errOut, "manifest: %s\n", core.Shown(path))
 	return ExitOK
 }

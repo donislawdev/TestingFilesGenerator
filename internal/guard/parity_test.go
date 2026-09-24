@@ -87,6 +87,13 @@ var reachableFromTheWindow = []string{
 	"preset:upload-validation.far-over",
 	"preset:upload-validation.bulk",
 
+	// The preset of unusual file names, 2026-09-24, and the global flag it
+	// gives txt to. Run from the screen by
+	// TestThePresetScreenWritesTheNamesTheCommandLineWrites, and the menu's
+	// first value asked by TestEveryFlagAPresetReadsDefaultsToOneValueOnBothSurfaces.
+	"preset:filename-handling",
+	"preset:filename-handling.format",
+
 	// A recipe that builds on a preset, since 2026-09-22: the switch and the
 	// menu on the batch screen are the extends key, and the chosen preset's
 	// parameters under it are the with section, drawn from the declaration
