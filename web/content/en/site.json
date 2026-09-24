@@ -56,6 +56,7 @@
     "ctaSource": "View the source",
     "ctaNote": "Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning.",
     "colFormat": "Format",
+    "colName": "Name",
     "colExtension": "Extension",
     "colSmallest": "Smallest file",
     "colFidelity": "Fidelity",

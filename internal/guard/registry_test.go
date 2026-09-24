@@ -32,6 +32,7 @@ func TestEveryFormatDeclaresTheFullSet(t *testing.T) {
 			if d.ID == "" {
 				t.Error("no id")
 			}
+			nameShowsAsItIs(t, d.Name)
 			if !strings.HasPrefix(d.Extension, ".") {
 				t.Errorf("extension %q does not start with a dot", d.Extension)
 			}
@@ -88,6 +89,35 @@ func TestEveryFormatDeclaresTheFullSet(t *testing.T) {
 				t.Error("no generator version - the manifest needs it to explain a hash mismatch after an upgrade")
 			}
 		})
+	}
+}
+
+// nameShowsAsItIs asks what a format's name has to be to be shown: present,
+// because an empty one would leave a row in the window with a gap where the
+// name goes and a column of the format table blank, and printable as it is.
+//
+// ASCII because "tfg formats" prints it and the command line is ASCII
+// (asciiRequired), and that also keeps lowering it the same length, which is
+// what lets the window mark the typed letters in bold. The punctuation rule
+// because it is text a person reads, and the gate that enforces the rule reads
+// string literals only in the command line packages - the names live in the
+// format packages, where it never looks.
+func nameShowsAsItIs(t *testing.T, name string) {
+	t.Helper()
+	if name == "" {
+		t.Error("no name - the window and \"tfg formats\" show one beside every identifier")
+		return
+	}
+	if strings.TrimSpace(name) != name {
+		t.Errorf("the name %q has space at an edge, which the columns it stands in would show", name)
+	}
+	for _, r := range name {
+		if r < ' ' || r > '~' {
+			t.Errorf("the name %q holds %q, and the command line prints only ASCII", name, r)
+		}
+	}
+	for _, fault := range proseFaults(name, false) {
+		t.Errorf("the name %q holds %s", name, fault)
 	}
 }
 

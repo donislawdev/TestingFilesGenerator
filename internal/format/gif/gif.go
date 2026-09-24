@@ -101,6 +101,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "gif",
+		Name:        "Graphics Interchange Format",
 		Extension:   ".gif",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

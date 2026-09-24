@@ -79,6 +79,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "webp",
+		Name:        "WebP",
 		Extension:   ".webp",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

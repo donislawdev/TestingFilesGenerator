@@ -65,6 +65,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "xlsx",
+		Name:        "Excel (Office Open XML)",
 		Extension:   ".xlsx",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

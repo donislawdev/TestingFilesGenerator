@@ -103,6 +103,7 @@ func fixedWidth(d dialect) int64 {
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "csv",
+		Name:        "Comma-Separated Values",
 		Extension:   ".csv",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

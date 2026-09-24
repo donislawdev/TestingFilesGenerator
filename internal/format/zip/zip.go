@@ -61,6 +61,7 @@ var fixedTime = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "zip",
+		Name:        "ZIP",
 		Extension:   ".zip",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

@@ -93,6 +93,7 @@ var fixedTime = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "targz",
+		Name:        "tar + gzip",
 		Extension:   ".tar.gz",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

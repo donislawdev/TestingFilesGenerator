@@ -58,6 +58,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "ico",
+		Name:        "Windows Icon",
 		Extension:   ".ico",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

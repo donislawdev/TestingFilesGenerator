@@ -54,6 +54,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "pptx",
+		Name:        "PowerPoint (Office Open XML)",
 		Extension:   ".pptx",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

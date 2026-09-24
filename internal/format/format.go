@@ -287,7 +287,21 @@ func (j JointLimit) per() int64 {
 // Descriptor is everything a format announces about itself. A format missing
 // any of it fails the registry test rather than shipping half implemented.
 type Descriptor struct {
-	ID               string
+	ID string
+
+	// Name is what the format is called where it is known by a name - JPEG XL
+	// for jxl, Portable Network Graphics for png - so that somebody who does
+	// not recognise the identifier can still find the format. A proper name,
+	// in English and never translated, which is why it can live here rather
+	// than in a language file. It is shown beside the identifier and never
+	// replaces it: the identifier is what a recipe and a manifest carry.
+	//
+	// Nothing written into a file, a manifest or a recipe reads it, so adding
+	// or rewording one changes no byte a run produces (D11). The one place it
+	// is a contract is the "name" key of "tfg formats --json", added on
+	// 2026-09-24 as a widening. Recorded in docs/FORMAT-NAMES-2026-09-24.md.
+	Name string
+
 	Extension        string
 	Fidelity         Fidelity
 	Determinism      Determinism

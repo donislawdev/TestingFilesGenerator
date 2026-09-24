@@ -106,6 +106,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "avif",
+		Name:        "AV1 Image File Format",
 		Extension:   ".avif",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

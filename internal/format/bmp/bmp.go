@@ -59,6 +59,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "bmp",
+		Name:        "Windows Bitmap",
 		Extension:   ".bmp",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

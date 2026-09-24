@@ -44,6 +44,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "md",
+		Name:        "Markdown",
 		Extension:   ".md",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

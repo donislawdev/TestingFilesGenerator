@@ -48,6 +48,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "log",
+		Name:        "Server and application log",
 		Extension:   ".log",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

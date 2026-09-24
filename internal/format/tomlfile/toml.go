@@ -73,6 +73,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "toml",
+		Name:        "TOML",
 		Extension:   ".toml",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,

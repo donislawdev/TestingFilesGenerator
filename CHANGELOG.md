@@ -282,6 +282,13 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Every format has its full name.** `tfg formats` has a `NAME` column
+  (`jxl` is JPEG XL, `png` Portable Network Graphics), `tfg formats jxl`
+  gives it on a `name` line, and `tfg formats --json` carries it under the new
+  key `name`. No key already there changes, and no generated file changes.
+  The formats table on the website has the same column. Names are proper
+  names and stay in English on every page.
+
 - **The window says where the manifest went, and opens it.** A finished run
   used to say `3 files written.` and nothing else, while the same run from the
   command line printed the path of the manifest beside the count. The line now

@@ -86,6 +86,7 @@ const (
 func init() {
 	format.Register(format.Descriptor{
 		ID:          "xml",
+		Name:        "Extensible Markup Language",
 		Extension:   ".xml",
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
