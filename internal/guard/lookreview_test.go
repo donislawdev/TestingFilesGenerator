@@ -131,6 +131,43 @@ func TestTheBarsRailStandsOnTheFormsLeftEdge(t *testing.T) {
 	}
 }
 
+// TestABarAtItsNarrowestHoldsTheRailAndTheButtonsSideBySide lays an action bar
+// out alone at the width it asks for, and reads the rail and the run buttons.
+//
+// Alone, because on a screen the form under the bar is wider than the bar
+// needs - measured on 2026-09-24, the smallest window is 501 px and the form
+// decides it - so a bar that asked for too little would still be laid out wide
+// enough, and a guard of the screen would pass while the bar's own arithmetic
+// was wrong. Since the run buttons give way to the right of centre rather than
+// widening the bar, the bar's least width is the rail, a gap and the buttons
+// once, and at that width the buttons stand clear of the rail and inside the
+// bar.
+func TestABarAtItsNarrowestHoldsTheRailAndTheButtonsSideBySide(t *testing.T) {
+	ourTheme(t)
+	rail := container.NewHBox(parts.NewButton(parts.Quiet, "Donate", func() {}).WithHeart().InTheBar())
+	preview := parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar()
+	generate := parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()
+	bar := parts.ActionBar(rail, parts.ButtonRow(preview, generate))
+	w := test.NewTempWindow(t, container.NewWithoutLayout(bar))
+	least := bar.MinSize()
+	bar.Resize(least)
+	w.Resize(least.Add(fyne.NewSquareSize(40)))
+
+	drv := fyne.CurrentApp().Driver()
+	barLeft := drv.AbsolutePositionForObject(bar).X
+	railEnds := drv.AbsolutePositionForObject(rail).X + rail.MinSize().Width
+	rowStarts := drv.AbsolutePositionForObject(preview).X
+	rowEnds := drv.AbsolutePositionForObject(generate).X + generate.Size().Width
+	if rowStarts < railEnds {
+		t.Errorf("at its least width of %.1f px the bar's run buttons start at x=%.1f, under a rail that ends at x=%.1f",
+			least.Width, rowStarts, railEnds)
+	}
+	if rowEnds > barLeft+least.Width {
+		t.Errorf("at its least width of %.1f px the bar's run buttons end at x=%.1f, past its right edge at x=%.1f",
+			least.Width, rowEnds, barLeft+least.Width)
+	}
+}
+
 // pixelsNear counts the pixels of a picture within a small distance of one
 // colour - the edge of a shape is blended, its middle is the colour itself.
 func pixelsNear(picture image.Image, want color.Color) int {
