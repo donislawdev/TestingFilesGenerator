@@ -39,7 +39,8 @@ func init() {
 				Detail:  "How far either side of the limit to reach, as a list of sizes.",
 			},
 		},
-		Reads: []string{"format"},
+		Reads:        []string{"format"},
+		ReadDefaults: map[string]string{"format": defaultFormat},
 
 		SaidWhenDefaulted: map[string]string{
 			"limit": "no limit was given, so this set is built around " + defaultLimitText +

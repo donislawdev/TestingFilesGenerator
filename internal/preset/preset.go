@@ -57,6 +57,20 @@ type Preset struct {
 	// that is not there.
 	Reads []string
 
+	// ReadDefaults is the value this preset gives each flag in Reads when the
+	// caller leaves it out, keyed by the flag's name. Register refuses a name
+	// in Reads without one.
+	//
+	// Declared here since 2026-09-24, when a second preset came to read
+	// --format with a default of its own. Until then the window took the
+	// default from Global, which knew only the pdf of size-boundaries, so the
+	// preset of unusual file names would have made text files from the command
+	// line and PDFs from the window - one preset, two sets (D1). Expand applies
+	// the default itself, and
+	// TestEveryFlagAPresetReadsDefaultsToOneValueOnBothSurfaces holds the two
+	// together.
+	ReadDefaults map[string]string
+
 	// Landing marks the preset a surface opens on before anybody has chosen
 	// one. Exactly one preset sets it, and Register refuses a second.
 	//
@@ -188,10 +202,8 @@ func (p Preset) Check(args Args) error {
 // is a property of the build and registration order between two packages is not
 // something to rely on.
 //
-// The default is the one the presets in this package use. That is true today
-// with one preset and it is a coupling rather than a design: a second preset
-// reading --format with a different default has to turn this into something the
-// preset declares, and the constant it points at is the one place to notice.
+// No default here. Which value stands in when nobody gives one belongs to the
+// preset reading the flag - ReadDefaults - and Globals puts it in.
 func Global(name string) (format.Property, bool) {
 	switch name {
 	case "format":
@@ -199,7 +211,6 @@ func Global(name string) (format.Property, bool) {
 			Name:    "format",
 			Kind:    format.PropertyChoice,
 			Choices: format.IDs(),
-			Default: defaultFormat,
 			Detail:  "What kind of file the whole set is made of.",
 		}, true
 	}
@@ -216,6 +227,7 @@ func (p Preset) Globals() []format.Property {
 	out := make([]format.Property, 0, len(p.Reads))
 	for _, name := range p.Reads {
 		if declared, ok := Global(name); ok {
+			declared.Default = p.ReadDefaults[name]
 			out = append(out, declared)
 		}
 	}
@@ -384,6 +396,11 @@ func Register(p Preset) {
 			panic(fmt.Sprintf("preset: %s and %s both open the window, and only one can", first, p.ID))
 		}
 		landing = p.ID
+	}
+	for _, name := range p.Reads {
+		if p.ReadDefaults[name] == "" {
+			panic(fmt.Sprintf("preset: %s reads --%s and gives it no default", p.ID, name))
+		}
 	}
 	// A parameter IS a format.Property, so a closed set of values is put in the
 	// same order here as it is over there. One rule for both, in the place each
