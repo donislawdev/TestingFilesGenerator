@@ -686,6 +686,13 @@ jobs:
         # go.mod is watched as well. A toolchain or dependency change can alter
         # what the detector sees even when none of our own lines moved.
         #
+        # So is this file, since 2026-09-24 and the owner's decision. A change
+        # to the race job itself used to leave it skipped, so the first run of
+        # a new definition was the weekly sweep, days after it merged. And so
+        # is .github/build-tags, which every command of the job reads and which
+        # decides the files it compiles - the same reason as go.mod, named by
+        # an outside review of the pull request that split the job.
+        #
         # Anything unclear counts as touched. A first push, a branch with no
         # comparable parent, a pull request event with no before - all answer
         # true, because the cost of running the detector when it was not needed
@@ -693,7 +700,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go go.mod'
+          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go go.mod .github/workflows/ci.yml .github/build-tags'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because
@@ -727,7 +734,7 @@ jobs:
         shell: bash
 
   race:
-    name: race detector
+    name: race detector (part ${{ strategy.job-index }} of ${{ strategy.job-total }})
     needs: touched
     # Not on every push, decided on 2026-08-20 after the owner asked what it was
     # costing. Measured that day: 10m31s on the runner, against about a minute
@@ -735,21 +742,45 @@ jobs:
     # of ten, on every push, including the ones that only touched a document.
     #
     # What makes that safe to change rather than a corner cut: concurrency in
-    # this tree is confined to three files by a guard that fails if a fourth
+    # this tree is confined to the files declared in
+    # internal/guard/concurrency_test.go, by a guard that fails if another one
     # grows a goroutine. A push that does not touch them cannot introduce a race
     # for this to find, so running it there bought nothing.
     #
-    # Three ways in now. A push that touches one of those files, the weekly
-    # sweep that fuzzing already uses, and by hand. The weekly run is what
-    # catches a race that arrives through a dependency rather than through us.
+    # Three ways in now. A push that touches one of those files or this
+    # workflow, the weekly sweep that fuzzing already uses, and by hand. The
+    # weekly run is what catches a race that arrives through a dependency
+    # rather than through us.
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       needs.touched.outputs.concurrency == 'true'
     runs-on: ubuntu-latest
-    # Raised from 30 on 2026-08-31, with the Go timeout below, and the reason is
-    # measured rather than "it went red". See that step for the numbers.
-    timeout-minutes: 45
+    # Four parts since 2026-09-24, the owner's decision. The whole package under
+    # the detector took 32 to 42 minutes, and six of the twelve runs on
+    # 2026-09-23 and 2026-09-24 were killed at the ceiling with no data race in
+    # their logs. Both ceilings had been raised once already, on 2026-08-31 -
+    # the job's from 30 to 45 minutes and Go's from 25 to 40 - for the same
+    # reason, and a problem that keeps coming back is the wrong shape rather
+    # than a missing notch. The guards run one after another - none calls
+    # t.Parallel - so four processes share the time between them, and every
+    # test still runs under the detector once, in one of them.
+    #
+    # Every part reports. One red part does not cancel the others, whose tests
+    # would then go unrun.
+    #
+    # The ceiling is the sum of the limits inside it, with room left over, so
+    # that each of them fires first and names what was slow: about four minutes
+    # to set up and compile (the compile alone took 3m03s on the first run),
+    # twenty for the guards, five for the other packages. Measured on the first
+    # run, split by a sorted list: 677, 635, 164 and 154 s of guards in the
+    # four parts, 14m55s for the longest part. The two slowest guards take 329
+    # and 222 s, and wherever they land together, that part is the slow one.
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3]
+    timeout-minutes: 35
     env:
       # The one thing in this project that needs a C toolchain. Linux runners
       # ship one, so this job carries the cost and the matrix above stays on
@@ -781,50 +812,97 @@ jobs:
           sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
         shell: bash
 
-      - name: test under the race detector
+      - name: test this part under the race detector
         # A data race is the one defect class here that nothing else notices. It
         # does not change a size, and on the run that happens to interleave the
         # safe way it does not change a byte either - so determinism and the
         # pinned values both stay green while the file is wrong once a month on
-        # somebody else's machine.
+        # somebody else's machine. The guard that keeps concurrency confined to
+        # the declared files lives in internal/guard, so this and that one
+        # answer different halves of the same worry.
         #
-        # Measured on 2026-08-02: 31 s without, 148 s with, and zero races found
-        # in the tree as it stands. The guard that keeps concurrency confined to
-        # two files lives in internal/guard, so this and that one answer
-        # different halves of the same worry.
+        # Which tests are this part's is worked out here, from the test binary,
+        # rather than written down. A list kept by hand would miss the next
+        # guard somebody adds, and miss it green. The list is asked with -race,
+        # because a file in the package builds only without it, and it keeps
+        # Fuzz and Example because go test runs those as tests too.
         #
-        # The timeout is stated rather than left to Go, since 2026-08-25. Go
-        # allows ten minutes PER PACKAGE by default, the job above allows thirty
-        # for all of it, and internal/guard went past the first of those without
-        # coming near the second - so the run died on a limit nobody had chosen,
-        # in a test that happened to be running when the alarm went off, with a
-        # stack trace instead of a failure. The number in the comment above this
-        # job says it was 10m31s on 2026-08-20, which is how close to the line it
-        # already was.
+        # A test's part is the checksum of its name (cksum) modulo the number
+        # of parts, so adding or removing a test moves no other test. It was
+        # every fourth name of a sorted list at first, and one guard added on
+        # this job's own pull request moved every name after it - the part
+        # holding the slowest guards changed from one commit to the next. The
+        # parts are even only on average, and which one is slow now changes only
+        # with what is in it.
         #
-        # Race instrumentation costs five to twenty times the wall clock, and
-        # this package renders twenty five screens and builds two binaries. The
-        # job's own ceiling is the one that means something, and this number
-        # stays below it so a slow run fails as a test rather than as a killed
-        # job with no output.
+        # Three things fail the part rather than let it pass on nothing -
+        # go test with a -run pattern that matches no test exits 0. An index the
+        # matrix does not agree with (the documentation does not say that
+        # job-index counts from nought, so this asks), a part given no test,
+        # and a part that never started a test it was given. That last one
+        # compares names rather than counts, so a stray line that looks like
+        # a start cannot stand in for a test that did not run.
         #
-        # Both were raised on 2026-08-31, from 25m under a 30m job. Not because
-        # a run went red, but because the margin had already gone and the reds
-        # were the symptom. Measured on the runner across four consecutive runs:
-        # 21m35s on main before JPEG XL, a timeout on the JPEG XL branch, 20m15s
-        # on main after it merged, and a timeout on the dependency bump. Two out
-        # of four, with no data race reported in any of them - a limit that
-        # decides on how busy the runner is tells you nothing about the code.
+        # The timeout is stated rather than left to Go's ten minutes a package,
+        # and stays below the job's ceiling, so a slow part fails as a test with
+        # a name rather than as a killed job with no output. Go's ten minutes
+        # killed this job on 2026-08-25, before a timeout was stated here.
+        # Twenty minutes is 1.8 times the slowest part measured.
+        env:
+          PART: ${{ strategy.job-index }}
+          PARTS: ${{ strategy.job-total }}
+          LISTED: ${{ matrix.part }}
+        run: |
+          set -euo pipefail
+          if [ "$PART" != "$LISTED" ] || [ "$PART" -ge "$PARTS" ]; then
+            echo "job $PART of $PARTS is part $LISTED in the matrix, and the split needs the two equal and below the total."
+            echo "List strategy.matrix.part as 0, 1, 2 and on, in order, and check the context names in this step's env."
+            exit 1
+          fi
+          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -race -list '.*' > listed.txt || { cat listed.txt; exit 1; }
+          grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no Test, Fuzz or Example function. What it printed:"; cat listed.txt; exit 1; }
+          while IFS= read -r name; do
+            read -r sum _ < <(printf '%s' "$name" | cksum)
+            if [ $((sum % PARTS)) -eq "$PART" ]; then
+              echo "$name"
+            fi
+          done < names.txt > mine.txt
+          planned=$(wc -l < mine.txt)
+          echo "part $PART of $PARTS runs $planned of $(wc -l < names.txt) tests"
+          if [ "$planned" -eq 0 ]; then
+            echo "part $PART of $PARTS was given no test - the checksum of no listed name lands here."
+            echo "With this few tests, use fewer parts in strategy.matrix.part."
+            exit 1
+          fi
+          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
+          missing=$(comm -23 <(sort mine.txt) <(sed -n 's/^=== RUN   \([^/]*\)$/\1/p' part.log | sort -u))
+          if [ -n "$missing" ]; then
+            echo "part $PART was given $planned tests and never ran these:"
+            echo "$missing"
+            echo "Each of these is a name the -run pattern did not reach, or a test the binary skipped before it started."
+            exit 1
+          fi
+        shell: bash
+
+      - name: the other packages under the race detector
+        # Every package outside internal/guard, in part 0 alone. None holds a
+        # test today - the first run took one second for all of them - and one
+        # written there has to reach the detector as well.
         #
-        # 21m35s against 25m was never a margin, and that predates JPEG XL. What
-        # this package holds now is twenty four formats, two of them running a
-        # borrowed encoder, twenty five screens and two binaries, and the 25m
-        # was chosen when it held less. The cheap half of the answer is in
-        # internal/guard/jxlladder_test.go, which stopped spending the budget on
-        # arithmetic that finds no races - 102s to 54s under -race. This is the
-        # other half: the ceiling now matches the work rather than the work
-        # being shaved to fit a ceiling nobody remeasured.
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -race -timeout 40m
+        # A step of its own with a ceiling of its own, rather than a second
+        # command after the guards. Go's -timeout holds one test binary, so two
+        # commands in one step add up under nothing but the job's ceiling, and
+        # the job would be killed past it with no name in the log - an outside
+        # review of the pull request that split the job. Runs after red guards
+        # as well, so its answer is not lost with theirs.
+        if: ${{ !cancelled() && matrix.part == 0 }}
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
+          mapfile -t others < others.txt
+          go test -tags "$(cat .github/build-tags)" -count=1 -race -timeout 4m "${others[@]}"
+        shell: bash
 
   coverage:
     name: coverage gate
