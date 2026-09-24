@@ -32,6 +32,9 @@ import (
 // means saying out loud that a guard is unproven. The list should only ever get
 // shorter.
 var notProvenByMutation = map[string]bool{
+	// A data race on purpose, to see one part of the race job go red. It has
+	// no line of ours to break and is reverted before merging.
+	"TestADataRaceOnPurposeForTheRaceJob": true,
 	// A directory entry costs one tar block and nothing more.
 	//
 	// There is no line of ours under this one to break. It asserts what
