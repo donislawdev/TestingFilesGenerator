@@ -50,7 +50,10 @@ const (
 	// Lowered from 433 on 2026-09-09: the tfg preset command moved out of
 	// preset.go into presetcmd.go, leaving the machinery behind generate
 	// --preset on its own. The longest file is engine.go again.
-	longestFile = 408
+	// Lowered from 408 on 2026-09-24: the rules a file name has to pass moved
+	// out of engine.go into filename.go when the length rule (O239) took it
+	// past the ceiling. The longest file is cli/generate.go now.
+	longestFile = 407
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

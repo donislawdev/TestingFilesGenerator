@@ -91,7 +91,9 @@ const MaxPlanBytes = 2 << 30
 // Every file goes out under a temporary name and is renamed into place, so the
 // output directory never holds a half written file. The full name is
 // "<final>.tfg-partial-<process id>", with the process id there because two
-// runs writing into one directory used to meet on the temporary file.
+// runs writing into one directory used to meet on the temporary file. A final
+// name too long for that to fit in MaxNameBytes is shortened in front of the
+// marker, never after it - SiblingName, since 2026-09-24 (O239).
 //
 // The marker is declared here rather than built at the point of use, because
 // two parts of the tool have to agree on it: the engine writes it, and the
@@ -124,7 +126,8 @@ func IsPartialName(name string) bool {
 // somebody - the manifest being rewritten over an earlier one, or the recipe
 // that "recipe fmt -w" is formatting in place. The full name is
 // "<final>.tfg-writing", with no process id, because the name is claimed
-// exclusively rather than made unique.
+// exclusively rather than made unique. Shortened in front of the marker the
+// same way when it would not fit, by SiblingPath.
 //
 // Declared here beside PartialMarker on 2026-09-06, and the argument for it is
 // the one already written above: two parts of the tool have to agree on the

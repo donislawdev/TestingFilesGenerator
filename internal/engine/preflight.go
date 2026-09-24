@@ -189,8 +189,12 @@ func tempPathFor(outDir, name string) string {
 // tempNameFor is that name without the directory in front of it, which is what
 // a directory listing gives back. Split out so the listing and the path cannot
 // disagree about how the temporary name is spelt.
+//
+// core.SiblingName rather than a plain join since 2026-09-24: the join made a
+// name from 238 bytes up too long for any file system in its temporary form,
+// so a legal name was never written (O239).
 func tempNameFor(name string) string {
-	return fmt.Sprintf("%s%s%d", name, core.PartialMarker, os.Getpid())
+	return core.SiblingName(name, fmt.Sprintf("%s%d", core.PartialMarker, os.Getpid()))
 }
 
 func exists(path string) bool {
