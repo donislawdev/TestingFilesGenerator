@@ -199,6 +199,12 @@ type runner struct {
 	// the real one, so the run says which number it made up. The command line
 	// prints these as "note:" lines and this is the window's half of it.
 	notes []string
+
+	// touched is told at every reading of the form - see watchedSettle - so
+	// that the window gives memory back once it has been left alone. Every
+	// change somebody makes and every run reads the form. Nil on a screen
+	// built on its own. See tidy.go.
+	touched func()
 }
 
 // Fields is every box on this screen, for a guard to compare against the tree.

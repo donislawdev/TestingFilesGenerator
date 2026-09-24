@@ -162,7 +162,7 @@ type content struct {
 // also what the single batch screen shows, so the two read as one tool.
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	r := &Recipe{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
-	r.runner.settle = countedSettle(host, r.settle)
+	r.runner.settle = watchedSettle(host, r.runner, r.settle)
 	r.runner.offer.through(host)
 	// A refusal about a size belongs on the box the switch is showing.
 	r.runner.readdress = r.readdressSizeWay

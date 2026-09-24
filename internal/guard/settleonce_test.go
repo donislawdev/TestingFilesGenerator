@@ -57,7 +57,7 @@ func TestOneChangeOfABoxReadsTheFormOnce(t *testing.T) {
 			switch {
 			case host.settles == 0:
 				t.Fatalf("typing %q into %q on the %s screen told the host of no reading of the form - "+
-					"either the box reports no change or the screen reads its form without countedSettle, and this guard sees nothing either way",
+					"either the box reports no change or the screen reads its form without watchedSettle, and this guard sees nothing either way",
 					v, b.at, b.screen)
 			case host.settles > 1:
 				t.Errorf("typing %q into %q on the %s screen read the form %d times, expected once - "+

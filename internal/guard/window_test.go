@@ -98,7 +98,68 @@ type fakeHost struct {
 	// settles and expansions count what Settling and ExpandingPreset were told.
 	settles    int
 	expansions int
+
+	// quiet is the clock the window waits out its quiet on, when a guard holds
+	// it - see QuietLater. Nil means the wait never ends, and releases counts
+	// the times the window gave memory back.
+	quiet    *quietClock
+	releases int
 }
+
+// quietClock keeps every request for later, each with whether it was called
+// off - a list rather than one slot, because what the guard asks is whether a
+// request already waiting was taken back when something happened.
+type quietClock struct {
+	pending []*quietRequest
+	asked   int
+}
+
+type quietRequest struct {
+	after     time.Duration
+	then      func()
+	calledOff bool
+}
+
+// fireAll runs every request waiting that was not called off, in the order
+// they were asked for, and forgets them. What they ask for while running
+// waits for the next call.
+func (c *quietClock) fireAll() {
+	due := c.pending
+	c.pending = nil
+	for _, r := range due {
+		if !r.calledOff {
+			r.then()
+		}
+	}
+}
+
+// waiting is the requests not called off.
+func (c *quietClock) waiting() []*quietRequest {
+	var out []*quietRequest
+	for _, r := range c.pending {
+		if !r.calledOff {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// QuietLater is the window's clock for waiting out its quiet (tidy.go), kept
+// apart from Later so that a request asked for on every key cannot take the
+// place of the busy face a guard is holding. Never fires unless a guard holds
+// it - no guard here lasts the seventy seconds a real window waits.
+func (h *fakeHost) QuietLater(after time.Duration, then func()) func() {
+	if h.quiet == nil {
+		return func() {}
+	}
+	r := &quietRequest{after: after, then: then}
+	h.quiet.pending = append(h.quiet.pending, r)
+	h.quiet.asked++
+	return func() { r.calledOff = true }
+}
+
+// ReleasingMemory counts the window giving memory back.
+func (h *fakeHost) ReleasingMemory() { h.releases++ }
 
 // heldClock keeps what the window asked for later, so a guard can look at the
 // screen BEFORE the busy face arrives and then let it arrive.

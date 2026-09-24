@@ -494,6 +494,15 @@ because it turns other people's test suites red.
   again for each one. Both are now done once, and the window uses less memory
   while you type.
 
+- **The window gives memory back once it has been left alone.** After a
+  spell of work it used to keep about 200 MB for as long as it stood idle.
+  About a minute and a half after the last setting changed or the last press
+  of Preview or Generate, the window now gives back what it no longer uses -
+  215 MB down to 129 MB in one measurement. Scrolling does not count, and
+  while Preview or Generate is running it waits. Nothing on the screen moves
+  when it does. A minimised window gives back less, because the toolkit only
+  lets go while it draws.
+
 - **Changing a setting of a preset is about four times faster.** With
   `upload-validation`, changing one of its settings held the window for
   about 0.15 seconds, and so did every key typed on `Several batches` built

@@ -114,7 +114,10 @@ func Open(h Host) fyne.Size {
 	// on the signal handler in cmd/tfg, and closing a window is not a signal -
 	// so without this the run would carry on with nobody watching it, or die in
 	// the middle of a file.
-	closeCleanly(h, []interface{ Stop() }{gen, pre, rec}, working, &showing)
+	// One wait for quiet for the whole window, told by every screen, and
+	// stopped with them when the window closes - see tidy.go.
+	quiet := tidyWhenLeftAlone(h, gen.runner, pre.runner, rec.runner)
+	closeCleanly(h, []interface{ Stop() }{gen, pre, rec, quiet}, working, &showing)
 	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
@@ -450,30 +453,37 @@ func offerHolding(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
 	}
 }
 
-// countedSettle is a screen's reading of its form, told to a host that counts
-// the readings and handed back untouched to any other.
+// watchedSettle is a screen's reading of its form, with two things told about
+// it on the way.
 //
-// The same shape as the two above - an optional interface, checked rather than
-// required, and nothing in the shipped program implements it. It is here for a
-// number a guard cannot read off the screen: how many times one change of a
-// box read the form. It was two until 2026-09-23, once for the line and once
-// for the box, and on the preset screen every reading expanded the preset -
-// 271-295 ms of the window's thread per key for upload-validation, measured
-// in docs/GUI-MEMORY-2026-09-23.md section 4h.
-func countedSettle(h Host, settle settler) settler {
-	c, ok := h.(interface{ Settling() })
-	if !ok {
-		return settle
-	}
+// The window's wait for quiet is told, so that memory is given back only once
+// the window has been left alone - see tidy.go. Every change somebody makes and
+// every run reads the form, so this is the one place that hears all of them.
+//
+// A host that counts the readings is told as well. The same shape as the two
+// above - an optional interface, checked rather than required, and nothing in
+// the shipped program implements it. It is here for a number a guard cannot
+// read off the screen: how many times one change of a box read the form. It
+// was two until 2026-09-23, once for the line and once for the box, and on the
+// preset screen every reading expanded the preset - 271-295 ms of the
+// window's thread per key for upload-validation, measured in
+// docs/GUI-MEMORY-2026-09-23.md section 4h.
+func watchedSettle(h Host, r *runner, settle settler) settler {
+	c, counts := h.(interface{ Settling() })
 	return func() ([]engine.Target, engine.Options, error) {
-		c.Settling()
+		if counts {
+			c.Settling()
+		}
+		if r.touched != nil {
+			r.touched()
+		}
 		return settle()
 	}
 }
 
 // tellExpanding says to a host that counts them that a preset is being
 // expanded rather than taken from what the screen remembers - see
-// lastExpansion. The same kind of seam as countedSettle, for the other half
+// lastExpansion. The same kind of seam as watchedSettle, for the other half
 // of the same question.
 func tellExpanding(h Host) {
 	if c, ok := h.(interface{ ExpandingPreset() }); ok {

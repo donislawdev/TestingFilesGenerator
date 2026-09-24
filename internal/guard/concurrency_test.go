@@ -44,6 +44,18 @@ var mayBeConcurrent = map[string]string{
 	// invariant G7 exists to hold. Added 2026-08-05 with the first generate
 	// window, and the owner was told.
 	"internal/gui/window/run.go": "the run happens beside the window, and closing the window waits for it",
+	// The window's clock. time.AfterFunc calls back on a goroutine of its
+	// own, which is how a delayed piece of work - the busy face, the wait for
+	// quiet - waits without holding the window, and the callback hands its
+	// work straight to the toolkit's thread. Declared 2026-09-24, when the scan
+	// learned to see a timer's callback: it had been here since the busy face
+	// got its delay, unlisted.
+	"internal/gui/run_cgo.go": "the window's clock calls back on a timer's goroutine and hands the work to the toolkit's thread",
+	// Giving memory back beside the window rather than on its thread: one of
+	// ten FreeOSMemory calls measured on the window's thread took 2491 ms.
+	// The goroutine touches nothing of ours. Added 2026-09-24, and THE OWNER
+	// DECIDED IT - docs/GUI-MEMORY-2026-09-23.md section 4j.
+	"internal/gui/window/tidy.go": "memory is given back beside the window, so the window never waits on it",
 	// Hashing the files a manifest claims is the work verify and cleanup are
 	// made of, and it is embarrassingly parallel. Added 2026-09-05 and the
 	// owner decided it: O116 turned the same idea down on 2026-08-20 on a
@@ -95,7 +107,7 @@ func isCancellation(n ast.Node) bool {
 }
 
 func TestConcurrencyStaysWhereItWasPutOnPurpose(t *testing.T) {
-	var found []string
+	var found, idle []string
 
 	for _, p := range packages(t) {
 		for _, path := range p.files {
@@ -104,48 +116,41 @@ func TestConcurrencyStaysWhereItWasPutOnPurpose(t *testing.T) {
 				rel = path
 			}
 			rel = filepath.ToSlash(rel)
-			if _, allowed := mayBeConcurrent[rel]; allowed {
-				continue
-			}
 
 			fset := token.NewFileSet()
 			file, err := parser.ParseFile(fset, path, nil, 0)
 			if err != nil {
 				t.Fatalf("parsing %s: %v", path, err)
 			}
-
-			ast.Inspect(file, func(n ast.Node) bool {
-				if n == nil {
-					return false
+			here := concurrencyIn(fset, file)
+			if _, allowed := mayBeConcurrent[rel]; allowed {
+				if len(here) == 0 {
+					idle = append(idle, rel)
 				}
-				what := ""
-				switch node := n.(type) {
-				case *ast.GoStmt:
-					what = "starts a goroutine"
-				case *ast.ChanType:
-					what = "declares a channel"
-				case *ast.SendStmt:
-					what = "sends on a channel"
-				case *ast.SelectStmt:
-					// A select waiting only on cancellation is how every long
-					// loop here notices Ctrl+C.
-					if onlyCancellation(node) {
-						return true
-					}
-					what = "selects over channels"
-				case *ast.SelectorExpr:
-					if id, ok := node.X.(*ast.Ident); ok && (id.Name == "sync" || id.Name == "atomic") {
-						what = "uses " + id.Name + "." + node.Sel.Name
-					}
-				}
-				if what == "" {
-					return true
-				}
-				found = append(found, fmt.Sprintf("%s:%d %s",
-					rel, fset.Position(n.Pos()).Line, what))
-				return true
-			})
+				continue
+			}
+			for _, one := range here {
+				found = append(found, rel+":"+one)
+			}
 		}
+	}
+
+	// The other direction, since 2026-09-24. A file declared here that runs
+	// nothing beside anything is a declaration nobody can check - and it is
+	// how a decision gets undone quietly: the window gives memory back on a
+	// goroutine BECAUSE a call on its own thread took 2491 ms once, and taking
+	// the go statement away would leave the file declared and every guard
+	// green. A file the build leaves out on this machine is not asked. A file
+	// that is gone is, because the walk above never reaches it and a deleted
+	// file would otherwise keep its declaration and its place on the race
+	// detector's list - an outside review of the pull request named it.
+	idle = append(idle, declaredWithoutAFile(repoRoot(t), mayBeConcurrent)...)
+	if len(idle) > 0 {
+		sort.Strings(idle)
+		t.Errorf("declared as concurrent and running nothing beside anything:\n  %s\n\n"+
+			"Either the concurrency moved and the declaration should go with it, or it was taken out and\n"+
+			"the reason it was put there - written beside the declaration - no longer holds.",
+			strings.Join(idle, "\n  "))
 	}
 
 	if len(found) > 0 {
@@ -154,6 +159,127 @@ func TestConcurrencyStaysWhereItWasPutOnPurpose(t *testing.T) {
 			"Adding it somewhere new is a decision, not a detail - a race changes nothing this suite can\n"+
 			"otherwise see. Put the file in mayBeConcurrent with the reason, and say so to the owner.",
 			len(found), strings.Join(found, "\n  "))
+	}
+}
+
+// declaredWithoutAFile is every declared path with no file under root, each
+// with what the system said about it.
+func declaredWithoutAFile(root string, declared map[string]string) []string {
+	var gone []string
+	for rel := range declared {
+		if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(rel))); err != nil {
+			gone = append(gone, rel+" ("+err.Error()+")")
+		}
+	}
+	return gone
+}
+
+// A declaration whose file is gone is reported, and one whose file is there
+// is not - asked of a folder made here, because every file the tree declares
+// exists and a check that stopped looking would stay green on it.
+func TestADeclarationWhoseFileIsGoneIsReported(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "a"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "a", "here.go"), []byte("package a\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	got := declaredWithoutAFile(root, map[string]string{"a/here.go": "", "a/gone.go": ""})
+	if len(got) != 1 || !strings.HasPrefix(got[0], "a/gone.go ") {
+		t.Errorf("declared a/here.go, which exists, and a/gone.go, which does not - reported %q, expected a/gone.go alone", got)
+	}
+}
+
+// concurrencyIn is every place in one file that runs something beside the
+// code around it, as "line what".
+//
+// A timer's callback since 2026-09-24. time.AfterFunc runs the function it is
+// handed on a goroutine of its own, and this scan saw only the go statement -
+// so the window's clock, which has handed every delayed piece of work to such
+// a goroutine since the busy face got a delay, stood outside the list without
+// a word. Found while the window was taught to give memory back
+// (docs/GUI-MEMORY-2026-09-23.md section 4j), decided by the owner that day.
+func concurrencyIn(fset *token.FileSet, file *ast.File) []string {
+	var found []string
+	ast.Inspect(file, func(n ast.Node) bool {
+		if n == nil {
+			return false
+		}
+		what := ""
+		switch node := n.(type) {
+		case *ast.GoStmt:
+			what = "starts a goroutine"
+		case *ast.ChanType:
+			what = "declares a channel"
+		case *ast.SendStmt:
+			what = "sends on a channel"
+		case *ast.SelectStmt:
+			// A select waiting only on cancellation is how every long
+			// loop here notices Ctrl+C.
+			if onlyCancellation(node) {
+				return true
+			}
+			what = "selects over channels"
+		case *ast.SelectorExpr:
+			what = concurrentName(node)
+		}
+		if what == "" {
+			return true
+		}
+		found = append(found, fmt.Sprintf("%d %s", fset.Position(n.Pos()).Line, what))
+		return true
+	})
+	return found
+}
+
+// concurrentName is what a package-qualified name says about running beside
+// something, or nothing: a lock or an atomic, or a timer that calls back on
+// a goroutine of its own.
+func concurrentName(node *ast.SelectorExpr) string {
+	id, ok := node.X.(*ast.Ident)
+	if !ok {
+		return ""
+	}
+	switch {
+	case id.Name == "sync" || id.Name == "atomic":
+		return "uses " + id.Name + "." + node.Sel.Name
+	case id.Name == "time" && node.Sel.Name == "AfterFunc":
+		return "hands a callback to a timer's goroutine (time.AfterFunc)"
+	}
+	return ""
+}
+
+// The scan sees each kind of concurrency it names, asked of source written
+// here - because the tree may hold none of a kind outside the declared files,
+// and a scan that stopped seeing it would then stay green.
+func TestTheConcurrencyScanSeesEachKindItLooksFor(t *testing.T) {
+	for _, c := range []struct{ name, body string }{
+		{"a goroutine", `go f()`},
+		{"a channel", `var c chan int; _ = c`},
+		{"a lock", `var m sync.Mutex; m.Lock()`},
+		{"a timer's callback", `time.AfterFunc(0, f)`},
+	} {
+		src := "package x\nfunc f() {}\nfunc g() {\n" + c.body + "\n}\n"
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, "x.go", src, 0)
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if len(concurrencyIn(fset, file)) == 0 {
+			t.Errorf("the scan does not see %s: %s", c.name, c.body)
+		}
+	}
+	// And a name from package time that runs nothing beside anything is not
+	// reported, so the timer rule is about the callback and not the package.
+	src := "package x\nfunc g() {\n_ = time.Now()\n}\n"
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "x.go", src, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := concurrencyIn(fset, file); len(got) != 0 {
+		t.Errorf("the scan calls a plain duration concurrency: %v", got)
 	}
 }
 
