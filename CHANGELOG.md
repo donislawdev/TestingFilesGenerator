@@ -509,6 +509,10 @@ because it turns other people's test suites red.
   long as before. On the `Several batches` screen with a preset switched on,
   a key typed into a box now works the preset out once rather than twice.
 
+- **Choosing a format, switching the base or choosing a base preset on
+  `Several batches` works the form out once instead of twice.** Switching
+  the base to `upload-validation` took half as long as before.
+
 - **A preview or a run refused while it was being planned no longer leaves
   "Working out what this would cost..." standing over the refusal.**
 

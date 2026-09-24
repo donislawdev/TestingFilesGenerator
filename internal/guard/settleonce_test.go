@@ -6,6 +6,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
@@ -64,6 +65,86 @@ func TestOneChangeOfABoxReadsTheFormOnce(t *testing.T) {
 					v, b.at, b.screen, host.settles)
 			}
 		}
+	}
+}
+
+// A menu, a switch or a press that lays the batch screen out again reads the
+// form once.
+//
+// The batch screen lays itself out again when a batch's format changes, when
+// the base is switched or chosen, and when a press adds, copies or takes away
+// a batch or what an archive holds. The layout said what the form comes to,
+// and until 2026-09-24 a menu or a switch was then followed by the live check,
+// which said it again: two readings, and with a base preset two expansions -
+// switching the base to upload-validation took 278-321 ms in the real window
+// (docs/GUI-MEMORY-2026-09-23.md section 4j).
+//
+// Exactly one, for the reason the guard above gives, and it matters here in
+// the other direction too: a press is followed by no check, so nought is a
+// press after which the line under the buttons still describes the old form.
+func TestAChangeThatLaysTheBatchScreenOutAgainReadsTheFormOnce(t *testing.T) {
+	host := newFakeHost(t)
+	rec := window.NewRecipe(host)
+	body := rec.Object()
+	once := func(what string, act func()) {
+		t.Helper()
+		host.settles = 0
+		act()
+		switch {
+		case host.settles == 0:
+			t.Fatalf("%s told the host of no reading of the form - either nothing changed or the line under the buttons was not said, and this guard cannot tell which",
+				what)
+		case host.settles > 1:
+			t.Errorf("%s read the form %d times, expected once", what, host.settles)
+		}
+	}
+	press := func(name string) func() {
+		return func() {
+			t.Helper()
+			b := buttonNamed(body, name)
+			if b == nil {
+				t.Fatalf("the batch screen has no %q button, so this guard cannot press it", name)
+			}
+			b.OnTapped()
+		}
+	}
+	base := func() *parts.Chooser {
+		for _, c := range reportingControls(findField(rec.Fields(), recipe.KeyExtends).Control) {
+			if pick, is := c.(*parts.Chooser); is {
+				return pick
+			}
+		}
+		t.Fatal("the base is switched on and there is no menu of presets under it")
+		return nil
+	}
+
+	once("choosing png for the first batch", func() {
+		chooserIn(t, rec.Fields(), recipe.TargetAddress(1, recipe.KeyFormat)).SetSelected("png")
+	})
+	once("switching the base on", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(true) })
+	once("choosing text-encoding as the base", func() { base().SetSelected("text-encoding") })
+	once("switching the base off", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(false) })
+
+	once("adding a batch", press(text.ButtonAddBatch()))
+	once("duplicating a batch", press(text.ButtonDuplicateBatch()))
+	once("removing a batch", press(text.ButtonRemoveBatch()))
+	once("choosing zip for the first batch", func() {
+		chooserIn(t, rec.Fields(), recipe.TargetAddress(1, recipe.KeyFormat)).SetSelected("zip")
+	})
+	once("adding what an archive holds", press(text.ButtonAddContents()))
+	once("removing what an archive holds", press(text.ButtonRemoveContents()))
+
+	// The base switched off with no batch left, which brings a batch back and
+	// is the one way a switch and a press meet. Raised by the review of #133
+	// (docs/REVIEW-133-2026-09-24.md): the batch came back through the press's
+	// path, which says the line, and the switch's check then said it again.
+	once("switching the base on again", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(true) })
+	for findField(rec.Fields(), recipe.TargetAddress(1, recipe.KeyID)) != nil {
+		once("removing a batch with the base on", press(text.ButtonRemoveBatch()))
+	}
+	once("switching the base off with no batch left", func() { toggleIn(t, rec.Fields(), "start_from_preset").SetChecked(false) })
+	if findField(rec.Fields(), recipe.TargetAddress(1, recipe.KeyID)) == nil {
+		t.Error("the base was switched off with no batch left and no batch came back, so the screen can produce nothing")
 	}
 }
 

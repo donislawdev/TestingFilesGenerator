@@ -49,10 +49,10 @@ func newBase(r *Recipe) *base {
 	b := &base{}
 	b.on = parts.NewToggle(func(on bool) {
 		// Off with no batch left is a form that can produce nothing, so a
-		// batch comes back - the one the screen opened with.
+		// batch comes back - the one the screen opened with. What the form
+		// then comes to is said by the switch's own check, as for any switch.
 		if !on && len(r.batches) == 0 {
-			r.addBatch()
-			return
+			newBatchAtTheEnd(r)
 		}
 		r.rebuild()
 	})
