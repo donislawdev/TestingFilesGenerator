@@ -60,7 +60,7 @@ type Preset struct {
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
 	p.runner.offer.through(host)
-	p.runner.settle = countedSettle(host, p.settle)
+	p.runner.settle = watchedSettle(host, p.runner, p.settle)
 	// No readdress here, and that is the boundary of this screen rather than an
 	// omission. The other two screens draw boxes for the settings of a target,
 	// so a refusal carrying a position has a box to be moved onto. This one
