@@ -20,7 +20,8 @@ import (
 // list about a short window.
 //
 // Nor has it a width of its own. On a form the list is as wide as the box it
-// drops from, and on its own it is as wide as a row with no words, so a list
+// drops from - the list of formats wider, for the names beside its values -
+// and on its own it is as wide as a row with no words, so a list
 // stood here bare was a 42 px strip with the first letter of each value on
 // it - seen on the render of 2026-09-15, and accepted with the rest of the
 // catalogue before anybody read it at that height. Each state is drawn as
@@ -77,6 +78,7 @@ func everyFormat(typed string) fyne.CanvasObject {
 	l := parts.NewOpenList(ids, "png", func(string, bool) {}, func(bool) {})
 	l.KindOf = parts.KindOfFile
 	l.GroupUnder(parts.KindHeading)
+	l.NameEach(parts.NameOfFormat)
 	l.WithFilter()
 	l.LimitTo(parts.ListCeiling(everyFormatWindow))
 	if typed != "" {
@@ -90,12 +92,12 @@ func everyFormat(typed string) fyne.CanvasObject {
 // look. Tall enough to show a few headings and the rows under them.
 const everyFormatWindow = 640
 
-// asWideAsItsBox gives an open list the width of the menu it would drop from:
-// the box a Chooser of the same values is given by parts.Menu, which is as
-// wide as the widest value plus the arrow.
+// asWideAsItsBox gives an open list the width it is drawn at under the menu it
+// would drop from: the box a Chooser of the same values is given by
+// parts.Menu, or wider where the list needs it - the list of formats, which
+// names every value (parts.ListWidth).
 func asWideAsItsBox(values []string, list *parts.OpenList) fyne.CanvasObject {
-	box := parts.Menu(parts.NewChooser(values, func(string) {}))
-	return parts.Sized(box.MinSize().Width, list)
+	return parts.Sized(parts.ListWidth(parts.NewChooser(values, func(string) {})), list)
 }
 
 func tabs() Entry {

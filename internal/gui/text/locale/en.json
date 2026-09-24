@@ -335,7 +335,7 @@
   },
   "ListNothingMatches": {
     "description": "Shown inside an open list somebody chooses from.",
-    "other": "Nothing matches"
+    "other": "No format matches - clear the box to see all"
   },
   "ManifestNamed": {
     "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",

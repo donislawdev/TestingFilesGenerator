@@ -273,6 +273,10 @@ const (
 	// its second step now, so a row is 4 px wider than it was.
 	rowGutter = space2
 	rowGap    = space2
+	// listNameGap is the room between a value and its name in an open list
+	// whose values have names. Twice rowGap, so the name reads as a second
+	// column rather than as more words of the value.
+	listNameGap = space4
 	// filterInset is the room round the filter box at the top of an open
 	// list, so the box reads as standing inside the list rather than as a
 	// second field glued onto its top edge.

@@ -75,7 +75,7 @@ type OpenList struct {
 func NewOpenList(options []string, chosen string, take func(string, bool), close func(bool)) *OpenList {
 	l := &OpenList{active: -1, take: take, close: close,
 		listContents: listContents{options: options, chosen: chosen, view: newRowView()}}
-	l.entries = arrange(options, nil, "")
+	l.entries = arrange(options, labels{}, "")
 	l.ExtendBaseWidget(l)
 	return l
 }
@@ -140,7 +140,13 @@ func (l *OpenList) fill(id int, r *ListRow) {
 	entry := l.entries[id]
 	r.label = entry.text
 	r.heading = entry.kind != entryValue
+	r.notice = entry.kind == entryNotice
 	r.from, r.to = entry.from, entry.to
+	r.name, r.nameFrom, r.nameTo = entry.name, entry.nameFrom, entry.nameTo
+	r.column = 0
+	if entry.name != "" {
+		r.column = l.column
+	}
 	r.kind = nil
 	r.marked = false
 	r.active = false
@@ -158,9 +164,11 @@ func (l *OpenList) fill(id int, r *ListRow) {
 }
 
 // Choice is one row of an open list, for a guard to read. Choosable is false
-// on a heading and on the notice that nothing matched.
+// on a heading and on the notice that nothing matched. Name is what the value
+// is called, empty where the list has no names.
 type Choice struct {
 	Label     string
+	Name      string
 	Marked    bool
 	Choosable bool
 }
@@ -182,7 +190,7 @@ type Choice struct {
 // belongs to with every letter, and nothing on this screen jumps under a
 // person's hands (GUI rule 3).
 func (l *OpenList) MinSize() fyne.Size {
-	rows := len(arrange(l.options, l.headingOf, ""))
+	rows := len(arrange(l.options, l.labels, ""))
 	if rows < 1 {
 		rows = 1
 	}

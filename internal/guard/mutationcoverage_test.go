@@ -76,7 +76,6 @@ var notProvenByMutation = map[string]bool{
 	"TestCommandLineIsAsciiOnly":                                      true,
 	"TestDryRunWritesNothingAtAll":                                    true,
 	"TestEveryEndingUsesACodeFromTheTable":                            true,
-	"TestEveryFormatDeclaresTheFullSet":                               true,
 	"TestGeneratingTwiceGivesTheSameBytes":                            true,
 	"TestLayeringHoldsForEveryPackage":                                true,
 	"TestNoNetworkImports":                                            true,

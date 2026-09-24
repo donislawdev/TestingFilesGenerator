@@ -401,7 +401,15 @@ func TestTheSpaceThatOpensTheFormatListIsNotTypedIntoItsFilter(t *testing.T) {
 	}
 }
 
-// TestThePartOfAValueThatMatchedIsDrawnInBold reads a row's drawn words.
+// TestThePartOfAValueThatMatchedIsDrawnInBold reads a row's drawn words: what
+// matched in the value, and since 2026-09-24 what matched at the start of a
+// word of the name beside it - targz is named "tar + gzip", and gzip starts
+// with gz.
+//
+// In the order the row draws them, with bold marked, so bold landing on the
+// wrong piece cannot pass for bold landing on the right one: until the names
+// arrived this joined the bold pieces and the plain ones separately, which a
+// name drawn wholly in bold would also have satisfied.
 func TestThePartOfAValueThatMatchedIsDrawnInBold(t *testing.T) {
 	_, _, list, filter := openFormatList(t)
 	typeInto(filter, "gz")
@@ -409,20 +417,21 @@ func TestThePartOfAValueThatMatchedIsDrawnInBold(t *testing.T) {
 	if row == nil {
 		t.Fatal("gz was typed and no row is drawing targz")
 	}
-	var bold, plain []string
+	var drawn []string
 	for _, o := range test.WidgetRenderer(row).Objects() {
 		words, ok := o.(*canvas.Text)
 		if !ok || !words.Visible() || words.Text == "" {
 			continue
 		}
 		if words.TextStyle.Bold {
-			bold = append(bold, words.Text)
+			drawn = append(drawn, "*"+words.Text+"*")
 		} else {
-			plain = append(plain, words.Text)
+			drawn = append(drawn, words.Text)
 		}
 	}
-	if strings.Join(bold, "") != "gz" || strings.Join(plain, "") != "tar" {
-		t.Errorf("targz with gz typed draws %v in bold and %v plain, where gz is what matched", bold, plain)
+	want := []string{"tar", "*gz*", "tar + ", "*gz*", "ip"}
+	if strings.Join(drawn, "|") != strings.Join(want, "|") {
+		t.Errorf("targz with gz typed draws %q, bold between stars, and it should draw %q: gz is what matched, in the value and at the start of gzip in its name", drawn, want)
 	}
 }
 

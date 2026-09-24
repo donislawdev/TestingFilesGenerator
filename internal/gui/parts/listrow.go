@@ -40,6 +40,17 @@ type ListRow struct {
 	// from and to are where what was typed into the list's filter stands in
 	// the words, drawn in bold. Equal when nothing is to be bold.
 	from, to int
+	// name is what the value is called, drawn a step quieter in a column of
+	// its own, with nameFrom and nameTo bold the way from and to are. column
+	// is how far in from the words that column starts - the widest value's
+	// width, so it is the same in every row. Empty and nought on a list whose
+	// values have no names.
+	name             string
+	nameFrom, nameTo int
+	column           float32
+	// notice says this row is the sentence saying the filter left nothing,
+	// which is drawn as a sentence rather than as one more heading.
+	notice bool
 
 	hovered bool
 }
@@ -64,6 +75,10 @@ func (r *ListRow) Kind() fyne.Resource { return r.kind }
 // Heading says whether this row is a heading or the notice that nothing
 // matched, rather than a value somebody can take - for a guard.
 func (r *ListRow) Heading() bool { return r.heading }
+
+// Name is what this row says its value is called, for a guard. Empty on a
+// list whose values have no names.
+func (r *ListRow) Name() string { return r.name }
 
 func newListRow() *ListRow {
 	r := &ListRow{}
@@ -104,7 +119,9 @@ func (r *ListRow) CreateRenderer() fyne.WidgetRenderer {
 	strong := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))
 	strong.TextStyle = fyne.TextStyle{Bold: true}
 	rest := canvas.NewText("", Theme().Color(theme.ColorNameForeground, theme.VariantDark))
-	rr := &listRowRenderer{row: r, back: back, tick: tick, kind: kind, label: label, strong: strong, rest: rest}
+	name := pieces{canvas.NewText("", nil), canvas.NewText("", nil), canvas.NewText("", nil)}
+	name.strong.TextStyle = fyne.TextStyle{Bold: true}
+	rr := &listRowRenderer{row: r, back: back, tick: tick, kind: kind, label: label, strong: strong, rest: rest, name: name}
 	rr.Refresh()
 	return rr
 }
@@ -113,6 +130,10 @@ func (r *ListRow) CreateRenderer() fyne.WidgetRenderer {
 // of them, or only what comes before the part that matched the filter, which
 // strong draws in bold, with rest after it. One text when nothing matched, so
 // a list nobody typed into draws exactly what it drew before the filter.
+//
+// The name is three more pieces cut the same way, after the words, so that
+// what matched in the name is bold on the same rule as what matched in the
+// value.
 type listRowRenderer struct {
 	row    *ListRow
 	back   *canvas.Rectangle
@@ -121,7 +142,18 @@ type listRowRenderer struct {
 	label  *canvas.Text
 	strong *canvas.Text
 	rest   *canvas.Text
+
+	name pieces
 }
+
+// pieces are some words drawn as up to three texts: whole holds all of them,
+// or only what comes before the part the filter matched, which strong draws in
+// bold, with rest after it. A value's words and a name's are cut by one rule
+// because they are cut by this.
+type pieces struct{ whole, strong, rest *canvas.Text }
+
+// value is the row's own words as pieces.
+func (r *listRowRenderer) value() pieces { return pieces{r.label, r.strong, r.rest} }
 
 func (r *listRowRenderer) Layout(size fyne.Size) {
 	icon := Theme().Size(theme.SizeNameInlineIcon)
@@ -174,52 +206,63 @@ func (r *listRowRenderer) Layout(size fyne.Size) {
 		r.kind.Resize(fyne.NewSquareSize(0))
 	}
 
-	r.placeWords(left, size.Width-left-right, size.Height)
+	room := size.Width - left - right
+	if r.row.column <= 0 {
+		r.value().place(left, room, size.Height)
+		return
+	}
+	// The value in a column as wide as the widest value, and the name after
+	// it, so every name in the list starts on one line.
+	r.value().place(left, r.row.column, size.Height)
+	at := r.row.column + listNameGap
+	r.name.place(left+at, fyne.Max(0, room-at), size.Height)
 }
 
-// placeWords lays the pieces of the words end to end from left, the last of
-// them taking what is left of the row.
-func (r *listRowRenderer) placeWords(left, room, height float32) {
-	text := r.label.MinSize()
+// place lays the pieces end to end from left, the last of them taking what is
+// left of the room.
+func (p pieces) place(left, room, height float32) {
+	text := p.whole.MinSize()
 	y := (height - text.Height) / 2
-	if !r.strong.Visible() {
-		r.label.Move(fyne.NewPos(left, y))
-		r.label.Resize(fyne.NewSize(room, text.Height))
+	if !p.strong.Visible() {
+		p.whole.Move(fyne.NewPos(left, y))
+		p.whole.Resize(fyne.NewSize(room, text.Height))
 		return
 	}
-	before, match := text.Width, r.strong.MinSize().Width
-	r.label.Move(fyne.NewPos(left, y))
-	r.label.Resize(fyne.NewSize(before, text.Height))
-	r.strong.Move(fyne.NewPos(left+before, y))
-	r.strong.Resize(fyne.NewSize(match, text.Height))
-	r.rest.Move(fyne.NewPos(left+before+match, y))
-	r.rest.Resize(fyne.NewSize(fyne.Max(0, room-before-match), text.Height))
+	before, match := text.Width, p.strong.MinSize().Width
+	p.whole.Move(fyne.NewPos(left, y))
+	p.whole.Resize(fyne.NewSize(before, text.Height))
+	p.strong.Move(fyne.NewPos(left+before, y))
+	p.strong.Resize(fyne.NewSize(match, text.Height))
+	p.rest.Move(fyne.NewPos(left+before+match, y))
+	p.rest.Resize(fyne.NewSize(fyne.Max(0, room-before-match), text.Height))
 }
 
-// splitWords cuts the words where the filter matched them, or leaves them
-// whole. A span that does not fit the words - a row refilled with a shorter
-// value - is no span, rather than a slice out of range.
-func (r *listRowRenderer) splitWords() {
-	words, from, to := r.row.label, r.row.from, r.row.to
-	if r.row.heading || from < 0 || to <= from || to > len(words) {
-		r.strong.Text, r.rest.Text = "", ""
-		r.strong.Hide()
-		r.rest.Hide()
+// split cuts words where the filter matched them, or leaves them whole in the
+// first piece. A span that does not fit the words - a row refilled with a
+// shorter value - is no span, rather than a slice out of range, and so is any
+// span on words drawn plain. The pieces after the first take its colour and
+// size.
+func (p pieces) split(words string, from, to int, plain bool) {
+	p.whole.Text = words
+	if plain || from < 0 || to <= from || to > len(words) {
+		p.strong.Text, p.rest.Text = "", ""
+		p.strong.Hide()
+		p.rest.Hide()
 		return
 	}
-	r.label.Text, r.strong.Text, r.rest.Text = words[:from], words[from:to], words[to:]
-	for _, piece := range []*canvas.Text{r.strong, r.rest} {
-		piece.Color = r.label.Color
-		piece.TextSize = r.label.TextSize
+	p.whole.Text, p.strong.Text, p.rest.Text = words[:from], words[from:to], words[to:]
+	for _, piece := range []*canvas.Text{p.strong, p.rest} {
+		piece.Color = p.whole.Color
+		piece.TextSize = p.whole.TextSize
 		piece.Show()
 	}
 }
 
-// wordsWidth is how wide the words are drawn, all pieces together.
-func (r *listRowRenderer) wordsWidth() float32 {
-	width := r.label.MinSize().Width
-	if r.strong.Visible() {
-		width += r.strong.MinSize().Width + r.rest.MinSize().Width
+// width is how wide the words are drawn, all pieces together.
+func (p pieces) width() float32 {
+	width := p.whole.MinSize().Width
+	if p.strong.Visible() {
+		width += p.strong.MinSize().Width + p.rest.MinSize().Width
 	}
 	return width
 }
@@ -228,7 +271,11 @@ func (r *listRowRenderer) MinSize() fyne.Size {
 	if r.row.heading {
 		return fyne.NewSize(HeadingRowWidthFor(r.label.MinSize().Width), ListRowHeight())
 	}
-	return fyne.NewSize(RowWidthFor(r.wordsWidth(), r.row.kind != nil), ListRowHeight())
+	words := r.value().width()
+	if r.row.column > 0 {
+		words = r.row.column + listNameGap + r.name.width()
+	}
+	return fyne.NewSize(RowWidthFor(words, r.row.kind != nil), ListRowHeight())
 }
 
 // headingText and headingStyle are how a heading in an open list is drawn:
@@ -247,6 +294,23 @@ func HeadingRowWidthFor(words float32) float32 {
 // headingWidth is how wide one heading's words are drawn.
 func headingWidth(heading string) float32 {
 	return fyne.MeasureText(heading, headingText, headingStyle).Width
+}
+
+// noticeWidth is how wide the sentence saying the filter left nothing is
+// drawn - as a sentence, at the size of one, and not bold. See Refresh.
+func noticeWidth(notice string) float32 {
+	return fyne.MeasureText(notice, Theme().Size(theme.SizeNameText), fyne.TextStyle{}).Width
+}
+
+// widestValue is how wide the widest of some values is drawn in bold, which is
+// the widest any of them is ever drawn: the filter draws what matched in bold.
+// On a list with names it is the column every name starts after.
+func widestValue(values []string) float32 {
+	var widest float32
+	for _, v := range values {
+		widest = fyne.Max(widest, fyne.MeasureText(v, Theme().Size(theme.SizeNameText), fyne.TextStyle{Bold: true}).Width)
+	}
+	return widest
 }
 
 // RowWidthFor is the room one row of an open list needs for a word that wide.
@@ -281,12 +345,17 @@ func RowWidthFor(word float32, withKind bool) float32 {
 // keyboard wins over the pointer, because a row somebody is hovering while the
 // keyboard sits elsewhere would otherwise show two rows as the current one.
 func (r *listRowRenderer) Refresh() {
-	r.label.Text = r.row.label
 	r.kind.Resource = r.row.kind
 	r.label.Color = Theme().Color(theme.ColorNameForeground, theme.VariantDark)
 	r.label.TextSize = Theme().Size(theme.SizeNameText)
 	r.label.TextStyle = fyne.TextStyle{}
-	if r.row.heading {
+	switch {
+	case r.row.notice:
+		// A sentence saying what happened and what to do, so it is drawn as
+		// one: at the size of a sentence, not bold. In bold at the caption
+		// size it read as the heading of a group with nothing under it.
+		r.label.Color = PaletteColour(ColorNameLabel, theme.VariantDark)
+	case r.row.heading:
 		// The look a field's name has - a step quieter than a value - in
 		// bold at the caption size, so a heading reads as the name over a
 		// group and not as one more value to take.
@@ -294,7 +363,18 @@ func (r *listRowRenderer) Refresh() {
 		r.label.TextSize = headingText
 		r.label.TextStyle = headingStyle
 	}
-	r.splitWords()
+	r.value().split(r.row.label, r.row.from, r.row.to, r.row.heading)
+
+	// The name a step quieter than the value, in the colour a field's name
+	// has - the value is what lands in the box, and the name says what it is.
+	r.name.whole.Color = PaletteColour(ColorNameLabel, theme.VariantDark)
+	r.name.whole.TextSize = Theme().Size(theme.SizeNameText)
+	r.name.split(r.row.name, r.row.nameFrom, r.row.nameTo, r.row.heading)
+	if r.row.name != "" && !r.row.heading {
+		r.name.whole.Show()
+	} else {
+		r.name.whole.Hide()
+	}
 
 	switch {
 	case r.row.heading:
@@ -321,14 +401,14 @@ func (r *listRowRenderer) Refresh() {
 		r.kind.Hide()
 	}
 
-	redraw(r.back, r.tick, r.kind, r.label, r.strong, r.rest)
+	redraw(r.back, r.tick, r.kind, r.label, r.strong, r.rest, r.name.whole, r.name.strong, r.name.rest)
 	// The width a row asks for changes with the picture, and the row is laid
 	// out by the list rather than by this renderer.
 	r.Layout(r.row.Size())
 }
 
 func (r *listRowRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.back, r.tick, r.kind, r.label, r.strong, r.rest}
+	return []fyne.CanvasObject{r.back, r.tick, r.kind, r.label, r.strong, r.rest, r.name.whole, r.name.strong, r.name.rest}
 }
 
 func (r *listRowRenderer) Destroy() {}

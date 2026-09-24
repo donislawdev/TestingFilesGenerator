@@ -253,14 +253,19 @@ func PresetCatchesHeading() string { return say("PresetCatchesHeading", "Typical
 func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked out from the size") }
 
 // PlaceholderFilter stands in the box at the top of an open list of formats,
-// where typing narrows the list to the formats whose name holds what was
-// typed.
+// where typing narrows the list to the formats whose identifier holds what was
+// typed, or whose name or kind has a word starting with it.
 func PlaceholderFilter() string { return say("PlaceholderFilter", "type to filter") }
 
 // ListNothingMatches stands in an open list whose filter left no value. It is
 // a row nobody can choose, so the list does not look broken while it is
-// empty.
-func ListNothingMatches() string { return say("ListNothingMatches", "Nothing matches") }
+// empty, and it says what to do as well as what happened: "Nothing matches"
+// said only the second, so the way back to the whole list was left to be
+// guessed (review of #127, decided by the owner on 2026-09-23). "The box" is
+// the filter box the person is typing in, the one control the list has.
+func ListNothingMatches() string {
+	return say("ListNothingMatches", "No format matches - clear the box to see all")
+}
 
 // The headings inside an open list of formats, one over each kind of file.
 // The list puts the kinds in the order of these words, so a translation
