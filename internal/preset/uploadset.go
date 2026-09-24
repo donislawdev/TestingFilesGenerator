@@ -317,7 +317,18 @@ func (s uploadSet) files() []setFile {
 // file is.
 func (s uploadSet) reachable(files []setFile) error {
 	var worst shortfall
+	// A file asking what an earlier one asked is not planned again. The set
+	// holds one small picture under a dozen names - a name with spaces, one
+	// with no extension, one outside ASCII - and planning is encoding it, so
+	// that was a dozen encodings of one question (docs/GUI-MEMORY-2026-09-23.md
+	// section 4j). Skipping changes no answer: the same request gets the same
+	// refusal and the same need, and the deepest shortfall keeps the FIRST
+	// file that reached it, because the comparison below is strict.
+	asked := map[string]bool{}
 	for _, f := range files {
+		if !firstTimeAsked(asked, f) {
+			continue
+		}
 		short, err := s.shortfallOf(f)
 		if err != nil {
 			return err
@@ -334,6 +345,21 @@ func (s uploadSet) reachable(files []setFile) error {
 		return nil
 	}
 	return s.cannotReach(worst)
+}
+
+// firstTimeAsked says whether a set is asking this file's question for the
+// first time, and remembers that it now has. A question with no key - a file
+// with contents - counts as asked for the first time, every time.
+func firstTimeAsked(asked map[string]bool, f setFile) bool {
+	key, ok := format.RequestKey(f.desc.ID, f.request())
+	if !ok {
+		return true
+	}
+	if asked[key] {
+		return false
+	}
+	asked[key] = true
+	return true
 }
 
 // shortfall is one file that is smaller than its format will write, and the
@@ -394,8 +420,14 @@ func wouldReach(floor, size, limit int64) int64 {
 //
 // The larger of the two rather than the sample, so that a format with a floor
 // above it cannot turn a file about a NAME into a refusal about a size.
+//
+// The remembered floor rather than one worked out here. It is the same
+// question - the label on, nothing else - and it was asked once for every
+// file about a name or an insides, each time encoding pictures to find the
+// answer: 35% of expanding upload-validation, measured 2026-09-23
+// (docs/GUI-MEMORY-2026-09-23.md section 4j).
 func sampleFor(desc format.Descriptor) int64 {
-	if floor := desc.SmallestAccepted(format.Request{Label: true}); floor > uploadSample {
+	if floor := format.SmallestWithLabel(desc); floor > uploadSample {
 		return floor
 	}
 	return uploadSample

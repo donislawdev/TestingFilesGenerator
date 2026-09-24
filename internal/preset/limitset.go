@@ -83,7 +83,7 @@ func (s limitSet) steps() []step {
 // files still looks like a set, and the three that are missing are the ones the
 // run was about - the ones nearest the limit.
 func (s limitSet) reachable(set []step) error {
-	floor := s.desc.SmallestAccepted(format.Request{Seed: 1, Label: true})
+	floor := format.SmallestRemembered(s.desc, format.Request{Seed: 1, Label: true})
 	for _, one := range set {
 		if one.size >= floor {
 			continue
