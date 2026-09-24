@@ -84,7 +84,7 @@ Flags:
 	// outside the directory used to arrive here as exit code 130.
 	if verifyErr != nil {
 		if !errors.Is(verifyErr, context.Canceled) {
-			fmt.Fprintf(errOut, "tfg: %s\n", describeError(verifyErr))
+			fmt.Fprintf(errOut, "tfg: %s\n", core.Shown(describeError(verifyErr)))
 			return classify(verifyErr)
 		}
 		fmt.Fprintf(errOut, "tfg: verify was interrupted after %s and did not check everything.\n", core.Count(len(diffs), "difference", "differences"))
@@ -215,11 +215,11 @@ func echoOtherRuns(diffs []audit.Difference, errOut io.Writer) {
 	for _, name := range names {
 		files := byRecord[name]
 		if len(files) == 0 {
-			fmt.Fprintf(errOut, "note: %s is another run's record, and nothing else here belongs to it.\n", name)
+			fmt.Fprintf(errOut, "note: %s is another run's record, and nothing else here belongs to it.\n", core.Shown(name))
 			continue
 		}
 		fmt.Fprintf(errOut, "note: %s is another run's record. %s here %s to it: %s.\n",
-			name, core.Count(len(files), "file", "files"), belongs(len(files)), someOf(files))
+			core.Shown(name), core.Count(len(files), "file", "files"), belongs(len(files)), someOf(files))
 	}
 }
 
@@ -249,6 +249,7 @@ func groupedByRecord(diffs []audit.Difference) map[string][]string {
 
 // someOf names the first few and counts the rest.
 func someOf(names []string) string {
+	names = core.ShownEach(names)
 	if len(names) <= otherRunExamples {
 		return strings.Join(names, ", ")
 	}

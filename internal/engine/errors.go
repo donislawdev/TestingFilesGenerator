@@ -205,7 +205,7 @@ type SpaceError struct {
 func (e *SpaceError) Error() string {
 	return fmt.Sprintf(
 		"this run needs %d B and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory",
-		e.Needed, e.Path, e.Available)
+		e.Needed, core.Shown(e.Path), e.Available)
 }
 
 // RunInProgressError is refusing to start because another run holds this
@@ -228,7 +228,7 @@ type RunInProgressError struct {
 func (e *RunInProgressError) Error() string {
 	return fmt.Sprintf(
 		"another run is already writing into %s, so this one will not start. Two runs writing into one directory can write over each other's files without either of them saying so. Wait for it to finish, or generate into a different directory. If nothing is running, that run was killed before it could tidy up - remove %s and try again",
-		e.Dir, e.Path)
+		core.Shown(e.Dir), core.Shown(e.Path))
 }
 
 // CollisionError is refusing to write over something that is already there.
@@ -249,9 +249,9 @@ func (e *CollisionError) Error() string {
 	if e.Manifest {
 		return fmt.Sprintf(
 			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside",
-			e.Path)
+			core.Shown(e.Path))
 	}
 	return fmt.Sprintf(
 		"%s already exists and this run will not write over it. Generate into an empty directory, or remove the file first",
-		e.Path)
+		core.Shown(e.Path))
 }

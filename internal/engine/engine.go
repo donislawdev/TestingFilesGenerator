@@ -491,7 +491,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	}
 
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
-		return res, fmt.Errorf("cannot create the output directory %s: %w", opt.OutDir, err)
+		return res, fmt.Errorf("cannot create the output directory %s: %w", core.Shown(opt.OutDir), err)
 	}
 
 	// The directory is taken before the manifest name is, and the two are not
@@ -511,7 +511,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		if errors.Is(err, fs.ErrExist) {
 			return res, &RunInProgressError{Path: lockPath, Dir: opt.OutDir}
 		}
-		return res, fmt.Errorf("cannot start a run in %s: %w", opt.OutDir, err)
+		return res, fmt.Errorf("cannot start a run in %s: %w", core.Shown(opt.OutDir), err)
 	}
 	// Given back however this run ends, including one stopped part way: the
 	// signal cancels the context, Run returns, and this runs. What it cannot
@@ -538,7 +538,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		if errors.Is(err, fs.ErrExist) {
 			return res, &CollisionError{Path: manifestPath, Manifest: true}
 		}
-		return res, fmt.Errorf("cannot start a run in %s: %w", opt.OutDir, err)
+		return res, fmt.Errorf("cannot start a run in %s: %w", core.Shown(opt.OutDir), err)
 	}
 
 	// Past this point the run owns the name and may write. Started says so, and

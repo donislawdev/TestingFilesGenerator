@@ -110,6 +110,9 @@ type Difference struct {
 }
 
 func (d Difference) String() string {
+	// Shown on a copy, so the paths a program compares stay as they are. See
+	// core.Shown for the name this printed wrongly (O241).
+	d.Path, d.Want, d.Got = core.Shown(d.Path), core.Shown(d.Want), core.Shown(d.Got)
 	switch d.Kind {
 	case Missing:
 		return fmt.Sprintf("missing   %s", d.Path)
@@ -191,7 +194,7 @@ func (e *EscapeError) Error() string {
 		"the manifest lists %q, which lands outside %s once the links on the way are followed. "+
 			"This tool never reads or removes anything outside the directory it was pointed at, so it will not act on this manifest. "+
 			"Check that the directory is the one the run wrote to, and that nothing inside it points elsewhere.",
-		e.Path, e.Dir)
+		e.Path, core.Shown(e.Dir))
 }
 
 // resolved turns a manifest entry into the path on disk, refusing one that

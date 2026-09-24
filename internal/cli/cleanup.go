@@ -120,10 +120,10 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), dir)
 	for _, c := range cands {
 		if c.Removable(force) {
-			fmt.Fprintf(out, "  remove %s\n", c.Path)
+			fmt.Fprintf(out, "  remove %s\n", core.Shown(c.Path))
 			continue
 		}
-		fmt.Fprintf(out, "  keep   %s - %s\n", c.Path, skipNote(c, force))
+		fmt.Fprintf(out, "  keep   %s - %s\n", core.Shown(c.Path), skipNote(c, force))
 	}
 	fmt.Fprintf(errOut, "Nothing was removed. Run the same command with --yes to remove them.\n")
 	return ExitOK
@@ -153,7 +153,7 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		}
 		report.Files = append(report.Files, cleanupEntry{Path: o.Path, Action: "kept", Reason: o.Reason})
 		if !asJSON {
-			fmt.Fprintf(errOut, "kept %s - %s\n", o.Path, o.Reason)
+			fmt.Fprintf(errOut, "kept %s - %s\n", core.Shown(o.Path), core.Shown(o.Reason))
 		}
 	}
 	// Kept counts every entry that is not removed, which is what the entries

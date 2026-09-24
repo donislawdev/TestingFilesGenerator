@@ -507,6 +507,16 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A report shows a character nobody can see in a file name as an escape.**
+  `verify`, `cleanup`, the notes of a run, a refusal of two names that collide
+  or of a taken name, and the lines about an output directory printed such a
+  character as it was. A right to left override then made the terminal draw
+  another name than the one on the disk, and a zero width space made two
+  names look the same. Such a character is printed as an escape now, such as
+  `\u202e` for a right to left override. A name without one is printed
+  as before. The manifest and every `--json` report still carry the
+  exact name.
+
 - **A recipe the tool writes shows a character nobody can see as an escape.**
   `tfg preset eject` wrote a right to left override, a zero width space or a
   line separator into the recipe as it was, so the file read as something

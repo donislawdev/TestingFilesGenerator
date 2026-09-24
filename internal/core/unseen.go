@@ -1,6 +1,62 @@
 package core
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+	"unicode/utf8"
+)
+
+// Shown is s the way a person should read it: every character HoldsUnseen
+// finds, and every byte that is not UTF-8, written as the escape %q would use
+// for it, and nothing else changed. No quotes are added.
+//
+// For every line this tool prints about a name or a path that came from a
+// recipe, a preset, a manifest or a directory listing (O241). Measured on
+// 2026-09-24: verify reported a missing "photo", right to left override,
+// "gpj.txt" as the terminal drew it, which is "phototxt.jpg", and an extra
+// "in", zero width space, "voice.txt" as "invoice.txt" - a report naming files
+// other than the ones on the disk, two of which could not be told apart.
+//
+// Without quotes, because a name holding nothing of the kind comes out byte
+// for byte as it always did, and every report line of every run that never
+// met such a name stays what scripts and people already read. The escape is
+// not ambiguous inside a file name: a backslash is refused in one on every
+// system (engine/filename.go). In a Windows path it reads as a separator
+// followed by a letter and a number, which a person does not mistake for one.
+//
+// Never for what a program reads. The manifest and every --json report carry
+// the name exactly, because a program compares it byte for byte.
+func Shown(s string) string {
+	if !HoldsUnseen(s) && utf8.ValidString(s) {
+		return s
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		r, size := utf8.DecodeRuneInString(s[i:])
+		switch {
+		case r == utf8.RuneError && size == 1:
+			q := strconv.Quote(s[i : i+1])
+			b.WriteString(q[1 : len(q)-1])
+		case !strconv.IsPrint(r):
+			q := strconv.QuoteRune(r)
+			b.WriteString(q[1 : len(q)-1])
+		default:
+			b.WriteString(s[i : i+size])
+		}
+		i += size
+	}
+	return b.String()
+}
+
+// ShownEach is Shown for every name of a list, for the lines that name a few
+// files one after another.
+func ShownEach(names []string) []string {
+	out := make([]string, len(names))
+	for i, name := range names {
+		out[i] = Shown(name)
+	}
+	return out
+}
 
 // HoldsUnseen reports whether s holds a character a person reading it cannot
 // see: a character that changes the direction of the text around it, one of
