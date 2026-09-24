@@ -187,15 +187,17 @@ func (c nameCase) name(desc format.Descriptor) (string, error) {
 		}
 		stem = strings.Repeat(c.fill, copies)
 	}
+	suffix := ext
 	switch c.extension {
+	case formatExtension:
 	case noExtension:
-		return stem, nil
+		suffix = ""
 	case upperExtension:
-		return stem + strings.ToUpper(ext), nil
+		suffix = strings.ToUpper(ext)
 	case fullwidthExtension:
-		return stem + fullwidth(ext), nil
+		suffix = fullwidth(ext)
 	}
-	return stem + ext, nil
+	return stem + suffix, nil
 }
 
 // expectation is the outcome and the reason this file carries.

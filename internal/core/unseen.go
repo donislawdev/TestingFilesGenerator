@@ -30,6 +30,24 @@ func Shown(s string) string {
 	if !HoldsUnseen(s) && utf8.ValidString(s) {
 		return s
 	}
+	return shown(s, false)
+}
+
+// ShownText is Shown for a whole message rather than one name: the line
+// breaks and tabs it is laid out with stay as they are, and everything else
+// nobody can see is escaped.
+//
+// For the places a message is turned into words for a person - the command
+// line's describeError and the window's refusals - because an error wrapped
+// from the operating system repeats the path it failed on in its own words,
+// after this tool's sentence has already shown it. Measured on 2026-09-25,
+// from a review: "cannot create the output directory" showed the folder
+// escaped and the "mkdir" part after it showed it raw.
+func ShownText(s string) string {
+	return shown(s, true)
+}
+
+func shown(s string, layout bool) string {
 	var b strings.Builder
 	for i := 0; i < len(s); {
 		r, size := utf8.DecodeRuneInString(s[i:])
@@ -37,6 +55,8 @@ func Shown(s string) string {
 		case r == utf8.RuneError && size == 1:
 			q := strconv.Quote(s[i : i+1])
 			b.WriteString(q[1 : len(q)-1])
+		case layout && (r == '\n' || r == '\t'):
+			b.WriteRune(r)
 		case !strconv.IsPrint(r):
 			q := strconv.QuoteRune(r)
 			b.WriteString(q[1 : len(q)-1])

@@ -14,21 +14,6 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
-### Added
-
-- **A preset for unusual file names: `filename-handling`.** It answers "will
-  my system store, show and give back a file name it did not expect?" with
-  fifty names in seven groups: scripts from Polish to Korean, names that look
-  like other names, leading spaces and dots, shell and SQL metacharacters,
-  names that mean something to a web server or a desktop, names read as
-  values, and names at the length limits. Every one is written byte for byte
-  on Windows, Linux and macOS - measured on NTFS, ext4 and APFS. On another
-  file system a name may be refused, and the run then ends with code 8 and
-  names it. The files are `txt` unless `--format` says otherwise, and the
-  names about length count the format's extension in. Four names are
-  expected to be accepted, the rest are left to your system's policy with a
-  reason.
-
 ### Changed
 
 - **A file name longer than 255 bytes is refused before anything is written,
@@ -322,6 +307,19 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A preset for unusual file names: `filename-handling`.** It answers "will
+  my system store, show and give back a file name it did not expect?" with
+  fifty names in seven groups: scripts from Polish to Korean, names that look
+  like other names, leading spaces and dots, shell and SQL metacharacters,
+  names that mean something to a web server or a desktop, names read as
+  values, and names at the length limits. Every one is written byte for byte
+  on Windows, Linux and macOS - measured on NTFS, ext4 and APFS. On another
+  file system a name may be refused, and the run then ends with code 8 and
+  names it. The files are `txt` unless `--format` says otherwise, and the
+  names about length count the format's extension in. Four names are
+  expected to be accepted, the rest are left to your system's policy with a
+  reason.
+
 - **Every format has its full name.** `tfg formats` has a `NAME` column
   (`jxl` is JPEG XL, `png` Portable Network Graphics), `tfg formats jxl`
   gives it on a `name` line, and `tfg formats --json` carries it under the new
@@ -523,9 +521,9 @@ because it turns other people's test suites red.
 ### Fixed
 
 - **A report shows a character nobody can see in a file name as an escape.**
-  `verify`, `cleanup`, the notes of a run, a refusal of two names that collide
-  or of a taken name, and the lines about an output directory printed such a
-  character as it was. A right to left override then made the terminal draw
+  `verify`, `cleanup`, the notes of a run, every error message and the
+  refusals in the window printed such a character as it was, in a file name
+  and in the name of a folder. A right to left override then made the terminal draw
   another name than the one on the disk, and a zero width space made two
   names look the same. Such a character is printed as an escape now, such as
   `\u202e` for a right to left override. A name without one is printed

@@ -126,6 +126,16 @@ func nameFault(target, name, ext string) string {
 		return unless(norm.NFD.IsNormalString(name) && !norm.NFC.IsNormalString(name), "it is not in the decomposed form")
 	case "leading_bom":
 		return unless(strings.HasPrefix(name, string(rune(0xFEFF))), "it does not begin with a byte order mark")
+	case "leading_space":
+		return unless(strings.HasPrefix(name, " ") && !strings.HasPrefix(name, "  "), "it does not begin with one plain space")
+	case "double_space":
+		return unless(strings.Contains(stem, "  "), "it does not hold two spaces in a row")
+	case "leading_dot":
+		return unless(strings.HasPrefix(name, ".") && !strings.HasPrefix(name, ".."), "it does not begin with one dot")
+	case "leading_double_dot":
+		return unless(strings.HasPrefix(name, ".."), "it does not begin with two dots")
+	case "leading_dash":
+		return unless(strings.HasPrefix(name, "-"), "it does not begin with a dash")
 	case "leading_ideographic_space":
 		return unless(strings.HasPrefix(name, string(rune(0x3000))), "it does not begin with an ideographic space")
 	case "unicode_tags":

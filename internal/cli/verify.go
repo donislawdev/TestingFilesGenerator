@@ -70,7 +70,7 @@ Flags:
 		dir = filepath.Dir(path)
 	}
 	if info, statErr := os.Stat(dir); statErr != nil || !info.IsDir() {
-		fmt.Fprintf(errOut, "tfg: cannot read the directory %s. Check the path and that you have permission to read it.\n", dir)
+		fmt.Fprintf(errOut, "tfg: cannot read the directory %s. Check the path and that you have permission to read it.\n", core.Shown(dir))
 		return ExitIO
 	}
 
@@ -84,7 +84,7 @@ Flags:
 	// outside the directory used to arrive here as exit code 130.
 	if verifyErr != nil {
 		if !errors.Is(verifyErr, context.Canceled) {
-			fmt.Fprintf(errOut, "tfg: %s\n", core.Shown(describeError(verifyErr)))
+			fmt.Fprintf(errOut, "tfg: %s\n", describeError(verifyErr))
 			return classify(verifyErr)
 		}
 		fmt.Fprintf(errOut, "tfg: verify was interrupted after %s and did not check everything.\n", core.Count(len(diffs), "difference", "differences"))
@@ -150,7 +150,7 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 	}
 
 	if wrong > 0 {
-		fmt.Fprintf(errOut, "tfg: %s does not match %s - %s:\n", dir, path, core.Count(wrong, "difference", "differences"))
+		fmt.Fprintf(errOut, "tfg: %s does not match %s - %s:\n", core.Shown(dir), core.Shown(path), core.Count(wrong, "difference", "differences"))
 		echoMismatches(diffs, errOut)
 		echoOtherRuns(diffs, errOut)
 		return ExitVerify
@@ -160,11 +160,11 @@ func reportVerify(diffs []audit.Difference, claimed int, path, dir string, asJSO
 	// "everything is fine" about zero files invites somebody to trust a run
 	// that never happened.
 	if claimed == 0 {
-		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", path)
+		fmt.Fprintf(errOut, "%s claims no files, so there was nothing to check.\n", core.Shown(path))
 		echoOtherRuns(diffs, errOut)
 		return ExitOK
 	}
-	fmt.Fprintf(out, "%s matches %s: %s checked\n", dir, path, core.Count(claimed, "file", "files"))
+	fmt.Fprintf(out, "%s matches %s: %s checked\n", core.Shown(dir), core.Shown(path), core.Count(claimed, "file", "files"))
 	echoOtherRuns(diffs, errOut)
 	return ExitOK
 }

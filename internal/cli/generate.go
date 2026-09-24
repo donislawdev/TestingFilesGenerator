@@ -656,7 +656,7 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 	// way is a chance for the saver and the claim to mean different files.
 	path := engine.ManifestPath(opt)
 	if err := res.Manifest.Save(path); err != nil {
-		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", core.Shown(path), core.Shown(describeError(err)))
+		fmt.Fprintf(errOut, "tfg: cannot write the manifest to %s: %s\n", core.Shown(path), describeError(err))
 		// What that leaves behind, because the line above is about the manifest
 		// and the person's problem is the files. Rule 6: a run that wrote files
 		// nothing can remove says so rather than leaving it to be discovered by

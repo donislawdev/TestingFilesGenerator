@@ -49,7 +49,7 @@ func (r *runner) refuse(err error) {
 		}
 		// About the run rather than about one box, or about a setting this
 		// screen does not draw. The foot of the form is where those belong.
-		loose = append(loose, one.Error())
+		loose = append(loose, core.ShownText(one.Error()))
 	}
 	if len(loose) > 0 {
 		r.problem.Say(strings.Join(loose, "\n\n"))

@@ -13,6 +13,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
@@ -69,7 +70,9 @@ func saysEscaped(t *testing.T, what, said, stem, unseen, rest string) {
 // directory and the manifest.
 func unseenRun(t *testing.T) (string, string) {
 	t.Helper()
-	dir := t.TempDir()
+	// The directory has such a character too, so every line naming it is asked
+	// as well - verify and cleanup printed it raw until a review of 2026-09-25.
+	dir := filepath.Join(t.TempDir(), "run"+zeroWidth)
 	var drafts []recipe.TargetDraft
 	for i, name := range []string{"photo" + rightToLeft + "gpj.txt", "in" + zeroWidth + "voice.txt", "report" + lineSeparator + "ERROR.txt"} {
 		drafts = append(drafts, recipe.TargetDraft{ID: "t" + strconv.Itoa(i), Format: "txt", Size: "1kb", Name: name})
@@ -86,11 +89,12 @@ func unseenRun(t *testing.T) (string, string) {
 	if code := cli.Run(context.Background(), []string{"generate", path, "--out", dir}, &out, &errOut); code != cli.ExitOK {
 		t.Fatalf("the run ended %d:\n%s", code, errOut.String())
 	}
-	m := regexp.MustCompile(`(?m)^manifest: (.+)$`).FindStringSubmatch(errOut.String())
-	if m == nil {
+	// Joined here rather than read off the "manifest:" line, which shows the
+	// directory's character as an escape and so is not a path any more.
+	if !regexp.MustCompile(`(?m)^manifest: `).MatchString(errOut.String()) {
 		t.Fatalf("the run did not say where its manifest is:\n%s", errOut.String())
 	}
-	return dir, strings.TrimSpace(m[1])
+	return dir, filepath.Join(dir, "manifest.json")
 }
 
 // carriesExactly fails unless some string in a JSON report is want, byte for
@@ -295,4 +299,38 @@ func TestTheLinesAboutARunShowANameNobodyCanReadAsAnEscape(t *testing.T) {
 	}
 	saysNothingUnseen(t, "a refusal of a held directory", busy)
 	saysEscaped(t, "a refusal of a held directory", busy, "held", zeroWidth, "dir, so this one")
+
+	// A directory inside that file cannot be made, and the system's own error
+	// under ours names the path again - raw, until a review of 2026-09-25.
+	underAFile := runCLI(t, "generate", "--format", "txt", "--size", "1kb", "--out", filepath.Join(file, "sub"))
+	if !strings.Contains(underAFile, "cannot create the output directory") {
+		t.Fatalf("the run did not refuse a directory inside a file, so this guard checked nothing:\n%s", underAFile)
+	}
+	saysNothingUnseen(t, "a refusal of a directory inside a file", underAFile)
+}
+
+// The window says the same about an output directory as the command line: a
+// folder named with a character nobody can see is shown with the escape,
+// under the box it is about and at the foot of the form.
+func TestTheWindowShowsADirectoryNobodyCanReadAsAnEscape(t *testing.T) {
+	parent := t.TempDir()
+	file := filepath.Join(parent, "out"+rightToLeft+"file")
+	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, out := range []string{file, filepath.Join(file, "sub")} {
+		host, content := presetScreen(t)
+		choosePreset(t, content, "filename-handling")
+		fill(t, content, text.FieldOutputDir(), out)
+		press(t, content, "Generate")
+		join(host)
+
+		said := everythingSaid(content)
+		// The box itself holds what was typed, raw, which is right for a box.
+		said = strings.ReplaceAll(said, out, "")
+		if !strings.Contains(said, "out"+escapeOf(rightToLeft)+"file") {
+			t.Fatalf("the window did not refuse %+q, or refused it without naming it:\n%s", out, said)
+		}
+		saysNothingUnseen(t, "the window's refusal of "+out, said)
+	}
 }

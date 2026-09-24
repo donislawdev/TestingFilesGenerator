@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -33,7 +34,19 @@ import (
 // So the system's sentence is swapped for ours and every layer of our own
 // context above it is kept. The number it carried stays, because a number means
 // the same thing in every language and it is what somebody puts into a search.
+//
+// And a character nobody can see is shown rather than left to act, in every
+// message at once (O241). A system error wrapped under our own sentence
+// repeats the path it failed on in its own words, raw, after our sentence had
+// shown it escaped - found in a review on 2026-09-25. One funnel covers every
+// command, including the ones that print a message nobody wrote with a name
+// in mind.
 func describeError(err error) string {
+	return core.ShownText(inOurWords(err))
+}
+
+// inOurWords is describeError before anything is escaped.
+func inOurWords(err error) string {
 	if err == nil {
 		return ""
 	}
