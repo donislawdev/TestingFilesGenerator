@@ -223,6 +223,17 @@ func decode(src []byte, name string) (rawRecipe, error) {
 	// one step earlier: what somebody typed is what they get, or they are told
 	// why not.
 	if !utf8.Valid(src) {
+		// UTF-16 has its own sentence, because the usual way to get one is not
+		// saving at all. Windows PowerShell 5.1 writes UTF-16 for "> my.yaml",
+		// so "save the file as UTF-8" told somebody to do something they never
+		// did (O245, measured 2026-09-25). Read as UTF-16 it is not, either: on
+		// the way into that file PowerShell decoded the output with the
+		// console's code page, and on a stock console that has already changed
+		// every letter outside ASCII - reading it would turn this loud refusal
+		// into names quietly different from the ones asked for.
+		if isUTF16(src) {
+			return raw, &SyntaxError{Name: name, UTF16: true, Detail: "this file is UTF-16, and a recipe is read as UTF-8. Windows PowerShell 5.1 writes UTF-16 whenever the output of a command is redirected into a file with >, and on the way it may already have changed every letter outside ASCII, so the file is refused rather than read"}
+		}
 		return raw, &SyntaxError{Name: name, Detail: "this file is not valid UTF-8. Every character that could not be read would come back as a replacement mark, so a name written with accents would produce a file called something else. Save the file as UTF-8 and try again"}
 	}
 

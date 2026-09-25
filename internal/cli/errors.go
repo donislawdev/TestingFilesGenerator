@@ -78,6 +78,15 @@ func inOurWords(err error) string {
 		return "stopped before it finished, because the time allowed for it ran out."
 	}
 
+	// A recipe Windows PowerShell 5.1 saved with ">" (O245). The recipe
+	// package says what the file is and why. The way round it is a flag, and a
+	// flag is this surface's to name - the packages under both surfaces never
+	// spell one (O79).
+	var syntax *recipe.SyntaxError
+	if errors.As(err, &syntax) && syntax.UTF16 {
+		return err.Error() + ". Have tfg write the file itself with tfg preset eject <preset> -o my.yaml, or redirect in PowerShell 7, cmd or bash, which keep the bytes as they are"
+	}
+
 	var errno syscall.Errno
 	if !errors.As(err, &errno) {
 		return err.Error()

@@ -339,6 +339,16 @@ because it turns other people's test suites red.
   batch, and the window offers `Open instructions` beside `Open manifest`
   after a run that wrote them.
 
+- **`tfg preset eject <id> -o my.yaml` writes the recipe to a file itself.**
+  The help used to say `> my.yaml`, and Windows PowerShell 5.1 saves that as
+  UTF-16, which `tfg` then refused to read. Piping through
+  `Out-File -Encoding utf8` was no way round it: PowerShell 5.1 first reads
+  the output in the console's code page, which changes letters outside ASCII,
+  so a name in Polish or Korean arrived different or not at all. `-o` writes
+  byte for byte what would have been printed, in every shell. A file already
+  at that name is refused and left as it is, because it may be a recipe you
+  edited. `> my.yaml` still works in cmd, bash and PowerShell 7.
+
 - **A preset for unusual file names: `filename-handling`.** It answers "will
   my system store, show and give back a file name it did not expect?" with
   fifty names in seven groups: scripts from Polish to Korean, names that look
@@ -559,6 +569,14 @@ because it turns other people's test suites red.
   the run with `--yes` names them once they are gone. With `--json` both
   reports carry them in a new `record` list. `files`, `removed`, `kept` and
   `would_remove` still count only what the manifest lists.
+
+- **A recipe saved as UTF-16 is refused with the reason and the way round
+  it.** The refusal told you to save the file as UTF-8, when the usual way to
+  get UTF-16 is not saving at all but `>` in Windows PowerShell 5.1. It now
+  says the file is UTF-16, where that comes from, and to use
+  `tfg preset eject <id> -o my.yaml` or `>` in PowerShell 7, cmd or bash.
+  The exit code is still `3`, and such a file is still not read: by then
+  PowerShell may already have changed its letters outside ASCII.
 
 - **A report shows a character nobody can see in a file name as an escape.**
   `verify`, `cleanup`, the notes of a run, every error message and the
