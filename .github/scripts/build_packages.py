@@ -83,17 +83,31 @@ KIND_TAG = {"window": "gui", "cli": "cli"}
 
 
 def how_to_start(package, feed):
-    """The paragraph that differs by feed: what the package gives and how to start it."""
+    """The paragraph that differs by feed: what the package gives and how to start it.
+
+    The WinGet sentences about upgrading are measured, not assumed: on Windows
+    Server 2025 with WinGet 1.29.380 on 2026-09-25, upgrading the window while
+    it was open failed with "Access is denied" and left the package folder half
+    removed until the upgrade ran again with the window closed. A portable
+    package can carry no script to warn at that moment, so the description is
+    the only place a person can read it first.
+    """
     other = next(p for p in PACKAGES if p is not package)
     other_id = other.winget_id if feed == "winget" else other.choco_id
     if package.kind == "cli":
-        return ("This package is the command line, for scripts and pipelines. The desktop "
+        text = ("This package is the command line, for scripts and pipelines. The desktop "
                 "window is the package %s. Type tfg help to see the commands." % other_id)
+        if feed == "winget":
+            text += (" Upgrade it when no tfg run is in progress. WinGet cannot replace a "
+                     "program while it runs.")
+        return text
     if feed == "winget":
         return ("This package is the desktop window. The command line is the package %s. "
                 "WinGet adds no Start menu shortcut for it. Open a new terminal and type "
                 "tfg-gui. The window offers a tfg-out folder in the directory it was started "
-                "from." % other_id)
+                "from. Close the window before you upgrade. WinGet cannot replace a running "
+                "program, so it stops half way, and the package works again once the "
+                "upgrade runs with the window closed." % other_id)
     return ("This package is the desktop window. The command line is the package %s. It "
             "adds a Start menu shortcut and the tfg-gui command. Started from the shortcut, "
             "the window offers a tfg-out folder in your user profile." % other_id)

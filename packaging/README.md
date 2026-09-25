@@ -35,7 +35,11 @@ the real file. With it, WinGet makes no link and puts the package's folder on
 `PATH`. The command line would work either way, but without the field its shape
 depends on the machine - a link where symbolic links are allowed, the folder on
 `PATH` where they are not. WinGet adds no Start menu shortcut for a portable
-package, and the window's description says so.
+package, and the window's description says so. One cost of the field is not
+ours to fix: WinGet leaves the package's folder on `PATH` after an uninstall -
+[microsoft/winget-cli#6160](https://github.com/microsoft/winget-cli/issues/6160),
+open, and true of every package that sets it. Measured here with WinGet
+1.29.380: the entry stays, pointing at a folder that no longer exists.
 
 **Chocolatey.** The package downloads the release archive rather than carrying
 it, so it holds no binaries and owes no `VERIFICATION.txt`, and the archive is the
@@ -50,10 +54,21 @@ into the package. The icon is a jsDelivr address pinned to the release tag:
 moderation refuses `raw.githubusercontent.com` and `github.com/.../raw` alike,
 and an icon on a branch would keep changing under an approved package.
 
-**Neither package ends a running program.** `chocolateybeforemodify.ps1` says when
-the program is still running from the package, and leaves closing it to the
-person - a run in progress may be halfway through a set of files, and cutting it
-would leave files with no manifest to say what they are.
+**Neither package ends a running program** - a run in progress may be halfway
+through a set of files, and cutting it would leave files with no manifest to say
+what they are. What each feed does instead was measured on Windows Server 2025
+on 2026-09-25, with the window open:
+
+- **Chocolatey goes ahead**, an upgrade and an uninstall alike, and reports
+  success. It moves the package folder aside to `lib-bkp`, and the running copy
+  keeps working from there - but it cannot delete that copy, so the copy stays:
+  after an upgrade until the next Chocolatey operation on the package, after an
+  uninstall for good. `chocolateybeforemodify.ps1` says so at that moment and
+  names the folder to delete once the program is closed.
+- **WinGet stops half way.** An upgrade fails with "Access is denied" on the
+  program, having already deleted some of the other files, and the package works
+  again once the upgrade runs with the window closed. A portable package carries
+  no script, so the description is where this is said.
 
 ## Submitting
 
