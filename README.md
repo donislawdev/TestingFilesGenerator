@@ -334,8 +334,13 @@ is **valid**, which is what `tfg validate` is for.
 ```
 tfg preset list [--json]              what this build offers
 tfg preset show <id> [--json]         what it takes and what it would produce
-tfg preset eject <id> > my.yaml       the recipe it stands for, to edit
+tfg preset eject <id> -o my.yaml      the recipe it stands for, to edit
 ```
+
+`-o` writes the recipe byte for byte as it would be printed, and refuses a file
+that is already there. `tfg preset eject <id> > my.yaml` does the same in cmd,
+bash and PowerShell 7. Windows PowerShell 5.1 saves it as UTF-16, which `tfg`
+refuses to read, so use `-o` there.
 
 ### `tfg formats`
 

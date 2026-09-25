@@ -10,9 +10,11 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -51,7 +53,7 @@ func presetUsage(w io.Writer) {
 Usage:
   tfg preset list                       what this build offers
   tfg preset show <id>                  what it takes and what it would produce
-  tfg preset eject <id> > my.yaml       the recipe it stands for, to edit
+  tfg preset eject <id> -o my.yaml      the recipe it stands for, to edit
 
 A preset is a recipe with a name. Ejecting one gives back an ordinary recipe
 file, so nothing here is a closed box.
@@ -65,10 +67,12 @@ Run "tfg generate --preset <id>" to produce the files.
 // The id has to be read before parsing, because the parameters of the preset
 // are flags and there is no way to register them until it is known which they
 // are.
-// asJSON is filled in for the operations that have a machine readable form and
-// nil for the one that does not - a recipe is already machine readable, and a
-// second encoding of it would be a second thing to keep in step.
-func presetFlagSet(name string, args []string, out, errOut io.Writer, usage func(io.Writer), asJSON *bool) (
+//
+// own registers the operation's own flags: --json for show, which has a
+// machine readable form, and -o for eject, which writes a file. Eject has no
+// --json - a recipe is already machine readable, and a second encoding of it
+// would be a second thing to keep in step.
+func presetFlagSet(name string, args []string, out, errOut io.Writer, usage func(io.Writer), own func(*flag.FlagSet)) (
 	*preset.Expansion, int) {
 
 	fs := flag.NewFlagSet("preset "+name, flag.ContinueOnError)
@@ -80,9 +84,7 @@ func presetFlagSet(name string, args []string, out, errOut io.Writer, usage func
 	}
 	// Registered before the parameters, so a preset declaring one called json
 	// is caught by the collision check rather than by the flag package panicking.
-	if asJSON != nil {
-		fs.BoolVar(asJSON, "json", false, "write the answer as JSON to standard output")
-	}
+	own(fs)
 
 	id, rest := splitLeadingPath(args)
 	if id == "" {
@@ -189,7 +191,9 @@ Usage:
 `)
 	}
 	var asJSON bool
-	expanded, code := presetFlagSet("show", args, out, errOut, usage, &asJSON)
+	expanded, code := presetFlagSet("show", args, out, errOut, usage, func(fs *flag.FlagSet) {
+		fs.BoolVar(&asJSON, "json", false, "write the answer as JSON to standard output")
+	})
 	if expanded == nil {
 		return code
 	}
@@ -256,26 +260,93 @@ func presetEject(args []string, out, errOut io.Writer) int {
 Prints an ordinary recipe file. Edit it, commit it, run it with tfg generate -
 from here on it is yours and nothing about it is special.
 
-The recipe goes to standard output and everything else to standard error, so
-"tfg preset eject size-boundaries > my.yaml" gives a clean file.
+With -o the recipe is written to that file, byte for byte what would have been
+printed. A file already at that name is refused and left as it is, because it
+may be a recipe somebody ejected and then edited.
+
+Without -o the recipe goes to standard output and everything else to standard
+error, so "tfg preset eject size-boundaries > my.yaml" gives a clean file in
+cmd, bash and PowerShell 7. Windows PowerShell 5.1 saves it as UTF-16, which
+tfg refuses to read, so use -o there.
 
 Usage:
+  tfg preset eject size-boundaries -o my.yaml
+  tfg preset eject size-boundaries --limit 20mb --format png -o my.yaml
   tfg preset eject size-boundaries > my.yaml
-  tfg preset eject size-boundaries --limit 20mb --format png > my.yaml
 `)
 	}
-	expanded, code := presetFlagSet("eject", args, out, errOut, usage, nil)
+	var to fileFlag
+	expanded, code := presetFlagSet("eject", args, out, errOut, usage, func(fs *flag.FlagSet) {
+		fs.Var(&to, "o", "write the recipe to this file rather than to standard output. A file already there is refused")
+	})
 	if expanded == nil {
 		return code
+	}
+	if to.set && (to.name == "" || to.name == "-") {
+		fmt.Fprintf(errOut, "tfg: -o takes the name of the file to write the recipe to, and %q is not one. Leave -o out and the recipe goes to standard output.\n", to.name)
+		return ExitUsage
 	}
 
 	// The note goes to the error channel. The recipe is the data here, and a
 	// sentence about a number we chose has no business inside a file somebody
 	// is about to commit.
 	sayNotes(expanded.Notes(), errOut)
+	if to.set {
+		return writeEjected(to.name, expanded.Source, errOut)
+	}
 	if _, err := out.Write(expanded.Source); err != nil {
 		fmt.Fprintf(errOut, "tfg: cannot write the recipe: %s\n", describeError(err))
 		return ExitIO
 	}
+	return ExitOK
+}
+
+// fileFlag is a file name given as a flag, and whether it was given at all. An
+// empty name typed on purpose is a mistake to report rather than the default.
+type fileFlag struct {
+	name string
+	set  bool
+}
+
+func (f *fileFlag) String() string { return f.name }
+
+func (f *fileFlag) Set(s string) error {
+	f.name, f.set = s, true
+	return nil
+}
+
+// writeEjected puts the recipe into a file nobody holds.
+//
+// Written by the tool rather than left to the shell because of O245, measured
+// on 2026-09-25: Windows PowerShell 5.1 saves "> my.yaml" as UTF-16, and every
+// way through PowerShell - Out-File included - first decodes the output with
+// the console's code page, which on a stock console changes every letter
+// outside ASCII. Only the bytes the tool writes itself arrive as they are.
+//
+// Claimed first and then replaced whole. The claim is exclusive and does not
+// follow a link (core.CreateNew), which is what keeps an edited recipe from
+// being written over. The replacement goes through a temporary name and a
+// rename (core.ReplaceFile), so a run stopped part way leaves an empty file or
+// none rather than a recipe cut short - and a YAML file cut short can still
+// read as a smaller recipe.
+func writeEjected(path string, source []byte, errOut io.Writer) int {
+	f, err := core.CreateNew(path, 0o644)
+	if err != nil {
+		var taken *core.NameTakenError
+		if errors.As(err, &taken) {
+			fmt.Fprintf(errOut, "tfg: %s is already there, and -o does not write over a file - it may be a recipe somebody edited. Nothing was written. Choose another name, or remove that file first.\n", core.Shown(path))
+			return ExitIO
+		}
+		fmt.Fprintf(errOut, "tfg: cannot write the recipe to %s: %s\n", core.Shown(path), describeError(err))
+		return ExitIO
+	}
+	_ = f.Close()
+	if err := core.ReplaceFile(path, source); err != nil {
+		// Only the empty claim this call made is there to take back.
+		_ = os.Remove(path)
+		fmt.Fprintf(errOut, "tfg: cannot write the recipe to %s: %s\n", core.Shown(path), describeError(err))
+		return ExitIO
+	}
+	fmt.Fprintf(errOut, "recipe: %s\n", core.Shown(path))
 	return ExitOK
 }

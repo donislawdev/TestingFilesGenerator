@@ -178,6 +178,17 @@ func withoutBOM(src []byte) []byte {
 	return []byte(out)
 }
 
+// isUTF16 says a file starts with the byte order mark of UTF-16, in either
+// order of bytes. Neither pair can begin a UTF-8 file, so this is asked only of
+// a file already found not to be UTF-8. UTF-32 in little endian order starts
+// with the same two bytes and is named UTF-16 too, which says the right thing:
+// not UTF-8, and why. UTF-16 without a mark has no sign to read and gets the
+// general sentence.
+func isUTF16(src []byte) bool {
+	s := string(src)
+	return strings.HasPrefix(s, "\xff\xfe") || strings.HasPrefix(s, "\xfe\xff")
+}
+
 // recipesIn counts the documents in a parsed file that carry a recipe.
 //
 // It is deliberately not len(f.Docs), and the difference is not academic.

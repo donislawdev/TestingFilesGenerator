@@ -116,6 +116,10 @@ func (e *ValidationError) Error() string {
 type SyntaxError struct {
 	Name   string
 	Detail string
+	// UTF16 says the file starts with the byte order mark of UTF-16. The
+	// sentence above says what the file is and why. What to do instead
+	// depends on the surface that read it, so the command line adds that.
+	UTF16 bool
 }
 
 func (e *SyntaxError) Error() string {
