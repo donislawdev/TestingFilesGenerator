@@ -319,8 +319,9 @@ tfg cleanup <manifest.json> [--yes] [--force] [--with-manifest] [--against <dir>
 Removes what the manifest lists and **nothing else**. Without `--yes` it deletes
 nothing and prints what it would remove. A file whose content changed since it
 was written is left alone and reported, because it may not be ours - `--force`
-removes those too. `--with-manifest` removes the manifest as well, once every
-file it lists is gone.
+removes those too. `--with-manifest` removes the manifest and the instructions
+beside it as well, once every file it lists is gone. The list printed without
+`--yes` names them too.
 
 ### `tfg recipe fmt`
 

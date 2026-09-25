@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -137,6 +138,183 @@ func TestTheInstructionsGoWhereTheManifestGoes(t *testing.T) {
 	if left := namesIn(t, out); len(left) != 0 {
 		t.Errorf("cleanup --with-manifest left %v behind", left)
 	}
+}
+
+// What cleanup --with-manifest takes besides the files is said before it is
+// taken, and again once it has been. Until 2026-09-25 the preview named only
+// the files the manifest lists, and --yes then took the manifest and the
+// instructions beside it as well - said by CodeRabbit on #140, measured true.
+func TestCleanupNamesTheRecordBeforeItTakesIt(t *testing.T) {
+	out, mf, instructions := purposeRun(t)
+	_, said, _ := run(t, "cleanup", mf, "--with-manifest")
+	for _, want := range []string{"  remove " + mf + "\n", "  remove " + instructions + "\n"} {
+		if !strings.Contains(said, want) {
+			t.Errorf("the preview does not say %q, and --yes takes it:\n%s", strings.TrimSpace(want), said)
+		}
+	}
+	_, raw, _ := run(t, "cleanup", mf, "--with-manifest", "--json")
+	preview := decodeCleanup(t, raw)
+	if got := recordActions(preview); !slices.Equal(got, []string{"manifest.json=would-remove", instructionsName + "=would-remove"}) {
+		t.Errorf("the preview's record is %v", got)
+	}
+	if len(preview.Files) != 1 || preview.WouldRemove != 1 {
+		t.Errorf("files and would_remove count %d and %d, and the manifest lists one file - the record is not theirs to count",
+			len(preview.Files), preview.WouldRemove)
+	}
+	_, raw, _ = run(t, "cleanup", mf, "--json")
+	if got := recordActions(decodeCleanup(t, raw)); len(got) != 0 {
+		t.Errorf("without --with-manifest the report names a record nothing will touch: %v", got)
+	}
+
+	code, said, errOut := run(t, "cleanup", mf, "--with-manifest", "--yes")
+	if code != cli.ExitOK {
+		t.Fatalf("cleanup --with-manifest --yes ended %d: %s", code, errOut)
+	}
+	for _, want := range []string{"  removed " + mf + "\n", "  removed " + instructions + "\n"} {
+		if !strings.Contains(said, want) {
+			t.Errorf("the run does not say %q, and took it:\n%s", strings.TrimSpace(want), said)
+		}
+	}
+	if left := namesIn(t, out); len(left) != 0 {
+		t.Errorf("cleanup --with-manifest left %v behind", left)
+	}
+
+	_, mf, _ = purposeRun(t)
+	code, raw, errOut = run(t, "cleanup", mf, "--with-manifest", "--yes", "--json")
+	if code != cli.ExitOK {
+		t.Fatalf("cleanup --with-manifest --yes --json ended %d: %s", code, errOut)
+	}
+	if got := recordActions(decodeCleanup(t, raw)); !slices.Equal(got, []string{"manifest.json=removed", instructionsName + "=removed"}) {
+		t.Errorf("the report's record is %v", got)
+	}
+}
+
+// The record stays while a file it lists stays, and the manifest stays while
+// the instructions it names do - and the report says which and why, in the
+// preview and in the run.
+func TestCleanupSaysWhyTheRecordStays(t *testing.T) {
+	out, mf, _ := purposeRun(t)
+	_, raw, _ := run(t, "cleanup", mf, "--json")
+	listed := decodeCleanup(t, raw).Files
+	if len(listed) != 1 {
+		t.Fatalf("the manifest lists %d files, and one was asked for", len(listed))
+	}
+	changed := filepath.Join(out, listed[0].Path)
+	body, err := os.ReadFile(changed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(changed, append(body, 'x'), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, raw, _ = run(t, "cleanup", mf, "--with-manifest", "--json")
+	preview := decodeCleanup(t, raw)
+	if got := recordActions(preview); !slices.Equal(got, []string{"manifest.json=would-keep", instructionsName + "=would-keep"}) {
+		t.Errorf("with a changed file the preview's record is %v", got)
+	} else if !strings.Contains(preview.Record[0].Reason, "only record") {
+		t.Errorf("the preview does not say why the manifest would stay: %q", preview.Record[0].Reason)
+	}
+	code, _, errOut := run(t, "cleanup", mf, "--with-manifest", "--yes", "--json")
+	if got := recordActions(decodeCleanup(t, fromBrace(errOut))); code != cli.ExitIO ||
+		!slices.Equal(got, []string{"manifest.json=kept", instructionsName + "=kept"}) {
+		t.Errorf("with a changed file the run ended %d and its record is %v", code, got)
+	}
+
+	// Instructions that will not go: a directory with something in it, which
+	// no system removes with a plain remove.
+	_, mf, instructions := purposeRun(t)
+	if err := os.Remove(instructions); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(instructions, "inside"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	code, said, errOut := run(t, "cleanup", mf, "--with-manifest", "--yes", "--json")
+	if got := recordActions(decodeCleanup(t, fromBrace(errOut))); code != cli.ExitIO || said != "" ||
+		!slices.Equal(got, []string{"manifest.json=kept", instructionsName + "=kept"}) {
+		t.Errorf("instructions that would not go ended %d, put %q on stdout, and the record is %v", code, said, got)
+	}
+	if _, err := os.Stat(mf); err != nil {
+		t.Error("the manifest went while the instructions it names stayed")
+	}
+}
+
+// Instructions somebody already deleted are not promised for removal, and do
+// not keep a manifest they asked to have removed.
+func TestInstructionsAlreadyGoneHoldNothingBack(t *testing.T) {
+	out, mf, instructions := purposeRun(t)
+	if err := os.Remove(instructions); err != nil {
+		t.Fatal(err)
+	}
+	_, raw, _ := run(t, "cleanup", mf, "--with-manifest", "--json")
+	preview := decodeCleanup(t, raw)
+	if got := recordActions(preview); !slices.Equal(got, []string{"manifest.json=would-remove", instructionsName + "=would-keep"}) {
+		t.Errorf("with the instructions gone the preview's record is %v", got)
+	} else if preview.Record[1].Reason != "it is already gone" {
+		t.Errorf("the preview keeps the instructions for %q rather than because they are gone", preview.Record[1].Reason)
+	}
+	code, raw, errOut := run(t, "cleanup", mf, "--with-manifest", "--yes", "--json")
+	if code != cli.ExitOK {
+		t.Fatalf("instructions already gone ended the run %d: %s", code, errOut)
+	}
+	if got := recordActions(decodeCleanup(t, raw)); !slices.Equal(got, []string{"manifest.json=removed", instructionsName + "=kept"}) {
+		t.Errorf("with the instructions gone the run's record is %v", got)
+	}
+	if left := namesIn(t, out); len(left) != 0 {
+		t.Errorf("cleanup --with-manifest left %v behind", left)
+	}
+}
+
+// purposeRun generates one file with a purpose and gives the output
+// directory, the manifest and the instructions beside it.
+func purposeRun(t *testing.T) (out, mf, instructions string) {
+	t.Helper()
+	dir := t.TempDir()
+	out = filepath.Join(dir, "out")
+	generateFrom(t, dir, out, "purpose: A file for the guard.\n")
+	return out, filepath.Join(out, "manifest.json"), filepath.Join(out, instructionsName)
+}
+
+// cleanupRecord is the part of a cleanup report these guards read, as a
+// script receives it rather than through the type that writes it.
+type cleanupRecord struct {
+	WouldRemove int `json:"would_remove"`
+	Files       []struct {
+		Path string `json:"path"`
+	} `json:"files"`
+	Record []struct {
+		Path   string `json:"path"`
+		Action string `json:"action"`
+		Reason string `json:"reason"`
+	} `json:"record"`
+}
+
+func decodeCleanup(t *testing.T, raw string) cleanupRecord {
+	t.Helper()
+	var r cleanupRecord
+	if err := json.Unmarshal([]byte(raw), &r); err != nil {
+		t.Fatalf("the report is not JSON: %v\n%s", err, raw)
+	}
+	return r
+}
+
+// recordActions is each file of the record by its own name, with what was
+// done to it, in the order the report gives them.
+func recordActions(r cleanupRecord) []string {
+	var out []string
+	for _, e := range r.Record {
+		out = append(out, filepath.Base(e.Path)+"="+e.Action)
+	}
+	return out
+}
+
+// fromBrace is the JSON report at the end of what a failed run said, after
+// the sentences in front of it.
+func fromBrace(said string) string {
+	if i := strings.Index(said, "{"); i >= 0 {
+		return said[i:]
+	}
+	return said
 }
 
 // A run nobody explained writes no instructions and names none.

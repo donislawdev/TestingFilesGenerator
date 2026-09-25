@@ -327,8 +327,8 @@ because it turns other people's test suites red.
   as extra, and `cleanup --with-manifest` removes it with the manifest. A
   run into a directory that already holds instructions of that name is
   refused before anything is written. If the file cannot be written, the run
-  says so and still succeeds, because every file and the manifest are
-  complete.
+  says so and does not fail over it, because the manifest was saved and
+  holds the same facts.
 
 - **A `purpose` for every target of a recipe.** One or two sentences on what
   the files are and why they are in the set. They reach `files[].purpose` in
@@ -549,6 +549,14 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **`tfg cleanup --with-manifest` says before it acts that the manifest goes
+  too.** The list printed without `--yes` named only the files the manifest
+  lists, and `--yes` then removed the manifest as well. It now ends with the
+  manifest and the instructions beside it, or says why they would stay, and
+  the run with `--yes` names them once they are gone. With `--json` both
+  reports carry them in a new `record` list. `files`, `removed`, `kept` and
+  `would_remove` still count only what the manifest lists.
 
 - **A report shows a character nobody can see in a file name as an escape.**
   `verify`, `cleanup`, the notes of a run, every error message and the

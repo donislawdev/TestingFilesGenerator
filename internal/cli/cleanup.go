@@ -20,7 +20,7 @@ func cleanup(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs.SetOutput(errOut)
 	yes := fs.Bool("yes", false, "actually remove the files. Without this nothing is deleted and the list is printed")
 	force := fs.Bool("force", false, "remove files whose content has changed since they were written")
-	withManifest := fs.Bool("with-manifest", false, "remove the manifest as well, once every file it lists is gone")
+	withManifest := fs.Bool("with-manifest", false, "remove the manifest and the instructions beside it as well, once every file it lists is gone")
 	asJSON := fs.Bool("json", false, "write the report as JSON instead of prose")
 	against := fs.String("against", "", "directory to clean. Defaults to the directory holding the manifest")
 	usage := func(w io.Writer) {
@@ -91,17 +91,34 @@ Flags:
 		return ExitOK
 	}
 
+	run := cleanupRun{path: path, dir: dir, force: *force, asJSON: *asJSON, out: out, errOut: errOut}
+	// Worked out before the preview as well as the real run, so the preview
+	// names every file --yes would take. It named only the files the manifest
+	// lists until 2026-09-25, and the real run then took the manifest and the
+	// instructions beside it too.
+	if *withManifest {
+		run.record = recordOf(path, m)
+	}
 	// The default run deletes nothing. A tool that removes files on the
 	// strength of one argument is the wrong shape when the directory may hold
 	// somebody's own work, and asking interactively is ruled out.
 	if !*yes {
-		return previewCleanup(cands, path, dir, *force, *asJSON, out, errOut)
+		return previewCleanup(cands, run)
 	}
-	var record []string
-	if *withManifest {
-		record = recordOf(path, m)
-	}
-	return applyCleanup(ctx, cands, path, dir, *force, record, *asJSON, out, errOut)
+	return applyCleanup(ctx, cands, run)
+}
+
+// cleanupRun is what every part of one cleanup needs to know about it.
+//
+// One value rather than the nine arguments applyCleanup took until
+// 2026-09-25, when the preview came to need the record as well.
+type cleanupRun struct {
+	path, dir     string
+	force, asJSON bool
+	// record is the manifest and the instructions beside it, when
+	// --with-manifest asked for them to go too, and nothing otherwise.
+	record      []string
+	out, errOut io.Writer
 }
 
 // recordOf is what a run wrote about itself: the manifest, and the
@@ -116,9 +133,11 @@ func recordOf(path string, m *manifest.Manifest) []string {
 }
 
 // previewCleanup lists what a run with --yes would remove, and removes nothing.
-func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON bool, out, errOut io.Writer) int {
-	if asJSON {
-		report := cleanupReport{Manifest: path, Directory: dir, Applied: false}
+func previewCleanup(cands []audit.Candidate, run cleanupRun) int {
+	force := run.force
+	record := previewRecord(cands, run)
+	if run.asJSON {
+		report := cleanupReport{Manifest: run.path, Directory: run.dir, Applied: false, Record: record}
 		for _, c := range cands {
 			e := cleanupEntry{Path: c.Path, State: string(c.Disposition)}
 			if c.Removable(force) {
@@ -129,32 +148,87 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 			report.Files = append(report.Files, e)
 			report.WouldRemove += boolToInt(c.Removable(force))
 		}
-		return writeJSON(out, errOut, report, ExitOK)
+		return writeJSON(run.out, run.errOut, report, ExitOK)
 	}
 
-	fmt.Fprintf(out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), core.Shown(dir))
+	fmt.Fprintf(run.out, "%s would be removed from %s:\n", core.Count(countRemovable(cands, force), "file", "files"), core.Shown(run.dir))
 	for _, c := range cands {
 		if c.Removable(force) {
-			fmt.Fprintf(out, "  remove %s\n", core.Shown(c.Path))
+			fmt.Fprintf(run.out, "  remove %s\n", core.Shown(c.Path))
 			continue
 		}
-		fmt.Fprintf(out, "  keep   %s - %s\n", core.Shown(c.Path), skipNote(c, force))
+		fmt.Fprintf(run.out, "  keep   %s - %s\n", core.Shown(c.Path), skipNote(c, force))
 	}
-	fmt.Fprintf(errOut, "Nothing was removed. Run the same command with --yes to remove them.\n")
+	sayRecord(run.out, record, "remove", "keep  ")
+	fmt.Fprintf(run.errOut, "Nothing was removed. Run the same command with --yes to remove them.\n")
 	return ExitOK
 }
 
-// applyCleanup removes the files and says exactly what happened to each.
+// previewRecord is what --yes would do with the manifest and the instructions
+// beside it, decided the way applyCleanup decides it: the record goes only
+// when no file it lists would still be on the disk. A file already gone does
+// not hold it back, and neither do instructions already gone - removeRecord
+// passes over those, so the preview says so rather than promising to remove
+// them.
 //
-// record is the manifest and the instructions beside it, when --with-manifest
-// asked for them to go too, and nothing otherwise.
-func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string, force bool, record []string, asJSON bool, out, errOut io.Writer) int {
-	outcomes, removeErr := audit.Remove(ctx, dir, cands, force)
+// A forecast, as the rest of the preview is. A file changed or removed between
+// this and --yes is found by the real run and said there.
+func previewRecord(cands []audit.Candidate, run cleanupRun) []cleanupEntry {
+	if len(run.record) == 0 {
+		return nil
+	}
+	staying := 0
+	for _, c := range cands {
+		if !c.Removable(run.force) && c.Disposition != audit.Absent {
+			staying++
+		}
+	}
+	entries := make([]cleanupEntry, 0, len(run.record))
+	for i, p := range run.record {
+		e := cleanupEntry{Path: p, Action: "would-remove"}
+		switch {
+		case staying > 0:
+			e.Action, e.Reason = "would-keep", keptBecause(i, staying)
+		case i > 0 && isGone(p):
+			e.Action, e.Reason = "would-keep", "it is already gone"
+		}
+		entries = append(entries, e)
+	}
+	return entries
+}
+
+// sayRecord puts the manifest and the instructions under the list of files, in
+// the list's own words - gone for a file that goes or went, kept for one that
+// stays, each as wide as the other so the names line up.
+func sayRecord(w io.Writer, record []cleanupEntry, gone, kept string) {
+	if len(record) == 0 {
+		return
+	}
+	fmt.Fprintln(w, "After them, because of --with-manifest:")
+	for _, e := range record {
+		if e.Action == "removed" || e.Action == "would-remove" {
+			fmt.Fprintf(w, "  %s %s\n", gone, core.Shown(e.Path))
+			continue
+		}
+		fmt.Fprintf(w, "  %s %s - %s\n", kept, core.Shown(e.Path), e.Reason)
+	}
+}
+
+// isGone says a name holds nothing at all - not a link, not a file.
+func isGone(path string) bool {
+	_, err := os.Lstat(path)
+	return errors.Is(err, os.ErrNotExist)
+}
+
+// applyCleanup removes the files and says exactly what happened to each.
+func applyCleanup(ctx context.Context, cands []audit.Candidate, run cleanupRun) int {
+	force, asJSON, out, errOut := run.force, run.asJSON, run.out, run.errOut
+	outcomes, removeErr := audit.Remove(ctx, run.dir, cands, force)
 
 	// A file that was already gone is not a leftover. Counting it as one would
 	// make the second run of cleanup fail, and the second run is the one a
 	// script makes.
-	report := cleanupReport{Manifest: path, Directory: dir, Applied: true}
+	report := cleanupReport{Manifest: run.path, Directory: run.dir, Applied: true}
 	// Two counts rather than one, because they answer different questions and
 	// conflating them is what this fixed. blocked is what a file still being
 	// there MEANS - it decides the exit code and whether the manifest may go.
@@ -193,12 +267,13 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return ExitInterrupted
 	}
 
-	if len(record) > 0 {
-		if blocked > 0 {
-			fmt.Fprintf(errOut, "tfg: the manifest was kept. It is the only record of %s still on disk.\n", core.Count(blocked, "file", "files"))
-		} else if code := removeRecord(record, errOut); code != ExitOK {
-			return code
+	// A record that could not be removed ends the run here, with the report on
+	// stderr like any failed run's. Before 2026-09-25 this ended without one.
+	if code := settleRecord(run, blocked, &report); code != ExitOK {
+		if asJSON {
+			return writeJSON(errOut, errOut, report, code)
 		}
+		return code
 	}
 
 	if asJSON {
@@ -211,7 +286,11 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return writeJSON(out, errOut, report, ExitOK)
 	}
 
-	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), core.Shown(dir))
+	fmt.Fprintf(out, "%s removed from %s\n", core.Count(removed, "file", "files"), core.Shown(run.dir))
+	// A record held back by a file left behind was said on stderr, with why.
+	if blocked == 0 {
+		sayRecord(out, report.Record, "removed", "kept   ")
+	}
 
 	// A file left behind is not a silent outcome. It was reported above, and
 	// the exit code has to carry it too or a script never learns.
@@ -219,6 +298,40 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return ExitIO
 	}
 	return ExitOK
+}
+
+// settleRecord removes the manifest and the instructions beside it, when
+// --with-manifest asked for them and no file they list is still on the disk,
+// and puts what happened to each into the report. The exit code is about the
+// record alone. A file left behind is the caller's to count.
+func settleRecord(run cleanupRun, blocked int, report *cleanupReport) int {
+	if len(run.record) == 0 {
+		return ExitOK
+	}
+	if blocked > 0 {
+		for i, p := range run.record {
+			report.Record = append(report.Record, cleanupEntry{Path: p, Action: "kept", Reason: keptBecause(i, blocked)})
+		}
+		also := ""
+		if len(run.record) > 1 {
+			also = ", and the instructions with it"
+		}
+		fmt.Fprintf(run.errOut, "tfg: the manifest was kept%s. It is the only record of %s still on disk.\n", also, core.Count(blocked, "file", "files"))
+		return ExitOK
+	}
+	var code int
+	report.Record, code = removeRecord(run.record, run.errOut)
+	return code
+}
+
+// keptBecause is why the file of the record at position i stays while n files
+// the manifest lists stay on the disk. The same words in the preview and in
+// the real run, so the two cannot come to disagree about the reason.
+func keptBecause(i, n int) string {
+	if i > 0 {
+		return "it stays with the manifest"
+	}
+	return fmt.Sprintf("it is the only record of %s still on disk", core.Count(n, "file", "files"))
 }
 
 func countRemovable(cands []audit.Candidate, force bool) int {
@@ -266,6 +379,10 @@ type cleanupReport struct {
 	Removed     int            `json:"removed"`
 	Kept        int            `json:"kept"`
 	Files       []cleanupEntry `json:"files"`
+	// Record is the manifest and the instructions beside it, only when
+	// --with-manifest was given. Apart from files, so that removed, kept and
+	// would_remove go on counting what the manifest lists and nothing else.
+	Record []cleanupEntry `json:"record,omitempty"`
 }
 
 type cleanupEntry struct {
@@ -289,10 +406,21 @@ func boolToInt(b bool) int {
 // manifest standing beside what it names rather than naming something gone.
 // Instructions already gone are not a failure: somebody deleting a page of
 // prose is no reason to keep a manifest they asked to have removed.
-func removeRecord(record []string, errOut io.Writer) int {
+//
+// What happened to each file comes back in the order of record, for the
+// report, with the file that failed and every one not yet tried kept.
+func removeRecord(record []string, errOut io.Writer) ([]cleanupEntry, int) {
+	entries := make([]cleanupEntry, len(record))
+	for i, p := range record {
+		entries[i] = cleanupEntry{Path: p, Action: "removed"}
+	}
 	for i := len(record) - 1; i >= 0; i-- {
 		err := os.Remove(record[i])
-		if err == nil || (i > 0 && errors.Is(err, os.ErrNotExist)) {
+		if err == nil {
+			continue
+		}
+		if i > 0 && errors.Is(err, os.ErrNotExist) {
+			entries[i].Action, entries[i].Reason = "kept", "it is already gone"
 			continue
 		}
 		what := "the manifest"
@@ -300,7 +428,11 @@ func removeRecord(record []string, errOut io.Writer) int {
 			what = "the instructions"
 		}
 		fmt.Fprintf(errOut, "tfg: cannot remove %s %s: %s\n", what, core.Shown(record[i]), describeError(err))
-		return ExitIO
+		for j := 0; j < i; j++ {
+			entries[j].Action, entries[j].Reason = "kept", "the instructions it names could not be removed"
+		}
+		entries[i].Action, entries[i].Reason = "kept", describeError(err)
+		return entries, ExitIO
 	}
-	return ExitOK
+	return entries, ExitOK
 }
