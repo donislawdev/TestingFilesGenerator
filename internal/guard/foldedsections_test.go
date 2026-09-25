@@ -161,11 +161,33 @@ func TestNothingInTheManifestNotesChangesAByte(t *testing.T) {
 	// And the values are not merely harmless - they arrive where the section is
 	// named for. A note nothing carries would be a box with no effect anywhere,
 	// which is a worse thing to hide behind a fold than a setting that works.
-	for _, want := range []string{"boundary-cases", "reject"} {
+	//
+	// Every box gets a value of its own and every value is looked for. Until
+	// 2026-09-25 every box got the same one, and when the purpose joined the
+	// kind of case in this section, a kind of case that stopped reaching the
+	// manifest was still found there - in the purpose. The mutation runner
+	// said so, NOT CAUGHT, about a guard that had been proven.
+	wants := []string{"reject"}
+	for _, setting := range inNotes {
+		if typed := typedIntoNote(setting); typed != "" {
+			wants = append(wants, typed)
+		}
+	}
+	for _, want := range wants {
 		if !strings.Contains(manifest.raw, want) {
 			t.Errorf("%q was typed into the manifest notes and the manifest does not carry it", want)
 		}
 	}
+}
+
+// typedIntoNote is what this guard types into one box of the manifest notes,
+// different for every box so that each is looked for on its own - or nothing
+// for the two lists, which are chosen rather than typed.
+func typedIntoNote(setting string) string {
+	if strings.HasSuffix(setting, recipe.KeyExpected) || strings.HasSuffix(setting, recipe.KeyExpectedReason) {
+		return ""
+	}
+	return "noted-" + setting[strings.LastIndex(setting, ".")+1:]
 }
 
 type writtenRun struct {
@@ -210,7 +232,7 @@ func runWithNotes(t *testing.T, dir string, notes []string) ([]string, writtenRu
 		case *parts.Chooser:
 			control.SetSelected(legalChoice(t, setting, control))
 		default:
-			setBox(t, fields, setting, "boundary-cases")
+			setBox(t, fields, setting, typedIntoNote(setting))
 		}
 	}
 
