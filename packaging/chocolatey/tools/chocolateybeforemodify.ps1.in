@@ -2,8 +2,15 @@
 #
 # Chocolatey runs this from the INSTALLED package before an upgrade or an
 # uninstall. It says so when the program is still running from this package,
-# because Windows does not let the files of a running program be replaced, and
-# a person should hear why before the operation that follows complains.
+# and it says what will really happen, which was measured rather than assumed
+# (Windows Server 2025, docs/PACKAGING-2026-09-25.md section 10). It does not
+# fail: Chocolatey moves the package folder aside to lib-bkp, goes ahead and
+# reports success, and the running copy keeps working from there. What it
+# cannot do is delete that copy while it runs, so the copy stays in lib-bkp -
+# after an upgrade until the next Chocolatey operation on this package, and
+# after an uninstall for good, because there may be no next operation. The
+# first version of this message said the operation would fail, which it did
+# not.
 #
 # It never ends the program. That is the owner's decision of 2026-09-25: a run
 # in progress may be halfway through writing a set of files, and cutting it
@@ -28,5 +35,7 @@ try {
 }
 
 if ($running.Count -gt 0) {
-    Write-Warning '{{TITLE}} is running from this package. Close it before you upgrade or remove the package. Windows does not let the files of a running program be replaced.'
+    $leftover = Join-Path $env:ChocolateyInstall 'lib-bkp\{{CHOCO_ID}}'
+    Write-Warning '{{TITLE}} is running from this package. Chocolatey goes ahead, but it cannot delete the running copy, so that copy stays behind.'
+    Write-Warning "It is left in $leftover. Close the program, then delete that folder."
 }
