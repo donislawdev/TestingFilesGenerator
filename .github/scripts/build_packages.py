@@ -85,12 +85,14 @@ KIND_TAG = {"window": "gui", "cli": "cli"}
 def how_to_start(package, feed):
     """The paragraph that differs by feed: what the package gives and how to start it.
 
-    The WinGet sentences about upgrading are measured, not assumed: on Windows
-    Server 2025 with WinGet 1.29.380 on 2026-09-25, upgrading the window while
-    it was open failed with "Access is denied" and left the package folder half
-    removed until the upgrade ran again with the window closed. A portable
-    package can carry no script to warn at that moment, so the description is
-    the only place a person can read it first.
+    The WinGet sentences about upgrading are measured, not assumed, with WinGet
+    1.29.380 on 2026-09-25: on Windows Server 2025 in machine scope and on
+    Windows 11 in user scope, upgrading the window while it was open failed
+    with "Access is denied" and left the package folder half removed until the
+    upgrade ran again with the window closed. On Windows 11 the command line
+    did the same while a tfg run was in progress. A portable package can carry
+    no script to warn at that moment, so the description is the only place a
+    person can read it first.
     """
     other = next(p for p in PACKAGES if p is not package)
     other_id = other.winget_id if feed == "winget" else other.choco_id
@@ -98,8 +100,9 @@ def how_to_start(package, feed):
         text = ("This package is the command line, for scripts and pipelines. The desktop "
                 "window is the package %s. Type tfg help to see the commands." % other_id)
         if feed == "winget":
-            text += (" Upgrade it when no tfg run is in progress. WinGet cannot replace a "
-                     "program while it runs.")
+            text += (" Upgrade it when no tfg run is in progress. WinGet cannot replace "
+                     "tfg while it runs, so it stops half way, and the package works again "
+                     "once the upgrade runs with no run in progress.")
         return text
     if feed == "winget":
         return ("This package is the desktop window. The command line is the package %s. "
