@@ -179,6 +179,9 @@ except SystemExit as refusal:
 	if err := os.WriteFile(script, []byte(probe), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// The interpreter is the one found on PATH, the script is the probe this
+	// guard just wrote, and every argument is a value it chose.
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.Command(pythonForGate(t), script, filepath.Dir(packagingScript(t)), packagingTag,
 		sumsFile(t, fixtureSums()), filepath.Join(dir, "packages"))
 	said, err := cmd.CombinedOutput()

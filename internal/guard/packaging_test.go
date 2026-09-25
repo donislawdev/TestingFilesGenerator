@@ -76,6 +76,10 @@ func fixtureSums() []byte {
 func renderPackages(t *testing.T, tag string, sums []byte, out string) rendering {
 	t.Helper()
 	python := pythonForGate(t)
+	// The interpreter is the one found on PATH, the script is a file of this
+	// repository, and every argument is a value this guard chose or a file it
+	// just wrote - nothing here comes from anything a person typed.
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.Command(python, packagingScript(t),
 		"--tag", tag, "--sums", sumsFile(t, sums), "--out", out)
 	cmd.Dir = repoRoot(t)
