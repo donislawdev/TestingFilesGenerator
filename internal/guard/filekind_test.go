@@ -46,7 +46,7 @@ func TestThePresetScreenCanBuildTheSetInAnyFormat(t *testing.T) {
 	written := namesIn(t, dir)
 	pictures := 0
 	for _, name := range written {
-		if name == "manifest.json" {
+		if isRecord(name) {
 			continue
 		}
 		if !strings.HasSuffix(name, ".png") {
@@ -102,8 +102,8 @@ func TestChoosingTheFormatGivesTheSameSetOnBothSurfaces(t *testing.T) {
 		t.Fatalf("the two surfaces produced different files.\n  command line: %v\n  window:       %v",
 			cliNames, windowNames)
 	}
-	if len(cliNames) != 8 {
-		t.Fatalf("the preset produced %d thing(s) and seven files plus a manifest was expected: %v",
+	if len(cliNames) != 9 {
+		t.Fatalf("the preset produced %d thing(s) and seven files, a manifest and its instructions were expected: %v",
 			len(cliNames), cliNames)
 	}
 

@@ -27,6 +27,10 @@ type nameOwner struct {
 	// with a choice nobody else can make, while a target sitting on the
 	// manifest has one box that is certainly filled in - its own.
 	manifest bool
+	// instructions is set for the file written beside the manifest that says
+	// what every file is for. Refused the same way the manifest is, in words
+	// of its own.
+	instructions bool
 }
 
 // claimFileName takes a name for one target, or refuses because somebody has it.
@@ -51,6 +55,15 @@ func claimFileName(names map[string]nameOwner, position int, id, name string) er
 			Detail: fmt.Sprintf("target %q produces a file named %s, and that is the name this run gives its manifest",
 				id, core.Shown(name)),
 			Because: "both are written into the output directory, so the file would take the name the manifest needs and the run would end with files and nothing to remove them by",
+			Remedy:  "Give the target a name template containing " + indexToken + ", or name the manifest something else",
+		}
+	}
+	if owner.instructions {
+		return &RecipeError{
+			Setting: core.TargetAddress(position, SettingName),
+			Detail: fmt.Sprintf("target %q produces a file named %s, and that is the name this run gives the instructions beside its manifest",
+				id, core.Shown(name)),
+			Because: "both are written into the output directory, and the instructions say what every file of the run is for, so one of the two would be lost",
 			Remedy:  "Give the target a name template containing " + indexToken + ", or name the manifest something else",
 		}
 	}

@@ -133,6 +133,7 @@ var shapeCases = map[string]string{
 	"format":     "version: 1\ntargets:\n  - id: a\n    format: {a: b}\n    size: 1kb\noutput:\n  dir: ./o\n",
 	"name":       "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    name: {a: b}\noutput:\n  dir: ./o\n",
 	"group":      "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    group: {a: b}\noutput:\n  dir: ./o\n",
+	"purpose":    "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    purpose: {a: b}\noutput:\n  dir: ./o\n",
 	"count":      "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    count: {a: b}\noutput:\n  dir: ./o\n",
 	"size":       "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: {a: b}\noutput:\n  dir: ./o\n",
 	"size-range": "version: 1\ntargets:\n  - id: a\n    format: txt\n    size-range: {a: b}\noutput:\n  dir: ./o\n",

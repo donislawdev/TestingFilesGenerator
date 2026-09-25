@@ -16,6 +16,13 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **`tfg preset eject` writes a `purpose` line for every target, so an
+  ejected recipe and the `recipe_hash` of every run from a preset differ from
+  0.3.0.** The recipe carries the purposes so that an ejected preset still
+  produces exactly what the preset does. The bytes of every generated file
+  are unchanged. A pipeline comparing `recipe_hash` across tool versions will
+  see a new value once.
+
 - **A file name longer than 255 bytes is refused before anything is written,
   on every system.** Linux stores at most 255 bytes in a name, while Windows
   and macOS count characters, so a name of 200 Chinese or Japanese characters
@@ -306,6 +313,29 @@ because it turns other people's test suites red.
   row now, and the picture of a file kind stays in front where it was.
 
 ### Added
+
+- **Every preset now says what each of its files is for.** A run from a
+  preset writes `manifest.instructions.md` beside `manifest.json`: the
+  question the preset answers, how to read accept, reject, sanitize and
+  unspecified, and then every file - its name, format and size, what your
+  system is expected to do with it and one or two sentences on why it is in
+  the set. Many files of one kind, such as the fifty of a mass upload, are
+  one entry. The file is named after the manifest, so `run2.json` gets
+  `run2.instructions.md`, and it is written only when some file has a
+  purpose - a plain `tfg generate --format png` writes none. `generate`
+  prints `instructions:` under `manifest:`, `verify` does not count the file
+  as extra, and `cleanup --with-manifest` removes it with the manifest. A
+  run into a directory that already holds instructions of that name is
+  refused before anything is written. If the file cannot be written, the run
+  says so and still succeeds, because every file and the manifest are
+  complete.
+
+- **A `purpose` for every target of a recipe.** One or two sentences on what
+  the files are and why they are in the set. They reach `files[].purpose` in
+  the manifest and the instructions beside it, and change no byte of any
+  file. The batch screen has a `Purpose` box among the manifest notes of each
+  batch, and the window offers `Open instructions` beside `Open manifest`
+  after a run that wrote them.
 
 - **A preset for unusual file names: `filename-handling`.** It answers "will
   my system store, show and give back a file name it did not expect?" with

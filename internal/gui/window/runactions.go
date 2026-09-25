@@ -79,6 +79,6 @@ func (r *runner) actions() fyne.CanvasObject {
 	// A row of ours with a wider gap since the prototype of 2026-09-23 - see
 	// parts.ButtonRow.
 	r.busy.row = parts.ButtonRow(r.previewBtn, r.generateBtn, r.busy.cancel,
-		r.offer.folderBtn, r.offer.manifestBtn)
+		r.offer.folderBtn, r.offer.manifest.btn, r.offer.instructions.btn)
 	return r.busy.row
 }

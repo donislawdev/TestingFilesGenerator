@@ -83,17 +83,71 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) fyne.CanvasO
 // rule at all. TestNothingInTheManifestNotesChangesAByte holds the line against
 // the engine rather than against this comment.
 func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
-	b.notes = parts.NewInnerFolding(text.SectionManifestNotes(),
+	n := &b.notes
+	n.fold = parts.NewInnerFolding(text.SectionManifestNotes(),
 		parts.Note(text.NoteManifestOnly()),
 		add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
-			r.tips.Say(text.DetailGroup()), parts.Text(b.group)),
+			r.tips.Say(text.DetailGroup()), parts.Text(n.group)),
+		// Across the row, because it is a sentence rather than a name. It is
+		// what the instructions beside the manifest say about these files.
+		parts.Wide(add(recipe.KeyPurpose, text.FieldPurpose(), text.HintPurpose(),
+			r.tips.Say(text.DetailPurpose()), n.purpose)),
 		add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
-			r.tips.Say(text.DetailExpected()), b.expected),
+			r.tips.Say(text.DetailExpected()), n.expected),
 		add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
-			r.tips.Say(text.DetailReason()), b.reason),
+			r.tips.Say(text.DetailReason()), n.reason),
 	)
-	r.wire(b.notes, &b.notesFolded, func() string { return b.notesSaid() })
-	return b.notes.Object()
+	r.wire(n.fold, &n.folded, n.said)
+	return n.fold.Object()
+}
+
+// batchNotes is the manifest notes of one batch: what the manifest says about
+// its files and nothing that changes a byte of them - the kind of case, what
+// the files are for, the outcome expected and the rule it is about - with the
+// section they are drawn in.
+//
+// Its own type since 2026-09-25, when the purpose took batch one field past
+// its ceiling. The ceiling is a ratchet, so the answer was to move state out,
+// and this was the seam: one section on the screen, one rule about what may be
+// in it (TestNothingInTheManifestNotesChangesAByte), and nothing the rest of
+// the batch reads.
+type batchNotes struct {
+	group, purpose   *parts.Entry
+	expected, reason *parts.Chooser
+	fold             *parts.Folding
+	// folded survives a rebuild for the reason batch.settingsFolded gives, and
+	// starts true: the section arrives put away.
+	folded bool
+}
+
+func newBatchNotes() batchNotes {
+	n := batchNotes{group: parts.NewEntry(), purpose: parts.NewEntry(), folded: true}
+	// The class is optional metadata, so it says so the way the count does.
+	// It stood empty and silent beside the id, which is REFUSED when empty -
+	// two boxes side by side, one you must fill in and one you need not,
+	// drawn identically. The rule this closes is worth more than the two
+	// fields: a box with a hint may be left alone, a box with nothing in it
+	// may not, and TestABoxYouMayLeaveAloneSaysSo holds it from the registry.
+	n.group.SetPlaceHolder(text.PlaceholderNotStated())
+	n.purpose.SetPlaceHolder(text.PlaceholderNotStated())
+
+	// Nothing is filled in with a default, on either list. A list carrying a
+	// value cannot say "I did not state this", and an expectation nobody stated
+	// has to stay unstated - manifest rule MF5, because an invented expectation
+	// produces false failures in somebody else's test run.
+	n.expected = parts.NewChooser(recipe.Outcomes(), nil)
+	n.expected.PlaceHolder = text.PlaceholderNotStated()
+	n.reason = parts.NewChooser(recipe.Reasons(), nil)
+	n.reason.PlaceHolder = text.PlaceholderNotStated()
+	return n
+}
+
+// takeFrom copies what another batch's notes hold, for a copied batch.
+func (n batchNotes) takeFrom(from batchNotes) {
+	n.group.SetText(from.group.Text)
+	n.purpose.SetText(from.purpose.Text)
+	n.expected.SetSelected(from.expected.Selected)
+	n.reason.SetSelected(from.reason.Selected)
 }
 
 // wire puts a section into the state it was left in and keeps it there across
@@ -140,9 +194,9 @@ func (b *batch) settingsSaid() string {
 	return text.FoldedSummary(said...)
 }
 
-// notesSaid is what the manifest notes say while they are away.
-func (b *batch) notesSaid() string {
-	return text.FoldedSummary(b.group.Text, b.expected.Selected, b.reason.Selected)
+// said is what the manifest notes say while they are away.
+func (n *batchNotes) said() string {
+	return text.FoldedSummary(n.group.Text, n.purpose.Text, n.expected.Selected, n.reason.Selected)
 }
 
 // openFoldHolding opens everything a box has been put away inside.
@@ -174,7 +228,7 @@ func (r *Recipe) openFoldHolding(address string) {
 		return
 	}
 	for _, b := range r.batches {
-		for _, fold := range []*parts.Folding{b.fold, b.settings, b.notes} {
+		for _, fold := range []*parts.Folding{b.fold, b.settings, b.notes.fold} {
 			if fold != nil && fold.Holds(field.Control) {
 				fold.Set(true)
 			}

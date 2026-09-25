@@ -97,7 +97,22 @@ Flags:
 	if !*yes {
 		return previewCleanup(cands, path, dir, *force, *asJSON, out, errOut)
 	}
-	return applyCleanup(ctx, cands, path, dir, *force, *withManifest, *asJSON, out, errOut)
+	var record []string
+	if *withManifest {
+		record = recordOf(path, m)
+	}
+	return applyCleanup(ctx, cands, path, dir, *force, record, *asJSON, out, errOut)
+}
+
+// recordOf is what a run wrote about itself: the manifest, and the
+// instructions it names when it names any, which sit beside it. Load has
+// already refused a manifest naming anything but a plain name there.
+func recordOf(path string, m *manifest.Manifest) []string {
+	record := []string{path}
+	if m.Run.Instructions != "" {
+		record = append(record, filepath.Join(filepath.Dir(path), m.Run.Instructions))
+	}
+	return record
 }
 
 // previewCleanup lists what a run with --yes would remove, and removes nothing.
@@ -130,7 +145,10 @@ func previewCleanup(cands []audit.Candidate, path, dir string, force, asJSON boo
 }
 
 // applyCleanup removes the files and says exactly what happened to each.
-func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string, force, withManifest, asJSON bool, out, errOut io.Writer) int {
+//
+// record is the manifest and the instructions beside it, when --with-manifest
+// asked for them to go too, and nothing otherwise.
+func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string, force bool, record []string, asJSON bool, out, errOut io.Writer) int {
 	outcomes, removeErr := audit.Remove(ctx, dir, cands, force)
 
 	// A file that was already gone is not a leftover. Counting it as one would
@@ -175,12 +193,11 @@ func applyCleanup(ctx context.Context, cands []audit.Candidate, path, dir string
 		return ExitInterrupted
 	}
 
-	if withManifest {
+	if len(record) > 0 {
 		if blocked > 0 {
 			fmt.Fprintf(errOut, "tfg: the manifest was kept. It is the only record of %s still on disk.\n", core.Count(blocked, "file", "files"))
-		} else if err := os.Remove(path); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot remove the manifest %s: %s\n", core.Shown(path), describeError(err))
-			return ExitIO
+		} else if code := removeRecord(record, errOut); code != ExitOK {
+			return code
 		}
 	}
 
@@ -265,4 +282,25 @@ func boolToInt(b bool) int {
 		return 1
 	}
 	return 0
+}
+
+// removeRecord takes away what a run wrote about itself, the instructions
+// before the manifest that names them - so a failure part way leaves the
+// manifest standing beside what it names rather than naming something gone.
+// Instructions already gone are not a failure: somebody deleting a page of
+// prose is no reason to keep a manifest they asked to have removed.
+func removeRecord(record []string, errOut io.Writer) int {
+	for i := len(record) - 1; i >= 0; i-- {
+		err := os.Remove(record[i])
+		if err == nil || (i > 0 && errors.Is(err, os.ErrNotExist)) {
+			continue
+		}
+		what := "the manifest"
+		if i > 0 {
+			what = "the instructions"
+		}
+		fmt.Fprintf(errOut, "tfg: cannot remove %s %s: %s\n", what, core.Shown(record[i]), describeError(err))
+		return ExitIO
+	}
+	return ExitOK
 }

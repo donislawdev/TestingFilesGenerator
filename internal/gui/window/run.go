@@ -665,7 +665,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// The manifest is written here rather than after crossing back, because
 		// it is disk work and the interface thread is the one thing that must
 		// not wait on a disk.
-		savedTo, saveErr := saveManifest(res, opt)
+		saved, saveErr := saveRecord(res, opt)
 		// The room left on the disk is the room left AFTER the files, which
 		// is not the number a preview measured before them.
 		room := roomOn(opt.OutDir)
@@ -673,7 +673,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// stop, waiting on the channel closed below, and a worker waiting for
 		// that thread to run something would be both of them waiting.
 		r.holdBeforeFinishing()
-		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room, savedTo) })
+		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room, saved) })
 		close(done)
 	}()
 }
@@ -683,10 +683,10 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 // Note what it does not do: clear stop. That is deliberate and the reason is at
 // the declaration of the field.
 //
-// savedTo is where the record went, or nothing at all when no record was
+// saved is where the record went, with nothing in it when no record was
 // written - which is a refused run, a preview, and a run whose manifest could
 // not be saved. The screen says nothing about a manifest in any of those.
-func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom, savedTo string) {
+func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room diskRoom, saved engine.Record) {
 	r.busy.set(false, busyFace{})
 	if room.known && r.offer.wroteInto != "" {
 		r.line.measured(r.offer.wroteInto, room.free)
@@ -715,12 +715,19 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// command line has printed it since there was a manifest, and the window
 	// said only how many files - so the one thing this tool makes that others
 	// do not was, from a window, something you found in the folder afterwards.
-	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(savedTo))
+	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(saved.Manifest))
 	said := append([]string{outcome}, manifestReachNote(res)...)
+	// Instructions that were due and are not there are said, not failed: every
+	// file and the manifest are whole. Silence would leave a button missing
+	// with no reason given.
+	if saved.Missed != nil {
+		said = append(said, text.InstructionsNotSaved(saved.Missed.Path, saved.Missed.Err.Error()))
+	}
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
 	r.offer.theFolder(res)
-	r.offer.theManifest(savedTo)
+	r.offer.manifest.show(saved.Manifest)
+	r.offer.instructions.show(saved.Instructions)
 }
 
 // manifestNameOf is the file's own name, for a sentence that stands beside a

@@ -131,13 +131,10 @@ type batch struct {
 	// section is rebuilt whenever the format changes, so a fold living in it
 	// would spring open every time somebody looked at another format.
 	settingsFolded bool
-	notesFolded    bool
 	settings       *parts.Folding
-	notes          *parts.Folding
 	name           *parts.Entry
-	group          *parts.Entry
-	expected       *parts.Chooser
-	reason         *parts.Chooser
+	// notes is the other section, with its fold, as one piece - see batchNotes.
+	notes batchNotes
 
 	// declared is what the chosen format takes, and props are the controls drawn
 	// from it. Both are replaced when the format changes and reused across a
@@ -266,13 +263,12 @@ func (r *Recipe) newBatch() *batch {
 		sizeRange: parts.NewEntry(),
 		boundary:  parts.NewEntry(),
 		name:      parts.NewEntry(),
-		group:     parts.NewEntry(),
+		notes:     newBatchNotes(),
 		sizeWay:   newSizeWaySwitch(),
 		// Both sections arrive put away. The owner's decision of 2026-08-25,
 		// and the number under it is 248 px of form per screen (O98) for
 		// settings a format works out on its own when nobody states them.
 		settingsFolded: true,
-		notesFolded:    true,
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
 	// What happens if the box is left alone, in the place a box says that.
@@ -288,22 +284,6 @@ func (r *Recipe) newBatch() *batch {
 	// with a default and a setting without: a batch with no id is refused
 	// rather than filled in, because an id is what anchors a batch's seed.
 	b.count.SetPlaceHolder(text.PlaceholderLeftEmpty(strconv.Itoa(recipe.DefaultCount)))
-	// The class is optional metadata, so it says so the same way. It stood
-	// empty and silent beside the id above it, which is REFUSED when empty -
-	// two boxes side by side, one you must fill in and one you need not,
-	// drawn identically. The rule this closes is worth more than the two
-	// fields: a box with a hint may be left alone, a box with nothing in it
-	// may not, and TestABoxYouMayLeaveAloneSaysSo holds it from the registry.
-	b.group.SetPlaceHolder(text.PlaceholderNotStated())
-
-	// Nothing is filled in with a default, on either list. A list carrying a
-	// value cannot say "I did not state this", and an expectation nobody stated
-	// has to stay unstated - manifest rule MF5, because an invented expectation
-	// produces false failures in somebody else's test run.
-	b.expected = parts.NewChooser(recipe.Outcomes(), nil)
-	b.expected.PlaceHolder = text.PlaceholderNotStated()
-	b.reason = parts.NewChooser(recipe.Reasons(), nil)
-	b.reason.PlaceHolder = text.PlaceholderNotStated()
 
 	b.formatPick = parts.NewChooser(format.IDs(), func(id string) {
 		r.onFormatChosen(b, id)
@@ -641,9 +621,7 @@ func (r *Recipe) duplicateBatch(index int) {
 	to.sizeRange.SetText(from.sizeRange.Text)
 	to.boundary.SetText(from.boundary.Text)
 	to.name.SetText(from.name.Text)
-	to.group.SetText(from.group.Text)
-	to.expected.SetSelected(from.expected.Selected)
-	to.reason.SetSelected(from.reason.Selected)
+	to.notes.takeFrom(from.notes)
 	if from.sizeWay != nil && to.sizeWay != nil {
 		to.sizeWay.SetSelected(from.sizeWay.Selected)
 	}
@@ -752,6 +730,7 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	if e := read.Expansion; e != nil {
 		opt.Preset = &manifest.Preset{
 			ID:         e.Preset.ID,
+			Question:   e.Preset.Question,
 			Parameters: map[string]string(e.Settled),
 			Defaulted:  e.Defaulted,
 		}
@@ -827,9 +806,10 @@ func (b *batch) draft() recipe.TargetDraft {
 		SizeRange:      b.statedSize(recipe.KeySizeRange),
 		Boundary:       b.statedSize(recipe.KeyBoundary),
 		Name:           b.name.Text,
-		Group:          b.group.Text,
-		Expected:       b.expected.Selected,
-		ExpectedReason: b.reason.Selected,
+		Group:          b.notes.group.Text,
+		Purpose:        b.notes.purpose.Text,
+		Expected:       b.notes.expected.Selected,
+		ExpectedReason: b.notes.reason.Selected,
 		Properties:     props,
 		Contains:       inside,
 	}

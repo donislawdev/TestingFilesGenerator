@@ -77,7 +77,17 @@ type Target struct {
 	// says an ejected preset is an ordinary recipe, and a field only a preset
 	// could set would make the ejected copy produce something different from
 	// the preset it came from.
-	Group      string
+	Group string
+	// Purpose says in words what these files are and why they are in the
+	// set, for the person who opens the directory afterwards. It reaches the
+	// manifest and the instructions written beside it, and nothing else: it
+	// takes no part in the seed, so a sentence can be reworded without moving
+	// a byte of any file (D11).
+	//
+	// A plain recipe key for the reason Group gives. A preset that could
+	// explain its files only while it was a preset would make its ejected
+	// copy a different set (PR5).
+	Purpose    string
 	Properties map[string]string
 	// Damage is what to break about these files, in the order to break it.
 	//

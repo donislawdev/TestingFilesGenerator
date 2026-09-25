@@ -154,6 +154,10 @@ for entry in manifest["files"]:
         assert not response.ok, entry["path"]
 ```
 
+A run from a preset also writes `manifest.instructions.md` - the same facts for
+a person to read: every file, what your system should do with it and why the
+file is in the set.
+
 And where the right answer genuinely depends on your own policy, the manifest
 says `unspecified` instead of inventing one. A generator that guesses produces
 false failures, and a suite that cries wolf gets switched off.

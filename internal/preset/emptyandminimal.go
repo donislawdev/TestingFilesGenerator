@@ -206,12 +206,16 @@ func (f minimalFile) draft() recipe.TargetDraft {
 			// decision - storage keeps it, an upload form usually turns it
 			// away, and both are defensible.
 			Expected: "unspecified", ExpectedReason: "size_zero",
+			Purpose: fmt.Sprintf("An empty %s file, nought bytes, which the format allows. "+
+				"Whether your system takes it or turns it away is its own policy - decide which, and check that it does that.", f.desc.Name),
 		}
 	}
 	return recipe.TargetDraft{
 		ID: f.id(), Format: f.desc.ID, Count: "1",
 		Size: strconv.FormatInt(f.size, 10), Name: f.name(), Group: minimalGroup,
 		Expected: "accept",
+		Purpose: fmt.Sprintf("The smallest valid %s file this build can write. "+
+			"Your system should take it - a refusal means a check on size or type is stricter than the format itself.", f.desc.Name),
 	}
 }
 
