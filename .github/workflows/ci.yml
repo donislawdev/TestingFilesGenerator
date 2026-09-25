@@ -491,24 +491,38 @@ jobs:
           Check (-not (Test-Path (Split-Path $cli))) "removing the command line takes its files"
 
           # A shortcut of somebody else's under the same name, made after the
-          # install, must survive the uninstall.
+          # install, must survive the uninstall - one pointing at a file, and
+          # one pointing at a shell item, which answers with an empty path.
           $other = $shell.CreateShortcut($shortcut)
           $other.TargetPath = Join-Path $env:WINDIR 'notepad.exe'
           $other.Save()
-          choco.exe uninstall testing-files-generator --yes --no-progress
+          $said = (choco.exe uninstall testing-files-generator --yes --no-progress) -join "`n"
           if ($LASTEXITCODE -ne 0) { throw "choco uninstall of the window exited $LASTEXITCODE" }
-          Check (Test-Path $shortcut) "a shortcut that points elsewhere is left alone"
+          Check (Test-Path $shortcut) "a shortcut that points at another file is left alone"
+          Check ($said -match 'It points at .*notepad\.exe, not at this package') "and the uninstall says where it points"
           Remove-Item -LiteralPath $shortcut -Force
           Check (-not (Test-Path (Join-Path $bin 'tfg-gui.exe'))) "removing the window takes its shim"
           Check (-not (Test-Path (Split-Path $window))) "removing the window takes its files"
 
+          choco.exe install testing-files-generator --source $feed --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the second install exited $LASTEXITCODE" }
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = '::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'
+          $other.Save()
+          Check ($shell.CreateShortcut($shortcut).TargetPath -eq '') "a shortcut to a shell item answers with an empty path"
+          $said = (choco.exe uninstall testing-files-generator --yes --no-progress) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "the second uninstall exited $LASTEXITCODE" }
+          Check (Test-Path $shortcut) "a shortcut that points at a shell item is left alone"
+          Check ($said -match 'It points at no file, so it is not from this package') "and the uninstall says so in a whole sentence"
+          Remove-Item -LiteralPath $shortcut -Force
+
           # And the ordinary case: install again, uninstall, and the package's
           # own shortcut goes with it.
           choco.exe install testing-files-generator --source $feed --yes --no-progress
-          if ($LASTEXITCODE -ne 0) { throw "the second install exited $LASTEXITCODE" }
-          Check (Test-Path $shortcut) "a second install makes the shortcut again"
+          if ($LASTEXITCODE -ne 0) { throw "the third install exited $LASTEXITCODE" }
+          Check (Test-Path $shortcut) "installing again makes the shortcut again"
           choco.exe uninstall testing-files-generator --yes --no-progress
-          if ($LASTEXITCODE -ne 0) { throw "the second uninstall exited $LASTEXITCODE" }
+          if ($LASTEXITCODE -ne 0) { throw "the third uninstall exited $LASTEXITCODE" }
           Check (-not (Test-Path $shortcut)) "removing the window takes its own shortcut"
 
           if ($failed -ne 0) { throw "$failed check(s) failed - read the FAILED lines above" }

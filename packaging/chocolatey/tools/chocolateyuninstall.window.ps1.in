@@ -27,9 +27,15 @@ try {
     $target = ''
 }
 
+# A shortcut to a shell item - File Explorer, the Recycle Bin - answers with an
+# empty path rather than none: 8 of the 447 Start menu shortcuts on the machine
+# this was written on, and 0 answered with no value at all (measured
+# 2026-09-25). So the empty answer is the one that needs its own sentence.
 if ($target.StartsWith($toolsDir + '\', [StringComparison]::OrdinalIgnoreCase)) {
     Remove-Item -LiteralPath $shortcut -Force
     Write-Host 'Removed the Start menu shortcut.'
-} else {
+} elseif ($target) {
     Write-Host "Left the Start menu shortcut alone. It points at $target, not at this package."
+} else {
+    Write-Host 'Left the Start menu shortcut alone. It points at no file, so it is not from this package.'
 }
