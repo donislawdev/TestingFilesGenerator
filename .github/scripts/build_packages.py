@@ -31,7 +31,10 @@ import sys
 import tempfile
 from collections import namedtuple
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# realpath, not abspath: the check that keeps --out outside the repository
+# compares resolved paths, so a symbolic link or a junction pointing into the
+# tree cannot walk the packages into it (outside review of #143).
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 TEMPLATES = os.path.join(ROOT, "packaging")
 TEMPLATE_SUFFIX = ".in"
 PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
@@ -103,9 +106,26 @@ def refuse(message):
     raise SystemExit("build_packages: %s" % message)
 
 
-def read_text(path):
-    with open(path, encoding="utf-8-sig") as handle:
-        return handle.read().replace("\r\n", "\n")
+def read_text(path, what="the file"):
+    """A text file, or a refusal naming it - never a traceback.
+
+    A file that is missing, unreadable or not UTF-8 is an input a person got
+    wrong, and the answer has to say which file and what to do, not print a
+    Python exception (outside review of #143).
+    """
+    try:
+        with open(path, encoding="utf-8-sig") as handle:
+            return handle.read().replace("\r\n", "\n")
+    except UnicodeDecodeError:
+        refuse("%s is not UTF-8 text, so it is not %s" % (path, what))
+    except OSError as err:
+        refuse("cannot read %s %s: %s" % (what, path, err.strerror or err))
+
+
+# A release's checksum file is under a kilobyte - 970 bytes for v0.4.0. Anything
+# near this is another file passed by mistake, an archive for instance, and is
+# refused by size before a byte of it is read.
+SUMS_LIMIT = 1024 * 1024
 
 
 def repository():
@@ -150,8 +170,15 @@ def read_sums(path):
     mode, and that star is not part of the name. A file saved on Windows may
     carry a byte order mark and CRLF. None of that may reach an address.
     """
+    hint = "Download verify-SHA256SUMS.txt from the release you are packaging"
+    try:
+        size = os.path.getsize(path)
+    except OSError as err:
+        refuse("cannot read the checksum file %s: %s. %s" % (path, err.strerror or err, hint))
+    if size > SUMS_LIMIT:
+        refuse("%s is %d bytes, so it is not a release's checksum file. %s" % (path, size, hint))
     sums = {}
-    for number, line in enumerate(read_text(path).split("\n"), 1):
+    for number, line in enumerate(read_text(path, "a checksum file").split("\n"), 1):
         if not line.strip():
             continue
         found = re.fullmatch(r"([0-9A-Fa-f]{64}) [ *](\S.*)", line.strip())
@@ -322,7 +349,7 @@ def destination(package, relative, version):
 
 def check_out(out):
     """--out is outside the repository and empty or absent, or a refusal."""
-    out = os.path.abspath(out)
+    out = os.path.realpath(out)
     root = os.path.normcase(ROOT)
     if os.path.normcase(out) == root or os.path.normcase(out).startswith(root + os.sep):
         refuse("--out %s is inside the repository. Rendered packages are not source - put "
@@ -342,8 +369,11 @@ def build(tag, sums_path, out):
         refuse("the icon %s is not in the repository" % ICON)
 
     parent = os.path.dirname(out)
-    os.makedirs(parent, exist_ok=True)
-    work = tempfile.mkdtemp(prefix=".packages-", dir=parent)
+    try:
+        os.makedirs(parent, exist_ok=True)
+        work = tempfile.mkdtemp(prefix=".packages-", dir=parent)
+    except OSError as err:
+        refuse("cannot create a working folder in %s: %s" % (parent, err.strerror or err))
     try:
         used = set()
         known = set()
@@ -366,6 +396,8 @@ def build(tag, sums_path, out):
         if os.path.isdir(out):
             os.rmdir(out)
         os.rename(work, out)
+    except OSError as err:
+        refuse("cannot write the packages to %s: %s. Nothing was left behind" % (out, err.strerror or err))
     finally:
         if os.path.isdir(work):
             shutil.rmtree(work)
