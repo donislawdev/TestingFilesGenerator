@@ -37,7 +37,7 @@
 								<container size="788x24">
 									<widget pos="-6,-6" size="800x36" type="*widget.Label">
 										<widget size="800x36" type="*widget.RichText">
-											<text bold pos="6,6" size="284x24" textSize="20">Testing Files Generator 0.3.0</text>
+											<text bold pos="6,6" size="285x24" textSize="20">Testing Files Generator 0.4.0</text>
 										</widget>
 									</widget>
 								</container>
