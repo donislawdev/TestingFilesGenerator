@@ -326,6 +326,7 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 		// notice the day something did, so the copy is the whole defence.
 		Preset: &manifest.Preset{
 			ID:         expanded.Preset.ID,
+			Question:   expanded.Preset.Question,
 			Parameters: maps.Clone(map[string]string(expanded.Settled)),
 			Defaulted:  slices.Clone(expanded.Defaulted),
 		},
@@ -400,6 +401,7 @@ func engineTarget(t recipe.Target) engine.Target {
 		Expected:         t.Expected,
 		ExpectedReason:   t.ExpectedReason,
 		Group:            t.Group,
+		Purpose:          t.Purpose,
 		Properties:       t.Properties,
 	}
 }

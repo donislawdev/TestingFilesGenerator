@@ -66,7 +66,7 @@ func progressText(p engine.Progress, elapsed time.Duration) string {
 	return line + text.TimeLeft(core.Roughly(left))
 }
 
-// saveManifest writes the record of what the run did, and hands back where it
+// saveRecord writes the record of what the run did, and hands back where it
 // put it.
 //
 // A run refused before it wrote anything gets none. Writing one would replace
@@ -79,9 +79,12 @@ func progressText(p engine.Progress, elapsed time.Duration) string {
 // constant - and a screen that says one name while the file has another is
 // worse than a screen that says nothing. An empty path means no record was
 // written, which is what the button and the sentence both ask about.
-func saveManifest(res *engine.Result, opt engine.Options) (string, error) {
+//
+// The instructions beside the manifest are saved with it, by the function the
+// command line calls, so both surfaces leave the same directory behind.
+func saveRecord(res *engine.Result, opt engine.Options) (engine.Record, error) {
 	if opt.DryRun || res == nil || !res.Started {
-		return "", nil
+		return engine.Record{}, nil
 	}
 	// Asked of the engine rather than joined here. This used to be
 	// filepath.Join(opt.OutDir, opt.ManifestName), which is the same answer
@@ -89,9 +92,9 @@ func saveManifest(res *engine.Result, opt engine.Options) (string, error) {
 	// directory itself, so saving would have tried to rename a file onto a
 	// directory. All three screens do fill it in, which is why nothing ever
 	// reached it.
-	path := engine.ManifestPath(opt)
-	if err := res.Manifest.Save(path); err != nil {
-		return "", fmt.Errorf("%s: %w", text.ManifestNotSaved(path), err)
+	saved, err := engine.SaveRecord(res, opt)
+	if err != nil {
+		return engine.Record{}, fmt.Errorf("%s: %w", text.ManifestNotSaved(saved.Manifest), err)
 	}
-	return path, nil
+	return saved, nil
 }

@@ -1,6 +1,7 @@
 package preset
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -131,6 +132,8 @@ func dialectFiles(csv format.Descriptor) []setFile {
 	out := []setFile{{
 		id: "dialect_default", name: "default.csv", group: dialectGroup,
 		desc: csv, props: base, size: tableSample, expected: "accept",
+		purpose: "The table every other CSV file of this group is compared with, every dialect setting at its default. " +
+			"Your import should take it - if it does not, the fault is not the dialect.",
 	}}
 
 	for _, axis := range dialectAxes(csv) {
@@ -152,9 +155,13 @@ func dialectVariants(csv format.Descriptor, base map[string]string, axis format.
 			name:  axis.Name + "_" + value + ".csv",
 			group: dialectGroup, desc: csv, props: besides(base, axis.Name, value),
 			size: tableSample, expected: "accept",
+			purpose: fmt.Sprintf("The default table with %s set to %s and nothing else changed. "+
+				"Every CSV reader has to cope with it, so a failure here is a fault in the import rather than a choice.", axis.Name, value),
 		}
 		if dialectPolicy[axis.Name] {
 			file.expected, file.reason = "unspecified", "none"
+			file.purpose = fmt.Sprintf("The default table with %s set to %s and nothing else changed. "+
+				"Whether your import takes this dialect is its own choice - check that it reads the table right or refuses it clearly, and never reads half of it.", axis.Name, value)
 		}
 		out = append(out, file)
 	}
@@ -214,6 +221,8 @@ func wideFile(csv format.Descriptor) setFile {
 		// or take it whole is its owner's decision, so this is a position
 		// rather than a promise - MF5.
 		expected: "unspecified", reason: "count_limit",
+		purpose: fmt.Sprintf("A CSV table with %d columns, the most this build writes. A spreadsheet may show only the first 16384 and drop the rest without a word - "+
+			"whether your import refuses such a table, cuts it or takes it whole is its own policy.", columns.Max),
 	}
 }
 
@@ -224,6 +233,8 @@ func sheetFile(xlsx format.Descriptor, rows, columns string) setFile {
 		props:    map[string]string{rowsParam: rows, columnsParam: columns},
 		atFloor:  true,
 		expected: "accept",
+		purpose: fmt.Sprintf("An Excel workbook of %s rows and %s columns, as many as were asked for. "+
+			"Your import should take it whole - it checks that a real spreadsheet of this size is read to its last row.", rows, columns),
 	}
 }
 
@@ -245,6 +256,7 @@ func layoutFiles(js format.Descriptor) []setFile {
 			name: value + ".json", group: layoutGroup, desc: js,
 			props: map[string]string{jsonFormat: value},
 			size:  tableSample, expected: "accept",
+			purpose: layoutPurpose(value),
 		})
 	}
 	return out
@@ -307,4 +319,19 @@ func expandTabularImport(args Args) ([]byte, error) {
 		}
 	}
 	return plan{preset: tabularID, question: tabularQuestion, targets: draftsOf(files)}.source()
+}
+
+// layoutPurpose is what the instructions say about the records laid out one
+// way. A layout the registry gains later gets the plain sentence rather than
+// none.
+func layoutPurpose(value string) string {
+	switch value {
+	case "indented":
+		return "The records as JSON, indented across many lines. Every JSON reader takes it - it checks that the import reads the document as JSON rather than line by line."
+	case "minified":
+		return "The records as JSON on one line, with no newline at the end. Every JSON reader takes it - it checks that nothing around the parser, such as a line reader or a log, chokes on one very long line."
+	case "record-per-line":
+		return "The records as JSON with one record on each line. Every JSON reader takes it - it checks that the import does not treat each line as a document of its own."
+	}
+	return fmt.Sprintf("The records as JSON laid out as %s. Every JSON reader takes it.", value)
 }

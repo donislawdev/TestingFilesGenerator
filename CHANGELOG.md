@@ -16,6 +16,13 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **`tfg preset eject` writes a `purpose` line for every target, so an
+  ejected recipe and the `recipe_hash` of every run from a preset differ from
+  0.3.0.** The recipe carries the purposes so that an ejected preset still
+  produces exactly what the preset does. The bytes of every generated file
+  are unchanged. A pipeline comparing `recipe_hash` across tool versions will
+  see a new value once.
+
 - **A file name longer than 255 bytes is refused before anything is written,
   on every system.** Linux stores at most 255 bytes in a name, while Windows
   and macOS count characters, so a name of 200 Chinese or Japanese characters
@@ -307,6 +314,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Every preset now says what each of its files is for.** A run from a
+  preset writes `manifest.instructions.md` beside `manifest.json`: the
+  question the preset answers, how to read accept, reject, sanitize and
+  unspecified, and then every file - its name, format and size, what your
+  system is expected to do with it and one or two sentences on why it is in
+  the set. Many files of one kind, such as the fifty of a mass upload, are
+  one entry. The file is named after the manifest, so `run2.json` gets
+  `run2.instructions.md`, and it is written only when some file has a
+  purpose - a plain `tfg generate --format png` writes none. `generate`
+  prints `instructions:` under `manifest:`, `verify` does not count the file
+  as extra, and `cleanup --with-manifest` removes it with the manifest - only
+  when it is named after that manifest, so an edited or renamed manifest
+  never takes instructions that may belong to another run. A
+  run into a directory that already holds instructions of that name is
+  refused before anything is written. If the file cannot be written, the run
+  says so and does not fail over it, because the manifest was saved and
+  holds the same facts.
+
+- **A `purpose` for every target of a recipe.** One or two sentences on what
+  the files are and why they are in the set. They reach `files[].purpose` in
+  the manifest and the instructions beside it, and change no byte of any
+  file. The batch screen has a `Purpose` box among the manifest notes of each
+  batch, and the window offers `Open instructions` beside `Open manifest`
+  after a run that wrote them.
+
 - **`tfg preset eject <id> -o my.yaml` writes the recipe to a file itself.**
   The help used to say `> my.yaml`, and Windows PowerShell 5.1 saves that as
   UTF-16, which `tfg` then refused to read. Piping through
@@ -529,6 +561,14 @@ because it turns other people's test suites red.
   the kind is shipped - there the flag says so and changes nothing.
 
 ### Fixed
+
+- **`tfg cleanup --with-manifest` says before it acts that the manifest goes
+  too.** The list printed without `--yes` named only the files the manifest
+  lists, and `--yes` then removed the manifest as well. It now ends with the
+  manifest and the instructions beside it, or says why they would stay, and
+  the run with `--yes` names them once they are gone. With `--json` both
+  reports carry them in a new `record` list. `files`, `removed`, `kept` and
+  `would_remove` still count only what the manifest lists.
 
 - **A recipe saved as UTF-16 is refused with the reason and the way round
   it.** The refusal told you to save the file as UTF-8, when the usual way to

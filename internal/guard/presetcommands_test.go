@@ -70,7 +70,7 @@ func TestTheBudgetShownIsTheBudgetWritten(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, e := range entries {
-		if e.Name() == "manifest.json" {
+		if isRecord(e.Name()) {
 			continue
 		}
 		info, err := e.Info()
@@ -142,6 +142,19 @@ func TestEjectingAPresetAndRunningItGivesTheSameRunBackDefaultsIncluded(t *testi
 			continue
 		}
 		a, err := os.ReadFile(filepath.Join(fromPreset, e.Name()))
+		if err == nil && isRecord(e.Name()) {
+			// The instructions open by naming the preset, which only the run
+			// from the preset knows - the manifest differs the same way, in
+			// run.preset. Everything after the opening is the files, and that
+			// part has to agree: it is what shows the purposes went through
+			// eject rather than staying behind in the preset (PR5).
+			b, readErr := os.ReadFile(filepath.Join(fromFile, e.Name()))
+			if readErr != nil || !bytes.Equal(afterOpening(a), afterOpening(b)) || len(afterOpening(a)) == 0 {
+				t.Errorf("the instructions of the preset and of the recipe ejected from it say different things about the files (read: %v)", readErr)
+			}
+			compared++
+			continue
+		}
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -464,9 +477,9 @@ func TestReadingThePresetOutOfTheArgumentsHandlesBothSpellings(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			// Seven files of the set plus the manifest.
-			if len(entries) != 8 {
-				t.Errorf("wrote %d entries and the set is seven files and a manifest", len(entries))
+			// Seven files of the set, the manifest and its instructions.
+			if len(entries) != 9 {
+				t.Errorf("wrote %d entries and the set is seven files, a manifest and its instructions", len(entries))
 			}
 		})
 	}
@@ -525,4 +538,14 @@ func TestAPresetParameterBecomesAFlagAndAnUnknownOneDoesNot(t *testing.T) {
 	}, &out, &errOut); code != cli.ExitUsage {
 		t.Errorf("a parameter nobody declared ended with %d rather than %d", code, cli.ExitUsage)
 	}
+}
+
+// afterOpening is the instructions from their first section on - the files,
+// without the opening that names where the run came from.
+func afterOpening(md []byte) []byte {
+	at := bytes.Index(md, []byte("\n## "))
+	if at < 0 {
+		return nil
+	}
+	return md[at:]
 }

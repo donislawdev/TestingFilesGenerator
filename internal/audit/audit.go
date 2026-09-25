@@ -244,7 +244,8 @@ func Claimed(m *manifest.Manifest) []manifest.File {
 // the manifest usually sits in the directory it describes, and a tool that
 // fails on its own output on the most obvious invocation is not usable.
 // Matched on the base name rather than the path, because a restored copy
-// carries its own copy of the manifest beside the files.
+// carries its own copy of the manifest beside the files. The instructions the
+// manifest names are its own output in the same way, and skipped the same way.
 //
 // A run that is cancelled reports what it managed to compare and says so
 // through the context error. Reporting "sound" on the strength of half a
@@ -309,7 +310,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		// decided. walk builds these with filepath.Rel, which returns a clean
 		// path, so a comparablePath here is a call that cannot be wrong -
 		// removing it left this guard green. See the comment on comparablePath.
-		if seen[p] || filepath.Base(p) == skip {
+		if seen[p] || filepath.Base(p) == skip || (m.Run.Instructions != "" && filepath.Base(p) == m.Run.Instructions) {
 			continue
 		}
 		unclaimed = append(unclaimed, p)

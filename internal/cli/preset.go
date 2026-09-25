@@ -38,6 +38,7 @@ func record(e *preset.Expansion) *manifest.Preset {
 	}
 	return &manifest.Preset{
 		ID:         e.Preset.ID,
+		Question:   e.Preset.Question,
 		Parameters: map[string]string(e.Settled),
 		Defaulted:  e.Defaulted,
 	}

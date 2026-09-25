@@ -26,8 +26,12 @@ import (
 // being there, because somebody would open it, see the old files and believe
 // them.
 type offers struct {
-	folderBtn   *parts.Button
-	manifestBtn *parts.Button
+	folderBtn *parts.Button
+	// manifest and instructions lead to the two files a run writes about
+	// itself. One type for both since 2026-09-25, when the instructions came
+	// and the second button leading to a file would have been a copy of the
+	// first.
+	manifest, instructions *fileOffer
 
 	// openFolder and openFile are how this asks the desktop, held as
 	// functions rather than reaching for the host: the runner is shared by
@@ -36,12 +40,11 @@ type offers struct {
 	openFolder func(string)
 	openFile   func(string)
 
-	// wroteInto and wroteManifest are where the run that just finished put
-	// its files and its record. Kept rather than read back off the form,
-	// because the boxes on the screen can be edited afterwards and a button
-	// has to lead where the run ACTUALLY went.
-	wroteInto     string
-	wroteManifest string
+	// wroteInto is where the run that just finished put its files. Kept
+	// rather than read back off the form, because the boxes on the screen can
+	// be edited afterwards and a button has to lead where the run ACTUALLY
+	// went. The two files keep their paths in their own offers.
+	wroteInto string
 
 	// relay redraws the bar when a button appears or goes, because the
 	// toolkit does not lay the row out again by itself when a child of it is
@@ -58,13 +61,30 @@ func newOffers(relay func()) *offers {
 		}
 	})
 	o.folderBtn.InTheBar().Hide()
-	o.manifestBtn = parts.NewButton(parts.Secondary, text.ButtonOpenManifest(), func() {
-		if o.wroteManifest != "" && o.openFile != nil {
-			o.openFile(o.wroteManifest)
+	o.manifest = newFileOffer(o, text.ButtonOpenManifest())
+	o.instructions = newFileOffer(o, text.ButtonOpenInstructions())
+	return o
+}
+
+// fileOffer is one button leading to one file a finished run wrote about
+// itself, built hidden and shown once the file is there.
+type fileOffer struct {
+	btn *parts.Button
+	// path is the file the button opens. Kept rather than worked out again,
+	// for the reason wroteInto gives.
+	path string
+	of   *offers
+}
+
+func newFileOffer(of *offers, label string) *fileOffer {
+	f := &fileOffer{of: of}
+	f.btn = parts.NewButton(parts.Secondary, label, func() {
+		if f.path != "" && of.openFile != nil {
+			of.openFile(f.path)
 		}
 	})
-	o.manifestBtn.InTheBar().Hide()
-	return o
+	f.btn.InTheBar().Hide()
+	return f
 }
 
 // through says which desktop these buttons reach. Called by every screen as
@@ -91,24 +111,32 @@ func (o *offers) theFolder(res *engine.Result) {
 	o.relay()
 }
 
-// theManifest shows the way to the record, once there is one.
+// show offers the way to a file, once there is one.
 //
 // Asked about the SAVING rather than about the run, which is the difference
 // from the folder above: a run that wrote files and could not save its
 // manifest has a folder worth opening and no record to open. The screen
 // refuses about that in its own sentence, and a button pointing at the file
-// that refusal is about would be the screen disagreeing with itself.
+// that refusal is about would be the screen disagreeing with itself. The
+// instructions the same way: a run nobody explained writes none, and one that
+// could not write them says so.
 //
 // The path is the one saving used rather than one worked out again here. The
 // manifest's name is a field on the batch screen, so a second way of arriving
 // at it is a second chance to name a different file.
-func (o *offers) theManifest(path string) {
+func (f *fileOffer) show(path string) {
 	if path == "" {
 		return
 	}
-	o.wroteManifest = path
-	o.manifestBtn.Show()
-	o.relay()
+	f.path = path
+	f.btn.Show()
+	f.of.relay()
+}
+
+// hide takes the offer away, for the next run.
+func (f *fileOffer) hide() {
+	f.path = ""
+	f.btn.Hide()
 }
 
 // inTheWay is the directory a refusal is about when it is about something
@@ -143,7 +171,7 @@ func inTheWay(err error) string {
 func (o *offers) forget() {
 	o.wroteInto = ""
 	o.folderBtn.Hide()
-	o.wroteManifest = ""
-	o.manifestBtn.Hide()
+	o.manifest.hide()
+	o.instructions.hide()
 	o.relay()
 }

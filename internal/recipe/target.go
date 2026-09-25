@@ -35,6 +35,7 @@ type rawTarget struct {
 	Properties map[string]scalar `yaml:"properties"`
 	Expected   any               `yaml:"expected"`
 	Group      *scalar           `yaml:"group"`
+	Purpose    *scalar           `yaml:"purpose"`
 
 	Boundary  *scalar             `yaml:"boundary"`
 	SizeRange *scalar             `yaml:"size-range"`
@@ -132,11 +133,21 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults)
 	t.Damage = damages(p, where, rt.Damage)
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
 	refuseImpossibleExpectation(p, where, t)
+	rt.describe(p, where, &t)
+	t.Properties = properties(p, where, t.Format, rt.Properties)
+	return t
+}
+
+// describe reads what a target says ABOUT its files rather than how to make
+// them: the class they belong to and why they are in the set. Neither takes
+// any part in a file's bytes.
+func (rt rawTarget) describe(p *problems, where spot, t *Target) {
 	if group, ok := oneValue(p, where.of("group"), where.String()+" {setting}", "group: invoices", rt.Group); ok {
 		t.Group = group
 	}
-	t.Properties = properties(p, where, t.Format, rt.Properties)
-	return t
+	if purpose, ok := oneValue(p, where.of(KeyPurpose), where.String()+" {setting}", "purpose: invoices as the accounting system exports them", rt.Purpose); ok {
+		t.Purpose = purpose
+	}
 }
 
 // refuseSections names the parts of a target this build cannot honour.

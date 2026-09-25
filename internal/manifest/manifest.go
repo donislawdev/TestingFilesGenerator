@@ -103,6 +103,13 @@ type Run struct {
 	// Preset names the question this run was built to answer, when it came
 	// from one. Absent for a run driven by a recipe file or by flags.
 	Preset *Preset `json:"preset,omitempty"`
+
+	// Instructions is the name of the file written beside this manifest that
+	// says, in words, what every file of the run is and why it is there.
+	// Absent when the run wrote none - no file had a purpose, or writing them
+	// failed and the run said so. verify and cleanup read it, so the file is
+	// never taken for something nobody asked for.
+	Instructions string `json:"instructions,omitempty"`
 }
 
 // Preset records which named question produced this run, and on what numbers.
@@ -119,6 +126,10 @@ type Run struct {
 // stays with the files.
 type Preset struct {
 	ID string `json:"id"`
+	// Question is the one sentence the preset answers, in the words the
+	// preset list gives it. Carried so that the instructions written beside
+	// the manifest can open with it without knowing about presets.
+	Question string `json:"question,omitempty"`
 	// Parameters are the settled values, ours and theirs together, written the
 	// way somebody would type them.
 	Parameters map[string]string `json:"parameters,omitempty"`
@@ -231,6 +242,13 @@ type File struct {
 	// than written as an empty string - a consumer reading it can then tell
 	// "no class" from "a class called nothing".
 	Group string `json:"group,omitempty"`
+
+	// Purpose is what this file is and why it is in the set, in words, from
+	// the recipe or the preset that produced it - the sentence the
+	// instructions beside this manifest are written from. Left out when
+	// nothing gave one, so every manifest written before it existed keeps its
+	// bytes, and it does not move manifest_version for the reason Damage gives.
+	Purpose string `json:"purpose,omitempty"`
 
 	LabelEmbedded bool `json:"label_embedded"`
 
@@ -655,6 +673,17 @@ func checkPaths(path string, m *Manifest) error {
 				"Use the manifest the run actually wrote, or correct the path to one inside the directory",
 			i+1, f.Path, problem)}
 	}
+	// The instructions are a name beside the manifest and nothing else.
+	// cleanup --with-manifest removes the file this names, so a manifest
+	// carrying a path here would be a manifest that removes something the run
+	// never wrote.
+	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
+		return &SchemaError{Path: path, Detail: fmt.Sprintf(
+			"run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
+				"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
+				"Use the manifest the run actually wrote, or remove the key",
+			name, instructionsSuffix)}
+	}
 	return nil
 }
 
@@ -848,6 +877,13 @@ func holdsACredential(props map[string]any) bool {
 // "the claim goes when the write does", and a rule spelled once cannot be
 // half applied.
 func (m *Manifest) writeOver(path string) error {
+	return writeClaimed(path, m.mode(), m.Encode)
+}
+
+// writeClaimed writes a file over the empty claim this run holds on its name,
+// through a temporary name and a rename. The manifest and the instructions
+// beside it are written the same way, so the reasons below hold for both.
+func writeClaimed(path string, mode os.FileMode, write func(io.Writer) error) error {
 	// The marker comes from core rather than being spelled here. It was a bare
 	// literal until 2026-09-06, which is how verify came to report our own half
 	// written manifest as "extra" - the reading side recognised the other
@@ -865,11 +901,11 @@ func (m *Manifest) writeOver(path string) error {
 	// The mode is the temporary file's, because the rename below moves the file
 	// and its mode with it. So this is where a manifest carrying a password
 	// stops being readable by every account on the machine.
-	f, err := core.CreateNew(tmp, m.mode())
+	f, err := core.CreateNew(tmp, mode)
 	if err != nil {
 		return err
 	}
-	if err := m.Encode(f); err != nil {
+	if err := write(f); err != nil {
 		_ = f.Close()
 		_ = os.Remove(tmp)
 		return err

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
@@ -154,6 +155,7 @@ func (s limitSet) drafts(set []step) []recipe.TargetDraft {
 			Name:     s.limitText + "_" + one.id + s.desc.Extension,
 			Group:    s.group,
 			Expected: "accept",
+			Purpose:  s.purpose(one),
 		}
 		if !one.accept {
 			draft.Expected = "reject"
@@ -162,4 +164,20 @@ func (s limitSet) drafts(set []step) []recipe.TargetDraft {
 		out = append(out, draft)
 	}
 	return out
+}
+
+// purpose is what the instructions say about one file of the set.
+func (s limitSet) purpose(one step) string {
+	name := s.desc.Name
+	switch {
+	case one.size == s.limit:
+		return fmt.Sprintf("A %s file of exactly %s, the limit itself. Your system should take it. "+
+			"A refusal here usually means the comparison is off by one, or your system counts a kilobyte as 1000 bytes where this set counts 1024.", name, s.limitText)
+	case one.accept:
+		return fmt.Sprintf("A %s file %s under the limit of %s. Your system should take it - "+
+			"a refusal means the limit is enforced lower than it is declared.", name, core.ExactBytes(s.limit-one.size), s.limitText)
+	default:
+		return fmt.Sprintf("A %s file %s over the limit of %s. Your system should turn it away - "+
+			"taking it means the limit is not enforced, or enforced only in the browser.", name, core.ExactBytes(one.size-s.limit), s.limitText)
+	}
 }

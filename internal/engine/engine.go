@@ -79,7 +79,11 @@ type Target struct {
 	ExpectedReason string
 	// Group names the class of case these files belong to and reaches the
 	// manifest, so a test can assert about a whole class at once.
-	Group      string
+	Group string
+	// Purpose is what these files are and why they are in the set, in words.
+	// It reaches the manifest and the instructions beside it, and never the
+	// seed - rewording it moves no byte of any file.
+	Purpose    string
 	Properties map[string]string
 	// Damage is what to break about these files, in the order to break it.
 	//
@@ -368,6 +372,18 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// pointed straight at it.
 	pl.names[collisionKey(manifestNameOf(opt))] = nameOwner{
 		name: manifestNameOf(opt), manifest: true}
+	// The instructions beside the manifest hold their name the same way, in a
+	// run that will write them. Their name is the manifest's with a longer
+	// ending, so a manifest named as long as a system allows gives
+	// instructions it does not - refused here, on the manifest's box, before
+	// anything is written rather than after every file.
+	if explained(targets) {
+		name := instructionsNameOf(opt)
+		if err := checkFileName(SettingOutputManifest, "the instructions beside the manifest", name); err != nil {
+			return nil, err
+		}
+		pl.names[collisionKey(name)] = nameOwner{name: name, instructions: true}
+	}
 
 	if opt.OutDir == "" {
 		return nil, &RecipeError{Setting: SettingOutDir,
@@ -662,6 +678,7 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		Notes:         notes,
 		Expected:      expectationFor(f),
 		Group:         f.Target.Group,
+		Purpose:       f.Target.Purpose,
 		TargetID:      f.Target.ID,
 	}
 

@@ -39,6 +39,10 @@
     "description": "The words on a button.",
     "other": "Open folder"
   },
+  "ButtonOpenInstructions": {
+    "description": "The words on a button.",
+    "other": "Open instructions"
+  },
   "ButtonOpenManifest": {
     "description": "The words on a button.",
     "other": "Open manifest"
@@ -114,6 +118,10 @@
   "DetailPreset": {
     "description": "The longer explanation behind the button beside a field name.",
     "other": "The set is worked out from the answer."
+  },
+  "DetailPurpose": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file."
   },
   "DetailReason": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -195,6 +203,10 @@
     "description": "The name above a box somebody fills in.",
     "other": "Preset"
   },
+  "FieldPurpose": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Purpose"
+  },
   "FieldReason": {
     "description": "The name above a box somebody fills in.",
     "other": "Rule being tested"
@@ -269,6 +281,10 @@
     "description": "The line under a field name, saying what the field does.",
     "other": "What you are testing."
   },
+  "HintPurpose": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What these files are and why they are in the set."
+  },
   "HintReason": {
     "description": "The line under a field name, saying what the field does.",
     "other": "Which rule this is about."
@@ -304,6 +320,10 @@
   "HowToUseRead": {
     "description": "Shown in the window.",
     "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
+  },
+  "InstructionsNotSaved": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Cause}}.",
+    "other": "The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts."
   },
   "ListHeadingCount": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",
