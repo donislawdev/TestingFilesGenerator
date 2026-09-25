@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -105,7 +106,9 @@ func TestTheReadmeSettingsTableAgreesWithTheRegistry(t *testing.T) {
 // numbers guard measured the general form of it on 2026-08-05, raised 43
 // findings and found most of them false, because "24 formats" and "25 formats"
 // and "150 formats" answer three different questions in this repository. The
-// count in that one sentence stays on the reader.
+// count in that one sentence stays on the reader. The counts the README writes
+// in DIGITS are a narrower question with one answer, and the guard below asks
+// it.
 func TestTheReadmeListsEveryFormatItShips(t *testing.T) {
 	body, err := os.ReadFile(filepath.Join(repoRoot(t), "README.md"))
 	if err != nil {
@@ -139,6 +142,37 @@ func TestTheReadmeListsEveryFormatItShips(t *testing.T) {
 		if !listed[d.ID] {
 			t.Errorf("%s is registered and the list under %q does not name it, so the first page a "+
 				"visitor reads offers fewer formats than the binary ships", d.ID, heading)
+		}
+	}
+}
+
+// Every count of formats the README writes in digits is the number the
+// program registers.
+//
+// Measured 2026-09-25: the README said "24 formats" and "24 real formats"
+// while the binary shipped 26, a release after yaml and toml arrived. The
+// same release had moved the count in words above the table to "Twenty six",
+// by hand, and nothing compared the other two with anything - the site gets
+// its number from the registry, the README cannot. So this asks the one
+// question those phrases answer, and only for the README, where a digit next
+// to "formats" means one thing.
+func TestTheReadmeCountsTheFormatsItShips(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join(repoRoot(t), "README.md"))
+	if err != nil {
+		t.Fatalf("reading the README: %v", err)
+	}
+	shipped := len(format.All())
+	if shipped == 0 {
+		t.Fatal("no format is registered - this guard would pass without checking anything")
+	}
+	counts := regexp.MustCompile(`\b(\d+) (real )?formats\b`).FindAllStringSubmatch(string(body), -1)
+	if len(counts) == 0 {
+		t.Fatal("the README states no count of formats in digits, so this guard reads nothing - " +
+			"if the counts were reworded on purpose, retire it")
+	}
+	for _, c := range counts {
+		if c[1] != strconv.Itoa(shipped) {
+			t.Errorf("the README says %q and the program ships %d formats", c[0], shipped)
 		}
 	}
 }

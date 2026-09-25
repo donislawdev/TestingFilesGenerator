@@ -1,0 +1,32 @@
+# Rendered by .github/scripts/build_packages.py - do not edit the generated copy.
+#
+# Chocolatey runs this from the INSTALLED package before an upgrade or an
+# uninstall. It says so when the program is still running from this package,
+# because Windows does not let the files of a running program be replaced, and
+# a person should hear why before the operation that follows complains.
+#
+# It never ends the program. That is the owner's decision of 2026-09-25: a run
+# in progress may be halfway through writing a set of files, and cutting it
+# leaves files without the manifest that describes them. A person closing it
+# is the only safe way. And nothing here may throw - this runs BEFORE the
+# operation the person asked for, which a failed check must not stop.
+#
+# Windows PowerShell 5.1 is what Chocolatey runs package scripts with, so this
+# file is ASCII and uses no PowerShell 7 syntax.
+$ErrorActionPreference = 'Continue'
+$toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$exe = Join-Path $toolsDir '{{PROGRAM}}\{{EXE}}'
+
+$running = @()
+try {
+    # A process of another account answers with no path, so it cannot be told
+    # apart and is left out. This is a courtesy, not a lock.
+    $running = @(Get-Process -Name '{{PROGRAM}}' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -and ($_.Path -ieq $exe) })
+} catch {
+    $running = @()
+}
+
+if ($running.Count -gt 0) {
+    Write-Warning '{{TITLE}} is running from this package. Close it before you upgrade or remove the package. Windows does not let the files of a running program be replaced.'
+}

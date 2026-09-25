@@ -381,6 +381,153 @@ jobs:
           grep -q -- '--- PASS: TestTheWindowBinaryDoesNotImportOpenGLAtLoadTime' import-table.log
         shell: bash
 
+  packages:
+    name: the Chocolatey packages install and leave
+    # What the packages DO, asked on a clean Windows machine rather than read
+    # off their text. The guards in internal/guard/packaging_test.go hold the
+    # lines that matter, and they check that a line is there - which is not the
+    # same as the install working (docs/PACKAGING-2026-09-25.md section 8.5).
+    # This job renders both Chocolatey packages from the latest published
+    # release, installs them the way a person does - the archives come from
+    # the release page and are checked against its checksums - and asks the
+    # machine what happened: the command answers with the version, the window's
+    # shim does not wait, the software renderer lies beside the window, the
+    # Start menu shortcut starts in the user's profile. Then it removes them and
+    # asks again, including whether a shortcut of somebody else's under the same
+    # name was left alone.
+    #
+    # Against the LATEST release, because a package can only point at one that
+    # exists. A change that renames the archives in release.yml will fail here
+    # until a release with the new names is published, and that is the right
+    # answer: the packages cannot be submitted before it either.
+    #
+    # WinGet is not asked here. The runner image does not carry it - its own
+    # inventory lists Chocolatey 2.7.4 and no WinGet (Windows2025-Readme.md,
+    # read 2026-09-25) - so both WinGet manifests are validated and installed on
+    # a virtual machine before every submission instead.
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: render the packages for the latest release
+        id: render
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = gh release view --json tagName --jq .tagName
+          if ($LASTEXITCODE -ne 0 -or -not $tag) { throw "could not read the latest release" }
+          gh release download $tag --pattern verify-SHA256SUMS.txt --dir $env:RUNNER_TEMP
+          if ($LASTEXITCODE -ne 0) { throw "could not download the checksums of $tag" }
+          python .github/scripts/build_packages.py --tag $tag `
+            --sums (Join-Path $env:RUNNER_TEMP 'verify-SHA256SUMS.txt') `
+            --out (Join-Path $env:RUNNER_TEMP 'packages')
+          if ($LASTEXITCODE -ne 0) { throw "the renderer refused $tag" }
+          "version=$($tag.TrimStart('v'))" >> $env:GITHUB_OUTPUT
+
+      - name: install both, ask the machine, remove both, ask again
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.render.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $failed = 0
+          function Check($ok, $what) {
+            if ($ok) { "ok      $what" } else { "FAILED  $what"; $script:failed++ }
+          }
+
+          $feed = Join-Path $env:RUNNER_TEMP 'feed'
+          New-Item -ItemType Directory -Force $feed | Out-Null
+          foreach ($id in 'testing-files-generator', 'testing-files-generator-cli') {
+            $nuspec = Join-Path $env:RUNNER_TEMP "packages\chocolatey\$id\$id.nuspec"
+            choco.exe pack $nuspec --outputdirectory $feed
+            if ($LASTEXITCODE -ne 0) { throw "choco pack $id exited $LASTEXITCODE" }
+          }
+          choco.exe install testing-files-generator testing-files-generator-cli --source $feed --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "choco install exited $LASTEXITCODE" }
+
+          $bin = Join-Path $env:ChocolateyInstall 'bin'
+          $lib = Join-Path $env:ChocolateyInstall 'lib'
+          $window = Join-Path $lib 'testing-files-generator\tools\tfg-gui\tfg-gui.exe'
+          $cli = Join-Path $lib 'testing-files-generator-cli\tools\tfg\tfg.exe'
+          $shortcut = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'Testing Files Generator.lnk'
+
+          $installed = (choco.exe list --limit-output) -join "`n"
+          Check ($installed -match "(?m)^testing-files-generator\|$([regex]::Escape($env:VERSION))$") "the window package is installed at $env:VERSION"
+          Check ($installed -match "(?m)^testing-files-generator-cli\|$([regex]::Escape($env:VERSION))$") "the command line package is installed at $env:VERSION"
+
+          $said = (& (Join-Path $bin 'tfg.exe') version) -join ''
+          Check ($LASTEXITCODE -eq 0 -and $said.Trim() -eq $env:VERSION) "tfg version answers $env:VERSION through the shim (said '$said')"
+
+          # The shim describes itself without starting anything. Measured
+          # 2026-09-25: it names its target and says GUI 'True' only when the
+          # .gui file lay beside the program when the shim was made.
+          $cliShim = (& (Join-Path $bin 'tfg.exe') --shimgen-help 2>&1) -join "`n"
+          Check ($cliShim -match "GUI: 'False'" -and $cliShim.Contains($cli)) "the tfg shim waits for the command line, so a script reads its exit code"
+          $windowShim = (& (Join-Path $bin 'tfg-gui.exe') --shimgen-help 2>&1) -join "`n"
+          Check ($windowShim -match "GUI: 'True'" -and $windowShim.Contains($window)) "the tfg-gui shim does not hold the terminal"
+
+          foreach ($file in 'opengl32.dll', 'libgallium_wgl.dll') {
+            Check (Test-Path (Join-Path (Split-Path $window) "opengl\$file")) "the software renderer's $file lies beside the window"
+          }
+
+          $shell = New-Object -ComObject WScript.Shell
+          Check (Test-Path $shortcut) "the Start menu shortcut is there"
+          $link = $shell.CreateShortcut($shortcut)
+          Check ($link.TargetPath -eq $window) "the shortcut starts the window (it starts '$($link.TargetPath)')"
+          Check ($link.WorkingDirectory -eq '%USERPROFILE%') "the shortcut starts in the user's profile (it starts in '$($link.WorkingDirectory)')"
+
+          choco.exe uninstall testing-files-generator-cli --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "choco uninstall of the command line exited $LASTEXITCODE" }
+          Check (-not (Test-Path (Join-Path $bin 'tfg.exe'))) "removing the command line takes its shim"
+          Check (-not (Test-Path (Split-Path $cli))) "removing the command line takes its files"
+
+          # A shortcut of somebody else's under the same name, made after the
+          # install, must survive the uninstall - one pointing at a file, and
+          # one pointing at a shell item, which answers with an empty path.
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = Join-Path $env:WINDIR 'notepad.exe'
+          $other.Save()
+          $said = (choco.exe uninstall testing-files-generator --yes --no-progress) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "choco uninstall of the window exited $LASTEXITCODE" }
+          Check (Test-Path $shortcut) "a shortcut that points at another file is left alone"
+          Check ($said -match 'It points at .*notepad\.exe, not at this package') "and the uninstall says where it points"
+          Remove-Item -LiteralPath $shortcut -Force
+          Check (-not (Test-Path (Join-Path $bin 'tfg-gui.exe'))) "removing the window takes its shim"
+          Check (-not (Test-Path (Split-Path $window))) "removing the window takes its files"
+
+          choco.exe install testing-files-generator --source $feed --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the second install exited $LASTEXITCODE" }
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = '::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'
+          $other.Save()
+          Check ($shell.CreateShortcut($shortcut).TargetPath -eq '') "a shortcut to a shell item answers with an empty path"
+          $said = (choco.exe uninstall testing-files-generator --yes --no-progress) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "the second uninstall exited $LASTEXITCODE" }
+          Check (Test-Path $shortcut) "a shortcut that points at a shell item is left alone"
+          Check ($said -match 'It points at no file, so it is not from this package') "and the uninstall says so in a whole sentence"
+          Remove-Item -LiteralPath $shortcut -Force
+
+          # And the ordinary case: install again, uninstall, and the package's
+          # own shortcut goes with it.
+          choco.exe install testing-files-generator --source $feed --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the third install exited $LASTEXITCODE" }
+          Check (Test-Path $shortcut) "installing again makes the shortcut again"
+          choco.exe uninstall testing-files-generator --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the third uninstall exited $LASTEXITCODE" }
+          Check (-not (Test-Path $shortcut)) "removing the window takes its own shortcut"
+
+          if ($failed -ne 0) { throw "$failed check(s) failed - read the FAILED lines above" }
+          "every check passed"
+
   govulncheck:
     name: known vulnerabilities
     runs-on: ubuntu-latest

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rendered by .github/scripts/build_packages.py - do not edit the generated copy. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>{{CHOCO_ID}}</id>
+    <version>{{VERSION}}</version>
+    <packageSourceUrl>{{PACKAGE_SOURCE_URL}}</packageSourceUrl>
+    <owners>{{PUBLISHER}}</owners>
+    <title>{{TITLE}}</title>
+    <authors>{{PUBLISHER}}</authors>
+    <projectUrl>{{PROJECT_URL}}</projectUrl>
+    <iconUrl>{{ICON_URL}}</iconUrl>
+    <licenseUrl>{{LICENSE_URL}}</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>{{REPO_URL}}</projectSourceUrl>
+    <docsUrl>{{DOCS_URL}}</docsUrl>
+    <bugTrackerUrl>{{REPO_URL}}/issues</bugTrackerUrl>
+    <tags>{{CHOCO_TAGS}}</tags>
+    <summary>{{SHORT_DESCRIPTION}}</summary>
+    <description><![CDATA[
+{{DESCRIPTION}}
+
+{{CHOCO_HOW_TO_START}}
+
+License: {{LICENSE}}.
+]]></description>
+    <releaseNotes>{{RELEASE_NOTES_URL}}</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

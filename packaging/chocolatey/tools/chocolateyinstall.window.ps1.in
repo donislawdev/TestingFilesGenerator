@@ -1,0 +1,48 @@
+# Rendered by .github/scripts/build_packages.py - do not edit the generated copy.
+#
+# The package DOWNLOADS the release archive instead of carrying it: the archive
+# is the same file, checksum and all, that the release page publishes, and a
+# package with no binaries inside owes the moderators no VERIFICATION.txt.
+#
+# Windows PowerShell 5.1 is what Chocolatey runs package scripts with, so this
+# file is ASCII and uses no PowerShell 7 syntax.
+$ErrorActionPreference = 'Stop'
+$toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$programDir = Join-Path $toolsDir '{{PROGRAM}}'
+
+# Into a folder of its own, exactly as the archive holds it: the window looks
+# for the software renderer in the opengl folder beside itself, and finds it
+# only when the two stay together.
+Install-ChocolateyZipPackage `
+    -PackageName '{{CHOCO_ID}}' `
+    -Url64bit '{{URL_AMD64}}' `
+    -Checksum64 '{{SHA256_AMD64}}' `
+    -ChecksumType64 'sha256' `
+    -UnzipLocation $programDir
+
+$exe = Join-Path $programDir '{{EXE}}'
+
+# Chocolatey makes a shim for every program in the package, and the shim waits
+# for the program to exit unless an empty file named after it with .gui on the
+# end lies beside it (ShimGenerationService.cs, read 2026-09-25). Without this
+# the terminal that typed the command stays blocked until the window closes.
+New-Item -ItemType File -Path "$exe.gui" -Force | Out-Null
+
+# A Start menu entry for everyone on the machine. The working directory is the
+# person's own profile, spelled as the variable, because the window offers a
+# tfg-out folder under the directory it was started from - and the program's
+# own folder here is one an ordinary account cannot write to. The variable is
+# stored as written and expanded when the shortcut is started, so it is the
+# profile of whoever starts it (measured 2026-09-25). Owner's decision the same
+# day.
+$shortcut = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) '{{TITLE}}.lnk'
+Install-ChocolateyShortcut `
+    -ShortcutFilePath $shortcut `
+    -TargetPath $exe `
+    -WorkingDirectory '%USERPROFILE%' `
+    -IconLocation $exe `
+    -Description '{{SHORT_DESCRIPTION}}'
+
+Write-Host ''
+Write-Host 'Start it from the Start menu, or type tfg-gui in a terminal.'
+Write-Host 'Started from the Start menu, it offers a tfg-out folder in your user profile.'
