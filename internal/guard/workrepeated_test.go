@@ -133,12 +133,20 @@ func presetRound(t *testing.T) *repetition {
 
 	r := newRepetition(t, host, p)
 	r.work = func(r *repetition) {
+		// Asked for by name, so it is asserted to have been met: a preset
+		// renamed or taken away would otherwise leave the parameter path
+		// unasked with the guard still green. Raised by the review of #139.
+		typedALimit := false
 		for _, id := range inTurnFrom(t, preset.IDs(), pick.Selected) {
 			r.change("choosing "+id, func() { pick.SetSelected(id) })
 			r.typeAndTypeBack(id+" seed", entryIn(t, fields, engine.SettingSeed), "7")
 			if id == "size-boundaries" {
 				r.typeAndTypeBack(id+" limit", entryIn(t, fields, "limit"), "20mb")
+				typedALimit = true
 			}
+		}
+		if !typedALimit {
+			t.Fatal("no preset is called size-boundaries any more, so no parameter of a preset was typed into and the expansions it causes are not asked about")
 		}
 	}
 	return r
