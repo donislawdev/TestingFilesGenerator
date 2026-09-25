@@ -721,7 +721,9 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// manifest was saved and holds the same facts. Silence would leave a button
 	// missing with no reason given.
 	if saved.Missed != nil {
-		said = append(said, text.InstructionsNotSaved(saved.Missed.Path, saved.Missed.Err.Error()))
+		// Escaped as the command line escapes it, the path and the system's
+		// sentence both - the second carries the path again (review on #140).
+		said = append(said, text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(saved.Missed.Err.Error())))
 	}
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)

@@ -265,6 +265,97 @@ func TestInstructionsAlreadyGoneHoldNothingBack(t *testing.T) {
 	}
 }
 
+// Instructions not named after the manifest cleanup was given are never taken.
+// A manifest can be edited, and one pointing at the instructions of another run
+// in the same directory had cleanup remove them - said by review on #140,
+// measured true. A manifest renamed after its run keeps its instructions the
+// same way, and in both cases the report says what stays and why.
+func TestCleanupLeavesInstructionsNotNamedAfterItsManifest(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "out")
+	for _, name := range []string{"run1", "run2"} {
+		path := filepath.Join(dir, name+".yaml")
+		src := "version: 1\ntargets:\n  - id: " + name + "\n    format: txt\n    size: 1kb\n    purpose: A file for the guard.\n" +
+			"output:\n  manifest: " + name + ".json\n"
+		if err := os.WriteFile(path, []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if code, said := tfg("generate", path, "--out", out); code != cli.ExitOK {
+			t.Fatalf("%s ended %d:\n%s", name, code, said)
+		}
+	}
+	first := filepath.Join(out, "run1.json")
+	raw, err := os.ReadFile(first)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doctored := bytes.Replace(raw, []byte(`"instructions": "run1.instructions.md"`), []byte(`"instructions": "run2.instructions.md"`), 1)
+	if bytes.Equal(doctored, raw) {
+		t.Fatal("run1.json names no instructions of its own to change, so this guard asked nothing")
+	}
+	if err := os.WriteFile(first, doctored, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, said, _ := run(t, "cleanup", first, "--with-manifest", "--json")
+	if got := recordActions(decodeCleanup(t, said)); !slices.Equal(got, []string{"run1.json=would-remove", "run2.instructions.md=would-keep"}) {
+		t.Errorf("the preview's record for a manifest naming another run's instructions is %v", got)
+	}
+	code, said, errOut := run(t, "cleanup", first, "--with-manifest", "--yes", "--json")
+	report := decodeCleanup(t, said)
+	if got := recordActions(report); code != cli.ExitOK || !slices.Equal(got, []string{"run1.json=removed", "run2.instructions.md=kept"}) {
+		t.Errorf("the run ended %d and its record is %v: %s", code, got, errOut)
+	} else if !strings.Contains(report.Record[1].Reason, "not named after this manifest") {
+		t.Errorf("the report keeps another run's instructions for %q", report.Record[1].Reason)
+	}
+	if _, err := os.Stat(filepath.Join(out, "run2.instructions.md")); err != nil {
+		t.Error("cleanup removed the instructions of another run because an edited manifest named them")
+	}
+
+	out, mf, instructions := purposeRun(t)
+	renamed := filepath.Join(out, "old.json")
+	if err := os.Rename(mf, renamed); err != nil {
+		t.Fatal(err)
+	}
+	code, said, errOut = run(t, "cleanup", renamed, "--with-manifest", "--yes", "--json")
+	if got := recordActions(decodeCleanup(t, said)); code != cli.ExitOK || !slices.Equal(got, []string{"old.json=removed", instructionsName + "=kept"}) {
+		t.Errorf("a renamed manifest ended %d and its record is %v: %s", code, got, errOut)
+	}
+	if _, err := os.Stat(instructions); err != nil {
+		t.Error("cleanup took instructions named after a manifest it was not given")
+	}
+}
+
+// The window says instructions it could not write the way the command line
+// does - the path with a character nobody can see written as its escape, in
+// the name and in the system's own sentence, which carries the path again.
+func TestTheWindowSaysInstructionsItCouldNotWriteWithTheEscape(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "out"+rightToLeft+"dir")
+	blocker := core.SiblingPath(filepath.Join(out, instructionsName), core.WritingMarker)
+	if err := os.MkdirAll(blocker, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	host, content := presetScreen(t)
+	choosePreset(t, content, "tabular-import")
+	fill(t, content, text.FieldOutputDir(), out)
+	press(t, content, text.ButtonGenerate())
+	waitForManifest(t, host, out)
+	join(host)
+
+	// The box itself holds what was typed, raw, which is right for a box - and
+	// it is the only place the raw path may stand. Taken out once rather than
+	// everywhere: the message carries the path too, and taking every copy out
+	// would take out exactly the raw one this guard is looking for.
+	said := everythingSaid(content)
+	if n := strings.Count(said, out); n != 1 {
+		t.Errorf("the output directory stands raw %d times on the screen, and only its own box may hold it:\n%s", n, said)
+	}
+	said = strings.Replace(said, out, "", 1)
+	if !strings.Contains(said, "instructions could not be saved") {
+		t.Fatalf("the window did not say the instructions were not written, so this guard checked nothing:\n%s", said)
+	}
+	saysNothingUnseen(t, "the window's line about instructions it could not write", said)
+}
+
 // purposeRun generates one file with a purpose and gives the output
 // directory, the manifest and the instructions beside it.
 func purposeRun(t *testing.T) (out, mf, instructions string) {

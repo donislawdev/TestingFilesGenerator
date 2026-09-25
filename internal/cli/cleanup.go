@@ -97,7 +97,7 @@ Flags:
 	// lists until 2026-09-25, and the real run then took the manifest and the
 	// instructions beside it too.
 	if *withManifest {
-		run.record = recordOf(path, m)
+		run.record, run.notOurs = recordOf(path, m)
 	}
 	// The default run deletes nothing. A tool that removes files on the
 	// strength of one argument is the wrong shape when the directory may hold
@@ -117,19 +117,39 @@ type cleanupRun struct {
 	force, asJSON bool
 	// record is the manifest and the instructions beside it, when
 	// --with-manifest asked for them to go too, and nothing otherwise.
-	record      []string
+	record []string
+	// notOurs is instructions the manifest names that are not named after it.
+	// They are said to stay and never removed - see recordOf.
+	notOurs     string
 	out, errOut io.Writer
 }
 
+// notOursReason is why instructions named after another manifest stay.
+const notOursReason = "it is not named after this manifest, so it may belong to another run"
+
 // recordOf is what a run wrote about itself: the manifest, and the
-// instructions it names when it names any, which sit beside it. Load has
-// already refused a manifest naming anything but a plain name there.
-func recordOf(path string, m *manifest.Manifest) []string {
-	record := []string{path}
-	if m.Run.Instructions != "" {
-		record = append(record, filepath.Join(filepath.Dir(path), m.Run.Instructions))
+// instructions named after it when it names them. Load has already refused a
+// manifest naming anything but a plain name there.
+//
+// Instructions named after some other manifest are not taken. They come back
+// apart, to be reported as kept. A manifest is a file somebody can edit, and
+// one naming the instructions of another run in the same directory had
+// cleanup remove them - found by review on #140, measured on 2026-09-25. A
+// manifest renamed after its run lands here too, and keeping its instructions
+// is the cheaper mistake: a file left to remove by hand, rather than a file
+// removed that was somebody else's. Refusing such a manifest outright would
+// have stopped verify and cleanup on every renamed one (owner's choice).
+func recordOf(path string, m *manifest.Manifest) (record []string, notOurs string) {
+	record = []string{path}
+	name := m.Run.Instructions
+	if name == "" {
+		return record, ""
 	}
-	return record
+	full := filepath.Join(filepath.Dir(path), name)
+	if name != manifest.InstructionsName(filepath.Base(path)) {
+		return record, full
+	}
+	return append(record, full), ""
 }
 
 // previewCleanup lists what a run with --yes would remove, and removes nothing.
@@ -193,6 +213,9 @@ func previewRecord(cands []audit.Candidate, run cleanupRun) []cleanupEntry {
 			e.Action, e.Reason = "would-keep", "it is already gone"
 		}
 		entries = append(entries, e)
+	}
+	if run.notOurs != "" {
+		entries = append(entries, cleanupEntry{Path: run.notOurs, Action: "would-keep", Reason: notOursReason})
 	}
 	return entries
 }
@@ -308,6 +331,7 @@ func settleRecord(run cleanupRun, blocked int, report *cleanupReport) int {
 	if len(run.record) == 0 {
 		return ExitOK
 	}
+	code := ExitOK
 	if blocked > 0 {
 		for i, p := range run.record {
 			report.Record = append(report.Record, cleanupEntry{Path: p, Action: "kept", Reason: keptBecause(i, blocked)})
@@ -317,10 +341,12 @@ func settleRecord(run cleanupRun, blocked int, report *cleanupReport) int {
 			also = ", and the instructions with it"
 		}
 		fmt.Fprintf(run.errOut, "tfg: the manifest was kept%s. It is the only record of %s still on disk.\n", also, core.Count(blocked, "file", "files"))
-		return ExitOK
+	} else {
+		report.Record, code = removeRecord(run.record, run.errOut)
 	}
-	var code int
-	report.Record, code = removeRecord(run.record, run.errOut)
+	if run.notOurs != "" {
+		report.Record = append(report.Record, cleanupEntry{Path: run.notOurs, Action: "kept", Reason: notOursReason})
+	}
 	return code
 }
 
