@@ -62,6 +62,12 @@ func ButtonOpenFolder() string { return say("ButtonOpenFolder", "Open folder") }
 func ButtonOpenManifest() string { return say("ButtonOpenManifest", "Open manifest") }
 func ButtonCancel() string       { return say("ButtonCancel", "Cancel") }
 
+// ButtonOpenInstructions opens the instructions a finished run wrote beside
+// its manifest - what every file is for, in words. On the bar beside the
+// manifest's button, and only while there are some: a run nobody explained
+// writes none.
+func ButtonOpenInstructions() string { return say("ButtonOpenInstructions", "Open instructions") }
+
 // files is a count with its noun, in the right number.
 //
 // The doc above this package has described "file(s)" as a dodge since the day
@@ -398,6 +404,15 @@ func ManifestNotSaved(path string) string {
 	return sayf("ManifestNotSaved",
 		"the files were written and the manifest could not be saved to {{.Path}}",
 		map[string]any{"Path": path})
+}
+
+// InstructionsNotSaved is said when the instructions of a run could not be
+// written. The manifest was saved, so it is said, not refused. It says nothing
+// about the files, because it is said after a stopped run as well.
+func InstructionsNotSaved(path, cause string) string {
+	return sayf("InstructionsNotSaved",
+		"The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts.",
+		map[string]any{"Path": path, "Cause": cause})
 }
 
 // NothingProduced is the outcome when a run ended with no manifest at all.

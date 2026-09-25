@@ -73,6 +73,9 @@ type TargetDraft struct {
 	Count  string
 	Name   string
 	Group  string
+	// Purpose says in a sentence or two what these files are and why they are
+	// in the set. See Target.Purpose.
+	Purpose string
 	// Three ways of saying how big, and this type deliberately accepts all
 	// three at once. Two of them together is a refusal Parse already words and
 	// addresses - "states both a size and a size-range" - so a screen offering
@@ -201,6 +204,7 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 	addNumber("boundary", t.Boundary)
 	add("name", t.Name)
 	add("group", t.Group)
+	add(KeyPurpose, t.Purpose)
 
 	if e := expectationEntry(t); e != nil {
 		entry = append(entry, yaml.MapItem{Key: "expected", Value: e})
@@ -372,6 +376,7 @@ func refuseUnwritable(d Document) error {
 		check(where.of("boundary"), t.Boundary)
 		check(where.of("name"), t.Name)
 		check(where.of("group"), t.Group)
+		check(where.of(KeyPurpose), t.Purpose)
 		check(where.of("expected"), t.Expected)
 		check(where.of("expected.reason"), t.ExpectedReason)
 
@@ -455,6 +460,7 @@ const (
 	KeyBoundary       = "boundary"
 	KeyName           = "name"
 	KeyGroup          = "group"
+	KeyPurpose        = "purpose"
 	KeyLabel          = "label"
 	KeyFill           = "fill"
 	KeyDamage         = "damage"

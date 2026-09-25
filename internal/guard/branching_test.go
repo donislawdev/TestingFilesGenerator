@@ -24,7 +24,9 @@ const (
 	// Written down because a comment naming the wrong function sends the next
 	// reader to flatten something that is not the one at the ceiling.
 	worstComplexity = 22 // internal/engine/engine.go Run
-	mostArguments   = 9  // internal/cli/cleanup.go applyCleanup
+	// 9 until 2026-09-25, when applyCleanup's arguments became one cleanupRun
+	// and the preview took the same value instead of an eighth argument.
+	mostArguments = 7 // internal/cli/verify.go reportVerify
 
 	// Where each axis counts as on its way to the ceiling. Three quarters for
 	// the two that have room to run, and an ABSOLUTE number for depth.
@@ -42,7 +44,8 @@ const (
 	// Lowered from 5 on 2026-09-05: splitting the verify loop into compare and
 	// claimedPaths took one function out of the band. The ratchet only tightens.
 	crowdedComplexity = 4
-	crowdedArguments  = 5
+	// 5 until 2026-09-25 - applyCleanup and previewCleanup, see mostArguments.
+	crowdedArguments = 3
 	// 53 until 2026-08-29, when TIFF arrived. The function that took it to 54
 	// is tiff.chooseSize, and it is the same shape as bmp.chooseSize because
 	// the two formats do the same arithmetic - the picture is grown to fill

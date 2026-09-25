@@ -53,7 +53,12 @@ const (
 	// Lowered from 408 on 2026-09-24: the rules a file name has to pass moved
 	// out of engine.go into filename.go when the length rule (O239) took it
 	// past the ceiling. The longest file is cli/generate.go now.
-	longestFile = 407
+	// Lowered from 407 on 2026-09-25: saving a run's record moved out of
+	// cli/generate.go into record.go, and the file groups of the upload set
+	// out of preset/uploadset.go into uploadfiles.go, when the instructions
+	// beside the manifest took both past the ceiling. The longest file is
+	// manifest/manifest.go now.
+	longestFile = 401
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

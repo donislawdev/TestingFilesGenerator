@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // What has to be true before a run may start, and where the things it writes
@@ -79,6 +80,14 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 	// it happened in silence.
 	if path := ManifestPath(opt); exists(path) {
 		return &CollisionError{Path: path, Manifest: true}
+	}
+	// And the instructions beside it, in a run that will write them. An
+	// earlier run's instructions describe that run's files, and a second run
+	// writing over them would leave its manifest beside words about others.
+	if explainedFiles(files) {
+		if path := InstructionsPath(opt); exists(path) {
+			return &CollisionError{Path: path, Instructions: true}
+		}
 	}
 
 	// Nothing else is written over either. This tool runs in directories that
@@ -224,6 +233,40 @@ func manifestNameOf(opt Options) string {
 // of a fault waiting for a fourth screen rather than of a safe piece of code.
 func ManifestPath(opt Options) string {
 	return filepath.Join(opt.OutDir, manifestNameOf(opt))
+}
+
+// instructionsNameOf is the name of the instructions beside this run's
+// manifest - its name with a different ending, see manifest.InstructionsName.
+func instructionsNameOf(opt Options) string {
+	return manifest.InstructionsName(manifestNameOf(opt))
+}
+
+// InstructionsPath is where this run's instructions land, when it writes any.
+// Exported for the reason ManifestPath is: the check, the reservation, the
+// save and the window's button have to mean the same file.
+func InstructionsPath(opt Options) string {
+	return filepath.Join(opt.OutDir, instructionsNameOf(opt))
+}
+
+// explained says whether any target was given a purpose, which is when a run
+// writes instructions beside its manifest.
+func explained(targets []Target) bool {
+	for _, t := range targets {
+		if t.Purpose != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// explainedFiles is explained asked of a plan.
+func explainedFiles(files []PlannedFile) bool {
+	for _, f := range files {
+		if f.Target.Purpose != "" {
+			return true
+		}
+	}
+	return false
 }
 
 // RunLockPath is the name a run holds while it writes into a directory.

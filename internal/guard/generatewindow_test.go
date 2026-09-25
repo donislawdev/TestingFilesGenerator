@@ -16,9 +16,11 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // The generate screen, exercised the way somebody uses it: fields are filled
@@ -697,6 +699,13 @@ func join(host *fakeHost) {
 	if host.waitForWork != nil {
 		host.waitForWork()
 	}
+}
+
+// isRecord says whether a name in an output directory is what the run wrote
+// about itself - the manifest, or the instructions beside it - rather than a
+// file of the set.
+func isRecord(name string) bool {
+	return name == engine.DefaultManifestName || name == manifest.InstructionsName(engine.DefaultManifestName)
 }
 
 func namesIn(t *testing.T, dir string) []string {

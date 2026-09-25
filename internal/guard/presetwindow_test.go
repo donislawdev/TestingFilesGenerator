@@ -82,8 +82,8 @@ func TestThePresetScreenBuildsTheMinimalSetTheCommandLineBuilds(t *testing.T) {
 	// it brings an empty one as well. Asserted rather than logged, because an
 	// equality between two empty sets proves nothing.
 	const wanted = 4
-	if len(cliNames) != wanted+1 {
-		t.Fatalf("the preset produced %d thing(s) and %d files plus a manifest was expected: %v",
+	if len(cliNames) != wanted+2 {
+		t.Fatalf("the preset produced %d thing(s) and %d files, a manifest and its instructions were expected: %v",
 			len(cliNames), wanted, cliNames)
 	}
 
@@ -92,7 +92,12 @@ func TestThePresetScreenBuildsTheMinimalSetTheCommandLineBuilds(t *testing.T) {
 		if name == "manifest.json" {
 			continue
 		}
-		compared++
+		// The instructions are compared byte for byte like the files - both
+		// surfaces write them through one function and from one manifest - but
+		// counted apart, because wanted is the size of the set.
+		if !isRecord(name) {
+			compared++
+		}
 		a, err := os.ReadFile(filepath.Join(fromCLI, name))
 		if err != nil {
 			t.Fatalf("reading %s from the command line run: %v", name, err)
@@ -261,11 +266,11 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 	// guard from catching 30 injected faults out of 30 down to 13, with the
 	// mutation report still looking clean.
 	//
-	// size-boundaries is seven files plus the manifest, and asserting the count
-	// here rather than logging it is the whole difference.
+	// size-boundaries is seven files, the manifest and its instructions, and
+	// asserting the count here rather than logging it is the whole difference.
 	const wanted = 7
-	if len(cliNames) != wanted+1 {
-		t.Fatalf("the preset produced %d thing(s) and %d files plus a manifest was expected: %v",
+	if len(cliNames) != wanted+2 {
+		t.Fatalf("the preset produced %d thing(s) and %d files, a manifest and its instructions were expected: %v",
 			len(cliNames), wanted, cliNames)
 	}
 
@@ -277,7 +282,12 @@ func TestThePresetScreenAndTheCommandLineProduceTheSameRun(t *testing.T) {
 		if name == "manifest.json" {
 			continue
 		}
-		compared++
+		// The instructions are compared byte for byte like the files - both
+		// surfaces write them through one function and from one manifest - but
+		// counted apart, because wanted is the size of the set.
+		if !isRecord(name) {
+			compared++
+		}
 		a, err := os.ReadFile(filepath.Join(fromCLI, name))
 		if err != nil {
 			t.Fatalf("reading %s from the command line run: %v", name, err)

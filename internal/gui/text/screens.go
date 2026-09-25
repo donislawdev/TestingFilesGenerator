@@ -483,6 +483,7 @@ func DetailSizeWay() string {
 	return say("DetailSizeWay", "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over.")
 }
 func FieldGroup() string    { return say("FieldGroup", "Kind of case") }
+func FieldPurpose() string  { return say("FieldPurpose", "Purpose") }
 func FieldExpected() string { return say("FieldExpected", "Expected outcome") }
 func FieldReason() string   { return say("FieldReason", "Rule being tested") }
 func FieldManifest() string { return say("FieldManifest", "Manifest file name") }
@@ -493,6 +494,9 @@ func HintBoundary() string {
 	return say("HintBoundary", "Three files: one byte under the limit, one on it, one over.")
 }
 func HintGroup() string { return say("HintGroup", "Marks several batches as one kind of case.") }
+func HintPurpose() string {
+	return say("HintPurpose", "What these files are and why they are in the set.")
+}
 func HintExpected() string {
 	return say("HintExpected", "What the system under test should do with these files.")
 }
@@ -505,6 +509,9 @@ func DetailSizeRange() string {
 }
 func DetailBoundary() string {
 	return say("DetailBoundary", "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used.")
+}
+func DetailPurpose() string {
+	return say("DetailPurpose", "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file.")
 }
 func DetailGroup() string {
 	return say("DetailGroup", "It reaches the manifest, so a test can assert about a whole class of case at once.")

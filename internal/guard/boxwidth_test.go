@@ -420,6 +420,7 @@ func TestOnlyAPathTakesTheWholeRow(t *testing.T) {
 		{text.TabPresets(), text.SettingLabel("spread")},
 		{text.TabRecipe(), text.FieldManifest()},
 		{text.TabRecipe(), text.FieldGroup()},
+		{text.TabRecipe(), text.FieldPurpose()},
 		{text.TabRecipe(), text.SettingLabel("password")},
 	} {
 		screen := selectTab(t, host.content, named.tab)

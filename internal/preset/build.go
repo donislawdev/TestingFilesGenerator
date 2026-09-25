@@ -157,6 +157,10 @@ type setFile struct {
 	// value is how a guard ends up testing the wrong thing.
 	atFloor          bool
 	expected, reason string
+	// purpose says in a sentence or two what this file is and why it is in
+	// the set, for the instructions written beside the manifest. English, and
+	// under D17 like everything else a person reads.
+	purpose string
 }
 
 // bytes is the size this file is asked for.
@@ -208,6 +212,7 @@ func (f setFile) draft() recipe.TargetDraft {
 	return recipe.TargetDraft{
 		ID: f.id, Format: f.desc.ID, Count: count,
 		Size: strconv.FormatInt(f.bytes(), 10), Name: f.name, Group: f.group,
+		Purpose:  f.purpose,
 		Expected: f.expected, ExpectedReason: f.reason,
 		Properties: f.props,
 	}

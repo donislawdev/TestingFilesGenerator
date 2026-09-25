@@ -86,9 +86,42 @@ func (f textFile) draft(size int64) recipe.TargetDraft {
 	return recipe.TargetDraft{
 		ID: f.id(), Format: f.desc.ID, Count: "1",
 		Size: strconv.FormatInt(size, 10), Name: f.name(), Group: f.group,
+		Purpose:  f.purpose(),
 		Expected: f.expected, ExpectedReason: f.reason,
 		Properties: f.props,
 	}
+}
+
+// purpose is what the instructions say about the file, worked out from the
+// settings that make it what it is - so a format or an encoding the registry
+// gains later is described rather than left blank.
+func (f textFile) purpose() string {
+	name := f.desc.Name
+	if ending, ok := f.props[lineEndingSetting]; ok {
+		if ending == "crlf" {
+			return fmt.Sprintf("A %s file whose lines end in CR LF, the way Windows and Excel write them. "+
+				"Your reader should take it - one that splits lines on LF alone keeps a carriage return at the end of every line.", name)
+		}
+		return fmt.Sprintf("A %s file whose lines end in %s. Your reader should take it - "+
+			"both endings are legal, and a reader that expects the other one sees a single long line or an empty one after each.", name, strings.ToUpper(ending))
+	}
+	encoding := strings.ToUpper(f.props[textenc.Setting])
+	mark := ""
+	switch f.props[textenc.SettingBOM] {
+	case "true":
+		mark = " that starts with a byte order mark"
+	case "false":
+		mark = " with no byte order mark"
+	}
+	if f.props[textenc.Setting] == textenc.UTF8 && f.props[textenc.SettingBOM] == "true" {
+		return fmt.Sprintf("A %s file in UTF-8%s. Your reader should take it - the mark is legal, "+
+			"and one shown as three stray characters, or carried into the first field of an import, is a fault.", name, mark)
+	}
+	if f.props[textenc.Setting] == textenc.UTF8 {
+		return fmt.Sprintf("A %s file in UTF-8%s. Your reader should take it and show every character right.", name, mark)
+	}
+	return fmt.Sprintf("A %s file in %s%s, two bytes for every character. "+
+		"Whether your reader takes UTF-16 at all is its own policy - check that it reads the text right or refuses it clearly, and never shows it as one character in three.", name, encoding, mark)
 }
 
 // carrying is every format in this build that declares all of these settings.

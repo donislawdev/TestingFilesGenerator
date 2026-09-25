@@ -254,6 +254,8 @@ var reachableFromTheWindow = []string{
 	// no recipe at all.
 	"recipe:targets",
 	"recipe:targets.group",
+	// The box under the batch's manifest notes, since 2026-09-25.
+	"recipe:targets.purpose",
 	"recipe:targets.boundary",
 	"recipe:targets.contains",
 	"recipe:targets.expected",

@@ -243,9 +243,17 @@ type CollisionError struct {
 	// costs the record of every file an earlier run wrote - after which
 	// cleanup cannot see them and nothing can.
 	Manifest bool
+	// Instructions is set when what is in the way is the instructions of an
+	// earlier run, which describe that run's files.
+	Instructions bool
 }
 
 func (e *CollisionError) Error() string {
+	if e.Instructions {
+		return fmt.Sprintf(
+			"%s already exists and this run will not write over it. It says what the files of an earlier run are for. Generate into an empty directory, or name this run's manifest something else",
+			core.Shown(e.Path))
+	}
 	if e.Manifest {
 		return fmt.Sprintf(
 			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside",

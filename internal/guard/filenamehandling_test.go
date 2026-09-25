@@ -227,7 +227,7 @@ func TestTheFileNamePresetWritesEveryNameByteForByte(t *testing.T) {
 		sort.Strings(recorded)
 		var onDisk []string
 		for _, name := range namesIn(t, dir) {
-			if name != "manifest.json" {
+			if !isRecord(name) {
 				onDisk = append(onDisk, name)
 			}
 		}
@@ -258,8 +258,8 @@ func TestThePresetScreenWritesTheNamesTheCommandLineWrites(t *testing.T) {
 	join(host)
 
 	cliNames, windowNames := namesIn(t, fromCLI), namesIn(t, fromWindow)
-	if len(cliNames) != 51 {
-		t.Fatalf("the command line wrote %d things and fifty files and a manifest were expected", len(cliNames))
+	if len(cliNames) != 52 {
+		t.Fatalf("the command line wrote %d things and fifty files, a manifest and its instructions were expected", len(cliNames))
 	}
 	if strings.Join(cliNames, "\x00") != strings.Join(windowNames, "\x00") {
 		t.Fatalf("the two surfaces wrote different names:\n  command line %+q\n  window       %+q", cliNames, windowNames)
