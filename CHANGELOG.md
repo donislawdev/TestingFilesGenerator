@@ -324,7 +324,9 @@ because it turns other people's test suites red.
   `run2.instructions.md`, and it is written only when some file has a
   purpose - a plain `tfg generate --format png` writes none. `generate`
   prints `instructions:` under `manifest:`, `verify` does not count the file
-  as extra, and `cleanup --with-manifest` removes it with the manifest. A
+  as extra, and `cleanup --with-manifest` removes it with the manifest - only
+  when it is named after that manifest, so an edited or renamed manifest
+  never takes instructions that may belong to another run. A
   run into a directory that already holds instructions of that name is
   refused before anything is written. If the file cannot be written, the run
   says so and does not fail over it, because the manifest was saved and
