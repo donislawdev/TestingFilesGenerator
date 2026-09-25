@@ -1,0 +1,24 @@
+# Rendered by .github/scripts/build_packages.py - do not edit the generated copy.
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.{{WINGET_SCHEMA}}.schema.json
+
+PackageIdentifier: {{WINGET_ID}}
+PackageVersion: {{VERSION}}
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+- RelativeFilePath: {{EXE}}
+# Load-bearing, in both packages. Without it WinGet reaches the program through
+# a symbolic link in its links folder, and the window started that way cannot
+# find the software renderer in the opengl folder beside the real file - the
+# program looks for it next to the path it was started from. With it, WinGet
+# makes no link and puts this package's own folder on PATH instead
+# (PortableInstaller.cpp in winget-cli, read 2026-09-25). The command line does
+# not need it, but without it the shape depends on the machine: a link where
+# symbolic links are allowed, the folder on PATH where they are not. One shape
+# is one thing to test.
+ArchiveBinariesDependOnPath: true
+ReleaseDate: {{RELEASE_DATE}}
+Installers:
+{{WINGET_INSTALLERS}}
+ManifestType: installer
+ManifestVersion: {{WINGET_SCHEMA}}

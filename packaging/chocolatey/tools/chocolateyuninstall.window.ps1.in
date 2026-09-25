@@ -1,0 +1,35 @@
+# Rendered by .github/scripts/build_packages.py - do not edit the generated copy.
+#
+# Chocolatey removes the files and the shims it made itself. The Start menu
+# shortcut was made by the install script, so Chocolatey does not know about
+# it, and removing it is this script's job.
+#
+# Only a shortcut that points into THIS package is removed. A person may keep a
+# shortcut of their own under the same name, pointing somewhere else, and an
+# uninstall does not get to decide it is ours. Nothing here throws either: a
+# missing shortcut is not a reason to leave the package half removed.
+#
+# Windows PowerShell 5.1 is what Chocolatey runs package scripts with, so this
+# file is ASCII and uses no PowerShell 7 syntax.
+$ErrorActionPreference = 'Continue'
+$toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$shortcut = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) '{{TITLE}}.lnk'
+
+if (-not (Test-Path -LiteralPath $shortcut)) {
+    Write-Host 'There was no Start menu shortcut to remove.'
+    return
+}
+
+$target = ''
+try {
+    $target = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut).TargetPath
+} catch {
+    $target = ''
+}
+
+if ($target.StartsWith($toolsDir + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    Remove-Item -LiteralPath $shortcut -Force
+    Write-Host 'Removed the Start menu shortcut.'
+} else {
+    Write-Host "Left the Start menu shortcut alone. It points at $target, not at this package."
+}

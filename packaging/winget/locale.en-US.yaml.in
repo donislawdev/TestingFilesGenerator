@@ -1,0 +1,24 @@
+# Rendered by .github/scripts/build_packages.py - do not edit the generated copy.
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.{{WINGET_SCHEMA}}.schema.json
+
+PackageIdentifier: {{WINGET_ID}}
+PackageVersion: {{VERSION}}
+PackageLocale: en-US
+Publisher: {{PUBLISHER}}
+PublisherUrl: {{REPO_URL}}
+PublisherSupportUrl: {{REPO_URL}}/issues
+PackageName: {{TITLE}}
+PackageUrl: {{PROJECT_URL}}
+License: {{LICENSE}}
+LicenseUrl: {{LICENSE_URL}}
+ShortDescription: {{SHORT_DESCRIPTION}}
+Description: |-
+  {{DESCRIPTION}}
+
+  {{WINGET_HOW_TO_START}}
+Moniker: {{MONIKER}}
+Tags:
+{{WINGET_TAGS}}
+ReleaseNotesUrl: {{RELEASE_NOTES_URL}}
+ManifestType: defaultLocale
+ManifestVersion: {{WINGET_SCHEMA}}
