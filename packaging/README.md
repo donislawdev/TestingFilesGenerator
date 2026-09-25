@@ -71,7 +71,7 @@ scope and on Windows 11 in user scope:
 - **WinGet stops half way.** An upgrade fails with "Access is denied" on the
   program, having already deleted some of the other files, and the package works
   again once the upgrade runs with the program closed. Measured for the window
-  and, on Windows 11, for the command line with a run in progress. A portable
+  and, on Windows 11, for the command line while a tfg command was running. A portable
   package carries no script, so the description is where this is said.
 
 ## Submitting

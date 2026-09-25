@@ -90,7 +90,7 @@ def how_to_start(package, feed):
     Windows 11 in user scope, upgrading the window while it was open failed
     with "Access is denied" and left the package folder half removed until the
     upgrade ran again with the window closed. On Windows 11 the command line
-    did the same while a tfg run was in progress. A portable package can carry
+    did the same while a tfg command was running. A portable package can carry
     no script to warn at that moment, so the description is the only place a
     person can read it first.
     """
@@ -100,9 +100,12 @@ def how_to_start(package, feed):
         text = ("This package is the command line, for scripts and pipelines. The desktop "
                 "window is the package %s. Type tfg help to see the commands." % other_id)
         if feed == "winget":
-            text += (" Upgrade it when no tfg run is in progress. WinGet cannot replace "
-                     "tfg while it runs, so it stops half way, and the package works again "
-                     "once the upgrade runs with no run in progress.")
+            # "when tfg is not running" rather than naming a command: any tfg
+            # command holds the program file while it runs, and "a tfg run" read
+            # as a command that does not exist (outside review of #144).
+            text += (" Upgrade it when tfg is not running. WinGet cannot replace tfg while "
+                     "it runs, so it stops half way, and the package works again once the "
+                     "upgrade runs after tfg has finished.")
         return text
     if feed == "winget":
         return ("This package is the desktop window. The command line is the package %s. "
