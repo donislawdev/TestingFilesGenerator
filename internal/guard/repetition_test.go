@@ -237,6 +237,9 @@ func reachableByType(root any) map[string]int {
 					visit(it.Value())
 				}
 			}
+		default:
+			// A function holds its closure out of reflection's reach, and a
+			// channel, a number or a string holds nothing drawn.
 		}
 	}
 	visit(reflect.ValueOf(root))
@@ -266,8 +269,11 @@ func mayHoldPointers(t reflect.Type) bool {
 		return followed(t)
 	case reflect.Array:
 		return mayHoldPointers(t.Elem())
+	default:
+		// Numbers, strings, functions, channels and bare pointers of the
+		// runtime: nothing drawn is reached through any of them.
+		return false
 	}
-	return false
 }
 
 // goroutineIDs is every goroutine alive now, by the number the runtime gives it.
