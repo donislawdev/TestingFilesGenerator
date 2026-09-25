@@ -323,7 +323,7 @@
   },
   "InstructionsNotSaved": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Cause}}.",
-    "other": "The instructions could not be saved to {{.Path}} ({{.Cause}}). The files and the manifest are complete, and the manifest holds the same facts."
+    "other": "The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts."
   },
   "ListHeadingCount": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",

@@ -32,6 +32,14 @@ import (
 // to make a check possible rather than checking the structure there is. The
 // same choice was made, for the same reason, in boundaryresolution_test.go.
 func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
+	// The manifest reaches the sequence below through writeOver. Asked rather
+	// than assumed: a writeOver that stopped calling writeClaimed would leave
+	// this guard reading, honestly and green, a function the manifest no
+	// longer passes through.
+	if !strings.Contains(functionSource(t, "internal/manifest/manifest.go", "writeOver"), "writeClaimed(") {
+		t.Fatal("writeOver in internal/manifest/manifest.go no longer calls writeClaimed, " +
+			"so the flush checked below is not the one the manifest is written through")
+	}
 	for _, c := range []struct {
 		file     string
 		function string
@@ -47,8 +55,12 @@ func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
 			// the sequence, which is the honest repair: the property being
 			// asked about is "the thing that renames flushes first", and the
 			// thing that renames is now called writeOver.
-			function: "writeOver",
-			order:    []string{"m.Encode(f)", "f.Sync()", "f.Close()", "os.Rename(tmp, path)"},
+			//
+			// writeClaimed since 2026-09-25, for the same reason: the
+			// instructions beside the manifest came to be written the same
+			// way, and the sequence moved into the one function both call.
+			function: "writeClaimed",
+			order:    []string{"write(f)", "f.Sync()", "f.Close()", "os.Rename(tmp, path)"},
 		},
 		{
 			file:     "internal/core/replace.go",

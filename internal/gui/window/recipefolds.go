@@ -88,10 +88,11 @@ func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
 		parts.Note(text.NoteManifestOnly()),
 		add(recipe.KeyGroup, text.FieldGroup(), text.HintGroup(),
 			r.tips.Say(text.DetailGroup()), parts.Text(n.group)),
-		// Across the row, because it is a sentence rather than a name. It is
-		// what the instructions beside the manifest say about these files.
-		parts.Wide(add(recipe.KeyPurpose, text.FieldPurpose(), text.HintPurpose(),
-			r.tips.Say(text.DetailPurpose()), n.purpose)),
+		// What the instructions beside the manifest say about these files. A
+		// sentence, and still a text box rather than the row - only a path is
+		// allowed the row (TestOnlyAPathTakesTheWholeRow).
+		add(recipe.KeyPurpose, text.FieldPurpose(), text.HintPurpose(),
+			r.tips.Say(text.DetailPurpose()), parts.Text(n.purpose)),
 		add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
 			r.tips.Say(text.DetailExpected()), n.expected),
 		add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),

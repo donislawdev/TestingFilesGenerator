@@ -407,10 +407,11 @@ func ManifestNotSaved(path string) string {
 }
 
 // InstructionsNotSaved is said when the instructions of a run could not be
-// written. Every file and the manifest are whole, so it is said, not refused.
+// written. The manifest was saved, so it is said, not refused. It says nothing
+// about the files, because it is said after a stopped run as well.
 func InstructionsNotSaved(path, cause string) string {
 	return sayf("InstructionsNotSaved",
-		"The instructions could not be saved to {{.Path}} ({{.Cause}}). The files and the manifest are complete, and the manifest holds the same facts.",
+		"The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts.",
 		map[string]any{"Path": path, "Cause": cause})
 }
 

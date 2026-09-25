@@ -17,8 +17,8 @@ type Record struct {
 	// run wrote none: no file was given a purpose, or writing them failed.
 	Instructions string
 	// Missed is set when instructions were due and are not there. The run is
-	// not failed by it - every file and the manifest are whole - and the
-	// caller says it out loud rather than letting it pass.
+	// not failed by it - the manifest was saved and holds the same facts - and
+	// the caller says it out loud rather than letting it pass.
 	Missed *InstructionsError
 }
 

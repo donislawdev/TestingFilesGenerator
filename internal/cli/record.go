@@ -128,11 +128,13 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 	if rec.Instructions != "" {
 		fmt.Fprintf(errOut, "instructions: %s\n", core.Shown(rec.Instructions))
 	}
-	// Said rather than failed. Every file and the manifest are whole, and the
-	// manifest holds the same facts the instructions would have put in words.
+	// Said rather than failed. The manifest was saved, and it holds the same
+	// facts the instructions would have put in words. Not "the files are
+	// complete": this runs after a stopped or partly failed run as well, and
+	// the line above it has already said how that went.
 	if rec.Missed != nil {
 		fmt.Fprintf(errOut,
-			"tfg: cannot write the instructions to %s: %s. The files and the manifest are complete, and the manifest holds the same facts.\n",
+			"tfg: cannot write the instructions to %s: %s. The manifest was saved and holds the same facts.\n",
 			core.Shown(rec.Missed.Path), describeError(rec.Missed.Err))
 	}
 	return ExitOK

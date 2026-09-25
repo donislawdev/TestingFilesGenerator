@@ -717,9 +717,9 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// do not was, from a window, something you found in the folder afterwards.
 	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(saved.Manifest))
 	said := append([]string{outcome}, manifestReachNote(res)...)
-	// Instructions that were due and are not there are said, not failed: every
-	// file and the manifest are whole. Silence would leave a button missing
-	// with no reason given.
+	// Instructions that were due and are not there are said, not failed: the
+	// manifest was saved and holds the same facts. Silence would leave a button
+	// missing with no reason given.
 	if saved.Missed != nil {
 		said = append(said, text.InstructionsNotSaved(saved.Missed.Path, saved.Missed.Err.Error()))
 	}
