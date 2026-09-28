@@ -94,6 +94,31 @@ func TestTheFilesYouCheckADownloadWithSortToTheEnd(t *testing.T) {
 	}
 }
 
+// The installer sorts among the programs: after the window's archives and
+// before the command line's, never among the files a person checks a download
+// with. Its name is read out of build_msi.py, the one place it is written, so
+// renaming it there is asked here.
+func TestTheInstallerSortsAmongThePrograms(t *testing.T) {
+	found := regexp.MustCompile(`(?m)^NAME = "([^"]+)"$`).FindStringSubmatch(readRepoFile(t, ".github/scripts/build_msi.py"))
+	if found == nil || !strings.Contains(found[1], "{version}") {
+		t.Fatal("build_msi.py names no installer with a {version} in it, so there is nothing to sort")
+	}
+	installer := strings.Replace(found[1], "{version}", "0.2.0", 1)
+	for _, window := range []string{"tfg-gui_0.2.0_windows_amd64.zip", "tfg-gui_0.2.0_linux_amd64.tar.gz", "tfg-gui_0.2.0_macos_arm64.tar.gz"} {
+		if !sortsAfter(installer, window) {
+			t.Errorf("%s sorts before %s, so it lands above the window's archives", installer, window)
+		}
+	}
+	for _, cli := range []string{"tfg_0.2.0_windows_amd64.zip", "tfg_0.2.0_linux_arm64.tar.gz", "tfg_0.2.0_macos_arm64.tar.gz"} {
+		if !sortsAfter(cli, installer) {
+			t.Errorf("%s sorts after %s, so it lands below the command line's archives", installer, cli)
+		}
+	}
+	if !sortsAfter(auxPrefix(t)+"SHA256SUMS.txt", installer) {
+		t.Errorf("%s sorts among the files a person checks a download with", installer)
+	}
+}
+
 // Every place that MAKES one of those four files has to use the prefix.
 //
 // Three different files create them - the build workflow makes the bill of

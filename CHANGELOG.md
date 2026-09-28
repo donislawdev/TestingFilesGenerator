@@ -14,6 +14,19 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **A Windows installer, `tfg-setup_<version>_windows_amd64.msi`, beside the
+  zip archives.** It installs the window and the command line for every
+  account on the machine, in `Program Files\Testing Files Generator`, puts
+  that folder on the machine's `PATH` once and the window in the Start menu,
+  and asks for administrator rights to do it. Upgrading while a `tfg`
+  command runs does not stop the command. The new version is in place at
+  once, and the old copy is removed at the next restart. Uninstalling
+  removes the folder entry from `PATH` and leaves any file in the folder
+  that the installer did not put there. A release candidate gets no
+  installer.
+
 ### Fixed
 
 - **The window no longer offers to write into a folder it cannot or should
