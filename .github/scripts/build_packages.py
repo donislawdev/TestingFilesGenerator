@@ -27,11 +27,15 @@ import argparse
 import os
 import re
 import shutil
+import stat
 import sys
 import tempfile
 from collections import namedtuple
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# realpath, not abspath: the check that keeps --out outside the repository
+# compares resolved paths, so a symbolic link or a junction pointing into the
+# tree cannot walk the packages into it (outside review of #143).
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 TEMPLATES = os.path.join(ROOT, "packaging")
 TEMPLATE_SUFFIX = ".in"
 PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
@@ -124,8 +128,20 @@ def refuse(message):
 
 
 def read_text(path):
+    """A file of this repository - the templates, go.mod, CNAME, the changelog.
+
+    These are not inputs a person chooses, so a failure here is a broken
+    checkout and a traceback says so. What a person DOES choose - the checksum
+    file - is read by read_sums, which refuses with a sentence instead.
+    """
     with open(path, encoding="utf-8-sig") as handle:
         return handle.read().replace("\r\n", "\n")
+
+
+# A release's checksum file is under a kilobyte - 970 bytes for v0.4.0. Anything
+# near this is another file passed by mistake, an archive for instance, and
+# reading stops one byte past it.
+SUMS_LIMIT = 1024 * 1024
 
 
 def repository():
@@ -170,8 +186,26 @@ def read_sums(path):
     mode, and that star is not part of the name. A file saved on Windows may
     carry a byte order mark and CRLF. None of that may reach an address.
     """
+    # Opened once and read at most one byte past the limit, from a regular file
+    # only: a size asked for first and a read made after could see two different
+    # files, and a pipe or a device has no size to ask (outside review of #145).
+    hint = "Download verify-SHA256SUMS.txt from the release you are packaging and pass that"
+    try:
+        with open(path, "rb") as handle:
+            if not stat.S_ISREG(os.fstat(handle.fileno()).st_mode):
+                refuse("%s is not a file. %s" % (path, hint))
+            data = handle.read(SUMS_LIMIT + 1)
+    except OSError as err:
+        refuse("cannot read the checksum file %s: %s. %s" % (path, err.strerror or err, hint))
+    if len(data) > SUMS_LIMIT:
+        refuse("%s is larger than %d bytes, so it is not a release's checksum file. %s"
+               % (path, SUMS_LIMIT, hint))
+    try:
+        text = data.decode("utf-8-sig").replace("\r\n", "\n")
+    except UnicodeDecodeError:
+        refuse("%s is not UTF-8 text, so it is not a release's checksum file. %s" % (path, hint))
     sums = {}
-    for number, line in enumerate(read_text(path).split("\n"), 1):
+    for number, line in enumerate(text.split("\n"), 1):
         if not line.strip():
             continue
         found = re.fullmatch(r"([0-9A-Fa-f]{64}) [ *](\S.*)", line.strip())
@@ -342,15 +376,44 @@ def destination(package, relative, version):
 
 def check_out(out):
     """--out is outside the repository and empty or absent, or a refusal."""
-    out = os.path.abspath(out)
+    out = os.path.realpath(out)
     root = os.path.normcase(ROOT)
     if os.path.normcase(out) == root or os.path.normcase(out).startswith(root + os.sep):
         refuse("--out %s is inside the repository. Rendered packages are not source - put "
                "them somewhere outside it" % out)
-    if os.path.exists(out) and (not os.path.isdir(out) or os.listdir(out)):
-        refuse("--out %s already holds something. Nothing is overwritten - pass an empty "
-               "or new directory" % out)
+    if os.path.exists(out):
+        try:
+            holds = not os.path.isdir(out) or bool(os.listdir(out))
+        except OSError as err:
+            refuse("cannot look inside --out %s: %s. Pass a new directory, or one you can "
+                   "read and write" % (out, err.strerror or err))
+        if holds:
+            refuse("--out %s already holds something. Nothing is overwritten - pass an empty "
+                   "or new directory" % out)
     return out
+
+
+def missing_folders(path):
+    """The folders of path that do not exist yet, deepest first - what this run
+    will have made, and the most a failed run may take away again."""
+    made = []
+    while not os.path.exists(path):
+        made.append(path)
+        up = os.path.dirname(path)
+        if up == path:
+            break
+        path = up
+    return made
+
+
+def remove_empty(folders):
+    """Remove the folders this run made, deepest first, stopping at the first one
+    that is not empty - it then holds something that is not ours."""
+    for folder in folders:
+        try:
+            os.rmdir(folder)
+        except OSError:
+            return
 
 
 def build(tag, sums_path, out):
@@ -362,8 +425,15 @@ def build(tag, sums_path, out):
         refuse("the icon %s is not in the repository" % ICON)
 
     parent = os.path.dirname(out)
-    os.makedirs(parent, exist_ok=True)
-    work = tempfile.mkdtemp(prefix=".packages-", dir=parent)
+    made = missing_folders(parent)
+    try:
+        os.makedirs(parent, exist_ok=True)
+        work = tempfile.mkdtemp(prefix=".packages-", dir=parent)
+    except OSError as err:
+        remove_empty(made)
+        refuse("cannot create a working folder in %s: %s. Check that you can write there, "
+               "or pass another --out" % (parent, err.strerror or err))
+    finished = False
     try:
         used = set()
         known = set()
@@ -386,9 +456,17 @@ def build(tag, sums_path, out):
         if os.path.isdir(out):
             os.rmdir(out)
         os.rename(work, out)
+        finished = True
+    except OSError as err:
+        refuse("cannot write the packages to %s: %s. Check that you can write there, or "
+               "pass another --out. Nothing was left behind" % (out, err.strerror or err))
     finally:
+        # A refusal is a SystemExit, so it reaches here too: nothing half
+        # rendered, and no folder this run made, outlives a run that failed.
         if os.path.isdir(work):
             shutil.rmtree(work)
+        if not finished:
+            remove_empty(made)
     return out
 
 

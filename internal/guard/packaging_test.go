@@ -75,13 +75,20 @@ func fixtureSums() []byte {
 // renderPackages runs the renderer the way a person does.
 func renderPackages(t *testing.T, tag string, sums []byte, out string) rendering {
 	t.Helper()
+	return renderFrom(t, tag, sumsFile(t, sums), out)
+}
+
+// renderFrom is renderPackages with the checksum file named rather than
+// written, so a guard can hand it a path to a file that is not there.
+func renderFrom(t *testing.T, tag, sumsPath, out string) rendering {
+	t.Helper()
 	python := pythonForGate(t)
 	// The interpreter is the one found on PATH, the script is a file of this
 	// repository, and every argument is a value this guard chose or a file it
 	// just wrote - nothing here comes from anything a person typed.
 	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
 	cmd := exec.Command(python, packagingScript(t),
-		"--tag", tag, "--sums", sumsFile(t, sums), "--out", out)
+		"--tag", tag, "--sums", sumsPath, "--out", out)
 	cmd.Dir = repoRoot(t)
 	said, err := cmd.CombinedOutput()
 	code := 0

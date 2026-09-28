@@ -1,10 +1,13 @@
 package guard
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -107,6 +110,146 @@ func entriesOf(t *testing.T, dir string) string {
 		names = append(names, e.Name())
 	}
 	return strings.Join(names, ", ")
+}
+
+// A file the renderer cannot read, and a destination that leads into the
+// repository by another name, are refused with a sentence rather than a Python
+// traceback or a write into the tree. An outside review of #143 found both: a
+// missing --sums printed an exception, and --out was checked by how it was
+// spelled rather than by where it leads.
+func TestTheRendererRefusesAFileItCannotReadAndAPathThatLeadsIntoTheTree(t *testing.T) {
+	dir := t.TempDir()
+	notUTF8 := filepath.Join(dir, "latin1.txt")
+	huge := filepath.Join(dir, "huge.txt")
+	aFile := filepath.Join(dir, "a-file-not-a-folder")
+	for path, body := range map[string][]byte{
+		notUTF8: {0xff, 0xfe, 0x41, 0x0a},
+		huge:    bytes.Repeat([]byte("a"), 2<<20),
+		aFile:   []byte("x"),
+	} {
+		if err := os.WriteFile(path, body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// The link points at an EMPTY folder made for this guard inside the tree,
+	// not at the tree itself, so no cleanup that followed it could reach
+	// anything else. The link is removed before the temporary directory that
+	// holds it - cleanups run last registered first.
+	target := filepath.Join(repoRoot(t), "packaging-guard-link-target")
+	if _, err := os.Stat(target); err == nil {
+		t.Fatalf("%s already exists, so this guard cannot tell what the renderer wrote there", target)
+	}
+	if err := os.Mkdir(target, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(target) })
+	link := filepath.Join(t.TempDir(), "into-the-tree")
+	if err := makeDirectoryLink(link, target); err != nil {
+		t.Fatalf("making a link to %s: %v", target, err)
+	}
+	t.Cleanup(func() { _ = os.Remove(link) })
+
+	for _, c := range []struct{ what, sums, out, says string }{
+		{"a checksum file that is not there", filepath.Join(dir, "missing.txt"),
+			filepath.Join(t.TempDir(), "packages"), "cannot read the checksum file"},
+		{"a checksum file that is not UTF-8", notUTF8,
+			filepath.Join(t.TempDir(), "packages"), "is not UTF-8 text"},
+		{"a file far too big to be a checksum file", huge,
+			filepath.Join(t.TempDir(), "packages"), "is not a release's checksum file"},
+		{"a destination that leads into the tree through a link", sumsFile(t, fixtureSums()),
+			filepath.Join(link, "packages"), "inside the repository"},
+		{"a destination under something that is a file", sumsFile(t, fixtureSums()),
+			filepath.Join(aFile, "packages"), "cannot create a working folder"},
+		// A device opens and reads like a file and has no size worth asking:
+		// NUL answers nothing, /dev/zero answers forever.
+		{"a checksum file that is a device", map[bool]string{true: "NUL", false: "/dev/zero"}[runtime.GOOS == "windows"],
+			filepath.Join(t.TempDir(), "packages"), "is not a file"},
+	} {
+		r := renderFrom(t, packagingTag, c.sums, c.out)
+		if r.code != 1 || !strings.HasPrefix(r.said, "build_packages: ") || strings.Contains(r.said, "Traceback") {
+			t.Errorf("%s: exit %d, and a refusal is exit 1 with a sentence, not a crash:\n%s", c.what, r.code, r.said)
+			continue
+		}
+		if !strings.Contains(r.said, c.says) {
+			t.Errorf("%s: the refusal does not say %q:\n%s", c.what, c.says, r.said)
+		}
+	}
+	if left := entriesOf(t, target); left != "" {
+		t.Errorf("the renderer wrote into the tree through the link: %s", left)
+	}
+}
+
+// A run that fails part way leaves nothing behind - neither its working
+// folder nor the folders it made to hold --out - and a destination it cannot
+// look into is refused with a sentence. An outside review of #145 found all
+// three: the parents made by makedirs outlived a refusal that said "Nothing was
+// left behind", no case reached the handler for a write that fails after the
+// working folder exists, and os.listdir on --out could still raise.
+func TestTheRendererLeavesNothingBehindWhenItFailsPartWay(t *testing.T) {
+	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "9.9.9"))
+	nested := t.TempDir()
+	long := t.TempDir()
+	for _, c := range []struct {
+		what, tag string
+		sums      []byte
+		out, base string
+		says      string
+	}{
+		// The refusal comes from the changelog, after the parents are made.
+		{"a refusal after new parent folders were made", "v9.9.9", unreleased,
+			filepath.Join(nested, "new", "deeper", "packages"), nested, "CHANGELOG.md"},
+		// Every file is written into the working folder first, and the name is
+		// too long for any file system this runs on only at the last rename.
+		{"a write that fails after the working folder exists", packagingTag, fixtureSums(),
+			filepath.Join(long, strings.Repeat("x", 300)), long, "cannot write the packages"},
+	} {
+		r := renderPackages(t, c.tag, c.sums, c.out)
+		if r.code != 1 || !strings.HasPrefix(r.said, "build_packages: ") || strings.Contains(r.said, "Traceback") {
+			t.Errorf("%s: exit %d, and a refusal is exit 1 with a sentence, not a crash:\n%s", c.what, r.code, r.said)
+			continue
+		}
+		if !strings.Contains(r.said, c.says) {
+			t.Errorf("%s: the refusal does not say %q:\n%s", c.what, c.says, r.said)
+		}
+		if left := entriesOf(t, c.base); left != "" {
+			t.Errorf("%s: the failed run left %s behind in %s", c.what, left, c.base)
+		}
+	}
+
+	// A folder this account cannot list, asked of the system first rather than
+	// assumed - an administrator can list some of these, and then the case says
+	// so instead of passing on nothing.
+	denied := map[string]string{"windows": `C:\System Volume Information`, "darwin": "/private/var/root"}[runtime.GOOS]
+	if denied == "" {
+		denied = "/root"
+	}
+	if _, err := os.ReadDir(denied); !os.IsPermission(err) {
+		t.Logf("NOT ASKED: %s answered %v rather than a refusal to list it, so there is no folder here "+
+			"this account cannot look into", denied, err)
+		return
+	}
+	r := renderPackages(t, packagingTag, fixtureSums(), denied)
+	if r.code != 1 || !strings.Contains(r.said, "cannot look inside --out") || strings.Contains(r.said, "Traceback") {
+		t.Errorf("a destination this account cannot list: exit %d, and it has to be refused with a sentence:\n%s",
+			r.code, r.said)
+	}
+}
+
+// makeDirectoryLink makes link lead to target: a junction on Windows, which
+// needs no privilege where a symbolic link does, and a symbolic link elsewhere.
+func makeDirectoryLink(link, target string) error {
+	if runtime.GOOS != "windows" {
+		return os.Symlink(target, link)
+	}
+	// Both paths are ones this guard just chose, under its own temporary
+	// directory and the repository - nothing a person typed.
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	out, err := exec.Command("cmd", "/c", "mklink", "/J", link, target).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("making a junction %s to %s: %w (%s)", link, target, err, out)
+	}
+	return nil
 }
 
 // sha256sum writes '<hash>  <name>' in text mode and '<hash> *<name>' in

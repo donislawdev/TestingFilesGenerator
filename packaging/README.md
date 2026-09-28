@@ -10,6 +10,18 @@ the product name and the licence, are held to their Go originals by a guard.
     python .github/scripts/build_packages.py --tag v0.4.0 \
         --sums verify-SHA256SUMS.txt --out <a directory outside the repository>
 
+The renderer refuses, with a sentence that names the input and says what to do,
+and never a traceback: a tag that is a release candidate or not a tag, a
+checksum file of another release or missing an archive, a version the changelog
+never dated, a checksum file that is missing, unreadable, not a regular file,
+not UTF-8 or over a megabyte (a release's is under a kilobyte), a destination
+inside the repository - compared as a resolved path, so a link or a junction
+does not get round it - or one that already holds something or cannot be looked
+into, and a value that would break the file it lands in. It renders into a
+working folder beside the destination and renames it at the end, and a run that
+fails removes the working folder and any folder it made to hold the
+destination.
+
 ## Four packages, two per feed
 
 | | the window | the command line |
