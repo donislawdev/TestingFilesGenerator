@@ -535,3 +535,49 @@ func TestEveryPlaceAsksTheSameQuestionOfACandidate(t *testing.T) {
 		t.Error("build_msi.py does not refuse a tag with a hyphen as a candidate")
 	}
 }
+
+// What the installer does on a machine is asked by one job in ci.yml, and the
+// guards above only hold its source - so the job is held here, the way the
+// import table's is: a job that stopped building the installer, stopped
+// installing it or stopped failing on a failed check would leave every guard
+// green and the installer asked by nobody.
+//
+// The WiX version is read out of build_msi.py rather than typed here, because
+// the script refuses every other version and a job installing another one
+// would stop at that refusal instead of at the install.
+func TestTheInstallerIsInstalledOnARunner(t *testing.T) {
+	jobs := ciJobs(workflowText(t, "ci.yml"))
+	if len(jobs) < 5 {
+		t.Fatalf("only %d job(s) were read out of ci.yml, so this guard is not reading the file it thinks it is", len(jobs))
+	}
+	var builders []string
+	for job, block := range jobs {
+		if strings.Contains(withoutYamlComments(block), "python .github/scripts/build_msi.py") {
+			builders = append(builders, job)
+		}
+	}
+	if len(builders) != 1 {
+		t.Fatalf("%d job(s) in ci.yml build the installer, and exactly one has to: %v", len(builders), builders)
+	}
+	job := builders[0]
+	block := withoutYamlComments(jobs[job])
+
+	wix := regexp.MustCompile(`(?m)^WIX_VERSION = "([^"]+)"$`).FindStringSubmatch(readRepoFile(t, ".github/scripts/build_msi.py"))
+	if wix == nil {
+		t.Fatal("build_msi.py names no WIX_VERSION, so there is nothing to hold the job to")
+	}
+	for what, want := range map[string]string{
+		"it runs on Windows, the only system that installs it":               "runs-on: windows-latest",
+		"it installs the WiX version build_msi.py builds with":               "dotnet tool install --global wix --version " + wix[1],
+		"it installs silently, as a deployment does":                         "'/qn'",
+		"it asks the command line through PATH, from a new process":          "cmd.exe /c 'tfg version'",
+		"it asks where the shortcut starts the window":                       "$link.WorkingDirectory",
+		"it asks an upgrade while a tfg run is in progress":                  "$held.HasExited",
+		"it uninstalls and asks what is left":                                "Msi '/x'",
+		"it fails the step when a check failed, rather than printing FAILED": `throw "$failed check(s) failed`,
+	} {
+		if !strings.Contains(block, want) {
+			t.Errorf("%s: job %q does not contain %q", what, job, want)
+		}
+	}
+}

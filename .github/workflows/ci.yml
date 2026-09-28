@@ -528,6 +528,163 @@ jobs:
           if ($failed -ne 0) { throw "$failed check(s) failed - read the FAILED lines above" }
           "every check passed"
 
+  installer:
+    name: the installer installs and leaves
+    # What the Windows installer DOES, asked on a clean Windows machine rather
+    # than read off its source. The guards in internal/guard/msi_test.go hold
+    # the lines each measurement rests on, and a line being there is not the
+    # install working (docs/PACKAGING-2026-09-25.md section 13). The installer
+    # is built unsigned here, from the latest published release's two amd64
+    # archives - checked against its checksums - and this commit's template,
+    # the way sign_release.py builds the signed one from a tag. It is
+    # installed silently and asked what it did, built again and installed over
+    # itself while a tfg run is in progress, and removed with a file of
+    # somebody else's in its folder.
+    #
+    # Against the latest release for the reason the job above gives: the
+    # archives are the ones a person downloads. The upgrade from one version
+    # to the next needs two published installers, so it was measured on a
+    # virtual machine instead, 0.3.0 to 0.4.0 (tools/packaging-vm).
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: build the installer twice from the latest release
+        id: build
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # The WiX this project builds with. build_msi.py refuses any other,
+          # and finds it in the dotnet tools folder without a PATH change.
+          dotnet tool install --global wix --version 5.0.2
+          if ($LASTEXITCODE -ne 0) { throw "could not install WiX 5.0.2" }
+          $tag = gh release view --json tagName --jq .tagName
+          if ($LASTEXITCODE -ne 0 -or -not $tag) { throw "could not read the latest release" }
+          $archives = Join-Path $env:RUNNER_TEMP 'archives'
+          gh release download $tag --dir $archives --pattern 'tfg_*_windows_amd64.zip' --pattern 'tfg-gui_*_windows_amd64.zip' --pattern verify-SHA256SUMS.txt
+          if ($LASTEXITCODE -ne 0) { throw "could not download the archives of $tag" }
+          $sums = Get-Content (Join-Path $archives 'verify-SHA256SUMS.txt')
+          foreach ($zip in Get-ChildItem $archives -Filter '*.zip') {
+            $got = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
+            if (-not ($sums -contains ($got + '  ' + $zip.Name))) { throw "$($zip.Name) does not match the checksums of $tag" }
+          }
+          # Twice, because every build carries a new ProductCode - the second
+          # is the same version rebuilt, as a feed's moderation may ask for.
+          foreach ($build in 'first', 'second') {
+            $out = Join-Path $env:RUNNER_TEMP $build
+            New-Item -ItemType Directory -Force $out | Out-Null
+            python .github/scripts/build_msi.py --tag $tag --archives $archives --out-dir $out
+            if ($LASTEXITCODE -ne 0) { throw "build_msi.py refused $tag" }
+          }
+          "version=$($tag.TrimStart('v'))" >> $env:GITHUB_OUTPUT
+
+      - name: install, ask the machine, install again while tfg runs, remove, ask again
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $failed = 0
+          function Check($ok, $what) {
+            if ($ok) { "ok      $what" } else { "FAILED  $what"; $script:failed++ }
+          }
+          $name = 'Testing Files Generator'
+          $dir = Join-Path $env:ProgramFiles $name
+          $shortcut = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) "$name.lnk"
+          $archives = Join-Path $env:RUNNER_TEMP 'archives'
+          $first = (Get-ChildItem (Join-Path $env:RUNNER_TEMP 'first') -Filter '*.msi').FullName
+          $second = (Get-ChildItem (Join-Path $env:RUNNER_TEMP 'second') -Filter '*.msi').FullName
+
+          # The arguments in a variable and a limit on the wait: a quote that
+          # swallows the file name leaves msiexec waiting on a help window.
+          function Msi($verb, $file, $log) {
+            $argv = @($verb, "`"$file`"", '/qn', '/norestart', '/l*v', "`"$(Join-Path $env:RUNNER_TEMP $log)`"")
+            $p = Start-Process -FilePath (Join-Path $env:SystemRoot 'System32\msiexec.exe') -ArgumentList $argv -PassThru
+            $null = $p.Handle
+            if (-not $p.WaitForExit(600000)) { throw "msiexec $verb did not finish in ten minutes" }
+            return $p.ExitCode
+          }
+          function Entries {
+            @(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -eq $name })
+          }
+          function Listing {
+            if (-not (Test-Path -LiteralPath $dir)) { return '(no folder)' }
+            (Get-ChildItem -LiteralPath $dir -Recurse -File | ForEach-Object { $_.FullName.Substring($dir.Length + 1).Replace('\', '/') } | Sort-Object) -join ', '
+          }
+          function OnPath {
+            @(([Environment]::GetEnvironmentVariable('Path', 'Machine')).Split(';') | Where-Object { $_.TrimEnd('\') -eq $dir })
+          }
+          # What the folder has to hold: the two archives, read out of them.
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $want = (Get-ChildItem $archives -Filter '*.zip' | ForEach-Object {
+              $zip = [IO.Compression.ZipFile]::OpenRead($_.FullName)
+              try { $zip.Entries | Where-Object { $_.Name } | ForEach-Object { $_.FullName } } finally { $zip.Dispose() }
+            } | Sort-Object -Unique) -join ', '
+          function Installed {
+            $e = @(Entries)
+            Check ($e.Count -eq 1 -and $e[0].DisplayVersion -eq $env:VERSION) "one entry in Programs and Features, at $env:VERSION ($(($e | ForEach-Object { $_.DisplayVersion }) -join ', '))"
+            Check ((Listing) -eq $want) "the folder holds exactly the two archives ($(Listing))"
+            Check (@(OnPath).Count -eq 1) "the folder is on the machine PATH once ($(@(OnPath).Count))"
+            Check (-not (Test-Path (Join-Path $dir 'opengl32.dll'))) "opengl32.dll is not in the folder on PATH, where other programs would load it"
+            # Asked from a new process, with the PATH a new terminal would read.
+            $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+            $said = ((& cmd.exe /c 'tfg version' 2>&1) | Out-String).Trim()
+            Check ($said -eq $env:VERSION) "tfg version, found on PATH, answers $env:VERSION (said '$said')"
+            Check (Test-Path $shortcut) "the Start menu has the shortcut, for every account"
+            $link = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut)
+            Check ($link.TargetPath -eq (Join-Path $dir 'tfg-gui.exe')) "the shortcut starts the window ($($link.TargetPath))"
+            Check ($link.WorkingDirectory.TrimEnd('\') -eq $dir) "the shortcut starts in the install folder, which the window recognises as its own ($($link.WorkingDirectory))"
+          }
+
+          Check (@(Entries).Count -eq 0 -and -not (Test-Path $dir) -and @(OnPath).Count -eq 0) "nothing of ours is on the runner before the install"
+          $code = Msi '/i' $first 'install.log'
+          Check ($code -eq 0) "the installer installs (exit $code)"
+          Installed
+          $firstCode = @(Entries)[0].PSChildName
+
+          # A tfg run kept in progress without writing to disk: its output goes
+          # into a pipe nobody reads, and once the pipe is full it waits.
+          $info = [Diagnostics.ProcessStartInfo]::new((Join-Path $dir 'tfg.exe'), 'formats --json')
+          $info.UseShellExecute = $false
+          $info.RedirectStandardOutput = $true
+          $info.CreateNoWindow = $true
+          $held = [Diagnostics.Process]::Start($info)
+          Start-Sleep -Seconds 2
+          Check (-not $held.HasExited) "a tfg run is in progress"
+          $code = Msi '/i' $second 'rebuild.log'
+          Check ($code -eq 0 -or $code -eq 3010) "the rebuild installs over the first while tfg runs (exit $code)"
+          Check (-not $held.HasExited) "the tfg run is still going - nothing ended it"
+          [void]$held.StandardOutput.ReadToEnd()
+          [void]$held.WaitForExit(10000)
+          Check ($held.ExitCode -eq 0) "the tfg run finished with 0 ($($held.ExitCode))"
+          Installed
+          Check (@(Entries).Count -eq 1 -and @(Entries)[0].PSChildName -ne $firstCode) "the rebuild replaced the first build instead of installing beside it"
+
+          $planted = Join-Path $dir 'somebody-elses.txt'
+          Set-Content -LiteralPath $planted -Value 'not ours'
+          $code = Msi '/x' $second 'uninstall.log'
+          Check ($code -eq 0) "the uninstall succeeds (exit $code)"
+          Check (@(Entries).Count -eq 0) "no entry is left in Programs and Features"
+          Check ((Listing) -eq 'somebody-elses.txt') "only the file of somebody else is left in the folder ($(Listing))"
+          Check (@(OnPath).Count -eq 0) "nothing of ours is left on the machine PATH"
+          Check (-not (Test-Path $shortcut)) "the shortcut is gone"
+          Check (-not (Test-Path 'HKLM:\Software\DonislawDev')) "nothing of ours is left in the registry"
+
+          if ($failed -ne 0) {
+            Get-ChildItem $env:RUNNER_TEMP -Filter '*.log' | ForEach-Object { "--- $($_.Name)"; Get-Content $_.FullName -Tail 40 }
+            throw "$failed check(s) failed - read the FAILED lines above"
+          }
+          "every check passed"
+
   govulncheck:
     name: known vulnerabilities
     runs-on: ubuntu-latest
