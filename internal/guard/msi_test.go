@@ -347,7 +347,14 @@ func TestTheInstallerIsBuiltFromBothArchivesOrNotAtAll(t *testing.T) {
 			"dotnet tool install --global wix --version 5.0.2"},
 		{"a document differs between the two archives", func(_ *testing.T, a archives, _, _ string) {
 			a[window]["LICENSE"] = "another licence"
-		}, "both hold LICENSE, and not the same bytes"},
+		}, "holds LICENSE, one file on Windows, and not the same bytes"},
+		// One file to Windows, where the installer puts it. Compared as
+		// written, the second name overwrote the first on a Windows disk
+		// and nothing was said (outside review of #147).
+		{"a document differs and its name only in letter case", func(_ *testing.T, a archives, _, _ string) {
+			delete(a[cli], "LICENSE")
+			a[cli]["License"] = "another licence"
+		}, "holds License, one file on Windows, and not the same bytes"},
 		{"the command line archive is missing", func(_ *testing.T, a archives, _, _ string) {
 			delete(a, cli)
 		}, "holds no " + cli},
@@ -489,6 +496,14 @@ try:
     print("missing tag: EXPORTED")
 except SystemExit as refusal:
     print("missing tag: " + ("REFUSED" if "git fetch --tags" in str(refusal) else str(refusal)))
+kept = os.path.join(base, "kept")
+try:
+    with sr.tagged_tree("HEAD", kept):
+        print("inside: %s" % os.path.isfile(os.path.join(kept, "go.mod")))
+        raise SystemExit("a refusal inside")
+except SystemExit:
+    pass
+print("left after a refusal: %s" % os.path.exists(kept))
 `
 	dir := t.TempDir()
 	file := filepath.Join(dir, "probe.py")
@@ -512,6 +527,8 @@ except SystemExit as refusal:
 		"candidate v0.5.0-rc1: True",
 		"candidate v1.0.0-beta.2: True",
 		"missing tag: REFUSED",
+		"inside: True",
+		"left after a refusal: False",
 	} {
 		if !strings.Contains(string(said), want+"\n") && !strings.Contains(string(said), want+"\r\n") {
 			t.Errorf("the probe did not say %q:\n%s", want, said)

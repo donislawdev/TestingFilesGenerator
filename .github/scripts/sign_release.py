@@ -51,6 +51,7 @@ Nothing here publishes. The release stays a draft until a person reads it and
 presses the button.
 """
 import argparse
+import contextlib
 import datetime
 import hashlib
 import io
@@ -515,6 +516,23 @@ def export_tree(tag, into):
     print("  the tree of %s: %d file(s) in %s" % (tag, len(files_under(into)), into))
 
 
+@contextlib.contextmanager
+def tagged_tree(tag, into):
+    """The tree of the tag for as long as it is needed, and gone afterwards.
+
+    Gone whatever happened inside: a refusal anywhere between the check
+    before the card and the installer left the export behind until the next
+    run cleared it (outside review of #147). Exported twice rather than kept
+    between the two, because the steps in between are the card and the Mac,
+    and either can stop the run.
+    """
+    export_tree(tag, into)
+    try:
+        yield into
+    finally:
+        shutil.rmtree(into, ignore_errors=True)
+
+
 def installer_script(tree):
     """build_msi.py as the tag has it, or a refusal for a tag from before it."""
     script = os.path.join(tree, ".github", "scripts", "build_msi.py")
@@ -709,8 +727,8 @@ def main(argv=None):
     if is_candidate(args.tag):
         print("  %s is a release candidate, so it gets no installer" % args.tag)
     else:
-        export_tree(args.tag, tree)
-        check_installer(args.tag, tree)
+        with tagged_tree(args.tag, tree):
+            check_installer(args.tag, tree)
 
     print("\n[1/9] fetching the build for %s" % args.tag)
     fetch_build(args.tag, work)
@@ -733,8 +751,8 @@ def main(argv=None):
     if is_candidate(args.tag):
         print("  none for a release candidate")
     else:
-        build_installer(args.tag, tree, work, thumbprint, pin, signtool, args.dry_run)
-        shutil.rmtree(tree)
+        with tagged_tree(args.tag, tree):
+            build_installer(args.tag, tree, work, thumbprint, pin, signtool, args.dry_run)
 
     print("\n[7/9] checksums over what will be published")
     name_for_publication(work, args.tag)

@@ -155,6 +155,11 @@ def unpack(archives, version, into):
     A file both archives hold goes in once, and only when both hold the same
     bytes - the three documents, today. Two different copies of one file are a
     question about how the release was built, and the installer does not pick one.
+
+    One file means one name to Windows, where the installer puts it: LICENSE
+    and License are the same file there, so the names are compared folded to
+    one case. Compared as written, the second would have overwritten the first
+    without a word (outside review of #147).
     """
     came_from = {}
     for package in packages.PACKAGES:
@@ -173,15 +178,17 @@ def unpack(archives, version, into):
                                "unpacked into. That is not an archive the release built"
                                % (name, entry.filename))
                     target = os.path.join(into, *entry.filename.split("/"))
-                    if entry.filename in came_from:
-                        with open(target, "rb") as held:
+                    key = entry.filename.casefold()
+                    if key in came_from:
+                        first, held_at, held_as = came_from[key]
+                        with open(held_at, "rb") as held:
                             if held.read() != archive.read(entry):
-                                refuse("%s and %s both hold %s, and not the same bytes. One "
-                                       "installer carries one copy - look at how the release "
-                                       "built the two archives"
-                                       % (came_from[entry.filename], name, entry.filename))
+                                refuse("%s holds %s and %s holds %s, one file on Windows, and "
+                                       "not the same bytes. One installer carries one copy - "
+                                       "look at how the release built the two archives"
+                                       % (first, held_as, name, entry.filename))
                         continue
-                    came_from[entry.filename] = name
+                    came_from[key] = (name, target, entry.filename)
                     os.makedirs(os.path.dirname(target), exist_ok=True)
                     with archive.open(entry) as src, open(target, "wb") as dst:
                         shutil.copyfileobj(src, dst)
@@ -189,7 +196,7 @@ def unpack(archives, version, into):
             refuse("%s is not a zip archive it can read (%s). Download it again" % (path, err))
     for package in packages.PACKAGES:
         program = package.program + ".exe"
-        if program not in came_from:
+        if program.casefold() not in came_from:
             refuse("the archives hold no %s at the top, and the installer puts it on PATH. "
                    "That is not the shape the release builds" % program)
     return came_from
