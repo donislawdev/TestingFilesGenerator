@@ -186,14 +186,29 @@ jobs:
         continue-on-error: true
         shell: bash
         working-directory: published
+        env:
+          TAG: ${{ steps.which.outputs.tag }}
         # A release missing one file looks almost exactly like a finished one,
         # which is why this counts rather than glances. Eight archives, the
-        # checksums, the bill of materials and the two statements.
+        # installer, the checksums, the bill of materials and the two statements.
         run: |
           set -euo pipefail
           archives="$(ls -1 -- *.zip *.tar.gz 2>/dev/null | wc -l)"
           echo "archives: $archives"
           test "$archives" = "8" || { echo "expected eight archives"; exit 1; }
+          # One installer for a release and none for a release candidate - a
+          # tag with a hyphen, the rule release.yml and sign_release.py use.
+          # Windows Installer reads only the three numbers of a version, so a
+          # candidate's installer would carry the release's own version.
+          shopt -s nullglob
+          installers=(*.msi)
+          echo "installers: ${#installers[@]}"
+          case "$TAG" in
+            *-*) test "${#installers[@]}" = "0" || { echo "a release candidate carries an installer"; exit 1; } ;;
+            *) test "${#installers[@]}" = "1" && test -f "tfg-setup_${TAG#v}_windows_amd64.msi" ||
+                 { echo "expected one installer, tfg-setup_${TAG#v}_windows_amd64.msi"; exit 1; } ;;
+          esac
+          shopt -u nullglob
           # Named with the verify- prefix rather than by suffix alone, because
           # the prefix is the only thing keeping these four at the end of the
           # download list, and a suffix is happy with a file that lost it.
@@ -320,6 +335,35 @@ jobs:
           if ($checked -lt 3) { throw "only $checked signed file(s) were checked across three archives" }
           "$checked file(s) signed by the pinned certificate, each with a timestamp"
 
+      - name: the installer is signed, stamped, and by OUR certificate
+        id: installer_signature
+        continue-on-error: true
+        shell: pwsh
+        working-directory: published
+        # A step of its own rather than a fourth file in the one above, so a
+        # release candidate - which carries no installer - leaves that one as
+        # it was, and an unsigned installer is its own line in the verdict. The
+        # installer is what an administrator runs with the machine's highest
+        # rights. Whether there is one at all is the asset count's question,
+        # so this checks every installer published and nothing else.
+        run: |
+          $line = Select-String -Path ../internal/legal/codesign.go `
+                    -Pattern 'CodeSigningSHA256 = "([0-9a-f]{64})"'
+          if (-not $line) { throw "could not read the pinned certificate out of internal/legal/codesign.go" }
+          $pinned = $line.Matches[0].Groups[1].Value
+          $installers = @(Get-ChildItem -Filter *.msi)
+          if ($installers.Count -eq 0) { "no installer is published, so there is no signature to check"; exit 0 }
+          foreach ($msi in $installers) {
+            $sig = Get-AuthenticodeSignature -LiteralPath $msi.FullName
+            "$($msi.Name): $($sig.Status)"
+            if ($sig.Status -ne 'Valid') { throw "$($msi.Name): signature status is $($sig.Status)" }
+            if (-not $sig.TimeStamperCertificate) { throw "$($msi.Name): the signature carries no timestamp" }
+            $bytes = [System.Security.Cryptography.SHA256]::Create().ComputeHash($sig.SignerCertificate.RawData)
+            $actual = ($bytes | ForEach-Object { $_.ToString('x2') }) -join ''
+            if ($actual -ne $pinned) { throw "$($msi.Name) was signed by a DIFFERENT certificate: $actual" }
+          }
+          "$($installers.Count) installer(s) signed by the pinned certificate, with a timestamp"
+
       - name: the page promises what was just checked
         id: notes
         continue-on-error: true
@@ -394,6 +438,7 @@ jobs:
           COMMANDS_API: ${{ steps.commands_api.outcome }}
           COMMANDS_OFFLINE: ${{ steps.commands_offline.outcome }}
           SIGNATURES: ${{ steps.signatures.outcome }}
+          INSTALLER_SIGNATURE: ${{ steps.installer_signature.outcome }}
           NOTES: ${{ steps.notes.outcome }}
           LATEST: ${{ steps.latest.outcome }}
         run: |
@@ -411,6 +456,7 @@ jobs:
           report "$COMMANDS_API" "the commands the notes tell people to run"
           report "$COMMANDS_OFFLINE" "the same commands with no network"
           report "$SIGNATURES" "every Windows program by our certificate"
+          report "$INSTALLER_SIGNATURE" "the installer by our certificate"
           report "$NOTES" "the page promises what was just checked"
           report "$LATEST" "a full release is the one people are offered"
           echo

@@ -534,6 +534,54 @@ func TestEveryPlaceAsksTheSameQuestionOfACandidate(t *testing.T) {
 	if !statementIn(activePython(readRepoFile(t, ".github/scripts/build_msi.py")), `if "-" in tag:$`) {
 		t.Error("build_msi.py does not refuse a tag with a hyphen as a candidate")
 	}
+	if !strings.Contains(releaseStepRun(t, "assets"), `*-*) test "${#installers[@]}" = "0"`) {
+		t.Error("verify-release.yml does not expect no installer on a tag with a hyphen")
+	}
+}
+
+// releaseStepRun is the script of one step of verify-release.yml, found by its
+// id, with its comment lines taken out.
+func releaseStepRun(t *testing.T, id string) string {
+	t.Helper()
+	var found []string
+	for _, job := range readReleaseWorkflow(t).Jobs {
+		for _, step := range job.Steps {
+			if step.ID == id {
+				found = append(found, strings.Join(scriptLines(step.Run), "\n"))
+			}
+		}
+	}
+	if len(found) != 1 {
+		t.Fatalf("verify-release.yml has %d step(s) with the id %s, and this reads exactly one", len(found), id)
+	}
+	return found[0]
+}
+
+// The last phase asks the page a person downloads from for the installer: one
+// for a release, under the name build_msi.py gives it, and signed by our
+// certificate with a timestamp. The two phases before it are run by the
+// people who made the release - this one is the check that looks at what was
+// published.
+func TestTheReleaseCheckAsksForTheInstaller(t *testing.T) {
+	name := regexp.MustCompile(`(?m)^NAME = "([^"]+)"$`).FindStringSubmatch(readRepoFile(t, ".github/scripts/build_msi.py"))
+	if name == nil || !strings.Contains(name[1], "{version}") {
+		t.Fatal("build_msi.py names no installer with a {version} in it, so there is nothing to hold the check to")
+	}
+	published := strings.Replace(name[1], "{version}", "${TAG#v}", 1)
+	if !strings.Contains(releaseStepRun(t, "assets"), `test -f "`+published+`"`) {
+		t.Errorf("the asset count does not ask for %s, the name build_msi.py gives the installer - "+
+			"a release would pass it with the installer missing or misnamed", published)
+	}
+	signature := releaseStepRun(t, "installer_signature")
+	for what, want := range map[string]string{
+		"it reads the installer's signature":           "Get-AuthenticodeSignature -LiteralPath $msi.FullName",
+		"it refuses an installer with no timestamp":    "if (-not $sig.TimeStamperCertificate)",
+		"it refuses one signed by another certificate": "if ($actual -ne $pinned)",
+	} {
+		if !strings.Contains(signature, want) {
+			t.Errorf("%s: the installer's signature step does not contain %q", what, want)
+		}
+	}
 }
 
 // What the installer does on a machine is asked by one job in ci.yml, and the
