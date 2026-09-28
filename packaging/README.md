@@ -96,7 +96,9 @@ from the two signed amd64 archives:
     python .github/scripts/build_msi.py --tag v0.5.0 --archives <folder> --out-dir <folder>
 
 It is built by `sign_release.py`, after the card has signed the programs, and
-signed the same way. The signing script runs `build_msi.py` from the tree of the
+signed the same way, with the product's name as the signature's description.
+Windows shows that name when it asks an administrator to let the installer run,
+and a string of digits without it. The signing script runs `build_msi.py` from the tree of the
 tag, exported with `git archive`, so the installer is built from what was tagged
 whatever the checkout stands on. `ci.yml` builds an unsigned one from the latest
 release in every pull request and installs it on a Windows runner.
@@ -117,7 +119,10 @@ What it does, each line measured on Windows Server 2025 before it was written:
   anyway. With it off the file in use is set aside, the new version is in place
   at once and the upgrade answers 3010, a restart to remove the old copy. It has
   to be in the package from the first installer on, because an upgrade removes
-  the old version under the OLD package's properties.
+  the old version under the OLD package's properties. Started with a double
+  click, Windows Installer asks first. It names the open window and offers
+  Cancel, Retry and Ignore. With the window closed before going on, the upgrade
+  needs no restart.
 - **One entry in Programs and Features.** A rebuild of the same version replaces
   the first build, and an older version is refused with a sentence.
 - **No extension, no custom action, no dialogs of WiX's own**, so nothing but our

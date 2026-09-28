@@ -233,6 +233,27 @@ func TestTheInstallerIsTheShapeThatWasMeasured(t *testing.T) {
 	}
 }
 
+// The name the installer is signed with is the name it carries.
+//
+// sign_release.py signs the installer with what --product-name prints, and
+// Windows shows that as the program's name when it asks an administrator to
+// let the installer run. Asked of the effect: the printed name is the Name of
+// the rendered package, so a template that renames the product renames both.
+func TestTheInstallerIsSignedWithTheNameItCarries(t *testing.T) {
+	pkg := named(renderedInstaller(t), "Package")
+	if len(pkg) != 1 || pkg[0].attrs["Name"] == "" {
+		t.Fatalf("read %d <Package> from the installer source, and this guard reads the name of one", len(pkg))
+	}
+	r := runMSI(t, t.TempDir(), false, "--tag", packagingTag, "--product-name")
+	if r.code != 0 {
+		t.Fatalf("build_msi.py --product-name exited %d:\n%s", r.code, r.said)
+	}
+	if got := strings.TrimRight(r.said, "\r\n"); got != pkg[0].attrs["Name"] {
+		t.Errorf("build_msi.py --product-name says %q and the package is named %q. The signature "+
+			"names the product the installer carries, and the signing script takes every word printed", got, pkg[0].attrs["Name"])
+	}
+}
+
 // What a person reads from the installer follows the punctuation rule (D17): a
 // flat hyphen, and no semicolons. The refusal to go back to an older version
 // is the one sentence a person sees from it, and the shortcut's description
@@ -445,10 +466,16 @@ func TestTheSigningSignsTheInstallerAndExpectsItOnTheDraft(t *testing.T) {
 		"it reads the installer's certificate back out of the file":                `signer = certificate_of(path)`,
 		"it holds that certificate to the pin":                                     `if signer != pin:`,
 		"it runs build_msi.py as the tag has it":                                   `installer_script(tree)`,
+		"it asks the tag for the name the installer carries":                       `name = product_name(tag, tree)`,
+		"it signs the installer with that name":                                    `"/d", name,`,
 	} {
 		if !strings.Contains(build, want) {
 			t.Errorf("%s: build_installer does not contain %q", what, want)
 		}
+	}
+	if !strings.Contains(pythonDef(t, script, "check_installer"), "product_name(tag, tree)") {
+		t.Error("check_installer does not ask for the name the installer is signed with, so a tag " +
+			"that cannot give one is found only after the card has signed the programs")
 	}
 
 	main := pythonDef(t, script, "main")
@@ -489,6 +516,7 @@ sr.export_tree("HEAD", tree)
 count = sum(len(files) for _, _, files in os.walk(tree))
 print("files: %d" % count)
 print("script: " + os.path.relpath(sr.installer_script(tree), base).replace(os.sep, "/"))
+print("name: " + sr.product_name("v0.5.0", tree))
 for tag in ("v0.5.0", "v0.5.0-rc1", "v1.0.0-beta.2"):
     print("candidate %s: %s" % (tag, sr.is_candidate(tag)))
 try:
@@ -520,9 +548,14 @@ print("left after a refusal: %s" % os.path.exists(kept))
 		t.Fatalf("the probe failed: %v\n%s", err, said)
 	}
 	committed := len(strings.Fields(gitOutput(t, "ls-tree", "-r", "--name-only", "HEAD")))
+	pkg := named(renderedInstaller(t), "Package")
+	if len(pkg) != 1 {
+		t.Fatalf("read %d <Package> from the installer source, and this guard reads the name of one", len(pkg))
+	}
 	for _, want := range []string{
 		"files: " + strconv.Itoa(committed),
 		"script: tree/.github/scripts/build_msi.py",
+		"name: " + pkg[0].attrs["Name"],
 		"candidate v0.5.0: False",
 		"candidate v0.5.0-rc1: True",
 		"candidate v1.0.0-beta.2: True",

@@ -4,6 +4,7 @@
     python .github/scripts/build_msi.py --tag v0.5.0 --archives <dir> --out-dir <dir>
     python .github/scripts/build_msi.py --tag v0.5.0 --check
     python .github/scripts/build_msi.py --tag v0.5.0 --source-only
+    python .github/scripts/build_msi.py --tag v0.5.0 --product-name
 
 One installer carries both programs, the window and the command line, for every
 account on the machine - decided by the owner on 2026-09-28, beside the zips and
@@ -22,6 +23,8 @@ built from what was tagged, whatever the checkout happens to stand on.
 --check asks only whether this machine can build it (the tag, the template, WiX),
 so sign_release.py can refuse before the card signs anything. --source-only prints
 the rendered installer source and builds nothing, which is what the guards read.
+--product-name prints the name the installer carries and nothing else, which is
+what sign_release.py signs it with.
 
 Exit codes:
     0  the installer was written to --out-dir, or --check found nothing missing
@@ -254,10 +257,15 @@ def main(argv=None):
                         help="only say whether this machine can build it")
     parser.add_argument("--source-only", action="store_true",
                         help="print the installer source and build nothing")
+    parser.add_argument("--product-name", action="store_true",
+                        help="print the name the installer carries and build nothing")
     args = parser.parse_args(argv)
 
     if args.source_only:
         sys.stdout.write(source(parse_version(args.tag), args.tag))
+        return 0
+    if args.product_name:
+        print(values(parse_version(args.tag), args.tag)["APP_NAME"])
         return 0
     if args.check:
         version = parse_version(args.tag)

@@ -543,6 +543,26 @@ def installer_script(tree):
     return script
 
 
+def product_name(tag, tree):
+    """The name the installer carries, as build_msi.py from the tag renders it.
+
+    The installer's signature carries it as its description, which Windows
+    shows as the program's name when it asks an administrator to let the
+    installer run - the same name Programs and Features lists afterwards.
+    Without it that prompt named a string of digits, a temporary copy of the
+    file (measured on Windows 11 on 2026-09-29, both copies signed by the
+    card). Asked of the tag's own script, so the two cannot disagree.
+    """
+    said = subprocess.run([sys.executable, installer_script(tree), "--tag", tag, "--product-name"],
+                          capture_output=True, encoding="utf-8",
+                          env={**os.environ, "PYTHONUTF8": "1"})
+    name = said.stdout.strip()
+    if said.returncode != 0 or not name:
+        raise SystemExit("sign_release: build_msi.py from the tag named no product (exit %d):\n%s"
+                         % (said.returncode, said.stderr.strip()))
+    return name
+
+
 def check_installer(tag, tree):
     """Refuse before the card signs anything when the installer cannot be built.
 
@@ -550,6 +570,7 @@ def check_installer(tag, tree):
     installer, and the next run signs them all again.
     """
     run([sys.executable, installer_script(tree), "--tag", tag, "--check"])
+    print("  its signature will name it %r" % product_name(tag, tree))
 
 
 def build_installer(tag, tree, work, thumbprint, pin, signtool, dry_run):
@@ -560,6 +581,7 @@ def build_installer(tag, tree, work, thumbprint, pin, signtool, dry_run):
     administrator runs with the highest rights the machine has, so it is the
     last file to leave unsigned.
     """
+    name = product_name(tag, tree)
     run([sys.executable, installer_script(tree), "--tag", tag,
          "--archives", work, "--out-dir", work])
     installers = [n for n in sorted(os.listdir(work)) if n.endswith(".msi")]
@@ -567,7 +589,7 @@ def build_installer(tag, tree, work, thumbprint, pin, signtool, dry_run):
         raise SystemExit("sign_release: expected one installer in %s after building it and "
                          "found %d: %s" % (work, len(installers), ", ".join(installers) or "none"))
     path = os.path.join(work, installers[0])
-    command = [signtool, "sign", "/sha1", thumbprint, "/fd", "sha256",
+    command = [signtool, "sign", "/sha1", thumbprint, "/fd", "sha256", "/d", name,
                "/tr", TIMESTAMP_URL, "/td", "sha256", "/v", path]
     if dry_run:
         print("    DRY RUN, would run: %s" % " ".join(command))
