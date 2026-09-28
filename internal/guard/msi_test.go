@@ -516,7 +516,11 @@ sr.export_tree("HEAD", tree)
 count = sum(len(files) for _, _, files in os.walk(tree))
 print("files: %d" % count)
 print("script: " + os.path.relpath(sr.installer_script(tree), base).replace(os.sep, "/"))
-print("name: " + sr.product_name("v0.5.0", tree))
+print("name: [" + sr.product_name("v0.5.0", tree) + "]")
+try:
+    print("candidate name: GIVEN [" + sr.product_name("v0.5.0-rc1", tree) + "]")
+except SystemExit as refusal:
+    print("candidate name: " + ("REFUSED" if "named no product" in str(refusal) else str(refusal)))
 for tag in ("v0.5.0", "v0.5.0-rc1", "v1.0.0-beta.2"):
     print("candidate %s: %s" % (tag, sr.is_candidate(tag)))
 try:
@@ -555,7 +559,8 @@ print("left after a refusal: %s" % os.path.exists(kept))
 	for _, want := range []string{
 		"files: " + strconv.Itoa(committed),
 		"script: tree/.github/scripts/build_msi.py",
-		"name: " + pkg[0].attrs["Name"],
+		"name: [" + pkg[0].attrs["Name"] + "]",
+		"candidate name: REFUSED",
 		"candidate v0.5.0: False",
 		"candidate v0.5.0-rc1: True",
 		"candidate v1.0.0-beta.2: True",
