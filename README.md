@@ -46,7 +46,7 @@ needs it finds out it exists.
 - **Cost nothing and stay out of your way** - GPL-3.0, and the files you
   generate are yours with no strings attached.
 
-![The desktop window of Testing Files Generator building a set of files around an upload limit, and the files appearing in a folder as they are written](.github/tfg-in-work.gif)
+![The desktop window of Testing Files Generator setting up a batch of log files and picking a format, then the size-boundaries and filename-handling presets writing their files into a folder beside it](.github/tfg-in-work.gif)
 
 ![The Star button at the top of this page, with a cursor pressing it](.github/star-the-repo.gif)
 
@@ -56,111 +56,23 @@ This README is also the manual. The short version is above the line, the full
 reference is below it.
 
 - [What it can do](#-what-it-can-do)
-- [Formats it generates](#-formats-it-generates)
-- [The problem it solves](#-the-problem-it-solves)
-- [What makes it different](#-what-makes-it-different)
 - [Install](#-install)
 - [Quick start](#-quick-start)
+- [Formats it generates](#-formats-it-generates)
+- [Presets](#-presets)
+- [The problem it solves](#-the-problem-it-solves)
+- [What makes it different](#-what-makes-it-different)
 - [Reference](#reference)
   - [Commands](#️-commands)
   - [Recipes](#-recipes)
   - [Formats in detail](#-formats-in-detail)
   - [The manifest](#-the-manifest)
-  - [Presets](#-presets)
   - [The desktop window](#️-the-desktop-window)
   - [Using it in CI](#️-using-it-in-ci)
   - [Questions](#-questions)
   - [Where this is](#-where-this-is)
   - [Everything inside a generated file is made up](#-everything-inside-a-generated-file-is-made-up)
   - [Licence](#-licence)
-
-## 📁 Formats it generates
-
-Twenty six, and every one is a **real file of that format** - it opens in the
-software that owns it, at the exact size you asked for:
-
-| group | formats |
-|---|---|
-| 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
-| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
-| 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
-| ⚙️ **Configuration** | `yaml`, `toml` |
-| 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
-| 🔊 **Audio** | `wav` |
-
-Coming next: `7z`, `mp3`, `mp4`.
-
-Most of them take settings of their own - image dimensions, JPEG quality, PDF
-page count, rows and columns in a spreadsheet, what goes inside an archive. See
-[format settings](#per-format-settings).
-
-## 🤔 The problem it solves
-
-You are testing software that accepts files from people. Sooner or later you
-need:
-
-- a PDF of **exactly** 10 MB, to find out whether the upload limit is real
-- the three files that sit either side of that limit, to catch off by one errors
-- 10,000 log files, to see what the nightly job does when the folder is big
-- a ZIP that genuinely holds 200 documents, not a stub with the right extension
-- a 4 GB file, without keeping a 4 GB file in your repository
-- the **same** fixtures on your laptop and on the build server, byte for byte
-
-Making one such file by hand is easy. Making them repeatedly, at exact sizes, in
-formats that really open in real software, is the tedious part - and that is the
-part this replaces.
-
-**Who it is for:** QA engineers, test automation, and anyone whose code has an
-upload form, an import routine, a parser or a storage quota behind it.
-
-## ⭐ What makes it different
-
-Other generators stop at the bytes. They hand you a folder, and you are still
-the one deciding what each file is supposed to prove.
-
-This one answers the question your test actually asks: **what should happen when
-this file arrives?**
-
-Every run writes a `manifest.json` beside the files - a plain list of everything
-it produced, and for each entry a declared expectation. Say your upload endpoint
-allows 1 MB. Ask for the three files that sit on that line:
-
-```
-tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges
-```
-
-| file | bytes | your system should | because |
-|---|---|---|---|
-| `1mb_under_1b.pdf` | 1048575 | **accept** it | it is inside the limit |
-| `1mb_at_limit.pdf` | 1048576 | **accept** it | the limit itself is allowed |
-| `1mb_over_1b.pdf` | 1048577 | **reject** it | `size_limit` |
-
-Three files, three different answers, in machine readable form. Your test reads
-the manifest instead of you hand writing the assertions:
-
-```python
-import json
-import os
-
-directory = "edges"
-manifest = json.load(open(os.path.join(directory, "manifest.json")))
-
-for entry in manifest["files"]:
-    response = upload(os.path.join(directory, entry["path"]))
-    outcome = entry["expected"]["outcome"]
-    if outcome == "accept":
-        assert response.ok, entry["path"]
-    elif outcome == "reject":
-        assert not response.ok, entry["path"]
-```
-
-A run from a preset also writes `manifest.instructions.md` - the same facts for
-a person to read: every file, what your system should do with it and why the
-file is in the set.
-
-And where the right answer genuinely depends on your own policy, the manifest
-says `unspecified` instead of inventing one. A generator that guesses produces
-false failures, and a suite that cries wolf gets switched off.
 
 ## 📦 Install
 
@@ -241,6 +153,120 @@ logs matches ./logs/manifest.json: 10000 files checked
 
 **Sizes count in 1024s**, the way your file manager does, so `2mb` means
 2097152 bytes. A plain byte count works too: `--size 2097152`.
+
+## 📁 Formats it generates
+
+Twenty six, and every one is a **real file of that format** - it opens in the
+software that owns it, at the exact size you asked for:
+
+| group | formats |
+|---|---|
+| 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
+| 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
+| 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
+| ⚙️ **Configuration** | `yaml`, `toml` |
+| 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
+| 🔊 **Audio** | `wav` |
+
+Coming next: `7z`, `mp3`, `mp4`.
+
+Most of them take settings of their own - image dimensions, JPEG quality, PDF
+page count, rows and columns in a spreadsheet, what goes inside an archive. See
+[format settings](#per-format-settings).
+
+## 🧪 Presets
+
+A preset is a ready made set of files that answers one common testing question,
+so you do not have to design the set yourself. Every file in it says what it is
+for, and the manifest says how your system should react to it:
+
+| preset | the question it answers |
+|---|---|
+| `empty-and-minimal` | Does a file that is valid and as small as the format allows get through? |
+| `filename-handling` | Will my system store, show and give back a file name it did not expect? |
+| `size-boundaries` | Is a size limit enforced exactly where it is declared? |
+| `tabular-import` | Does my table import survive what real tools export? |
+| `text-encoding` | Does my reader know which encoding a file is in, or is it guessing? |
+| `upload-validation` | Does my upload form take what it should and turn the rest away? |
+
+```
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./limits
+```
+
+`show` tells you what the set would cost before you build it, and says outright
+when a number is a placeholder of ours rather than a limit of yours. Presets are
+ordinary recipes underneath - `tfg preset eject size-boundaries` prints the
+recipe and you edit it from there. The Presets screen of the window offers the
+same ones.
+
+## 🤔 The problem it solves
+
+You are testing software that accepts files from people. Sooner or later you
+need:
+
+- a PDF of **exactly** 10 MB, to find out whether the upload limit is real
+- the three files that sit either side of that limit, to catch off by one errors
+- 10,000 log files, to see what the nightly job does when the folder is big
+- a ZIP that genuinely holds 200 documents, not a stub with the right extension
+- a 4 GB file, without keeping a 4 GB file in your repository
+- the **same** fixtures on your laptop and on the build server, byte for byte
+
+Making one such file by hand is easy. Making them repeatedly, at exact sizes, in
+formats that really open in real software, is the tedious part - and that is the
+part this replaces.
+
+**Who it is for:** QA engineers, test automation, and anyone whose code has an
+upload form, an import routine, a parser or a storage quota behind it.
+
+## ⭐ What makes it different
+
+Other generators stop at the bytes. They hand you a folder, and you are still
+the one deciding what each file is supposed to prove.
+
+This one answers the question your test actually asks: **what should happen when
+this file arrives?**
+
+Every run writes a `manifest.json` beside the files - a plain list of everything
+it produced, and for each entry a declared expectation. Say your upload endpoint
+allows 1 MB. Ask for the three files that sit on that line:
+
+```
+tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges
+```
+
+| file | bytes | your system should | because |
+|---|---|---|---|
+| `1mb_under_1b.pdf` | 1048575 | **accept** it | it is inside the limit |
+| `1mb_at_limit.pdf` | 1048576 | **accept** it | the limit itself is allowed |
+| `1mb_over_1b.pdf` | 1048577 | **reject** it | `size_limit` |
+
+Three files, three different answers, in machine readable form. Your test reads
+the manifest instead of you hand writing the assertions:
+
+```python
+import json
+import os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]
+```
+
+A run from a preset also writes `manifest.instructions.md` - the same facts for
+a person to read: every file, what your system should do with it and why the
+file is in the set.
+
+And where the right answer genuinely depends on your own policy, the manifest
+says `unspecified` instead of inventing one. A generator that guesses produces
+false failures, and a suite that cries wolf gets switched off.
 
 ---
 
@@ -633,25 +659,6 @@ produced the file, and `summary.by_target` counts the files each target came to.
 A recipe with several targets can therefore be checked target by target without
 reading file names.
 
-## 🧪 Presets
-
-A preset is a ready made set of files that answers a common testing question, so
-you do not have to design the set yourself:
-
-```
-tfg preset list
-tfg preset show size-boundaries
-tfg generate --preset size-boundaries --limit 10mb --out ./limits
-```
-
-`show` tells you what the set would cost before you build it, and says outright
-when a number is a placeholder of ours rather than a limit of yours. Presets are
-ordinary recipes underneath - `tfg preset eject size-boundaries` prints the
-recipe and you edit it from there.
-
-`tfg preset list` names every preset your build ships, and the Presets
-screen of the window offers the same ones.
-
 ## 🖥️ The desktop window
 
 The same engine with a window on it, for the testing that is not scripted. It is
@@ -662,6 +669,15 @@ justified rather than quietly drifting apart.
 Four screens - one batch, presets, several batches at once, and about. It shows
 what a run would cost before writing anything, reports progress while it runs,
 and can be cancelled part way without leaving a half written file behind.
+
+<p>
+  <img src=".github/window-presets.png" width="49%" alt="The Presets screen of the window, with the list of presets open">
+  <img src=".github/window-settings.png" width="49%" alt="One batch of log files in the window, with the settings the log format takes">
+</p>
+<p>
+  <img src=".github/window-several-batches.png" width="49%" alt="The Several batches screen of the window, where each batch has its own format and size">
+  <img src=".github/window-formats.png" width="49%" alt="The list of formats in the window, grouped by kind and filtered as you type">
+</p>
 
 It does not open a recipe file yet. Recipes are a command line thing for now,
 and the window builds its batches in the form.
