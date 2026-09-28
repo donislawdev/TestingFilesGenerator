@@ -463,10 +463,11 @@ func TestThePackagesNameTheProductAndLicenceTheProgramDoes(t *testing.T) {
 // does to their machine. A missing file shows up on somebody else's clone.
 func TestThePackageSourcesAreTrackedByGit(t *testing.T) {
 	tracked := map[string]bool{}
-	for _, name := range strings.Fields(gitOutput(t, "ls-files", "packaging", ".github/scripts/build_packages.py")) {
+	for _, name := range strings.Fields(gitOutput(t, "ls-files", "packaging",
+		".github/scripts/build_packages.py", ".github/scripts/build_msi.py")) {
 		tracked[name] = true
 	}
-	want := []string{".github/scripts/build_packages.py", "packaging/README.md"}
+	want := []string{".github/scripts/build_packages.py", ".github/scripts/build_msi.py", "packaging/README.md"}
 	for name := range packagingTemplates(t) {
 		want = append(want, name)
 	}
