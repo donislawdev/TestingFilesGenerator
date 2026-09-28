@@ -106,7 +106,10 @@ func TestTheSocialPictureShowsTheCardAsItIsNow(t *testing.T) {
 			"  TFG_WRITE_SITE=1 go test ./internal/guard/ -run TestTheSiteSaysWhatTheToolSays\n"+
 			"  TFG_WRITE_SOCIAL_STAMP=1 go test ./internal/guard/ -run TestTheSocialPicture\n"+
 			"Then LOOK at web/assets/social-preview.png. If git says it did not change, "+
-			"the camera photographed the old card.",
+			"the camera photographed the old card.\n"+
+			"And upload it to GitHub by hand - Settings, General, Social preview. GitHub keeps "+
+			"a copy of its own that nothing here writes to, and until 2026-09-29 it said 24 "+
+			"formats while this picture said 26. tools/release-check.py compares the two.",
 			was, now)
 	}
 }
