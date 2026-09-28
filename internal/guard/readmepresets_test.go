@@ -49,7 +49,12 @@ func TestTheReadmeListsEveryPresetItShips(t *testing.T) {
 				"its question:\n%s", len(cells), line)
 			continue
 		}
-		rows[strings.Trim(cells[0], "`")] = strings.TrimSpace(cells[1])
+		id := strings.Trim(cells[0], "`")
+		if _, twice := rows[id]; twice {
+			t.Errorf("the presets table has two rows for %s, and the second would hide what the "+
+				"first says from this guard", id)
+		}
+		rows[id] = strings.TrimSpace(cells[1])
 	}
 	if len(rows) == 0 {
 		t.Fatal("the presets section has no table rows - this guard would pass against any README ever written")

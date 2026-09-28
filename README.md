@@ -176,7 +176,7 @@ page count, rows and columns in a spreadsheet, what goes inside an archive. See
 
 ## 🧪 Presets
 
-A preset is a ready made set of files that answers one common testing question,
+A preset is a ready-made set of files that answers one common testing question,
 so you do not have to design the set yourself. Every file in it says what it is
 for, and the manifest says how your system should react to it:
 

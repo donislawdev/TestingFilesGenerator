@@ -10,14 +10,16 @@
  * rather than drawn so the numbers come from the same place the site's do -
  * the count of formats and the list of presets are the registry's.
  *
- * What it has to say, decided by the owner on 2026-09-29: a generator of one
- * file at one size loses to the ones in a browser, so the card leads with what
- * those do not have - presets, recipes and settings per format - and shows a
- * preset's answer rather than a window. A feed shows it about 500 pixels wide,
- * so there are few things on it and none of them small.
+ * What it has to say: a generator of one file at one size loses to the ones
+ * in a browser, so the card leads with what those do not have - presets,
+ * recipes and settings per format - and shows a preset's answer rather than a
+ * window. A feed shows it about 500 pixels wide, so there are few things on it
+ * and none of them small.
  *
  * Everything on it is real. The three files, their byte counts and their
- * declared outcomes are what size-boundaries writes for a 1 MB limit. */
+ * declared outcomes are what size-boundaries writes for a 1 MB limit with a
+ * one byte spread, and TestTheLimitExampleIsWhatThePresetWrites asks the
+ * program for them on every run. */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -97,7 +99,7 @@ li b { color: #E8EAED; font-weight: 650; }
   color: #949CA8;
 }
 
-/* Without it the card read as a tool for CI alone (the owner, 2026-09-29). */
+/* Without it the card reads as a tool for CI alone. */
 .brand .surfaces {
   margin-left: 4px;
   font-size: 17px;
