@@ -503,13 +503,14 @@ def export_tree(tag, into):
         raise SystemExit("sign_release: git archive %s failed:\n%s"
                          % (tag, archive.stderr.decode(errors="replace").strip()))
     os.makedirs(into)
+    # Settled, not suppressed: the archive is git's own export of our tag, and
+    # the "data" filter keeps every name inside the folder. Measured on Python
+    # 3.14.7 on 2026-09-28 with a crafted archive: "../x" and a link pointing
+    # out are refused, "/x" lands inside with the slash dropped, and nothing
+    # appeared beside the folder in any of the three. The rule reports the
+    # with line, so that is the line the comment sits above.
+    # nosemgrep: trailofbits.python.tarfile-extractall-traversal.tarfile-extractall-traversal
     with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
-        # Settled, not suppressed: the archive is git's own export of our tag,
-        # and the "data" filter keeps every name inside the folder. Measured
-        # on Python 3.14.7 on 2026-09-28 with a crafted archive: "../x" and a
-        # link pointing out are refused, "/x" lands inside with the slash
-        # dropped, and nothing appeared beside the folder in any of the three.
-        # nosemgrep: trailofbits.python.tarfile-extractall-traversal.tarfile-extractall-traversal
         tar.extractall(into, filter="data")
     print("  the tree of %s: %d file(s) in %s" % (tag, len(files_under(into)), into))
 
