@@ -32,7 +32,7 @@ func TestTheWindowOffersTheHomeDirectoryWhenStartedWhereItShouldNotWrite(t *test
 	if spelled == program {
 		t.Fatalf("the second spelling of %s is the same text, so the case below would test nothing", program)
 	}
-	if !sameDirectoryHere(t, spelled, program) {
+	if spelled != "" && !sameDirectoryHere(t, spelled, program) {
 		t.Fatalf("%s (%s) is not the same directory as %s, so the case below would test the wrong thing", spelled, how, program)
 	}
 	root := rootOf(home)
@@ -51,6 +51,9 @@ func TestTheWindowOffersTheHomeDirectoryWhenStartedWhereItShouldNotWrite(t *test
 		{"no home directory to go to", program, "", filepath.Join(program, window.OutputFolderName)},
 	} {
 		t.Run(c.what, func(t *testing.T) {
+			if c.working == "" {
+				t.Skipf("this system allows %s, so there is no second spelling to try", how)
+			}
 			got := window.OfferedDirectory(c.working, program, c.home)
 			if got != c.want {
 				t.Errorf("started in %s with the program in %s and the home in %q, the window offers %s.\n"+
@@ -72,7 +75,7 @@ func TestAFolderTheOldOfferLeftBehindIsNotOfferedAgain(t *testing.T) {
 	program := t.TempDir()
 	elsewhere := t.TempDir()
 	spelled, how := anotherSpelling(t, program)
-	if !sameDirectoryHere(t, spelled, program) {
+	if spelled != "" && !sameDirectoryHere(t, spelled, program) {
 		t.Fatalf("%s (%s) is not the same directory as %s", spelled, how, program)
 	}
 	root := rootOf(program)
@@ -80,13 +83,24 @@ func TestAFolderTheOldOfferLeftBehindIsNotOfferedAgain(t *testing.T) {
 	for _, c := range []struct {
 		what, remembered string
 		leftBehind       bool
+		spelling         bool
 	}{
-		{"the folder under the root of a disk", filepath.Join(root, window.OutputFolderName), true},
-		{"the folder under this program's directory, spelled as " + how, filepath.Join(spelled, window.OutputFolderName), true},
-		{"another folder under this program's directory", filepath.Join(program, "results"), false},
-		{"the folder under a directory somebody chose", filepath.Join(elsewhere, window.OutputFolderName), false},
+		{"the folder under the root of a disk", filepath.Join(root, window.OutputFolderName), true, false},
+		{"the folder under this program's directory, spelled as " + how, filepath.Join(spelled, window.OutputFolderName), true, true},
+		{"another folder under this program's directory", filepath.Join(program, "results"), false, false},
+		{"the folder under a directory somebody chose", filepath.Join(elsewhere, window.OutputFolderName), false, false},
+		// What the window offers when it cannot read the working directory.
+		// It means "here", and the offer made afresh names the same folder in
+		// full - kept, it would be "/tfg-out" again at a start from Finder.
+		{"the bare folder name, offered when the working directory could not be read", window.OutputFolderName, true, false},
 	} {
 		t.Run(c.what, func(t *testing.T) {
+			// Checked here rather than left to the join above: with no second
+			// spelling that join is the bare name, the last case, and this one
+			// would pass for its reason.
+			if c.spelling && spelled == "" {
+				t.Skipf("this system allows %s, so there is no second spelling to try", how)
+			}
 			if got := window.LeftByTheOldOffer(c.remembered, program); got != c.leftBehind {
 				t.Errorf("LeftByTheOldOffer(%s) = %v, want %v", c.remembered, got, c.leftBehind)
 			}
@@ -97,36 +111,106 @@ func TestAFolderTheOldOfferLeftBehindIsNotOfferedAgain(t *testing.T) {
 // And the window really does pass over it at start. The rule above is only
 // half of the fix: without the call where the remembered folder is handed to
 // the screens, the value left by the old offer comes back regardless.
+//
+// Both places the old offer could leave: the root of a disk, and the
+// directory of the program that is running - here the test binary, so handing
+// the rule no program directory at this call turns the second case red.
 func TestTheWindowDoesNotOfferTheFolderTheOldOfferLeftBehind(t *testing.T) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		t.Skipf("this system has no home directory, so the fixed offer has nowhere to go: %v", err)
 	}
-	stale := filepath.Join(rootOf(home), window.OutputFolderName)
-	if !window.LeftByTheOldOffer(stale, "") {
-		t.Fatalf("%s does not count as left by the old offer, so this would test the wrong thing", stale)
-	}
+	program := testBinaryDirectory(t)
 
-	host := newFakeHost(t)
-	host.Remembered().RememberDirectory(stale)
-	window.Open(host)
-	if host.content == nil {
-		t.Fatal("opening the window put no screen in it")
+	for _, c := range []struct{ what, stale string }{
+		{"under the root of a disk", filepath.Join(rootOf(home), window.OutputFolderName)},
+		{"under the program's own directory", filepath.Join(program, window.OutputFolderName)},
+	} {
+		stale := c.stale
+		t.Run(c.what, func(t *testing.T) {
+			if !window.LeftByTheOldOffer(stale, program) {
+				t.Fatalf("%s does not count as left by the old offer, so this would test the wrong thing", stale)
+			}
+			host := newFakeHost(t)
+			host.Remembered().RememberDirectory(stale)
+			window.Open(host)
+			if host.content == nil {
+				t.Fatal("opening the window put no screen in it")
+			}
+			for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
+				screen := selectTab(t, host.content, tab)
+				box := entryUnder(t, screen, text.FieldOutputDir())
+				if box == nil {
+					t.Fatalf("the %s screen has no output directory box", tab)
+				}
+				if box.Text == stale {
+					t.Errorf("the %s screen offers %s, which the old offer left in the remembered settings "+
+						"and which can never be written into", tab, stale)
+				}
+				if !hasSuffix(box.Text, window.OutputFolderName) {
+					t.Errorf("the %s screen offers %q instead of the folder of our own", tab, box.Text)
+				}
+			}
+		})
 	}
-	for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
-		screen := selectTab(t, host.content, tab)
-		box := entryUnder(t, screen, text.FieldOutputDir())
-		if box == nil {
-			t.Fatalf("the %s screen has no output directory box", tab)
-		}
-		if box.Text == stale {
-			t.Errorf("the %s screen offers %s, which the old offer left in the remembered settings "+
-				"and which can never be written into", tab, stale)
-		}
-		if !hasSuffix(box.Text, window.OutputFolderName) {
-			t.Errorf("the %s screen offers %q instead of the folder of our own", tab, box.Text)
-		}
+}
+
+// And the window really does ask the rule when it starts. The first guard in
+// this file hands OfferedDirectory three paths of its own, so a window that
+// stopped asking it - or asked it without the program's directory - would
+// leave that guard green, and under go test the working directory is the
+// package directory, which no rule sends anywhere else. This one stands the
+// test binary where a double click and Finder stand a program, with a home
+// directory of its own, and reads the box on every screen (outside review of
+// #146).
+func TestTheWindowStartedWhereItShouldNotWriteOffersTheHomeDirectory(t *testing.T) {
+	program := testBinaryDirectory(t)
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	if got, err := os.UserHomeDir(); err != nil || got != home {
+		t.Fatalf("the home directory is %q (%v) after setting it to %s, so the cases below would test the wrong thing", got, err, home)
 	}
+	want := filepath.Join(home, window.OutputFolderName)
+
+	for _, c := range []struct{ what, dir string }{
+		{"started in its own directory, as a double click or a shortcut starts it", program},
+		{"started in the root of a disk, as macOS starts it from Finder", rootOf(program)},
+	} {
+		t.Run(c.what, func(t *testing.T) {
+			t.Chdir(c.dir)
+			if here, err := os.Getwd(); err != nil || !sameDirectoryHere(t, here, c.dir) {
+				t.Fatalf("the working directory is %q (%v) rather than %s, so this would test the wrong thing", here, err, c.dir)
+			}
+			host := newFakeHost(t)
+			window.Open(host)
+			if host.content == nil {
+				t.Fatal("opening the window put no screen in it")
+			}
+			for _, tab := range []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe()} {
+				screen := selectTab(t, host.content, tab)
+				box := entryUnder(t, screen, text.FieldOutputDir())
+				if box == nil {
+					t.Fatalf("the %s screen has no output directory box", tab)
+				}
+				if box.Text != want {
+					t.Errorf("%s in %s, the %s screen offers %q.\nWant %s: neither is a place to write "+
+						"ten thousand files into.", c.what, c.dir, tab, box.Text, want)
+				}
+			}
+		})
+	}
+}
+
+// testBinaryDirectory is the directory of the program that is running, which
+// under go test is the test binary - the same answer the window gets.
+func testBinaryDirectory(t *testing.T) string {
+	t.Helper()
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatalf("the test binary cannot say where it lives: %v", err)
+	}
+	return filepath.Dir(exe)
 }
 
 // anotherSpelling is the same directory under a different text, and says how
@@ -135,6 +219,11 @@ func TestTheWindowDoesNotOfferTheFolderTheOldOfferLeftBehind(t *testing.T) {
 // directory before it trusts the case - a spelling that turned out to be a
 // second directory would make the "own directory" case pass for the wrong
 // reason.
+//
+// Where there is neither it gives back no spelling and says why, and only the
+// case that needs one is skipped. Skipping here would skip every case of the
+// guard that called it, the root of a disk and the ordinary directory with
+// them (outside review of #146).
 func anotherSpelling(t *testing.T, dir string) (string, string) {
 	t.Helper()
 	link := filepath.Join(t.TempDir(), "same-directory")
@@ -144,8 +233,7 @@ func anotherSpelling(t *testing.T, dir string) (string, string) {
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 		return strings.ToUpper(dir), "other letter case"
 	}
-	t.Skip("this system allows neither a link nor a second letter case, so there is no second spelling to try")
-	return "", ""
+	return "", "neither a link nor a second letter case"
 }
 
 // sameDirectoryHere is the precondition every case above asserts rather than

@@ -25,8 +25,10 @@ import (
 //     which is read only, so the window offered "/tfg-out" and the first run
 //     ended in the system's refusal.
 //
-// Either one sends the offer to the home directory instead. A terminal is
-// untouched: whoever typed their way to a directory knows which one it is.
+// Either one sends the offer to the home directory instead, however the
+// program was started - the rule asks where, not how. Any other directory is
+// untouched, which is what keeps a terminal as it was: whoever typed their way
+// to a directory knows which one it is.
 //
 // Without a home directory the offer stays where it always was, because a
 // path offered before is better than one made up.
@@ -62,8 +64,15 @@ func notMeantForWriting(dir, program string) bool {
 	return isRoot(dir) || sameDirectory(dir, program)
 }
 
-// isRoot says whether an absolute directory is the root of its disk: "/" or
-// "C:\". The working directory always comes absolute from the system.
+// isRoot says whether a directory is the root of its disk: "/" or "C:\". The
+// working directory always comes absolute from the system.
+//
+// A remembered bare "tfg-out" reaches here as ".", and counts as a root on
+// purpose. The bare name is what startingDirectory offers when it cannot read
+// the working directory, and it means "here" - which the offer works out
+// afresh, spelled in full, or as the home directory when "here" is the root
+// of a disk. Asking for an absolute path first (outside review of #146) would
+// keep the bare name, and started from Finder it would mean "/tfg-out" again.
 func isRoot(dir string) bool {
 	clean := filepath.Clean(dir)
 	return filepath.Dir(clean) == clean
