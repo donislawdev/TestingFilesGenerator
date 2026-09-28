@@ -312,7 +312,8 @@ def render(text, table, name):
 # something else: a quote ends a PowerShell string early, a bracket or an
 # ampersand is markup in the nuspec, and a colon followed by a space or a space
 # followed by a hash turns the rest of a plain YAML value into a key or a
-# comment.
+# comment. The installer source (build_msi.py) is XML, and WiX reads it once
+# more after the parser, taking $( as one of its own variables.
 BREAKS = (
     (".ps1", "'", "a single quote ends the PowerShell string it sits in"),
     (".nuspec", "<", "the nuspec reads it as markup"),
@@ -320,6 +321,10 @@ BREAKS = (
     (".nuspec", "&", "the nuspec reads it as markup"),
     (".yaml", ": ", "YAML reads the rest as a key"),
     (".yaml", " #", "YAML reads the rest as a comment"),
+    (".wxs", '"', "a double quote ends the attribute it sits in"),
+    (".wxs", "<", "the installer source reads it as markup"),
+    (".wxs", "&", "the installer source reads it as markup"),
+    (".wxs", "$(", "WiX reads it as one of its own variables"),
 )
 
 

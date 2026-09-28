@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Windows installer: the window and the command line, for every account on
+  the machine. Rendered by .github/scripts/build_msi.py, which fills every
+  doubled-brace placeholder from the one place its value lives and hands WiX
+  two folders - $(PayloadDir), the two signed archives unpacked into one, and
+  $(IconFile), the program's icon.
+
+  Each line below that decides what happens on somebody's machine was measured
+  on Windows Server 2025 before it was written (docs/PACKAGING-2026-09-25.md
+  section 12). No extension, no custom action and no dialogs of WiX's own, so
+  nothing but these files and Windows Installer's own tables goes into the
+  package.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="{{APP_NAME}}"
+      Manufacturer="{{PUBLISHER}}"
+      Version="{{VERSION}}"
+      UpgradeCode="{{UPGRADE_CODE}}"
+      Scope="perMachine">
+
+    <!--
+      The UpgradeCode is the product, not a build, and it never changes. Every
+      machine finds the version it has through it, and a new one would leave
+      the old install in place beside the new one for good. A guard pins it.
+
+      afterInstallExecute puts the new files down before the old version is
+      removed. AllowSameVersionUpgrades because a version held in a feed's
+      moderation is rebuilt under the same number, and without it an equal
+      version installs as a second entry beside the first.
+    -->
+    <MajorUpgrade
+        Schedule="afterInstallExecute"
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of [ProductName] is already installed. Uninstall it first to install this one." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!--
+      Nothing that is running gets closed or ended. A run in progress may be
+      half way through a set of files, and cut there it leaves files with no
+      manifest to say what they are.
+
+      With the Restart Manager on, an upgrade while tfg ran waited thirty
+      seconds, failed with 1601 and closed the program anyway. With it off the
+      file in use is set aside, the new version is in place at once, the
+      program keeps running, and the installer answers 3010 so the old copy
+      goes at the next restart.
+
+      It has to be here, in the package, from the first installer on. An
+      upgrade removes the old version under the OLD package's properties, so
+      the same property given on the command line changed nothing, and a
+      package published without it cannot be fixed afterwards.
+    -->
+    <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+
+    <!-- What Programs and Features shows. There is nothing to repair or to
+         change - one feature, and no choices. -->
+    <Property Id="ARPURLINFOABOUT" Value="{{PROJECT_URL}}" />
+    <Property Id="ARPHELPLINK" Value="{{ISSUES_URL}}" />
+    <Property Id="ARPURLUPDATEINFO" Value="{{RELEASE_NOTES_URL}}" />
+    <Property Id="ARPPRODUCTICON" Value="ProgramIcon" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <Icon Id="ProgramIcon" SourceFile="$(IconFile)" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="{{APP_NAME}}" />
+    </StandardDirectory>
+
+    <!--
+      The two archives in one folder, as they are. The window finds its
+      software renderer in the opengl folder beside it, so the shape of this
+      folder is part of the program.
+    -->
+    <ComponentGroup Id="Programs" Directory="INSTALLFOLDER">
+      <Files Include="$(PayloadDir)\**" />
+    </ComponentGroup>
+
+    <!--
+      The folder on the machine's PATH, once, so tfg answers in every account
+      and for a build agent that runs as a service. Only the folder the
+      programs are in: the software renderer's opengl32.dll is one level down,
+      because a library of that name on PATH is one other programs would load.
+      Permanent="no" takes the entry off again at uninstall.
+    -->
+    <ComponentGroup Id="OnThePath" Directory="INSTALLFOLDER">
+      <Component Id="MachinePath">
+        <Environment Id="MachinePath" Name="PATH" Value="[INSTALLFOLDER]"
+                     Part="last" Action="set" System="yes" Permanent="no" />
+        <RegistryValue Root="HKLM" Key="Software\{{PUBLISHER}}\{{APP_NAME}}"
+                       Name="Path" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!--
+      The window in the Start menu, started in the folder it is installed in.
+      That folder is not one to write into, and the window knows it: started
+      in its own folder it offers tfg-out in the home folder of whoever opened
+      it. The shortcut cannot say so itself, because Windows Installer expands
+      a profile variable when it installs, in the installing account.
+    -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut">
+        <Shortcut Id="Window"
+                  Name="{{APP_NAME}}"
+                  Description="{{SHORTCUT_DESCRIPTION}}"
+                  Target="[INSTALLFOLDER]{{WINDOW_EXE}}"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="ProgramIcon" />
+        <RegistryValue Root="HKLM" Key="Software\{{PUBLISHER}}\{{APP_NAME}}"
+                       Name="Shortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <Feature Id="Everything">
+      <ComponentGroupRef Id="Programs" />
+      <ComponentGroupRef Id="OnThePath" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+  </Package>
+</Wix>

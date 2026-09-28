@@ -1,4 +1,4 @@
-# Package sources: WinGet and Chocolatey
+# Package sources: WinGet, Chocolatey and the Windows installer
 
 These are **templates**, not packages. Every `{{PLACEHOLDER}}` is filled by
 `.github/scripts/build_packages.py` from the one place that owns the value: the
@@ -85,6 +85,56 @@ scope and on Windows 11 in user scope:
   again once the upgrade runs with the program closed. Measured for the window
   and, on Windows 11, for the command line while a tfg command was running. A portable
   package carries no script, so the description is where this is said.
+
+## The Windows installer
+
+`msi/tfg-setup.wxs.in` is the source of `tfg-setup_<version>_windows_amd64.msi`,
+a release asset of its own beside the zip archives - the feed packages above stay
+on the zips. `.github/scripts/build_msi.py` fills it and builds it with WiX 5.0.2,
+from the two signed amd64 archives:
+
+    python .github/scripts/build_msi.py --tag v0.5.0 --archives <folder> --out-dir <folder>
+
+It is built by `sign_release.py`, after the card has signed the programs, and
+signed the same way, with the product's name as the signature's description.
+Windows shows that name when it asks an administrator to let the installer run,
+and a string of digits without it. The signing script runs `build_msi.py` from the tree of the
+tag, exported with `git archive`, so the installer is built from what was tagged
+whatever the checkout stands on. `ci.yml` builds an unsigned one from the latest
+release in every pull request and installs it on a Windows runner.
+
+What it does, each line measured on Windows Server 2025 before it was written:
+
+- **For the machine.** `Program Files\Testing Files Generator` with both programs,
+  the software renderer in `opengl` and the three documents. The folder goes on
+  the machine's `PATH` once, at the end, and comes off at uninstall. The software
+  renderer stays one level down, because a library named `opengl32.dll` in a
+  folder on `PATH` is one other programs would load.
+- **The window in the Start menu,** started in the install folder. The window
+  recognises its own folder and offers `tfg-out` in the home folder of whoever
+  opened it. The shortcut cannot say that itself - Windows Installer expands a
+  profile variable when it installs, in the installing account.
+- **Nothing running is ended.** The Restart Manager is off. With it on, an
+  upgrade while `tfg` ran waited thirty seconds, failed and closed the program
+  anyway. With it off the file in use is set aside, the new version is in place
+  at once and the upgrade answers 3010, a restart to remove the old copy. It has
+  to be in the package from the first installer on, because an upgrade removes
+  the old version under the OLD package's properties. Started with a double
+  click, Windows Installer asks first. It names the open window and offers
+  Cancel, Retry and Ignore. With the window closed before going on, the upgrade
+  needs no restart.
+- **One entry in Programs and Features.** A rebuild of the same version replaces
+  the first build, and an older version is refused with a sentence.
+- **No extension, no custom action, no dialogs of WiX's own**, so nothing but our
+  files and Windows Installer's own tables goes into the package.
+
+The `UpgradeCode` in `build_msi.py` is the product's identity for good. Every
+machine finds the version it has through it, so a new one would leave the old
+install in place beside the new one - a guard pins it. A release candidate, a tag
+with a hyphen, gets no installer: Windows Installer reads only the three numbers
+of a version. `build_msi.py` refuses one, and refuses two archives that hold
+different copies of one file, an archive missing a program, a name that leads
+out of the folder, and a WiX of another version.
 
 ## Submitting
 

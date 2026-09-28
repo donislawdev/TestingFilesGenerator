@@ -293,7 +293,8 @@ sys.path.insert(0, sys.argv[1])
 import build_packages as bp
 
 table = {"OK": "fine", "QUOTE": "it's", "MARKUP": "a & b", "COLON": "key: value",
-         "HASH": "a #b", "LINES": "one\ntwo"}
+         "HASH": "a #b", "LINES": "one\ntwo", "DQUOTE": 'say "so"', "LT": "a < b",
+         "WIXVAR": "$(PayloadDir)"}
 for label, text, name in [
     ("unknown placeholder", "x {{NOT_A_KEY}} y", "chocolatey/tools/a.ps1"),
     ("quote in a script", "Write-Host '{{QUOTE}}'", "chocolatey/tools/a.ps1"),
@@ -302,6 +303,11 @@ for label, text, name in [
     ("comment in YAML", "Short: {{HASH}}", "winget/locale.en-US.yaml"),
     ("several lines inside a line", "x {{LINES}} y", "winget/locale.en-US.yaml"),
     ("clean", "Short: {{OK}}", "winget/locale.en-US.yaml"),
+    ("double quote in the installer", 'Name="{{DQUOTE}}"', "tfg-setup.wxs"),
+    ("bracket in the installer", 'Name="{{LT}}"', "tfg-setup.wxs"),
+    ("ampersand in the installer", 'Name="{{MARKUP}}"', "tfg-setup.wxs"),
+    ("WiX variable in the installer", 'Name="{{WIXVAR}}"', "tfg-setup.wxs"),
+    ("clean installer", 'Name="{{OK}}"', "tfg-setup.wxs"),
 ]:
     try:
         bp.render(text, table, name)
@@ -336,13 +342,17 @@ except SystemExit as refusal:
 		answers[m[1]] = m[2]
 	}
 	for _, label := range []string{"unknown placeholder", "quote in a script", "markup in the nuspec",
-		"colon in YAML", "comment in YAML", "several lines inside a line", "unused value"} {
+		"colon in YAML", "comment in YAML", "several lines inside a line", "unused value",
+		"double quote in the installer", "bracket in the installer", "ampersand in the installer",
+		"WiX variable in the installer"} {
 		if answers[label] != "REFUSED" {
 			t.Errorf("%s: the renderer answered %q, and it has to refuse:\n%s", label, answers[label], said)
 		}
 	}
-	if answers["clean"] != "RENDERED" {
-		t.Errorf("the clean case was not rendered (%q), so the probe cannot tell a refusal from "+
-			"a failure:\n%s", answers["clean"], said)
+	for _, clean := range []string{"clean", "clean installer"} {
+		if answers[clean] != "RENDERED" {
+			t.Errorf("the %s case was not rendered (%q), so the probe cannot tell a refusal from "+
+				"a failure:\n%s", clean, answers[clean], said)
+		}
 	}
 }
