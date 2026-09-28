@@ -81,7 +81,7 @@ func installerElements(t *testing.T, source string) []wxsElement {
 	open := []int{-1}
 	for {
 		tok, err := dec.Token()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
