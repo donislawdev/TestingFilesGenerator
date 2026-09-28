@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -403,5 +405,133 @@ func TestTheInstallerIsBuiltFromBothArchivesOrNotAtAll(t *testing.T) {
 				t.Error("a name inside an archive wrote a file outside the folder it was unpacked into")
 			}
 		})
+	}
+}
+
+// pythonDef is one top-level function of a script, cut at the next top-level
+// def - by what the text says, never by line numbers.
+func pythonDef(t *testing.T, code, name string) string {
+	t.Helper()
+	start := strings.Index(code, "\ndef "+name+"(")
+	if start < 0 {
+		t.Fatalf("the script has no function %s", name)
+	}
+	rest := code[start+1:]
+	if end := strings.Index(rest, "\ndef "); end >= 0 {
+		rest = rest[:end]
+	}
+	return rest
+}
+
+// The release signs the installer the way it signs the programs, asks whether
+// it can build one before the card signs anything, and does not call a draft
+// complete without it.
+//
+// The installer is what an administrator runs with the highest rights the
+// machine has. And a check after the card would leave signed programs on a
+// draft that can never get its installer from that run.
+func TestTheSigningSignsTheInstallerAndExpectsItOnTheDraft(t *testing.T) {
+	script := activePython(signingScript(t))
+	build := pythonDef(t, script, "build_installer")
+	for what, want := range map[string]string{
+		"it timestamps the installer's signature, or it dies with the certificate": `"/tr", TIMESTAMP_URL, "/td", "sha256", "/v", path]`,
+		"it reads the installer's certificate back out of the file":                `signer = certificate_of(path)`,
+		"it holds that certificate to the pin":                                     `if signer != pin:`,
+		"it runs build_msi.py as the tag has it":                                   `installer_script(tree)`,
+	} {
+		if !strings.Contains(build, want) {
+			t.Errorf("%s: build_installer does not contain %q", what, want)
+		}
+	}
+
+	main := pythonDef(t, script, "main")
+	check, card := strings.Index(main, "check_installer(args.tag, tree)"), strings.Index(main, "signing_thumbprint(pin)")
+	if check < 0 || card < 0 || check > card {
+		t.Errorf("main asks whether the installer can be built at %d and reaches the card at %d. "+
+			"It asks first, so a machine without WiX stops before anything is signed", check, card)
+	}
+
+	draft := pythonDef(t, script, "confirm_draft")
+	for what, want := range map[string]string{
+		"a release's draft is not complete without exactly one installer": `if not is_candidate(tag) and len(installers) != 1:`,
+		"a candidate's draft carries none":                                `if is_candidate(tag) and installers:`,
+	} {
+		if !statementIn(draft, regexp.QuoteMeta(want)) {
+			t.Errorf("%s: no line of confirm_draft begins with %s", what, want)
+		}
+	}
+}
+
+// The installer is built from the tree of the tag, not from the checkout.
+//
+// Nothing in the signing script knows which commit the checkout stands on, and
+// a template changed on main after the tag would otherwise ship in a release
+// that never carried it. Asked of the real mechanism: the tree of HEAD is
+// exported the way a tag's is, and it has to hold exactly what the commit
+// holds - a copy of the working tree would bring along whatever lies in it
+// untracked - with build_msi.py taken from inside it.
+func TestTheInstallerIsBuiltFromTheTaggedTreeNotTheCheckout(t *testing.T) {
+	probe := `
+import os, sys
+sys.path.insert(0, sys.argv[1])
+import sign_release as sr
+
+base = sys.argv[2]
+tree = os.path.join(base, "tree")
+sr.export_tree("HEAD", tree)
+count = sum(len(files) for _, _, files in os.walk(tree))
+print("files: %d" % count)
+print("script: " + os.path.relpath(sr.installer_script(tree), base).replace(os.sep, "/"))
+for tag in ("v0.5.0", "v0.5.0-rc1", "v1.0.0-beta.2"):
+    print("candidate %s: %s" % (tag, sr.is_candidate(tag)))
+try:
+    sr.export_tree("refs/tags/no-such-tag", os.path.join(base, "none"))
+    print("missing tag: EXPORTED")
+except SystemExit as refusal:
+    print("missing tag: " + ("REFUSED" if "git fetch --tags" in str(refusal) else str(refusal)))
+`
+	dir := t.TempDir()
+	file := filepath.Join(dir, "probe.py")
+	if err := os.WriteFile(file, []byte(probe), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// The interpreter is the one found on PATH, the script is the probe this
+	// guard just wrote, and every argument is a path it chose.
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	cmd := exec.Command(pythonForGate(t), file, filepath.Join(repoRoot(t), ".github", "scripts"), dir)
+	cmd.Dir = repoRoot(t)
+	said, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("the probe failed: %v\n%s", err, said)
+	}
+	committed := len(strings.Fields(gitOutput(t, "ls-tree", "-r", "--name-only", "HEAD")))
+	for _, want := range []string{
+		"files: " + strconv.Itoa(committed),
+		"script: tree/.github/scripts/build_msi.py",
+		"candidate v0.5.0: False",
+		"candidate v0.5.0-rc1: True",
+		"candidate v1.0.0-beta.2: True",
+		"missing tag: REFUSED",
+	} {
+		if !strings.Contains(string(said), want+"\n") && !strings.Contains(string(said), want+"\r\n") {
+			t.Errorf("the probe did not say %q:\n%s", want, said)
+		}
+	}
+}
+
+// One rule for a release candidate, in every place that asks it: a hyphen in
+// the tag. release.yml marks such a release a pre-release, build_msi.py builds
+// it no installer, and the signing script neither builds one nor expects one.
+// Two rules would disagree about a tag like v1.0.0-beta, and the one that
+// says "release" would put an installer on a candidate's page.
+func TestEveryPlaceAsksTheSameQuestionOfACandidate(t *testing.T) {
+	if !strings.Contains(withoutYamlComments(workflowText(t, "release.yml")), "*-*) flags+=(--prerelease) ;;") {
+		t.Error("release.yml no longer marks a tag with a hyphen as a pre-release in the words this guard reads")
+	}
+	if !statementIn(pythonDef(t, activePython(signingScript(t)), "is_candidate"), `return "-" in tag$`) {
+		t.Error("sign_release.py does not call a tag with a hyphen a candidate")
+	}
+	if !statementIn(activePython(readRepoFile(t, ".github/scripts/build_msi.py")), `if "-" in tag:$`) {
+		t.Error("build_msi.py does not refuse a tag with a hyphen as a candidate")
 	}
 }

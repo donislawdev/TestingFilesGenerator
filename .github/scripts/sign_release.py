@@ -34,11 +34,16 @@ What it does, in order, and what it refuses
     each one, notarises it with Apple and staples the ticket on. A bare macOS
     binary cannot be stapled at all, so without this those two archives are
     refused by Gatekeeper even though they are signed;
- 6. repacks those archives and writes verify-SHA256SUMS.txt over everything it
-    is about to publish, signed and unsigned alike;
- 7. uploads the lot to the DRAFT release and asks attest-release.yml for the
+ 6. builds the Windows installer from the two signed amd64 archives, with
+    build_msi.py taken from the tree of the TAG rather than from the checkout,
+    signs it with the card and reads its certificate back like the programs'.
+    A release candidate gets no installer, because Windows Installer reads
+    only the three numbers of a version;
+ 7. writes verify-SHA256SUMS.txt over everything it is about to publish,
+    signed and unsigned alike;
+ 8. uploads the lot to the DRAFT release and asks attest-release.yml for the
     statement about the signed bytes;
- 8. waits for that statement and confirms the draft is complete. Until this
+ 9. waits for that statement and confirms the draft is complete. Until this
     existed in the project this came from, the script ended at "dispatched, go
     look" - and a draft missing one file looks almost exactly like a finished one.
 
@@ -48,12 +53,14 @@ presses the button.
 import argparse
 import datetime
 import hashlib
+import io
 import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 import zipfile
 
@@ -461,6 +468,96 @@ def sign_macos(tag, directory, host, dry_run):
     print("  %d macOS archive(s) signed, notarised and stapled" % len(archives))
 
 
+def is_candidate(tag):
+    """A tag with a hyphen is a release candidate.
+
+    The one rule, in the three places that ask it: release.yml marks such a
+    release a pre-release, build_msi.py refuses to build it an installer, and
+    this script neither builds one nor expects one on the draft. Windows
+    Installer reads only the three numbers of a version, so a candidate's
+    installer would carry the release's own version.
+    """
+    return "-" in tag
+
+
+def export_tree(tag, into):
+    """The tree of the tag, exactly as it was tagged, in a folder of its own.
+
+    The installer is built from what was tagged. Nothing in this script knows
+    which commit the checkout stands on, and a template changed on main after
+    the tag would otherwise go into a release that never carried it - so the
+    script that builds the installer runs from this copy, and reads the
+    template, the names and the icon beside it. Beside the work folder, never
+    inside it: everything in there gets a checksum and goes on the page.
+    """
+    if os.path.isdir(into):
+        shutil.rmtree(into)
+    found = subprocess.run(["git", "rev-parse", "--verify", "--quiet", tag + "^{commit}"],
+                           capture_output=True, text=True)
+    if found.returncode != 0:
+        raise SystemExit(
+            "sign_release: this clone has no tag %s, so there is no tagged tree to build "
+            "the installer from. Fetch it first:\n    git fetch --tags" % tag)
+    archive = subprocess.run(["git", "archive", "--format=tar", tag], capture_output=True)
+    if archive.returncode != 0:
+        raise SystemExit("sign_release: git archive %s failed:\n%s"
+                         % (tag, archive.stderr.decode(errors="replace").strip()))
+    os.makedirs(into)
+    with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
+        tar.extractall(into, filter="data")
+    print("  the tree of %s: %d file(s) in %s" % (tag, len(files_under(into)), into))
+
+
+def installer_script(tree):
+    """build_msi.py as the tag has it, or a refusal for a tag from before it."""
+    script = os.path.join(tree, ".github", "scripts", "build_msi.py")
+    if not os.path.isfile(script):
+        raise SystemExit(
+            "sign_release: the tag has no .github/scripts/build_msi.py - it was tagged "
+            "before the installer existed, and the release cannot carry one")
+    return script
+
+
+def check_installer(tag, tree):
+    """Refuse before the card signs anything when the installer cannot be built.
+
+    Stopping after the programs are signed would leave a draft without the
+    installer, and the next run signs them all again.
+    """
+    run([sys.executable, installer_script(tree), "--tag", tag, "--check"])
+
+
+def build_installer(tag, tree, work, thumbprint, pin, signtool, dry_run):
+    """Build the installer from the signed archives in work, and sign it.
+
+    Signed like the programs, with a timestamp, and its certificate read back
+    out of the file and held to the pin. The installer is what an
+    administrator runs with the highest rights the machine has, so it is the
+    last file to leave unsigned.
+    """
+    run([sys.executable, installer_script(tree), "--tag", tag,
+         "--archives", work, "--out-dir", work])
+    installers = [n for n in sorted(os.listdir(work)) if n.endswith(".msi")]
+    if len(installers) != 1:
+        raise SystemExit("sign_release: expected one installer in %s after building it and "
+                         "found %d: %s" % (work, len(installers), ", ".join(installers) or "none"))
+    path = os.path.join(work, installers[0])
+    command = [signtool, "sign", "/sha1", thumbprint, "/fd", "sha256",
+               "/tr", TIMESTAMP_URL, "/td", "sha256", "/v", path]
+    if dry_run:
+        print("    DRY RUN, would run: %s" % " ".join(command))
+        return
+    run(command)
+    run([signtool, "verify", "/pa", "/v", path])
+    signer = certificate_of(path)
+    if signer != pin:
+        raise SystemExit(
+            "sign_release: %s was signed by a DIFFERENT certificate\n"
+            "  expected %s\n  got      %s\nNothing has been uploaded."
+            % (installers[0], pin, signer))
+    print("    %s: built from the tagged tree, signed" % installers[0])
+
+
 def name_for_publication(directory, tag):
     """Give the build's own files the names a person will see, or drop them.
 
@@ -545,6 +642,14 @@ def confirm_draft(tag, wait_seconds, dry_run):
     missing = []
     if sum(1 for n in names if n.endswith((".zip", ".tar.gz"))) != 8:
         missing.append("eight archives")
+    # One installer for a release, none for a candidate - asked both ways, since
+    # an installer on a candidate's page would carry the release's version.
+    installers = [n for n in names if n.endswith(".msi")]
+    if is_candidate(tag) and installers:
+        raise SystemExit("sign_release: %s is a release candidate and its draft holds an "
+                         "installer: %s" % (tag, ", ".join(installers)))
+    if not is_candidate(tag) and len(installers) != 1:
+        missing.append("one installer (it holds %d)" % len(installers))
     # Each of the four is asked for WITH its prefix, not by suffix alone. A
     # suffix would be happy with a file the prefix fell off, and the prefix is
     # the only thing keeping these four at the end of the download list.
@@ -589,34 +694,51 @@ def main(argv=None):
             "archives are rejected by Gatekeeper unless this step runs.")
     pin = pinned_digest()
     work = os.path.join("dist", "signing", args.tag)
+    tree = os.path.join("dist", "signing", args.tag + ".tree")
 
-    print("\n[1/8] fetching the build for %s" % args.tag)
+    # Asked here, like the Mac above, before the card signs anything: stopping
+    # at the installer would leave signed programs and no installer.
+    print("\nbefore anything: can this machine build the installer")
+    if is_candidate(args.tag):
+        print("  %s is a release candidate, so it gets no installer" % args.tag)
+    else:
+        export_tree(args.tag, tree)
+        check_installer(args.tag, tree)
+
+    print("\n[1/9] fetching the build for %s" % args.tag)
     fetch_build(args.tag, work)
 
-    print("\n[2/8] checking it before touching it")
+    print("\n[2/9] checking it before touching it")
     verify_before_touching(work)
 
-    print("\n[3/8] the card")
+    print("\n[3/9] the card")
     thumbprint = signing_thumbprint(pin)
     signtool = find_signtool()
 
-    print("\n[4/8] signing the Windows programs")
+    print("\n[4/9] signing the Windows programs")
     for name in windows_archives(work):
         sign_archive(os.path.join(work, name), thumbprint, pin, signtool, args.dry_run)
 
-    print("\n[5/8] signing the macOS bundles on %s" % args.macos_host)
+    print("\n[5/9] signing the macOS bundles on %s" % args.macos_host)
     sign_macos(args.tag, work, args.macos_host, args.dry_run)
 
-    print("\n[6/8] checksums over what will be published")
+    print("\n[6/9] the Windows installer")
+    if is_candidate(args.tag):
+        print("  none for a release candidate")
+    else:
+        build_installer(args.tag, tree, work, thumbprint, pin, signtool, args.dry_run)
+        shutil.rmtree(tree)
+
+    print("\n[7/9] checksums over what will be published")
     name_for_publication(work, args.tag)
     digest = write_checksums(work)
     print("  %sSHA256SUMS.txt: %s" % (AUX_PREFIX, digest))
 
-    print("\n[7/8] uploading to the draft")
+    print("\n[8/9] uploading to the draft")
     upload_to_draft(args.tag, work, args.dry_run)
     ask_for_the_statement(args.tag, digest, args.dry_run)
 
-    print("\n[8/8] waiting for the statement and checking the draft")
+    print("\n[9/9] waiting for the statement and checking the draft")
     confirm_draft(args.tag, args.wait, args.dry_run)
 
     print("\nDone. %s is a complete DRAFT." % args.tag)
