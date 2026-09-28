@@ -2,7 +2,6 @@ package window
 
 import (
 	"os"
-	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -201,8 +200,11 @@ func offerWhereItLastWrote(h Host, working map[string]interface {
 	OutDir() string
 	SetOutDir(string)
 }) {
+	// A remembered folder the window itself once offered from a place it
+	// should not write into counts as nothing remembered - see
+	// LeftByTheOldOffer.
 	last := h.Remembered().Directory()
-	if last == "" {
+	if last == "" || LeftByTheOldOffer(last, programDirectory()) {
 		return
 	}
 	for _, screen := range working {
@@ -378,16 +380,24 @@ func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
 // A working directory we cannot read leaves the folder name on its own, which
 // lands in the same place by a shorter route, because a relative name that
 // means "here" is still better than a path that is wrong.
+//
+// Which directory the folder goes under is OfferedDirectory's answer, and
+// this only asks the system for the three things it needs.
 func startingDirectory() string {
 	dir, err := os.Getwd()
 	if err != nil {
 		return OutputFolderName
 	}
-	return filepath.Join(dir, OutputFolderName)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = ""
+	}
+	return OfferedDirectory(dir, programDirectory(), home)
 }
 
-// OutputFolderName is the folder the window offers to write into, under
-// whatever directory the program was started from.
+// OutputFolderName is the folder the window offers to write into, under the
+// directory the program was started from - or under the home directory when
+// that one is not meant for writing, see OfferedDirectory.
 //
 // A folder of our own rather than the working directory itself, and the reason
 // is what a double click does. Started from a desktop, the working directory is

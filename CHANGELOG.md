@@ -14,6 +14,19 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The window no longer offers to write into a folder it cannot or should
+  not write into.** Started from Finder on macOS it offered `/tfg-out`,
+  which is read only, so the first run ended in a refusal from the system.
+  Started by a double click, or from a shortcut, in the folder the program
+  lives in, it offered a `tfg-out` folder there - under Program Files that
+  is refused, and in a package manager's folder the files can go with the
+  next upgrade. In both cases the window now offers `tfg-out` in your home
+  folder. Started from a terminal it still offers `tfg-out` where you are,
+  and the command line is unchanged. A window that remembered one of these
+  folders from an earlier run offers the home folder too.
+
 ## [0.4.0] - 2026-09-25
 
 ### Changed
