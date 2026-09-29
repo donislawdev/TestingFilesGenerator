@@ -1,11 +1,14 @@
 package guard
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
@@ -29,7 +32,7 @@ import (
 //
 // The fixture is built with os.Symlink rather than a junction so that the same
 // guard runs on all three systems in the matrix. Windows refuses to create one
-// without the privilege, and the guard says so rather than passing quietly -
+// without the privilege, and plantLink says so rather than passing quietly -
 // a skip that looks like a pass is how this class of defect survives.
 func linkedEscape(t *testing.T) (out, victim string) {
 	t.Helper()
@@ -42,10 +45,138 @@ func linkedEscape(t *testing.T) (out, victim string) {
 	if err := os.WriteFile(victim, []byte("the owner's own work\n"), 0o644); err != nil {
 		t.Fatalf("writing the victim: %v", err)
 	}
-	if err := os.Symlink(root, filepath.Join(out, "jn")); err != nil {
-		t.Skipf("this system will not create a link here, so the escape cannot be built: %v", err)
-	}
+	plantLink(t, root, filepath.Join(out, "jn"))
 	return out, victim
+}
+
+// plantLink makes link lead to target, or says out loud why the case cannot
+// run.
+//
+// Creating a symbolic link needs a privilege on Windows that an ordinary
+// account does not have. Off CI that is a skip, which -v prints. On CI it is a
+// failure, because the Windows job runs go test without -v, and there a skip
+// reads exactly like a pass. On 2026-09-29 the guard asked to prove that a
+// directory reached through a link still works after O252 was green on all
+// three systems, and nothing said whether it had run on Windows at all. The
+// same guard skipped on the machine that wrote it, with "A required privilege
+// is not held by the client". The first CI run after this helper was green on
+// Windows, and GitHub sets CI on every job, so the runner makes links.
+func plantLink(t *testing.T, target, link string) {
+	t.Helper()
+	plantLinkWith(t, os.Symlink, os.Getenv("CI"), target, link)
+}
+
+// linkReporter is the part of testing.T that plantLinkWith speaks to, so that
+// its decision can be asked of a recorder rather than of a test that really
+// stops.
+type linkReporter interface {
+	Helper()
+	Fatalf(format string, args ...any)
+	Skipf(format string, args ...any)
+}
+
+// plantLinkWith is plantLink with the two things it reads from the world
+// passed in. A real testing.T stops at Fatalf and Skipf and a recorder does
+// not, so every branch returns on its own.
+func plantLinkWith(t linkReporter, symlink func(oldname, newname string) error, ci, target, link string) {
+	t.Helper()
+	err := symlink(target, link)
+	if err == nil {
+		return
+	}
+	if !linkWantsAPrivilege(err) {
+		t.Fatalf("planting a symbolic link %s to %s: %v", link, target, err)
+		return
+	}
+	if !linkCasesMaySkip(ci) {
+		t.Fatalf("this host does not allow creating a symbolic link (%v), so this case did not run.\n"+
+			"On CI a case that did not run must not look like one that passed. "+
+			"Give the job the privilege, or build this case with something that needs none.", err)
+		return
+	}
+	t.Skipf("this host does not allow creating a symbolic link (%v), so this case did not run", err)
+}
+
+// errPrivilegeNotHeld is what Windows answers an account that may not create a
+// symbolic link. By number, because the syscall package does not name it and
+// its text is written in the system's own language.
+const errPrivilegeNotHeld = syscall.Errno(1314) // ERROR_PRIVILEGE_NOT_HELD
+
+// linkWantsAPrivilege says whether a link was refused for want of a privilege.
+// Asked of the error inside rather than of the text: the text of an
+// os.LinkError carries both paths, and a path is not evidence.
+func linkWantsAPrivilege(err error) bool {
+	return errors.Is(err, errPrivilegeNotHeld) || errors.Is(err, fs.ErrPermission)
+}
+
+// linkCasesMaySkip says whether a case built on a symbolic link may skip when
+// the host refuses to make one.
+//
+// A function of its input for the reason screensAreCompared is one: a skipped
+// test is a green test, so a condition widened by accident stops the case from
+// being checked without one thing going red. Asked this way, the CI answer is
+// tested on a machine that is not CI.
+func linkCasesMaySkip(ci string) bool {
+	return ci == ""
+}
+
+// linkRecorder answers for testing.T in TestACaseBuiltOnALinkSkipsOnlyOffCI.
+type linkRecorder struct{ failed, skipped bool }
+
+func (r *linkRecorder) Helper()               {}
+func (r *linkRecorder) Fatalf(string, ...any) { r.failed = true }
+func (r *linkRecorder) Skipf(string, ...any)  { r.skipped = true }
+
+func (r *linkRecorder) outcome() string {
+	switch {
+	case r.failed && r.skipped:
+		return "failed and skipped"
+	case r.failed:
+		return "failed"
+	case r.skipped:
+		return "skipped"
+	}
+	return "made"
+}
+
+// What this defends. A case built on a symbolic link runs on every CI system
+// or fails there. It never skips there, because nothing would show it did.
+// And only a refused privilege is a skip anywhere - any other refusal is a
+// failure, whatever the paths in it say.
+//
+// Asked of plantLinkWith rather than of the predicate alone (outside review of
+// #151): a guard on linkCasesMaySkip stays green if plantLink stops asking it.
+func TestACaseBuiltOnALinkSkipsOnlyOffCI(t *testing.T) {
+	refused := &os.LinkError{Op: "symlink", Old: "target", New: "link", Err: errPrivilegeNotHeld}
+	denied := &os.LinkError{Op: "symlink", Old: "target", New: "link", Err: fs.ErrPermission}
+	// The paths say "privilege" and the error inside does not.
+	other := &os.LinkError{Op: "symlink", Old: "privilege", New: "privilege", Err: fs.ErrExist}
+
+	cases := []struct {
+		err  error
+		ci   string
+		want string
+		why  string
+	}{
+		{nil, "true", "made", "a link that was made needs nothing said about it"},
+		{refused, "", "skipped", "off CI a Windows account without the privilege is not a defect, and -v prints the skip"},
+		{refused, "true", "failed", "on CI the Windows job runs without -v, so a skip there reads as a pass"},
+		{denied, "", "skipped", "a Unix permission refusal is the same case as the Windows privilege"},
+		{denied, "true", "failed", "on CI no refusal may hide a case"},
+		{other, "", "failed", "a refusal that is not about the privilege is a defect, whatever the paths say"},
+		{other, "true", "failed", "a refusal that is not about the privilege is a defect on CI too"},
+	}
+	for _, c := range cases {
+		r := &linkRecorder{}
+		plantLinkWith(r, func(string, string) error { return c.err }, c.ci, "target", "link")
+		if got := r.outcome(); got != c.want {
+			t.Errorf("with %v and CI=%q the case %s, want %s.\n"+
+				"Reason: %s.\n"+
+				"What to do: a skip is green, so a wider skip stops the link cases from being checked "+
+				"without anything going red. Narrow it back.",
+				c.err, c.ci, got, c.want, c.why)
+		}
+	}
 }
 
 // A junction is the other redirection Windows offers, and it is the one that
@@ -163,9 +294,7 @@ func TestADirectoryReachedThroughALinkStillWorks(t *testing.T) {
 		t.Fatalf("making the directory: %v", err)
 	}
 	linked := filepath.Join(root, "linked")
-	if err := os.Symlink(real, linked); err != nil {
-		t.Skipf("this system will not create a link here: %v", err)
-	}
+	plantLink(t, real, linked)
 
 	// Generate through the link, then verify and clean up through it. Every
 	// path involved resolves inside, so all three have to behave normally.
