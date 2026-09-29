@@ -57,9 +57,7 @@ func TestALinkInsideTheDirectoryPointingBackInsideItIsNotAnEscape(t *testing.T) 
 		t.Fatalf("making the directories: %v", err)
 	}
 	out := filepath.Join(root, "out")
-	if err := os.Symlink(actual, out); err != nil {
-		t.Skipf("this system will not create a link here: %v", err)
-	}
+	plantLink(t, actual, out)
 
 	if code, _, errOut := run(t,
 		"generate", "--format", "txt", "--size", "1kb", "--count", "1",
@@ -78,9 +76,7 @@ func TestALinkInsideTheDirectoryPointingBackInsideItIsNotAnEscape(t *testing.T) 
 	if err := os.Rename(named, target); err != nil {
 		t.Fatalf("moving the file: %v", err)
 	}
-	if err := os.Symlink(target, named); err != nil {
-		t.Skipf("this system will not create a link here: %v", err)
-	}
+	plantLink(t, target, named)
 
 	mf := filepath.Join(out, "manifest.json")
 	code, stdout, errOut := run(t, "verify", mf)

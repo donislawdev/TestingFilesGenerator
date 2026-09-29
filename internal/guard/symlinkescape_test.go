@@ -1,6 +1,8 @@
 package guard
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,7 +31,7 @@ import (
 //
 // The fixture is built with os.Symlink rather than a junction so that the same
 // guard runs on all three systems in the matrix. Windows refuses to create one
-// without the privilege, and the guard says so rather than passing quietly -
+// without the privilege, and plantLink says so rather than passing quietly -
 // a skip that looks like a pass is how this class of defect survives.
 func linkedEscape(t *testing.T) (out, victim string) {
 	t.Helper()
@@ -42,10 +44,63 @@ func linkedEscape(t *testing.T) (out, victim string) {
 	if err := os.WriteFile(victim, []byte("the owner's own work\n"), 0o644); err != nil {
 		t.Fatalf("writing the victim: %v", err)
 	}
-	if err := os.Symlink(root, filepath.Join(out, "jn")); err != nil {
-		t.Skipf("this system will not create a link here, so the escape cannot be built: %v", err)
-	}
+	plantLink(t, root, filepath.Join(out, "jn"))
 	return out, victim
+}
+
+// plantLink makes link lead to target, or says out loud why the case cannot
+// run.
+//
+// Creating a symbolic link needs a privilege on Windows that an ordinary
+// account does not have. Off CI that is a skip, which -v prints. On CI it is a
+// failure, because the Windows job runs go test without -v, and there a skip
+// reads exactly like a pass. On 2026-09-29 the guard asked to prove that a
+// directory reached through a link still works after O252 was green on all
+// three systems, and nothing said whether it had run on Windows at all. The
+// same guard skipped on the machine that wrote it, with "A required privilege
+// is not held by the client".
+func plantLink(t *testing.T, target, link string) {
+	t.Helper()
+	err := os.Symlink(target, link)
+	if err == nil {
+		return
+	}
+	if !errors.Is(err, fs.ErrPermission) && !strings.Contains(err.Error(), "privilege") {
+		t.Fatalf("planting a symbolic link %s to %s: %v", link, target, err)
+	}
+	if !linkCasesMaySkip(os.Getenv("CI")) {
+		t.Fatalf("this host does not allow creating a symbolic link (%v), so this case did not run.\n"+
+			"On CI a case that did not run must not look like one that passed. "+
+			"Give the job the privilege, or build this case with something that needs none.", err)
+	}
+	t.Skipf("this host does not allow creating a symbolic link (%v), so this case did not run", err)
+}
+
+// linkCasesMaySkip says whether a case built on a symbolic link may skip when
+// the host refuses to make one.
+//
+// A function of its input for the reason screensAreCompared is one: a skipped
+// test is a green test, so a condition widened by accident stops the case from
+// being checked without one thing going red. Asked this way, the CI answer is
+// tested on a machine that is not CI.
+func linkCasesMaySkip(ci string) bool {
+	return ci == ""
+}
+
+// What this defends. A case built on a symbolic link runs on every CI system
+// or fails there. It never skips there, because nothing would show it did.
+func TestACaseBuiltOnALinkSkipsOnlyOffCI(t *testing.T) {
+	if linkCasesMaySkip("true") {
+		t.Error("on CI a case that could not make its link skips, and the Windows job runs without -v, " +
+			"so it is reported as passed.\n" +
+			"What to do: keep the CI answer a failure. A skip is green, so widening this stops the link cases " +
+			"on Windows from being checked without anything going red.")
+	}
+	if !linkCasesMaySkip("") {
+		t.Error("off CI a case that could not make its link fails, so every Windows account without the " +
+			"privilege sees a missing privilege reported as a defect.\n" +
+			"What to do: off CI a refused link is a skip, which -v prints.")
+	}
 }
 
 // A junction is the other redirection Windows offers, and it is the one that
@@ -163,9 +218,7 @@ func TestADirectoryReachedThroughALinkStillWorks(t *testing.T) {
 		t.Fatalf("making the directory: %v", err)
 	}
 	linked := filepath.Join(root, "linked")
-	if err := os.Symlink(real, linked); err != nil {
-		t.Skipf("this system will not create a link here: %v", err)
-	}
+	plantLink(t, real, linked)
 
 	// Generate through the link, then verify and clean up through it. Every
 	// path involved resolves inside, so all three have to behave normally.

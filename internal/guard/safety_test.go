@@ -378,9 +378,7 @@ func TestAFreshRunIntoAnEmptyDirectoryStillWorks(t *testing.T) {
 func TestANameTakenByALinkPointingNowhereIsStillTaken(t *testing.T) {
 	dir := t.TempDir()
 	dangling := filepath.Join(dir, "files_0001.txt")
-	if err := os.Symlink(filepath.Join(dir, "nothing-is-here"), dangling); err != nil {
-		t.Skipf("this system will not create a link here, so the case cannot be built: %v", err)
-	}
+	plantLink(t, filepath.Join(dir, "nothing-is-here"), dangling)
 
 	// Asserted rather than assumed, because the whole case is a name that IS
 	// there and that os.Stat cannot see. A fixture that quietly resolved would

@@ -187,15 +187,13 @@ func TestCreateNewCreatesOnlyWhenTheNameIsFree(t *testing.T) {
 				t.Fatalf("planting a hard link: %v", err)
 			}
 		}},
+		// The hard link case above needs no privilege anywhere, so the shape
+		// that matters most is never the one plantLink skips off CI.
 		{"a symbolic link to a file outside the directory", func(t *testing.T, dir, name, victim string) {
-			if err := os.Symlink(victim, name); err != nil {
-				skipIfLinksAreNotAllowed(t, err)
-			}
+			plantLink(t, victim, name)
 		}},
 		{"a symbolic link to nothing at all", func(t *testing.T, dir, name, victim string) {
-			if err := os.Symlink(filepath.Join(dir, "nothing-is-here"), name); err != nil {
-				skipIfLinksAreNotAllowed(t, err)
-			}
+			plantLink(t, filepath.Join(dir, "nothing-is-here"), name)
 		}},
 	}
 
@@ -265,9 +263,7 @@ func TestAHeldTemporaryNameStopsTheWriteRatherThanGoingThroughIt(t *testing.T) {
 		dir := t.TempDir()
 		path := filepath.Join(dir, "manifest.json")
 		target := filepath.Join(t.TempDir(), "created-by-escape.json")
-		if err := os.Symlink(target, path); err != nil {
-			skipIfLinksAreNotAllowed(t, err)
-		}
+		plantLink(t, target, path)
 
 		if r, err := manifest.Claim(path); err == nil {
 			_ = r.Release()
@@ -310,20 +306,4 @@ func TestAHeldTemporaryNameStopsTheWriteRatherThanGoingThroughIt(t *testing.T) {
 			t.Errorf("the recipe changed even though the write was refused: %q, %v", got, err)
 		}
 	})
-}
-
-// skipIfLinksAreNotAllowed says out loud when a case did not run.
-//
-// Creating a symbolic link needs a privilege on Windows that an ordinary
-// account does not have, and a case that quietly passes because it never ran is
-// the failure this project has recorded more than any other. The hard link
-// cases above need no privilege anywhere, so the shape that matters most is
-// never the one being skipped.
-func skipIfLinksAreNotAllowed(t *testing.T, err error) {
-	t.Helper()
-	if errors.Is(err, fs.ErrPermission) || strings.Contains(err.Error(), "privilege") {
-		t.Skipf("this host does not allow creating a symbolic link (%v), so this case did not run. "+
-			"The hard link cases beside it did.", err)
-	}
-	t.Fatalf("planting a symbolic link: %v", err)
 }
