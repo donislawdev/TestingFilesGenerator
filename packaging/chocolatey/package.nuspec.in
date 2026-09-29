@@ -11,6 +11,7 @@
     <projectUrl>{{PROJECT_URL}}</projectUrl>
     <iconUrl>{{ICON_URL}}</iconUrl>
     <licenseUrl>{{LICENSE_URL}}</licenseUrl>
+    <copyright>{{COPYRIGHT}}</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <projectSourceUrl>{{REPO_URL}}</projectSourceUrl>
     <docsUrl>{{DOCS_URL}}</docsUrl>

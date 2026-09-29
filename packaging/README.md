@@ -4,8 +4,9 @@ These are **templates**, not packages. Every `{{PLACEHOLDER}}` is filled by
 `.github/scripts/build_packages.py` from the one place that owns the value: the
 version from the release tag, the checksums from that release's
 `verify-SHA256SUMS.txt`, the addresses from `go.mod` and `web/public/CNAME`, the
-release date from `CHANGELOG.md`. The two values the renderer keeps a copy of,
-the product name and the licence, are held to their Go originals by a guard.
+release date from `CHANGELOG.md`. The three values the renderer keeps a copy
+of, the product name, the licence and the copyright line, are held to their Go
+originals by a guard.
 
     python .github/scripts/build_packages.py --tag v0.4.0 \
         --sums verify-SHA256SUMS.txt --out <a directory outside the repository>

@@ -11,6 +11,7 @@ PackageName: {{TITLE}}
 PackageUrl: {{PROJECT_URL}}
 License: {{LICENSE}}
 LicenseUrl: {{LICENSE_URL}}
+Copyright: {{COPYRIGHT}}
 ShortDescription: {{SHORT_DESCRIPTION}}
 Description: |-
   {{DESCRIPTION}}
