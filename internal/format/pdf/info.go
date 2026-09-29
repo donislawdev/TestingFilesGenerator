@@ -211,18 +211,30 @@ func entry(b *strings.Builder, key, value string) {
 // into a line feed - so "Zażółć" or a title with a line break in it would come
 // back as something else.
 func pdfString(s string) string {
-	for i := 0; i < len(s); i++ {
-		if s[i] < 0x20 || s[i] > 0x7e {
-			units := utf16.Encode([]rune(s))
-			raw := make([]byte, 0, 2+2*len(units))
-			raw = append(raw, 0xfe, 0xff)
-			for _, u := range units {
-				raw = append(raw, byte(u>>8), byte(u))
-			}
-			return "<" + strings.ToUpper(hex.EncodeToString(raw)) + ">"
-		}
+	if !printableASCII(s) {
+		return utf16Hex(s)
 	}
 	return "(" + escapeString(s) + ")"
+}
+
+func printableASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] < 0x20 || s[i] > 0x7e {
+			return false
+		}
+	}
+	return true
+}
+
+// utf16Hex is s as UTF-16 with a byte order mark, written in hex.
+func utf16Hex(s string) string {
+	units := utf16.Encode([]rune(s))
+	raw := make([]byte, 0, 2+2*len(units))
+	raw = append(raw, 0xfe, 0xff)
+	for _, u := range units {
+		raw = append(raw, byte(u>>8), byte(u))
+	}
+	return "<" + strings.ToUpper(hex.EncodeToString(raw)) + ">"
 }
 
 // escapeString protects the three characters that end or nest a PDF string.
