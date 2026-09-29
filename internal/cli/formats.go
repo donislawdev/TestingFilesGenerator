@@ -64,6 +64,7 @@ type propertyEntry struct {
 	Choices []string `json:"choices,omitempty"`
 	Default string   `json:"default,omitempty"`
 	Detail  string   `json:"detail,omitempty"`
+	Group   string   `json:"group,omitempty"`
 }
 
 // smallestAccepted is the number this command prints as the minimum.
@@ -96,6 +97,7 @@ func entryFor(d format.Descriptor) formatEntry {
 		props = append(props, propertyEntry{
 			Name: p.Name, Kind: string(p.Kind), Min: p.Min, Max: p.Max,
 			Unit: p.Unit, Choices: p.Choices, Default: p.Default, Detail: p.Detail,
+			Group: p.Group,
 		})
 	}
 	return formatEntry{
@@ -128,7 +130,12 @@ func describeOne(d format.Descriptor, out io.Writer) {
 		return
 	}
 	fmt.Fprint(out, "\nproperties, set with --set name=value:\n")
-	for _, p := range d.Properties {
+	for i, p := range d.Properties {
+		// A block of settings opens with its name, the way the window draws
+		// it. Register has already refused a block declared in two places.
+		if p.Group != "" && (i == 0 || d.Properties[i-1].Group != p.Group) {
+			fmt.Fprintf(out, "\n  %s:\n", p.Group)
+		}
 		fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
 		if p.Detail != "" {
 			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)

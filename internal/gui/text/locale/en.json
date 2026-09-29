@@ -393,6 +393,10 @@
     "description": "Stands in an empty box, in a quieter colour than a value. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
     "other": "default: {{.Value}}"
   },
+  "PlaceholderNotSet": {
+    "description": "Stands in an empty box, in a quieter colour than a value.",
+    "other": "not set"
+  },
   "PlaceholderNotStated": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
     "other": "not stated"

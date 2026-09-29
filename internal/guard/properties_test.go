@@ -35,6 +35,12 @@ func TestABadPropertyValueIsTheCallersMistakeNotOurs(t *testing.T) {
 		{"png", "width=-5", "below the declared minimum"},
 		{"png", "width=99999", "above the declared maximum"},
 		{"pdf", "page_size=a7", "not one of the declared choices"},
+		// Free text the format reads itself, which the declaration cannot
+		// refuse because a date is not a closed set. The generator refuses,
+		// and it has to land on the same code as the registry would.
+		{"pdf", "created=2023-02-29", "a day no calendar has"},
+		{"pdf", "modified=2024-02-29T13:45:00.5Z", "a fraction of a second, which a PDF date cannot hold"},
+		{"pdf", "orientation=mixed", "mixed pages in a document of one page"},
 		// This one used to pass the first check and fail deeper, in different
 		// words, because bit depth was declared as a range of 8 to 32 when it
 		// is really a set of four values.

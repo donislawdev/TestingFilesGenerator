@@ -337,6 +337,15 @@ func screenScenes() []screenScene {
 			chooseFormat(t, s.tab, "png")
 			s.canvas.Focus(chooserFor(t, s.tab))
 		}},
+		// The longest list of settings any format declares, and the first one
+		// with a block of its own: PDF went from two settings to thirteen on
+		// 2026-09-29, eight of them under "Document properties". A heading
+		// inside a fold had never been drawn among fields, so this is the
+		// picture of what that looks like rather than a reading of the code.
+		{name: "generate-pdf-settings", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
+			chooseFormat(t, s.tab, "pdf")
+			openFold(t, s.tab, "", text.SettingsFor("pdf"))
+		}},
 		// The switch with the keyboard in it. The disc behind the square is the
 		// toolkit's own mark and it is what the owner called ugly on 2026-08-18
 		// - it is still here, and this is the state it is still here in. What

@@ -15,15 +15,20 @@ import (
 // the first part and therefore does not move.
 func document(m memo) (prefix, suffix []byte) {
 	var body bytes.Buffer
-	body.WriteString("%PDF-1.7\n")
+	// The version is the one asked for and nothing else follows from it: the
+	// file uses nothing newer than 1.4, so every version offered here is true
+	// of it. 2.0 is not offered, because it requires things this file does not
+	// have yet - a file identifier and the widths of the font's characters.
+	body.WriteString("%PDF-" + m.opts.version + "\n")
 	// A comment of high bytes tells any tool handling the file that it is
 	// binary, which stops a transfer from mangling the line endings.
 	body.Write([]byte{'%', 0xe2, 0xe3, 0xcf, 0xd3, '\n'})
 
 	var objects []string
 
-	kids := make([]string, 0, m.pages)
-	for i := 0; i < m.pages; i++ {
+	pages := m.opts.pages
+	kids := make([]string, 0, pages)
+	for i := 0; i < pages; i++ {
 		// Objects: 1 catalog, 2 pages, 3 font, 4 info, then per page a page
 		// object and a content stream.
 		kids = append(kids, fmt.Sprintf("%d 0 R", 5+i*2))
@@ -31,15 +36,23 @@ func document(m memo) (prefix, suffix []byte) {
 
 	objects = append(objects, "<</Type/Catalog/Pages 2 0 R>>")
 	objects = append(objects, fmt.Sprintf("<</Type/Pages/Kids[%s]/Count %d>>",
-		strings.Join(kids, " "), m.pages))
+		strings.Join(kids, " "), pages))
 	objects = append(objects, "<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>")
 	objects = append(objects, infoObject(m))
 
-	for i := 0; i < m.pages; i++ {
+	// A page that asks to be turned says so after its paper, and a page that
+	// does not says nothing - an explicit /Rotate 0 would be bytes the file
+	// never had before it could be turned.
+	rotate := ""
+	if m.opts.rotate != 0 {
+		rotate = fmt.Sprintf("/Rotate %d", m.opts.rotate)
+	}
+	for i := 0; i < pages; i++ {
 		content := pageContent(m, i)
+		paper := m.opts.geometry(i)
 		objects = append(objects, fmt.Sprintf(
-			"<</Type/Page/Parent 2 0 R/MediaBox[0 0 %d %d]/Contents %d 0 R/Resources<</Font<</F1 3 0 R>>>>>>",
-			m.pageSize.width, m.pageSize.height, 6+i*2))
+			"<</Type/Page/Parent 2 0 R/MediaBox[0 0 %d %d]%s/Contents %d 0 R/Resources<</Font<</F1 3 0 R>>>>>>",
+			paper.width, paper.height, rotate, 6+i*2))
 		objects = append(objects, fmt.Sprintf("<</Length %d>>\nstream\n%sendstream", len(content), content))
 	}
 

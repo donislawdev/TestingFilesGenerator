@@ -48,6 +48,22 @@ func goldenCases() map[string]engine.Target {
 		"png_64kib": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "64"}},
 		"pdf_16kib": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 16384), Label: true},
+		// The PDF settings of 2026-09-29. The first case above pins all of
+		// them at their defaults, which is the promise that they cost the
+		// default document nothing. These pin what they write when set: text
+		// in both of the ways a string is written, a date in a zone and a
+		// date with no time, and pages of five sizes lying both ways, turned
+		// and under the older header.
+		"pdf_document_properties": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{
+				"title": "Zażółć (gęślą) jaźń", "author": "QA", "subject": "Invoices", "keywords": "a, b",
+				"creator": "Microsoft Word", "producer": "Producer 1.0",
+				"created": "2024-02-29T13:45:00+02:00", "modified": "1999-12-31",
+			}},
+		"pdf_mixed_pages": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{
+				"pages": "5", "page_size": "mixed", "orientation": "mixed", "rotate": "270", "pdf_version": "1.4",
+			}},
 		// The three Office packages, each at a size well above its floor. What
 		// they pin is a whole OPC container: the parts, their order, the
 		// compression of each one and the padding part that settles the size.

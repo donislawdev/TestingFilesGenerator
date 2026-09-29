@@ -9,12 +9,15 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
+// pageContent is what page index says. A page lying wide is shorter, so it
+// holds fewer lines - worked out from its own paper, never from the first
+// page's, because a mixed document has pages of five heights.
 func pageContent(m memo, index int) string {
 	var b strings.Builder
-	top := m.pageSize.height - 72
+	top := m.opts.geometry(index).height - 72
 
 	b.WriteString("BT\n/F1 18 Tf\n")
-	fmt.Fprintf(&b, "72 %d Td\n(%s) Tj\n", top, escapeString(fmt.Sprintf("Page %d of %d", index+1, m.pages)))
+	fmt.Fprintf(&b, "72 %d Td\n(%s) Tj\n", top, escapeString(fmt.Sprintf("Page %d of %d", index+1, m.opts.pages)))
 	b.WriteString("ET\n")
 
 	b.WriteString("BT\n/F1 11 Tf\n")

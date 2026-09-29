@@ -575,7 +575,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 
 | format | settings |
 |---|---|
-| `pdf` | `pages`, `page_size` |
+| `pdf` | `pages`, `page_size`, `orientation`, `rotate`, `pdf_version`, and the document properties `title`, `author`, `subject`, `keywords`, `creator`, `producer`, `created`, `modified` |
 | `png`, `bmp`, `tiff`, `webp` | `width`, `height` |
 | `gif` | `width`, `height`, `frames` |
 | `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |

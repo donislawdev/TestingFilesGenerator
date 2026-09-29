@@ -241,7 +241,9 @@
     "format ids separated by commas, or all": "format ids separated by commas, or all",
     "extensions separated by commas": "extensions separated by commas",
     "the id of a format, as tfg formats lists them": "the id of a format, as tfg formats lists them",
-    "the password, in plain text": "the password, in plain text"
+    "the password, in plain text": "the password, in plain text",
+    "any text": "any text",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
   },
   "faq": [
     {

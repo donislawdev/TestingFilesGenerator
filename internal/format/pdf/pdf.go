@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -30,27 +29,9 @@ func init() {
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
-		Label:  format.LabelVisible,
-		Oracle: "pdftotext",
-		Properties: []format.Property{
-			{
-				Name: "pages", Kind: format.PropertyInt,
-				Min: 1, Max: maxPages,
-				Default: strconv.Itoa(defaultPages),
-				Detail:  "How many pages the document has.",
-			},
-			{
-				Name: "page_size", Kind: format.PropertyChoice,
-				// Written out rather than read from the map, so one build
-				// cannot offer a different set from the next. The ORDER is no
-				// longer decided here: registration sorts every closed set, so
-				// the menu in the window, "tfg formats pdf" and the wording of
-				// a refusal all list them the same way round.
-				Choices: []string{"a4", "a3", "a5", "letter", "legal"},
-				Default: "a4",
-				Detail:  "The paper size every page uses.",
-			},
-		},
+		Label:            format.LabelVisible,
+		Oracle:           "pdftotext",
+		Properties:       properties,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -59,10 +40,9 @@ func init() {
 type generator struct{}
 
 type memo struct {
-	pages    int
-	pageSize pageSize
-	seed     uint64
-	label    string
+	opts  options
+	seed  uint64
+	label string
 	// prefix is everything up to and including the trailer. Small - a few
 	// kilobytes per page - so holding it costs nothing next to the padding.
 	prefix []byte
@@ -74,11 +54,7 @@ type memo struct {
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	pages, err := pageCount(r.Properties)
-	if err != nil {
-		return format.Plan{}, err
-	}
-	size, err := paperSize(r.Properties)
+	opts, err := readOptions(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -88,7 +64,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		label = core.Label("pdf", r.Bytes, r.Seed)
 	}
 
-	m := memo{pages: pages, pageSize: size, seed: r.Seed, label: label}
+	m := memo{opts: opts, seed: r.Seed, label: label}
 	m.prefix, m.suffix = document(m)
 
 	// One number answers both questions: how much padding this file needs, and
@@ -102,15 +78,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Bytes:       r.Bytes,
 		Exact:       true,
 		Determinism: format.DeterminismByte,
-		Properties: map[string]any{
-			"pages":                      pages,
-			"page_size":                  size.name,
-			"pdf_version":                "1.7",
-			"fonts_embedded":             false,
-			format.PropertyLabelEmbedded: r.Label,
-			"compressed":                 false,
-			"content_streams":            pages,
-		},
+		Properties:  described(m, r.Label),
 	}
 
 	switch {
@@ -121,9 +89,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "PDF",
 			Requested: r.Bytes,
 			Minimum:   floor,
-			Reason: fmt.Sprintf("a %d page %s document%s already needs that much before any padding",
-				pages, size.name, labelCost(r.Label)),
-			Hint: fmt.Sprintf("Ask for %d B or more%s.", floor, cleanHint(r.Label)),
+			Reason: fmt.Sprintf("a %s%s already needs that much before any padding",
+				documentWords(opts), carrying(r.Label, opts)),
+			Hint: fmt.Sprintf("Ask for %d B or more%s.", floor, cleanHint(r.Label, opts)),
 		}
 	case r.Bytes < bare+minComment:
 		// A comment is a per cent sign and a newline at the very least, so
@@ -143,6 +111,51 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	p.Memo = m
 	return p, nil
+}
+
+// described is what the manifest says about the file: what is in it, so a
+// test can assert on it without opening the PDF.
+//
+// A value the document carries is always here, and a value it does not carry
+// is not - an author nobody asked for is absent from both. The alternative,
+// only what differs from the defaults, would make every consumer know the
+// defaults of this build to read the manifest of it.
+func described(m memo, labelled bool) map[string]any {
+	o := m.opts
+	props := map[string]any{
+		"pages":                      o.pages,
+		"page_size":                  o.sizeName,
+		"orientation":                o.orientation,
+		"rotate":                     o.rotate,
+		"pdf_version":                o.version,
+		"fonts_embedded":             false,
+		format.PropertyLabelEmbedded: labelled,
+		"compressed":                 false,
+		"content_streams":            o.pages,
+		"title":                      titleOf(m),
+		"producer":                   o.info.producer,
+	}
+	if o.sizeName == mixed {
+		cycle := make([]string, 0, len(o.sizes))
+		for _, s := range o.sizes {
+			cycle = append(cycle, s.name)
+		}
+		props["page_size_cycle"] = cycle
+	}
+	for key, value := range map[string]string{
+		"author": o.info.author, "subject": o.info.subject,
+		"keywords": o.info.keywords, "creator": o.info.creator,
+	} {
+		if value != "" {
+			props[key] = value
+		}
+	}
+	for key, d := range map[string]date{"created": o.info.created, "modified": o.info.modified} {
+		if d.pdf != "" {
+			props[key] = d.asked
+		}
+	}
+	return props
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

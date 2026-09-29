@@ -252,6 +252,11 @@ func PresetCatchesHeading() string { return say("PresetCatchesHeading", "Typical
 // comes from the size that was asked for.
 func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked out from the size") }
 
+// PlaceholderNotSet stands in a free text setting that has no default. Left
+// empty, the format goes without it - no password, no author - and what that
+// means for the file is said in the sentence beside the box.
+func PlaceholderNotSet() string { return say("PlaceholderNotSet", "not set") }
+
 // PlaceholderFilter stands in the box at the top of an open list of formats,
 // where typing narrows the list to the formats whose identifier holds what was
 // typed, or whose name or kind has a word starting with it.

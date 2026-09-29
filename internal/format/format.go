@@ -167,6 +167,21 @@ type Property struct {
 	// and what a window shows beside the field.
 	Detail string
 
+	// Group names the block of settings this one opens or belongs to, for a
+	// format that declares enough of them to need blocks. Empty for the
+	// settings that come first and belong to no block.
+	//
+	// It exists because PDF went from two settings to twelve in one step, and
+	// eight of them describe the document rather than its pages - a title, an
+	// author, two dates. One column of twelve names read as a list nobody
+	// sorted. The window draws the name as a heading above the first setting
+	// of the block and tfg formats prints it the same way.
+	//
+	// A block is declared as consecutive settings. Register refuses a group
+	// that comes back after another one, because both surfaces draw a heading
+	// where a block starts and a split block would get two.
+	Group string
+
 	// Secret marks a value that is a credential rather than a description of
 	// the file, and there is exactly one of them today: the password an
 	// archive is locked with.
