@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -261,9 +262,15 @@ func TestThePresetsSayInTheWindowWhatTheySayOnTheSite(t *testing.T) {
 		if tag == text.English {
 			continue
 		}
+		// A window language the site does not have is nothing to compare. Any
+		// other failure to read is a comparison lost without a word, which
+		// the count below only notices when EVERY language was lost.
 		raw, err := os.ReadFile(filepath.Join(repoRoot(t), "web", "content", tag, "site.json"))
-		if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
 			continue
+		}
+		if err != nil {
+			t.Fatalf("the %s site file could not be read: %v", tag, err)
 		}
 		var site struct {
 			Presets map[string]struct {

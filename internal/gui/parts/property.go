@@ -189,8 +189,9 @@ func leftAlone(p format.Property) string {
 // together in the window's language by Allowed. Two surfaces describing one
 // format in two ways is D1 breaking in the place nobody thinks to compare, so a
 // guard holds the English of the two to one sentence.
-// It registers each one with the screen, so a setting a format declares can be
-// told it was the one refused. Until 2026-08-12 these were the only fields on
+//
+// Each field is registered with the screen, so a setting a format declares can
+// be told it was the one refused. Until 2026-08-12 these were the only fields on
 // either screen that could not: they were built with the plain Field function,
 // which had nowhere to put a refusal, so "width must be between 1 and 20000"
 // appeared at the foot of the form with nothing marked. Thirteen formats
@@ -393,9 +394,12 @@ func allowedKind(p format.Property) string {
 		return text.AllowedTrueOrFalse()
 	case format.PropertySize:
 		return text.AllowedSize()
+	default:
+		// A text setting describes itself with its shape or not at all - the
+		// same default as Property.Allowed, so a kind added tomorrow reads the
+		// same on both surfaces until somebody gives it words.
+		return text.Shape(p.Shape)
 	}
-	// A text setting describes itself with its shape or not at all.
-	return text.Shape(p.Shape)
 }
 
 // allowedNumber is a whole number, with its range and what it counts when the

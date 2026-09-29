@@ -25,12 +25,12 @@ because it turns other people's test suites red.
   the settings of every format, the presets and the sizes of a run are Polish
   as well, so a size reads 10,0 MB. The values you pick from a list
   (portrait, a4), the names of the formats and the reason a run is refused
-  stay in English, and so do the command line, recipes and manifests. The same tab
-  says what the window keeps between runs (the output directory, the window
-  size and the language), shows the folder they are kept in, and Forget
-  clears them. `tfg-gui --pseudo-language` opens the window with every
-  sentence longer and accented, to see how a translation will fit before
-  one exists. It is never saved as a choice.
+  stay in English, and so do the command line, recipes and manifests. The
+  same tab says what the window keeps between runs (the output directory,
+  the window size and the language), shows the folder they are kept in, and
+  Forget clears them. `tfg-gui --pseudo-language` opens the window with
+  every sentence longer and accented, to see how a translation will fit
+  before one exists. It is never saved as a choice.
 - **A Windows installer, `tfg-setup_<version>_windows_amd64.msi`, beside the
   zip archives.** It installs the window and the command line for every
   account on the machine, in `Program Files\Testing Files Generator`, puts
