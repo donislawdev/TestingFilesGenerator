@@ -38,7 +38,7 @@ func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
 	// here would leave this guard reading, honestly and green, a function
 	// nothing is written through any more.
 	for _, via := range []struct{ file, caller, callee string }{
-		{"internal/manifest/manifest.go", "Reservation.Save", "saveReserved("},
+		{"internal/manifest/reservation.go", "Reservation.Save", "saveReserved("},
 		{"internal/core/writenew.go", "WriteNew", "writeAndKeep("},
 	} {
 		if !strings.Contains(functionSource(t, via.file, via.caller), via.callee) {
@@ -53,7 +53,7 @@ func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
 		order []string
 	}{
 		{
-			file: "internal/manifest/manifest.go",
+			file: "internal/manifest/reservation.go",
 			// saveReserved since 2026-09-29 (O252). It was writeClaimed from
 			// 2026-09-25 and writeOver before that, and Save before that - the
 			// sequence moved with the code each time and this guard moved with
@@ -211,7 +211,7 @@ func functionSource(t *testing.T, file, function string) string {
 // reservation (O252): Save now reserves and saves, and the reservation is where
 // the name is looked at.
 func TestSavingAManifestTellsAnEmptySlotFromAnUnreadableOne(t *testing.T) {
-	body := functionSource(t, "internal/manifest/manifest.go", "Claim")
+	body := functionSource(t, "internal/manifest/reservation.go", "Claim")
 	if !strings.Contains(body, "errors.Is(err, fs.ErrNotExist)") {
 		t.Error("manifest.Claim does not tell a missing file from a failure to look at one, " +
 			"so a path it cannot examine is answered in words about a manifest that is already there")

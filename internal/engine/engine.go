@@ -542,36 +542,10 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	defer releaseRunLock(lockPath, lock)
 
 	// The manifest name is taken before the first file, not after the last one.
-	//
-	// Claiming it at save time already stopped two runs from both writing a
-	// manifest, but it happened at the end - so a second run wrote its whole set
-	// of files and only then found out it had nowhere to record them. Measured
-	// on 2026-08-03: two runs started together under different ids ended 0 and
-	// 5, with sixteen files on the disk and eight of them in nobody's manifest.
-	// Taking the name here turns that into a refusal before anything is written.
-	manifestPath := ManifestPath(opt)
-	reservation, err := manifest.Claim(manifestPath)
-	if err != nil {
-		// The reservation name held by somebody is a run going or a run
-		// killed, not a finished one - the same fault and the same remedy as
-		// the lock above, so the same words. Asked before the collision below,
-		// because that refusal is a fs.ErrExist too.
-		var held *core.NameTakenError
-		if errors.As(err, &held) {
-			return res, &RunInProgressError{Path: held.Path, Dir: filepath.Dir(manifestPath)}
-		}
-		// Only a name that is genuinely taken is a collision. Reporting every
-		// failure that way said "manifest.json already exists ... it is the
-		// only record of what an earlier run wrote" about an empty directory
-		// the user simply had no permission to write in - a sentence that is
-		// untrue and sends somebody looking for a run that never happened.
-		// Measured on 2026-08-04 with write denied on the output directory.
-		if errors.Is(err, fs.ErrExist) {
-			return res, &CollisionError{Path: manifestPath, Manifest: true}
-		}
-		return res, fmt.Errorf("cannot start a run in %s: %w", core.Shown(opt.OutDir), err)
+	// reserveManifest says why, and in which words a refusal comes back.
+	if res.reservation, err = reserveManifest(ManifestPath(opt), opt.OutDir); err != nil {
+		return res, err
 	}
-	res.reservation = reservation
 
 	// Past this point the run owns the name and may write. Started says so, and
 	// it is what tells the caller a manifest is worth saving - set here rather
@@ -642,6 +616,44 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 
 	m.Run.Complete = true
 	return res, nil
+}
+
+// reserveManifest takes the name a run's manifest will have, before the first
+// file is written, and turns a refusal into the words that fit it.
+//
+// Claiming it at save time already stopped two runs from both writing a
+// manifest, but it happened at the end - so a second run wrote its whole set
+// of files and only then found out it had nowhere to record them. Measured on
+// 2026-08-03: two runs started together under different ids ended 0 and 5,
+// with sixteen files on the disk and eight of them in nobody's manifest.
+// Taking the name here turns that into a refusal before anything is written.
+//
+// Its own function since 2026-09-29, when the reservation moved to the
+// manifest's temporary name (O252) and Run went past the size a person can
+// follow.
+func reserveManifest(manifestPath, outDir string) (*manifest.Reservation, error) {
+	reservation, err := manifest.Claim(manifestPath)
+	if err == nil {
+		return reservation, nil
+	}
+	// The reservation name held by somebody is a run going or a run killed,
+	// not a finished one - the same fault and the same remedy as the lock,
+	// so the same words. Asked before the collision below, because that
+	// refusal is a fs.ErrExist too.
+	var held *core.NameTakenError
+	if errors.As(err, &held) {
+		return nil, &RunInProgressError{Path: held.Path, Dir: filepath.Dir(manifestPath)}
+	}
+	// Only a name that is genuinely taken is a collision. Reporting every
+	// failure that way said "manifest.json already exists ... it is the only
+	// record of what an earlier run wrote" about an empty directory the user
+	// simply had no permission to write in - a sentence that is untrue and
+	// sends somebody looking for a run that never happened. Measured on
+	// 2026-08-04 with write denied on the output directory.
+	if errors.Is(err, fs.ErrExist) {
+		return nil, &CollisionError{Path: manifestPath, Manifest: true}
+	}
+	return nil, fmt.Errorf("cannot start a run in %s: %w", core.Shown(outDir), err)
 }
 
 // claimRunLock takes the name that says this directory has a run in it.
