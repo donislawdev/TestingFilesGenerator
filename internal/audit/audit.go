@@ -138,11 +138,20 @@ func (d Difference) String() string {
 		// second is a RECORD that was being saved, so the useful thing to say
 		// is that the directory may hold files nothing lists - which is the
 		// one case where a person has to look rather than just delete.
+		//
+		// Since 2026-09-29 that second one is also how a run reserves its
+		// manifest's name, from before its first file to its save (O252). So
+		// it may belong to a run still going, like the lock above, and the
+		// sentence holds both endings open for the same reason. It names the
+		// manifest OR a file beside it, because the instructions are written
+		// through the same marker - a review of #150 caught the first wording
+		// promising a manifest about a file that would never become one.
 		if core.IsWritingName(filepath.Base(d.Path)) {
 			return fmt.Sprintf(
-				"leftover  %s\n            a run's record that was not finished being saved, from a run that was "+
-					"stopped before it could tidy up. The directory may hold files that nothing lists, and cleanup "+
-					"cannot remove those - check what is here against what you expected before deleting this by hand",
+				"leftover  %s\n            a record of a run that is not saved yet - its manifest or a file written "+
+					"beside it. If a run is going on it will give this its final name when it ends. If none is, that run was stopped before it could "+
+					"tidy up, and the directory may hold files that nothing lists, which cleanup cannot remove - "+
+					"check what is here against what you expected before deleting this by hand",
 				d.Path)
 		}
 		return fmt.Sprintf(

@@ -32,13 +32,19 @@ import (
 // to make a check possible rather than checking the structure there is. The
 // same choice was made, for the same reason, in boundaryresolution_test.go.
 func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
-	// The manifest reaches the sequence below through writeOver. Asked rather
-	// than assumed: a writeOver that stopped calling writeClaimed would leave
-	// this guard reading, honestly and green, a function the manifest no
-	// longer passes through.
-	if !strings.Contains(functionSource(t, "internal/manifest/manifest.go", "writeOver"), "writeClaimed(") {
-		t.Fatal("writeOver in internal/manifest/manifest.go no longer calls writeClaimed, " +
-			"so the flush checked below is not the one the manifest is written through")
+	// The manifest reaches the sequence below through its reservation, and
+	// the instructions and an ejected recipe through WriteNew. Asked rather
+	// than assumed: a caller that stopped going through the function checked
+	// here would leave this guard reading, honestly and green, a function
+	// nothing is written through any more.
+	for _, via := range []struct{ file, caller, callee string }{
+		{"internal/manifest/reservation.go", "Reservation.Save", "saveReserved("},
+		{"internal/core/writenew.go", "WriteNew", "writeAndKeep("},
+	} {
+		if !strings.Contains(functionSource(t, via.file, via.caller), via.callee) {
+			t.Fatalf("%s in %s no longer calls %s, so the flush checked below is not the one it writes through",
+				via.caller, via.file, via.callee)
+		}
 	}
 	for _, c := range []struct {
 		file     string
@@ -47,20 +53,28 @@ func TestWhatIsRenamedIntoPlaceIsOnTheDiskFirst(t *testing.T) {
 		order []string
 	}{
 		{
-			file: "internal/manifest/manifest.go",
-			// writeOver rather than Save since 2026-08-27. Save used to hold
-			// this sequence itself and now wraps it, so that every way of
-			// failing gives the claimed name back in one place - review item
-			// S2. The sequence moved with the code and this guard moved with
-			// the sequence, which is the honest repair: the property being
-			// asked about is "the thing that renames flushes first", and the
-			// thing that renames is now called writeOver.
-			//
-			// writeClaimed since 2026-09-25, for the same reason: the
-			// instructions beside the manifest came to be written the same
-			// way, and the sequence moved into the one function both call.
-			function: "writeClaimed",
-			order:    []string{"write(f)", "f.Sync()", "f.Close()", "os.Rename(tmp, path)"},
+			file: "internal/manifest/reservation.go",
+			// saveReserved since 2026-09-29 (O252). It was writeClaimed from
+			// 2026-09-25 and writeOver before that, and Save before that - the
+			// sequence moved with the code each time and this guard moved with
+			// the sequence, which is the honest repair: the property asked
+			// about is "the thing that names the file flushes first". The
+			// close is core.Finish, which asks the file what it is and then
+			// closes it, and the naming is core.Publish rather than a rename.
+			function: "saveReserved",
+			order:    []string{"m.Encode(f)", "f.Sync()", "core.Finish(f, nil)", "core.Publish(tmp, final)"},
+		},
+		{
+			// The instructions beside the manifest and a recipe written by
+			// "preset eject -o", since 2026-09-29.
+			file:     "internal/core/writenew.go",
+			function: "writeAndKeep",
+			order:    []string{"f.Write(content)", "f.Sync()", "Finish(f, nil)"},
+		},
+		{
+			file:     "internal/core/writenew.go",
+			function: "WriteNew",
+			order:    []string{"writeAndKeep(f, content)", "Publish(tmp, path)"},
 		},
 		{
 			file:     "internal/core/replace.go",
@@ -143,9 +157,21 @@ func function0f(t *testing.T, file, function string) (*ast.FuncDecl, *token.File
 		t.Fatalf("parsing %s: %v", file, err)
 	}
 	source := readFile(t, path)
+	// "Type.Method" names a method, because two types in one file can each
+	// have a Save - and finding the first one by name would read the wrong one
+	// without a word.
+	receiver, name := "", function
+	if i := strings.IndexByte(function, '.'); i >= 0 {
+		receiver, name = function[:i], function[i+1:]
+	}
 	for _, decl := range parsed.Decls {
 		fn, ok := decl.(*ast.FuncDecl)
-		if !ok || fn.Name.Name != function || fn.Body == nil {
+		if !ok || fn.Name.Name != name || fn.Body == nil {
+			continue
+		}
+		// receiverOf lives in canvastold_test.go and reports the type a
+		// pointer receiver points at.
+		if _, on := receiverOf(fn); on != receiver {
 			continue
 		}
 		return fn, fset, source
@@ -180,10 +206,14 @@ func functionSource(t *testing.T, file, function string) string {
 //
 // Found by an outside review of the whole tree, docs/CODE-REVIEW-2026-08-23.md
 // section 3.7c.
+//
+// Asked of Claim since 2026-09-29, when the look moved there with the
+// reservation (O252): Save now reserves and saves, and the reservation is where
+// the name is looked at.
 func TestSavingAManifestTellsAnEmptySlotFromAnUnreadableOne(t *testing.T) {
-	body := functionSource(t, "internal/manifest/manifest.go", "Save")
+	body := functionSource(t, "internal/manifest/reservation.go", "Claim")
 	if !strings.Contains(body, "errors.Is(err, fs.ErrNotExist)") {
-		t.Error("manifest.Save does not tell a missing file from a failure to look at one, " +
+		t.Error("manifest.Claim does not tell a missing file from a failure to look at one, " +
 			"so a path it cannot examine is answered in words about a manifest that is already there")
 	}
 }

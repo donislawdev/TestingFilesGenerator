@@ -10,6 +10,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -450,7 +451,9 @@ func generateOne(t *testing.T, target engine.Target) []byte {
 	}
 	var produced []string
 	for _, e := range entries {
-		if !e.IsDir() && e.Name() != "manifest.json" {
+		// The run's manifest reservation stays behind, because this run is
+		// never saved - see manifest.Reservation.
+		if !e.IsDir() && e.Name() != "manifest.json" && !core.IsWritingName(e.Name()) {
 			produced = append(produced, e.Name())
 		}
 	}

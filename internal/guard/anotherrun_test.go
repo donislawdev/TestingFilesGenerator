@@ -56,11 +56,13 @@ func twoRunsSharing(t *testing.T) (dir string, alpha *manifest.Manifest, alphaPa
 		if err != nil {
 			t.Fatalf("running %s: %v", id, err)
 		}
-		path := engine.ManifestPath(opt)
-		if err := res.Manifest.Save(path); err != nil {
+		// Through SaveRecord, the one way both surfaces save, so the manifest
+		// lands through the reservation the run took before its first file.
+		rec, err := engine.SaveRecord(res, opt)
+		if err != nil {
 			t.Fatalf("saving the manifest of %s: %v", id, err)
 		}
-		return res.Manifest, path
+		return res.Manifest, rec.Manifest
 	}
 
 	alpha, alphaPath = run("alpha", "a_{index:04}.txt", "manifest-alpha.json", 3)

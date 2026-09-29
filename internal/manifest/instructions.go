@@ -2,7 +2,7 @@ package manifest
 
 import (
 	"fmt"
-	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -244,24 +244,16 @@ func codeSpan(s string) string {
 	return fence + s + fence
 }
 
-// SaveInstructions writes the instructions under a name nobody holds.
+// SaveInstructions writes the instructions under a name nobody holds, and says
+// what the file is, so a caller taking them back after a failed manifest
+// removes this file and nothing that took its name since.
 //
-// Claimed at the moment of writing rather than before the first file, like the
-// manifest is. The manifest's claim already keeps two runs of one record apart,
-// and this name is the manifest's own with a different ending - so the only run
-// that could reach it is one refused before it wrote anything. The claim is
-// here for the case that leaves: a file put there by hand while the run went.
-func SaveInstructions(path string, text []byte) error {
-	if err := claimName(path); err != nil {
-		return err
-	}
-	err := writeClaimed(path, 0o644, func(w io.Writer) error {
-		_, err := w.Write(text)
-		return err
-	})
-	if err != nil {
-		_ = Release(path)
-		return err
-	}
-	return nil
+// Not reserved before the first file, unlike the manifest. The manifest's
+// reservation already keeps two runs of one record apart, and this name is the
+// manifest's own with a different ending - so the only run that could reach it
+// is one refused before it wrote anything. What is left is a file put there by
+// hand while the run went, and core.WriteNew refuses that one rather than
+// writing over it.
+func SaveInstructions(path string, text []byte) (os.FileInfo, error) {
+	return core.WriteNew(path, text, 0o644)
 }

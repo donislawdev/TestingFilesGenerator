@@ -70,6 +70,14 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 	if path := RunLockPath(opt.OutDir); exists(path) {
 		return &RunInProgressError{Path: path, Dir: opt.OutDir}
 	}
+	// The manifest's reservation, which outlives the lock above: the lock is
+	// given back when the files are written, and the reservation when the
+	// manifest is. A run killed between the two leaves only this one, and a
+	// manifest pointed outside the output directory has its reservation there
+	// rather than beside the lock. Same fault, same remedy, same words.
+	if path := manifest.ReservationPath(ManifestPath(opt)); exists(path) {
+		return &RunInProgressError{Path: path, Dir: filepath.Dir(path)}
+	}
 
 	// The manifest is checked with the files it would describe, and leaving it
 	// out cost exactly what it protects. A second run into the same directory

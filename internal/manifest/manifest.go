@@ -2,12 +2,9 @@ package manifest
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
-	"path/filepath"
 	"runtime"
 	"slices"
 	"sort"
@@ -696,8 +693,8 @@ func major(v string) string {
 	return v
 }
 
-// Save writes the manifest, claiming the name before it writes and never
-// writing over a manifest that is already there.
+// Save writes the manifest under a name nothing holds, and never writes over a
+// manifest that is already there.
 //
 // Two failures shaped this, and neither is hypothetical.
 //
@@ -707,104 +704,26 @@ func major(v string) string {
 // wrote, and one manifest replaced the other. Measured on 2026-08-03 with two
 // runs of eight files under different ids - both ended with exit code 0,
 // sixteen files were on the disk, one manifest described eight of them, and the
-// other eight could never be removed by this tool again. O_EXCL closes that,
-// because creating the name and finding out whether it existed become one
-// operation the operating system settles.
+// other eight could never be removed by this tool again.
 //
 // The second is the process ending part way through the write. Every generated
-// file goes through a temporary name and a rename for exactly this reason,
-// while the manifest - the one file that can remove all the others - was
-// written in place. A truncated manifest does not parse, so the record of a
-// finished run would be lost to a Ctrl+C landing in the wrong second.
+// file goes through a temporary name for exactly this reason, while the
+// manifest - the one file that can remove all the others - was written in
+// place. A truncated manifest does not parse, so the record of a finished run
+// would be lost to a Ctrl+C landing in the wrong second.
 //
-// So the name is claimed first, the content is written beside it, and the
-// rename puts it in place in one step.
-// Claim takes the manifest name before a run writes anything.
+// So the manifest is written whole under a temporary name and given its own by
+// core.Publish, which refuses a name somebody holds rather than replacing it.
 //
-// Claiming at save time was already better than checking in advance - two runs
-// could no longer both write - but it happened after the last file, so the
-// second run wrote its whole set and only then found out it had nowhere to
-// record them. Measured on 2026-08-03: two runs started together under
-// different ids ended 0 and 5, with sixteen files on the disk and eight of them
-// in nobody's manifest. That turned a silent loss into a loud partial run,
-// which was the improvement, and this is the rest of it.
-//
-// The claim is an empty file under the final name. Save renames over it, so the
-// window between them belongs to this run and nobody else can take the name.
-func Claim(path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
-	}
-	return claimName(path)
-}
-
-// Release gives the name back, for a run that claimed it and then could not
-// start. Without it a refused run would leave an empty manifest behind and the
-// next run into that directory would be refused for a file nobody wrote.
-func Release(path string) error {
-	if info, err := os.Stat(path); err != nil || info.Size() != 0 {
-		// Somebody filled it in, so it is not ours to remove.
-		return nil
-	}
-	return os.Remove(path)
-}
-
+// A run reserves the name before its first file and saves through that
+// Reservation. This is for every other caller - the guards, and anything that
+// writes a manifest it did not reserve - and it reserves and saves in one go.
 func (m *Manifest) Save(path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	r, err := Claim(path)
+	if err != nil {
 		return err
 	}
-
-	// A run that got this far claimed the name before it wrote a byte, and the
-	// claim is an empty file. Anything with content in it is somebody's
-	// manifest and is never written over - that is the whole point of the
-	// claim, and it is why "it exists" is not enough to go on here.
-	switch info, err := os.Stat(path); {
-	case errors.Is(err, fs.ErrNotExist):
-		// Nothing there. A caller that writes a manifest without claiming
-		// first - the guards do - claims it now.
-		if err := claimName(path); err != nil {
-			return err
-		}
-	case err != nil:
-		// Something is there and it cannot be looked at - a permission, a
-		// path whose parent is a file, a name the host will not take. Read as
-		// "nothing there" until 2026-08-25, which sent the run on to claim a
-		// name it had no answer about, and the claim then failed in words
-		// about the wrong thing.
-		return err
-	case info.Size() != 0:
-		return &os.PathError{Op: "save", Path: path, Err: fs.ErrExist}
-	}
-
-	// Past here the name is ours: either nothing was there and the claim above
-	// took it, or what was there is the empty claim this run made before its
-	// first file. So a failure from here on has to give the name back.
-	//
-	// Measured on 2026-08-27, review item S2, by putting a directory under the
-	// temporary name and running an ordinary generate: three files were written
-	// and exit was 5, which is right - and a nought byte manifest.json was left
-	// sitting beside them, which is not. What that costs was measured too, and
-	// it is three things rather than the one the review named:
-	//
-	//	cleanup   exit 5, "unexpected end of JSON input" - the files cannot be
-	//	          removed by the only thing allowed to remove them
-	//	verify    exit 5, the same
-	//	generate  refused, and the refusal SAYS the file "is the only record of
-	//	          what an earlier run wrote" about a file that records nothing
-	//
-	// The last of those is the worst, because it is a true sentence in every
-	// other case and a false one here, and it sends somebody looking for a run
-	// whose files it cannot name. Giving the name back turns all three into the
-	// honest situation: files nobody recorded, in a directory that says so by
-	// naming a FILE the next run collides with rather than a phantom manifest.
-	if err := m.writeOver(path); err != nil {
-		// Only ever removes a nought byte file - see Release. So a manifest
-		// somebody else wrote cannot be taken away by a failure of ours, which
-		// is the property that makes this safe to do on every error below.
-		_ = Release(path)
-		return err
-	}
-	return nil
+	return r.Save(m)
 }
 
 // secretProperties are the property names whose value is a credential rather
@@ -868,96 +787,6 @@ func holdsACredential(props map[string]any) bool {
 		}
 	}
 	return false
-}
-
-// writeOver puts the manifest under a name this run already owns.
-//
-// Split out of Save so that every way of failing gives the name back, rather
-// than the four early returns below each having to remember to. The rule is
-// "the claim goes when the write does", and a rule spelled once cannot be
-// half applied.
-func (m *Manifest) writeOver(path string) error {
-	return writeClaimed(path, m.mode(), m.Encode)
-}
-
-// writeClaimed writes a file over the empty claim this run holds on its name,
-// through a temporary name and a rename. The manifest and the instructions
-// beside it are written the same way, so the reasons below hold for both.
-func writeClaimed(path string, mode os.FileMode, write func(io.Writer) error) error {
-	// The marker comes from core rather than being spelled here. It was a bare
-	// literal until 2026-09-06, which is how verify came to report our own half
-	// written manifest as "extra" - the reading side recognised the other
-	// marker and had never been told about this one.
-	//
-	// A sibling rather than a plain join, so a manifest named up to the length
-	// every system stores can be written under its temporary name (O239).
-	tmp := core.SiblingPath(path, core.WritingMarker)
-	// Claimed rather than created, and core.CreateNew says why: this name sits
-	// in a directory the run does not own, nothing else in the tool checks it,
-	// and a create that is not exclusive follows whatever is at the name.
-	// Measured on 2026-09-06 - a link here put the manifest on a file outside
-	// the output directory and the run still exited 0.
-	//
-	// The mode is the temporary file's, because the rename below moves the file
-	// and its mode with it. So this is where a manifest carrying a password
-	// stops being readable by every account on the machine.
-	f, err := core.CreateNew(tmp, mode)
-	if err != nil {
-		return err
-	}
-	if err := write(f); err != nil {
-		_ = f.Close()
-		_ = os.Remove(tmp)
-		return err
-	}
-	// On the device before the rename, because the rename is what turns this
-	// into the manifest and a rename can reach the disk before the bytes do.
-	// What survives that is an empty file under the name of the only record
-	// able to remove a run's files - the loss this whole function is shaped
-	// against, reached by pulling the plug rather than by killing the process.
-	//
-	// One call per run, so the cost argument that keeps generated files
-	// unsynced does not reach here. That one is written on engine.Run and it is
-	// about ten thousand flushes, not one. docs/CODE-REVIEW-2026-08-23.md
-	// section 3.4, owner's call on 2026-08-25.
-	if err := f.Sync(); err != nil {
-		_ = f.Close()
-		_ = os.Remove(tmp)
-		return err
-	}
-	if err := f.Close(); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	// Over our own claim, which is why this rename is allowed to replace
-	// something. Nobody else can be holding that name.
-	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
-}
-
-// claimName creates the file only if nobody else holds the name.
-//
-// How that question is settled, and why creating the file is the only way to
-// ask it, is in core.CreateNew - together with the measurement of what Windows
-// answers when the path runs through a reparse point.
-//
-// It moved there on 2026-09-06. This function had the better half of the answer
-// and asked os.Stat, which follows a link: a link pointing at nothing answered
-// "there is nothing here" and the create went through it. The temporary name
-// beside this one had no half of the answer at all. One rule spelled in two
-// places is one rule with a hole in it, so now there is one place.
-//
-// What was measured here stays true of the fallback: it leaves the narrow
-// window two runs starting together could meet - see O43.
-func claimName(path string) error {
-	f, err := core.CreateNew(path, 0o644)
-	if err != nil {
-		return err
-	}
-	return f.Close()
 }
 
 // readAtMost reads a manifest and refuses one that is over the ceiling.

@@ -46,7 +46,9 @@ func seedDirectory(t *testing.T, dir string) []byte {
 	if err != nil {
 		t.Fatalf("the first run failed: %v", err)
 	}
-	if err := res.Manifest.Save(manifestOf(dir)); err != nil {
+	// Through SaveRecord, the one way both surfaces save, so the manifest
+	// lands through the reservation the run took before its first file.
+	if _, err := engine.SaveRecord(res, opt); err != nil {
 		t.Fatalf("saving the first manifest: %v", err)
 	}
 	body, err := os.ReadFile(manifestOf(dir))
@@ -208,7 +210,7 @@ func TestNoTargetCanTakeTheNameTheManifestNeeds(t *testing.T) {
 				left, _ := os.ReadDir(dir)
 				saveErr := error(nil)
 				if runErr == nil {
-					saveErr = res.Manifest.Save(filepath.Join(dir, engine.DefaultManifestName))
+					_, saveErr = engine.SaveRecord(res, opt)
 				}
 				t.Fatalf("planning allowed a target to take %q, the name the manifest needs. "+
 					"The run then left %d entries in the directory and saving the manifest said %v",

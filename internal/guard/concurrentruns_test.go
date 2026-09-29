@@ -65,6 +65,11 @@ func TestAManifestIsNeverWrittenOverEvenWhenItAppearsMidRun(t *testing.T) {
 // 5, with sixteen files on the disk and eight of them in nobody's manifest.
 // After the claim moved to the front: eight files and one manifest.
 //
+// Since 2026-09-29 the reservation is the temporary name the manifest is
+// written under, not an empty file under the final name (O252). So while a run
+// goes there is no manifest at all, and nothing can read an empty one as the
+// record of a run that happened.
+//
 // What is guarded here is the primitive, because the window it closes is
 // between two processes and this package keeps concurrency out on purpose.
 // The engine calling it is covered by the guards for a refused run writing
@@ -73,50 +78,87 @@ func TestAClaimedNameCannotBeClaimedTwice(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "manifest.json")
 
-	if err := manifest.Claim(path); err != nil {
+	first, err := manifest.Claim(path)
+	if err != nil {
 		t.Fatalf("claiming an unused name: %v", err)
 	}
-	if err := manifest.Claim(path); err == nil {
+	defer func() { _ = first.Release() }()
+	if second, err := manifest.Claim(path); err == nil {
+		_ = second.Release()
 		t.Error("the same name was claimed twice, so two runs could both believe it is theirs")
 	}
 
-	// The claim is an empty file rather than a manifest, so nothing reads it as
-	// a record of a run that happened.
-	info, err := os.Stat(path)
+	if _, err := os.Lstat(path); err == nil {
+		t.Error("a manifest exists while the run that reserved it is still going - a reader would take it for a record")
+	}
+	info, err := os.Stat(manifest.ReservationPath(path))
 	if err != nil {
-		t.Fatalf("the claim is not there: %v", err)
+		t.Fatalf("the reservation is not there: %v", err)
 	}
 	if info.Size() != 0 {
-		t.Errorf("the claim carries %d B - it has to be empty, or a reader would take it for a manifest", info.Size())
+		t.Errorf("the reservation carries %d B before the save - it has to be empty", info.Size())
 	}
 }
 
-// And a run that claims the name and then cannot start gives it back, or the
-// next run into that directory is refused for a file nobody ever wrote.
-func TestAClaimIsGivenBackButAFilledInManifestIsNot(t *testing.T) {
+// And a run that reserves the name and then cannot start gives it back, or the
+// next run into that directory is told a run is going when none is.
+func TestAClaimIsGivenBackAndLeavesNoManifest(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "manifest.json")
 
-	if err := manifest.Claim(path); err != nil {
+	r, err := manifest.Claim(path)
+	if err != nil {
 		t.Fatalf("claiming: %v", err)
 	}
-	if err := manifest.Release(path); err != nil {
+	if err := r.Release(); err != nil {
 		t.Fatalf("releasing: %v", err)
 	}
-	if _, err := os.Stat(path); err == nil {
-		t.Error("the name is still taken by a run that never wrote anything")
+	for _, name := range []string{path, manifest.ReservationPath(path)} {
+		if _, err := os.Lstat(name); err == nil {
+			t.Errorf("%s is still there after a run that wrote nothing gave its name back", filepath.Base(name))
+		}
+	}
+	if again, err := manifest.Claim(path); err != nil {
+		t.Errorf("the name could not be claimed again after it was given back: %v", err)
+	} else {
+		_ = again.Release()
+	}
+}
+
+// A manifest that appears between the reservation and the save is left as it
+// is, and the save says so.
+//
+// This is the second window of O252, measured on 2026-09-29: the save used to
+// rename over the empty claim under the final name, and a rename replaces what
+// it lands on. So anything put there during the run - by a person, by another
+// tool - was destroyed without a word. Reproduced here without a second
+// process, by putting the file there at the moment the race would.
+func TestAManifestPutThereDuringTheRunIsNotWrittenOver(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "manifest.json")
+
+	r, err := manifest.Claim(path)
+	if err != nil {
+		t.Fatalf("claiming: %v", err)
+	}
+	theirs := []byte(`{"manifest_version":"1.0","files":[]}`)
+	if err := os.WriteFile(path, theirs, 0o644); err != nil {
+		t.Fatalf("putting the other manifest there: %v", err)
 	}
 
-	// A manifest with content in it is somebody's record and is never removed
-	// by this path, whatever asks.
-	if err := os.WriteFile(path, []byte(`{"manifest_version":"1.0","files":[]}`), 0o644); err != nil {
-		t.Fatalf("writing: %v", err)
+	m := manifest.New("testing-files-generator", "0.0.0-dev", "run_x", "tfg generate", 1, "windows", "amd64")
+	if err := r.Save(m); err == nil {
+		t.Error("the save reported success over a manifest somebody else put there")
 	}
-	if err := manifest.Release(path); err != nil {
-		t.Fatalf("releasing a filled in manifest reported an error: %v", err)
+	after, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("the other manifest is gone: %v", err)
 	}
-	if _, err := os.Stat(path); err != nil {
-		t.Error("a manifest with content was removed as though it were an empty claim")
+	if string(after) != string(theirs) {
+		t.Errorf("the other manifest was written over:\nbefore %s\nafter  %s", theirs, after)
+	}
+	if _, err := os.Lstat(manifest.ReservationPath(path)); err == nil {
+		t.Error("the refused save left its reservation behind, so the next run would be told a run is going")
 	}
 }
 

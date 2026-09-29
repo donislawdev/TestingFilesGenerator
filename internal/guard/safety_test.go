@@ -13,6 +13,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // This tool writes large amounts of data and it runs in directories that
@@ -285,9 +286,11 @@ func TestARunStoppedPartWayNamesEveryFileThatFinished(t *testing.T) {
 	onDisk := map[string]bool{}
 	for _, e := range entries {
 		name := e.Name()
-		if name == engine.DefaultManifestName {
-			// The run takes this name before the first file and it holds no
-			// entry of its own.
+		if name == filepath.Base(manifest.ReservationPath(engine.DefaultManifestName)) {
+			// The run reserves its manifest's name before the first file, under
+			// the name the manifest is written through, and this run is never
+			// saved. It holds no entry of its own. Until 2026-09-29 the
+			// reservation was an empty file under the manifest's own name.
 			continue
 		}
 		if strings.Contains(name, core.PartialMarker) {

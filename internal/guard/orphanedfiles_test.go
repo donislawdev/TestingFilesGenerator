@@ -5,15 +5,18 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // A manifest that could not be written leaves no manifest at all.
 //
-// The run claims the manifest name before it writes its first file, and the
-// claim is an empty file. So a save that fails after the files are on disk used
-// to leave a nought byte manifest.json sitting beside a complete set of files,
+// The run claims the manifest name before it writes its first file, and until
+// 2026-09-29 the claim was an empty file under the final name. So a save that
+// failed after the files were on disk used to leave a nought byte
+// manifest.json sitting beside a complete set of files,
 // and that one empty file is worse than nothing three separate ways. Measured
 // on 2026-08-27 by putting a directory under the temporary name the writer uses
 // and running an ordinary generate:
@@ -36,81 +39,93 @@ func TestAManifestThatCouldNotBeWrittenLeavesNoManifest(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "manifest.json")
 
-	// The claim, exactly as a run makes it before writing anything.
-	if err := manifest.Claim(path); err != nil {
-		t.Fatalf("claiming the name: %v", err)
+	// The reservation, exactly as a run makes it before writing anything.
+	r, err := manifest.Claim(path)
+	if err != nil {
+		t.Fatalf("reserving the name: %v", err)
 	}
-	if _, err := os.Stat(path); err != nil {
-		t.Fatalf("the claim did not create the file: %v", err)
+	if _, err := os.Stat(manifest.ReservationPath(path)); err != nil {
+		t.Fatalf("the reservation did not create its file: %v", err)
 	}
 
-	// Block the temporary name with a directory, which is how this was
-	// reproduced against the real binary. Any other way of making the write
-	// fail would do - this one needs no permissions and works on every host.
-	if err := os.Mkdir(path+".tfg-writing", 0o755); err != nil {
-		t.Fatalf("blocking the temporary name: %v", err)
+	// Block the final name with a directory, so the save fails at the very
+	// last step. Since 2026-09-29 the reservation is the temporary name
+	// itself, so blocking that one - how this was first reproduced - now
+	// refuses the reservation instead, before any file is written.
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatalf("blocking the final name: %v", err)
 	}
 
 	m := manifest.New("testing-files-generator", "0.0.0-test", "run_x", "tfg generate", 1, "windows", "amd64")
 	m.Add(manifest.File{ID: "files", Path: "files_0001.txt", Name: "files_0001.txt", Bytes: 1024})
 
-	if err := m.Save(path); err == nil {
-		t.Fatal("saving over a blocked temporary name reported success, so this test is not reaching the failure it is about")
+	if err := r.Save(m); err == nil {
+		t.Fatal("saving over a blocked final name reported success, so this test is not reaching the failure it is about")
 	}
 
-	if _, err := os.Stat(path); err == nil {
-		t.Error("a manifest is still there after the save failed. It is empty, so cleanup cannot read it and " +
-			"the next run into this directory is refused for a record that records nothing")
+	if info, err := os.Stat(path); err == nil && info.Mode().IsRegular() {
+		t.Error("a manifest file is there after the save failed, so the next run into this directory " +
+			"is refused for a record that may record nothing")
+	}
+	if _, err := os.Lstat(manifest.ReservationPath(path)); err == nil {
+		t.Error("the failed save left its reservation behind, so the next run is told a run is going when none is")
 	}
 }
 
-// Giving a claimed name back never takes away a manifest with something in it.
+// A clean-up removes the file this tool wrote and nothing that took its name.
 //
-// This is what makes the rule above safe to have. A failed save now removes the
-// name it was writing to, and the one file this tool promises never to destroy
-// is a manifest - so the removal has to be able to tell its own empty claim
-// from somebody's record of a thousand files.
+// This is what makes the rule above safe to have. A failed save removes the
+// name it was writing to, and the one thing this tool promises never to
+// destroy is a file somebody else put there - so the removal has to be able to
+// tell its own file from one that took the name while it worked (O252, the
+// third window: until 2026-09-29 every clean-up removed by name).
 //
-// Asked of Release directly rather than through a failed run, and that is a
-// correction rather than a shortcut. The first version of this drove a real
-// save over a real manifest, passed, and could not be reddened by any single
-// mutation - because in that path the file is protected TWICE: Save refuses at
-// the size check before it ever writes, and Release refuses again afterwards.
-// A guard nothing can break is not a guard, and this project has removed six
-// pieces of code for exactly that reason. The end to end half of the question
-// already has a guard of its own in manifestsafety_test.go.
-func TestGivingAClaimedNameBackSparesAManifestWithContent(t *testing.T) {
+// Asked of core.RemoveOwn directly, because every clean-up of this kind goes
+// through it - the reservation, the run lock, the instructions after a failed
+// manifest. The replacement is made the way the measurement made it: ours
+// removed and theirs created at once, which on ext4 hands theirs our inode
+// number every time.
+func TestGivingAClaimedNameBackSparesWhatTookItsName(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "manifest.json")
+	path := filepath.Join(dir, "manifest.json.tfg-writing")
 
+	if err := os.WriteFile(path, nil, 0o644); err != nil {
+		t.Fatalf("writing our file: %v", err)
+	}
+	ours, err := os.Lstat(path)
+	if err != nil {
+		t.Fatalf("asking what our file is: %v", err)
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatalf("taking our file away: %v", err)
+	}
 	const theirs = `{"manifest_version":"1.0","files":[]}`
 	if err := os.WriteFile(path, []byte(theirs), 0o644); err != nil {
-		t.Fatalf("writing the earlier manifest: %v", err)
+		t.Fatalf("putting their file under the name: %v", err)
 	}
 
-	if err := manifest.Release(path); err != nil {
-		t.Fatalf("releasing a name somebody else holds reported an error: %v", err)
+	if err := core.RemoveOwn(path, ours); err == nil {
+		t.Error("removing our file under a name that now holds theirs reported success")
 	}
-
 	got, err := os.ReadFile(path)
 	if err != nil {
-		t.Fatalf("the earlier manifest is gone: %v", err)
+		t.Fatalf("their file is gone: %v", err)
 	}
 	if string(got) != theirs {
-		t.Errorf("the earlier manifest changed.\n got: %s\nwant: %s", got, theirs)
+		t.Errorf("their file changed.\n got: %s\nwant: %s", got, theirs)
 	}
 
-	// And the empty claim it IS meant to take away still goes, or the check
-	// above would pass against a Release that never removes anything.
-	claim := filepath.Join(dir, "claim.json")
-	if err := manifest.Claim(claim); err != nil {
-		t.Fatalf("claiming a name: %v", err)
+	// And our own file IS removed, or the check above would pass against a
+	// clean-up that never removes anything.
+	mine, err := os.Lstat(path)
+	if err != nil {
+		t.Fatalf("asking what the file is: %v", err)
 	}
-	if err := manifest.Release(claim); err != nil {
-		t.Fatalf("releasing our own claim: %v", err)
+	if err := core.RemoveOwn(path, mine); err != nil {
+		t.Fatalf("removing a file by its own identity: %v", err)
 	}
-	if _, err := os.Stat(claim); err == nil {
-		t.Error("an empty claim survived being given back, so a refused run leaves the name taken")
+	if _, err := os.Lstat(path); err == nil {
+		t.Error("a file survived being removed by its own identity, so a failed save would leave its name taken")
 	}
 }
 
@@ -125,6 +140,16 @@ func TestGivingAClaimedNameBackSparesAManifestWithContent(t *testing.T) {
 // them, and the number is checked at one as well as at several - a sentence
 // with a verb agreeing with the count reads wrong at exactly one of those, and
 // core.Count carries a paragraph about that mistake.
+//
+// How the save is made to fail changed on 2026-09-29 (O252). This used to put a
+// directory under the temporary name before the run. That name is now the
+// run's reservation, taken before the first file, so the same block refuses the
+// run at the start and it writes nothing - and nothing else a person can do
+// before a run makes the save fail at the end, which is the point of the
+// change. So the block is put in place during the run: the moment the
+// reservation appears, a directory goes under the manifest's final name. The
+// files are large enough that the run is still writing them by then, and the
+// guard asserts that it got there rather than assuming.
 func TestARunThatCannotSaveItsManifestSaysWhatItLeftBehind(t *testing.T) {
 	for _, c := range []struct {
 		count int
@@ -135,14 +160,16 @@ func TestARunThatCannotSaveItsManifestSaysWhatItLeftBehind(t *testing.T) {
 	} {
 		dir := t.TempDir()
 		out := filepath.Join(dir, "out")
-		if err := os.MkdirAll(filepath.Join(out, "manifest.json.tfg-writing"), 0o755); err != nil {
-			t.Fatalf("blocking the temporary name: %v", err)
-		}
+		final := filepath.Join(out, "manifest.json")
+		blocked := blockWhenReserved(final)
 
 		code, _, errOut := run(t, "generate",
-			"--format", "txt", "--size", "1kb",
+			"--format", "txt", "--size", "16mb",
 			"--count", itoa(c.count), "--out", out)
 
+		if !<-blocked {
+			t.Fatalf("count %d: the run finished before its manifest name could be blocked, so nothing here was tested", c.count)
+		}
 		if code == 0 {
 			t.Fatalf("count %d: the run ended with 0 although its manifest could not be written", c.count)
 		}
@@ -157,4 +184,28 @@ func TestARunThatCannotSaveItsManifestSaysWhatItLeftBehind(t *testing.T) {
 			t.Errorf("count %d: nothing names the directory the files are in.\ngot:\n%s", c.count, errOut)
 		}
 	}
+}
+
+// blockWhenReserved puts a directory under a manifest's final name the moment
+// the run reserves it, and says on the channel whether it did so while the run
+// still had the reservation - that is, before the save.
+func blockWhenReserved(final string) <-chan bool {
+	done := make(chan bool, 1)
+	reservation := manifest.ReservationPath(final)
+	go func() {
+		deadline := time.Now().Add(30 * time.Second)
+		for time.Now().Before(deadline) {
+			if _, err := os.Lstat(reservation); err == nil {
+				if err := os.Mkdir(final, 0o755); err != nil {
+					done <- false
+					return
+				}
+				_, stillReserved := os.Lstat(reservation)
+				done <- stillReserved == nil
+				return
+			}
+		}
+		done <- false
+	}()
+	return done
 }

@@ -194,6 +194,11 @@ type Result struct {
 	// which replaced the record of an earlier run and left that run's files
 	// with nothing able to remove them. A refused run has nothing to record.
 	Started bool
+
+	// reservation is the run's hold on its manifest name, taken before the
+	// first file and handed to SaveRecord, which saves through it. Nil for a
+	// dry run and for a run refused before it reserved anything.
+	reservation *manifest.Reservation
 }
 
 // PlannedFile is one file worked out before anything is written.
@@ -523,7 +528,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// name the claim below already refused that, four times out of four, which
 	// is why this is the same mechanism rather than a new one.
 	lockPath := RunLockPath(opt.OutDir)
-	if err := claimRunLock(lockPath); err != nil {
+	lock, err := claimRunLock(lockPath)
+	if err != nil {
 		if errors.Is(err, fs.ErrExist) {
 			return res, &RunInProgressError{Path: lockPath, Dir: opt.OutDir}
 		}
@@ -533,28 +539,12 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// signal cancels the context, Run returns, and this runs. What it cannot
 	// cover is the process being killed outright, and that is why the refusal
 	// above names the file to remove.
-	defer releaseRunLock(lockPath)
+	defer releaseRunLock(lockPath, lock)
 
 	// The manifest name is taken before the first file, not after the last one.
-	//
-	// Claiming it at save time already stopped two runs from both writing a
-	// manifest, but it happened at the end - so a second run wrote its whole set
-	// of files and only then found out it had nowhere to record them. Measured
-	// on 2026-08-03: two runs started together under different ids ended 0 and
-	// 5, with sixteen files on the disk and eight of them in nobody's manifest.
-	// Taking the name here turns that into a refusal before anything is written.
-	manifestPath := ManifestPath(opt)
-	if err := manifest.Claim(manifestPath); err != nil {
-		// Only a name that is genuinely taken is a collision. Reporting every
-		// failure that way said "manifest.json already exists ... it is the
-		// only record of what an earlier run wrote" about an empty directory
-		// the user simply had no permission to write in - a sentence that is
-		// untrue and sends somebody looking for a run that never happened.
-		// Measured on 2026-08-04 with write denied on the output directory.
-		if errors.Is(err, fs.ErrExist) {
-			return res, &CollisionError{Path: manifestPath, Manifest: true}
-		}
-		return res, fmt.Errorf("cannot start a run in %s: %w", core.Shown(opt.OutDir), err)
+	// reserveManifest says why, and in which words a refusal comes back.
+	if res.reservation, err = reserveManifest(ManifestPath(opt), opt.OutDir); err != nil {
+		return res, err
 	}
 
 	// Past this point the run owns the name and may write. Started says so, and
@@ -569,7 +559,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// taken by a run that never happened.
 	defer func() {
 		if !res.Manifest.Run.Complete && res.Failures == 0 && len(res.Manifest.Files) == 0 {
-			_ = manifest.Release(manifestPath)
+			_ = res.reservation.Release()
+			res.reservation = nil
 		}
 	}()
 
@@ -627,29 +618,79 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	return res, nil
 }
 
+// reserveManifest takes the name a run's manifest will have, before the first
+// file is written, and turns a refusal into the words that fit it.
+//
+// Claiming it at save time already stopped two runs from both writing a
+// manifest, but it happened at the end - so a second run wrote its whole set
+// of files and only then found out it had nowhere to record them. Measured on
+// 2026-08-03: two runs started together under different ids ended 0 and 5,
+// with sixteen files on the disk and eight of them in nobody's manifest.
+// Taking the name here turns that into a refusal before anything is written.
+//
+// Its own function since 2026-09-29, when the reservation moved to the
+// manifest's temporary name (O252) and Run went past the size a person can
+// follow.
+func reserveManifest(manifestPath, outDir string) (*manifest.Reservation, error) {
+	reservation, err := manifest.Claim(manifestPath)
+	if err == nil {
+		return reservation, nil
+	}
+	// The reservation name held by somebody is a run going or a run killed,
+	// not a finished one - the same fault and the same remedy as the lock,
+	// so the same words. Asked before the collision below, because that
+	// refusal is a fs.ErrExist too.
+	var held *core.NameTakenError
+	if errors.As(err, &held) {
+		return nil, &RunInProgressError{Path: held.Path, Dir: filepath.Dir(manifestPath)}
+	}
+	// Only a name that is genuinely taken is a collision. Reporting every
+	// failure that way said "manifest.json already exists ... it is the only
+	// record of what an earlier run wrote" about an empty directory the user
+	// simply had no permission to write in - a sentence that is untrue and
+	// sends somebody looking for a run that never happened. Measured on
+	// 2026-08-04 with write denied on the output directory.
+	if errors.Is(err, fs.ErrExist) {
+		return nil, &CollisionError{Path: manifestPath, Manifest: true}
+	}
+	return nil, fmt.Errorf("cannot start a run in %s: %w", core.Shown(outDir), err)
+}
+
 // claimRunLock takes the name that says this directory has a run in it.
 //
 // core.CreateNew rather than os.Create, and that is the whole claim: it refuses
 // a name something already holds and it believes the refusal only when Lstat
 // finds something there, so a directory reached through a link still works.
-// The file stays empty - the same shape as the manifest claim, and for the same
-// reason. Nothing reads it, so there is nothing in it to be read half written.
-func claimRunLock(path string) error {
+// The file stays empty. Nothing reads it, so there is nothing in it to be read
+// half written. What it is comes back with it, so the release removes this
+// file rather than whatever holds the name by then.
+func claimRunLock(path string) (os.FileInfo, error) {
 	fh, err := core.CreateNew(path, 0o666)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return fh.Close()
+	// A lock made and then failing to close is still a lock, and nothing
+	// would ever give it back - every later run into the directory would be
+	// told a run is going. Taken back here, by what it is.
+	own, err := core.Finish(fh, nil)
+	if err != nil {
+		_ = core.RemoveOwn(path, own)
+		return nil, err
+	}
+	return own, nil
 }
 
-// releaseRunLock gives the name back.
+// releaseRunLock gives the name back, if it still holds our lock.
+//
+// By identity rather than by name since 2026-09-29, the third window of O252:
+// a name removed by name removes whatever somebody put there after us.
 //
 // The failure is dropped on purpose. A run that finished and could not remove
 // its own lock has nothing useful to say to the person - the files are written
 // and the manifest is saved - and the next run into that directory will name
 // the file and say what to do about it.
-func releaseRunLock(path string) {
-	_ = os.Remove(path)
+func releaseRunLock(path string, own os.FileInfo) {
+	_ = core.RemoveOwn(path, own)
 }
 
 func entryFor(f PlannedFile, sha string, materialized bool, failure error) manifest.File {

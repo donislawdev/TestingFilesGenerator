@@ -44,6 +44,21 @@ because it turns other people's test suites red.
   A window that remembered one of these folders from an earlier run offers
   the home folder too.
 
+- **A file put under a name while this tool is writing that name is no longer
+  written over.** Each generated file, the manifest, the instructions beside
+  it and a recipe written by `tfg preset eject -o` are written under a
+  temporary name first, and until now the last step replaced whatever had
+  appeared under the final name in the meantime - another program's file, or
+  a person's. Now that step refuses a name somebody holds: the other file
+  stays as it is, a generated file that could not take its name is reported
+  as a failed file (exit code 8), and a manifest or recipe that could not is
+  reported as a write failure (exit code 5). While a run goes, its manifest
+  is reserved as `manifest.json.tfg-writing` rather than as an empty
+  `manifest.json`, so a run that is killed leaves that name behind, and the
+  next run into the directory says a run is going or was killed and names
+  the file to remove, instead of calling an empty file the record of an
+  earlier run.
+
 ## [0.4.0] - 2026-09-25
 
 ### Changed

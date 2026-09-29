@@ -58,7 +58,11 @@ const (
 	// out of preset/uploadset.go into uploadfiles.go, when the instructions
 	// beside the manifest took both past the ceiling. The longest file is
 	// manifest/manifest.go now.
-	longestFile = 401
+	// Lowered from 401 on 2026-09-29: a run's reservation of its manifest's
+	// name moved out of manifest/manifest.go into reservation.go when O252
+	// took the file past the ceiling. The longest file is format/zip/zip.go
+	// now.
+	longestFile = 399
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to
