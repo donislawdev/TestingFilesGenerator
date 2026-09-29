@@ -111,7 +111,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 			p.sections.section(sectionSettings, text.SectionSettings(), p.paramBox),
 			p.sections.section(sectionOutput, text.SectionOutput(),
 				parts.Wide(p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
-					p.tips.Say(text.DetailOutputDir()), chooserFor(p.host, p.outDir))),
+					p.tips.Say(text.DetailOutputDir()), chooserFor(p.outDir, p.host.ChooseDirectory))),
 				p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
 					p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 			),

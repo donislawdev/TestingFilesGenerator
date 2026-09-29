@@ -18,6 +18,7 @@ const (
 	tabGenerate = "generate"
 	tabPresets  = "presets"
 	tabRecipe   = "recipe"
+	tabTools    = "tools"
 	tabPrefs    = "preferences"
 	tabAbout    = "about"
 )
@@ -38,6 +39,7 @@ func Open(h Host) fyne.Size {
 	gen := NewGenerate(h)
 	pre := NewPreset(h)
 	rec := NewRecipe(h)
+	tools := NewTools(h)
 	runners := []*runner{gen.runner, pre.runner, rec.runner}
 	// The way out is wired below, once everything it stops exists. The screen
 	// is built now, so it is handed a way to reach it rather than the thing.
@@ -63,6 +65,7 @@ func Open(h Host) fyne.Size {
 		&parts.Tab{ID: tabGenerate, Text: text.TabOneTarget(), Content: gen.Object()},
 		&parts.Tab{ID: tabPresets, Text: text.TabPresets(), Content: pre.Object()},
 		&parts.Tab{ID: tabRecipe, Text: text.TabRecipe(), Content: rec.Object()},
+		&parts.Tab{ID: tabTools, Text: text.TabTools(), Content: tools.Object()},
 		&parts.Tab{ID: tabPrefs, Text: text.TabPreferences(), Content: prefs.Object()},
 		&parts.Tab{ID: tabAbout, Text: text.TabAbout(), Content: About(h)},
 	)
@@ -101,6 +104,7 @@ func Open(h Host) fyne.Size {
 		tabGenerate: gen,
 		tabPresets:  pre,
 		tabRecipe:   rec,
+		tabTools:    tools,
 	}
 
 	// The keyboard starts on the first field of the screen somebody is looking
@@ -133,14 +137,14 @@ func Open(h Host) fyne.Size {
 	// One wait for quiet for the whole window, told by every screen, and
 	// stopped with them when the window closes - see tidy.go.
 	quiet := tidyWhenLeftAlone(h, runners...)
-	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, quiet}, working, &showing)
+	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, tools, quiet}, working, &showing)
 	// Restart now stands down while any screen is making files, and stands up
 	// again when it stops - told rather than asked, so the button is right
 	// the moment a run ends while the Preferences tab is on show.
 	for _, r := range runners {
 		r.busy.changed = prefs.BusyChanged
 	}
-	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
+	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
 	// One table for the window, handed to the boxes of every screen. Wired here
@@ -384,11 +388,16 @@ func donate(h Host, look parts.Look) *parts.Button {
 //
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
-func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
+//
+// pick is which picker the button opens - Host.ChooseDirectory for where files
+// go, Host.ChooseFile for a file a tool reads. One box and one button for
+// both, so a path field looks and behaves the same whatever it names (GUI
+// rule 2).
+func chooserFor(box *parts.Entry, pick func(func(string))) fyne.CanvasObject {
 	choose := parts.NewButton(parts.Secondary, text.ButtonChoose(), func() {
-		host.ChooseDirectory(func(dir string) {
-			if dir != "" {
-				box.SetText(dir)
+		pick(func(path string) {
+			if path != "" {
+				box.SetText(path)
 			}
 		})
 	})

@@ -32,6 +32,13 @@ import (
 // means saying out loud that a guard is unproven. The list should only ever get
 // shorter.
 var notProvenByMutation = map[string]bool{
+	// A pipe exists only off Windows, so this guard compiles only there, and
+	// the mutation runner runs on the Windows machine the project is built on
+	// - the substitution would be applied and the test would not exist to
+	// catch it. It runs on every Linux and macOS runner of the CI. The break it
+	// is for - asking IsDir where IsRegular stands in checksum.digest - was
+	// read, not run (2026-09-29).
+	"TestAToolNeverOpensAPipe": true,
 	// A directory entry costs one tar block and nothing more.
 	//
 	// There is no line of ours under this one to break. It asserts what

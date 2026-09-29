@@ -56,9 +56,12 @@ type busy struct {
 	// was put on and never twice.
 	worn bool
 
-	fields   *parts.Fields
-	preview  *parts.Button
-	generate *parts.Button
+	fields *parts.Fields
+	// starters are the buttons that start work - Preview and Generate on a
+	// work screen, the one action of a tool on the Tools tab. A list since
+	// 2026-09-29, when a second kind of screen came to need this state: the
+	// face is the same whatever the work is.
+	starters []*parts.Button
 	cancel   *parts.Button
 	bar      *parts.Progress
 	// also are controls that are neither fields nor run buttons and still
@@ -135,8 +138,9 @@ func (b *busy) wear(face busyFace) {
 	for _, control := range b.also {
 		control.Disable()
 	}
-	b.preview.Disable()
-	b.generate.Disable()
+	for _, starter := range b.starters {
+		starter.Disable()
+	}
 	// Cancel is hidden rather than greyed when there is nothing to cancel,
 	// asked for on 2026-08-11 after looking at the window. A permanently dead
 	// control is a question the screen keeps asking and answering itself, and
@@ -162,8 +166,9 @@ func (b *busy) undress() {
 	for _, control := range b.also {
 		control.Enable()
 	}
-	b.preview.Enable()
-	b.generate.Enable()
+	for _, starter := range b.starters {
+		starter.Enable()
+	}
 	b.cancel.Disable()
 	b.cancel.Hide()
 	b.bar.Hide()

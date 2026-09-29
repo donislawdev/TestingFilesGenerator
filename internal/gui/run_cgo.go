@@ -212,6 +212,29 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 	}, d.Window)
 }
 
+// ChooseFile is ChooseDirectory for one file. The toolkit's picker hands back
+// the file already opened for reading, and a tool opens it again itself - it
+// has to, to see whether it is a file at all before reading - so the handle is
+// closed here and only the path goes on.
+func (d desktop) ChooseFile(chosen func(string)) {
+	dialog.ShowFileOpen(func(file fyne.URIReadCloser, err error) {
+		if err != nil || file == nil {
+			chosen("")
+			return
+		}
+		path := file.URI().Path()
+		_ = file.Close()
+		chosen(path)
+	}, d.Window)
+}
+
+// Copy puts text on the clipboard of the application, which is where the
+// toolkit keeps it since the window's own was deprecated (fyne v2.8.1,
+// window.go:105).
+func (d desktop) Copy(text string) {
+	fyne.CurrentApp().Clipboard().SetContent(text)
+}
+
 // OpenLink hands an address to the desktop's own browser.
 //
 // The program makes no request. It parses the address and passes it to the

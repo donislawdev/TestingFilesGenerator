@@ -10,6 +10,10 @@ import (
 //
 // Nothing points upwards. The engine must not learn about the command line,
 // and the command line binary must not learn about the window.
+//
+// The tools sit on a layer of their own between the engine and the surfaces,
+// since 2026-09-29: a tool is a facade over the engine and the audit, so it
+// has to see both, and both surfaces show every tool, so both have to see it.
 var layer = map[string]int{
 	"internal/version": 0,
 	"internal/core":    0,
@@ -31,7 +35,7 @@ var layer = map[string]int{
 	// import it and it cannot reach a binary by accident. It sits with the
 	// other commands because it imports the registry and the version, and
 	// because it is a program somebody runs rather than a library.
-	"internal/legal/cmd/sbom": 5,
+	"internal/legal/cmd/sbom": 6,
 
 	"internal/format":            1,
 	"internal/format/all":        1,
@@ -86,18 +90,29 @@ var layer = map[string]int{
 	"internal/engine": 3,
 	"internal/audit":  3,
 
-	"internal/cli":           4,
-	"internal/gui":           4,
-	"internal/gui/parts":     4,
-	"internal/gui/icon":      4,
-	"internal/gui/font":      4,
-	"internal/gui/catalogue": 4,
-	"internal/gui/text":      4,
-	"internal/gui/window":    4,
+	"internal/tool":          4,
+	"internal/tool/checksum": 4,
+	"internal/tool/all":      4,
 
-	"cmd/tfg":     5,
-	"cmd/tfg-gui": 5,
+	"internal/cli":           5,
+	"internal/gui":           5,
+	"internal/gui/parts":     5,
+	"internal/gui/icon":      5,
+	"internal/gui/font":      5,
+	"internal/gui/catalogue": 5,
+	"internal/gui/text":      5,
+	"internal/gui/window":    5,
+
+	"cmd/tfg":     6,
+	"cmd/tfg-gui": 6,
 }
+
+// surfaceLayer is the layer of the command line and the window. Below it is a
+// library both of them show, above it a binary. Three guards ask this - what
+// may print, what may reach the network, where flag names are read - and each
+// used to hold its own 4, so moving the surfaces up a layer was three edits
+// with nothing saying they belonged together.
+const surfaceLayer = 5
 
 // Same layer edges that are intended. Everything else inside one layer is a
 // violation, which is what keeps cli and gui apart.
@@ -165,6 +180,11 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/jxl":        {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/wav":        {"internal/format", "internal/format/imagelabel"},
 	"internal/preset":            {"internal/recipe"},
+
+	// A tool registers itself with the registry beside it, and the package that
+	// pulls every tool in reaches each of them - the arrangement of the formats.
+	"internal/tool/checksum": {"internal/tool"},
+	"internal/tool/all":      {"internal/tool/checksum"},
 
 	// A recipe checks the damages it names against the registry that holds
 	// them, the same way it checks a format against the format registry. It

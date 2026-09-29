@@ -63,6 +63,10 @@
     "description": "The words on a button.",
     "other": "Choose..."
   },
+  "ButtonCopy": {
+    "description": "The words on a button.",
+    "other": "Copy"
+  },
   "ButtonDonate": {
     "description": "The words on a button.",
     "other": "Donate"
@@ -106,6 +110,10 @@
   "ButtonRestart": {
     "description": "The words on a button.",
     "other": "Restart now"
+  },
+  "ButtonRunTool": {
+    "description": "The words on a button.",
+    "other": "Run"
   },
   "ChoiceSameAsSystem": {
     "description": "An entry in a list somebody chooses from. Carries one value, {{.Language}}, which has to stay spelled exactly that way.",
@@ -203,6 +211,10 @@
     "description": "The longer explanation behind the button beside a field name.",
     "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
   },
+  "DetailTool": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "other": "What the tool works on and its settings change with the tool chosen."
+  },
   "DirectoryWithFreeSpace": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Directory}}, {{.Free}}.",
     "other": "{{.Directory}} ({{.Free}} free)"
@@ -291,6 +303,10 @@
     "description": "The name above a box somebody fills in.",
     "other": "Batch name"
   },
+  "FieldTool": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Tool"
+  },
   "Files": {
     "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
     "one": "1 file",
@@ -368,6 +384,10 @@
   "HintTargetID": {
     "description": "The line under a field name, saying what the field does.",
     "other": "A short name for this batch."
+  },
+  "HintTool": {
+    "description": "The line under a field name, saying what the field does.",
+    "other": "What you want to find out."
   },
   "HowToUseChoose": {
     "description": "Shown in the window.",
@@ -613,6 +633,18 @@
     "description": "The heading over a group of fields.",
     "other": "Support"
   },
+  "SectionTool": {
+    "description": "The heading over a group of fields.",
+    "other": "The question"
+  },
+  "SectionToolInput": {
+    "description": "The heading over a group of fields.",
+    "other": "What it works on"
+  },
+  "SectionToolResult": {
+    "description": "The heading over a group of fields.",
+    "other": "Result"
+  },
   "SettingKey": {
     "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
     "other": "Written as {{.Key}} in a recipe."
@@ -665,6 +697,10 @@
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
     "other": "Batches of different formats and sizes, generated together in one run."
   },
+  "SubtitleTools": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "other": "Small things to do with files you already have. Every tool here is on the command line too, as tfg tool."
+  },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",
     "other": "About"
@@ -685,6 +721,10 @@
     "description": "The name of a tab along the top of the window.",
     "other": "Several batches"
   },
+  "TabTools": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "Tools"
+  },
   "TimeLeft": {
     "description": "Shown in the window. Carries one value, {{.Roughly}}, which has to stay spelled exactly that way.",
     "other": "{{.Roughly}} left"
@@ -692,6 +732,38 @@
   "TooManyFiles": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
     "other": "this run asks for {{.Count}} files - {{.Reason}}"
+  },
+  "ToolCopied": {
+    "description": "Shown in the window. Carries one value, {{.What}}, which has to stay spelled exactly that way.",
+    "other": "The {{.What}} is on the clipboard."
+  },
+  "ToolDoesNotMatch": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}, {{.Wanted}}.",
+    "other": "Does not match: the {{.About}} is {{.Got}} and {{.Wanted}} was expected."
+  },
+  "ToolFlag": {
+    "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
+    "other": "Written as --{{.Key}} after tfg tool on the command line."
+  },
+  "ToolInputWrittenAs": {
+    "description": "Shown in the window. Carries one value, {{.Tool}}, which has to stay spelled exactly that way.",
+    "other": "Written as the path after tfg tool {{.Tool}} on the command line."
+  },
+  "ToolMatches": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}.",
+    "other": "Matches: the {{.About}} is {{.Got}}, as expected."
+  },
+  "ToolNothingYet": {
+    "description": "Shown in the window.",
+    "other": "Nothing worked out yet. Choose what to work on and press Run."
+  },
+  "ToolReading": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Done}}, {{.Total}}.",
+    "other": "Read {{.Done}} of {{.Total}}."
+  },
+  "ToolStopped": {
+    "description": "Shown in the window.",
+    "other": "Stopped before it finished. A tool only reads, so nothing was changed."
   },
   "UseSmallestSize": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",

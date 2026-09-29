@@ -319,6 +319,22 @@ func screenScenes() []screenScene {
 		{name: "preferences-chosen", tab: text.TabPreferences(), set: func(t *testing.T, s scene) {
 			menuUnder(t, s.tab, text.FieldLanguage()).SetSelected(polishName(t))
 		}},
+		// The Tools tab at rest, refused for want of a file, and with a result
+		// that matches - the four states of GUI rule 3 but the one in flight,
+		// which the busy face of the work screens already pictures. The file is
+		// named by a path relative to this package, so the picture does not
+		// carry a temporary directory that differs on every run, and with a
+		// forward slash, which Windows reads as well - a separator of the
+		// system would draw a different box on each runner.
+		{name: "tools", tab: text.TabTools()},
+		{name: "tools-refused", tab: text.TabTools(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonRunTool())
+		}},
+		{name: "tools-result", tab: text.TabTools(), set: func(t *testing.T, s scene) {
+			fillField(t, s.tab, text.SettingLabel("file"), "testdata/checksum-sample.txt")
+			fillField(t, s.tab, text.SettingLabel("expected"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+			pressNamed(t, s.tab, text.ButtonRunTool())
+		}},
 		{name: "generate", tab: text.TabOneTarget()},
 		{name: "generate-empty", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, text.FieldCount(), "0")

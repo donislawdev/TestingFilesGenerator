@@ -14,6 +14,9 @@ const (
 	sectionPreset        = "preset"
 	sectionSettings      = "settings"
 	sectionBase          = "base"
+	sectionTool          = "tool"
+	sectionToolInput     = "tool-input"
+	sectionToolResult    = "tool-result"
 )
 
 // sections are the panels of a work screen, each of which folds away - the

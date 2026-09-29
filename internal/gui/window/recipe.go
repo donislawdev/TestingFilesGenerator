@@ -563,7 +563,7 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	r.fields.Require(recipe.KeyOutputDir)
 	return r.sections.section(sectionOutput, text.SectionOutput(),
 		parts.Wide(r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
-			r.tips.Say(text.DetailOutputDir()), chooserFor(r.host, r.outDir))),
+			r.tips.Say(text.DetailOutputDir()), chooserFor(r.outDir, r.host.ChooseDirectory))),
 		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
 			r.tips.Say(text.DetailManifest()), parts.Text(r.manifest)),
 		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),

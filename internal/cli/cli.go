@@ -20,6 +20,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/tool/all"
 )
 
 // Exit codes are a frozen contract. Changing what one means is a breaking

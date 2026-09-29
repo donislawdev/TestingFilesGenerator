@@ -19,6 +19,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // describeError renders an error for a person, in English, whatever language
@@ -145,6 +146,9 @@ func mustBeFile(path, kind, command string) error {
 // subject changes is the cut that costs nothing to read: a caller still asks
 // one question and gets one number.
 func classify(err error) int {
+	if code, ok := classifyTool(err); ok {
+		return code
+	}
 	if code, ok := classifyRequest(err); ok {
 		return code
 	}
@@ -168,6 +172,23 @@ func classify(err error) int {
 		return ExitIO
 	}
 	return ExitRuntime
+}
+
+// classifyTool covers the refusals of a tool, which say what kind they are
+// (tool.Classified) - so a tool added tomorrow ends with the right code and
+// nothing here names it.
+func classifyTool(err error) (int, bool) {
+	var refusal tool.Classified
+	if !errors.As(err, &refusal) {
+		return 0, false
+	}
+	switch refusal.Class() {
+	case tool.Asked:
+		return ExitUsage, true
+	case tool.Reading:
+		return ExitIO, true
+	}
+	return 0, false
 }
 
 // classifyRequest covers what was asked for: the recipe, the preset and what

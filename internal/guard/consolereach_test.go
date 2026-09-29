@@ -37,11 +37,11 @@ import (
 // is a guard that reads what the compiler reads. oracle is test only and out of
 // the layer map anyway, but the next embedded script will not be.
 func TestNothingBelowASurfaceReachesTheConsoleDirectly(t *testing.T) {
-	// Layer 4 is the surface - internal/cli and the window - and layer 5 is a
-	// main package. Those own the console by construction. Everything at 3 or
-	// below is a library, and a library that prints has taken a decision that
-	// belongs to whoever called it.
-	const surface = 4
+	// surfaceLayer is internal/cli and the window, and above it is a main
+	// package. Those own the console by construction. Everything below is a
+	// library - the tools too - and a library that prints has taken a decision
+	// that belongs to whoever called it.
+	const surface = surfaceLayer
 
 	var offenders []string
 	packagesRead, filesRead := 0, 0

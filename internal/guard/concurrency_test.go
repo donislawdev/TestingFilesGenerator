@@ -34,6 +34,14 @@ var mayBeConcurrent = map[string]string{
 	// it is the second registry, not because anything here runs beside
 	// anything else.
 	"internal/damage/damage.go": "the damage registry is written at init and read by everything after",
+	// The third registry, the tools, for the same reason as the two above.
+	"internal/tool/tool.go": "the tool registry is written at init and read by everything after",
+	// A tool reads a file of any size, and a window that waits for it is a
+	// window the desktop calls not responding - the reason the run of the
+	// engine happens beside the window, one file over. Closing the window
+	// cancels it and waits for it the same way (G7). Added 2026-09-29 with the
+	// Tools tab (docs/NARZEDZIA-SUMY-2026-09-29.md section 12.3).
+	"internal/gui/window/tools.go": "a tool reads beside the window, and closing the window waits for it",
 	// Signals arrive on a channel by definition, and the handler has to run
 	// beside the work it interrupts.
 	"cmd/tfg/main.go": "the interrupt handler has to run beside the work it stops",

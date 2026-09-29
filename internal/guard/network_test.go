@@ -23,7 +23,7 @@ func networkBanned(rel string) bool {
 		return false
 	}
 	if l, ok := layer[rel]; ok {
-		return l <= 3 || rel == "internal/cli" || rel == "cmd/tfg"
+		return l < surfaceLayer || rel == "internal/cli" || rel == "cmd/tfg"
 	}
 	return false
 }

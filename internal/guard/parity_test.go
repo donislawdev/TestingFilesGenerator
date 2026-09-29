@@ -9,6 +9,8 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/tool/all"
 )
 
 // D1 says every capability of the engine is reachable from both surfaces, and
@@ -278,6 +280,15 @@ var reachableFromTheWindow = []string{
 	"recipe:defaults.label",
 	"recipe:output",
 	"recipe:output.manifest",
+
+	// The tools. Every tool, what it works on and every setting it takes are
+	// drawn from the declaration on the Tools tab - held by
+	// TestTheToolsScreenOffersEveryToolWithEveryBox, which walks the registry
+	// rather than this list, and by TestTheWindowRunsAToolAndSaysWhatTheCommandLineSays.
+	"tool:checksum",
+	"tool:checksum.algorithm",
+	"tool:checksum.expected",
+	"tool:checksum.file",
 }
 
 // notYetReachable is everything the engine can do that the window cannot.
@@ -365,6 +376,18 @@ func capabilities() []string {
 		// a guard that refuses to let one ship.
 		for _, name := range p.Reads {
 			out = append(out, "preset:"+p.ID+"."+name)
+		}
+	}
+	// A tool is a capability as well, and so is everything it works on and
+	// takes: a tool the command line runs and the window cannot is D1 broken
+	// the day it is registered.
+	for _, d := range tool.All() {
+		out = append(out, "tool:"+d.ID)
+		for _, in := range d.Inputs {
+			out = append(out, "tool:"+d.ID+"."+in.Name)
+		}
+		for _, p := range d.Settings {
+			out = append(out, "tool:"+d.ID+"."+p.Name)
 		}
 	}
 	sort.Strings(out)

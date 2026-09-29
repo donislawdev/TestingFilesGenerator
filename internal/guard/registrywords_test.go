@@ -23,6 +23,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // The words of the registries in the window's language -
@@ -239,6 +240,9 @@ func TestTheWindowDescribesASettingAsTheCommandLineDoes(t *testing.T) {
 	}
 	for _, d := range damage.All() {
 		each(text.DamageOwner(d.ID), d.Parameters)
+	}
+	for _, d := range tool.All() {
+		each(text.ToolOwner(d.ID), d.Settings)
 	}
 	for _, n := range []int64{0, 1023, 1024, 1536, 10 << 20, 2516582400, 1 << 40} {
 		if got, want := text.HumanBytes(n), core.HumanBytes(n); got != want {
