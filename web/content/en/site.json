@@ -18,6 +18,13 @@
       "description": "Every file format this generator produces, the smallest file each one can be, and the settings each one accepts. All {{ .Facts.FormatCount }} open in the software that owns them."
     },
     {
+      "key": "presets",
+      "slug": "presets",
+      "nav": "Presets",
+      "title": "Test File Presets - Ready-Made Sets for QA Questions",
+      "description": "Ready-made sets of test files, each answering one testing question: upload limits, file names, encodings, table imports, empty files and upload validation."
+    },
+    {
       "key": "docs",
       "slug": "docs",
       "nav": "Documentation",
@@ -80,7 +87,9 @@
     "footerPrivacy": "This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.",
     "notFoundTitle": "That page is not here",
     "notFoundLead": "The address you followed does not match any page on this site.",
-    "notFoundBack": "Go to the home page"
+    "notFoundBack": "Go to the home page",
+    "read.format": "The format of every file in the set. It is a flag of the tool itself, and the preset only gives it a default.",
+    "readTakes.format": "a format id from the formats page"
   },
   "endings": {
     "0": "Everything worked.",
@@ -96,12 +105,101 @@
     "143": "Stopped by a signal, which is what a CI timeout looks like."
   },
   "presets": {
-    "empty-and-minimal": "Does a file that is valid and as small as the format allows get through?",
-    "filename-handling": "Will my system store, show and give back a file name it did not expect?",
-    "size-boundaries": "Is a size limit enforced exactly where it is declared?",
-    "tabular-import": "Does my table import survive what real tools export?",
-    "text-encoding": "Does my reader know which encoding a file is in, or is it guessing?",
-    "upload-validation": "Does my upload form take what it should and turn the rest away?"
+    "empty-and-minimal": {
+      "question": "Does a file that is valid and as small as the format allows get through?",
+      "title": "Empty and minimal",
+      "pageTitle": "Smallest Valid and Empty Test Files in Every Format",
+      "description": "The smallest valid file this tool writes in each of its {{ .Facts.FormatCount }} formats, plus an empty file where the format allows one, each with the reaction to expect.",
+      "catches": [
+        "a valid file turned away for being too small, where the check counts bytes instead of reading them",
+        "an empty file that brings the reader down rather than being reported",
+        "a picture one pixel wide that divides by zero on the way to a thumbnail",
+        "storage that reads nought bytes as a failed upload and keeps retrying"
+      ],
+      "details": {
+        "formats": "Which formats the set is built from. Leave it at all for every format this build has, or name the ones your system accepts."
+      }
+    },
+    "filename-handling": {
+      "question": "Will my system store, show and give back a file name it did not expect?",
+      "title": "File name handling",
+      "pageTitle": "Problematic File Names for Testing - Unicode and Length",
+      "description": "Test files whose names break uploads and storage: other scripts and emoji, a right to left override, invisible characters, shell and SQL syntax, length limits.",
+      "catches": [
+        "a name that looks like a different one on screen, in a log or in a list",
+        "a name cut, trimmed or rewritten between upload and storage",
+        "a length limit counted in characters where the storage counts bytes"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Is a size limit enforced exactly where it is declared?",
+      "title": "Size boundaries",
+      "pageTitle": "Test an Upload Size Limit - Files at the Exact Boundary",
+      "description": "Files one byte under, at and one byte over the size limit your system declares, plus wider steps either side, each marked with whether it should be accepted.",
+      "catches": [
+        "off by one errors at the limit",
+        "MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass",
+        "a limit enforced in the browser and not on the server"
+      ],
+      "details": {
+        "limit": "The size limit your system declares. Everything else is measured from it.",
+        "spread": "How far either side of the limit to reach, as a list of sizes."
+      }
+    },
+    "tabular-import": {
+      "question": "Does my table import survive what real tools export?",
+      "title": "Tabular import",
+      "pageTitle": "CSV and Excel Import Test Files - Delimiters, Headers",
+      "description": "CSV files with other delimiters, CR LF endings, no header and other quoting, a table wider than a spreadsheet shows, an Excel workbook and JSON in several layouts.",
+      "catches": [
+        "a semicolon file read as one column, because the delimiter was assumed rather than looked for",
+        "a CRLF file split into rows with an empty row after each one",
+        "a headerless table whose first row of data is eaten as column names",
+        "an import that keeps the columns it can show and drops the rest without a word",
+        "a reader that takes JSON records one line at a time and stops at the first indented document"
+      ],
+      "details": {
+        "rows": "How many rows the spreadsheet holds. It is written at exactly the size that many rows package to, so the budget above moves with this.",
+        "columns": "How many columns each row of the spreadsheet has. Rows times columns has a ceiling, and asking past it is refused before anything is written."
+      }
+    },
+    "text-encoding": {
+      "question": "Does my reader know which encoding a file is in, or is it guessing?",
+      "title": "Text encoding",
+      "pageTitle": "Text Encoding Test Files - UTF-8, UTF-16, BOM, CRLF",
+      "description": "The same text in UTF-8, UTF-16LE and UTF-16BE, with and without a byte order mark, and files ending lines in CR LF and LF, to test how a reader decodes text.",
+      "catches": [
+        "a reader that assumes UTF-8 and shows a UTF-16 file as one character in three, or as rows of boxes",
+        "a byte order mark read as content, so the first field of an import starts with three stray characters",
+        "an importer that guesses the encoding from the opening bytes and guesses differently for a longer file",
+        "a CRLF file split into rows with an empty row after each one, or a carriage return kept inside the last field"
+      ],
+      "details": {
+        "sample": "How big each file of the set is. UTF-16 stores two bytes for every character, so an odd number is refused."
+      }
+    },
+    "upload-validation": {
+      "question": "Does my upload form take what it should and turn the rest away?",
+      "title": "Upload validation",
+      "pageTitle": "Upload Validation Test Files - Type, Size and Name",
+      "description": "Files for testing an upload form: allowed and denied types, content that does not match its extension, the size limit either side, hostile names and a bulk upload.",
+      "catches": [
+        "a limit enforced in the browser and not on the server",
+        "an SVG or an HTML file taken for a picture or for plain text, which is a way to get a script past a form",
+        "a file checked by its extension and never opened, so a PDF named .jpg goes through",
+        "a form that reads the whole body into memory before it looks at how big it is",
+        "an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round",
+        "a name with spaces, brackets or characters outside ASCII written to disk unchanged"
+      ],
+      "details": {
+        "limit": "The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset.",
+        "allow": "Which types your form is supposed to accept. Each one becomes a real file of that type, and they are the positive control of the whole set.",
+        "deny": "Which extensions your form is supposed to turn away. An extension this build has no format for still gets a file under that name, holding plain text.",
+        "far-over": "How far past the limit the one big file goes. Turn it off where writing several times the limit is not worth the disk.",
+        "bulk": "How many files the mass upload holds. Nought leaves that group out of the set altogether."
+      }
+    }
   },
   "commands": {
     "generate": "produce files, from a recipe or from flags",
@@ -114,6 +212,12 @@
     "damage": "list the ways this build can break a file on purpose",
     "version": "print the tool version",
     "license": "print the licence and what it means for generated files"
+  },
+  "outcomes": {
+    "accept": "Your system should take the file.",
+    "reject": "Your system should turn the file away.",
+    "sanitize": "Your system should take the file and clean it, for example by renaming it.",
+    "unspecified": "It depends on the rules of your system. You decide, then check that what happens is what you meant."
   },
   "terms": {
     "oracleNone": "not applicable",
@@ -130,7 +234,14 @@
     "hertz": "hertz",
     "megapixels": "megapixels",
     "million cells": "million cells",
-    "entries per second": "entries per second"
+    "entries per second": "entries per second",
+    "files": "files",
+    "sizes separated by commas": "sizes separated by commas",
+    "format ids separated by commas": "format ids separated by commas",
+    "format ids separated by commas, or all": "format ids separated by commas, or all",
+    "extensions separated by commas": "extensions separated by commas",
+    "the id of a format, as tfg formats lists them": "the id of a format, as tfg formats lists them",
+    "the password, in plain text": "the password, in plain text"
   },
   "faq": [
     {

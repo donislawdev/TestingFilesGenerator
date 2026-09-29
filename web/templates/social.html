@@ -230,7 +230,7 @@ li b { color: #E8EAED; font-weight: 650; }
       <p class="label">presets</p>
       <div class="chips">
         {{- range .Facts.Presets }}
-        <span class="chip{{ if eq . "size-boundaries" }} picked{{ end }}">{{ . }}</span>
+        <span class="chip{{ if eq .ID "size-boundaries" }} picked{{ end }}">{{ .ID }}</span>
         {{- end }}
       </div>
     </div>

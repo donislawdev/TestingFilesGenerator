@@ -51,7 +51,7 @@
     </a>
     <nav class="mainnav" aria-label="{{ .Word "navLabel" }}">
       {{- range .Nav }}
-      <a href="{{ .URL }}"{{ if .Current }} aria-current="page"{{ end }}>{{ .Label }}</a>
+      <a href="{{ .URL }}"{{ if .Current }} aria-current="page"{{ else if .Section }} aria-current="true"{{ end }}>{{ .Label }}</a>
       {{- end }}
     </nav>
     <div class="langswitch">

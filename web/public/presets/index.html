@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test File Presets - Ready-Made Sets for QA Questions</title>
+<meta name="description" content="Ready-made sets of test files, each answering one testing question: upload limits, file names, encodings, table imports, empty files and upload validation.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/presets/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Test File Presets - Ready-Made Sets for QA Questions">
+<meta property="og:description" content="Ready-made sets of test files, each answering one testing question: upload limits, file names, encodings, table imports, empty files and upload validation.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/presets/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test File Presets - Ready-Made Sets for QA Questions">
+<meta name="twitter:description" content="Ready-made sets of test files, each answering one testing question: upload limits, file names, encodings, table imports, empty files and upload validation.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/" aria-current="page">Presets</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/presety/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Test file presets, one set for each testing question</h1>
+<p class="lead">
+  A preset is a whole set of test files designed around one question, with a manifest saying how your
+  system should react to each file. You pick the question, the tool builds the set. Each preset has
+  its own page with what it usually finds, what is in the set and every setting it takes.
+</p>
+
+<ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/presets/empty-and-minimal/">Empty and minimal</a></p>
+    <p class="muted">Does a file that is valid and as small as the format allows get through?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/filename-handling/">File name handling</a></p>
+    <p class="muted">Will my system store, show and give back a file name it did not expect?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/size-boundaries/">Size boundaries</a></p>
+    <p class="muted">Is a size limit enforced exactly where it is declared?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/tabular-import/">Tabular import</a></p>
+    <p class="muted">Does my table import survive what real tools export?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/text-encoding/">Text encoding</a></p>
+    <p class="muted">Does my reader know which encoding a file is in, or is it guessing?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/upload-validation/">Upload validation</a></p>
+    <p class="muted">Does my upload form take what it should and turn the rest away?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+
+<section class="section" id="recipes">
+  <h2>How is a preset different from a recipe?</h2>
+  <p>
+    Underneath, it is not. A preset is a recipe the tool writes for you from a few settings.
+    <code>tfg preset eject</code> prints that recipe so you can keep it next to your tests and edit it,
+    and a recipe of your own can build on a preset with one line, <code>extends: preset:</code>
+    followed by its id.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Can I trust the defaults?</h2>
+  <p>
+    For the files, yes. For a number only your system knows, such as the limit of an upload form, a
+    default is a placeholder of ours, and the tool says so every time it uses one. The page of each
+    preset marks those settings, and <code>tfg preset show</code> says it before anything is written.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -71,6 +71,7 @@
     <nav class="mainnav" aria-label="Główna">
       <a href="/pl/" aria-current="page">Start</a>
       <a href="/pl/formaty/">Formaty</a>
+      <a href="/pl/presety/">Presety</a>
       <a href="/pl/dokumentacja/">Dokumentacja</a>
       <a href="/pl/zastosowania/">Zastosowania</a>
       <a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a>
@@ -185,6 +186,49 @@ for entry in manifest["files"]:
       produkuje fałszywe błędy, a zestaw testów, który krzyczy bez powodu, zostaje wyłączony.
     </p>
   </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presety</p>
+  <h2>Wybierz pytanie, dostań cały zestaw</h2>
+  <p>
+    Preset to zestaw plików testowych zaprojektowany wokół jednego pytania testowego, więc nie musisz
+    sam ustalać, który plik czego dowodzi. Każdy ma stronę, która mówi, co zwykle znajduje, co jest
+    w zestawie i jakie ustawienia przyjmuje.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/empty-and-minimal/">Pliki puste i minimalne</a></p>
+    <p class="muted">Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/filename-handling/">Obsługa nazw plików</a></p>
+    <p class="muted">Czy mój system zapisze, pokaże i odda nazwę pliku, której się nie spodziewał?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/size-boundaries/">Granice rozmiaru</a></p>
+    <p class="muted">Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/tabular-import/">Import tabel</a></p>
+    <p class="muted">Czy import tabeli poradzi sobie z tym, co eksportują prawdziwe narzędzia?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/text-encoding/">Kodowanie tekstu</a></p>
+    <p class="muted">Czy mój czytnik wie, w jakim kodowaniu jest plik, czy zgaduje?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pl/presety/upload-validation/">Walidacja uploadu</a></p>
+    <p class="muted">Czy mój formularz przesyłania plików przyjmuje to, co powinien, i odrzuca resztę?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <p><a href="/pl/presety/">Wszystkie presety i to, jak mają się do przepisów</a></p>
 </section>
 
 <section class="section" id="start">
@@ -325,6 +369,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
       <ul class="plain">
         <li><a href="/pl/">Start</a></li>
         <li><a href="/pl/formaty/">Formaty</a></li>
+        <li><a href="/pl/presety/">Presety</a></li>
         <li><a href="/pl/dokumentacja/">Dokumentacja</a></li>
         <li><a href="/pl/zastosowania/">Zastosowania</a></li>
         <li><a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a></li>

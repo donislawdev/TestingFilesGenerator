@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Najmniejsze poprawne i puste pliki w każdym formacie</title>
+<meta name="description" content="Najmniejszy poprawny plik, jaki to narzędzie zapisze w każdym z 26 formatów, i plik pusty tam, gdzie format na to pozwala, każdy z oczekiwaną reakcją.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/presety/empty-and-minimal/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/empty-and-minimal/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pl">
+<meta property="og:title" content="Najmniejsze poprawne i puste pliki w każdym formacie">
+<meta property="og:description" content="Najmniejszy poprawny plik, jaki to narzędzie zapisze w każdym z 26 formatów, i plik pusty tam, gdzie format na to pozwala, każdy z oczekiwaną reakcją.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/presety/empty-and-minimal/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
+<meta property="og:locale:alternate" content="en">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Najmniejsze poprawne i puste pliki w każdym formacie">
+<meta name="twitter:description" content="Najmniejszy poprawny plik, jaki to narzędzie zapisze w każdym z 26 formatów, i plik pusty tam, gdzie format na to pozwala, każdy z oczekiwaną reakcją.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presety",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pl\/presety\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Pliki puste i minimalne",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pl\/presety\/empty-and-minimal\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Przejdź do treści</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Główna">
+      <a href="/pl/">Start</a>
+      <a href="/pl/formaty/">Formaty</a>
+      <a href="/pl/presety/" aria-current="true">Presety</a>
+      <a href="/pl/dokumentacja/">Dokumentacja</a>
+      <a href="/pl/zastosowania/">Zastosowania</a>
+      <a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a>
+      <a href="/pl/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/presets/empty-and-minimal/" hreflang="en" lang="en" rel="alternate">English</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/pl/presety/">Presety</a></p>
+<h1>Pliki puste i minimalne</h1>
+<p class="lead">Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?</p>
+<p>
+  Preset <code>empty-and-minimal</code> buduje jednym poleceniem cały zestaw prawdziwych plików testowych do
+  tego pytania, a obok nich <code>manifest.json</code>, który mówi, jak system ma zareagować na każdy
+  plik. Wszystko poniżej pochodzi z programu, przy wartościach domyślnych tej wersji.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Co zwykle znajduje?</h2>
+  <ul class="ticks">
+    <li>poprawny plik odrzucony jako za mały, bo kontrola liczy bajty, zamiast go przeczytać</li>
+    <li>pusty plik, który wywraca czytnik, zamiast zostać zgłoszony</li>
+    <li>obrazek szeroki na jeden piksel, który w drodze do miniatury dzieli przez zero</li>
+    <li>magazyn, który zero bajtów uznaje za nieudane przesłanie i ponawia je bez końca</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Co jest w zestawie?</h2>
+  <p>Przy wartościach domyślnych, tak jak podaje to <code>tfg preset show empty-and-minimal</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Pliki</th><td>28</td></tr>
+        <tr><th scope="row">Cele w przepisie</th><td>28</td></tr>
+        <tr><th scope="row">Łączny rozmiar</th><td>32 667 B</td></tr>
+        <tr><th scope="row">Formaty</th><td>avif, bmp, csv, docx, gif, html, ico, jpg, json, jxl, log, md, pdf, png, pptx, svg, targz, tiff, toml, txt, wav, webp, xlsx, xml, yaml, zip</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>I czego manifest tego zestawu oczekuje od Twojego systemu:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Oczekiwanie</th><th>Znaczenie</th><th class="num">Pliki</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>System powinien przyjąć plik.</td><td class="num">26</td></tr>
+        <tr><td><code>unspecified</code></td><td>Zależy od reguł Twojego systemu. Ty decydujesz, a potem sprawdzasz, czy dzieje się to, co zamierzałeś.</td><td class="num">2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Co można zmienić?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Ustawienie</th><th>Przyjmuje</th><th>Domyślnie</th><th>Co robi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--formats</code></td>
+          <td>identyfikatory formatów rozdzielone przecinkami albo all</td>
+          <td><code>all</code></td>
+          <td>Z jakich formatów powstaje zestaw. Zostaw all, żeby dostać każdy format tej wersji, albo wymień te, które przyjmuje Twój system.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Jak go uruchomić?</h2>
+  <p>Sprawdź, ile zestaw będzie kosztował, zbuduj go albo weź jego przepis do edycji:</p>
+  <pre><code>tfg preset show empty-and-minimal
+tfg generate --preset empty-and-minimal --out ./empty-and-minimal
+tfg preset eject empty-and-minimal &gt; empty-and-minimal.yaml</code></pre>
+  <p>Albo zbuduj na nim własny przepis, trzymany obok testów:</p>
+  <pre><code>version: 1
+extends: preset:empty-and-minimal</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kod na GitHubie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Pobieranie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Zgłoś problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Wesprzyj projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Strony</p>
+      <ul class="plain">
+        <li><a href="/pl/">Start</a></li>
+        <li><a href="/pl/formaty/">Formaty</a></li>
+        <li><a href="/pl/presety/">Presety</a></li>
+        <li><a href="/pl/dokumentacja/">Dokumentacja</a></li>
+        <li><a href="/pl/zastosowania/">Zastosowania</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a></li>
+        <li><a href="/pl/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.</p>
+    <p class="muted">Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSV and Excel Import Test Files - Delimiters, Headers</title>
+<meta name="description" content="CSV files with other delimiters, CR LF endings, no header and other quoting, a table wider than a spreadsheet shows, an Excel workbook and JSON in several layouts.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/tabular-import/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="CSV and Excel Import Test Files - Delimiters, Headers">
+<meta property="og:description" content="CSV files with other delimiters, CR LF endings, no header and other quoting, a table wider than a spreadsheet shows, an Excel workbook and JSON in several layouts.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CSV and Excel Import Test Files - Delimiters, Headers">
+<meta name="twitter:description" content="CSV files with other delimiters, CR LF endings, no header and other quoting, a table wider than a spreadsheet shows, an Excel workbook and JSON in several layouts.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Tabular import",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/tabular-import\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/" aria-current="true">Presets</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/presety/tabular-import/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/presets/">Presets</a></p>
+<h1>Tabular import</h1>
+<p class="lead">Does my table import survive what real tools export?</p>
+<p>
+  The <code>tabular-import</code> preset builds a whole set of real test files for this question in one
+  command, and a <code>manifest.json</code> beside them saying how your system should react to each
+  file. Everything below is read from the program, at the defaults of this version.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>What does it usually find?</h2>
+  <ul class="ticks">
+    <li>a semicolon file read as one column, because the delimiter was assumed rather than looked for</li>
+    <li>a CRLF file split into rows with an empty row after each one</li>
+    <li>a headerless table whose first row of data is eaten as column names</li>
+    <li>an import that keeps the columns it can show and drops the rest without a word</li>
+    <li>a reader that takes JSON records one line at a time and stops at the first indented document</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>What is in the set?</h2>
+  <p>At its defaults, as <code>tfg preset show tabular-import</code> reports it:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Files</th><td>13</td></tr>
+        <tr><th scope="row">Targets in its recipe</th><td>13</td></tr>
+        <tr><th scope="row">Total size</th><td>3 080 060 B</td></tr>
+        <tr><th scope="row">Formats</th><td>csv, json, xlsx</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>And what the manifest of that set expects from your system:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Expected</th><th>Meaning</th><th class="num">Files</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Your system should take the file.</td><td class="num">8</td></tr>
+        <tr><td><code>unspecified</code></td><td>It depends on the rules of your system. You decide, then check that what happens is what you meant.</td><td class="num">5</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>What can you change?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Setting</th><th>Takes</th><th>Default</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--rows</code></td>
+          <td>1 - 200000 rows</td>
+          <td><code>1000</code></td>
+          <td>How many rows the spreadsheet holds. It is written at exactly the size that many rows package to, so the budget above moves with this.</td>
+        </tr>
+        <tr>
+          <td><code>--columns</code></td>
+          <td>1 - 32768 columns</td>
+          <td><code>10</code></td>
+          <td>How many columns each row of the spreadsheet has. Rows times columns has a ceiling, and asking past it is refused before anything is written.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>How do you run it?</h2>
+  <p>See what the set would cost, build it, or take its recipe to edit:</p>
+  <pre><code>tfg preset show tabular-import
+tfg generate --preset tabular-import --out ./tabular-import
+tfg preset eject tabular-import &gt; tabular-import.yaml</code></pre>
+  <p>Or build on it in a recipe of your own, next to your tests:</p>
+  <pre><code>version: 1
+extends: preset:tabular-import</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

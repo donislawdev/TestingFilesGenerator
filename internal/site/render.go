@@ -110,9 +110,35 @@ func (s Site) filledLanguages() ([]Language, error) {
 		if err != nil {
 			return nil, err
 		}
+		// After expanding, so the page of a preset takes its title from words
+		// that are already filled in, and before anything is rendered, so the
+		// sitemap, the language links and the links between pages all see it.
+		if done, err = done.withPresetPages(s.Facts); err != nil {
+			return nil, err
+		}
 		out[i] = done
 	}
 	return out, nil
+}
+
+// navFor is the header as seen from one page.
+//
+// A page made from a list is not in the header, and there would be one link
+// per preset in it if it were. The page it sits under is marked instead.
+func navFor(lang Language, page Page) []NavItem {
+	var out []NavItem
+	for _, item := range lang.Pages {
+		if item.Parent != "" {
+			continue
+		}
+		out = append(out, NavItem{
+			Label:   item.Nav,
+			URL:     pageURL(lang, item),
+			Current: item.Key == page.Key,
+			Section: page.Parent != "" && item.Key == page.Parent,
+		})
+	}
+	return out
 }
 
 // copyExtras publishes files that live elsewhere in the repository.
@@ -141,13 +167,14 @@ func (s Site) viewFor(lang Language, page Page) (view, error) {
 		Path:      pageURL(lang, page),
 		Canonical: s.Origin() + pageURL(lang, page),
 		IsHome:    page.Slug == "",
+		Nav:       navFor(lang, page),
 	}
-	for _, item := range lang.Pages {
-		v.Nav = append(v.Nav, NavItem{
-			Label:   item.Nav,
-			URL:     pageURL(lang, item),
-			Current: item.Key == page.Key,
-		})
+	if page.Parent != "" {
+		up, ok := find(lang, page.Parent)
+		if !ok {
+			return view{}, fmt.Errorf("the %s page %q sits under %q, which is not there", lang.Code, page.Key, page.Parent)
+		}
+		v.Up = &NavItem{Label: up.Nav, URL: pageURL(lang, up)}
 	}
 	for _, other := range s.Languages {
 		mate, ok := find(other, page.Key)
@@ -190,9 +217,7 @@ func (s Site) notFound(partials, shell string) ([]byte, error) {
 		W:      root.Words,
 		Path:   "/404.html",
 		IsHome: false,
-	}
-	for _, item := range root.Pages {
-		v.Nav = append(v.Nav, NavItem{Label: item.Nav, URL: pageURL(root, item)})
+		Nav:    navFor(root, page),
 	}
 	const body = `<h1>{{ .Word "notFoundTitle" }}</h1>` +
 		`<p class="lead">{{ .Word "notFoundLead" }}</p>` +
@@ -223,7 +248,13 @@ func (s Site) renderPages(out map[string][]byte, partials, shell string) error {
 			if err != nil {
 				return err
 			}
-			fragment, err := os.ReadFile(filepath.Join(s.ContentDir, lang.Code, page.Key+".html"))
+			// A page made from a list shares one content file with the rest
+			// of its list, and names it. Every other page has its own.
+			name := page.Key
+			if page.Template != "" {
+				name = page.Template
+			}
+			fragment, err := os.ReadFile(filepath.Join(s.ContentDir, lang.Code, name+".html"))
 			if err != nil {
 				return fmt.Errorf("reading the %s text of the %s page: %w", lang.Code, page.Key, err)
 			}

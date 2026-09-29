@@ -68,8 +68,14 @@ func (l Language) expand(f Facts) (Language, error) {
 	out.Words = everyValue(l.Words)
 	out.Endings = everyValue(l.Endings)
 	out.Terms = everyValue(l.Terms)
-	out.Presets = everyValue(l.Presets)
 	out.Commands = everyValue(l.Commands)
+	out.Outcomes = everyValue(l.Outcomes)
+	if l.Presets != nil {
+		out.Presets = make(map[string]PresetText, len(l.Presets))
+		for id, text := range l.Presets {
+			out.Presets[id] = text.expanded(through)
+		}
+	}
 
 	out.Pages = make([]Page, len(l.Pages))
 	for i, p := range l.Pages {
@@ -101,6 +107,9 @@ type view struct {
 	Path       string
 	Body       template.HTML
 	IsHome     bool
+	// Up is the page this one sits under, for the link back to it and the
+	// middle step of the breadcrumb. Nil for a page in the header.
+	Up *NavItem
 }
 
 // Word looks up a piece of interface text.
@@ -133,20 +142,6 @@ func (v view) Endings() ([]Ending, error) {
 			return nil, fmt.Errorf("exit code %d has no meaning written in %s", code, v.Lang.Code)
 		}
 		out = append(out, Ending{Code: code, Meaning: meaning})
-	}
-	return out, nil
-}
-
-// PresetList is every preset this build registers, described in the language
-// being rendered.
-func (v view) PresetList() ([]Preset, error) {
-	out := make([]Preset, 0, len(v.Facts.Presets))
-	for _, id := range v.Facts.Presets {
-		question, ok := v.Lang.Presets[id]
-		if !ok {
-			return nil, fmt.Errorf("the preset %q has no question written in %s", id, v.Lang.Code)
-		}
-		out = append(out, Preset{ID: id, Question: question})
 	}
 	return out, nil
 }
@@ -203,6 +198,11 @@ func (v view) AllowedOf(p Property) (string, error) {
 		}
 		return span + " " + unit, nil
 	default:
+		// A shape says what free text has to look like, which the kind
+		// alone does not - "text" is no description of a list of sizes.
+		if p.Shape != "" {
+			return v.Term(p.Shape)
+		}
 		return v.Term(p.Kind)
 	}
 }

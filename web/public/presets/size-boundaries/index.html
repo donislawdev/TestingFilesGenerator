@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test an Upload Size Limit - Files at the Exact Boundary</title>
+<meta name="description" content="Files one byte under, at and one byte over the size limit your system declares, plus wider steps either side, each marked with whether it should be accepted.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/size-boundaries/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Test an Upload Size Limit - Files at the Exact Boundary">
+<meta property="og:description" content="Files one byte under, at and one byte over the size limit your system declares, plus wider steps either side, each marked with whether it should be accepted.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test an Upload Size Limit - Files at the Exact Boundary">
+<meta name="twitter:description" content="Files one byte under, at and one byte over the size limit your system declares, plus wider steps either side, each marked with whether it should be accepted.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Size boundaries",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/size-boundaries\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/" aria-current="true">Presets</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/presety/size-boundaries/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/presets/">Presets</a></p>
+<h1>Size boundaries</h1>
+<p class="lead">Is a size limit enforced exactly where it is declared?</p>
+<p>
+  The <code>size-boundaries</code> preset builds a whole set of real test files for this question in one
+  command, and a <code>manifest.json</code> beside them saying how your system should react to each
+  file. Everything below is read from the program, at the defaults of this version.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>What does it usually find?</h2>
+  <ul class="ticks">
+    <li>off by one errors at the limit</li>
+    <li>MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass</li>
+    <li>a limit enforced in the browser and not on the server</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>What is in the set?</h2>
+  <p>At its defaults, as <code>tfg preset show size-boundaries</code> reports it:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Files</th><td>7</td></tr>
+        <tr><th scope="row">Targets in its recipe</th><td>7</td></tr>
+        <tr><th scope="row">Total size</th><td>73 400 320 B</td></tr>
+        <tr><th scope="row">Formats</th><td>pdf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>And what the manifest of that set expects from your system:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Expected</th><th>Meaning</th><th class="num">Files</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Your system should take the file.</td><td class="num">4</td></tr>
+        <tr><td><code>reject</code></td><td>Your system should turn the file away.</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>What can you change?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Setting</th><th>Takes</th><th>Default</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>a size such as 2mb</td>
+          <td><code>10mb</code></td>
+          <td>The size limit your system declares. Everything else is measured from it. <strong>This default is our placeholder, not your system's value. Pass your own.</strong></td>
+        </tr>
+        <tr>
+          <td><code>--spread</code></td>
+          <td>sizes separated by commas</td>
+          <td><code>1B,1kb,1mb</code></td>
+          <td>How far either side of the limit to reach, as a list of sizes.</td>
+        </tr>
+        <tr>
+          <td><code>--format</code></td>
+          <td>a format id from the formats page</td>
+          <td><code>pdf</code></td>
+          <td>The format of every file in the set. It is a flag of the tool itself, and the preset only gives it a default.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>How do you run it?</h2>
+  <p>See what the set would cost, build it, or take its recipe to edit:</p>
+  <pre><code>tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./size-boundaries
+tfg preset eject size-boundaries &gt; size-boundaries.yaml</code></pre>
+  <p>Or build on it in a recipe of your own, next to your tests:</p>
+  <pre><code>version: 1
+extends: preset:size-boundaries
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

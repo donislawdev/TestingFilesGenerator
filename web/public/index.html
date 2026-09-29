@@ -71,6 +71,7 @@
     <nav class="mainnav" aria-label="Main">
       <a href="/" aria-current="page">Home</a>
       <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
       <a href="/docs/">Documentation</a>
       <a href="/use-cases/">Use cases</a>
       <a href="/create-file-exact-size/">Exact size</a>
@@ -185,6 +186,49 @@ for entry in manifest["files"]:
       guesses produces false failures, and a suite that cries wolf gets switched off.
     </p>
   </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presets</p>
+  <h2>Pick the question, get the whole set</h2>
+  <p>
+    A preset is a set of test files designed around one testing question, so you do not have to work
+    out which files prove what. Each one has a page saying what it usually finds, what is in the set
+    and every setting it takes.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/presets/empty-and-minimal/">Empty and minimal</a></p>
+    <p class="muted">Does a file that is valid and as small as the format allows get through?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/filename-handling/">File name handling</a></p>
+    <p class="muted">Will my system store, show and give back a file name it did not expect?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/size-boundaries/">Size boundaries</a></p>
+    <p class="muted">Is a size limit enforced exactly where it is declared?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/tabular-import/">Tabular import</a></p>
+    <p class="muted">Does my table import survive what real tools export?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/text-encoding/">Text encoding</a></p>
+    <p class="muted">Does my reader know which encoding a file is in, or is it guessing?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/presets/upload-validation/">Upload validation</a></p>
+    <p class="muted">Does my upload form take what it should and turn the rest away?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <p><a href="/presets/">All presets, and how they relate to recipes</a></p>
 </section>
 
 <section class="section" id="start">
@@ -325,6 +369,7 @@ tfg cleanup ./logs/manifest.json --yes</code></pre>
       <ul class="plain">
         <li><a href="/">Home</a></li>
         <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
         <li><a href="/docs/">Documentation</a></li>
         <li><a href="/use-cases/">Use cases</a></li>
         <li><a href="/create-file-exact-size/">Exact size</a></li>

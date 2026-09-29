@@ -1,0 +1,30 @@
+<h1>Test file presets, one set for each testing question</h1>
+<p class="lead">
+  A preset is a whole set of test files designed around one question, with a manifest saying how your
+  system should react to each file. You pick the question, the tool builds the set. Each preset has
+  its own page with what it usually finds, what is in the set and every setting it takes.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>How is a preset different from a recipe?</h2>
+  <p>
+    Underneath, it is not. A preset is a recipe the tool writes for you from a few settings.
+    <code>tfg preset eject</code> prints that recipe so you can keep it next to your tests and edit it,
+    and a recipe of your own can build on a preset with one line, <code>extends: preset:</code>
+    followed by its id.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Can I trust the defaults?</h2>
+  <p>
+    For the files, yes. For a number only your system knows, such as the limit of an upload form, a
+    default is a placeholder of ours, and the tool says so every time it uses one. The page of each
+    preset marks those settings, and <code>tfg preset show</code> says it before anything is written.
+  </p>
+</section>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smallest Valid and Empty Test Files in Every Format</title>
+<meta name="description" content="The smallest valid file this tool writes in each of its 26 formats, plus an empty file where the format allows one, each with the reaction to expect.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/empty-and-minimal/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Smallest Valid and Empty Test Files in Every Format">
+<meta property="og:description" content="The smallest valid file this tool writes in each of its 26 formats, plus an empty file where the format allows one, each with the reaction to expect.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Smallest Valid and Empty Test Files in Every Format">
+<meta name="twitter:description" content="The smallest valid file this tool writes in each of its 26 formats, plus an empty file where the format allows one, each with the reaction to expect.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Empty and minimal",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/empty-and-minimal\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/" aria-current="true">Presets</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/presety/empty-and-minimal/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/presets/">Presets</a></p>
+<h1>Empty and minimal</h1>
+<p class="lead">Does a file that is valid and as small as the format allows get through?</p>
+<p>
+  The <code>empty-and-minimal</code> preset builds a whole set of real test files for this question in one
+  command, and a <code>manifest.json</code> beside them saying how your system should react to each
+  file. Everything below is read from the program, at the defaults of this version.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>What does it usually find?</h2>
+  <ul class="ticks">
+    <li>a valid file turned away for being too small, where the check counts bytes instead of reading them</li>
+    <li>an empty file that brings the reader down rather than being reported</li>
+    <li>a picture one pixel wide that divides by zero on the way to a thumbnail</li>
+    <li>storage that reads nought bytes as a failed upload and keeps retrying</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>What is in the set?</h2>
+  <p>At its defaults, as <code>tfg preset show empty-and-minimal</code> reports it:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Files</th><td>28</td></tr>
+        <tr><th scope="row">Targets in its recipe</th><td>28</td></tr>
+        <tr><th scope="row">Total size</th><td>32 667 B</td></tr>
+        <tr><th scope="row">Formats</th><td>avif, bmp, csv, docx, gif, html, ico, jpg, json, jxl, log, md, pdf, png, pptx, svg, targz, tiff, toml, txt, wav, webp, xlsx, xml, yaml, zip</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>And what the manifest of that set expects from your system:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Expected</th><th>Meaning</th><th class="num">Files</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Your system should take the file.</td><td class="num">26</td></tr>
+        <tr><td><code>unspecified</code></td><td>It depends on the rules of your system. You decide, then check that what happens is what you meant.</td><td class="num">2</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>What can you change?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Setting</th><th>Takes</th><th>Default</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--formats</code></td>
+          <td>format ids separated by commas, or all</td>
+          <td><code>all</code></td>
+          <td>Which formats the set is built from. Leave it at all for every format this build has, or name the ones your system accepts.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>How do you run it?</h2>
+  <p>See what the set would cost, build it, or take its recipe to edit:</p>
+  <pre><code>tfg preset show empty-and-minimal
+tfg generate --preset empty-and-minimal --out ./empty-and-minimal
+tfg preset eject empty-and-minimal &gt; empty-and-minimal.yaml</code></pre>
+  <p>Or build on it in a recipe of your own, next to your tests:</p>
+  <pre><code>version: 1
+extends: preset:empty-and-minimal</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

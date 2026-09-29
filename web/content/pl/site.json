@@ -18,6 +18,13 @@
       "description": "Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w swoim programie."
     },
     {
+      "key": "presets",
+      "slug": "presety",
+      "nav": "Presety",
+      "title": "Presety plików testowych - gotowe zestawy do testów QA",
+      "description": "Gotowe zestawy plików testowych, każdy odpowiada na jedno pytanie: limity uploadu, nazwy plików, kodowanie, import tabel, pliki puste i walidacja uploadu."
+    },
+    {
       "key": "docs",
       "slug": "dokumentacja",
       "nav": "Dokumentacja",
@@ -80,7 +87,9 @@
     "footerPrivacy": "Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.",
     "notFoundTitle": "Tej strony tu nie ma",
     "notFoundLead": "Adres, którym tu trafiłeś, nie pasuje do żadnej strony w tym serwisie.",
-    "notFoundBack": "Wróć na stronę główną"
+    "notFoundBack": "Wróć na stronę główną",
+    "read.format": "Format każdego pliku w zestawie. To flaga samego narzędzia, a preset daje jej tylko wartość domyślną.",
+    "readTakes.format": "identyfikator formatu ze strony formatów"
   },
   "endings": {
     "0": "Wszystko się udało.",
@@ -96,12 +105,101 @@
     "143": "Zatrzymane sygnałem - tak wygląda przekroczony czas w CI."
   },
   "presets": {
-    "empty-and-minimal": "Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?",
-    "filename-handling": "Czy mój system zapisze, pokaże i odda nazwę pliku, której się nie spodziewał?",
-    "size-boundaries": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?",
-    "tabular-import": "Czy import tabeli poradzi sobie z tym, co eksportują prawdziwe narzędzia?",
-    "text-encoding": "Czy mój czytnik wie, w jakim kodowaniu jest plik, czy zgaduje?",
-    "upload-validation": "Czy mój formularz przesyłania plików przyjmuje to, co powinien, i odrzuca resztę?"
+    "empty-and-minimal": {
+      "question": "Czy plik poprawny i najmniejszy, na jaki format pozwala, przechodzi?",
+      "title": "Pliki puste i minimalne",
+      "pageTitle": "Najmniejsze poprawne i puste pliki w każdym formacie",
+      "description": "Najmniejszy poprawny plik, jaki to narzędzie zapisze w każdym z {{ .Facts.FormatCount }} formatów, i plik pusty tam, gdzie format na to pozwala, każdy z oczekiwaną reakcją.",
+      "catches": [
+        "poprawny plik odrzucony jako za mały, bo kontrola liczy bajty, zamiast go przeczytać",
+        "pusty plik, który wywraca czytnik, zamiast zostać zgłoszony",
+        "obrazek szeroki na jeden piksel, który w drodze do miniatury dzieli przez zero",
+        "magazyn, który zero bajtów uznaje za nieudane przesłanie i ponawia je bez końca"
+      ],
+      "details": {
+        "formats": "Z jakich formatów powstaje zestaw. Zostaw all, żeby dostać każdy format tej wersji, albo wymień te, które przyjmuje Twój system."
+      }
+    },
+    "filename-handling": {
+      "question": "Czy mój system zapisze, pokaże i odda nazwę pliku, której się nie spodziewał?",
+      "title": "Obsługa nazw plików",
+      "pageTitle": "Problematyczne nazwy plików do testów - Unicode i długość",
+      "description": "Pliki z nazwami, które psują przesyłanie i zapis: inne alfabety i emoji, odwrócony kierunek tekstu, znaki niewidoczne, składnia powłoki i SQL, limity długości.",
+      "catches": [
+        "nazwa, która na ekranie, w logu albo na liście wygląda jak inna",
+        "nazwa ucięta, przycięta albo przepisana między przesłaniem a zapisem",
+        "limit długości liczony w znakach tam, gdzie magazyn liczy bajty"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Czy limit rozmiaru działa dokładnie tam, gdzie jest zadeklarowany?",
+      "title": "Granice rozmiaru",
+      "pageTitle": "Test limitu rozmiaru pliku - pliki dokładnie na granicy",
+      "description": "Pliki o bajt mniejsze od limitu rozmiaru, równe mu i o bajt większe, do tego szersze kroki w obie strony, każdy z informacją, czy system ma go przyjąć.",
+      "catches": [
+        "błędy o jeden na samym limicie",
+        "pomylone MB i MiB - to 4,8 procent, wystarczy, żeby przepuścić plik, który nie powinien przejść",
+        "limit sprawdzany w przeglądarce, a nie na serwerze"
+      ],
+      "details": {
+        "limit": "Limit rozmiaru, który deklaruje Twój system. Wszystko inne jest liczone od niego.",
+        "spread": "Jak daleko w obie strony od limitu sięgać, jako lista rozmiarów."
+      }
+    },
+    "tabular-import": {
+      "question": "Czy import tabeli poradzi sobie z tym, co eksportują prawdziwe narzędzia?",
+      "title": "Import tabel",
+      "pageTitle": "Pliki testowe do importu CSV i Excel - separatory, nagłówki",
+      "description": "Pliki CSV z innymi separatorami, końcami linii CR LF, bez nagłówka i z innym cytowaniem, tabela szersza, niż pokaże arkusz, skoroszyt Excel i JSON w kilku układach.",
+      "catches": [
+        "plik ze średnikami wczytany jako jedna kolumna, bo separator założono, zamiast go poszukać",
+        "plik z CRLF podzielony na wiersze z pustym wierszem po każdym",
+        "tabela bez nagłówka, której pierwszy wiersz danych zostaje zjedzony jako nazwy kolumn",
+        "import, który zostawia kolumny, jakie umie pokazać, a resztę bez słowa porzuca",
+        "czytnik, który bierze rekordy JSON po jednej linii i zatrzymuje się na pierwszym dokumencie z wcięciami"
+      ],
+      "details": {
+        "rows": "Ile wierszy ma arkusz. Plik ma dokładnie taki rozmiar, na jaki pakuje się tyle wierszy, więc budżet zestawu zmienia się razem z tą wartością.",
+        "columns": "Ile kolumn ma każdy wiersz arkusza. Iloczyn wierszy i kolumn ma sufit, a prośba ponad niego zostaje odrzucona, zanim cokolwiek powstanie."
+      }
+    },
+    "text-encoding": {
+      "question": "Czy mój czytnik wie, w jakim kodowaniu jest plik, czy zgaduje?",
+      "title": "Kodowanie tekstu",
+      "pageTitle": "Pliki testowe kodowania - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Ten sam tekst w UTF-8, UTF-16LE i UTF-16BE, ze znacznikiem kolejności bajtów i bez, oraz pliki z końcami linii CR LF i LF, do testu, jak czytnik dekoduje tekst.",
+      "catches": [
+        "czytnik, który zakłada UTF-8 i pokazuje plik UTF-16 jako jeden znak na trzy albo jako rzędy prostokątów",
+        "znacznik kolejności bajtów wczytany jako treść, więc pierwsze pole importu zaczyna się od trzech obcych znaków",
+        "import, który zgaduje kodowanie z pierwszych bajtów i dla dłuższego pliku zgaduje inaczej",
+        "plik z CRLF podzielony na wiersze z pustym wierszem po każdym albo znak powrotu karetki zostawiony w ostatnim polu"
+      ],
+      "details": {
+        "sample": "Jak duży jest każdy plik zestawu. UTF-16 zapisuje dwa bajty na każdy znak, więc liczba nieparzysta zostaje odrzucona."
+      }
+    },
+    "upload-validation": {
+      "question": "Czy mój formularz przesyłania plików przyjmuje to, co powinien, i odrzuca resztę?",
+      "title": "Walidacja uploadu",
+      "pageTitle": "Pliki do testu walidacji uploadu - typ, rozmiar, nazwa",
+      "description": "Pliki do testu formularza przesyłania: typy dozwolone i zakazane, treść niezgodna z rozszerzeniem, limit rozmiaru z obu stron, wrogie nazwy i przesyłanie masowe.",
+      "catches": [
+        "limit sprawdzany w przeglądarce, a nie na serwerze",
+        "plik SVG albo HTML przyjęty jako obrazek albo zwykły tekst, co jest sposobem na przemycenie skryptu przez formularz",
+        "plik sprawdzany po rozszerzeniu i nigdy nieotwierany, więc PDF nazwany .jpg przechodzi",
+        "formularz, który wczytuje całe żądanie do pamięci, zanim sprawdzi, jak jest duże",
+        "plik PHOTO.JPG odrzucony tam, gdzie photo.jpg przechodzi, albo odwrotnie",
+        "nazwa ze spacjami, nawiasami albo znakami spoza ASCII zapisana na dysk bez zmian"
+      ],
+      "details": {
+        "limit": "Limit rozmiaru, który deklaruje Twój formularz. Ten zestaw robi jeden krok w każdą stronę od niego - po plik w każdej odległości sięgnij po preset size-boundaries.",
+        "allow": "Które typy formularz ma przyjmować. Każdy staje się prawdziwym plikiem tego typu i to one są kontrolą pozytywną całego zestawu.",
+        "deny": "Które rozszerzenia formularz ma odrzucać. Rozszerzenie, dla którego ta wersja nie ma formatu, i tak dostaje plik pod tą nazwą, ze zwykłym tekstem w środku.",
+        "far-over": "Jak daleko za limit sięga jeden duży plik. Wyłącz go tam, gdzie zapis kilkukrotności limitu nie jest wart miejsca na dysku.",
+        "bulk": "Ile plików ma przesyłanie masowe. Zero całkiem usuwa tę grupę z zestawu."
+      }
+    }
   },
   "commands": {
     "generate": "tworzy pliki, z przepisu albo z flag",
@@ -114,6 +212,12 @@
     "damage": "wypisuje sposoby, którymi ta wersja umie celowo zepsuć plik",
     "version": "wypisuje wersję narzędzia",
     "license": "wypisuje licencję i to, co znaczy dla wygenerowanych plików"
+  },
+  "outcomes": {
+    "accept": "System powinien przyjąć plik.",
+    "reject": "System powinien odrzucić plik.",
+    "sanitize": "System powinien przyjąć plik i go oczyścić, na przykład zmieniając mu nazwę.",
+    "unspecified": "Zależy od reguł Twojego systemu. Ty decydujesz, a potem sprawdzasz, czy dzieje się to, co zamierzałeś."
   },
   "terms": {
     "oracleNone": "nie dotyczy",
@@ -130,7 +234,14 @@
     "hertz": "herców",
     "megapixels": "megapikseli",
     "million cells": "milionów komórek",
-    "entries per second": "wpisów na sekundę"
+    "entries per second": "wpisów na sekundę",
+    "files": "plików",
+    "sizes separated by commas": "rozmiary rozdzielone przecinkami",
+    "format ids separated by commas": "identyfikatory formatów rozdzielone przecinkami",
+    "format ids separated by commas, or all": "identyfikatory formatów rozdzielone przecinkami albo all",
+    "extensions separated by commas": "rozszerzenia rozdzielone przecinkami",
+    "the id of a format, as tfg formats lists them": "identyfikator formatu, tak jak wypisuje go tfg formats",
+    "the password, in plain text": "hasło, zwykłym tekstem"
   },
   "faq": [
     {
