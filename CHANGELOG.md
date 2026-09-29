@@ -16,6 +16,16 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **The window in Polish, and a Preferences tab.** The window now speaks the
+  language your system is set to when it has that language, and English
+  otherwise - so on a system set to Polish it opens in Polish. Preferences
+  lets you choose another language. The choice takes effect the next time
+  the window opens, and Restart now does that at once. It is off while files
+  are being made, and anything typed on the other tabs is cleared. The
+  command line, recipes and manifests do not change language. The same tab
+  says what the window keeps between runs (the output folder, the window
+  size and the language), shows the folder they are kept in, and Forget
+  clears them.
 - **A Windows installer, `tfg-setup_<version>_windows_amd64.msi`, beside the
   zip archives.** It installs the window and the command line for every
   account on the machine, in `Program Files\Testing Files Generator`, puts
