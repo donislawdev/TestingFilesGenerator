@@ -11,6 +11,16 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
+// The screens by what they are rather than by what they are called - see
+// parts.Tab. Everything that carries something between screens is keyed by
+// these, never by the translated word on the strip.
+const (
+	tabGenerate = "generate"
+	tabPresets  = "presets"
+	tabRecipe   = "recipe"
+	tabAbout    = "about"
+)
+
 // Open fills the window with the first screen and wires the way between them.
 //
 // The window opens on the work rather than on a welcome, decided by the owner
@@ -44,10 +54,10 @@ func Open(h Host) fyne.Size {
 	// the toolkit's could not do, the first of which is stand on the same edge
 	// as the words under it.
 	tabs := parts.NewTabs(
-		&parts.Tab{Text: text.TabOneTarget(), Content: gen.Object()},
-		&parts.Tab{Text: text.TabPresets(), Content: pre.Object()},
-		&parts.Tab{Text: text.TabRecipe(), Content: rec.Object()},
-		&parts.Tab{Text: text.TabAbout(), Content: About(h)},
+		&parts.Tab{ID: tabGenerate, Text: text.TabOneTarget(), Content: gen.Object()},
+		&parts.Tab{ID: tabPresets, Text: text.TabPresets(), Content: pre.Object()},
+		&parts.Tab{ID: tabRecipe, Text: text.TabRecipe(), Content: rec.Object()},
+		&parts.Tab{ID: tabAbout, Text: text.TabAbout(), Content: About(h)},
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -68,11 +78,11 @@ func Open(h Host) fyne.Size {
 		OutDir() string
 		SetOutDir(string)
 	}{
-		text.TabOneTarget(): gen,
-		text.TabPresets():   pre,
-		text.TabRecipe():    rec,
+		tabGenerate: gen,
+		tabPresets:  pre,
+		tabRecipe:   rec,
 	}
-	showing := text.TabOneTarget()
+	showing := tabGenerate
 
 	offerWhereItLastWrote(h, working)
 
@@ -81,9 +91,9 @@ func Open(h Host) fyne.Size {
 	// shortcut belongs to the window and the answer is whichever screen is
 	// being looked at.
 	keyed := map[string]keyboardScreen{
-		text.TabOneTarget(): gen,
-		text.TabPresets():   pre,
-		text.TabRecipe():    rec,
+		tabGenerate: gen,
+		tabPresets:  pre,
+		tabRecipe:   rec,
 	}
 
 	// The keyboard starts on the first field of the screen somebody is looking
@@ -92,7 +102,7 @@ func Open(h Host) fyne.Size {
 
 	tabs.OnSelected = func(item *parts.Tab, byKeyboard bool) {
 		from, leaving := working[showing]
-		to, arriving := working[item.Text]
+		to, arriving := working[item.ID]
 		if leaving && arriving {
 			to.SetOutDir(from.OutDir())
 		}
@@ -100,12 +110,12 @@ func Open(h Host) fyne.Size {
 		// that About in the middle of two work screens does not strand the
 		// value on the screen before it.
 		if arriving {
-			showing = item.Text
+			showing = item.ID
 		}
 		// The keyboard follows the person to the screen they moved to. Without
 		// this it stays on a control of the screen they left, which is a Tab
 		// that starts somewhere nobody can see.
-		focusFirst(item.Text, byKeyboard)
+		focusFirst(item.ID, byKeyboard)
 	}
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The
