@@ -457,6 +457,38 @@ func TestThePackagesNameTheProductAndLicenceTheProgramDoes(t *testing.T) {
 	}
 }
 
+// Every package carries, once, the copyright line tfg license prints.
+// Chocolatey's moderation asked for it after 0.4.0 and refuses one shorter than
+// four characters (rule CPMR0001), and winget show prints it. Read from what
+// the renderer wrote rather than from its copy, so a template that loses the
+// element fails here as surely as a copy that drifts from the program.
+func TestEveryPackageCarriesTheCopyrightTheProgramPrints(t *testing.T) {
+	lines := regexp.MustCompile(`(?m)^Copyright \(C\) .+$`).FindAllString(
+		readRepoFile(t, "internal/version/version.go"), -1)
+	if len(lines) != 1 {
+		t.Fatalf("internal/version/version.go holds %d copyright lines, not one - "+
+			"there is no single line to hold the packages to", len(lines))
+	}
+	nuspec := `<copyright>([^<]*)</copyright>`
+	locale := `(?m)^Copyright: (.*)$`
+	files := renderedPackages(t)
+	for _, pkg := range []struct{ file, pattern string }{
+		{windowChoco + "testing-files-generator.nuspec", nuspec},
+		{cliChoco + "testing-files-generator-cli.nuspec", nuspec},
+		{windowWinget + ".locale.en-US.yaml", locale},
+		{cliWinget + ".locale.en-US.yaml", locale},
+	} {
+		found := regexp.MustCompile(pkg.pattern).FindAllStringSubmatch(files[pkg.file], -1)
+		if len(found) != 1 {
+			t.Errorf("%s carries %d copyright lines, not one", pkg.file, len(found))
+			continue
+		}
+		if found[0][1] != lines[0] {
+			t.Errorf("%s gives the copyright as %q and tfg license as %q", pkg.file, found[0][1], lines[0])
+		}
+	}
+}
+
 // The package sources are in git. Chocolatey's moderation asks packageSourceUrl
 // to point at them, the job in ci.yml renders them on a fresh clone, and the
 // point of a package source is that somebody else can see what the package

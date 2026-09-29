@@ -9,8 +9,9 @@ window and one package waiting in moderation does not hold the other.
 The templates in packaging/ hold the shape. This fills them from the one place
 each value lives: the version from the tag, the checksums from the release's
 own checksum file, the addresses from go.mod and web/public/CNAME, the date
-from CHANGELOG.md. Nothing is typed twice, and the two values that are - the
-product's name and its licence - are held to their Go originals by a guard.
+from CHANGELOG.md. Nothing is typed twice, and the three values that are - the
+product's name, its licence and its copyright line - are held to their Go
+originals by a guard.
 
 Usage:
     python .github/scripts/build_packages.py --tag v0.4.0 \\
@@ -49,6 +50,11 @@ WINGET_SCHEMA = "1.12.0"
 # Held by a guard to internal/gui/run_cgo.go and internal/legal/spdx.go.
 APP_NAME = "Testing Files Generator"
 LICENCE = "GPL-3.0-only"
+
+# The line tfg license prints, held by a guard to internal/version/version.go.
+# Chocolatey's moderation asked for it in the nuspec after 0.4.0, and it
+# refuses one shorter than four characters (rule CPMR0001).
+COPYRIGHT = "Copyright (C) 2026 DonislawDev"
 
 # The name both feeds show as the author, and the first part of the WinGet
 # identifiers - the same publisher folder the sibling project already has in
@@ -258,6 +264,7 @@ def values(package, version, tag, sums):
         "EXE": package.program + ".exe",
         "MONIKER": package.moniker,
         "LICENSE": LICENCE,
+        "COPYRIGHT": COPYRIGHT,
         "REPO_URL": repo_url,
         "PROJECT_URL": site(),
         "DOCS_URL": site() + "docs/",
