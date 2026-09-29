@@ -185,6 +185,11 @@ func TestVerifyNamesTheRunLockAsOursRatherThanAsSomebodyElses(t *testing.T) {
 	if err != nil {
 		t.Fatalf("running: %v", err)
 	}
+	// Saved the way both surfaces save, so the manifest's reservation is gone
+	// and the lock planted below is the one thing verify has to name.
+	if _, err := engine.SaveRecord(res, opt); err != nil {
+		t.Fatalf("saving: %v", err)
+	}
 	if err := os.WriteFile(engine.RunLockPath(dir), nil, 0o644); err != nil {
 		t.Fatalf("standing in for a run that was killed: %v", err)
 	}

@@ -396,8 +396,17 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 			f.Desc.ID, counter.n, f.Plan.Bytes)
 	}
 
-	if err := os.Rename(tmp, final); err != nil {
+	// Given its name only while nobody holds it. Preflight refused every name
+	// that was taken when the run started, and this is the answer for one
+	// taken since: a rename used to replace it, so a file somebody put there
+	// during the run was destroyed without a word - 2544 of 3000 names on
+	// NTFS, measured on 2026-09-29 with a writer spinning on them (O252). Now
+	// this file fails in its own words and the run goes on with the rest.
+	if err := core.Publish(tmp, final); err != nil {
 		_ = os.Remove(tmp)
+		if errors.Is(err, fs.ErrExist) {
+			return "", &CollisionError{Path: final}
+		}
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil

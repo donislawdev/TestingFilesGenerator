@@ -14,13 +14,13 @@ package legal
 // reads like an oversight.
 var modules = []Module{
 	{Path: "github.com/goccy/go-yaml", SPDX: "MIT", Copyright: "(c) 2019 Masaaki Goshima",
-		Note: "Reads the recipe file. One of the four modules in the command line binary."},
+		Note: "Reads the recipe file. Linked into the command line binary."},
 	{Path: "github.com/gen2brain/gav1d", SPDX: "BSD-2-Clause", Copyright: "(c) 2018-2025 VideoLAN and dav1d authors, (c) 2016 Alliance for Open Media",
-		Note: "Codes and reads AV1, which is what an AVIF picture is made of. Pure Go with no module of its own behind it, so it brings nothing else along. It also ships an AOM Patent License 1.0, which travels with the notices. One of the four modules in the command line binary."},
+		Note: "Codes and reads AV1, which is what an AVIF picture is made of. Pure Go with no module of its own behind it, so it brings nothing else along. It also ships an AOM Patent License 1.0, which travels with the notices. Linked into the command line binary."},
 	{Path: "github.com/gen2brain/jxl", SPDX: "BSD-3-Clause", Copyright: "(c) the JPEG XL Project Authors",
-		Note: "Codes JPEG XL. Pure Go with no module of its own behind it, so it brings nothing else along. It also ships a patent grant from Google covering this implementation of JPEG XL, which travels with the notices. One of the four modules in the command line binary."},
+		Note: "Codes JPEG XL. Pure Go with no module of its own behind it, so it brings nothing else along. It also ships a patent grant from Google covering this implementation of JPEG XL, which travels with the notices. Linked into the command line binary."},
 	{Path: "golang.org/x/text", SPDX: "BSD-3-Clause", Copyright: "Copyright 2009 The Go Authors",
-		Note: "Unicode normalisation, used to decide whether two file names are one name spelled two ways. One of the four modules in the command line binary."},
+		Note: "Unicode normalisation, used to decide whether two file names are one name spelled two ways. Linked into the command line binary."},
 	{Path: "std", SPDX: "BSD-3-Clause", Copyright: "Copyright 2009 The Go Authors",
 		Note: "The Go runtime and standard library, linked into every binary here. Not a module, so `go list -deps` never names it - the one entry this list carries that no build can report."},
 	{Path: "fyne.io/fyne/v2", SPDX: "BSD-3-Clause", Copyright: "(C) 2018 Fyne.io developers (see AUTHORS)"},
@@ -50,5 +50,6 @@ var modules = []Module{
 	{Path: "github.com/yuin/goldmark", SPDX: "MIT", Copyright: "(c) 2019 Yusuke Inuzuka"},
 	{Path: "golang.org/x/image", SPDX: "BSD-3-Clause", Copyright: "2009 The Go Authors."},
 	{Path: "golang.org/x/net", SPDX: "BSD-3-Clause", Copyright: "2009 The Go Authors."},
-	{Path: "golang.org/x/sys", SPDX: "BSD-3-Clause", Copyright: "2009 The Go Authors."},
+	{Path: "golang.org/x/sys", SPDX: "BSD-3-Clause", Copyright: "2009 The Go Authors.",
+		Note: "Linked into the command line binary on Linux and macOS since 2026-09-29, for the one call that gives a finished file its name without replacing anything already there (renameat2 and renamex_np). The Windows build makes the same call through the standard library, because golang.org/x/sys/windows brings in the network package."},
 }

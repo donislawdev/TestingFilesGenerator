@@ -14,7 +14,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
+	"io/fs"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -323,27 +323,22 @@ func (f *fileFlag) Set(s string) error {
 // the console's code page, which on a stock console changes every letter
 // outside ASCII. Only the bytes the tool writes itself arrive as they are.
 //
-// Claimed first and then replaced whole. The claim is exclusive and does not
-// follow a link (core.CreateNew), which is what keeps an edited recipe from
-// being written over. The replacement goes through a temporary name and a
-// rename (core.ReplaceFile), so a run stopped part way leaves an empty file or
-// none rather than a recipe cut short - and a YAML file cut short can still
-// read as a smaller recipe.
+// Written whole under a temporary name and given its own only while nobody
+// holds it (core.WriteNew), so a run stopped part way leaves no recipe cut short
+// - a YAML file cut short can still read as a smaller recipe - and a file
+// already under that name, maybe a recipe somebody edited, is refused rather
+// than written over.
+//
+// Until 2026-09-29 this claimed the name with an empty file first and renamed
+// the recipe over the claim. A file put under the name between the two was
+// destroyed by the rename, and a failure removed whatever held the name by
+// then - two of the three windows of O252.
 func writeEjected(path string, source []byte, errOut io.Writer) int {
-	f, err := core.CreateNew(path, 0o644)
-	if err != nil {
-		var taken *core.NameTakenError
-		if errors.As(err, &taken) {
+	if _, err := core.WriteNew(path, source, 0o644); err != nil {
+		if errors.Is(err, fs.ErrExist) {
 			fmt.Fprintf(errOut, "tfg: %s is already there, and -o does not write over a file - it may be a recipe somebody edited. Nothing was written. Choose another name, or remove that file first.\n", core.Shown(path))
 			return ExitIO
 		}
-		fmt.Fprintf(errOut, "tfg: cannot write the recipe to %s: %s\n", core.Shown(path), describeError(err))
-		return ExitIO
-	}
-	_ = f.Close()
-	if err := core.ReplaceFile(path, source); err != nil {
-		// Only the empty claim this call made is there to take back.
-		_ = os.Remove(path)
 		fmt.Fprintf(errOut, "tfg: cannot write the recipe to %s: %s\n", core.Shown(path), describeError(err))
 		return ExitIO
 	}

@@ -142,13 +142,17 @@ func TestEveryFileThisToolWritesIsCreatedThroughOneClaim(t *testing.T) {
 //	                    reports a hard link as an ordinary file, because that
 //	                    is what it is. This is the shape that needs no
 //	                    privilege on Windows
-//	a link to nothing   O_EXCL says "it exists" and the fallback has to agree.
+//	a link to nothing   O_EXCL says "it exists", and the refusal has to stand.
 //	                    os.Stat follows the link and says the name is free,
 //	                    which is exactly how the manifest escaped
 //
-// The last one is why the fallback asks os.Lstat. The fallback exists because
-// O_EXCL lies on Windows when the path runs through a reparse point - measured
-// 2026-08-03 - so it cannot simply be taken away.
+// The last one is why the refusal is read with os.Lstat. Until 2026-09-29 a
+// refusal os.Lstat did not confirm was followed by a second create without
+// O_EXCL, because O_EXCL lied on Windows when the path ran through a reparse
+// point (measured 2026-08-03, O47). Go 1.27 no longer lies through a junction,
+// measured that day, and that second create is gone - it was the first window
+// of O252. TestADirectoryReachedThroughALinkStillWorks is what says whether a
+// symbolic link agrees, on the runners that may make one.
 func TestCreateNewCreatesOnlyWhenTheNameIsFree(t *testing.T) {
 	t.Run("a free name is created", func(t *testing.T) {
 		dir := t.TempDir()
@@ -265,7 +269,8 @@ func TestAHeldTemporaryNameStopsTheWriteRatherThanGoingThroughIt(t *testing.T) {
 			skipIfLinksAreNotAllowed(t, err)
 		}
 
-		if err := manifest.Claim(path); err == nil {
+		if r, err := manifest.Claim(path); err == nil {
+			_ = r.Release()
 			t.Fatal("the name was claimed through a link pointing at nothing")
 		}
 		if _, err := os.Stat(target); err == nil {

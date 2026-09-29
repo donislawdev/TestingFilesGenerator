@@ -17,14 +17,16 @@ first, so the difference is worth stating rather than leaving to be assumed.
 
 | binary | what it is | third party code in it |
 |---|---|---|
-| `tfg` | the command line | the Go runtime, and **four** modules: `github.com/goccy/go-yaml`, `github.com/gen2brain/gav1d`, `github.com/gen2brain/jxl` and `golang.org/x/text` |
+| `tfg` | the command line | the Go runtime, and **four** modules: `github.com/goccy/go-yaml`, `github.com/gen2brain/gav1d`, `github.com/gen2brain/jxl` and `golang.org/x/text` - plus `golang.org/x/sys` on Linux and macOS, whose notice is in the window's table below |
 | `tfg-gui` | the desktop window | the same, plus **27** more for the graphics toolkit, one of them on Linux only |
 
 The window is a separate binary because its toolkit needs a C compiler and
 OpenGL, neither of which the command line uses. A server or a build agent
-running `tfg` therefore carries none of the 27, and that is checked rather than
-asserted: a guard in the source compares what the command line binary actually
-links against that list of four.
+running `tfg` therefore carries none of the 27 but one - `golang.org/x/sys`, on
+Linux and macOS only, for the one system call that gives a finished file its
+name without replacing anything already there. What the command line binary
+links is checked rather than asserted: a guard in the source compares it with
+the reviewed list of modules, and another refuses a network package in it.
 
 ---
 

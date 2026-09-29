@@ -48,21 +48,35 @@ func (e *InstructionsError) Unwrap() error { return e.Err }
 func SaveRecord(res *Result, opt Options) (Record, error) {
 	rec := Record{Manifest: ManifestPath(opt)}
 	m := res.Manifest
+	var instructions os.FileInfo
 	if text := m.Instructions(filepath.Base(rec.Manifest)); text != nil {
 		path := InstructionsPath(opt)
-		if err := manifest.SaveInstructions(path, text); err != nil {
+		own, err := manifest.SaveInstructions(path, text)
+		if err != nil {
 			rec.Missed = &InstructionsError{Path: path, Err: err}
 		} else {
+			instructions = own
 			rec.Instructions = path
 			m.Run.Instructions = filepath.Base(path)
 		}
 	}
-	if err := m.Save(rec.Manifest); err != nil {
+	if err := saveManifest(res, m, rec.Manifest); err != nil {
 		if rec.Instructions != "" {
-			_ = os.Remove(rec.Instructions)
+			// The file this call wrote, and nothing that took its name since.
+			_ = core.RemoveOwn(rec.Instructions, instructions)
 			rec.Instructions, m.Run.Instructions = "", ""
 		}
 		return rec, err
 	}
 	return rec, nil
+}
+
+// saveManifest saves through the reservation the run took before its first
+// file, or reserves and saves in one go for a result that has none.
+func saveManifest(res *Result, m *manifest.Manifest, path string) error {
+	if r := res.reservation; r != nil {
+		res.reservation = nil
+		return r.Save(m)
+	}
+	return m.Save(path)
 }

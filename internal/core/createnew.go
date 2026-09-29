@@ -1,8 +1,6 @@
 package core
 
 import (
-	"errors"
-	"io/fs"
 	"os"
 )
 
@@ -34,40 +32,62 @@ import (
 // any privilege, which is measured rather than read. So the only answer that
 // holds is the one the operating system settles while it creates the file.
 //
-// O_EXCL IS NOT RELIABLE EVERYWHERE, and that was measured too, on 2026-08-03
-// and again on 2026-08-25. On Windows, Go asks for the reparse point rather
-// than for what it points at when O_EXCL is set, and the create then reports
-// "the file exists" about a file that is not there whenever any part of the
-// path is a symbolic link or a junction. A directory reached through a link is
-// an ordinary setup - a redirected workspace, a mounted scratch disk - and this
-// tool supports it on purpose.
+// O_EXCL WAS NOT RELIABLE EVERYWHERE, measured on 2026-08-03 and again on
+// 2026-08-25 (O47): on Windows the create reported "the file exists" about a
+// file that was not there whenever any part of the path was a symbolic link or
+// a junction. This function answered that with a second create, without
+// O_EXCL, whenever os.Lstat found nothing - and that second create truncated
+// whatever another process put under the name between the two calls, the
+// first of the three windows in O252.
 //
-// So a refusal is believed only when something really is there, and the
-// question that settles it is os.Lstat rather than os.Stat: a link pointing at
-// nothing is a name being taken, whatever it points at. Where O_EXCL works this
-// is exactly O_EXCL. Where it lies, this is what the tool did before it, and
-// what is left is the window between the two calls - narrow, on that one
-// platform, and smaller than the whole of the door it replaces.
+// It is gone since 2026-09-29, because the compiler moved underneath it.
+// Measured that day on Go 1.27.0, the oldest compiler go.mod admits: O_EXCL
+// through a junction creates the file and says nothing false. A symbolic link
+// could not be measured on this machine, which grants no right to make one,
+// and TestADirectoryReachedThroughALinkStillWorks asks exactly that question on
+// the runners, which do.
+//
+// A refusal is still read with os.Lstat, and only to choose its words: a name
+// that holds something - even a link pointing at nothing - gets the sentence
+// about a name already in use, and any other failure is the create's own.
 func CreateNew(path string, perm os.FileMode) (*os.File, error) {
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, perm)
 	if err == nil {
 		return f, nil
 	}
-
-	_, lookErr := os.Lstat(path)
-	if lookErr == nil {
-		// Something is genuinely there. This is the refusal that matters, and
-		// it is the one the escapes above went round.
+	if _, lookErr := os.Lstat(path); lookErr == nil {
 		return nil, &NameTakenError{Path: path, Err: err}
 	}
-	if !errors.Is(lookErr, fs.ErrNotExist) {
-		// A name we cannot ask about is not a name we may write over. Reported
-		// as the create failed rather than as the look did, because the create
-		// is what the caller asked for.
+	return nil, err
+}
+
+// OpenOwn opens for writing a file this tool made earlier and closed, and
+// refuses when the name holds anything else by now.
+//
+// The question is asked of the opened file rather than of the name, and that
+// order is the point. A name looked at and then opened can be swapped for a
+// link in between, and the open follows the link wherever it points - so the
+// look proves nothing. The open file is what the bytes would reach, so it is
+// the one to ask.
+//
+// Here beside CreateNew rather than with the writers, because it is the other
+// half of the same claim: CreateNew makes the file, and this is the only way
+// back into it.
+func OpenOwn(path string, own os.FileInfo) (*os.File, error) {
+	f, err := os.OpenFile(path, os.O_WRONLY, 0)
+	if err != nil {
 		return nil, err
 	}
-
-	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	now, err := f.Stat()
+	if err != nil {
+		_ = f.Close()
+		return nil, err
+	}
+	if !sameWrite(own, now) {
+		_ = f.Close()
+		return nil, &NotOursError{Path: path}
+	}
+	return f, nil
 }
 
 // NameTakenError is refusing to write under a name something else is holding.
