@@ -340,25 +340,10 @@ func run(launch Launch, errOut io.Writer) int {
 
 	// The language, decided before the first word is asked for, and after the
 	// application exists - the choice is kept in its preferences, so the order
-	// of these two was turned round on 2026-09-29. A choice made on the
-	// Preferences screen, or the system's language when there is none, or
-	// English (docs/PRODUCT.md D9) - see text.Resolve.
-	//
-	// A failure to load is not a reason to refuse to start: every message states
-	// its English on the spot and answers with it when no catalogue is loaded, so
-	// the window opens in English rather than not at all. It is said out loud
-	// rather than swallowed, because a language silently not arriving is the
-	// shape of defect somebody reports as "it ignores my system settings" a year
-	// later.
+	// of these two was turned round on 2026-09-29.
 	restart := false
 	kept := window.Forgetting(stored{prefs: a.Preferences()})
-	speak := text.Resolve(kept.Language(), lang.SystemLocale().LanguageString(), text.Languages()).Tag
-	if launch.Pseudo {
-		speak = text.Pseudo
-	}
-	if err := text.LoadBuiltIn(speak); err != nil {
-		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
-	}
+	speakTheChosenLanguage(kept, launch.Pseudo, errOut)
 
 	// The picture the desktop shows for this program, in the taskbar, in the
 	// switcher and on the window itself - the toolkit says an application icon
@@ -442,16 +427,49 @@ func run(launch Launch, errOut io.Writer) int {
 	// Restart now, once everything the window writes at its close is written:
 	// the folder by the close intercept, the size by the close callback, and
 	// the toolkit's last save of its preferences as the loop ends. A new
-	// window started any earlier could read the file before them. The window
-	// is gone by now, so a start that fails is said where a window that could
-	// not open says so - on standard error and in a system dialog - with the
-	// way round it: the choice is saved, and opening the program gives it.
+	// window started any earlier could read the file before them.
+	//
+	// The toolkit's own last save is inside a.Run and not after it, read in
+	// fyne v2.8.1: the loop queues the stopped hook that saves (app/app.go,
+	// forceImmediateSave), and Run waits for that queue to drain before it
+	// returns (internal/driver/glfw/driver.go, WaitForEvents).
 	if restart {
-		if err := startInstead(launch.Args); err != nil {
-			sentence := text.PreferencesRestartFailed(err.Error())
-			fmt.Fprintln(errOut, sentence)
-			sayInADialog(text.WindowTitle(version.Version), sentence)
-		}
+		restartInstead(launch.Args, errOut)
 	}
 	return code
+}
+
+// speakTheChosenLanguage loads the words this window speaks: a choice made on
+// the Preferences screen, or the system's language when there is none, or
+// English (docs/PRODUCT.md D9) - see text.Resolve. The pseudo language, when
+// asked for, is never a choice and never saved.
+//
+// A failure to load is not a reason to refuse to start: every message states
+// its English on the spot and answers with it when no catalogue is loaded, so
+// the window opens in English rather than not at all. It is said out loud
+// rather than swallowed, because a language silently not arriving is the shape
+// of defect somebody reports as "it ignores my system settings" a year later.
+func speakTheChosenLanguage(kept window.Remembered, pseudo bool, errOut io.Writer) {
+	speak := text.Resolve(kept.Language(), lang.SystemLocale().LanguageString(), text.Languages()).Tag
+	if pseudo {
+		speak = text.Pseudo
+	}
+	if err := text.LoadBuiltIn(speak); err != nil {
+		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
+	}
+}
+
+// restartInstead starts the program again once this window has gone. The
+// window is gone by now, so a start that fails is said where a window that
+// could not open says so - on standard error and in a system dialog - with the
+// system's reason, and the way round it: the choice is saved, and opening the
+// program again gives it.
+func restartInstead(args []string, errOut io.Writer) {
+	err := startInstead(args)
+	if err == nil {
+		return
+	}
+	sentence := text.PreferencesRestartFailed(err.Error())
+	fmt.Fprintln(errOut, sentence)
+	sayInADialog(text.WindowTitle(version.Version), sentence)
 }

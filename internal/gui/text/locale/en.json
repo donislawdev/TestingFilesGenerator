@@ -435,7 +435,7 @@
   },
   "PreferencesKept": {
     "description": "Shown on the Preferences screen.",
-    "other": "Between runs this window keeps three things: the folder the files went to, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
+    "other": "Between runs this window keeps three things: the output directory, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
   },
   "PreferencesKeptIn": {
     "description": "Shown on the Preferences screen.",
@@ -463,7 +463,7 @@
   },
   "PreferencesRestartFailed": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Reason}}, which has to stay spelled exactly that way.",
-    "other": "The window could not start again: {{.Reason}}. The choice is saved. Close this window and open it yourself to see it."
+    "other": "The window could not start again: {{.Reason}}. The language chosen is saved. Open the program again to see it."
   },
   "PresetCatchesHeading": {
     "description": "Shown on the preset screen.",

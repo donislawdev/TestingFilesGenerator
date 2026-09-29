@@ -110,9 +110,10 @@ func TestMovingBetweenScreensIsTabsAndNotButtons(t *testing.T) {
 	window.Open(host)
 
 	// The order is the order of the list, and About stays last. The two work
-	// screens that produce files come first, the recipe screen joins them, and
+	// screens that produce files come first, the recipe screen joins them,
+	// Preferences follows the work because it changes nothing a run makes, and
 	// the notice is the one somebody goes looking for rather than passes through.
-	want := []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabAbout()}
+	want := []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabPreferences(), text.TabAbout()}
 	got := tabNames(host.content)
 	if len(got) != len(want) {
 		t.Fatalf("the window has tabs %v and %v was expected", got, want)

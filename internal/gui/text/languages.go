@@ -194,14 +194,9 @@ func pseudoOf(sentence string) string {
 	b.WriteString("[")
 	letters := 0
 	for i := 0; i < len(sentence); {
-		if strings.HasPrefix(sentence[i:], "{{") {
-			end := strings.Index(sentence[i:], "}}")
-			if end < 0 {
-				b.WriteString(sentence[i:])
-				break
-			}
-			b.WriteString(sentence[i : i+end+2])
-			i += end + 2
+		if n := valueAt(sentence[i:]); n > 0 {
+			b.WriteString(sentence[i : i+n])
+			i += n
 			continue
 		}
 		r, size := utf8.DecodeRuneInString(sentence[i:])
@@ -218,6 +213,19 @@ func pseudoOf(sentence string) string {
 	b.WriteString(strings.Repeat(string(rune(0x00B7)), (letters*2+4)/5))
 	b.WriteString("]")
 	return b.String()
+}
+
+// valueAt is how long the value a sentence carries is when s starts with one,
+// or 0 when it does not. One left open runs to the end of the sentence, so
+// nothing after it is taken for words and accented.
+func valueAt(s string) int {
+	if !strings.HasPrefix(s, "{{") {
+		return 0
+	}
+	if end := strings.Index(s, "}}"); end >= 0 {
+		return end + 2
+	}
+	return len(s)
 }
 
 // pseudoLetters are the letters Pseudo accents, each one a letter of a real

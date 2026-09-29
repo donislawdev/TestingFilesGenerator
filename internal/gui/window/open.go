@@ -356,7 +356,9 @@ func FirstScreen(h Host) fyne.CanvasObject {
 //
 // It stays on every screen either way, which is not decoration - a button asking
 // for money that appears on some screens and not others is a button people
-// conclude they imagined.
+// conclude they imagined. Every screen but Preferences, by the owner's decision
+// of 2026-09-29: that one holds how the window speaks and what it keeps, and
+// asks for nothing.
 //
 // It opens the support page in whatever the desktop uses for the web. The
 // program fetches nothing and sends nothing, which is what keeps untouchable

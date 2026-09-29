@@ -797,7 +797,7 @@ func PreferencesRestartBusy() string {
 // PreferencesRestartFailed is the four parts of D6: what failed, why, and what
 // still works - the choice is saved, so opening the window by hand gives it.
 func PreferencesRestartFailed(reason string) string {
-	return sayf("PreferencesRestartFailed", "The window could not start again: {{.Reason}}. The choice is saved. Close this window and open it yourself to see it.", map[string]any{"Reason": reason})
+	return sayf("PreferencesRestartFailed", "The window could not start again: {{.Reason}}. The language chosen is saved. Open the program again to see it.", map[string]any{"Reason": reason})
 }
 
 // PreferencesMissing is said when a language chosen before is not in this
@@ -811,7 +811,7 @@ func PreferencesMissing(tag string) string {
 // computer. The folder picker's own memory is named as well: it writes into the
 // same place, and a list of what is kept that left it out would be untrue.
 func PreferencesKept() string {
-	return say("PreferencesKept", "Between runs this window keeps three things: the folder the files went to, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer.")
+	return say("PreferencesKept", "Between runs this window keeps three things: the output directory, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer.")
 }
 
 func PreferencesKeptIn() string { return say("PreferencesKeptIn", "They are kept in this folder:") }
