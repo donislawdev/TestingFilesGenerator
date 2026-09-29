@@ -142,6 +142,10 @@ var ownWork = map[string]bool{
 	// The same words in Polish, translated for this project on 2026-09-29 -
 	// the first language the Preferences screen offers beside English.
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/pl.json": true,
+	// The registries' own sentences, written out of them for a translator, and
+	// the same sentences in Polish, translated for this project on 2026-09-29.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/registry/en.json": true,
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/registry/pl.json": true,
 }
 
 // accountFor requires exactly one registry entry to claim a file. None means

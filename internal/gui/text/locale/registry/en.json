@@ -1,0 +1,1082 @@
+{
+  "Catch.empty-and-minimal.1": {
+    "description": "One line of what the empty-and-minimal preset typically finds, on the preset screen.",
+    "hash": "sha256-c9501051d6fa",
+    "other": "a valid file turned away for being too small, where the check counts bytes instead of reading them"
+  },
+  "Catch.empty-and-minimal.2": {
+    "description": "One line of what the empty-and-minimal preset typically finds, on the preset screen.",
+    "hash": "sha256-ab3561380909",
+    "other": "an empty file that brings the reader down rather than being reported"
+  },
+  "Catch.empty-and-minimal.3": {
+    "description": "One line of what the empty-and-minimal preset typically finds, on the preset screen.",
+    "hash": "sha256-0a385c1ce8f5",
+    "other": "a picture one pixel wide that divides by zero on the way to a thumbnail"
+  },
+  "Catch.empty-and-minimal.4": {
+    "description": "One line of what the empty-and-minimal preset typically finds, on the preset screen.",
+    "hash": "sha256-b62092374dc7",
+    "other": "storage that reads nought bytes as a failed upload and keeps retrying"
+  },
+  "Catch.filename-handling.1": {
+    "description": "One line of what the filename-handling preset typically finds, on the preset screen.",
+    "hash": "sha256-cd689fee5310",
+    "other": "a name that looks like a different one on screen, in a log or in a list"
+  },
+  "Catch.filename-handling.2": {
+    "description": "One line of what the filename-handling preset typically finds, on the preset screen.",
+    "hash": "sha256-ba8e95039ea8",
+    "other": "a name cut, trimmed or rewritten between upload and storage"
+  },
+  "Catch.filename-handling.3": {
+    "description": "One line of what the filename-handling preset typically finds, on the preset screen.",
+    "hash": "sha256-c7a8efdaa07d",
+    "other": "a length limit counted in characters where the storage counts bytes"
+  },
+  "Catch.size-boundaries.1": {
+    "description": "One line of what the size-boundaries preset typically finds, on the preset screen.",
+    "hash": "sha256-1c7f6a00f596",
+    "other": "off by one errors at the limit"
+  },
+  "Catch.size-boundaries.2": {
+    "description": "One line of what the size-boundaries preset typically finds, on the preset screen.",
+    "hash": "sha256-763425765f30",
+    "other": "MB confused with MiB, which is 4.8 per cent and enough to let a file through that should not pass"
+  },
+  "Catch.size-boundaries.3": {
+    "description": "One line of what the size-boundaries preset typically finds, on the preset screen.",
+    "hash": "sha256-787363b16a1e",
+    "other": "a limit enforced in the browser and not on the server"
+  },
+  "Catch.tabular-import.1": {
+    "description": "One line of what the tabular-import preset typically finds, on the preset screen.",
+    "hash": "sha256-39b5b6de0202",
+    "other": "a semicolon file read as one column, because the delimiter was assumed rather than looked for"
+  },
+  "Catch.tabular-import.2": {
+    "description": "One line of what the tabular-import preset typically finds, on the preset screen.",
+    "hash": "sha256-2a752bcedf30",
+    "other": "a CRLF file split into rows with an empty row after each one"
+  },
+  "Catch.tabular-import.3": {
+    "description": "One line of what the tabular-import preset typically finds, on the preset screen.",
+    "hash": "sha256-d413fe6b64bb",
+    "other": "a headerless table whose first row of data is eaten as column names"
+  },
+  "Catch.tabular-import.4": {
+    "description": "One line of what the tabular-import preset typically finds, on the preset screen.",
+    "hash": "sha256-aa0e2941d4e7",
+    "other": "an import that keeps the columns it can show and drops the rest without a word"
+  },
+  "Catch.tabular-import.5": {
+    "description": "One line of what the tabular-import preset typically finds, on the preset screen.",
+    "hash": "sha256-3f1943397e64",
+    "other": "a reader that takes JSON records one line at a time and stops at the first indented document"
+  },
+  "Catch.text-encoding.1": {
+    "description": "One line of what the text-encoding preset typically finds, on the preset screen.",
+    "hash": "sha256-0392010f72c4",
+    "other": "a reader that assumes UTF-8 and shows a UTF-16 file as one character in three, or as rows of boxes"
+  },
+  "Catch.text-encoding.2": {
+    "description": "One line of what the text-encoding preset typically finds, on the preset screen.",
+    "hash": "sha256-5fea89140de5",
+    "other": "a byte order mark read as content, so the first field of an import starts with three stray characters"
+  },
+  "Catch.text-encoding.3": {
+    "description": "One line of what the text-encoding preset typically finds, on the preset screen.",
+    "hash": "sha256-8c3775227fee",
+    "other": "an importer that guesses the encoding from the opening bytes and guesses differently for a longer file"
+  },
+  "Catch.text-encoding.4": {
+    "description": "One line of what the text-encoding preset typically finds, on the preset screen.",
+    "hash": "sha256-1f46ea750358",
+    "other": "a CRLF file split into rows with an empty row after each one, or a carriage return kept inside the last field"
+  },
+  "Catch.upload-validation.1": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-787363b16a1e",
+    "other": "a limit enforced in the browser and not on the server"
+  },
+  "Catch.upload-validation.2": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-d206391c78ce",
+    "other": "an SVG or an HTML file taken for a picture or for plain text, which is a way to get a script past a form"
+  },
+  "Catch.upload-validation.3": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-c3108c812fdc",
+    "other": "a file checked by its extension and never opened, so a PDF named .jpg goes through"
+  },
+  "Catch.upload-validation.4": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-5f1862f0a060",
+    "other": "a form that reads the whole body into memory before it looks at how big it is"
+  },
+  "Catch.upload-validation.5": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-3d1670bd44fd",
+    "other": "an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round"
+  },
+  "Catch.upload-validation.6": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-b918ae8fc864",
+    "other": "a name with spaces, brackets or characters outside ASCII written to disk unchanged"
+  },
+  "Detail.damage/zero-head.bytes": {
+    "description": "The sentence under the bytes setting of the zero-head damage, after what it takes.",
+    "hash": "sha256-8700126f6712",
+    "other": "How many bytes at the start are zeroed. Below four, some formats come out with damage no reader complains about."
+  },
+  "Detail.format/avif.height": {
+    "description": "The sentence under the height setting of the avif format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/avif.quality": {
+    "description": "The sentence under the quality setting of the avif format, after what it takes.",
+    "hash": "sha256-f6e1c3e1af83",
+    "other": "How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding."
+  },
+  "Detail.format/avif.width": {
+    "description": "The sentence under the width setting of the avif format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/bmp.height": {
+    "description": "The sentence under the height setting of the bmp format, after what it takes.",
+    "hash": "sha256-c5f8bc5c8f49",
+    "other": "How tall the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/bmp.width": {
+    "description": "The sentence under the width setting of the bmp format, after what it takes.",
+    "hash": "sha256-0c629fee898a",
+    "other": "How wide the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/csv.columns": {
+    "description": "The sentence under the columns setting of the csv format, after what it takes.",
+    "hash": "sha256-a8c37c7f2d97",
+    "other": "How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word."
+  },
+  "Detail.format/csv.delimiter": {
+    "description": "The sentence under the delimiter setting of the csv format, after what it takes.",
+    "hash": "sha256-1cc7b45d9a95",
+    "other": "What separates the fields. Choose semicolon for the shape a European spreadsheet exports."
+  },
+  "Detail.format/csv.header": {
+    "description": "The sentence under the header setting of the csv format, after what it takes.",
+    "hash": "sha256-29dcadb7c881",
+    "other": "Whether the first row names the columns. Turn it off for a table dumped straight out of a database."
+  },
+  "Detail.format/csv.line_ending": {
+    "description": "The sentence under the line_ending setting of the csv format, after what it takes.",
+    "hash": "sha256-d802b082ce8b",
+    "other": "How each row ends. Choose crlf for the shape RFC 4180 asks for and Excel writes."
+  },
+  "Detail.format/csv.quote_style": {
+    "description": "The sentence under the quote_style setting of the csv format, after what it takes.",
+    "hash": "sha256-a2427ed0240b",
+    "other": "Which fields carry quotes. With none the description stops carrying separators as well, because an unquoted field cannot hold one."
+  },
+  "Detail.format/docx.paragraphs": {
+    "description": "The sentence under the paragraphs setting of the docx format, after what it takes.",
+    "hash": "sha256-5d0141e9b1da",
+    "other": "How many paragraphs of text the document holds. The rest of the size you asked for is carried by a part of the package that is not shown."
+  },
+  "Detail.format/gif.frames": {
+    "description": "The sentence under the frames setting of the gif format, after what it takes.",
+    "hash": "sha256-d2291fedd06c",
+    "other": "How many frames the animation has. Set it to 1 for a still picture."
+  },
+  "Detail.format/gif.height": {
+    "description": "The sentence under the height setting of the gif format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/gif.width": {
+    "description": "The sentence under the width setting of the gif format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/html.structure": {
+    "description": "The sentence under the structure setting of the html format, after what it takes.",
+    "hash": "sha256-40b00d44ba38",
+    "other": "Whether the file is a whole page or only the blocks that would sit inside one. A fragment has no doctype, no html element and no body, which is what a content field or the body of an email really holds. It is far smaller, so the smallest fragment sits well below the smallest page."
+  },
+  "Detail.format/ico.embed": {
+    "description": "The sentence under the embed setting of the ico format, after what it takes.",
+    "hash": "sha256-1578534c06bf",
+    "other": "What sits inside the icon. A bitmap is read by every version of Windows. A PNG makes the file much smaller and needs Windows Vista or newer."
+  },
+  "Detail.format/ico.height": {
+    "description": "The sentence under the height setting of the ico format, after what it takes.",
+    "hash": "sha256-e2712d04875d",
+    "other": "How tall the icon is. Left out, the largest standard icon size that fits is used."
+  },
+  "Detail.format/ico.width": {
+    "description": "The sentence under the width setting of the ico format, after what it takes.",
+    "hash": "sha256-1e8b4b7bc765",
+    "other": "How wide the icon is. Left out, the largest standard icon size that fits is used."
+  },
+  "Detail.format/jpg.height": {
+    "description": "The sentence under the height setting of the jpg format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/jpg.quality": {
+    "description": "The sentence under the quality setting of the jpg format, after what it takes.",
+    "hash": "sha256-55a9a664be71",
+    "other": "How much detail survives compression, from 1 to 100. JPEG throws detail away by design, so a low number gives a visibly softer picture. It changes how large the picture encodes to, not the size of the file you asked for."
+  },
+  "Detail.format/jpg.width": {
+    "description": "The sentence under the width setting of the jpg format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/json.formatting": {
+    "description": "The sentence under the formatting setting of the json format, after what it takes.",
+    "hash": "sha256-fc49d1b8da7d",
+    "other": "How the document is laid out. Every reader accepts all three, so this changes what meets everything around the parser rather than the parser itself - minified puts the whole file on one line and ends without a newline, and indented makes the same records several times larger."
+  },
+  "Detail.format/jxl.height": {
+    "description": "The sentence under the height setting of the jxl format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/jxl.quality": {
+    "description": "The sentence under the quality setting of the jxl format, after what it takes.",
+    "hash": "sha256-f6e1c3e1af83",
+    "other": "How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding."
+  },
+  "Detail.format/jxl.width": {
+    "description": "The sentence under the width setting of the jxl format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/log.entry_format": {
+    "description": "The sentence under the entry_format setting of the log format, after what it takes.",
+    "hash": "sha256-96bf1c74dcf1",
+    "other": "Which kind of log to write. Web server shapes carry a request and a status, the others carry a level and a message."
+  },
+  "Detail.format/log.ip_version": {
+    "description": "The sentence under the ip_version setting of the log format, after what it takes.",
+    "hash": "sha256-870d5b20c405",
+    "other": "Which kind of client address appears. Choose v6 to find out whether a reader handles it."
+  },
+  "Detail.format/log.level_mix": {
+    "description": "The sentence under the level_mix setting of the log format, after what it takes.",
+    "hash": "sha256-45f87458cd88",
+    "other": "Which severities appear. Only the plain and json-lines shapes carry one, and asking for it beside another shape is refused."
+  },
+  "Detail.format/log.line_ending": {
+    "description": "The sentence under the line_ending setting of the log format, after what it takes.",
+    "hash": "sha256-8595ad80ed76",
+    "other": "How each line ends. Choose crlf for a log written by a Windows service."
+  },
+  "Detail.format/log.methods": {
+    "description": "The sentence under the methods setting of the log format, after what it takes.",
+    "hash": "sha256-c621eebad3fc",
+    "other": "Which request methods appear. Read is GET and HEAD, mixed adds POST, PUT, PATCH and DELETE."
+  },
+  "Detail.format/log.rate": {
+    "description": "The sentence under the rate setting of the log format, after what it takes.",
+    "hash": "sha256-f8f4b55f9769",
+    "other": "How fast the entries arrive. Only means anything while timestamps advance."
+  },
+  "Detail.format/log.status_mix": {
+    "description": "The sentence under the status_mix setting of the log format, after what it takes.",
+    "hash": "sha256-6555eacaebb2",
+    "other": "Which response codes appear. Realistic is mostly success with a tail of errors."
+  },
+  "Detail.format/log.timestamps": {
+    "description": "The sentence under the timestamps setting of the log format, after what it takes.",
+    "hash": "sha256-b7c69e2424bc",
+    "other": "Whether each entry happens later than the one before it. Fixed puts every entry at the same instant, which is what this format did before it could advance."
+  },
+  "Detail.format/md.bom": {
+    "description": "The sentence under the bom setting of the md format, after what it takes.",
+    "hash": "sha256-a2d6a88583d6",
+    "other": "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file."
+  },
+  "Detail.format/md.encoding": {
+    "description": "The sentence under the encoding setting of the md format, after what it takes.",
+    "hash": "sha256-9b6f8a3338ec",
+    "other": "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused."
+  },
+  "Detail.format/pdf.author": {
+    "description": "The sentence under the author setting of the pdf format, after what it takes.",
+    "hash": "sha256-33b1ee363d86",
+    "other": "The author in the document properties. Left empty, the document names none."
+  },
+  "Detail.format/pdf.created": {
+    "description": "The sentence under the created setting of the pdf format, after what it takes.",
+    "hash": "sha256-76abcd78cc63",
+    "other": "When the document says it was created. A time written without a zone is kept without one, and none leaves the date out."
+  },
+  "Detail.format/pdf.creator": {
+    "description": "The sentence under the creator setting of the pdf format, after what it takes.",
+    "hash": "sha256-57ed4066a447",
+    "other": "The program the document says it was written in, such as Microsoft Word. Left empty, the document names none."
+  },
+  "Detail.format/pdf.keywords": {
+    "description": "The sentence under the keywords setting of the pdf format, after what it takes.",
+    "hash": "sha256-fa35deba8ee4",
+    "other": "The keywords in the document properties, as one line of text. Left empty, the document has none."
+  },
+  "Detail.format/pdf.modified": {
+    "description": "The sentence under the modified setting of the pdf format, after what it takes.",
+    "hash": "sha256-67960ecb9bad",
+    "other": "When the document says it was last changed, written the same way as created. Left empty, the document has no such date."
+  },
+  "Detail.format/pdf.orientation": {
+    "description": "The sentence under the orientation setting of the pdf format, after what it takes.",
+    "hash": "sha256-e3b372e39fb9",
+    "other": "Whether pages stand upright or lie wide. Mixed alternates the two, starting upright, and needs at least two pages."
+  },
+  "Detail.format/pdf.page_size": {
+    "description": "The sentence under the page_size setting of the pdf format, after what it takes.",
+    "hash": "sha256-5bac95d9b758",
+    "other": "The paper size every page uses. Mixed goes through a4, letter, legal, a3 and a5 in turn, one a page, and needs at least two pages."
+  },
+  "Detail.format/pdf.pages": {
+    "description": "The sentence under the pages setting of the pdf format, after what it takes.",
+    "hash": "sha256-298488d25c0b",
+    "other": "How many pages the document has."
+  },
+  "Detail.format/pdf.pdf_version": {
+    "description": "The sentence under the pdf_version setting of the pdf format, after what it takes.",
+    "hash": "sha256-be65b8f13fa3",
+    "other": "The version written at the start of the file. Nothing else changes, because the document uses nothing newer than 1.4."
+  },
+  "Detail.format/pdf.producer": {
+    "description": "The sentence under the producer setting of the pdf format, after what it takes.",
+    "hash": "sha256-d38b44bea162",
+    "other": "The program the document says turned it into a PDF."
+  },
+  "Detail.format/pdf.rotate": {
+    "description": "The sentence under the rotate setting of the pdf format, after what it takes.",
+    "hash": "sha256-954a63b2b503",
+    "other": "Asks the reader to turn every page clockwise by this many degrees when it shows it. The page itself stays upright, so a reader that ignores the request shows it unturned."
+  },
+  "Detail.format/pdf.subject": {
+    "description": "The sentence under the subject setting of the pdf format, after what it takes.",
+    "hash": "sha256-3c66b2d9cc36",
+    "other": "The subject in the document properties. Left empty, the document has none."
+  },
+  "Detail.format/pdf.title": {
+    "description": "The sentence under the title setting of the pdf format, after what it takes.",
+    "hash": "sha256-28f3672d6413",
+    "other": "The title a reader shows in its title bar and in the document properties. Left empty, the title is the self describing label, or the name of this tool without one."
+  },
+  "Detail.format/png.height": {
+    "description": "The sentence under the height setting of the png format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/png.width": {
+    "description": "The sentence under the width setting of the png format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/pptx.slides": {
+    "description": "The sentence under the slides setting of the pptx format, after what it takes.",
+    "hash": "sha256-b62241b390bf",
+    "other": "How many slides the presentation holds. The rest of the size you asked for is carried by a part of the package that is not shown."
+  },
+  "Detail.format/svg.height": {
+    "description": "The sentence under the height setting of the svg format, after what it takes.",
+    "hash": "sha256-093ec883d633",
+    "other": "How tall the drawing says it is. The label sits along the bottom edge, so a drawing shorter than that strip carries no visible label."
+  },
+  "Detail.format/svg.width": {
+    "description": "The sentence under the width setting of the svg format, after what it takes.",
+    "hash": "sha256-5dc327958f8d",
+    "other": "How wide the drawing says it is. Nothing is drawn into pixels here, so a large number costs a few bytes in the file and a great deal of memory in whatever opens it."
+  },
+  "Detail.format/targz.compression": {
+    "description": "The sentence under the compression setting of the targz format, after what it takes.",
+    "hash": "sha256-82bb36e51fe2",
+    "other": "How hard the files inside are squeezed. The archive still comes out the size you asked for - what changes is how much of it is real content and how much is padding."
+  },
+  "Detail.format/targz.depth": {
+    "description": "The sentence under the depth setting of the targz format, after what it takes.",
+    "hash": "sha256-485a554d4ae5",
+    "other": "How many directories deep the files inside sit. 0 puts them all at the top."
+  },
+  "Detail.format/targz.directory_entries": {
+    "description": "The sentence under the directory_entries setting of the targz format, after what it takes.",
+    "hash": "sha256-4602285f60ac",
+    "other": "Whether the archive also lists the directories themselves. Most file browsers show the same folders either way, so the difference is in the entry list rather than on screen. It matters for readers that only create a directory the archive names."
+  },
+  "Detail.format/targz.entries": {
+    "description": "The sentence under the entries setting of the targz format, after what it takes.",
+    "hash": "sha256-e8a3f919b300",
+    "other": "How many files the archive holds. Use contains instead when the files are not all alike."
+  },
+  "Detail.format/targz.entry_format": {
+    "description": "The sentence under the entry_format setting of the targz format, after what it takes.",
+    "hash": "sha256-f4dab5f30a79",
+    "other": "The format of the files inside. Run tfg formats to see what this build supports."
+  },
+  "Detail.format/targz.entry_mode": {
+    "description": "The sentence under the entry_mode setting of the targz format, after what it takes.",
+    "hash": "sha256-6afb3c26590f",
+    "other": "The permissions recorded for each file inside. It is what the archive says, not what the file gets - that depends on who unpacks it and how."
+  },
+  "Detail.format/targz.entry_owner": {
+    "description": "The sentence under the entry_owner setting of the targz format, after what it takes.",
+    "hash": "sha256-e4fa8df2c217",
+    "other": "Who each file inside belongs to. Leave it unset and the archive names nobody, which is what most archives written by a build carry."
+  },
+  "Detail.format/targz.entry_size": {
+    "description": "The sentence under the entry_size setting of the targz format, after what it takes.",
+    "hash": "sha256-c3687f6606e8",
+    "other": "How big each file inside is."
+  },
+  "Detail.format/tiff.height": {
+    "description": "The sentence under the height setting of the tiff format, after what it takes.",
+    "hash": "sha256-c5f8bc5c8f49",
+    "other": "How tall the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/tiff.width": {
+    "description": "The sentence under the width setting of the tiff format, after what it takes.",
+    "hash": "sha256-0c629fee898a",
+    "other": "How wide the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/txt.bom": {
+    "description": "The sentence under the bom setting of the txt format, after what it takes.",
+    "hash": "sha256-a2d6a88583d6",
+    "other": "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file."
+  },
+  "Detail.format/txt.encoding": {
+    "description": "The sentence under the encoding setting of the txt format, after what it takes.",
+    "hash": "sha256-9b6f8a3338ec",
+    "other": "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused."
+  },
+  "Detail.format/wav.bit_depth": {
+    "description": "The sentence under the bit_depth setting of the wav format, after what it takes.",
+    "hash": "sha256-211bd38551ad",
+    "other": "How many bits each sample uses."
+  },
+  "Detail.format/wav.channels": {
+    "description": "The sentence under the channels setting of the wav format, after what it takes.",
+    "hash": "sha256-f94ddfa60e04",
+    "other": "How many channels the signal has, so 1 for mono and 2 for stereo."
+  },
+  "Detail.format/wav.content": {
+    "description": "The sentence under the content setting of the wav format, after what it takes.",
+    "hash": "sha256-c2baa480c847",
+    "other": "What the signal sounds like."
+  },
+  "Detail.format/wav.sample_rate": {
+    "description": "The sentence under the sample_rate setting of the wav format, after what it takes.",
+    "hash": "sha256-71e4eb77e129",
+    "other": "How many samples a second the signal carries."
+  },
+  "Detail.format/webp.height": {
+    "description": "The sentence under the height setting of the webp format, after what it takes.",
+    "hash": "sha256-c5f8bc5c8f49",
+    "other": "How tall the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/webp.width": {
+    "description": "The sentence under the width setting of the webp format, after what it takes.",
+    "hash": "sha256-0c629fee898a",
+    "other": "How wide the picture is. Left out, the picture is sized to fill the bytes you asked for."
+  },
+  "Detail.format/xlsx.columns": {
+    "description": "The sentence under the columns setting of the xlsx format, after what it takes.",
+    "hash": "sha256-a8c37c7f2d97",
+    "other": "How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word."
+  },
+  "Detail.format/xlsx.rows": {
+    "description": "The sentence under the rows setting of the xlsx format, after what it takes.",
+    "hash": "sha256-5ea8a1ff74e7",
+    "other": "How many rows of cells the sheet holds. The rest of the size you asked for is carried by a part of the package that is not shown."
+  },
+  "Detail.format/xml.bom": {
+    "description": "The sentence under the bom setting of the xml format, after what it takes.",
+    "hash": "sha256-a2d6a88583d6",
+    "other": "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file."
+  },
+  "Detail.format/xml.encoding": {
+    "description": "The sentence under the encoding setting of the xml format, after what it takes.",
+    "hash": "sha256-9b6f8a3338ec",
+    "other": "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused."
+  },
+  "Detail.format/zip.compression": {
+    "description": "The sentence under the compression setting of the zip format, after what it takes.",
+    "hash": "sha256-82bb36e51fe2",
+    "other": "How hard the files inside are squeezed. The archive still comes out the size you asked for - what changes is how much of it is real content and how much is padding."
+  },
+  "Detail.format/zip.depth": {
+    "description": "The sentence under the depth setting of the zip format, after what it takes.",
+    "hash": "sha256-485a554d4ae5",
+    "other": "How many directories deep the files inside sit. 0 puts them all at the top."
+  },
+  "Detail.format/zip.directory_entries": {
+    "description": "The sentence under the directory_entries setting of the zip format, after what it takes.",
+    "hash": "sha256-4602285f60ac",
+    "other": "Whether the archive also lists the directories themselves. Most file browsers show the same folders either way, so the difference is in the entry list rather than on screen. It matters for readers that only create a directory the archive names."
+  },
+  "Detail.format/zip.encryption": {
+    "description": "The sentence under the encryption setting of the zip format, after what it takes.",
+    "hash": "sha256-2cdbcc794818",
+    "other": "How the archive is locked. AES is the WinZip scheme, and some readers cannot open it at all. ZipCrypto is the old one every reader opens and nothing modern trusts, and some of them hand back the encrypted bytes without saying so. A locked archive from this tool is a fixture rather than protection - the key is worked out from the run seed, so the same recipe gives the same archive on any machine, and the password is written into the manifest beside it."
+  },
+  "Detail.format/zip.entries": {
+    "description": "The sentence under the entries setting of the zip format, after what it takes.",
+    "hash": "sha256-e8a3f919b300",
+    "other": "How many files the archive holds. Use contains instead when the files are not all alike."
+  },
+  "Detail.format/zip.entry_format": {
+    "description": "The sentence under the entry_format setting of the zip format, after what it takes.",
+    "hash": "sha256-f4dab5f30a79",
+    "other": "The format of the files inside. Run tfg formats to see what this build supports."
+  },
+  "Detail.format/zip.entry_size": {
+    "description": "The sentence under the entry_size setting of the zip format, after what it takes.",
+    "hash": "sha256-c3687f6606e8",
+    "other": "How big each file inside is."
+  },
+  "Detail.format/zip.password": {
+    "description": "The sentence under the password setting of the zip format, after what it takes.",
+    "hash": "sha256-c3c77f362ce2",
+    "other": "The password the archive is locked with. It is written into the manifest as you typed it, because a test that cannot open the file cannot check anything."
+  },
+  "Detail.preset/empty-and-minimal.formats": {
+    "description": "The sentence under the formats setting of the empty-and-minimal preset, after what it takes.",
+    "hash": "sha256-945bbcfdb3cf",
+    "other": "Which formats the set is built from. Leave it at all for every format this build has, or name the ones your system accepts."
+  },
+  "Detail.preset/filename-handling.format": {
+    "description": "The sentence under the format setting of the filename-handling preset, after what it takes.",
+    "hash": "sha256-30738a4e7806",
+    "other": "What kind of file the whole set is made of."
+  },
+  "Detail.preset/size-boundaries.format": {
+    "description": "The sentence under the format setting of the size-boundaries preset, after what it takes.",
+    "hash": "sha256-30738a4e7806",
+    "other": "What kind of file the whole set is made of."
+  },
+  "Detail.preset/size-boundaries.limit": {
+    "description": "The sentence under the limit setting of the size-boundaries preset, after what it takes.",
+    "hash": "sha256-b43eca6d1365",
+    "other": "The size limit your system declares. Everything else is measured from it."
+  },
+  "Detail.preset/size-boundaries.spread": {
+    "description": "The sentence under the spread setting of the size-boundaries preset, after what it takes.",
+    "hash": "sha256-149b17db988d",
+    "other": "How far either side of the limit to reach, as a list of sizes."
+  },
+  "Detail.preset/tabular-import.columns": {
+    "description": "The sentence under the columns setting of the tabular-import preset, after what it takes.",
+    "hash": "sha256-de43c523ae48",
+    "other": "How many columns each row of the spreadsheet has. Rows times columns has a ceiling, and asking past it is refused before anything is written."
+  },
+  "Detail.preset/tabular-import.rows": {
+    "description": "The sentence under the rows setting of the tabular-import preset, after what it takes.",
+    "hash": "sha256-46b383ddf143",
+    "other": "How many rows the spreadsheet holds. It is written at exactly the size that many rows package to, so the budget above moves with this."
+  },
+  "Detail.preset/text-encoding.sample": {
+    "description": "The sentence under the sample setting of the text-encoding preset, after what it takes.",
+    "hash": "sha256-dcd4f143702e",
+    "other": "How big each file of the set is. UTF-16 stores two bytes for every character, so an odd number is refused."
+  },
+  "Detail.preset/upload-validation.allow": {
+    "description": "The sentence under the allow setting of the upload-validation preset, after what it takes.",
+    "hash": "sha256-d8a6c0a7bd9f",
+    "other": "Which types your form is supposed to accept. Each one becomes a real file of that type, and they are the positive control of the whole set."
+  },
+  "Detail.preset/upload-validation.bulk": {
+    "description": "The sentence under the bulk setting of the upload-validation preset, after what it takes.",
+    "hash": "sha256-4dd1c4efad8d",
+    "other": "How many files the mass upload holds. Nought leaves that group out of the set altogether."
+  },
+  "Detail.preset/upload-validation.deny": {
+    "description": "The sentence under the deny setting of the upload-validation preset, after what it takes.",
+    "hash": "sha256-f9e5c633d218",
+    "other": "Which extensions your form is supposed to turn away. An extension this build has no format for still gets a file under that name, holding plain text."
+  },
+  "Detail.preset/upload-validation.far-over": {
+    "description": "The sentence under the far-over setting of the upload-validation preset, after what it takes.",
+    "hash": "sha256-6a0093c6d7a0",
+    "other": "How far past the limit the one big file goes. Turn it off where writing several times the limit is not worth the disk."
+  },
+  "Detail.preset/upload-validation.limit": {
+    "description": "The sentence under the limit setting of the upload-validation preset, after what it takes.",
+    "hash": "sha256-be929d76067d",
+    "other": "The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset."
+  },
+  "Group.format/pdf.Document properties": {
+    "description": "The heading over a block of settings of the pdf format.",
+    "hash": "sha256-7115a778ab47",
+    "other": "Document properties"
+  },
+  "Joint.format/avif.width.height": {
+    "description": "Why width times height of the avif format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-269a6c476761",
+    "other": "the encoder holds the whole picture in memory while it works"
+  },
+  "Joint.format/gif.width.height": {
+    "description": "Why width times height of the gif format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-0bed7aa664d8",
+    "other": "the picture is held in memory while it is encoded"
+  },
+  "Joint.format/jpg.width.height": {
+    "description": "Why width times height of the jpg format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-0bed7aa664d8",
+    "other": "the picture is held in memory while it is encoded"
+  },
+  "Joint.format/jxl.width.height": {
+    "description": "Why width times height of the jxl format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-269a6c476761",
+    "other": "the encoder holds the whole picture in memory while it works"
+  },
+  "Joint.format/png.width.height": {
+    "description": "Why width times height of the png format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-0bed7aa664d8",
+    "other": "the picture is held in memory while it is encoded"
+  },
+  "Joint.format/xlsx.rows.columns": {
+    "description": "Why rows times columns of the xlsx format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-e1ef283f3c5d",
+    "other": "the sheet is built in memory before it is packaged"
+  },
+  "Label.allow": {
+    "description": "The name beside the box of a setting a recipe writes as allow.",
+    "hash": "sha256-e213c161d5ce",
+    "other": "Allow"
+  },
+  "Label.author": {
+    "description": "The name beside the box of a setting a recipe writes as author.",
+    "hash": "sha256-d95082a2ee57",
+    "other": "Author"
+  },
+  "Label.bit_depth": {
+    "description": "The name beside the box of a setting a recipe writes as bit_depth.",
+    "hash": "sha256-cc62f2e89a82",
+    "other": "Bit depth"
+  },
+  "Label.bom": {
+    "description": "The name beside the box of a setting a recipe writes as bom.",
+    "hash": "sha256-e39338101951",
+    "other": "Bom"
+  },
+  "Label.bulk": {
+    "description": "The name beside the box of a setting a recipe writes as bulk.",
+    "hash": "sha256-3140100df131",
+    "other": "Bulk"
+  },
+  "Label.bytes": {
+    "description": "The name beside the box of a setting a recipe writes as bytes.",
+    "hash": "sha256-4d8000301fcc",
+    "other": "Bytes"
+  },
+  "Label.channels": {
+    "description": "The name beside the box of a setting a recipe writes as channels.",
+    "hash": "sha256-4c8906cf76f5",
+    "other": "Channels"
+  },
+  "Label.columns": {
+    "description": "The name beside the box of a setting a recipe writes as columns.",
+    "hash": "sha256-53aade77cd69",
+    "other": "Columns"
+  },
+  "Label.compression": {
+    "description": "The name beside the box of a setting a recipe writes as compression.",
+    "hash": "sha256-278b1b2a9c84",
+    "other": "Compression"
+  },
+  "Label.content": {
+    "description": "The name beside the box of a setting a recipe writes as content.",
+    "hash": "sha256-47bd29075f8b",
+    "other": "Content"
+  },
+  "Label.created": {
+    "description": "The name beside the box of a setting a recipe writes as created.",
+    "hash": "sha256-d70b9e24bca2",
+    "other": "Created"
+  },
+  "Label.creator": {
+    "description": "The name beside the box of a setting a recipe writes as creator.",
+    "hash": "sha256-88447b83090c",
+    "other": "Creator"
+  },
+  "Label.delimiter": {
+    "description": "The name beside the box of a setting a recipe writes as delimiter.",
+    "hash": "sha256-4b4eb3b88e85",
+    "other": "Delimiter"
+  },
+  "Label.deny": {
+    "description": "The name beside the box of a setting a recipe writes as deny.",
+    "hash": "sha256-05a2d7332eb9",
+    "other": "Deny"
+  },
+  "Label.depth": {
+    "description": "The name beside the box of a setting a recipe writes as depth.",
+    "hash": "sha256-f1dbc33978a9",
+    "other": "Depth"
+  },
+  "Label.directory_entries": {
+    "description": "The name beside the box of a setting a recipe writes as directory_entries.",
+    "hash": "sha256-7f31f347692c",
+    "other": "Directory entries"
+  },
+  "Label.embed": {
+    "description": "The name beside the box of a setting a recipe writes as embed.",
+    "hash": "sha256-7512561d2f68",
+    "other": "Embed"
+  },
+  "Label.encoding": {
+    "description": "The name beside the box of a setting a recipe writes as encoding.",
+    "hash": "sha256-4d25a47625ce",
+    "other": "Encoding"
+  },
+  "Label.encryption": {
+    "description": "The name beside the box of a setting a recipe writes as encryption.",
+    "hash": "sha256-82f4e719a19c",
+    "other": "Encryption"
+  },
+  "Label.entries": {
+    "description": "The name beside the box of a setting a recipe writes as entries.",
+    "hash": "sha256-7cb76b4af12a",
+    "other": "Entries"
+  },
+  "Label.entry_format": {
+    "description": "The name beside the box of a setting a recipe writes as entry_format.",
+    "hash": "sha256-63d61a75badf",
+    "other": "Entry format"
+  },
+  "Label.entry_mode": {
+    "description": "The name beside the box of a setting a recipe writes as entry_mode.",
+    "hash": "sha256-4a17440263ca",
+    "other": "Entry mode"
+  },
+  "Label.entry_owner": {
+    "description": "The name beside the box of a setting a recipe writes as entry_owner.",
+    "hash": "sha256-d7bf94c5f409",
+    "other": "Entry owner"
+  },
+  "Label.entry_size": {
+    "description": "The name beside the box of a setting a recipe writes as entry_size.",
+    "hash": "sha256-1190635edb6f",
+    "other": "Entry size"
+  },
+  "Label.far-over": {
+    "description": "The name beside the box of a setting a recipe writes as far-over.",
+    "hash": "sha256-874367c30d4e",
+    "other": "Far-over"
+  },
+  "Label.format": {
+    "description": "The name beside the box of a setting a recipe writes as format.",
+    "hash": "sha256-2f343666aaa8",
+    "other": "Format"
+  },
+  "Label.formats": {
+    "description": "The name beside the box of a setting a recipe writes as formats.",
+    "hash": "sha256-9f01769a4278",
+    "other": "Formats"
+  },
+  "Label.formatting": {
+    "description": "The name beside the box of a setting a recipe writes as formatting.",
+    "hash": "sha256-29d4198e41d8",
+    "other": "Formatting"
+  },
+  "Label.frames": {
+    "description": "The name beside the box of a setting a recipe writes as frames.",
+    "hash": "sha256-2c447e8d0598",
+    "other": "Frames"
+  },
+  "Label.header": {
+    "description": "The name beside the box of a setting a recipe writes as header.",
+    "hash": "sha256-ba5caa4285a8",
+    "other": "Header"
+  },
+  "Label.height": {
+    "description": "The name beside the box of a setting a recipe writes as height.",
+    "hash": "sha256-bfe2eca40179",
+    "other": "Height"
+  },
+  "Label.ip_version": {
+    "description": "The name beside the box of a setting a recipe writes as ip_version.",
+    "hash": "sha256-29016036fada",
+    "other": "Ip version"
+  },
+  "Label.keywords": {
+    "description": "The name beside the box of a setting a recipe writes as keywords.",
+    "hash": "sha256-8bfdb93cafaa",
+    "other": "Keywords"
+  },
+  "Label.level_mix": {
+    "description": "The name beside the box of a setting a recipe writes as level_mix.",
+    "hash": "sha256-cc4f6ea7c7fc",
+    "other": "Level mix"
+  },
+  "Label.limit": {
+    "description": "The name beside the box of a setting a recipe writes as limit.",
+    "hash": "sha256-674b0ed54bf7",
+    "other": "Limit"
+  },
+  "Label.line_ending": {
+    "description": "The name beside the box of a setting a recipe writes as line_ending.",
+    "hash": "sha256-c4f7d0b83542",
+    "other": "Line ending"
+  },
+  "Label.methods": {
+    "description": "The name beside the box of a setting a recipe writes as methods.",
+    "hash": "sha256-8696622f3441",
+    "other": "Methods"
+  },
+  "Label.modified": {
+    "description": "The name beside the box of a setting a recipe writes as modified.",
+    "hash": "sha256-e8ce5dcaf408",
+    "other": "Modified"
+  },
+  "Label.orientation": {
+    "description": "The name beside the box of a setting a recipe writes as orientation.",
+    "hash": "sha256-e3d11242200f",
+    "other": "Orientation"
+  },
+  "Label.page_size": {
+    "description": "The name beside the box of a setting a recipe writes as page_size.",
+    "hash": "sha256-bd69e66e00ef",
+    "other": "Page size"
+  },
+  "Label.pages": {
+    "description": "The name beside the box of a setting a recipe writes as pages.",
+    "hash": "sha256-9046da16aea9",
+    "other": "Pages"
+  },
+  "Label.paragraphs": {
+    "description": "The name beside the box of a setting a recipe writes as paragraphs.",
+    "hash": "sha256-d2ef75e86bb7",
+    "other": "Paragraphs"
+  },
+  "Label.password": {
+    "description": "The name beside the box of a setting a recipe writes as password.",
+    "hash": "sha256-e7cf3ef4f17c",
+    "other": "Password"
+  },
+  "Label.pdf_version": {
+    "description": "The name beside the box of a setting a recipe writes as pdf_version.",
+    "hash": "sha256-3ce7c43387ea",
+    "other": "Pdf version"
+  },
+  "Label.producer": {
+    "description": "The name beside the box of a setting a recipe writes as producer.",
+    "hash": "sha256-98ee4021c6f1",
+    "other": "Producer"
+  },
+  "Label.quality": {
+    "description": "The name beside the box of a setting a recipe writes as quality.",
+    "hash": "sha256-1b2c08a8733d",
+    "other": "Quality"
+  },
+  "Label.quote_style": {
+    "description": "The name beside the box of a setting a recipe writes as quote_style.",
+    "hash": "sha256-8c8c9f41e450",
+    "other": "Quote style"
+  },
+  "Label.rate": {
+    "description": "The name beside the box of a setting a recipe writes as rate.",
+    "hash": "sha256-45b63ffd01af",
+    "other": "Rate"
+  },
+  "Label.rotate": {
+    "description": "The name beside the box of a setting a recipe writes as rotate.",
+    "hash": "sha256-c3613b1704f5",
+    "other": "Rotate"
+  },
+  "Label.rows": {
+    "description": "The name beside the box of a setting a recipe writes as rows.",
+    "hash": "sha256-101f2ff3de22",
+    "other": "Rows"
+  },
+  "Label.sample": {
+    "description": "The name beside the box of a setting a recipe writes as sample.",
+    "hash": "sha256-95a2f1edb08a",
+    "other": "Sample"
+  },
+  "Label.sample_rate": {
+    "description": "The name beside the box of a setting a recipe writes as sample_rate.",
+    "hash": "sha256-218e0d43275e",
+    "other": "Sample rate"
+  },
+  "Label.slides": {
+    "description": "The name beside the box of a setting a recipe writes as slides.",
+    "hash": "sha256-a0ffe3818444",
+    "other": "Slides"
+  },
+  "Label.spread": {
+    "description": "The name beside the box of a setting a recipe writes as spread.",
+    "hash": "sha256-b11fb1f593a8",
+    "other": "Spread"
+  },
+  "Label.status_mix": {
+    "description": "The name beside the box of a setting a recipe writes as status_mix.",
+    "hash": "sha256-e5e3006b5ecd",
+    "other": "Status mix"
+  },
+  "Label.structure": {
+    "description": "The name beside the box of a setting a recipe writes as structure.",
+    "hash": "sha256-7203c2b3dad3",
+    "other": "Structure"
+  },
+  "Label.subject": {
+    "description": "The name beside the box of a setting a recipe writes as subject.",
+    "hash": "sha256-68971283841a",
+    "other": "Subject"
+  },
+  "Label.timestamps": {
+    "description": "The name beside the box of a setting a recipe writes as timestamps.",
+    "hash": "sha256-755f099dbf49",
+    "other": "Timestamps"
+  },
+  "Label.title": {
+    "description": "The name beside the box of a setting a recipe writes as title.",
+    "hash": "sha256-7e8cd2056da7",
+    "other": "Title"
+  },
+  "Label.width": {
+    "description": "The name beside the box of a setting a recipe writes as width.",
+    "hash": "sha256-3019947b6daf",
+    "other": "Width"
+  },
+  "Note.size-boundaries.limit": {
+    "description": "What a run of the size-boundaries preset says when nobody gave its limit.",
+    "hash": "sha256-d65173d5db01",
+    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your system's limit. Pass the limit your system declares, or the files say nothing about it."
+  },
+  "Note.upload-validation.limit": {
+    "description": "What a run of the upload-validation preset says when nobody gave its limit.",
+    "hash": "sha256-c30ac7e13539",
+    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your form's limit. Pass the limit your form declares, or the files say nothing about it."
+  },
+  "Question.empty-and-minimal": {
+    "description": "The question the empty-and-minimal preset answers, at the top of the preset screen.",
+    "hash": "sha256-9a69d7227e12",
+    "other": "Does a file that is valid and as small as the format allows get through?"
+  },
+  "Question.filename-handling": {
+    "description": "The question the filename-handling preset answers, at the top of the preset screen.",
+    "hash": "sha256-e558318318a2",
+    "other": "Will my system store, show and give back a file name it did not expect?"
+  },
+  "Question.size-boundaries": {
+    "description": "The question the size-boundaries preset answers, at the top of the preset screen.",
+    "hash": "sha256-e26666b8f7a6",
+    "other": "Is a size limit enforced exactly where it is declared?"
+  },
+  "Question.tabular-import": {
+    "description": "The question the tabular-import preset answers, at the top of the preset screen.",
+    "hash": "sha256-f2132eb34797",
+    "other": "Does my table import survive what real tools export?"
+  },
+  "Question.text-encoding": {
+    "description": "The question the text-encoding preset answers, at the top of the preset screen.",
+    "hash": "sha256-766ce93a4d3c",
+    "other": "Does my reader know which encoding a file is in, or is it guessing?"
+  },
+  "Question.upload-validation": {
+    "description": "The question the upload-validation preset answers, at the top of the preset screen.",
+    "hash": "sha256-950469ca4b3a",
+    "other": "Does my upload form take what it should and turn the rest away?"
+  },
+  "Shape.a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-a40bd1decdc9",
+    "other": "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
+  },
+  "Shape.any text": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-06c83efcd22e",
+    "other": "any text"
+  },
+  "Shape.extensions separated by commas": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-69f0be0e37e3",
+    "other": "extensions separated by commas"
+  },
+  "Shape.format ids separated by commas": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-cc1ca5dd954c",
+    "other": "format ids separated by commas"
+  },
+  "Shape.format ids separated by commas, or all": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-48e97c935e5d",
+    "other": "format ids separated by commas, or all"
+  },
+  "Shape.sizes separated by commas": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-f7e5e8c54e6f",
+    "other": "sizes separated by commas"
+  },
+  "Shape.the id of a format, as tfg formats lists them": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-b6784882fdeb",
+    "other": "the id of a format, as tfg formats lists them"
+  },
+  "Shape.the password, in plain text": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-eb266034b6a8",
+    "other": "the password, in plain text"
+  },
+  "Unit.bytes": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 bytes. Written the way the language puts a noun after a number.",
+    "hash": "sha256-277089d91c0b",
+    "other": "bytes"
+  },
+  "Unit.columns": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 columns. Written the way the language puts a noun after a number.",
+    "hash": "sha256-0e624a1a135e",
+    "other": "columns"
+  },
+  "Unit.entries per second": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 entries per second. Written the way the language puts a noun after a number.",
+    "hash": "sha256-90ad5144c654",
+    "other": "entries per second"
+  },
+  "Unit.files": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 files. Written the way the language puts a noun after a number.",
+    "hash": "sha256-3d7db37d08f9",
+    "other": "files"
+  },
+  "Unit.hertz": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 hertz. Written the way the language puts a noun after a number.",
+    "hash": "sha256-e333c47e4b5c",
+    "other": "hertz"
+  },
+  "Unit.megapixels": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 megapixels. Written the way the language puts a noun after a number.",
+    "hash": "sha256-2bb37d7da74d",
+    "other": "megapixels"
+  },
+  "Unit.million cells": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 million cells. Written the way the language puts a noun after a number.",
+    "hash": "sha256-95a765354101",
+    "other": "million cells"
+  },
+  "Unit.paragraphs": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 paragraphs. Written the way the language puts a noun after a number.",
+    "hash": "sha256-ec575de14f57",
+    "other": "paragraphs"
+  },
+  "Unit.pixels": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 pixels. Written the way the language puts a noun after a number.",
+    "hash": "sha256-6ec9c2b0eb14",
+    "other": "pixels"
+  },
+  "Unit.rows": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 rows. Written the way the language puts a noun after a number.",
+    "hash": "sha256-bc51e9e65d79",
+    "other": "rows"
+  },
+  "Unit.slides": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 slides. Written the way the language puts a noun after a number.",
+    "hash": "sha256-fd2c8f1dc03c",
+    "other": "slides"
+  }
+}

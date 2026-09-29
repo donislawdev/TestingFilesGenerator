@@ -19,7 +19,13 @@ import (
 
 // HumanBytes counts in 1024s, the same as every size this tool accepts and the
 // same as what Explorer and ls show. See docs/RECIPE.md section 9.
-func HumanBytes(n int64) string {
+func HumanBytes(n int64) string { return HumanBytesIn(n, ".") }
+
+// HumanBytesIn is HumanBytes with the mark a language writes between the whole
+// part and the tenths - 10.0 MB in English, 10,0 MB in Polish. The command line
+// is English and never asks for another (D9). The window asks its catalogue,
+// so one piece of arithmetic serves both and only the mark differs.
+func HumanBytesIn(n int64, decimalMark string) string {
 	const unit = 1024
 	if n < unit {
 		// Through ExactBytes rather than its own %d, so the two never spell one
@@ -32,7 +38,7 @@ func HumanBytes(n int64) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "KMGT"[exp])
+	return strings.Replace(fmt.Sprintf("%.1f %cB", float64(n)/float64(div), "KMGT"[exp]), ".", decimalMark, 1)
 }
 
 // ExactBytes writes a count out in full, grouped in threes, with its unit.

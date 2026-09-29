@@ -289,8 +289,14 @@ func (j JointLimit) readably(got int64) (asked, allowed string) {
 // Describe is the rule as one sentence, for the format list and for a window.
 func (j JointLimit) Describe() string {
 	return fmt.Sprintf("%s times %s cannot pass %d %s, because %s",
-		j.Of, j.By, j.Max/j.per(), j.Unit, j.Why)
+		j.Of, j.By, j.Most(), j.Unit, j.Why)
 }
+
+// Most is the ceiling counted in Unit - 40 for forty million pixels in
+// megapixels - which is the number a sentence about this limit says. Here
+// rather than worked out by whoever words the sentence, so the window saying it
+// in another language divides the same way.
+func (j JointLimit) Most() int64 { return j.Max / j.per() }
 
 func (j JointLimit) per() int64 {
 	if j.Per == 0 {

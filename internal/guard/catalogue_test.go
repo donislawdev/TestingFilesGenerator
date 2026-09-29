@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 const localeDir = "../gui/text/locale"
@@ -180,11 +182,23 @@ func TestTheEnglishCatalogueSaysWhatTheCodeSays(t *testing.T) {
 // where PRODUCT.md declares its scope. This is that guard, and it keeps only the
 // half that means anything here: the dashes and the semicolons. Refusing
 // characters outside ASCII in a translation would be refusing the point of one.
+//
+// The words of the registries in every language are read as well, since the
+// day they arrived in a folder of their own - the same gap as above, one folder
+// down (docs/JEZYKI-REJESTRY-2026-09-29.md).
 func TestEveryTranslationObeysThePunctuationRule(t *testing.T) {
 	files, err := filepath.Glob(filepath.Join(localeDir, "*.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	registry, err := filepath.Glob(filepath.Join(localeDir, text.RegistryFolder, "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(registry) == 0 {
+		t.Fatal("no file of registry words was found, so half of this guard asserts about nothing")
+	}
+	files = append(files, registry...)
 	if len(files) == 0 {
 		t.Fatal("no translation file was found, so this guard is asserting about nothing")
 	}

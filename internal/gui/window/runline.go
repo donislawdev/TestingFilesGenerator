@@ -3,7 +3,6 @@ package window
 import (
 	"strings"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
@@ -55,7 +54,7 @@ func (l *runLine) fallback(dir string) string {
 func (l *runLine) where(dir string) string {
 	dir = strings.TrimSpace(dir)
 	if dir != "" && l.freeKnown && dir == l.freeIn {
-		return text.DirectoryWithFreeSpace(dir, core.HumanBytes(l.free))
+		return text.DirectoryWithFreeSpace(dir, text.HumanBytes(l.free))
 	}
 	return dir
 }

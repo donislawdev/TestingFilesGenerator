@@ -41,6 +41,9 @@ type base struct {
 	// typed into it.
 	declared []format.Property
 	params   []parts.PropertyField
+	// owner is whose declaration they are, for the sentences under them in
+	// another language - replaced with them.
+	owner text.Owner
 }
 
 // newBase builds the controls, without placing them. The switch starts off,
@@ -96,6 +99,7 @@ func (b *base) choose(id string) error {
 	settings = append(settings, chosen.Parameters...)
 	settings = append(settings, chosen.Globals()...)
 	b.declared = settings
+	b.owner = text.PresetOwner(chosen.ID)
 	b.params = make([]parts.PropertyField, 0, len(settings))
 	for _, p := range settings {
 		b.params = append(b.params, parts.FromProperty(p))
@@ -138,7 +142,7 @@ func (b *base) parameterRows(fields *parts.Fields, tips *parts.Tips) []fyne.Canv
 			fields.InBytes(recipe.KeyWith + "." + f.Name)
 		}
 		rows = append(rows, fields.Add(recipe.KeyWith+"."+f.Name, text.SettingLabel(f.Name),
-			parts.PropertyDetail(d), tips.Say(text.SettingKey(f.Name)), parts.ShapedFor(d, f.Control)))
+			parts.PropertyDetail(b.owner, d), tips.Say(text.SettingKey(f.Name)), parts.ShapedFor(d, f.Control)))
 	}
 	return rows
 }

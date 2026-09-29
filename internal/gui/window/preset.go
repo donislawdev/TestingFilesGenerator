@@ -181,7 +181,7 @@ func (p *Preset) onPresetChosen(id string) {
 
 	// The question first, because it is the thing somebody chooses by. A list
 	// of ids says nothing about which one answers what they came to ask.
-	p.about.Add(parts.Prose(chosen.Question))
+	p.about.Add(parts.Prose(text.PresetQuestion(chosen.ID, chosen.Question)))
 
 	// One line each rather than one sentence. Run together they are unreadable,
 	// because the entries have commas inside them - "MB confused with MiB,
@@ -196,7 +196,7 @@ func (p *Preset) onPresetChosen(id string) {
 	// which left more room between the items than around the whole list.
 	if len(chosen.Catches) > 0 {
 		p.about.Add(parts.Subheading(text.PresetCatchesHeading()))
-		p.about.Add(parts.Bullets(chosen.Catches))
+		p.about.Add(parts.Bullets(text.PresetCatches(chosen.ID, chosen.Catches)))
 	}
 	p.about.Refresh()
 
@@ -224,7 +224,7 @@ func (p *Preset) onPresetChosen(id string) {
 	// registers declares a single narrow parameter and there is no pair to
 	// make. What it buys is the next thing, arriving on three screens instead
 	// of two.
-	fields, objects := parts.DeclaredFields(settings, p.fields, p.tips)
+	fields, objects := parts.DeclaredFields(text.PresetOwner(chosen.ID), settings, p.fields, p.tips)
 	p.params = fields
 	for _, o := range objects {
 		p.paramBox.Add(o)
@@ -374,10 +374,25 @@ func (l *lastExpansion) of(h Host, id string, given preset.Args) (*preset.Expans
 	got, err := preset.Expand(id, given)
 	var notes []string
 	if err == nil {
-		notes = got.Notes()
+		notes = notesIn(got)
 	}
 	*l = lastExpansion{held: true, id: id, given: maps.Clone(given), got: got, notes: notes, err: err}
 	return got, notes, err
+}
+
+// notesIn is what a run says about a set, in the window's language wherever
+// the sentence is a fixed one - see preset.Note. Both screens that expand a
+// preset ask this, so the two cannot say one set's notes in two languages.
+func notesIn(e *preset.Expansion) []string {
+	if e == nil {
+		return nil
+	}
+	spoken := e.Spoken()
+	out := make([]string, 0, len(spoken))
+	for _, n := range spoken {
+		out = append(out, text.PresetNote(e.Preset.ID, n.About, n.Said))
+	}
+	return out
 }
 
 // engineTarget turns one recipe target into one engine target.

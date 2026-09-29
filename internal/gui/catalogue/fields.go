@@ -116,7 +116,10 @@ func propertyField() Entry {
 		states = append(states, State{d.caption, func() fyne.CanvasObject {
 			s := form()
 			tips := parts.NewTips()
-			_, objects := parts.DeclaredFields([]format.Property{d.p}, s, tips)
+			// Made up for the catalogue, so no language has words for them
+			// and each says its English. The owner is a plain name rather
+			// than text.FormatOwner, which this package has no edge to.
+			_, objects := parts.DeclaredFields("format/catalogue", []format.Property{d.p}, s, tips)
 			return tips.Over(parts.FieldColumn(objects...))
 		}})
 	}

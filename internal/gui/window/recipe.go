@@ -711,7 +711,7 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	}
 
 	// What the run has to say out loud about a preset's value nobody gave.
-	r.notes = read.Notes()
+	r.notes = notesIn(read.Expansion)
 
 	targets := make([]engine.Target, 0, len(rec.Targets))
 	for _, t := range rec.Targets {
