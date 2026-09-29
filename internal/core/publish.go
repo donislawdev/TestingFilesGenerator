@@ -79,8 +79,14 @@ func PublishThrough(tmp, final string, noReplace, link func(string, string) erro
 		return &os.LinkError{Op: "publish", Old: tmp, New: final, Err: err}
 	}
 
-	if _, lookErr := os.Lstat(final); lookErr == nil {
+	// "I could not look" is not "nothing is there", and this is the one step
+	// that replaces what it lands on - so only a look that found nothing lets
+	// it through (the rule of review 2026-08-23, 3.7c, asked again on #150).
+	switch _, lookErr := os.Lstat(final); {
+	case lookErr == nil:
 		return &os.LinkError{Op: "publish", Old: tmp, New: final, Err: fs.ErrExist}
+	case !errors.Is(lookErr, fs.ErrNotExist):
+		return &os.LinkError{Op: "publish", Old: tmp, New: final, Err: lookErr}
 	}
 	return os.Rename(tmp, final)
 }

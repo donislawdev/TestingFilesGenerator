@@ -112,6 +112,10 @@ func (r *Reservation) Save(m *Manifest) error {
 	r.used = true
 	f, err := core.OpenOwn(r.tmp, r.own)
 	if err != nil {
+		// A reservation that could not be opened is still this run's, unless
+		// the name holds something else now - and RemoveOwn asks exactly that.
+		// Left behind, it would tell the next run a run is going.
+		_ = core.RemoveOwn(r.tmp, r.own)
 		return err
 	}
 	own, err := saveReserved(f, m, r.tmp, r.final)

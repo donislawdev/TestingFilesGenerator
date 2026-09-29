@@ -100,6 +100,33 @@ func TestEjectThatCannotWriteLeavesNoEmptyFile(t *testing.T) {
 	}
 }
 
+// A temporary name left by a stopped eject is named for what it is, rather than
+// reported as the recipe itself being there.
+//
+// Since 2026-09-29 the recipe is written under "<file>.tfg-writing" first and
+// given its name after (O252). An eject stopped in between leaves that name,
+// and the next eject refusing with "my.yaml is already there" sent somebody
+// looking for a recipe that does not exist, with nothing naming the file to
+// remove. A review of #150 caught it.
+func TestEjectNamesItsOwnLeftoverRatherThanTheRecipe(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "my.yaml")
+	left := core.SiblingPath(path, core.WritingMarker)
+	if err := os.WriteFile(left, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	code, _, errOut := run(t, "preset", "eject", ejectedPreset, "-o", path)
+	if code != cli.ExitIO {
+		t.Errorf("an eject stopped by its own leftover ended %d rather than %d: %s", code, cli.ExitIO, errOut)
+	}
+	if !strings.Contains(errOut, filepath.Base(left)) || strings.Contains(errOut, "may be a recipe somebody edited") {
+		t.Errorf("the refusal does not name the leftover, or calls it the recipe:\n%s", errOut)
+	}
+	if _, err := os.Lstat(path); err == nil {
+		t.Error("a recipe was written although the temporary name was held")
+	}
+}
+
 // An empty name and "-" are refused as usage, and nothing is written - "-" is
 // not standard output here, leaving -o out is.
 func TestEjectRefusesAFileNameThatIsNotOne(t *testing.T) {

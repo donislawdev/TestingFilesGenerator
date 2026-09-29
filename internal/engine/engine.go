@@ -669,7 +669,15 @@ func claimRunLock(path string) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return core.Finish(fh, nil)
+	// A lock made and then failing to close is still a lock, and nothing
+	// would ever give it back - every later run into the directory would be
+	// told a run is going. Taken back here, by what it is.
+	own, err := core.Finish(fh, nil)
+	if err != nil {
+		_ = core.RemoveOwn(path, own)
+		return nil, err
+	}
+	return own, nil
 }
 
 // releaseRunLock gives the name back, if it still holds our lock.

@@ -142,11 +142,14 @@ func (d Difference) String() string {
 		// Since 2026-09-29 that second one is also how a run reserves its
 		// manifest's name, from before its first file to its save (O252). So
 		// it may belong to a run still going, like the lock above, and the
-		// sentence holds both endings open for the same reason.
+		// sentence holds both endings open for the same reason. It names the
+		// manifest OR a file beside it, because the instructions are written
+		// through the same marker - a review of #150 caught the first wording
+		// promising a manifest about a file that would never become one.
 		if core.IsWritingName(filepath.Base(d.Path)) {
 			return fmt.Sprintf(
-				"leftover  %s\n            a run's record that is not saved yet. If a run is going on it will "+
-					"replace this with its manifest when it ends. If none is, that run was stopped before it could "+
+				"leftover  %s\n            a record of a run that is not saved yet - its manifest or a file written "+
+					"beside it. If a run is going on it will give this its final name when it ends. If none is, that run was stopped before it could "+
 					"tidy up, and the directory may hold files that nothing lists, which cleanup cannot remove - "+
 					"check what is here against what you expected before deleting this by hand",
 				d.Path)

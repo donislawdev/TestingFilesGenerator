@@ -335,6 +335,15 @@ func (f *fileFlag) Set(s string) error {
 // then - two of the three windows of O252.
 func writeEjected(path string, source []byte, errOut io.Writer) int {
 	if _, err := core.WriteNew(path, source, 0o644); err != nil {
+		// The temporary name the recipe is written under first, held by a
+		// write that was stopped or by another program. Saying the recipe
+		// itself is there would send somebody looking for a file that is not
+		// (a review of #150).
+		var held *core.NameTakenError
+		if errors.As(err, &held) {
+			fmt.Fprintf(errOut, "tfg: %s is already there. It is the temporary name the recipe is written under before it becomes %s, left by a write that was stopped or put there by another program. Nothing was written. Remove it and try again.\n", core.Shown(held.Path), core.Shown(path))
+			return ExitIO
+		}
 		if errors.Is(err, fs.ErrExist) {
 			fmt.Fprintf(errOut, "tfg: %s is already there, and -o does not write over a file - it may be a recipe somebody edited. Nothing was written. Choose another name, or remove that file first.\n", core.Shown(path))
 			return ExitIO
