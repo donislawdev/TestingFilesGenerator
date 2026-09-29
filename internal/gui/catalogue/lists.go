@@ -101,28 +101,31 @@ func asWideAsItsBox(values []string, list *parts.OpenList) fyne.CanvasObject {
 }
 
 func tabs() Entry {
-	four := func() *parts.Tabs {
+	// The strip as the window has it, five screens since the Preferences
+	// tab of 2026-09-29.
+	five := func() *parts.Tabs {
 		return parts.NewTabs(
 			&parts.Tab{Text: "Single batch", Content: parts.Prose("the first screen")},
 			&parts.Tab{Text: "Presets", Content: parts.Prose("the second screen")},
 			&parts.Tab{Text: "Several batches", Content: parts.Prose("the third screen")},
-			&parts.Tab{Text: "About", Content: parts.Prose("the fourth screen")},
+			&parts.Tab{Text: "Preferences", Content: parts.Prose("the fourth screen")},
+			&parts.Tab{Text: "About", Content: parts.Prose("the fifth screen")},
 		)
 	}
 	return Entry{Name: "Tabs", Covers: []string{"TabWord", "Tabbed"}, States: []State{
-		{"the strip, first word chosen", func() fyne.CanvasObject { return four() }},
+		{"the strip, first word chosen", func() fyne.CanvasObject { return five() }},
 		{"a word under the pointer", func() fyne.CanvasObject {
-			t := four()
+			t := five()
 			t.Words()[1].MouseIn(&desktop.MouseEvent{})
 			return t
 		}},
 		{"a word holding the keyboard", func() fyne.CanvasObject {
-			t := four()
+			t := five()
 			t.Words()[2].FocusGained()
 			return t
 		}},
 		{"the strip with its screens under it", func() fyne.CanvasObject {
-			return parts.Tabbed(four())
+			return parts.Tabbed(five())
 		}},
 		{"long words", func() fyne.CanvasObject {
 			return parts.NewTabs(

@@ -9,8 +9,8 @@ import (
 // startAgain starts this executable again with args, waits for it, and
 // answers its exit code.
 //
-// The one place in the window binary that starts a process, and the process
-// it starts is itself: the path comes from os.Executable and nowhere else,
+// This file is the one place in the window binary that starts a process, and
+// the process it starts is itself: the path comes from os.Executable and nowhere else,
 // so nothing on the search path and nothing beside the program can be what
 // runs. The guard over shipped code that refuses every other spawn names
 // this file for that reason - notelemetry_test.go.
@@ -27,18 +27,10 @@ import (
 // process sets it for itself too, and this is the half that does not depend
 // on when the C runtime takes its copy.
 func startAgain(args []string) (int, error) {
-	exe, err := os.Executable()
+	cmd, err := ourselves(args)
 	if err != nil {
 		return 0, err
 	}
-	// Settled rather than suppressed, for both scanners that flag a command
-	// built from variables: the program is this one, by the path the system
-	// answers for the running process, and the arguments are the ones this
-	// process was started with plus one flag of ours. Nothing a person typed
-	// chooses what runs, and nothing on the search path can be what runs.
-	//nolint:gosec // G204: the command is os.Executable and the arguments are our own
-	cmd := exec.Command(exe, args...) // nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	cmd.Env = append(os.Environ(), softwareDriver+"="+softwareLLVMPipe)
 	err = cmd.Run()
 	var exit *exec.ExitError
@@ -52,4 +44,45 @@ func startAgain(args []string) (int, error) {
 		return 0, err
 	}
 	return 0, nil
+}
+
+// startInstead starts this executable again with args and does not wait: the
+// window that asked has already closed, and the new one takes its place. It is
+// what Restart now on the Preferences screen comes to, once the window has
+// gone the way it goes when a person closes it - see run.
+//
+// The streams are handed over as startAgain hands them, and the environment is
+// this process's own, so a window drawn by the software renderer starts again
+// drawn by it: the flag is among args and the driver variable is inherited.
+func startInstead(args []string) error {
+	cmd, err := ourselves(args)
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	// Nothing here waits for it, so the handle is given back rather than
+	// held until this process ends.
+	return cmd.Process.Release()
+}
+
+// ourselves is this program, with args. The one command this binary ever
+// builds, and the one spawn the guard over shipped code forgives - both ways of
+// starting again go through it, so there is one place to read what can run.
+func ourselves(args []string) (*exec.Cmd, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	// Settled rather than suppressed, for both scanners that flag a command
+	// built from variables: the program is this one, by the path the system
+	// answers for the running process, and the arguments are the ones this
+	// process was started with plus, at most, one flag of ours. Nothing a
+	// person typed chooses what runs, and nothing on the search path can be
+	// what runs.
+	//nolint:gosec // G204: the command is os.Executable and the arguments are our own
+	cmd := exec.Command(exe, args...) // nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	return cmd, nil
 }

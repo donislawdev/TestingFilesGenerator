@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/lang"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/catalogue"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon"
@@ -78,6 +79,16 @@ type desktop struct {
 	// because a window drawn in software is slower and the person should
 	// be able to read why.
 	software bool
+	// args are the arguments this process was started with, handed back
+	// unchanged when Restart now starts the program again - see run.
+	args []string
+	// restart is set by Restart now and read once the window has closed.
+	// A pointer because the host is copied into every screen, and the
+	// screen that sets it and run that reads it hold different copies.
+	restart *bool
+	// kept is the one store for the whole run, made once, because the
+	// promise Forget makes lives in it - see window.Forgetting.
+	kept window.Remembered
 }
 
 // SoftwareRendering reports whether this window draws through the software
@@ -107,9 +118,9 @@ func (d desktop) Later(after time.Duration, then func()) func() {
 // dies mid write leaves a short file. That is survivable here and the toolkit
 // already decides it: a file that will not parse is logged and the defaults are
 // used, which for these two values means the window opens where it always did.
-func (d desktop) Remembered() window.Remembered { return stored{fyne.CurrentApp().Preferences()} }
+func (d desktop) Remembered() window.Remembered { return d.kept }
 
-// stored puts names on the two things kept, so that no screen and no guard ever
+// stored puts names on the things kept, so that no screen and no guard ever
 // handles a preference key. The keys are here and nowhere else.
 type stored struct{ prefs fyne.Preferences }
 
@@ -117,10 +128,30 @@ const (
 	keyDirectory = "outputDirectory"
 	keyWidth     = "windowWidth"
 	keyHeight    = "windowHeight"
+	keyLanguage  = "language"
 )
+
+// ours is every key this program writes, which is what Forget removes and all
+// it removes. The folder picker's own keys stay: they are the toolkit's.
+var ours = []string{keyDirectory, keyWidth, keyHeight, keyLanguage}
 
 func (s stored) Directory() string          { return s.prefs.String(keyDirectory) }
 func (s stored) RememberDirectory(d string) { s.prefs.SetString(keyDirectory, d) }
+
+func (s stored) Language() string { return s.prefs.String(keyLanguage) }
+func (s stored) RememberLanguage(tag string) {
+	if tag == "" {
+		s.prefs.RemoveValue(keyLanguage)
+		return
+	}
+	s.prefs.SetString(keyLanguage, tag)
+}
+
+func (s stored) Forget() {
+	for _, key := range ours {
+		s.prefs.RemoveValue(key)
+	}
+}
 
 // Size is two numbers rather than one, because the toolkit's store holds
 // scalars. Read back as a size so that everything above this line handles a
@@ -133,6 +164,19 @@ func (s stored) RememberSize(size fyne.Size) {
 	s.prefs.SetFloat(keyWidth, float64(size.Width))
 	s.prefs.SetFloat(keyHeight, float64(size.Height))
 }
+
+// SettingsFolder is the toolkit's storage root for this application, which is
+// where its preferences.json lives - asked of the toolkit rather than put
+// together here, so it is the folder the file is really in.
+func (d desktop) SettingsFolder() string {
+	return filepath.FromSlash(fyne.CurrentApp().Storage().RootURI().Path())
+}
+
+// SystemLanguage asks the toolkit, which asks the system. The toolkit answers
+// "en" when the system says nothing usable, so an answer always comes back.
+func (d desktop) SystemLanguage() string { return lang.SystemLocale().LanguageString() }
+
+func (d desktop) RestartWhenClosed() { *d.restart = true }
 
 // rememberThisSize writes down how big the window is now.
 //
@@ -282,16 +326,6 @@ func run(launch Launch, errOut io.Writer) int {
 	// the menus. See darkmenus_windows.go for what it is and what it costs.
 	PreferDarkMenus()
 
-	// The catalogue, before the first word is asked for. A failure here is not
-	// a reason to refuse to start: every message states its English on the spot
-	// and answers with it when no catalogue is loaded, so the window opens in
-	// English rather than not at all. It is said out loud rather than swallowed,
-	// because a language silently not arriving is the shape of defect somebody
-	// reports as "it ignores my system settings" a year later.
-	if err := text.LoadBuiltIn(); err != nil {
-		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
-	}
-
 	// Where the toolkit says what went wrong when it cannot open its window.
 	// It writes through the standard logger, whose stream a binary built for
 	// the windows subsystem does not have, so the stream is kept as it was
@@ -303,6 +337,29 @@ func run(launch Launch, errOut io.Writer) int {
 	log.SetOutput(io.MultiWriter(&said, log.Writer()))
 
 	a := app.NewWithID(appID)
+
+	// The language, decided before the first word is asked for, and after the
+	// application exists - the choice is kept in its preferences, so the order
+	// of these two was turned round on 2026-09-29. A choice made on the
+	// Preferences screen, or the system's language when there is none, or
+	// English (docs/PRODUCT.md D9) - see text.Resolve.
+	//
+	// A failure to load is not a reason to refuse to start: every message states
+	// its English on the spot and answers with it when no catalogue is loaded, so
+	// the window opens in English rather than not at all. It is said out loud
+	// rather than swallowed, because a language silently not arriving is the
+	// shape of defect somebody reports as "it ignores my system settings" a year
+	// later.
+	restart := false
+	kept := window.Forgetting(stored{prefs: a.Preferences()})
+	speak := text.Resolve(kept.Language(), lang.SystemLocale().LanguageString(), text.Languages()).Tag
+	if launch.Pseudo {
+		speak = text.Pseudo
+	}
+	if err := text.LoadBuiltIn(speak); err != nil {
+		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
+	}
+
 	// The picture the desktop shows for this program, in the taskbar, in the
 	// switcher and on the window itself - the toolkit says an application icon
 	// is also the default icon for every window it opens, so this one line
@@ -315,7 +372,7 @@ func run(launch Launch, errOut io.Writer) int {
 	// answers dark whatever the desktop is set to, by the owner's decision.
 	a.Settings().SetTheme(parts.Theme())
 	w := a.NewWindow(text.WindowTitle(version.Version))
-	host := desktop{Window: w, software: software}
+	host := desktop{Window: w, software: software, args: launch.Args, restart: &restart, kept: kept}
 	// The window coming to the front is not the keyboard arriving, and only
 	// the window can tell the two apart - see WindowReturning for the
 	// measurement. The foreground hook runs just before the driver's call, so
@@ -371,7 +428,7 @@ func run(launch Launch, errOut io.Writer) int {
 	// the person, because the window that would have carried it is what
 	// failed - and it says what became of the renderer, when there is
 	// something to say.
-	return OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {
+	code := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {
 		sentence := text.WindowRefused(CauseFrom(said.String()))
 		fmt.Fprintln(errOut, sentence)
 		body := sentence
@@ -381,4 +438,20 @@ func run(launch Launch, errOut io.Writer) int {
 		}
 		sayInADialog(text.WindowRefusedTitle(), body)
 	})
+
+	// Restart now, once everything the window writes at its close is written:
+	// the folder by the close intercept, the size by the close callback, and
+	// the toolkit's last save of its preferences as the loop ends. A new
+	// window started any earlier could read the file before them. The window
+	// is gone by now, so a start that fails is said where a window that could
+	// not open says so - on standard error and in a system dialog - with the
+	// way round it: the choice is saved, and opening the program gives it.
+	if restart {
+		if err := startInstead(launch.Args); err != nil {
+			sentence := text.PreferencesRestartFailed(err.Error())
+			fmt.Fprintln(errOut, sentence)
+			sayInADialog(text.WindowTitle(version.Version), sentence)
+		}
+	}
+	return code
 }

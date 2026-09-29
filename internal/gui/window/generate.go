@@ -134,6 +134,25 @@ type Host interface {
 	// window drawn in software is slower and the person should be able to
 	// read why, in the place they go to read what this program is.
 	SoftwareRendering() bool
+
+	// SettingsFolder is the folder the toolkit keeps this window's state in,
+	// as the system spells it - what the Preferences screen names under "What
+	// this window remembers", so a person can see the file rather than take a
+	// sentence's word for it.
+	SettingsFolder() string
+
+	// SystemLanguage is the language the desktop is set to, as a tag such as
+	// pl-PL, and empty when the system does not say. The Preferences screen
+	// names what "Same as the system" comes to on this machine with it.
+	SystemLanguage() string
+
+	// RestartWhenClosed asks for this program to start again once this window
+	// has closed - the second half of Restart now, after the screens have
+	// closed the window the way a person closing it does. Starting the new
+	// one only after the old one is gone is what makes the new window find
+	// everything the old one wrote down as it went: the output folder and the
+	// size are written at the close, not before.
+	RestartWhenClosed()
 }
 
 // Generate is the screen that produces files from settings somebody chose.

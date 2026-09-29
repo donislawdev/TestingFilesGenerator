@@ -31,6 +31,10 @@
     "description": "The words on a button.",
     "other": "Duplicate"
   },
+  "ButtonForget": {
+    "description": "The words on a button.",
+    "other": "Forget"
+  },
   "ButtonGenerate": {
     "description": "The words on a button.",
     "other": "Generate"
@@ -58,6 +62,14 @@
   "ButtonRemoveContents": {
     "description": "The words on a button.",
     "other": "Remove"
+  },
+  "ButtonRestart": {
+    "description": "The words on a button.",
+    "other": "Restart now"
+  },
+  "ChoiceSameAsSystem": {
+    "description": "An entry in a list somebody chooses from. Carries one value, {{.Language}}, which has to stay spelled exactly that way.",
+    "other": "Same as the system ({{.Language}})"
   },
   "ContentsHeading": {
     "description": "Shown where an archive says what it holds.",
@@ -186,6 +198,10 @@
   "FieldLabel": {
     "description": "The name above a box somebody fills in.",
     "other": "Label in each file"
+  },
+  "FieldLanguage": {
+    "description": "The name above a box somebody fills in.",
+    "other": "Window language"
   },
   "FieldManifest": {
     "description": "The name above a box somebody fills in.",
@@ -325,6 +341,10 @@
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Cause}}.",
     "other": "The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts."
   },
+  "LanguageName": {
+    "description": "The name of the language this file is written in, written in that language: Polski, not Polish. It is how the language is listed on the Preferences screen.",
+    "other": "English"
+  },
   "ListHeadingCount": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",
     "other": "{{.Kind}} · {{.Count}}"
@@ -405,6 +425,46 @@
     "description": "Stands in an empty box, in a quieter colour than a value.",
     "other": "worked out from the size"
   },
+  "PreferencesForgetWhat": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Forget clears the three things above. This window then keeps nothing when it closes, and the next one opens the way the first one did."
+  },
+  "PreferencesForgotten": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Forgotten. The next window opens the way the first one did."
+  },
+  "PreferencesKept": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Between runs this window keeps three things: the folder the files went to, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
+  },
+  "PreferencesKeptIn": {
+    "description": "Shown on the Preferences screen.",
+    "other": "They are kept in this folder:"
+  },
+  "PreferencesLanguageScope": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Only the window changes language. The files it makes, recipes, manifests and the command line do not."
+  },
+  "PreferencesMissing": {
+    "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",
+    "other": "The language chosen before, {{.Tag}}, is not in this version. The window follows the system until you choose again."
+  },
+  "PreferencesNextStart": {
+    "description": "Shown on the Preferences screen.",
+    "other": "The window speaks the chosen language from the next time it opens."
+  },
+  "PreferencesRestartBusy": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Files are being made. Restart once they are done."
+  },
+  "PreferencesRestartClears": {
+    "description": "Shown on the Preferences screen.",
+    "other": "Restarting closes this window and opens it again. Anything typed on the other tabs is cleared."
+  },
+  "PreferencesRestartFailed": {
+    "description": "Shown on the Preferences screen. Carries one value, {{.Reason}}, which has to stay spelled exactly that way.",
+    "other": "The window could not start again: {{.Reason}}. The choice is saved. Close this window and open it yourself to see it."
+  },
   "PresetCatchesHeading": {
     "description": "Shown on the preset screen.",
     "other": "Typically finds:"
@@ -477,6 +537,10 @@
     "description": "The heading over a group of fields.",
     "other": "How to use it"
   },
+  "SectionLanguage": {
+    "description": "The heading over a group of fields.",
+    "other": "Language"
+  },
   "SectionLicence": {
     "description": "The heading over a group of fields.",
     "other": "Licence"
@@ -492,6 +556,10 @@
   "SectionPreset": {
     "description": "The heading over a group of fields.",
     "other": "The question"
+  },
+  "SectionRemembered": {
+    "description": "The heading over a group of fields.",
+    "other": "What this window remembers"
   },
   "SectionSettings": {
     "description": "The heading over a group of fields.",
@@ -541,6 +609,10 @@
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
     "other": "Files of one format and one size, with a manifest that says how the system under test should react to them."
   },
+  "SubtitlePreferences": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "other": "How this window speaks, and what it keeps between runs. Nothing here changes the files it makes."
+  },
   "SubtitlePreset": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
     "other": "Ready-made sets of files, each built to answer one question about the system under test."
@@ -556,6 +628,10 @@
   "TabOneTarget": {
     "description": "The name of a tab along the top of the window.",
     "other": "Single batch"
+  },
+  "TabPreferences": {
+    "description": "The name of a tab along the top of the window.",
+    "other": "Preferences"
   },
   "TabPresets": {
     "description": "The name of a tab along the top of the window.",
