@@ -11,6 +11,17 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
+// The screens by what they are rather than by what they are called - see
+// parts.Tab. Everything that carries something between screens is keyed by
+// these, never by the translated word on the strip.
+const (
+	tabGenerate = "generate"
+	tabPresets  = "presets"
+	tabRecipe   = "recipe"
+	tabPrefs    = "preferences"
+	tabAbout    = "about"
+)
+
 // Open fills the window with the first screen and wires the way between them.
 //
 // The window opens on the work rather than on a welcome, decided by the owner
@@ -27,6 +38,11 @@ func Open(h Host) fyne.Size {
 	gen := NewGenerate(h)
 	pre := NewPreset(h)
 	rec := NewRecipe(h)
+	runners := []*runner{gen.runner, pre.runner, rec.runner}
+	// The way out is wired below, once everything it stops exists. The screen
+	// is built now, so it is handed a way to reach it rather than the thing.
+	var leave func()
+	prefs := NewPreferences(h, func() { leave() }, func() bool { return anyBusy(runners) })
 
 	// Tabs across the top rather than buttons at the foot, reported from use on
 	// 2026-08-11. The way between the screens used to sit in the row of actions
@@ -44,10 +60,11 @@ func Open(h Host) fyne.Size {
 	// the toolkit's could not do, the first of which is stand on the same edge
 	// as the words under it.
 	tabs := parts.NewTabs(
-		&parts.Tab{Text: text.TabOneTarget(), Content: gen.Object()},
-		&parts.Tab{Text: text.TabPresets(), Content: pre.Object()},
-		&parts.Tab{Text: text.TabRecipe(), Content: rec.Object()},
-		&parts.Tab{Text: text.TabAbout(), Content: About(h)},
+		&parts.Tab{ID: tabGenerate, Text: text.TabOneTarget(), Content: gen.Object()},
+		&parts.Tab{ID: tabPresets, Text: text.TabPresets(), Content: pre.Object()},
+		&parts.Tab{ID: tabRecipe, Text: text.TabRecipe(), Content: rec.Object()},
+		&parts.Tab{ID: tabPrefs, Text: text.TabPreferences(), Content: prefs.Object()},
+		&parts.Tab{ID: tabAbout, Text: text.TabAbout(), Content: About(h)},
 	)
 
 	// The output directory follows whoever is looking, and that is a fix for a
@@ -68,11 +85,11 @@ func Open(h Host) fyne.Size {
 		OutDir() string
 		SetOutDir(string)
 	}{
-		text.TabOneTarget(): gen,
-		text.TabPresets():   pre,
-		text.TabRecipe():    rec,
+		tabGenerate: gen,
+		tabPresets:  pre,
+		tabRecipe:   rec,
 	}
-	showing := text.TabOneTarget()
+	showing := tabGenerate
 
 	offerWhereItLastWrote(h, working)
 
@@ -81,9 +98,9 @@ func Open(h Host) fyne.Size {
 	// shortcut belongs to the window and the answer is whichever screen is
 	// being looked at.
 	keyed := map[string]keyboardScreen{
-		text.TabOneTarget(): gen,
-		text.TabPresets():   pre,
-		text.TabRecipe():    rec,
+		tabGenerate: gen,
+		tabPresets:  pre,
+		tabRecipe:   rec,
 	}
 
 	// The keyboard starts on the first field of the screen somebody is looking
@@ -92,7 +109,7 @@ func Open(h Host) fyne.Size {
 
 	tabs.OnSelected = func(item *parts.Tab, byKeyboard bool) {
 		from, leaving := working[showing]
-		to, arriving := working[item.Text]
+		to, arriving := working[item.ID]
 		if leaving && arriving {
 			to.SetOutDir(from.OutDir())
 		}
@@ -100,12 +117,12 @@ func Open(h Host) fyne.Size {
 		// that About in the middle of two work screens does not strand the
 		// value on the screen before it.
 		if arriving {
-			showing = item.Text
+			showing = item.ID
 		}
 		// The keyboard follows the person to the screen they moved to. Without
 		// this it stays on a control of the screen they left, which is a Tab
 		// that starts somewhere nobody can see.
-		focusFirst(item.Text, byKeyboard)
+		focusFirst(item.ID, byKeyboard)
 	}
 
 	// Closing the window during a run is a cancellation and not a kill, G7. The
@@ -115,8 +132,14 @@ func Open(h Host) fyne.Size {
 	// the middle of a file.
 	// One wait for quiet for the whole window, told by every screen, and
 	// stopped with them when the window closes - see tidy.go.
-	quiet := tidyWhenLeftAlone(h, gen.runner, pre.runner, rec.runner)
-	closeCleanly(h, []interface{ Stop() }{gen, pre, rec, quiet}, working, &showing)
+	quiet := tidyWhenLeftAlone(h, runners...)
+	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, quiet}, working, &showing)
+	// Restart now stands down while any screen is making files, and stands up
+	// again when it stops - told rather than asked, so the button is right
+	// the moment a run ends while the Preferences tab is on show.
+	for _, r := range runners {
+		r.busy.changed = prefs.BusyChanged
+	}
 	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
@@ -168,8 +191,8 @@ func Open(h Host) fyne.Size {
 func closeCleanly(h Host, running []interface{ Stop() }, working map[string]interface {
 	OutDir() string
 	SetOutDir(string)
-}, showing *string) {
-	h.SetCloseIntercept(func() {
+}, showing *string) (leave func()) {
+	leave = func() {
 		for _, screen := range running {
 			screen.Stop()
 		}
@@ -177,7 +200,13 @@ func closeCleanly(h Host, running []interface{ Stop() }, working map[string]inte
 			h.Remembered().RememberDirectory(screen.OutDir())
 		}
 		h.Close()
-	})
+	}
+	h.SetCloseIntercept(leave)
+	// Handed back as well, because closing the window from inside it - Restart
+	// now on the Preferences screen - has to go this same way. The toolkit's
+	// Close does not pass through the intercept (driver/glfw window.go, read
+	// on 2026-09-29), so calling it alone would skip the runs and the folder.
+	return leave
 }
 
 // offerWhereItLastWrote puts the directory of the last run on every screen.
@@ -327,7 +356,9 @@ func FirstScreen(h Host) fyne.CanvasObject {
 //
 // It stays on every screen either way, which is not decoration - a button asking
 // for money that appears on some screens and not others is a button people
-// conclude they imagined.
+// conclude they imagined. Every screen but Preferences, by the owner's decision
+// of 2026-09-29: that one holds how the window speaks and what it keeps, and
+// asks for nothing.
 //
 // It opens the support page in whatever the desktop uses for the web. The
 // program fetches nothing and sends nothing, which is what keeps untouchable

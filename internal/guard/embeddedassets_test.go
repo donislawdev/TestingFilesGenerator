@@ -139,6 +139,9 @@ var ownWork = map[string]bool{
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts heart.svg": true,
 	// The window's own words.
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/en.json": true,
+	// The same words in Polish, translated for this project on 2026-09-29 -
+	// the first language the Preferences screen offers beside English.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/pl.json": true,
 }
 
 // accountFor requires exactly one registry entry to claim a file. None means

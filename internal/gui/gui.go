@@ -45,7 +45,12 @@ func Run(args []string, errOut io.Writer) int {
 type Launch struct {
 	Catalogue  bool
 	SoftwareGL bool
-	Args       []string
+	// Pseudo opens the window in text.Pseudo - every sentence accented and
+	// longer, to see how a translation will sit on each screen before one
+	// exists. For whoever builds the window, like the catalogue, and never
+	// saved as a choice.
+	Pseudo bool
+	Args   []string
 }
 
 // SoftwareFlag asks for the software renderer. Public, because it is the way
@@ -53,7 +58,10 @@ type Launch struct {
 // window asks for itself when it starts again.
 const SoftwareFlag = "--software-gl"
 
-// ReadLaunch reads the two flags the window knows out of the launch line.
+// PseudoFlag asks for the pseudo language - see Launch.Pseudo.
+const PseudoFlag = "--pseudo-language"
+
+// ReadLaunch reads the flags the window knows out of the launch line.
 //
 // The catalogue has two spellings, because the tree writes the word one way
 // and the flag was named the other on the day it was decided, and a flag
@@ -66,6 +74,8 @@ func ReadLaunch(args []string) Launch {
 			launch.Catalogue = true
 		case SoftwareFlag:
 			launch.SoftwareGL = true
+		case PseudoFlag:
+			launch.Pseudo = true
 		}
 	}
 	return launch

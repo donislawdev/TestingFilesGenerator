@@ -315,7 +315,7 @@ var librariesLoadedByPath = map[string]approvedOperation{
 // of the compiler.
 var spawnsAllowed = map[string]approvedOperation{
 	"internal/gui/again.go": {call: "exec.Command", from: "os.Executable",
-		why: "starts this program again, by the path os.Executable answers, for the software renderer - see startAgain there"},
+		why: "starts this program again, by the path os.Executable answers - for the software renderer, and for Restart now on the Preferences screen - see ourselves there"},
 }
 
 // withoutRegisteredPathLoads drops the findings a registered file is allowed

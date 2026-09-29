@@ -312,6 +312,13 @@ func screenScenes() []screenScene {
 		// every later step - and why it is the first in the list.
 		{name: "catalogue", page: catalogue.Page},
 		{name: "about", tab: text.TabAbout()},
+		// The Preferences screen at rest, and with another language chosen -
+		// the one state in which its main action is on and the line under it
+		// says what a restart does.
+		{name: "preferences", tab: text.TabPreferences()},
+		{name: "preferences-chosen", tab: text.TabPreferences(), set: func(t *testing.T, s scene) {
+			menuUnder(t, s.tab, text.FieldLanguage()).SetSelected(polishName(t))
+		}},
 		{name: "generate", tab: text.TabOneTarget()},
 		{name: "generate-empty", tab: text.TabOneTarget(), set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, text.FieldCount(), "0")

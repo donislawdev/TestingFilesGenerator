@@ -90,6 +90,9 @@ var localiser *i18n.Localizer
 // returning it raw, because a sentence with {{.Directory}} still in it is not a
 // fallback, it is a different defect.
 func sayf(id, english string, data map[string]any) string {
+	if pseudo {
+		return fill(pseudoOf(english), data)
+	}
 	if localiser == nil {
 		return fill(english, data)
 	}
@@ -119,6 +122,12 @@ func sayN(id, one, other string, count int, data map[string]any) string {
 	values := map[string]any{"Count": count}
 	for k, v := range data {
 		values[k] = v
+	}
+	if pseudo {
+		if count == 1 {
+			return fill(pseudoOf(one), values)
+		}
+		return fill(pseudoOf(other), values)
 	}
 	if localiser == nil {
 		if count == 1 {
@@ -165,6 +174,9 @@ func fill(layout string, data map[string]any) string {
 // own, so there is one place a sentence is written and no way for a catalogue
 // to disagree with the code about what it says in English.
 func say(id, english string) string {
+	if pseudo {
+		return pseudoOf(english)
+	}
 	if localiser == nil {
 		return english
 	}
@@ -204,8 +216,28 @@ func Load(fsys fs.FS, dir string, prefer ...string) error {
 		}
 	}
 
-	localiser = i18n.NewLocalizer(bundle, append(prefer, "en")...)
+	localiser = i18n.NewLocalizer(bundle, append(prefer, English)...)
+	speaking = English
+	for _, asked := range prefer {
+		if carries(bundle, asked) {
+			speaking = asked
+			break
+		}
+	}
 	return nil
+}
+
+// carries says whether a catalogue was loaded for a language, so that Speaking
+// names the language the window answers in rather than the one it was asked
+// for - a file missing from the build is the difference.
+func carries(bundle *i18n.Bundle, asked string) bool {
+	want := language.Make(asked)
+	for _, tag := range bundle.LanguageTags() {
+		if tag == want {
+			return true
+		}
+	}
+	return false
 }
 
 // LoadBuiltIn is Load over the catalogue compiled into this program.
@@ -216,10 +248,22 @@ func Load(fsys fs.FS, dir string, prefer ...string) error {
 // docs/GUI.md section 6 names that as its own piece of work rather than as
 // something a text package can do.
 //
-// No language is preferred yet. Every message answers in English, which is the
-// only language this build carries, and asking the machine which language it
-// wants is the next step rather than this one - a preference nothing can honour
-// is a setting that does nothing.
-func LoadBuiltIn() error {
-	return Load(builtIn, "locale")
+// The language is decided before this is called - see Resolve - and handed in
+// as a tag this build carries. Empty, or English, answers in English. Pseudo
+// is the language of whoever builds the window, and answers in no catalogue at
+// all: every sentence is its English, disguised.
+//
+// Since 2026-09-29 the language is chosen on the Preferences screen and takes
+// effect from the next start, which is what keeps this the one call it has
+// always been. The switch without a restart remains its own piece of work, for
+// the reasons in the paragraph above.
+func LoadBuiltIn(lang string) error {
+	if lang == Pseudo {
+		pseudo = true
+		lang = ""
+	}
+	if lang == "" {
+		return Load(builtIn, "locale")
+	}
+	return Load(builtIn, "locale", lang)
 }

@@ -57,6 +57,10 @@ import (
 type fakeHost struct {
 	content   fyne.CanvasObject
 	intercept func()
+	// system is what SystemLanguage answers, and restarts how many times
+	// Restart now asked for a new window.
+	system   string
+	restarts int
 	// waitForWork waits for a preview or a run to finish, without stopping it.
 	//
 	// Separate from intercept, which is the CLOSE intercept and now cancels.
@@ -85,7 +89,8 @@ type fakeHost struct {
 	file      string
 	fileCount int
 
-	kept *keptInMemory
+	kept       *keptInMemory
+	remembered window.Remembered
 
 	// hold parks the worker just before it reports, so that a guard can read
 	// the screen while a run is going. Nil unless a guard asked for one.
@@ -401,13 +406,21 @@ func (h *fakeHost) Remembered() window.Remembered {
 	if h.kept == nil {
 		h.kept = &keptInMemory{}
 	}
-	return h.kept
+	// Wrapped once and kept, like the real window's store: the promise
+	// Forget makes lives in the wrapper, and a new one each call would
+	// forget that it was ever asked to forget.
+	if h.remembered == nil {
+		h.remembered = window.Forgetting(h.kept)
+	}
+	return h.remembered
 }
 
 type keptInMemory struct {
 	dir      string
 	size     fyne.Size
 	dirWrite int
+	language string
+	forgets  int
 }
 
 func (k *keptInMemory) Directory() string { return k.dir }
@@ -415,8 +428,34 @@ func (k *keptInMemory) RememberDirectory(d string) {
 	k.dir = d
 	k.dirWrite++
 }
-func (k *keptInMemory) Size() fyne.Size          { return k.size }
-func (k *keptInMemory) RememberSize(s fyne.Size) { k.size = s }
+func (k *keptInMemory) Size() fyne.Size             { return k.size }
+func (k *keptInMemory) RememberSize(s fyne.Size)    { k.size = s }
+func (k *keptInMemory) Language() string            { return k.language }
+func (k *keptInMemory) RememberLanguage(tag string) { k.language = tag }
+
+// Forget removes the values, as the real store does. What it promises for
+// the rest of the run is window.Forgetting's, which Remembered wraps this in.
+func (k *keptInMemory) Forget() {
+	k.dir, k.size, k.language = "", fyne.Size{}, ""
+	k.forgets++
+}
+
+// SettingsFolder is a made up folder, so a guard can find it on the screen.
+func (h *fakeHost) SettingsFolder() string { return fakeSettingsFolder }
+
+// SystemLanguage is what a guard set, English when it set nothing - the
+// answer the toolkit gives a system that says nothing usable.
+func (h *fakeHost) SystemLanguage() string {
+	if h.system == "" {
+		return "en"
+	}
+	return h.system
+}
+
+// RestartWhenClosed counts the asks, for the guard that presses Restart now.
+func (h *fakeHost) RestartWhenClosed() { h.restarts++ }
+
+const fakeSettingsFolder = `C:\settings\of\the\window`
 
 func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 	h.asked++
@@ -838,9 +877,15 @@ func unringed(o fyne.CanvasObject) fyne.CanvasObject {
 	// it - the render probe said there was no Format menu to open, which was
 	// untrue and read exactly like a defect.
 	if len(box.Objects) == 1 {
-		if nested, is := box.Objects[0].(*fyne.Container); is {
-			box = nested
+		nested, is := box.Objects[0].(*fyne.Container)
+		if !is {
+			// The width wrapper round a control with no edge in it: a menu
+			// on a row that nothing can refuse - Named, which the language
+			// list on the Preferences screen is since 2026-09-29. The
+			// control is the one thing inside.
+			return box.Objects[0]
 		}
+		box = nested
 	}
 	if len(box.Objects) != 2 {
 		return o

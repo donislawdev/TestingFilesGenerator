@@ -12,7 +12,14 @@ import (
 )
 
 // Tab is one screen of the window and the word on the strip that leads to it.
+//
+// ID is what the screen IS and Text is what it is called, and the two are
+// kept apart because the second is a translation. The window used to know its
+// screens by their words, so two tabs translated to the same word would have
+// become one screen to everything that carries the output directory and the
+// keyboard between them.
 type Tab struct {
+	ID      string
 	Text    string
 	Content fyne.CanvasObject
 }

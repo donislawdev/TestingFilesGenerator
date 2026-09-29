@@ -666,9 +666,12 @@ not a cut down version: a test compares the two interfaces capability by
 capability, and anything only one of them can do has to be declared and
 justified rather than quietly drifting apart.
 
-Four screens - one batch, presets, several batches at once, and about. It shows
-what a run would cost before writing anything, reports progress while it runs,
-and can be cancelled part way without leaving a half written file behind.
+Five screens - one batch, presets, several batches at once, preferences, and
+about. It shows what a run would cost before writing anything, reports progress
+while it runs, and can be cancelled part way without leaving a half written file
+behind. The window speaks your system's language when it has it (English and
+Polish today) and English otherwise. Preferences lets you choose another, and
+says what the window keeps between runs.
 
 <p>
   <img src=".github/window-presets.png" width="49%" alt="The Presets screen of the window, with the list of presets open">

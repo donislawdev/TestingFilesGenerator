@@ -45,7 +45,7 @@ func TestAMenuIsNotDrawnAsWideAsABoxToTypeIn(t *testing.T) {
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
 		menus, boxes := menusOn(screen), typingBoxesOn(screen)
-		if len(menus) == 0 {
+		if len(menus) == 0 || holdsNoBoxByDesign(t, tab, boxes) {
 			continue
 		}
 		widest := float32(0)
@@ -173,6 +173,25 @@ func menusOn(screen fyne.CanvasObject) []*parts.Chooser {
 	return found
 }
 
+// holdsNoBoxByDesign says whether a screen is the one whose menus stand beside
+// no box to type in, so that a guard comparing a menu with the boxes beside it
+// has nothing to compare on it. Preferences holds one menu and no box.
+//
+// Named rather than skipped whenever a screen comes back with no box: a screen
+// that lost its boxes to a renamed part would otherwise pass these guards by
+// not looking. Held both ways - the day a box stands on the named screen, the
+// name stops being true out loud.
+func holdsNoBoxByDesign(t *testing.T, tab string, boxes []*parts.Entry) bool {
+	t.Helper()
+	if tab != text.TabPreferences() {
+		return false
+	}
+	if len(boxes) != 0 {
+		t.Errorf("the %s screen holds %d box(es) to type in and is still named as holding none", tab, len(boxes))
+	}
+	return true
+}
+
 func typingBoxesOn(screen fyne.CanvasObject) []*parts.Entry {
 	var found []*parts.Entry
 	walk(screen, func(o fyne.CanvasObject) {
@@ -263,12 +282,12 @@ func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 	checked := 0
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
-		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
-		if len(menus) == 0 {
+		menus, boxes := menusWithAnArchiveOpened(t, screen, tab, canvas), typingBoxesOn(screen)
+		if len(menus) == 0 || holdsNoBoxByDesign(t, tab, boxes) {
 			continue
 		}
 		narrowest := float32(0)
-		for _, box := range typingBoxesOn(screen) {
+		for _, box := range boxes {
 			w := box.Size().Width
 			if w <= 0 {
 				continue

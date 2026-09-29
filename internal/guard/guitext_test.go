@@ -93,8 +93,19 @@ var notWords = map[string]string{
 		"Translating a storage key would lose what was kept the day somebody changed language",
 	`"windowWidth"`:  "the name the window files its width under, never shown",
 	`"windowHeight"`: "the name the window files its height under, never shown",
-	`"file"`:         "the scheme of a local address, which is a protocol name rather than prose",
-	`"."`:            "the working directory, when the system will not say which one it is",
+	`"language"`: "the name the window files the chosen language under, never shown. " +
+		"Translating it would lose the choice the day somebody changed language",
+	`"--pseudo-language"`: "a flag on the launch line for whoever builds the window, English by D9 like every flag, never translated or shown",
+	// What each screen IS, as opposed to the word on its tab - see parts.Tab.
+	// They carry the output directory and the keyboard between screens, so a
+	// translation that renamed one would split a screen from its own state.
+	`"generate"`:    "what the single batch screen is, the key it is known by between screens, never shown",
+	`"presets"`:     "what the presets screen is, the key it is known by between screens, never shown",
+	`"recipe"`:      "what the several batches screen is, the key it is known by between screens, never shown",
+	`"preferences"`: "what the preferences screen is, the key it is known by between screens, never shown",
+	`"about"`:       "what the about screen is, the key it is known by between screens, never shown",
+	`"file"`:        "the scheme of a local address, which is a protocol name rather than prose",
+	`"."`:           "the working directory, when the system will not say which one it is",
 	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +
 		"prose, and translating it would move where somebody's files land",
 	`". "`:             "what joins two sentences the declaration already carries",

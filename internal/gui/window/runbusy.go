@@ -71,6 +71,11 @@ type busy struct {
 
 	later   later
 	callOff func()
+	// changed is told whenever work starts or stops owning the screen, and
+	// only then - the Preferences screen listens, because Restart now closes
+	// the window and closing it stops a run (G7), so the button stands down
+	// while there is one. Nil when nobody listens.
+	changed func()
 	// epoch counts the pieces of work that have owned the screen, so that a
 	// face asked for by one of them can never dress the next. Calling the
 	// clock off is not enough: the real window's clock hands the face to
@@ -91,7 +96,11 @@ type busyFace struct{ stoppable, progressing bool }
 // goes on later - BusyFaceAfter from now, on the interface thread, if the
 // work is still going - and comes off at once.
 func (b *busy) set(occupied bool, face busyFace) {
+	was := b.occupied
 	b.occupied = occupied
+	if was != occupied && b.changed != nil {
+		b.changed()
+	}
 	if b.callOff != nil {
 		b.callOff()
 		b.callOff = nil

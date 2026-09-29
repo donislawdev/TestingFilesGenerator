@@ -57,7 +57,7 @@ func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 // looking at three of the four. Passing by not looking is worse than failing.
 // TestEveryTabInTheWindowIsOnTheListGuardsWalk keeps it honest.
 func allTabs() []string {
-	return []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabAbout()}
+	return []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabPreferences(), text.TabAbout()}
 }
 
 // What this defends. A button a person can see is a button a person can press.
@@ -289,7 +289,16 @@ func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 					reachedWords[word.Text()] = true
 				}
 			}
-			if !reachedChrome {
+			// Every screen but Preferences, by the owner's decision of
+			// 2026-09-29: that screen holds how the window speaks and what it
+			// keeps, and asks for nothing. Held both ways, so the day a Donate
+			// button stands on it this exemption stops being true out loud.
+			withoutDonate := tab == text.TabPreferences()
+			if withoutDonate && buttonNamed(screen, text.ButtonDonate()) != nil {
+				t.Errorf("the %q screen holds a %q button and is still named as the screen without one",
+					tab, text.ButtonDonate())
+			}
+			if !reachedChrome && !withoutDonate {
 				t.Errorf("the %q button cannot be reached with Tab from the %q screen (UX9)",
 					text.ButtonDonate(), tab)
 			}
