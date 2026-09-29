@@ -2531,7 +2531,7 @@
 																<widget pos="0,1" size="788x26" type="*widget.Scroll">
 																	<widget size="788x26" type="*widget.entryContent">
 																		<widget size="788x26" type="*widget.RichText">
-																			<text color="placeholder" pos="6,5" size="165x16">worked out from the size</text>
+																			<text color="placeholder" pos="6,5" size="45x16">not set</text>
 																		</widget>
 																		<widget size="788x26" type="*widget.RichText">
 																			<text pos="6,5" size="0x16"></text>

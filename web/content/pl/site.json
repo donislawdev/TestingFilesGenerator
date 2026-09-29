@@ -241,7 +241,9 @@
     "format ids separated by commas, or all": "identyfikatory formatów rozdzielone przecinkami albo all",
     "extensions separated by commas": "rozszerzenia rozdzielone przecinkami",
     "the id of a format, as tfg formats lists them": "identyfikator formatu, tak jak wypisuje go tfg formats",
-    "the password, in plain text": "hasło, zwykłym tekstem"
+    "the password, in plain text": "hasło, zwykłym tekstem",
+    "any text": "dowolny tekst",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "data, np. 2024-02-29 albo 2024-02-29T13:45:00+02:00, albo none"
   },
   "faq": [
     {

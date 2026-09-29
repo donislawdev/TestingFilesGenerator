@@ -163,13 +163,23 @@ func textField(p format.Property) PropertyField {
 	}
 }
 
-// leftAlone is what happens if this field is not touched. A declaration with no
-// default means the format works the value out from the size it was asked for.
+// leftAlone is what happens if this field is not touched. A number or a size
+// with no default is worked out from the size the file was asked for.
+//
+// Free text with no default is not, and until 2026-09-29 its box said it was:
+// the password of an archive read "worked out from the size". Nothing is
+// worked out there - an empty password is no password - and the same would
+// have been said of the author of a PDF. What leaving it empty gives is the
+// format's to say, in the sentence beside the box.
 func leftAlone(p format.Property) string {
-	if p.Default == "" {
+	switch {
+	case p.Default != "":
+		return text.PlaceholderLeftEmpty(p.Default)
+	case p.Kind == format.PropertyText:
+		return text.PlaceholderNotSet()
+	default:
 		return text.PlaceholderWorkedOut()
 	}
-	return text.PlaceholderLeftEmpty(p.Default)
 }
 
 // PropertyFields draws every field one format declares, in the order it
@@ -221,7 +231,13 @@ func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]Pro
 	fields := make([]PropertyField, 0, len(declared))
 	objects := make([]fyne.CanvasObject, 0, len(declared))
 
-	for _, p := range declared {
+	for i, p := range declared {
+		// A block of settings opens with its name, drawn as the name of a block
+		// inside a section - the same heading as the files inside an archive.
+		// tfg formats prints the same name in the same place.
+		if p.Group != "" && (i == 0 || declared[i-1].Group != p.Group) {
+			objects = append(objects, Subheading(p.Group))
+		}
 		f := FromProperty(p)
 		fields = append(fields, f)
 		// A setting the format itself calls a size gets its count of bytes.

@@ -28,6 +28,28 @@ because it turns other people's test suites red.
   removes the folder entry from `PATH` and leaves any file in the folder
   that the installer did not put there. A release candidate gets no
   installer.
+- **Eleven new PDF settings.** `orientation` lays pages upright, wide, or
+  both in turn. `page_size=mixed` goes through a4, letter, legal, a3 and a5,
+  one a page. `rotate` asks the reader to turn every page by 90, 180 or 270
+  degrees while the page itself stays upright, so a reader that ignores the
+  request shows something different from one that follows it.
+  `pdf_version` writes 1.4 instead of 1.7 at the start of the file. And the
+  document properties a reader shows: `title`, `author`, `subject`,
+  `keywords`, `creator`, `producer`, and the dates `created` and `modified`,
+  written as `2024-02-29` or `2024-02-29T13:45:00+02:00`, or `none` to leave
+  the date out. Text outside ASCII, such as Polish letters, reads back
+  unchanged. The manifest says what each file carries. A file made without
+  these settings is byte for byte the file this version made before.
+- **The window groups the settings of a format** when there are enough of
+  them to need it. PDF shows its document properties under a heading of
+  their own, and `tfg formats pdf` prints the same heading in the same place.
+
+### Changed
+
+- **An empty text box in the window reads "not set"** instead of "worked out
+  from the size" when leaving it empty means going without - the password
+  of an archive, the author of a PDF. What that means for the file is in the
+  sentence beside the box.
 
 ### Fixed
 

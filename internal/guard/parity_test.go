@@ -185,6 +185,20 @@ var reachableFromTheWindow = []string{
 	"property:xml.encoding",
 	"property:pdf.page_size",
 	"property:pdf.pages",
+	// The settings of 2026-09-29, drawn by the same code - the eight that
+	// describe the document under a heading of their own, from the Group
+	// the declaration carries.
+	"property:pdf.orientation",
+	"property:pdf.rotate",
+	"property:pdf.pdf_version",
+	"property:pdf.title",
+	"property:pdf.author",
+	"property:pdf.subject",
+	"property:pdf.keywords",
+	"property:pdf.creator",
+	"property:pdf.producer",
+	"property:pdf.created",
+	"property:pdf.modified",
 	"property:png.height",
 	"property:png.width",
 	// SVG names its dimensions the same way the nine picture formats do, on

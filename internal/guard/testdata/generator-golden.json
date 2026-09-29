@@ -138,6 +138,16 @@
       "bytes": 16384,
       "sha256": "f5a4b84a7729ca4f314d51641c4318ed238401bff023599a94cc1e065b42679d"
     },
+    "pdf_document_properties": {
+      "bytes": 16384,
+      "sha256": "5cd0b0e415dba836b9c6d46d1c79a93e080b63622179944d2ce43a040a80bf3e",
+      "measured_on": "2026-09-29"
+    },
+    "pdf_mixed_pages": {
+      "bytes": 32768,
+      "sha256": "b108f98a71e7ece73248cc6abbc78eece506b626a410ce35bddb2f94701c753c",
+      "measured_on": "2026-09-29"
+    },
     "png_64kib": {
       "bytes": 65536,
       "sha256": "65c6153643fe861e3e32149cefb638f5209a9c783cf702e655585d4e405ff657",

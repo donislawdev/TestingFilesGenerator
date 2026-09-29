@@ -36,7 +36,24 @@ func Register(d Descriptor) {
 	for i := range d.Properties {
 		SortChoices(d.Properties[i].Choices)
 	}
+	if g, split := splitGroup(d.Properties); split {
+		panic(fmt.Sprintf("format: %q declares the group %q in two places", d.ID, g))
+	}
 	registry[d.ID] = d
+}
+
+// splitGroup finds a group whose settings are not declared together.
+func splitGroup(props []Property) (string, bool) {
+	closed := map[string]bool{}
+	for i, p := range props {
+		if i > 0 && props[i-1].Group != p.Group {
+			closed[props[i-1].Group] = true
+		}
+		if closed[p.Group] {
+			return p.Group, true
+		}
+	}
+	return "", false
 }
 
 // SmallestWithLabel is d.SmallestAccepted(Request{Label: true}), worked out
