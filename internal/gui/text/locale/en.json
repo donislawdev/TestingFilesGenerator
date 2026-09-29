@@ -3,6 +3,46 @@
     "description": "Shown on the About screen.",
     "other": "Generate test files, and know how the system under test should react to them."
   },
+  "AllowedDefault": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Default}}, which has to stay spelled exactly that way.",
+    "other": "default {{.Default}}"
+  },
+  "AllowedJointly": {
+    "description": "A note under two settings of a format whose product has a ceiling. Of and By are the names a recipe writes and stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Of}}, {{.By}}, {{.Max}}, {{.Unit}}, {{.Why}}.",
+    "other": "{{.Of}} times {{.By}} cannot pass {{.Max}} {{.Unit}}, because {{.Why}}"
+  },
+  "AllowedOneOf": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Values}}, which has to stay spelled exactly that way.",
+    "other": "one of: {{.Values}}"
+  },
+  "AllowedRange": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Min}}, {{.Max}}.",
+    "other": "whole number from {{.Min}} to {{.Max}}"
+  },
+  "AllowedRangeOf": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Unit}}, {{.Min}}, {{.Max}}.",
+    "other": "whole number of {{.Unit}} from {{.Min}} to {{.Max}}"
+  },
+  "AllowedSize": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "other": "a size such as 2mb, or a plain byte count"
+  },
+  "AllowedTrueOrFalse": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "other": "true or false"
+  },
+  "AllowedWholeNumber": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "other": "whole number"
+  },
+  "AllowedWholeNumberOf": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Unit}}, which has to stay spelled exactly that way.",
+    "other": "whole number of {{.Unit}}"
+  },
+  "AllowedWithDefault": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.What}}, {{.Default}}.",
+    "other": "{{.What}}, default {{.Default}}"
+  },
   "BatchHeading": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
     "other": "Batch {{.Number}}"
@@ -82,6 +122,10 @@
   "DamageSettingsFor": {
     "description": "Shown in the window. Carries one value, {{.Damage}}, which has to stay spelled exactly that way.",
     "other": "Settings for {{.Damage}}"
+  },
+  "DecimalMark": {
+    "description": "What this language writes between the whole part of a number and its tenths, as in 10.0 MB. One character.",
+    "other": "."
   },
   "DetailBasePreset": {
     "description": "The longer explanation behind the button beside a field name.",

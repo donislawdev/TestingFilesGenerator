@@ -381,13 +381,68 @@ func SettingsFor(formatID string) string {
 // It changes only what is drawn. The key is what a refusal is matched against
 // and what goes into a recipe, and neither of those goes through here - see
 // SettingKey for where the key stays visible.
-func SettingLabel(key string) string {
+//
+// Looked up by the key since 2026-09-29, because another language cannot be
+// spelled out of an English key. The English is still spelled out of it - the
+// registry declares no label - so an English window reads as it did.
+func SettingLabel(key string) string { return lookup(LabelKey(key), EnglishLabel(key)) }
+
+// EnglishLabel is the English SettingLabel falls back to, spelled out of the
+// key - bit_depth reads "Bit depth". Exported for the guard that writes the
+// words of the registries out for a translator.
+func EnglishLabel(key string) string {
 	if key == "" {
 		return key
 	}
 	spaced := strings.ReplaceAll(key, "_", " ")
 	return strings.ToUpper(spaced[:1]) + spaced[1:]
 }
+
+// What a setting takes, in the window's language - format.Property.Allowed put
+// together from these rather than read whole, because that sentence is English
+// and the command line prints it (D9). The values in it - true, 2mb, the
+// default, the numbers - are what a recipe writes, and stay as they are.
+//
+// A guard puts every declared setting through both and asks for the same
+// English to the letter, so the window and tfg formats cannot come to describe
+// one setting in two ways (D1).
+func AllowedWholeNumber() string { return say("AllowedWholeNumber", "whole number") }
+func AllowedWholeNumberOf(unit string) string {
+	return sayf("AllowedWholeNumberOf", "whole number of {{.Unit}}", map[string]any{"Unit": unit})
+}
+func AllowedRange(least, most int64) string {
+	return sayf("AllowedRange", "whole number from {{.Min}} to {{.Max}}",
+		map[string]any{"Min": least, "Max": most})
+}
+func AllowedRangeOf(unit string, least, most int64) string {
+	return sayf("AllowedRangeOf", "whole number of {{.Unit}} from {{.Min}} to {{.Max}}",
+		map[string]any{"Unit": unit, "Min": least, "Max": most})
+}
+func AllowedOneOf(values []string) string {
+	return sayf("AllowedOneOf", "one of: {{.Values}}", map[string]any{"Values": strings.Join(values, ", ")})
+}
+func AllowedTrueOrFalse() string { return say("AllowedTrueOrFalse", "true or false") }
+func AllowedSize() string {
+	return say("AllowedSize", "a size such as 2mb, or a plain byte count")
+}
+func AllowedDefault(value string) string {
+	return sayf("AllowedDefault", "default {{.Default}}", map[string]any{"Default": value})
+}
+func AllowedWithDefault(what, value string) string {
+	return sayf("AllowedWithDefault", "{{.What}}, default {{.Default}}",
+		map[string]any{"What": what, "Default": value})
+}
+
+// AllowedJointly is format.JointLimit.Describe in the window's language. Of and
+// By are the keys a recipe writes, as they are in English.
+func AllowedJointly(of, by string, most int64, unit, why string) string {
+	return sayf("AllowedJointly", "{{.Of}} times {{.By}} cannot pass {{.Max}} {{.Unit}}, because {{.Why}}",
+		map[string]any{"Of": of, "By": by, "Max": most, "Unit": unit, "Why": why})
+}
+
+// DecimalMark is what the window's language writes between the whole part of
+// a number and its tenths - see HumanBytes.
+func DecimalMark() string { return say("DecimalMark", ".") }
 
 // SettingKey says what to write in a recipe for the field being looked at.
 //

@@ -3,6 +3,7 @@ package text
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"path"
 	"strings"
@@ -173,7 +174,13 @@ func fill(layout string, data map[string]any) string {
 // The English is handed over on every call rather than kept in a file of its
 // own, so there is one place a sentence is written and no way for a catalogue
 // to disagree with the code about what it says in English.
-func say(id, english string) string {
+func say(id, english string) string { return localise(id, english) }
+
+// localise is the one question both kinds of text ask: the entry under this
+// key in the language the window speaks, or the English handed in when there
+// is none. say asks it for the window's own sentences and lookup for the
+// registries' - see registry.go.
+func localise(id, english string) string {
 	if pseudo {
 		return pseudoOf(english)
 	}
@@ -199,21 +206,25 @@ func say(id, english string) string {
 // Languages are tried in the order given and English is always last, so a
 // catalogue that carries half a language leaves English sentences rather than
 // empty ones.
+//
+// The words of the registries are read from the folder beside the window's own,
+// into the same language - see registry.go for why they are a file of their
+// own. A catalogue without that folder is a window that has not translated
+// them yet, and says their English.
 func Load(fsys fs.FS, dir string, prefer ...string) error {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
 
-	entries, err := fs.ReadDir(fsys, dir)
-	if err != nil {
+	if err := loadFiles(bundle, fsys, dir, ""); err != nil {
 		return err
 	}
-	for _, entry := range entries {
-		if entry.IsDir() || path.Ext(entry.Name()) != ".json" {
-			continue
-		}
-		if _, err := bundle.LoadMessageFileFS(fsys, path.Join(dir, entry.Name())); err != nil {
-			return err
-		}
+	// Not the English copy of the registries' words: it is written for a
+	// translator, and the English on screen comes from the registries
+	// themselves - a copy one commit behind them must not be able to answer
+	// for them.
+	err := loadFiles(bundle, fsys, path.Join(dir, RegistryFolder), English+".json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
 	}
 
 	localiser = i18n.NewLocalizer(bundle, append(prefer, English)...)
@@ -222,6 +233,25 @@ func Load(fsys fs.FS, dir string, prefer ...string) error {
 		if carries(bundle, asked) {
 			speaking = asked
 			break
+		}
+	}
+	return nil
+}
+
+// loadFiles puts every catalogue file of one folder into the bundle, but the
+// one named in except. Folders inside it are left to the caller, so the
+// registry folder is not read as a language of the window.
+func loadFiles(bundle *i18n.Bundle, fsys fs.FS, dir, except string) error {
+	entries, err := fs.ReadDir(fsys, dir)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || path.Ext(entry.Name()) != ".json" || entry.Name() == except {
+			continue
+		}
+		if _, err := bundle.LoadMessageFileFS(fsys, path.Join(dir, entry.Name())); err != nil {
+			return err
 		}
 	}
 	return nil

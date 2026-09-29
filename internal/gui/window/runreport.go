@@ -46,14 +46,14 @@ func manifestReachNote(res *engine.Result) []string {
 		return nil
 	}
 	return []string{text.ManifestTooLargeToRead(
-		core.HumanBytes(size), core.HumanBytes(manifest.MaxBytes))}
+		text.HumanBytes(size), text.HumanBytes(manifest.MaxBytes))}
 }
 
 // progressText is the line under the bar. Bytes rather than files, because one
 // large file is a run where the file count says nothing for minutes.
 func progressText(p engine.Progress, elapsed time.Duration) string {
 	line := text.Progress(p.FilesDone, p.FilesTotal,
-		core.HumanBytes(p.BytesDone), core.HumanBytes(p.BytesTotal),
+		text.HumanBytes(p.BytesDone), text.HumanBytes(p.BytesTotal),
 		core.Percent(p.BytesDone, p.BytesTotal))
 
 	// The estimate stays quiet until it has enough to go on. A number that

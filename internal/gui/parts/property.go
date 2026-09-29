@@ -185,9 +185,10 @@ func leftAlone(p format.Property) string {
 // PropertyFields draws every field one format declares, in the order it
 // declared them, each with the sentence saying what it takes.
 //
-// The sentence comes from Property.Allowed, which is the one "tfg formats"
-// prints. Two surfaces describing one format in two ways is D1 breaking in the
-// place nobody thinks to compare, so there is one sentence and both read it.
+// The sentence is Property.Allowed, which is the one "tfg formats" prints, put
+// together in the window's language by Allowed. Two surfaces describing one
+// format in two ways is D1 breaking in the place nobody thinks to compare, so a
+// guard holds the English of the two to one sentence.
 // It registers each one with the screen, so a setting a format declares can be
 // told it was the one refused. Until 2026-08-12 these were the only fields on
 // either screen that could not: they were built with the plain Field function,
@@ -195,7 +196,8 @@ func leftAlone(p format.Property) string {
 // appeared at the foot of the form with nothing marked. Thirteen formats
 // declare fourteen of these between them.
 func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
-	fields, objects := DeclaredFields(d.Properties, into, tips)
+	owner := text.FormatOwner(d.ID)
+	fields, objects := DeclaredFields(owner, d.Properties, into, tips)
 
 	// A rule binding two settings belongs beside them and nowhere else. Drawn
 	// from Min and Max alone, two number boxes would offer twenty thousand by
@@ -206,9 +208,15 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 	// preset declares parameters and no joint limits, so asking it for some
 	// would be a field nothing fills.
 	for _, j := range d.JointLimits {
-		objects = append(objects, Note(j.Describe()))
+		objects = append(objects, Note(JointLimit(owner, j)))
 	}
 	return fields, objects
+}
+
+// JointLimit is JointLimit.Describe in the window's language. A guard asks the
+// English of the two to agree to the letter, for every limit declared.
+func JointLimit(owner text.Owner, j format.JointLimit) string {
+	return text.AllowedJointly(j.Of, j.By, j.Most(), text.Unit(j.Unit), text.JointReason(owner, j.Of, j.By, j.Why))
 }
 
 // DeclaredFields draws every field a list of declared settings describes, in
@@ -227,7 +235,10 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 // and that was a way of using the width a name standing OVER its box left
 // empty beside it - with the name beside the box there is no such width, a
 // row is as tall as one box, and a form reads down one column of names.
-func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
+//
+// The owner is whose declaration the list is, which is half of the key every
+// sentence of it is found under in another language - see text.Owner.
+func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
 	fields := make([]PropertyField, 0, len(declared))
 	objects := make([]fyne.CanvasObject, 0, len(declared))
 
@@ -236,7 +247,7 @@ func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]Pro
 		// inside a section - the same heading as the files inside an archive.
 		// tfg formats prints the same name in the same place.
 		if p.Group != "" && (i == 0 || declared[i-1].Group != p.Group) {
-			objects = append(objects, Subheading(p.Group))
+			objects = append(objects, Subheading(text.SettingGroup(owner, p.Group)))
 		}
 		f := FromProperty(p)
 		fields = append(fields, f)
@@ -255,7 +266,7 @@ func DeclaredFields(declared []format.Property, into *Fields, tips *Tips) ([]Pro
 		// The button is what makes that safe rather than a loss: this is a tool
 		// whose window and whose recipe file are two ways into one engine, so
 		// somebody who finds a setting here has to be able to write it down.
-		objects = append(objects, into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(p),
+		objects = append(objects, into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
 			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control)))
 	}
 	return fields, objects
@@ -321,13 +332,15 @@ func narrowOnAScreen(p format.Property) bool {
 // Exported because two screens draw these fields now, and the sentence has to be
 // composed one way. A screen assembling it itself would be D1 breaking in the
 // place nobody compares: two surfaces describing one format in two wordings.
-func PropertyDetail(p format.Property) string {
+//
+// The owner is whose declaration p is - see DeclaredFields.
+func PropertyDetail(owner text.Owner, p format.Property) string {
 	detail := allowedOnAScreen(p)
-	if p.Detail != "" {
+	if said := text.SettingDetail(owner, p.Name, p.Detail); said != "" {
 		if detail != "" {
 			detail += ". "
 		}
-		detail += p.Detail
+		detail += said
 	}
 	return detail
 }
@@ -351,5 +364,51 @@ func allowedOnAScreen(p format.Property) string {
 	if p.Kind == format.PropertyChoice {
 		return ""
 	}
-	return p.Allowed()
+	return Allowed(p)
+}
+
+// Allowed is Property.Allowed in the window's language, put together from the
+// same parts in the same order. A guard asks the English of the two to agree to
+// the letter for every setting declared, so this cannot become a second opinion
+// about what a setting takes (D1).
+func Allowed(p format.Property) string {
+	what := allowedKind(p)
+	switch {
+	case p.Default != "" && what == "":
+		return text.AllowedDefault(p.Default)
+	case p.Default != "":
+		return text.AllowedWithDefault(what, p.Default)
+	}
+	return what
+}
+
+// allowedKind is the part of Allowed that the kind of the setting decides.
+func allowedKind(p format.Property) string {
+	switch p.Kind {
+	case format.PropertyInt:
+		return allowedNumber(p)
+	case format.PropertyChoice:
+		return text.AllowedOneOf(p.Choices)
+	case format.PropertyBool:
+		return text.AllowedTrueOrFalse()
+	case format.PropertySize:
+		return text.AllowedSize()
+	}
+	// A text setting describes itself with its shape or not at all.
+	return text.Shape(p.Shape)
+}
+
+// allowedNumber is a whole number, with its range and what it counts when the
+// declaration says.
+func allowedNumber(p format.Property) string {
+	ranged := p.Min != 0 || p.Max != 0
+	switch {
+	case p.Unit == "" && ranged:
+		return text.AllowedRange(p.Min, p.Max)
+	case p.Unit == "":
+		return text.AllowedWholeNumber()
+	case ranged:
+		return text.AllowedRangeOf(text.Unit(p.Unit), p.Min, p.Max)
+	}
+	return text.AllowedWholeNumberOf(text.Unit(p.Unit))
 }

@@ -21,8 +21,11 @@ because it turns other people's test suites red.
   otherwise - so on a system set to Polish it opens in Polish. Preferences
   lets you choose another language. The choice takes effect the next time
   the window opens, and Restart now does that at once. It is off while files
-  are being made, and anything typed on the other tabs is cleared. The
-  command line, recipes and manifests do not change language. The same tab
+  are being made, and anything typed on the other tabs is cleared. In Polish
+  the settings of every format, the presets and the sizes of a run are Polish
+  as well, so a size reads 10,0 MB. The values you pick from a list
+  (portrait, a4), the names of the formats and the reason a run is refused
+  stay in English, and so do the command line, recipes and manifests. The same tab
   says what the window keeps between runs (the output directory, the window
   size and the language), shows the folder they are kept in, and Forget
   clears them. `tfg-gui --pseudo-language` opens the window with every

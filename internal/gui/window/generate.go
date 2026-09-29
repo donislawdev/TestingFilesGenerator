@@ -532,7 +532,7 @@ func (g *Generate) rebuildDamageFields() {
 		return
 	}
 
-	fields, objects := parts.DeclaredFields(d.Parameters, g.fields, g.tips)
+	fields, objects := parts.DeclaredFields(text.DamageOwner(d.ID), d.Parameters, g.fields, g.tips)
 	g.damage.props = fields
 	if len(objects) == 0 {
 		g.damage.box.Refresh()

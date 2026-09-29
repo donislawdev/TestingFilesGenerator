@@ -59,9 +59,16 @@ func TestTheWindowSpeaksTheLanguageItWasToldTo(t *testing.T) {
 // catalogueFiles is every catalogue compiled into the window, by tag.
 func catalogueFiles(t *testing.T) map[string]map[string]map[string]string {
 	t.Helper()
-	paths, err := filepath.Glob(filepath.Join(localeDir, "*.json"))
+	return catalogueFilesIn(t, localeDir)
+}
+
+// catalogueFilesIn is every catalogue file of one folder, by tag - the
+// window's own, or the words of the registries beside them.
+func catalogueFilesIn(t *testing.T, dir string) map[string]map[string]map[string]string {
+	t.Helper()
+	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil || len(paths) == 0 {
-		t.Fatalf("no catalogue in %s: %v", localeDir, err)
+		t.Fatalf("no catalogue in %s: %v", dir, err)
 	}
 	out := map[string]map[string]map[string]string{}
 	for _, path := range paths {
@@ -179,7 +186,13 @@ func TestEveryLetterEveryLanguageSaysIsInTheTypeface(t *testing.T) {
 		"Inter-Regular": charactersIn(t, "Inter-Regular", font.Regular),
 		"Inter-Bold":    charactersIn(t, "Inter-Bold", font.Bold),
 	}
-	for tag, entries := range catalogueFiles(t) {
+	languages := catalogueFiles(t)
+	// The words of the registries, under the same tag with a mark saying where
+	// they came from - they reach the same screens in the same face.
+	for tag, entries := range registryFiles(t) {
+		languages[tag+" "+text.RegistryFolder] = entries
+	}
+	for tag, entries := range languages {
 		missing := map[string][]string{}
 		for id, entry := range entries {
 			for form, sentence := range entry {

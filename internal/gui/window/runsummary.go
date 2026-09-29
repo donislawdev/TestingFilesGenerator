@@ -140,12 +140,12 @@ func (s summary) totalText() string {
 		return ""
 	case drawn:
 		if s.least != s.most {
-			return text.SizeBetween(core.HumanBytes(s.least), core.HumanBytes(s.most))
+			return text.SizeBetween(text.HumanBytes(s.least), text.HumanBytes(s.most))
 		}
 	case stated:
 		// Every size is on the form, so the exact total below is the answer.
 	}
-	return text.SizeAndBytes(core.HumanBytes(s.least), core.ExactBytes(s.least))
+	return text.SizeAndBytes(text.HumanBytes(s.least), core.ExactBytes(s.least))
 }
 
 // exactly is the summary of a plan: the sizes are drawn by now, so the two
