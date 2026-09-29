@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload Validation Test Files - Type, Size and Name</title>
+<meta name="description" content="Files for testing an upload form: allowed and denied types, content that does not match its extension, the size limit either side, hostile names and a bulk upload.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/upload-validation/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Upload Validation Test Files - Type, Size and Name">
+<meta property="og:description" content="Files for testing an upload form: allowed and denied types, content that does not match its extension, the size limit either side, hostile names and a bulk upload.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta property="og:locale:alternate" content="pl">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Upload Validation Test Files - Type, Size and Name">
+<meta name="twitter:description" content="Files for testing an upload form: allowed and denied types, content that does not match its extension, the size limit either side, hostile names and a bulk upload.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Upload validation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/presets\/upload-validation\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/" aria-current="true">Presets</a>
+      <a href="/docs/">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+    </nav>
+    <div class="langswitch">
+      <a href="/pl/presety/upload-validation/" hreflang="pl" lang="pl" rel="alternate">Polski</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/presets/">Presets</a></p>
+<h1>Upload validation</h1>
+<p class="lead">Does my upload form take what it should and turn the rest away?</p>
+<p>
+  The <code>upload-validation</code> preset builds a whole set of real test files for this question in one
+  command, and a <code>manifest.json</code> beside them saying how your system should react to each
+  file. Everything below is read from the program, at the defaults of this version.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>What does it usually find?</h2>
+  <ul class="ticks">
+    <li>a limit enforced in the browser and not on the server</li>
+    <li>an SVG or an HTML file taken for a picture or for plain text, which is a way to get a script past a form</li>
+    <li>a file checked by its extension and never opened, so a PDF named .jpg goes through</li>
+    <li>a form that reads the whole body into memory before it looks at how big it is</li>
+    <li>an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round</li>
+    <li>a name with spaces, brackets or characters outside ASCII written to disk unchanged</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>What is in the set?</h2>
+  <p>At its defaults, as <code>tfg preset show upload-validation</code> reports it:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Files</th><td>71</td></tr>
+        <tr><th scope="row">Targets in its recipe</th><td>22</td></tr>
+        <tr><th scope="row">Total size</th><td>120 639 488 B</td></tr>
+        <tr><th scope="row">Formats</th><td>html, jpg, pdf, png, svg, txt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>And what the manifest of that set expects from your system:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Expected</th><th>Meaning</th><th class="num">Files</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Your system should take the file.</td><td class="num">56</td></tr>
+        <tr><td><code>reject</code></td><td>Your system should turn the file away.</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>It depends on the rules of your system. You decide, then check that what happens is what you meant.</td><td class="num">5</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>What can you change?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Setting</th><th>Takes</th><th>Default</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>a size such as 2mb</td>
+          <td><code>10mb</code></td>
+          <td>The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset. <strong>This default is our placeholder, not your system's value. Pass your own.</strong></td>
+        </tr>
+        <tr>
+          <td><code>--allow</code></td>
+          <td>format ids separated by commas</td>
+          <td><code>jpg,png,pdf</code></td>
+          <td>Which types your form is supposed to accept. Each one becomes a real file of that type, and they are the positive control of the whole set.</td>
+        </tr>
+        <tr>
+          <td><code>--deny</code></td>
+          <td>extensions separated by commas</td>
+          <td><code>svg,html,exe,sh</code></td>
+          <td>Which extensions your form is supposed to turn away. An extension this build has no format for still gets a file under that name, holding plain text.</td>
+        </tr>
+        <tr>
+          <td><code>--far-over</code></td>
+          <td>10x, 2x, off</td>
+          <td><code>2x</code></td>
+          <td>How far past the limit the one big file goes. Turn it off where writing several times the limit is not worth the disk.</td>
+        </tr>
+        <tr>
+          <td><code>--bulk</code></td>
+          <td>0 - 10000 files</td>
+          <td><code>50</code></td>
+          <td>How many files the mass upload holds. Nought leaves that group out of the set altogether.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>How do you run it?</h2>
+  <p>See what the set would cost, build it, or take its recipe to edit:</p>
+  <pre><code>tfg preset show upload-validation
+tfg generate --preset upload-validation --limit 10mb --out ./upload-validation
+tfg preset eject upload-validation &gt; upload-validation.yaml</code></pre>
+  <p>Or build on it in a recipe of your own, next to your tests:</p>
+  <pre><code>version: 1
+extends: preset:upload-validation
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

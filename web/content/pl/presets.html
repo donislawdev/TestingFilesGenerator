@@ -1,0 +1,31 @@
+<h1>Presety plików testowych, jeden zestaw na każde pytanie testowe</h1>
+<p class="lead">
+  Preset to cały zestaw plików testowych zaprojektowany wokół jednego pytania, z manifestem, który
+  mówi, jak system ma zareagować na każdy plik. Ty wybierasz pytanie, narzędzie buduje zestaw. Każdy
+  preset ma własną stronę: co zwykle znajduje, co jest w zestawie i jakie ustawienia przyjmuje.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Czym preset różni się od przepisu?</h2>
+  <p>
+    Pod spodem niczym. Preset to przepis, który narzędzie pisze za Ciebie z kilku ustawień.
+    <code>tfg preset eject</code> wypisuje ten przepis, więc możesz go trzymać obok testów i edytować,
+    a własny przepis może zbudować na presecie jedną linią, <code>extends: preset:</code> i jego
+    identyfikator.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Czy mogę ufać wartościom domyślnym?</h2>
+  <p>
+    Co do plików - tak. Co do liczby, którą zna tylko Twój system, na przykład limitu formularza
+    przesyłania, wartość domyślna jest naszą wartością zastępczą, a narzędzie mówi to za każdym razem,
+    gdy jej używa. Strona każdego presetu oznacza takie ustawienia, a <code>tfg preset show</code> mówi
+    o tym, zanim cokolwiek zostanie zapisane.
+  </p>
+</section>

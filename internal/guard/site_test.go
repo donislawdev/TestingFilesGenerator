@@ -18,7 +18,6 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
-	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
 	"github.com/donislawdev/TestingFilesGenerator/internal/site"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -97,14 +96,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 	for _, d := range format.All() {
 		props := make([]site.Property, 0, len(d.Properties))
 		for _, p := range d.Properties {
-			props = append(props, site.Property{
-				Name:    p.Name,
-				Kind:    string(p.Kind),
-				Min:     p.Min,
-				Max:     p.Max,
-				Unit:    p.Unit,
-				Choices: append([]string(nil), p.Choices...),
-			})
+			props = append(props, siteProperty(p))
 		}
 		formats = append(formats, site.Format{
 			ID:          d.ID,
@@ -125,16 +117,11 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		})
 	}
 
-	ids := make([]string, 0, len(preset.All()))
-	for _, p := range preset.All() {
-		ids = append(ids, p.ID)
-	}
-
 	return site.Facts{
 		Version:   version.Version,
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
-		Presets:   ids,
+		Presets:   presetFactsFromTheProgram(t),
 		Commands:  commandsTheToolPrints(t),
 		Downloads: declaredDownloads(),
 		// Fixed on purpose. See the comment on the field.
@@ -396,11 +383,9 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 				t.Errorf("exit code %d has no meaning in %s, so that row of the table would be blank", code, lang.Code)
 			}
 		}
-		for _, id := range facts.Presets {
-			if _, ok := lang.Presets[id]; !ok {
-				t.Errorf("the preset %q has no question in %s", id, lang.Code)
-			}
-		}
+		// Presets are asked by TestEveryPresetIsDescribedInEveryLanguage,
+		// which holds far more of them than a question.
+		//
 		// The other direction as well, which the rows above do not ask. A
 		// command dropped from the program leaves its summary behind in both
 		// language files, and the page would then be a list of what the tool
@@ -448,6 +433,19 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 			for _, p := range f.Properties {
 				if _, ok := lang.Terms[p.Kind]; !ok {
 					t.Errorf("%s.%s is a %q and %s has no word for that kind", f.ID, p.Name, p.Kind, lang.Code)
+				}
+				// The shape is what the page shows instead of the kind, so
+				// its words are asked for the same way. In English they are
+				// the registry's own, since the page and the program
+				// describe one setting.
+				if p.Shape != "" {
+					said, ok := lang.Terms[p.Shape]
+					if !ok {
+						t.Errorf("%s.%s takes %q and %s has no words for that", f.ID, p.Name, p.Shape, lang.Code)
+					}
+					if ok && lang.Code == "en" && said != p.Shape {
+						t.Errorf("the registry says %s.%s takes %q and the English page says %q", f.ID, p.Name, p.Shape, said)
+					}
 				}
 				if p.Unit != "" {
 					if _, ok := lang.Terms[p.Unit]; !ok {
@@ -666,9 +664,24 @@ func TestTheSitemapNeedsNoSchemaButItsOwn(t *testing.T) {
 		}
 	}
 
-	pages := 0
+	// Counted from what was rendered rather than from the language files.
+	// Since 2026-09-29 a page per preset is made from the registry, and those
+	// pages are in no language file - counting the files would compare the
+	// sitemap with a set that is missing them. So the count is every page
+	// published, and it is held to having reached the made pages at all:
+	// a count that silently stopped seeing them would agree with a sitemap
+	// that had also stopped naming them.
+	pages, written := 0, 0
+	for path := range rendered {
+		if filepath.Base(path) == "index.html" {
+			pages++
+		}
+	}
 	for _, language := range s.Languages {
-		pages += len(language.Pages)
+		written += len(language.Pages)
+	}
+	if len(s.Facts.Presets) > 0 && pages <= written {
+		t.Fatalf("the site renders %d pages and its language files list %d, so the preset pages were not counted", pages, written)
 	}
 	if locations != pages {
 		t.Errorf("the site has %d pages and the sitemap names %d of them, so a crawler reading it is told about the wrong set", pages, locations)

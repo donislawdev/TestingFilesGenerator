@@ -150,7 +150,7 @@ body {
   background: var(--surface-2);
 }
 
-.mainnav a[aria-current="page"] {
+.mainnav a[aria-current] {
   color: var(--text);
   background: var(--surface-2);
 }

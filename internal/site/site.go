@@ -40,6 +40,11 @@ type Property struct {
 	Max     int64
 	Unit    string
 	Choices []string
+	// Shape is what free text has to look like, as the registry words it.
+	// It is looked up among the terms like a unit, because the registry
+	// states it in English. Without it a text setting is described as "text",
+	// which says nothing about the value it wants.
+	Shape string
 }
 
 // Format is one entry of the registry, flattened for display.
@@ -72,14 +77,17 @@ type Ending struct {
 	Meaning string
 }
 
-// Preset is one ready made set of files, named by the question it answers.
+// Preset is one ready-made set of files, named by the question it answers,
+// as a card that leads to its own page.
 //
-// The identifier comes from the registry and the question from the language
+// The identifier comes from the registry and the words from the language
 // file, for the same reason the units do: the registry states its question in
 // English, and a Polish page carrying it would be a page translated halfway.
 type Preset struct {
 	ID       string
+	Title    string
 	Question string
+	URL      string
 }
 
 // Command is one command the tool offers, described in the language being
@@ -123,7 +131,7 @@ type Facts struct {
 	Version   string
 	Formats   []Format
 	ExitCodes []int
-	Presets   []string
+	Presets   []PresetFacts
 	Downloads []Download
 
 	// Commands is what tfg --help prints, in the order it prints it, read out
@@ -196,6 +204,15 @@ type Page struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Nav         string `json:"nav"`
+
+	// The three below are never written in site.json. They are set on the
+	// pages made from a list rather than by hand - one per preset - and say
+	// which page they sit under, which content file holds their text, and
+	// which item of the list they are about. A page with a parent is left out
+	// of the header, and the parent is marked there while it is open.
+	Parent   string `json:"-"`
+	Template string `json:"-"`
+	Item     string `json:"-"`
 }
 
 // Language is one whole version of the site.
@@ -203,22 +220,24 @@ type Page struct {
 // Dir is the path prefix. It is empty for the language served at the root,
 // which is the one search engines are pointed at by x-default.
 //
-// Endings, Terms, Presets and Commands are the places where a word has to
-// exist for every value the program can produce, and a missing one is an error
-// rather than a gap left in English. Endings is keyed by the exit code written
-// out in decimal, Terms by the kind or unit exactly as the registry spells it,
-// Presets by the identifier, and Commands by the name tfg --help prints.
+// Endings, Terms, Presets, Commands and Outcomes are the places where a word
+// has to exist for every value the program can produce, and a missing one is
+// an error rather than a gap left in English. Endings is keyed by the exit code
+// written out in decimal, Terms by the kind, unit or shape exactly as the
+// registry spells it, Presets by the identifier, Commands by the name
+// tfg --help prints, and Outcomes by the reaction a manifest declares.
 type Language struct {
-	Code     string            `json:"code"`
-	Name     string            `json:"name"`
-	Dir      string            `json:"dir"`
-	Words    map[string]string `json:"words"`
-	Endings  map[string]string `json:"endings"`
-	Terms    map[string]string `json:"terms"`
-	Presets  map[string]string `json:"presets"`
-	Commands map[string]string `json:"commands"`
-	Pages    []Page            `json:"pages"`
-	Faq      []QA              `json:"faq"`
+	Code     string                `json:"code"`
+	Name     string                `json:"name"`
+	Dir      string                `json:"dir"`
+	Words    map[string]string     `json:"words"`
+	Endings  map[string]string     `json:"endings"`
+	Terms    map[string]string     `json:"terms"`
+	Presets  map[string]PresetText `json:"presets"`
+	Commands map[string]string     `json:"commands"`
+	Outcomes map[string]string     `json:"outcomes"`
+	Pages    []Page                `json:"pages"`
+	Faq      []QA                  `json:"faq"`
 }
 
 // Site is everything needed to render.
@@ -247,10 +266,16 @@ type Alternate struct {
 }
 
 // NavItem is one link in the header.
+//
+// Current is the page being read. Section is the page it sits under, which is
+// marked as well so a reader on the page of one preset can see where they
+// are - but told apart, because a screen reader announces "current page" for
+// the first and would be wrong about the second.
 type NavItem struct {
 	Label   string
 	URL     string
 	Current bool
+	Section bool
 }
 
 // Switch is the link to this page in another language.

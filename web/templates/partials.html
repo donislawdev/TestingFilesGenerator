@@ -42,9 +42,17 @@
       "name": "{{ .Word "breadcrumbHome" }}",
       "item": "{{ .Facts.Origin }}{{ if .Lang.Dir }}/{{ .Lang.Dir }}/{{ else }}/{{ end }}"
     },
+{{- with .Up }}
     {
       "@type": "ListItem",
       "position": 2,
+      "name": "{{ .Label }}",
+      "item": "{{ $.Facts.Origin }}{{ .URL }}"
+    },
+{{- end }}
+    {
+      "@type": "ListItem",
+      "position": {{ if .Up }}3{{ else }}2{{ end }},
       "name": "{{ .Page.Nav }}",
       "item": "{{ .Canonical }}"
     }
@@ -190,8 +198,9 @@
 <ul class="cards">
 {{- range .PresetList }}
   <li class="card">
-    <p class="card-title"><code>{{ .ID }}</code></p>
+    <p class="card-title"><a href="{{ .URL }}">{{ .Title }}</a></p>
     <p class="muted">{{ .Question }}</p>
+    <p><code>{{ .ID }}</code></p>
   </li>
 {{- end }}
 </ul>
