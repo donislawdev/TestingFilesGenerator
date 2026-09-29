@@ -172,6 +172,15 @@ jobs:
         # command line binary links exactly four external modules and the
         # toolkit is not among them, so a build for a server carries no
         # window, no OpenGL and - see internal/guard - no socket.
+        #
+        # Five on Linux and macOS since 2026-09-29 (O252): golang.org/x/sys,
+        # for the one call that gives a finished file its name without
+        # replacing anything there - renameat2 with RENAME_NOREPLACE and
+        # renamex_np with RENAME_EXCL. Already in the graph at the same
+        # version, BSD-3-Clause read from its LICENSE file. Not on Windows:
+        # golang.org/x/sys/windows imports net, which the command line may not
+        # link, so Windows makes the same call through syscall. The answer
+        # therefore depends on the runner, and the list says so.
         run: |
           set -euo pipefail
           # Built with printf rather than written across several lines. A
@@ -266,6 +275,9 @@ jobs:
 
           linked=$(go list -deps -tags "$(cat .github/build-tags)" -f '{{if .Module}}{{.Module.Path}}{{end}}' ./cmd/tfg | LC_ALL=C sort -u | grep -v '^github.com/donislawdev/TestingFilesGenerator$' | grep .)
           wanted=$(printf '%s\n' github.com/gen2brain/gav1d github.com/gen2brain/jxl github.com/goccy/go-yaml golang.org/x/text)
+          if [ "$RUNNER_OS" != "Windows" ]; then
+            wanted=$(printf '%s\n' $wanted golang.org/x/sys | LC_ALL=C sort)
+          fi
           if [ "$linked" != "$wanted" ]; then
             echo "the command line binary links a different set of modules."
             echo "expected: $wanted"
