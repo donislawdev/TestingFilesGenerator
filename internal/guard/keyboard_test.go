@@ -12,6 +12,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
 // The keyboard, and the one thing about it that is not obvious.
@@ -106,6 +107,42 @@ func TestTheKeyboardStartsARunFromInsideABox(t *testing.T) {
 	if got := len(filesIn(t, dir)); got == 0 {
 		t.Error("Ctrl+Enter was pressed with the keyboard in a box and nothing was written, " +
 			"so the shortcut is registered somewhere the keystroke never reaches")
+	}
+}
+
+// TestTheKeyboardRunsAToolFromInsideItsBox is the guard above for the Tools
+// tab: Ctrl+Enter with the keyboard in the box naming the file runs the tool,
+// and nothing else.
+//
+// Two defects, both until 2026-09-30. The boxes were handed the window's
+// shortcuts from a list of three screens of its own, and the Tools tab was not
+// on it, so the key did nothing. And the keyboard acted on the last screen
+// that had a directory rather than on the tab on show, so once the boxes did
+// pass it on, the key ran Generate on the first screen, which nobody could
+// see. That is why the first screen is given a run it could make: a key that
+// went there would write into this directory.
+func TestTheKeyboardRunsAToolFromInsideItsBox(t *testing.T) {
+	path := writeTemp(t, "keyed.txt", "abc")
+	host, content, _ := keyedWindow(t)
+	dir := t.TempDir()
+	first := selectTab(t, content, text.TabOneTarget())
+	entryUnder(t, first, text.FieldOutputDir()).SetText(dir)
+	entryUnder(t, first, text.FieldSize()).SetText("1kb")
+	entryUnder(t, first, text.FieldTargetID()).SetText("keys")
+
+	screen := selectTab(t, content, text.TabTools())
+	box := entryUnder(t, screen, text.SettingLabel(checksum.InputFile))
+	box.SetText(path)
+	pressInABox(t, box, fyne.KeyReturn, fyne.KeyModifierControl)
+	join(host)
+
+	if got := len(filesIn(t, dir)); got != 0 {
+		t.Errorf("Ctrl+Enter was pressed on the Tools tab and the first screen, which nobody could see, "+
+			"wrote %d file(s)", got)
+	}
+	if want := publishedAnswer(t, "abc", "sha256"); !strings.Contains(allText(screen), want) {
+		t.Errorf("Ctrl+Enter was pressed in the box naming the file and the screen does not show its "+
+			"sha256 %s - the shortcut never reached the tool", want)
 	}
 }
 

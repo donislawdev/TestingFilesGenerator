@@ -216,16 +216,30 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 // the file already opened for reading, and a tool opens it again itself - it
 // has to, to see whether it is a file at all before reading - so the handle is
 // closed here and only the path goes on.
+//
+// Closed whenever one is handed over, error or not: the toolkit's rule is that
+// a reader which is not nil is the callback's to close (fyne v2.8.1,
+// dialog/file.go:871). Its own file reader hands back a wrapper with nothing
+// open inside when the open failed (internal/repository/file.go:337), so no
+// handle leaked before 2026-09-30 - the order follows the rule rather than
+// that detail, which a review of #157 asked for.
 func (d desktop) ChooseFile(chosen func(string)) {
 	dialog.ShowFileOpen(func(file fyne.URIReadCloser, err error) {
-		if err != nil || file == nil {
-			chosen("")
-			return
-		}
-		path := file.URI().Path()
-		_ = file.Close()
-		chosen(path)
+		chosen(pickedPath(file, err))
 	}, d.Window)
+}
+
+// pickedPath is the path of what the picker handed over, or nothing, with the
+// reader closed either way.
+func pickedPath(file fyne.URIReadCloser, err error) string {
+	if file == nil {
+		return ""
+	}
+	_ = file.Close()
+	if err != nil {
+		return ""
+	}
+	return file.URI().Path()
 }
 
 // Copy puts text on the clipboard of the application, which is where the

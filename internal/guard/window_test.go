@@ -72,9 +72,12 @@ type fakeHost struct {
 	closed      int
 	picked      string
 	asked       int
-	// pickedFile is what ChooseFile answers, and copied the last text Copy was
-	// given - the two things only the Tools tab asks of a window.
+	// pickedFile is what ChooseFile answers, askedFile how often it was asked,
+	// and copied the last text Copy was given - the things only the Tools tab
+	// asks of a window. Counted apart from asked, so a guard about the
+	// directory picker cannot be satisfied by the file picker.
 	pickedFile string
+	askedFile  int
 	copied     string
 
 	opened      string
@@ -470,7 +473,7 @@ func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 }
 
 func (h *fakeHost) ChooseFile(chosen func(string)) {
-	h.asked++
+	h.askedFile++
 	chosen(h.pickedFile)
 }
 

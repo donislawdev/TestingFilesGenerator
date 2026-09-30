@@ -267,10 +267,16 @@ func inputCount(d tool.Descriptor) string {
 // the other commands - so this parses again after each run of paths. A "--"
 // ends the flags for good, which is how a file whose name starts with a dash
 // is reached.
+//
+// A lone "-" is a path like any other - the flag package leaves it where it
+// is, since it is not a flag - and it is taken as one, the same as onePath
+// takes it for the other commands. Until 2026-09-30 it was handed back to the
+// flag package, which left it again, for ever: "tfg tool checksum -" never
+// returned (a review of #157 found it).
 func parseAround(fs *flag.FlagSet, args []string) ([]string, error) {
 	var paths []string
 	for {
-		for len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+		for len(args) > 0 && (args[0] == "-" || !strings.HasPrefix(args[0], "-")) {
 			paths = append(paths, args[0])
 			args = args[1:]
 		}
@@ -323,29 +329,30 @@ func printToolTable(columns []string, rows [][]string, w io.Writer) {
 		widths[i] = len(c)
 	}
 	for _, row := range rows {
-		for i, cell := range row {
-			if i < len(widths) && len(cell) > widths[i] {
-				widths[i] = len(cell)
-			}
+		for i := 0; i < len(row) && i < len(widths); i++ {
+			widths[i] = max(widths[i], len(row[i]))
 		}
-	}
-	line := func(cells []string) {
-		padded := make([]string, len(cells))
-		for i, cell := range cells {
-			if i == len(cells)-1 {
-				padded[i] = cell
-				continue
-			}
-			padded[i] = cell + strings.Repeat(" ", widths[i]-len(cell))
-		}
-		fmt.Fprintln(w, strings.Join(padded, "  "))
 	}
 	headings := make([]string, len(columns))
 	for i, c := range columns {
 		headings[i] = strings.ToUpper(c)
 	}
-	line(headings)
+	printToolRow(headings, widths, w)
 	for _, row := range rows {
-		line(row)
+		printToolRow(row, widths, w)
 	}
+}
+
+// printToolRow prints one row of a table, every cell but the last padded to
+// the width of its column. The last is left as it is, so a line ends where
+// its words do.
+func printToolRow(cells []string, widths []int, w io.Writer) {
+	padded := make([]string, len(cells))
+	for i, cell := range cells {
+		padded[i] = cell
+		if i < len(cells)-1 {
+			padded[i] += strings.Repeat(" ", widths[i]-len(cell))
+		}
+	}
+	fmt.Fprintln(w, strings.Join(padded, "  "))
 }

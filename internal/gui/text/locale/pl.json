@@ -185,7 +185,7 @@
   "ToolCopied": { "other": "Skopiowano do schowka: {{.What}}." },
   "ToolDoesNotMatch": { "other": "Nie zgadza się: {{.About}} to {{.Got}}, a oczekiwano {{.Wanted}}." },
   "ToolFlag": { "other": "W linii poleceń zapisuje się jako --{{.Key}} po tfg tool." },
-  "ToolInputWrittenAs": { "other": "W linii poleceń zapisuje się jako ścieżkę po tfg tool {{.Tool}}." },
+  "ToolInputWrittenAs": { "other": "W linii poleceń zapisuje się jako ścieżka po tfg tool {{.Tool}}." },
   "ToolMatches": { "other": "Zgadza się: {{.About}} to {{.Got}}, tak jak oczekiwano." },
   "ToolNothingYet": { "other": "Jeszcze nic nie policzono. Wybierz, na czym narzędzie ma pracować, i naciśnij Uruchom." },
   "ToolReading": { "other": "Przeczytano {{.Done}} z {{.Total}}." },

@@ -93,6 +93,11 @@ func Open(h Host) fyne.Size {
 		tabRecipe:   rec,
 	}
 	showing := tabGenerate
+	// looking is the tab on show, whatever it is - which is what a key acts on.
+	// Not showing, which stays on the last screen with a directory: until
+	// 2026-09-30 the keyboard read that one, so Ctrl+Enter on the Tools tab,
+	// on About or on Preferences ran Generate on a screen nobody could see.
+	looking := tabGenerate
 
 	offerWhereItLastWrote(h, working)
 
@@ -123,6 +128,7 @@ func Open(h Host) fyne.Size {
 		if arriving {
 			showing = item.ID
 		}
+		looking = item.ID
 		// The keyboard follows the person to the screen they moved to. Without
 		// this it stays on a control of the screen they left, which is a Tab
 		// that starts somewhere nobody can see.
@@ -147,14 +153,7 @@ func Open(h Host) fyne.Size {
 	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
-	// One table for the window, handed to the boxes of every screen. Wired here
-	// rather than in each constructor because the table belongs to the window
-	// and the screens are built before it exists.
-	shortcuts := parts.NewShortcuts()
-	for _, screen := range []interface{ Fields() *parts.Fields }{gen, pre, rec} {
-		screen.Fields().PassShortcutsTo(shortcuts.Deliver)
-	}
-	wireKeyboard(h, keyed, &showing, shortcuts)
+	wireKeyboard(h, keyed, &looking)
 
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
@@ -251,13 +250,26 @@ func offerWhereItLastWrote(h Host, working map[string]interface {
 // of the ceiling. The ceiling is a ratchet, so the answer is a split and never
 // a higher number.
 //
-// showing is a pointer because the answer changes as somebody moves between
+// looking is a pointer because the answer changes as somebody moves between
 // screens, and a shortcut is about the screen being looked at WHEN IT IS
-// PRESSED rather than when it was registered.
-func wireKeyboard(h Host, keyed map[string]keyboardScreen, showing *string, table *parts.Shortcuts) {
+// PRESSED rather than when it was registered. A tab the map does not know -
+// About, Preferences - takes no shortcut at all.
+//
+// One table for the window, handed to the boxes of every screen the keyboard
+// reaches. Wired here rather than in each constructor because the table
+// belongs to the window and the screens are built before it exists. From the
+// map rather than from a list of its own since 2026-09-30: the list named
+// three screens, the Tools tab was the fourth in the map and not in the list,
+// and Ctrl+Enter typed in its box did nothing. A screen the keyboard reaches
+// is now a screen whose boxes pass it on, with nothing to remember.
+func wireKeyboard(h Host, keyed map[string]keyboardScreen, looking *string) {
+	table := parts.NewShortcuts()
+	for _, screen := range keyed {
+		screen.Fields().PassShortcutsTo(table.Deliver)
+	}
 	on := func(act func(keyboardScreen)) func(fyne.Shortcut) {
 		return func(fyne.Shortcut) {
-			if screen, ok := keyed[*showing]; ok {
+			if screen, ok := keyed[*looking]; ok {
 				act(screen)
 			}
 		}
@@ -341,6 +353,8 @@ type keyboardScreen interface {
 	PressPreview()
 	PressCancel()
 	FirstField() fyne.Focusable
+	// Fields is the boxes, which pass on the shortcuts they have no use for.
+	Fields() *parts.Fields
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put

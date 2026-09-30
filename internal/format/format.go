@@ -692,46 +692,6 @@ func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 	return bad
 }
 
-// CheckStated is every problem with the values stated for a list of declared
-// settings that belongs to something other than a format - a tool, today.
-//
-// The loop above, a damage's CheckEach and a preset's own check are three
-// copies of this already (O261), and a tool would have been the fourth. The
-// refusals are the same two types, so a form puts them under the box they are
-// about and the command line ends with the same code, whoever declared the
-// setting. owner fills the field those types call Format.
-func CheckStated(owner string, declared []Property, stated map[string]string) []error {
-	known := make(map[string]Property, len(declared))
-	names := make([]string, 0, len(declared))
-	for _, p := range declared {
-		known[p.Name] = p
-		names = append(names, p.Name)
-	}
-	keys := make([]string, 0, len(stated))
-	for k := range stated {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var bad []error
-	for _, k := range keys {
-		p, ok := known[k]
-		switch {
-		case !ok:
-			bad = append(bad, &UnknownPropertyError{Format: owner, Key: k, Known: names})
-		case stated[k] == "":
-			// Not stated, the same as left out - see CheckEachProperty.
-		default:
-			if why := p.Allows(stated[k]); why != "" {
-				bad = append(bad, &PropertyValueError{
-					Format: owner, Key: k, Value: stated[k], Reason: why, Remedy: p.Instead(),
-				})
-			}
-		}
-	}
-	return bad
-}
-
 // Instead is what to do about a value this property will not take, built from
 // the declaration rather than written per format.
 //

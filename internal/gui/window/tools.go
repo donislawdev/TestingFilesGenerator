@@ -34,9 +34,6 @@ type Tools struct {
 	tips     *parts.Tips
 	fields   *parts.Fields
 	sections *sections
-	// fixed is how many fields belong to the screen whatever tool is chosen;
-	// the chosen tool's come after and are replaced with it.
-	fixed int
 
 	pick   *parts.Chooser
 	titles map[string]string
@@ -44,17 +41,40 @@ type Tools struct {
 	work   *fyne.Container
 	result *fyne.Container
 
-	chosen   tool.Descriptor
-	inputs   map[string]*parts.Entry
-	settings []parts.PropertyField
+	chosen tool.Descriptor
+	form   toolForm
 
-	run    *parts.Button
 	busy   *busy
 	status *widget.Label
 	fault  *parts.ErrorArea
 	job    *toolJob
 
 	body fyne.CanvasObject
+}
+
+// toolForm is the boxes of the chosen tool: what goes into a request, before
+// it is asked. Held apart from the screen because the three are drawn, thrown
+// away and read together, and never one without the others - which is also
+// what kept Tools under the ceiling on the fields of a type (2026-09-30).
+type toolForm struct {
+	// fixed is how many fields belong to the screen whatever tool is chosen.
+	// The chosen tool's come after them and are replaced with it.
+	fixed    int
+	inputs   map[string]*parts.Entry
+	settings []parts.PropertyField
+}
+
+// request is what the boxes say, as the tool is asked it - the same request
+// tfg tool builds from its flags.
+func (f toolForm) request() tool.Request {
+	in := tool.Request{Inputs: map[string]string{}, Values: map[string]string{}}
+	for name, box := range f.inputs {
+		in.Inputs[name] = box.Text
+	}
+	for _, field := range f.settings {
+		in.Values[field.Name] = field.Value()
+	}
+	return in
 }
 
 // settingTool is the key the box choosing the tool goes under. Not a flag of
@@ -77,14 +97,14 @@ func NewTools(host Host) *Tools {
 	t.work = parts.Grid()
 	t.result = parts.FieldColumn()
 
-	t.run = parts.NewButton(parts.Primary, text.ButtonRunTool(), t.PressGenerate).InTheBar()
+	run := parts.NewButton(parts.Primary, text.ButtonRunTool(), t.PressGenerate).InTheBar()
 	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), t.PressCancel).InTheBar()
 	cancel.Disable()
 	cancel.Hide()
 	bar := parts.NewProgress()
 	bar.Hide()
-	t.busy = &busy{fields: t.fields, starters: []*parts.Button{t.run}, cancel: cancel, bar: bar, later: host.Later}
-	t.busy.row = parts.ButtonRow(t.run, cancel)
+	t.busy = &busy{fields: t.fields, starters: []*parts.Button{run}, cancel: cancel, bar: bar, later: host.Later}
+	t.busy.row = parts.ButtonRow(run, cancel)
 	t.status = widget.NewLabel("")
 	t.status.Wrapping = fyne.TextWrapWord
 	t.fault = parts.NewErrorArea()
@@ -103,7 +123,7 @@ func NewTools(host Host) *Tools {
 			t.sections.section(sectionToolResult, text.SectionToolResult(), t.result),
 		)),
 	))
-	t.fixed = t.fields.Len()
+	t.form.fixed = t.fields.Len()
 	if len(questions) > 0 {
 		t.pick.SetSelected(questions[0])
 	}
@@ -117,6 +137,11 @@ func (t *Tools) Object() fyne.CanvasObject { return t.body }
 // FirstField is where the keyboard starts: which tool, because every box under
 // it is drawn from that answer.
 func (t *Tools) FirstField() fyne.Focusable { return t.pick }
+
+// Fields is the boxes of the screen, for the window to hand its shortcuts to -
+// so Ctrl+Enter pressed in the box naming the file runs the tool, the way it
+// runs the work of every other screen.
+func (t *Tools) Fields() *parts.Fields { return t.fields }
 
 // PressPreview does nothing: a tool reads and says, so there is no cost to
 // work out before it runs. On the screen for the keyboard's sake - the window
@@ -153,35 +178,22 @@ func (t *Tools) onChosen(question string) {
 	t.about.Add(parts.Prose(text.ToolDetail(d.ID, d.Detail)))
 	t.about.Refresh()
 
-	t.fields.KeepFirst(t.fixed)
+	t.fields.KeepFirst(t.form.fixed)
 	t.work.RemoveAll()
-	t.inputs = map[string]*parts.Entry{}
+	t.form.inputs = map[string]*parts.Entry{}
 	for _, in := range d.Inputs {
 		box := entry("", "")
-		t.inputs[in.Name] = box
+		t.form.inputs[in.Name] = box
 		t.work.Add(parts.Wide(t.fields.Add(in.Name, text.SettingLabel(in.Name), text.ToolInput(d.ID, in.Name, in.Detail),
 			t.tips.Say(text.ToolInputWrittenAs(d.ID)), chooserFor(box, t.host.ChooseFile))))
 	}
 	settings, objects := parts.DeclaredFields(text.ToolOwner(d.ID), d.Settings, t.fields, t.tips)
-	t.settings = settings
+	t.form.settings = settings
 	for _, o := range objects {
 		t.work.Add(o)
 	}
 	t.work.Refresh()
 	t.showResult(nil)
-}
-
-// request is what the boxes say, as the tool is asked it - the same request
-// tfg tool builds from its flags.
-func (t *Tools) request() tool.Request {
-	in := tool.Request{Inputs: map[string]string{}, Values: map[string]string{}}
-	for name, box := range t.inputs {
-		in.Inputs[name] = box.Text
-	}
-	for _, f := range t.settings {
-		in.Values[f.Name] = f.Value()
-	}
-	return in
 }
 
 // PressGenerate runs the chosen tool - the name the window's keyboard asks
@@ -193,7 +205,7 @@ func (t *Tools) PressGenerate() {
 	t.fields.ClearAll()
 	t.fault.Clear()
 	showOn(t.status, "")
-	t.job = startTool(t.chosen, t.request(), t)
+	t.job = startTool(t.chosen, t.form.request(), t)
 }
 
 // progressed and finished are what a running tool tells the screen, on the
@@ -229,27 +241,39 @@ func (t *Tools) refuse(err error) {
 }
 
 // showResult draws what a run found, or what will appear there before one.
+//
+// The canvas is told once, after the last change - a deferred word to it read
+// as coming before the changes to the guard that holds this
+// (TestABoxThatGainsOrLosesAPieceSaysSo), which cannot see when a defer runs.
 func (t *Tools) showResult(r *tool.Result) {
 	t.result.RemoveAll()
-	defer t.result.Refresh()
+	for _, o := range t.resultObjects(r) {
+		t.result.Add(o)
+	}
+	t.result.Refresh()
+}
+
+// resultObjects is what a run found, as the section shows it: the rows and the
+// verdict, or a sentence saying nothing has run yet.
+func (t *Tools) resultObjects(r *tool.Result) []fyne.CanvasObject {
 	if r == nil {
-		t.result.Add(parts.Prose(text.ToolNothingYet()))
-		return
+		return []fyne.CanvasObject{parts.Prose(text.ToolNothingYet())}
 	}
 	rows := parts.Grid()
 	for _, row := range r.Rows {
 		rows.Add(t.resultRow(row))
 	}
-	t.result.Add(rows)
+	out := []fyne.CanvasObject{rows}
 	switch r.Verdict.Outcome {
 	case tool.Match:
-		t.result.Add(parts.Prose(text.ToolMatches(r.Verdict.About, r.Verdict.Got)))
+		out = append(out, parts.Prose(text.ToolMatches(r.Verdict.About, r.Verdict.Got)))
 	case tool.Mismatch:
 		verdict := parts.NewErrorArea()
 		verdict.Say(text.ToolDoesNotMatch(r.Verdict.About, r.Verdict.Got, r.Verdict.Wanted))
-		t.result.Add(verdict.Object())
+		out = append(out, verdict.Object())
 	case tool.Unasked:
 	}
+	return out
 }
 
 // resultRow is one row of a result: its first cell as the name in the column

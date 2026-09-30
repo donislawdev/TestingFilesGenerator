@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -35,6 +36,19 @@ var knownChecksums = []struct {
 	{"123456789", "crc32", "cbf43926"},
 	{"", "sha256", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
 	{"", "md5", "d41d8cd98f00b204e9800998ecf8427e"},
+}
+
+// publishedAnswer is the checksum knownChecksums gives for a content, so a
+// guard that needs one reads it from the table rather than typing it again.
+func publishedAnswer(t *testing.T, content, algorithm string) string {
+	t.Helper()
+	for _, k := range knownChecksums {
+		if k.content == content && k.algorithm == algorithm {
+			return k.sum
+		}
+	}
+	t.Fatalf("knownChecksums has no %s of %q", algorithm, content)
+	return ""
 }
 
 // checksumOf runs the checksum tool the way both surfaces do, through Start.
@@ -237,5 +251,79 @@ func TestToolsEndWithTheCodeOfWhatHappened(t *testing.T) {
 		if code != cli.ExitOK && out.Len() > 0 {
 			t.Errorf("%s: failed and still wrote to standard output: %s", c.name, out.String())
 		}
+	}
+}
+
+// TestALoneDashIsAFileNameAndNotAHang holds "tfg tool checksum -" to what
+// "tfg verify -" does: a path, read like any other, and an answer. Until
+// 2026-09-30 the flags were read again and again around a "-" nothing ever
+// took, and the command never returned (a review of #157, measured before the
+// fix: killed by timeout, code 124). The failure being guarded is a hang, so
+// every run has a deadline and says so.
+func TestALoneDashIsAFileNameAndNotAHang(t *testing.T) {
+	t.Chdir(t.TempDir())
+	runs := func(args ...string) (int, string) {
+		t.Helper()
+		type ending struct {
+			code int
+			out  string
+		}
+		ended := make(chan ending, 1)
+		go func() {
+			var out, errOut bytes.Buffer
+			code := cli.Run(context.Background(), append([]string{"tool", checksum.ID}, args...), &out, &errOut)
+			ended <- ending{code, out.String()}
+		}()
+		select {
+		case e := <-ended:
+			return e.code, e.out
+		case <-time.After(10 * time.Second):
+			t.Fatalf("tfg tool checksum %s has not returned after ten seconds", strings.Join(args, " "))
+			return 0, ""
+		}
+	}
+
+	if code, _ := runs("-"); code != cli.ExitIO {
+		t.Errorf("nothing is called - here and the tool ended with %d, not %d as for any path that is not there",
+			code, cli.ExitIO)
+	}
+	if err := os.WriteFile("-", []byte("abc"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	want := publishedAnswer(t, "abc", "md5")
+	for _, args := range [][]string{{"-", "--algorithm", "md5"}, {"--algorithm", "md5", "-"}} {
+		code, out := runs(args...)
+		if code != cli.ExitOK || !strings.Contains(out, want) {
+			t.Errorf("a file is called - and tfg tool checksum %s ended with %d, saying:\n%s",
+				strings.Join(args, " "), code, out)
+		}
+	}
+}
+
+// TestTheToolsScreenTakesAChosenFileAndCopiesTheChecksum asks the two things
+// only the Tools tab asks of a window: the file picker, whose answer has to
+// land in the box, and the clipboard, which has to get the checksum the row
+// shows. The stand in window recorded both from the day they arrived and
+// nothing read either until 2026-09-30.
+func TestTheToolsScreenTakesAChosenFileAndCopiesTheChecksum(t *testing.T) {
+	path := writeTemp(t, "picked.txt", "abc")
+	host := newFakeHost(t)
+	host.pickedFile = path
+	window.Open(host)
+	screen := selectTab(t, host.content, text.TabTools())
+
+	pressNamed(t, screen, text.ButtonChoose())
+	if host.askedFile == 0 {
+		t.Fatal("the browse button of the Tools tab asked nobody for a file")
+	}
+	if got := entryUnder(t, screen, text.SettingLabel(checksum.InputFile)).Text; got != path {
+		t.Fatalf("%s was chosen and the box holds %q", path, got)
+	}
+
+	pressNamed(t, screen, text.ButtonRunTool())
+	host.waitForWork()
+	pressNamed(t, screen, text.ButtonCopy())
+	if want := publishedAnswer(t, "abc", "sha256"); host.copied != want {
+		t.Errorf("Copy put %q on the clipboard and the sha256 of the file is %s", host.copied, want)
 	}
 }

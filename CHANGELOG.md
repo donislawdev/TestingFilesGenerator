@@ -104,6 +104,11 @@ because it turns other people's test suites red.
   the file to remove, instead of calling an empty file the record of an
   earlier run.
 
+- **Ctrl+Enter, Ctrl+P and Escape act on the tab you are looking at.** With
+  About on show, Ctrl+Enter used to run Generate on the last work tab you had
+  left, which you could not see, and Escape could stop a run there. On a tab
+  with nothing to run the three keys now do nothing.
+
 ## [0.4.0] - 2026-09-25
 
 ### Changed

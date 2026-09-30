@@ -22,7 +22,6 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
-	"errors"
 	"hash"
 	"hash/crc32"
 	"io"
@@ -223,26 +222,7 @@ func readExpected(raw string) (*Expected, error) {
 
 // digest reads a file once and works out every chosen checksum of it.
 func digest(ctx context.Context, path string, chosen map[string]bool, progress tool.Progress) (map[string]string, int64, error) {
-	before, err := os.Stat(path)
-	var failed *os.PathError
-	if errors.As(err, &failed) {
-		// Said as "open", which is what every other command prints for a path
-		// it could not read. Asking before opening is part of opening here -
-		// a pipe has to be refused before open waits on it forever - and the
-		// name of the system call that asked (GetFileAttributesEx on Windows)
-		// means nothing to anybody.
-		return nil, 0, &os.PathError{Op: "open", Path: failed.Path, Err: failed.Err}
-	}
-	if err != nil {
-		return nil, 0, err
-	}
-	// Followed through a link, the way a person naming a file means it - but
-	// what is at the end has to be a file. A directory cannot be read as one,
-	// and a pipe or a device can be read forever.
-	if !before.Mode().IsRegular() {
-		return nil, 0, &NotAFileError{Path: path, Directory: before.IsDir()}
-	}
-	f, err := os.Open(path)
+	f, before, err := openRegular(path)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -276,6 +256,38 @@ func digest(ctx context.Context, path string, chosen map[string]bool, progress t
 	return out, read, nil
 }
 
+// openRegular opens a path for reading, and hands it back only when what was
+// opened is a file.
+//
+// Followed through a link, the way a person naming a file means it - but what
+// is at the end has to be a file. A directory cannot be read as one, and a
+// pipe or a device can be read forever.
+//
+// Asked of the open file rather than of the name, since 2026-09-30. The name
+// was asked first and opened second until then, and between the two looks it
+// could come to stand for a pipe, which open then waited on for good - a
+// review of #157 found it. Now there is one look, at what was opened, and the
+// open itself does not wait (openForLooking). The price is that a device named
+// on purpose is opened and closed again, never read.
+func openRegular(path string) (*os.File, os.FileInfo, error) {
+	f, err := openForLooking(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	info, err := f.Stat()
+	if err == nil && !info.Mode().IsRegular() {
+		err = &NotAFileError{Path: path, Directory: info.IsDir()}
+	}
+	if err == nil {
+		err = waitAgain(f)
+	}
+	if err != nil {
+		_ = f.Close()
+		return nil, nil, err
+	}
+	return f, info, nil
+}
+
 // changed says whether the file moved under the read. A checksum of a file
 // that was being written is a checksum of no version of it.
 func changed(before, after os.FileInfo, read int64) bool {
@@ -295,14 +307,15 @@ func copyWatching(ctx context.Context, dst io.Writer, src io.Reader, total int64
 		if err := ctx.Err(); err != nil {
 			return done, err
 		}
+		// What was read is written before the error is looked at, because a
+		// reader may hand back its last bytes and io.EOF in one call. Nothing
+		// read is nothing written, so there is no need to ask first.
 		n, err := src.Read(buf)
-		if n > 0 {
-			if _, werr := dst.Write(buf[:n]); werr != nil {
-				return done, werr
-			}
-			done += int64(n)
-			progress(done, total)
+		if _, werr := dst.Write(buf[:n]); werr != nil {
+			return done, werr
 		}
+		done += int64(n)
+		progress(done, total)
 		if err == io.EOF {
 			return done, nil
 		}

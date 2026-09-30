@@ -14,11 +14,17 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
-// TestAToolNeverOpensAPipe names a pipe as the file to work a checksum out of.
+// TestAToolNeverWaitsOnAPipe names a pipe as the file to work a checksum out of.
 // Opening one for reading waits until something writes to it, which may be
-// never - so the tool has to refuse from what the path IS, before it opens it.
-// A tool that opened first hangs here until the deadline, and says so.
-func TestAToolNeverOpensAPipe(t *testing.T) {
+// never - so the open must not wait, and what was opened has to be refused
+// before a byte of it is read. An open that waits hangs here until the
+// deadline and says so, and one that reads the pipe hands back the checksum
+// of nothing instead of the refusal.
+//
+// Since 2026-09-30 this is asked of the open file rather than of the name
+// (checksum.openRegular), which is what closed the moment between the two
+// looks that a review of #157 found - so this one guard holds both halves.
+func TestAToolNeverWaitsOnAPipe(t *testing.T) {
 	pipe := filepath.Join(t.TempDir(), "pipe")
 	if err := syscall.Mkfifo(pipe, 0o600); err != nil {
 		t.Fatalf("making a pipe to name: %v", err)
