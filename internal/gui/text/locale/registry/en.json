@@ -609,6 +609,11 @@
     "hash": "sha256-be929d76067d",
     "other": "The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset."
   },
+  "Detail.tool/checksum-write.algorithm": {
+    "description": "The sentence under the algorithm setting of the checksum-write tool, after what it takes.",
+    "hash": "sha256-bc3d55ed0c3c",
+    "other": "Which checksum to write. sha256 is the one sha256sum and most release pages use."
+  },
   "Detail.tool/checksum.algorithm": {
     "description": "The sentence under the algorithm setting of the checksum tool, after what it takes.",
     "hash": "sha256-b2c6c5ddeaa1",
@@ -623,6 +628,16 @@
     "description": "The heading over a block of settings of the pdf format.",
     "hash": "sha256-7115a778ab47",
     "other": "Document properties"
+  },
+  "Input.checksum-check.checksum_file": {
+    "description": "The sentence under the checksum_file box of the checksum-check tool.",
+    "hash": "sha256-90d7baf0d228",
+    "other": "The checksum file. The paths in it are read from the folder it is in, and nothing is written."
+  },
+  "Input.checksum-write.folder": {
+    "description": "The sentence under the folder box of the checksum-write tool.",
+    "hash": "sha256-3040f185111b",
+    "other": "The folder to list. Every file under it is read, and the checksum file is written into it."
   },
   "Input.checksum.file": {
     "description": "The sentence under the file box of the checksum tool.",
@@ -698,6 +713,11 @@
     "description": "The name beside the box of a setting a recipe writes as channels.",
     "hash": "sha256-4c8906cf76f5",
     "other": "Channels"
+  },
+  "Label.checksum_file": {
+    "description": "The name beside the box of what the checksum-check tool works on.",
+    "hash": "sha256-6413f83e729a",
+    "other": "Checksum file"
   },
   "Label.columns": {
     "description": "The name beside the box of a setting a recipe writes as columns.",
@@ -798,6 +818,11 @@
     "description": "The name beside the box of what the checksum tool works on.",
     "hash": "sha256-50009ce1da4d",
     "other": "File"
+  },
+  "Label.folder": {
+    "description": "The name beside the box of what the checksum-write tool works on.",
+    "hash": "sha256-74ccd4330384",
+    "other": "Folder"
   },
   "Label.format": {
     "description": "The name beside the box of a setting a recipe writes as format.",
@@ -1063,6 +1088,106 @@
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-eb266034b6a8",
     "other": "the password, in plain text"
+  },
+  "Tool.checksum-check.Detail": {
+    "description": "One sentence under the question of the checksum-check tool, saying what it does.",
+    "hash": "sha256-3480ee8eb9ae",
+    "other": "Reads a checksum file - SHA256SUMS, MD5SUMS or the tagged kind shasum writes - and checks every file it lists in the folder the checksum file is in. Files it does not list are not looked at, the same as sha256sum -c."
+  },
+  "Tool.checksum-check.Note.changed": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-3f2770c1e166",
+    "other": "Changed while it was being read, so no checksum is given:"
+  },
+  "Tool.checksum-check.Note.checked": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-cb6fcab36d77",
+    "other": "Files checked:"
+  },
+  "Tool.checksum-check.Note.itself": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-5e9a4797e536",
+    "other": "The checksum file itself, which cannot hold its own checksum - not checked:"
+  },
+  "Tool.checksum-check.Note.mismatched": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-d0bf74f3a786",
+    "other": "Not what the checksum file says:"
+  },
+  "Tool.checksum-check.Note.missing": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-fd0f2e8d9bb6",
+    "other": "Listed and not there:"
+  },
+  "Tool.checksum-check.Note.not_a_file": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-eee42d6fa58b",
+    "other": "Listed and not a file - a folder, a pipe, a device or a socket - so not read:"
+  },
+  "Tool.checksum-check.Note.not_checksums": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-e297bc7fabca",
+    "other": "Lines that are not checksums, not checked:"
+  },
+  "Tool.checksum-check.Note.outside": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-5751322174e9",
+    "other": "Listed with a path that leaves the folder of the checksum file, so not read:"
+  },
+  "Tool.checksum-check.Note.twice": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-7f2a58a6ec1c",
+    "other": "Listed more than once - every line was checked:"
+  },
+  "Tool.checksum-check.Note.unknown": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-ab57ed3087cc",
+    "other": "Lines of an algorithm this tool does not work out, not checked:"
+  },
+  "Tool.checksum-check.Note.unreadable": {
+    "description": "A line of the result of the checksum-check tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-37ad21c9b5c7",
+    "other": "Listed and could not be read:"
+  },
+  "Tool.checksum-check.Question": {
+    "description": "The question the checksum-check tool answers - its name in the list of tools and the title over it.",
+    "hash": "sha256-b3706c34f494",
+    "other": "Is every file still what its checksum file says?"
+  },
+  "Tool.checksum-write.Detail": {
+    "description": "One sentence under the question of the checksum-write tool, saying what it does.",
+    "hash": "sha256-78015d348f2a",
+    "other": "Writes the checksum of every file in a folder into one file beside them, SHA256SUMS for sha256. Check it later with tfg tool checksum-check, or with sha256sum -c in that folder."
+  },
+  "Tool.checksum-write.Note.links": {
+    "description": "A line of the result of the checksum-write tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-e1078e9b1204",
+    "other": "Left out, because they are links and a link is not followed:"
+  },
+  "Tool.checksum-write.Note.listed": {
+    "description": "A line of the result of the checksum-write tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-6d35a92a455f",
+    "other": "Files in it:"
+  },
+  "Tool.checksum-write.Note.others": {
+    "description": "A line of the result of the checksum-write tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-71cbbcf6dd9f",
+    "other": "Left out, because they are not files - a pipe, a device, a socket or a junction - and reading one may never end:"
+  },
+  "Tool.checksum-write.Note.ours": {
+    "description": "A line of the result of the checksum-write tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-4d087172bfc7",
+    "other": "Left out, because a run of this program left them half written:"
+  },
+  "Tool.checksum-write.Note.written": {
+    "description": "A line of the result of the checksum-write tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-a460d3635ba3",
+    "other": "Written:"
+  },
+  "Tool.checksum-write.Question": {
+    "description": "The question the checksum-write tool answers - its name in the list of tools and the title over it.",
+    "hash": "sha256-3d55c8d03d3a",
+    "other": "How will I know later that nothing in this folder changed?"
   },
   "Tool.checksum.Detail": {
     "description": "One sentence under the question of the checksum tool, saying what it does.",

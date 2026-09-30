@@ -15,7 +15,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -294,7 +293,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		return nil, err
 	}
 
-	found, stopped := inOrder(ctx, len(claimed), func(i int, scratch []byte) Difference {
+	found, stopped := InOrder(ctx, len(claimed), func(i int, scratch []byte) Difference {
 		return compare(claimed[i], full[i], scratch)
 	})
 	for _, d := range found {
@@ -426,50 +425,6 @@ func nameFor(p string, folded map[string]string, neighbours neighbourClaims) (Ki
 // call - open since 2026-08-25.
 func comparablePath(p string) string {
 	return path.Clean(p)
-}
-
-// walk lists every file under dir as a slash separated path relative to it.
-//
-// Recursive because the manifest carries a path rather than a bare name, and
-// a run that groups its output into folders has to verify the same way.
-//
-// It takes the context because this is the part with no upper bound: the loop
-// over a manifest is as long as the manifest, and this is as long as whatever
-// directory somebody pointed at. Until 2026-08-25 only the loop asked, so
-// Ctrl+C during the walk of a large tree did nothing until the walk was over.
-func walk(ctx context.Context, dir string) ([]string, error) {
-	// The root is resolved first, because WalkDir does not follow links and a
-	// directory that is itself one would be handed to the callback as a single
-	// entry that is not a directory. Found on 2026-08-03 by the guard for
-	// generating into a linked directory: verify reported "extra ." and called
-	// the whole run a mismatch. People keep fixtures on redirected paths, so
-	// this is an ordinary setup rather than a corner.
-	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
-		dir = resolved
-	}
-
-	var out []string
-	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if d.IsDir() {
-			return nil
-		}
-		rel, relErr := filepath.Rel(dir, p)
-		if relErr != nil {
-			return relErr
-		}
-		out = append(out, filepath.ToSlash(rel))
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 // claimedPaths is where each claimed file sits on the disk, in the order the

@@ -54,7 +54,7 @@ func widthFor(n int) int {
 	return w
 }
 
-// inOrder answers one question for each of n items, over several goroutines,
+// InOrder answers one question for each of n items, over several goroutines,
 // and hands the answers back in the order the items were given.
 //
 // Three properties, and each one is depended on by something else in this
@@ -75,7 +75,12 @@ func widthFor(n int) int {
 //     own sake: if a refusal could arrive here, stopping the other goroutines
 //     would mean a LOWER index never got asked, and the same manifest would
 //     name a different file on different days.
-func inOrder[T any](ctx context.Context, n int, one func(i int, scratch []byte) T) ([]T, error) {
+//
+// Exported since 2026-09-30 for the checksum tools, which hash a folder the
+// same way and are held to the same three properties: a file that cannot be
+// read is an answer of one, never a stop, and the tool decides afterwards
+// what the answers come to. The goroutines stay in this file.
+func InOrder[T any](ctx context.Context, n int, one func(i int, scratch []byte) T) ([]T, error) {
 	out := make([]T, n)
 	done := make([]bool, n)
 
@@ -136,6 +141,34 @@ func drain[T any](ctx context.Context, next *atomic.Int64, out []T, done []bool,
 		out[i] = one(i, scratch)
 		done[i] = true
 	}
+}
+
+// Tally adds up what several goroutines have read and tells one listener the
+// running total, one call at a time.
+//
+// Here because this is the file where things run beside each other. A tool
+// hashing a folder counts bytes in every worker, and the listener at the other
+// end - a window's progress bar - is not written to be called from two
+// goroutines at once. So the calls are made one after another under a lock,
+// rather than every listener having to be written for it and every package
+// that counts having to be one the race detector is run for
+// (docs/NARZEDZIA-SUMY-2026-09-29.md §15.3).
+type Tally struct {
+	mu   sync.Mutex
+	done int64
+	tell func(done int64)
+}
+
+// NewTally is a tally that tells tell each new total.
+func NewTally(tell func(done int64)) *Tally { return &Tally{tell: tell} }
+
+// Add counts n more and tells the listener the total, before the next Add
+// from any goroutine can.
+func (t *Tally) Add(n int64) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.done += n
+	t.tell(t.done)
 }
 
 // finishedPrefix is how many items were answered before the first one that was

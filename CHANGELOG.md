@@ -24,6 +24,17 @@ because it turns other people's test suites red.
   <checksum>`. A checksum that does not match ends with code 7, the same as
   `tfg verify`. The file is only read. `tfg tool list` and `tfg tool show
   <id>` say what there is, both with `--json`.
+- **Checksums of a whole folder.** `tfg tool checksum-write <folder>` writes
+  SHA256SUMS beside the files, byte for byte what `sha256sum` writes, so
+  `sha256sum -c` checks it later. It never writes over a checksum file that is
+  there, and a folder with anything in it that cannot be read gets no checksum
+  file at all, with everything that could not be read named. `tfg tool
+  checksum-check <SHA256SUMS>` checks every file a checksum file lists. It
+  reads what `sha256sum` and `shasum` write, and names the lines that are not
+  checksums, such as those of a signature, rather than failing on them. Links,
+  pipes and anything else that is not a file are left out and named, never
+  opened. Both are on the Tools tab, where the checksum a file should have now
+  shows in full.
 - **The window in Polish, and a Preferences tab.** The window now speaks the
   language your system is set to when it has that language, and English
   otherwise - so on a system set to Polish it opens in Polish. Preferences

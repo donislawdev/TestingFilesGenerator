@@ -749,9 +749,21 @@
     "description": "Shown in the window. Carries one value, {{.Tool}}, which has to stay spelled exactly that way.",
     "other": "Written as the path after tfg tool {{.Tool}} on the command line."
   },
+  "ToolListDoesNotMatch": {
+    "description": "Shown in the window. Carries one value, {{.About}}, which has to stay spelled exactly that way.",
+    "other": "Does not match: {{.About}} lists files that are not what it says."
+  },
+  "ToolListMatches": {
+    "description": "Shown in the window. Carries one value, {{.About}}, which has to stay spelled exactly that way.",
+    "other": "Matches: every file {{.About}} lists is what it says."
+  },
   "ToolMatches": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}.",
     "other": "Matches: the {{.About}} is {{.Got}}, as expected."
+  },
+  "ToolMoreItems": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.More}}, {{.Tool}}.",
+    "other": "And {{.More}} more. tfg tool {{.Tool}} lists them all."
   },
   "ToolNothingYet": {
     "description": "Shown in the window.",
@@ -763,7 +775,7 @@
   },
   "ToolStopped": {
     "description": "Shown in the window.",
-    "other": "Stopped before it finished. A tool only reads, so nothing was changed."
+    "other": "Stopped before it finished. Nothing was written or changed."
   },
   "UseSmallestSize": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",

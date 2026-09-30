@@ -49,18 +49,20 @@ const tidyAfterFrame = 12 * time.Second
 // tidyWhenLeftAlone gives the window its one wait for quiet and has every
 // screen tell it at every reading of the form - which every change and every
 // run makes.
-func tidyWhenLeftAlone(h Host, screens ...*runner) *tidy {
-	t := newTidy(h, func() bool { return anyBusy(screens) })
+func tidyWhenLeftAlone(h Host, working []*busy, screens ...*runner) *tidy {
+	t := newTidy(h, func() bool { return anyBusy(working) })
 	for _, r := range screens {
 		r.touched = t.touch
 	}
 	return t
 }
 
-// anyBusy says whether work owns any of these screens.
-func anyBusy(screens []*runner) bool {
-	for _, r := range screens {
-		if r.busy.occupied {
+// anyBusy says whether work owns any of these screens - a run, a preview, or
+// a tool on the Tools tab. The tool was left out until 2026-09-30 on the
+// reasoning that a tool only reads, and checksum-write writes a file.
+func anyBusy(working []*busy) bool {
+	for _, b := range working {
+		if b.occupied {
 			return true
 		}
 	}

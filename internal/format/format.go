@@ -196,6 +196,17 @@ type Property struct {
 	// Declared here rather than known by the places that care, because a
 	// second secret property added later would otherwise have to find them.
 	Secret bool
+
+	// Long marks free text whose value is long by nature - a checksum of 64 or
+	// 128 digits - so a window gives its box the whole row, as it gives a path.
+	//
+	// It says something about the value rather than about pixels, and a
+	// terminal has nothing to do with it. Every other box of text is as wide
+	// as a short name (the owner's report of 2026-09-21), which is right for a
+	// name and showed about twenty of the sixty four digits a pasted sha256
+	// has (docs/NARZEDZIA-SUMY-2026-09-29.md §14, the owner's decision of
+	// 2026-09-30). Ignored by every kind but text.
+	Long bool
 }
 
 // JointLimit is a rule binding two settings that neither of them can state

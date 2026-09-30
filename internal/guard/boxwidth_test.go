@@ -12,6 +12,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // A box is a promise about what goes in it.
@@ -443,4 +444,78 @@ func TestOnlyAPathTakesTheWholeRow(t *testing.T) {
 		t.Fatalf("checked %d boxes and %d paths across three screens, which is not the whole window", checked, paths)
 	}
 	t.Logf("%d boxes held under half the column, %d paths allowed the row", checked, paths)
+}
+
+// A box for a value declared long takes the row, and on the Tools tab nothing
+// else but a path does.
+//
+// The guard above holds three screens and none of them declares a long value.
+// The Tools tab has one: the checksum a file should have, 64 digits for a
+// sha256, drawn 140 px wide until 2026-09-30 and showing about twenty of them
+// (docs/NARZEDZIA-SUMY-2026-09-29.md §14). Every tool of the registry is chosen
+// in turn, so one registered tomorrow is held the day it arrives, and the long
+// boxes are counted, so a screen that stopped drawing the one there is today
+// turns this red rather than passing on nothing.
+func TestALongValueTakesTheRowAndOnTheToolsTabNothingElseButAPathDoes(t *testing.T) {
+	ourTheme(t)
+	host := newFakeHost(t)
+	window.Open(host)
+	w := test.NewWindow(host.content)
+	t.Cleanup(w.Close)
+	layOut := func() {
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1599))
+		w.Resize(fyne.NewSize(window.LargestOpening.Width, 1600))
+	}
+	screen := selectTab(t, host.content, text.TabTools())
+	menu := chooserUnder(t, screen, text.FieldTool())
+
+	half := float32(parts.ColumnWidth) / 2
+	long, short := 0, 0
+	for _, d := range tool.All() {
+		menu.SetSelected(text.ToolQuestion(d.ID, d.Question))
+		layOut()
+		mayTakeTheRow := map[fyne.CanvasObject]bool{}
+		allowed := func(label string) {
+			if control := controlUnder(screen, label); control != nil {
+				walk(control, func(o fyne.CanvasObject) { mayTakeTheRow[o] = true })
+			}
+		}
+		for _, in := range d.Inputs {
+			allowed(text.SettingLabel(in.Name))
+		}
+		for _, p := range d.Settings {
+			if p.Long {
+				allowed(text.SettingLabel(p.Name))
+			}
+		}
+		walk(screen, func(o fyne.CanvasObject) {
+			box, is := o.(*parts.Entry)
+			if !is || !box.Visible() || box.Size().Width == 0 {
+				return
+			}
+			switch {
+			case !mayTakeTheRow[box] && box.Size().Width > half:
+				t.Errorf("%s: the box with placeholder %q is %.0f px of a %d px column, and only a path or a long value may take the row",
+					d.ID, box.PlaceHolder, box.Size().Width, parts.ColumnWidth)
+			case mayTakeTheRow[box]:
+			default:
+				short++
+			}
+		})
+		for _, p := range d.Settings {
+			if !p.Long {
+				continue
+			}
+			width := typedInWidth(controlUnder(screen, text.SettingLabel(p.Name)))
+			if width <= half {
+				t.Errorf("%s declares %s long and its box is %.0f px, under half the %d px column", d.ID, p.Name, width, parts.ColumnWidth)
+			}
+			long++
+		}
+	}
+	if long == 0 || short == 0 {
+		t.Fatalf("measured %d long boxes and %d short ones on the Tools tab - the checksum a file should have is declared long, "+
+			"so this guard read a screen that is not the one it was written for", long, short)
+	}
+	t.Logf("%d long boxes took the row, %d short ones stayed under half the column", long, short)
 }

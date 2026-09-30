@@ -79,7 +79,7 @@ var mayBeConcurrent = map[string]string{
 	// is settled before the goroutines start, so a worker answers about one
 	// file and cannot fail - which is what makes the order of the answers, and
 	// the file a refusal names, the same on every run.
-	"internal/audit/parallel.go": "hashing the claimed files runs beside itself, and nothing else in the package does",
+	"internal/audit/parallel.go": "hashing runs beside itself - the files a manifest claims and the files of a checksum tool - and nothing else in the package does",
 	// Writing the files IS the run. Measured 2026-09-06, after P7 stopped
 	// planning from encoding the picture twice: planning 300 PNGs is 51 ms and
 	// writing them is 2741 ms, so the write loop is 98% of it and the plan is
