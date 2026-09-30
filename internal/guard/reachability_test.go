@@ -57,7 +57,7 @@ func laidOutWindow(t *testing.T) (fyne.CanvasObject, fyne.Canvas) {
 // looking at three of the four. Passing by not looking is worse than failing.
 // TestEveryTabInTheWindowIsOnTheListGuardsWalk keeps it honest.
 func allTabs() []string {
-	return []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabPreferences(), text.TabAbout()}
+	return []string{text.TabOneTarget(), text.TabPresets(), text.TabRecipe(), text.TabTools(), text.TabPreferences(), text.TabAbout()}
 }
 
 // What this defends. A button a person can see is a button a person can press.

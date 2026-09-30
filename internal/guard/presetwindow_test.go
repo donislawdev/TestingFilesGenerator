@@ -526,16 +526,24 @@ func TestWhatAPresetFindsIsShownAsSeparateLines(t *testing.T) {
 // than the dialog: that the button asks, and that what comes back is what the
 // run will use. A button that asks and drops the answer looks exactly like one
 // that works, which is the shape this project keeps meeting.
+//
+// The button is pressed on the screen's own tab, not found in the whole
+// window. It was found in the whole window until 2026-09-30, and the Tools tab
+// brought a second "Choose..." - the last one found, so this pressed the
+// file picker of the Tools tab and failed for a reason that was not the
+// directory at all. The twin below passed for the same reason and proved
+// nothing (O118).
 func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 	host := newFakeHost(t)
 	host.picked = filepath.Join(t.TempDir(), "chosen")
 	window.Open(host)
 
-	for _, screenName := range []string{"generate", "preset"} {
-		if screenName == "preset" {
-			selectTab(t, host.content, text.TabPresets())
-		}
-		content := host.content
+	for _, screen := range []struct{ name, tab string }{
+		{"generate", text.TabOneTarget()},
+		{"preset", text.TabPresets()},
+	} {
+		content := selectTab(t, host.content, screen.tab)
+		screenName := screen.name
 
 		// Put something else in first, so this asks whether the button fills
 		// the field rather than whether the field happens to differ. Since
@@ -544,9 +552,10 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 		// and comparing against that measured the carrying, not the button.
 		fill(t, content, text.FieldOutputDir(), "C:\\neither\\of\\them")
 		before := entryUnder(t, content, text.FieldOutputDir()).Text
+		asked := host.asked
 		press(t, content, "Choose...")
 
-		if host.asked == 0 {
+		if host.asked == asked {
 			t.Fatalf("the %s screen has a browse button that asks nobody", screenName)
 		}
 		after := entryUnder(t, content, text.FieldOutputDir()).Text
@@ -567,11 +576,17 @@ func TestBrowsingForADirectoryPutsItInTheField(t *testing.T) {
 func TestCancellingTheDirectoryPickerLeavesTheFieldAlone(t *testing.T) {
 	host := newFakeHost(t) // picked is empty, so nothing is chosen
 	window.Open(host)
+	screen := selectTab(t, host.content, text.TabOneTarget())
 
-	before := entryUnder(t, host.content, text.FieldOutputDir()).Text
-	press(t, host.content, "Choose...")
+	before := entryUnder(t, screen, text.FieldOutputDir()).Text
+	press(t, screen, "Choose...")
 
-	if after := entryUnder(t, host.content, text.FieldOutputDir()).Text; after != before {
+	// Asserted rather than assumed: this guard passed while the press went to
+	// another tab's button, which asked nothing of the directory picker.
+	if host.asked == 0 {
+		t.Fatal("the browse button asked nobody, so there was no picker to cancel")
+	}
+	if after := entryUnder(t, screen, text.FieldOutputDir()).Text; after != before {
 		t.Errorf("cancelling the picker changed the field from %q to %q", before, after)
 	}
 }

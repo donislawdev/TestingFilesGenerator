@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A Tools tab, and `tfg tool`.** Small things to do with files you already
+  have, in the window and on the command line with the same settings. The
+  first works out the checksum of a file - md5, sha1, sha256, sha512 or crc32,
+  sha256 unless you ask - and compares it with one you were given, telling the
+  algorithm from its length: `tfg tool checksum file.iso --expected
+  <checksum>`. A checksum that does not match ends with code 7, the same as
+  `tfg verify`. The file is only read. `tfg tool list` and `tfg tool show
+  <id>` say what there is, both with `--json`.
 - **The window in Polish, and a Preferences tab.** The window now speaks the
   language your system is set to when it has that language, and English
   otherwise - so on a system set to Polish it opens in Polish. Preferences
@@ -95,6 +103,11 @@ because it turns other people's test suites red.
   next run into the directory says a run is going or was killed and names
   the file to remove, instead of calling an empty file the record of an
   earlier run.
+
+- **Ctrl+Enter, Ctrl+P and Escape act on the tab you are looking at.** With
+  About on show, Ctrl+Enter used to run Generate on the last work tab you had
+  left, which you could not see, and Escape could stop a run there. On a tab
+  with nothing to run the three keys now do nothing.
 
 ## [0.4.0] - 2026-09-25
 

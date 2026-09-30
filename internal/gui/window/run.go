@@ -380,7 +380,7 @@ func newRunner(wait later) *runner {
 	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), r.onCancel).InTheBar()
 	cancel.Disable()
 	cancel.Hide()
-	r.busy = &busy{fields: r.fields, preview: r.previewBtn, generate: r.generateBtn,
+	r.busy = &busy{fields: r.fields, starters: []*parts.Button{r.previewBtn, r.generateBtn},
 		cancel: cancel, bar: bar, later: wait}
 
 	r.offer = newOffers(r.busy.relay)

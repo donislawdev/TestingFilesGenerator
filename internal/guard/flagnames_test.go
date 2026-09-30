@@ -51,9 +51,9 @@ import (
 func packagesBelowTheSurfaces(t *testing.T) []string {
 	t.Helper()
 
-	// The surfaces are layer 4. Anything above them is a binary, anything
-	// below is what both of them show.
-	const surfaces = 4
+	// Anything above the surfaces is a binary, anything below is what both of
+	// them show.
+	const surfaces = surfaceLayer
 
 	var out []string
 	for pkg, n := range layer {

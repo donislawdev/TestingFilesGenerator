@@ -42,6 +42,10 @@ var commandsTakingHelp = [][]string{
 	{"preset", "list"},
 	{"preset", "show"},
 	{"preset", "eject"},
+	{"tool"},
+	{"tool", "list"},
+	{"tool", "show"},
+	{"tool", "checksum"},
 }
 
 func TestAskingForHelpIsNotAMistake(t *testing.T) {

@@ -99,6 +99,7 @@ func commands() []command {
 				return damageCmd(args, out, errOut)
 			},
 		},
+		{Verb: "tool", Summary: "small things to do with files you already have", Run: toolCmd},
 		{
 			Verb: "version", Aliases: []string{"--version"},
 			Summary: "print the tool version",

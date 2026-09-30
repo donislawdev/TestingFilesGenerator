@@ -18,6 +18,7 @@ const (
 	tabGenerate = "generate"
 	tabPresets  = "presets"
 	tabRecipe   = "recipe"
+	tabTools    = "tools"
 	tabPrefs    = "preferences"
 	tabAbout    = "about"
 )
@@ -38,6 +39,7 @@ func Open(h Host) fyne.Size {
 	gen := NewGenerate(h)
 	pre := NewPreset(h)
 	rec := NewRecipe(h)
+	tools := NewTools(h)
 	runners := []*runner{gen.runner, pre.runner, rec.runner}
 	// The way out is wired below, once everything it stops exists. The screen
 	// is built now, so it is handed a way to reach it rather than the thing.
@@ -63,6 +65,7 @@ func Open(h Host) fyne.Size {
 		&parts.Tab{ID: tabGenerate, Text: text.TabOneTarget(), Content: gen.Object()},
 		&parts.Tab{ID: tabPresets, Text: text.TabPresets(), Content: pre.Object()},
 		&parts.Tab{ID: tabRecipe, Text: text.TabRecipe(), Content: rec.Object()},
+		&parts.Tab{ID: tabTools, Text: text.TabTools(), Content: tools.Object()},
 		&parts.Tab{ID: tabPrefs, Text: text.TabPreferences(), Content: prefs.Object()},
 		&parts.Tab{ID: tabAbout, Text: text.TabAbout(), Content: About(h)},
 	)
@@ -90,6 +93,11 @@ func Open(h Host) fyne.Size {
 		tabRecipe:   rec,
 	}
 	showing := tabGenerate
+	// looking is the tab on show, whatever it is - which is what a key acts on.
+	// Not showing, which stays on the last screen with a directory: until
+	// 2026-09-30 the keyboard read that one, so Ctrl+Enter on the Tools tab,
+	// on About or on Preferences ran Generate on a screen nobody could see.
+	looking := tabGenerate
 
 	offerWhereItLastWrote(h, working)
 
@@ -101,6 +109,7 @@ func Open(h Host) fyne.Size {
 		tabGenerate: gen,
 		tabPresets:  pre,
 		tabRecipe:   rec,
+		tabTools:    tools,
 	}
 
 	// The keyboard starts on the first field of the screen somebody is looking
@@ -119,6 +128,7 @@ func Open(h Host) fyne.Size {
 		if arriving {
 			showing = item.ID
 		}
+		looking = item.ID
 		// The keyboard follows the person to the screen they moved to. Without
 		// this it stays on a control of the screen they left, which is a Tab
 		// that starts somewhere nobody can see.
@@ -133,24 +143,17 @@ func Open(h Host) fyne.Size {
 	// One wait for quiet for the whole window, told by every screen, and
 	// stopped with them when the window closes - see tidy.go.
 	quiet := tidyWhenLeftAlone(h, runners...)
-	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, quiet}, working, &showing)
+	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, tools, quiet}, working, &showing)
 	// Restart now stands down while any screen is making files, and stands up
 	// again when it stops - told rather than asked, so the button is right
 	// the moment a run ends while the Preferences tab is on show.
 	for _, r := range runners {
 		r.busy.changed = prefs.BusyChanged
 	}
-	offerSettling(h, []interface{ Settled() }{gen, pre, rec})
+	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
 
-	// One table for the window, handed to the boxes of every screen. Wired here
-	// rather than in each constructor because the table belongs to the window
-	// and the screens are built before it exists.
-	shortcuts := parts.NewShortcuts()
-	for _, screen := range []interface{ Fields() *parts.Fields }{gen, pre, rec} {
-		screen.Fields().PassShortcutsTo(shortcuts.Deliver)
-	}
-	wireKeyboard(h, keyed, &showing, shortcuts)
+	wireKeyboard(h, keyed, &looking)
 
 	// The window still opens on the work rather than on the notice, which is
 	// the owner's decision of 2026-08-05 and is now a property of which tab is
@@ -247,13 +250,26 @@ func offerWhereItLastWrote(h Host, working map[string]interface {
 // of the ceiling. The ceiling is a ratchet, so the answer is a split and never
 // a higher number.
 //
-// showing is a pointer because the answer changes as somebody moves between
+// looking is a pointer because the answer changes as somebody moves between
 // screens, and a shortcut is about the screen being looked at WHEN IT IS
-// PRESSED rather than when it was registered.
-func wireKeyboard(h Host, keyed map[string]keyboardScreen, showing *string, table *parts.Shortcuts) {
+// PRESSED rather than when it was registered. A tab the map does not know -
+// About, Preferences - takes no shortcut at all.
+//
+// One table for the window, handed to the boxes of every screen the keyboard
+// reaches. Wired here rather than in each constructor because the table
+// belongs to the window and the screens are built before it exists. From the
+// map rather than from a list of its own since 2026-09-30: the list named
+// three screens, the Tools tab was the fourth in the map and not in the list,
+// and Ctrl+Enter typed in its box did nothing. A screen the keyboard reaches
+// is now a screen whose boxes pass it on, with nothing to remember.
+func wireKeyboard(h Host, keyed map[string]keyboardScreen, looking *string) {
+	table := parts.NewShortcuts()
+	for _, screen := range keyed {
+		screen.Fields().PassShortcutsTo(table.Deliver)
+	}
 	on := func(act func(keyboardScreen)) func(fyne.Shortcut) {
 		return func(fyne.Shortcut) {
-			if screen, ok := keyed[*showing]; ok {
+			if screen, ok := keyed[*looking]; ok {
 				act(screen)
 			}
 		}
@@ -337,6 +353,8 @@ type keyboardScreen interface {
 	PressPreview()
 	PressCancel()
 	FirstField() fyne.Focusable
+	// Fields is the boxes, which pass on the shortcuts they have no use for.
+	Fields() *parts.Fields
 }
 
 // FirstScreen is what the window shows when it opens, without a window to put
@@ -384,11 +402,16 @@ func donate(h Host, look parts.Look) *parts.Button {
 //
 // The box stays editable. A picker that replaces typing takes away pasting a
 // path somebody sent you, which is how most of these get filled in.
-func chooserFor(host Host, box *parts.Entry) fyne.CanvasObject {
+//
+// pick is which picker the button opens - Host.ChooseDirectory for where files
+// go, Host.ChooseFile for a file a tool reads. One box and one button for
+// both, so a path field looks and behaves the same whatever it names (GUI
+// rule 2).
+func chooserFor(box *parts.Entry, pick func(func(string))) fyne.CanvasObject {
 	choose := parts.NewButton(parts.Secondary, text.ButtonChoose(), func() {
-		host.ChooseDirectory(func(dir string) {
-			if dir != "" {
-				box.SetText(dir)
+		pick(func(path string) {
+			if path != "" {
+				box.SetText(path)
 			}
 		})
 	})

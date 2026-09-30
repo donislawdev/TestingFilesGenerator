@@ -285,6 +285,7 @@ tfg recipe fmt  print a recipe in its settled shape
 tfg preset      build a set of files from a named test question
 tfg formats     list the formats this build supports
 tfg damage      list the ways this build can break a file on purpose
+tfg tool        small things to do with files you already have
 tfg version     print the tool version
 tfg license     print the licence and what it means for generated files
 ```
@@ -379,6 +380,21 @@ refuses to read, so use `-o` there.
 tfg formats [--json]     every format, with fidelity, determinism and smallest size
 tfg formats <id>         what a single format accepts
 ```
+
+### `tfg tool`
+
+```
+tfg tool list [--json]                          the tools this build has
+tfg tool show <id> [--json]                     what one tool works on and takes
+tfg tool checksum <file> [--algorithm sha256] [--expected <checksum>] [--json]
+```
+
+Small things to do with files you already have, beside the generator. Every tool
+is also on the Tools tab of the window, with the same settings. The first one
+works out the checksum of a file - md5, sha1, sha256, sha512 or crc32, sha256
+unless you ask - and compares it with one you were given, telling the algorithm
+from its length. A checksum that does not match ends with code 7, the same as
+`tfg verify`. crc32 is the one ZIP and PNG use, not the one `cksum` prints.
 
 ### `tfg damage`
 
@@ -666,8 +682,8 @@ not a cut down version: a test compares the two interfaces capability by
 capability, and anything only one of them can do has to be declared and
 justified rather than quietly drifting apart.
 
-Five screens - one batch, presets, several batches at once, preferences, and
-about. It shows what a run would cost before writing anything, reports progress
+Six screens - one batch, presets, several batches at once, tools, preferences,
+and about. It shows what a run would cost before writing anything, reports progress
 while it runs, and can be cancelled part way without leaving a half written file
 behind. The window speaks your system's language when it has it (English and
 Polish today) and English otherwise. Preferences lets you choose another, and

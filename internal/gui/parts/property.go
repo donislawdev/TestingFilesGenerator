@@ -267,8 +267,9 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 		// The button is what makes that safe rather than a loss: this is a tool
 		// whose window and whose recipe file are two ways into one engine, so
 		// somebody who finds a setting here has to be able to write it down.
+		// For a tool that is a flag rather than a recipe key - see WrittenAs.
 		objects = append(objects, into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
-			tips.Say(text.SettingKey(p.Name)), ShapedFor(p, f.Control)))
+			tips.Say(text.WrittenAs(owner, p.Name)), ShapedFor(p, f.Control)))
 	}
 	return fields, objects
 }

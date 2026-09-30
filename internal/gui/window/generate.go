@@ -52,6 +52,16 @@ type Host interface {
 	// which is what lets a guard press the button on a machine with no screen.
 	ChooseDirectory(func(string))
 
+	// ChooseFile asks the person for one existing file, for a tool on the Tools
+	// tab to read, and calls back with its path or with nothing - always, for
+	// the reason ChooseDirectory gives.
+	ChooseFile(func(string))
+
+	// Copy puts text on the system's clipboard, on a press somebody made - the
+	// checksum a tool worked out, so it can be pasted where it is needed. Only
+	// a real window has a clipboard to put it on, and a stand in records it.
+	Copy(text string)
+
 	// Canvas is what the screens need for the keyboard: a shortcut is registered
 	// on it, and so is where the keyboard starts.
 	//
@@ -414,7 +424,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 		),
 		g.sections.section(sectionOutput, text.SectionOutput(),
 			parts.Wide(add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
-				chooserFor(g.host, g.outDir))),
+				chooserFor(g.outDir, g.host.ChooseDirectory))),
 			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
 				parts.Numeric(g.seed)),
 			g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),

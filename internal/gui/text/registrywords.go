@@ -6,6 +6,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/preset"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // RegistryWord is one sentence of the registries the window shows, under the
@@ -36,6 +37,9 @@ func RegistryWords() []RegistryWord {
 	}
 	for _, d := range damage.All() {
 		w.settings(DamageOwner(d.ID), "the "+d.ID+" damage", d.Parameters)
+	}
+	for _, d := range tool.All() {
+		w.tool(d)
 	}
 	return w.sorted()
 }
@@ -72,6 +76,17 @@ func (w registryWords) preset(p preset.Preset) {
 	for name, said := range p.SaidWhenDefaulted {
 		w.add(NoteKey(p.ID, name), said, "What a run of "+whose+" says when nobody gave its "+name+".")
 	}
+}
+
+func (w registryWords) tool(d tool.Descriptor) {
+	whose := "the " + d.ID + " tool"
+	w.add(ToolQuestionKey(d.ID), d.Question, "The question "+whose+" answers - its name in the list of tools and the title over it.")
+	w.add(ToolDetailKey(d.ID), d.Detail, "One sentence under the question of "+whose+", saying what it does.")
+	for _, in := range d.Inputs {
+		w.add(LabelKey(in.Name), EnglishLabel(in.Name), "The name beside the box of what "+whose+" works on.")
+		w.add(InputKey(d.ID, in.Name), in.Detail, "The sentence under the "+in.Name+" box of "+whose+".")
+	}
+	w.settings(ToolOwner(d.ID), whose, d.Settings)
 }
 
 func (w registryWords) settings(owner Owner, whose string, declared []format.Property) {

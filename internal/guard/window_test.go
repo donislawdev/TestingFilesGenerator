@@ -72,6 +72,13 @@ type fakeHost struct {
 	closed      int
 	picked      string
 	asked       int
+	// pickedFile is what ChooseFile answers, askedFile how often it was asked,
+	// and copied the last text Copy was given - the things only the Tools tab
+	// asks of a window. Counted apart from asked, so a guard about the
+	// directory picker cannot be satisfied by the file picker.
+	pickedFile string
+	askedFile  int
+	copied     string
 
 	opened      string
 	openedCount int
@@ -464,6 +471,13 @@ func (h *fakeHost) ChooseDirectory(chosen func(string)) {
 	// unreachable from any test.
 	chosen(h.picked)
 }
+
+func (h *fakeHost) ChooseFile(chosen func(string)) {
+	h.askedFile++
+	chosen(h.pickedFile)
+}
+
+func (h *fakeHost) Copy(text string) { h.copied = text }
 
 // A tree that renders as one flat colour passes every structural check and
 // shows nothing. That defect is not hypothetical here: SVG at exactly its

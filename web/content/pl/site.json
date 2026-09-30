@@ -210,6 +210,7 @@
     "preset": "buduje zestaw plików z nazwanego pytania testowego",
     "formats": "wypisuje formaty, które ta wersja obsługuje",
     "damage": "wypisuje sposoby, którymi ta wersja umie celowo zepsuć plik",
+    "tool": "drobne czynności na plikach, które już masz",
     "version": "wypisuje wersję narzędzia",
     "license": "wypisuje licencję i to, co znaczy dla wygenerowanych plików"
   },

@@ -882,3 +882,77 @@ func PreferencesForgetWhat() string {
 func PreferencesForgotten() string {
 	return say("PreferencesForgotten", "Forgotten. The next window opens the way the first one did.")
 }
+
+// The Tools tab - docs/NARZEDZIA-SUMY-2026-09-29.md. What each tool says about
+// itself comes from its declaration through registry.go. These are the words
+// of the screen around it.
+
+func TabTools() string { return say("TabTools", "Tools") }
+
+func SubtitleTools() string {
+	return say("SubtitleTools", "Small things to do with files you already have. Every tool here is on the command line too, as tfg tool.")
+}
+
+func SectionTool() string       { return say("SectionTool", "The question") }
+func SectionToolInput() string  { return say("SectionToolInput", "What it works on") }
+func SectionToolResult() string { return say("SectionToolResult", "Result") }
+
+func FieldTool() string { return say("FieldTool", "Tool") }
+func HintTool() string  { return say("HintTool", "What you want to find out.") }
+func DetailTool() string {
+	return say("DetailTool", "What the tool works on and its settings change with the tool chosen.")
+}
+
+// ButtonRunTool starts the tool chosen. One word for every tool, because the
+// question over it already says what it will do.
+func ButtonRunTool() string { return say("ButtonRunTool", "Run") }
+
+// ButtonCopy puts one value of a result on the clipboard.
+func ButtonCopy() string { return say("ButtonCopy", "Copy") }
+
+// ToolNothingYet is the result before the first run, so the section says what
+// will appear there rather than standing empty.
+func ToolNothingYet() string {
+	return say("ToolNothingYet", "Nothing worked out yet. Choose what to work on and press Run.")
+}
+
+// ToolReading is the line under the bar while a tool reads.
+func ToolReading(done, total string) string {
+	return sayf("ToolReading", "Read {{.Done}} of {{.Total}}.", map[string]any{"Done": done, "Total": total})
+}
+
+// ToolStopped is said when Cancel stopped a tool. A tool only reads, so
+// nothing is left half done anywhere.
+func ToolStopped() string {
+	return say("ToolStopped", "Stopped before it finished. A tool only reads, so nothing was changed.")
+}
+
+// ToolCopied says a value is on the clipboard, since pressing Copy changes
+// nothing that can be seen.
+func ToolCopied(what string) string {
+	return sayf("ToolCopied", "The {{.What}} is on the clipboard.", map[string]any{"What": what})
+}
+
+// ToolMatches and ToolDoesNotMatch are tool.Verdict.Said in the window's
+// language. A guard holds their English to that sentence, which is what the
+// command line prints.
+func ToolMatches(about, got string) string {
+	return sayf("ToolMatches", "Matches: the {{.About}} is {{.Got}}, as expected.", map[string]any{"About": about, "Got": got})
+}
+
+func ToolDoesNotMatch(about, got, wanted string) string {
+	return sayf("ToolDoesNotMatch", "Does not match: the {{.About}} is {{.Got}} and {{.Wanted}} was expected.",
+		map[string]any{"About": about, "Got": got, "Wanted": wanted})
+}
+
+// ToolInputWrittenAs is what the button beside the box of what a tool works
+// on says about writing it down: a path, with no flag in front of it.
+func ToolInputWrittenAs(tool string) string {
+	return sayf("ToolInputWrittenAs", "Written as the path after tfg tool {{.Tool}} on the command line.", map[string]any{"Tool": tool})
+}
+
+// ToolFlag is what the button beside a tool's setting says about writing it
+// down. A tool is run by no recipe, so the flag is what there is to write.
+func ToolFlag(key string) string {
+	return sayf("ToolFlag", "Written as --{{.Key}} after tfg tool on the command line.", map[string]any{"Key": key})
+}

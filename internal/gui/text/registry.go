@@ -2,6 +2,7 @@ package text
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -49,6 +50,23 @@ func FormatOwner(id string) Owner { return Owner("format/" + id) }
 func PresetOwner(id string) Owner { return Owner("preset/" + id) }
 func DamageOwner(id string) Owner { return Owner("damage/" + id) }
 
+// ToolOwner is the fourth: the settings of a tool on the Tools tab.
+func ToolOwner(id string) Owner { return Owner(toolPrefix + id) }
+
+const toolPrefix = "tool/"
+
+// WrittenAs is what the button beside a declared setting says about writing
+// it down: the key a recipe writes it under, or for a tool - which no recipe
+// runs - the flag of tfg tool. A sentence about a recipe beside a setting
+// nobody can put in one would send somebody looking for a file that cannot
+// hold it.
+func WrittenAs(o Owner, key string) string {
+	if strings.HasPrefix(string(o), toolPrefix) {
+		return ToolFlag(key)
+	}
+	return SettingKey(key)
+}
+
 // The keys, built here and nowhere else - exported for the guard that writes
 // registry/en.json out of the registries, so the window and the guard cannot
 // come to ask for two different things.
@@ -61,6 +79,13 @@ func JointKey(o Owner, of, by string) string { return "Joint." + string(o) + "."
 func QuestionKey(preset string) string       { return "Question." + preset }
 func CatchKey(preset string, n int) string   { return "Catch." + preset + "." + strconv.Itoa(n) }
 func NoteKey(preset, about string) string    { return "Note." + preset + "." + about }
+
+// The words of a tool, under keys of their own rather than beside a preset's:
+// a tool and a preset may one day share a name, and "Question.<id>" would then
+// be one key for two sentences.
+func ToolQuestionKey(id string) string { return "Tool." + id + ".Question" }
+func ToolDetailKey(id string) string   { return "Tool." + id + ".Detail" }
+func InputKey(id, name string) string  { return "Input." + id + "." + name }
 
 // lookup is say for a sentence whose key is made of identifiers and whose
 // English comes from a registry rather than from this package. Nothing to say
@@ -116,6 +141,15 @@ func PresetNote(preset, about, english string) string {
 	}
 	return lookup(NoteKey(preset, about), english)
 }
+
+// ToolQuestion is the question a tool answers, which is its title.
+func ToolQuestion(id, english string) string { return lookup(ToolQuestionKey(id), english) }
+
+// ToolDetail is the sentence saying what a tool does.
+func ToolDetail(id, english string) string { return lookup(ToolDetailKey(id), english) }
+
+// ToolInput is the sentence beside what a tool works on.
+func ToolInput(id, name, english string) string { return lookup(InputKey(id, name), english) }
 
 // HumanBytes is core.HumanBytes with the decimal mark of the window's language.
 //

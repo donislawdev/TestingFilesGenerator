@@ -609,10 +609,25 @@
     "hash": "sha256-be929d76067d",
     "other": "The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset."
   },
+  "Detail.tool/checksum.algorithm": {
+    "description": "The sentence under the algorithm setting of the checksum tool, after what it takes.",
+    "hash": "sha256-b2c6c5ddeaa1",
+    "other": "Which checksums to work out: md5, sha1, sha256, sha512 or crc32. Only sha256 and sha512 still show that nobody changed the file on purpose. crc32 is the one ZIP and PNG use, not the one cksum prints."
+  },
+  "Detail.tool/checksum.expected": {
+    "description": "The sentence under the expected setting of the checksum tool, after what it takes.",
+    "hash": "sha256-d2a5105f8783",
+    "other": "The checksum the file should have. The algorithm is told from its length, and worked out even when it is not chosen above."
+  },
   "Group.format/pdf.Document properties": {
     "description": "The heading over a block of settings of the pdf format.",
     "hash": "sha256-7115a778ab47",
     "other": "Document properties"
+  },
+  "Input.checksum.file": {
+    "description": "The sentence under the file box of the checksum tool.",
+    "hash": "sha256-a87fb4cce79e",
+    "other": "The file to work out the checksums of. It is only read."
   },
   "Joint.format/avif.width.height": {
     "description": "Why width times height of the avif format have a ceiling, at the end of the note under the two, after the word because.",
@@ -643,6 +658,11 @@
     "description": "Why rows times columns of the xlsx format have a ceiling, at the end of the note under the two, after the word because.",
     "hash": "sha256-e1ef283f3c5d",
     "other": "the sheet is built in memory before it is packaged"
+  },
+  "Label.algorithm": {
+    "description": "The name beside the box of a setting a recipe writes as algorithm.",
+    "hash": "sha256-d704d8af25be",
+    "other": "Algorithm"
   },
   "Label.allow": {
     "description": "The name beside the box of a setting a recipe writes as allow.",
@@ -764,10 +784,20 @@
     "hash": "sha256-1190635edb6f",
     "other": "Entry size"
   },
+  "Label.expected": {
+    "description": "The name beside the box of a setting a recipe writes as expected.",
+    "hash": "sha256-ca99b7f1b14e",
+    "other": "Expected"
+  },
   "Label.far-over": {
     "description": "The name beside the box of a setting a recipe writes as far-over.",
     "hash": "sha256-874367c30d4e",
     "other": "Far-over"
+  },
+  "Label.file": {
+    "description": "The name beside the box of what the checksum tool works on.",
+    "hash": "sha256-50009ce1da4d",
+    "other": "File"
   },
   "Label.format": {
     "description": "The name beside the box of a setting a recipe writes as format.",
@@ -984,10 +1014,20 @@
     "hash": "sha256-950469ca4b3a",
     "other": "Does my upload form take what it should and turn the rest away?"
   },
+  "Shape.a checksum in hexadecimal": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-62cb052ebc94",
+    "other": "a checksum in hexadecimal"
+  },
   "Shape.a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": {
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-a40bd1decdc9",
     "other": "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
+  },
+  "Shape.algorithm names separated by commas, or all": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-bba80a8dec88",
+    "other": "algorithm names separated by commas, or all"
   },
   "Shape.any text": {
     "description": "What the text in a box has to look like, in the sentence under it.",
@@ -1023,6 +1063,16 @@
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-eb266034b6a8",
     "other": "the password, in plain text"
+  },
+  "Tool.checksum.Detail": {
+    "description": "One sentence under the question of the checksum tool, saying what it does.",
+    "hash": "sha256-f3e1a6e1c983",
+    "other": "Works out the checksum of a file, and compares it with one you were given - from a download page, a release note or a colleague."
+  },
+  "Tool.checksum.Question": {
+    "description": "The question the checksum tool answers - its name in the list of tools and the title over it.",
+    "hash": "sha256-f7c87f2771e3",
+    "other": "Is this file the one it claims to be?"
   },
   "Unit.bytes": {
     "description": "What a number counts, after it, as in: from 1 to 20000 bytes. Written the way the language puts a noun after a number.",

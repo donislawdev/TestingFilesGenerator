@@ -20,12 +20,17 @@
 							<rectangle radius="6" size="126x32" strokeColor="hyperlink"/>
 							<text bold pos="8,8" size="110x16">Several batches</text>
 						</widget>
-						<widget pos="319,0" size="100x32" type="*parts.TabWord">
+						<widget pos="319,0" size="54x32" type="*parts.TabWord">
+							<rectangle radius="6" size="54x32"/>
+							<rectangle radius="6" size="54x32" strokeColor="hyperlink"/>
+							<text bold color="placeholder" pos="8,8" size="38x16">Tools</text>
+						</widget>
+						<widget pos="381,0" size="100x32" type="*parts.TabWord">
 							<rectangle radius="6" size="100x32"/>
 							<rectangle radius="6" size="100x32" strokeColor="hyperlink"/>
 							<text bold color="placeholder" pos="8,8" size="84x16">Preferences</text>
 						</widget>
-						<widget pos="427,0" size="57x32" type="*parts.TabWord">
+						<widget pos="490,0" size="57x32" type="*parts.TabWord">
 							<rectangle radius="6" size="57x32"/>
 							<rectangle radius="6" size="57x32" strokeColor="hyperlink"/>
 							<text bold color="placeholder" pos="8,8" size="41x16">About</text>
