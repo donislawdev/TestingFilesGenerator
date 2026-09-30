@@ -97,7 +97,7 @@ func TestEveryFileThisToolWritesIsCreatedThroughOneClaim(t *testing.T) {
 					return true
 				}
 				pkg, ok := sel.X.(*ast.Ident)
-				if !ok || pkg.Name != "os" || !creators[sel.Sel.Name] {
+				if !ok || pkg.Name != "os" || !creators[sel.Sel.Name] || opensOnlyToRead(call) {
 					return true
 				}
 				if _, granted := allowed[rel]; granted {
@@ -129,6 +129,42 @@ func TestEveryFileThisToolWritesIsCreatedThroughOneClaim(t *testing.T) {
 				"the next thing that lands in that file.", rel, why)
 		}
 	}
+}
+
+// readingFlags are the flags of an open that only reads - os.Open with
+// something os.Open cannot ask for. O_NONBLOCK is why this exists: the
+// checksum tool opens without waiting on a pipe (checksum.openRegular), which
+// takes os.OpenFile, and it creates nothing and writes nothing.
+var readingFlags = map[string]bool{
+	"O_RDONLY": true, "O_NONBLOCK": true, "O_CLOEXEC": true, "O_NOFOLLOW": true, "O_NOCTTY": true,
+}
+
+// opensOnlyToRead says whether a call is os.OpenFile with flags that read and
+// nothing else, spelled out where the call is. Anything else - a flag that
+// writes or creates, or flags held in a variable this cannot see into - is
+// taken as a create, so what cannot be read here is refused rather than
+// waved through. A read-only open is a question of reading through a link,
+// which the comment on creators leaves to core.Boundary.
+func opensOnlyToRead(call *ast.CallExpr) bool {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "OpenFile" || len(call.Args) < 2 {
+		return false
+	}
+	only := true
+	ast.Inspect(call.Args[1], func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.BinaryExpr:
+			only = only && v.Op == token.OR
+		case nil, *ast.ParenExpr, *ast.SelectorExpr:
+			// nil is Inspect leaving a node, not a node.
+		case *ast.Ident:
+			only = only && (readingFlags[v.Name] || v.Name == "os" || v.Name == "syscall")
+		default:
+			only = false
+		}
+		return only
+	})
+	return only
 }
 
 // core.CreateNew creates only when the name is free, and what it refuses covers
