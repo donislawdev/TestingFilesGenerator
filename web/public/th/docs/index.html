@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>เอกสาร - คำสั่ง สูตร แมนิเฟสต์ รหัสออก</title>
+<meta name="description" content="วิธีสร้างไฟล์ทดสอบจากบรรทัดคำสั่งหรือสูตร YAML แมนิเฟสต์มีอะไรบ้าง และรหัสออกแต่ละตัวมีความหมายอย่างไรเมื่อรันใน CI">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="เอกสาร - คำสั่ง สูตร แมนิเฟสต์ รหัสออก">
+<meta property="og:description" content="วิธีสร้างไฟล์ทดสอบจากบรรทัดคำสั่งหรือสูตร YAML แมนิเฟสต์มีอะไรบ้าง และรหัสออกแต่ละตัวมีความหมายอย่างไรเมื่อรันใน CI">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="เอกสาร - คำสั่ง สูตร แมนิเฟสต์ รหัสออก">
+<meta name="twitter:description" content="วิธีสร้างไฟล์ทดสอบจากบรรทัดคำสั่งหรือสูตร YAML แมนิเฟสต์มีอะไรบ้าง และรหัสออกแต่ละตัวมีความหมายอย่างไรเมื่อรันใน CI">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "เอกสาร",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/docs\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/">พรีเซ็ต</a>
+      <a href="/th/docs/" aria-current="page">เอกสาร</a>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/">คำถามที่พบบ่อย</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>เอกสาร</h1>
+<p class="lead">
+  ทุกอย่างที่เครื่องมือทำได้ จัดเรียงตามคำถามที่ผู้คนมาถามจริงๆ <a href="https://github.com/donislawdev/TestingFilesGenerator">README
+  ในรีโพซิทอรี</a>เป็นข้อมูลอ้างอิงฉบับสมบูรณ์และตรงกับบิลด์ที่คุณดาวน์โหลดเสมอ
+</p>
+
+<section class="section" id="commands">
+  <h2>มีคำสั่งอะไรบ้าง</h2>
+  <p>แต่ละคำสั่งทำสิ่งเดียว:</p>
+  <pre><code>tfg generate    สร้างไฟล์จากสูตรหรือจากแฟลก
+tfg validate    ตรวจสอบสูตรโดยไม่เขียนอะไร
+tfg verify      ตรวจสอบไดเรกทอรีเทียบกับแมนิเฟสต์
+tfg cleanup     ลบไฟล์ที่แมนิเฟสต์ระบุไว้
+tfg recipe fmt  พิมพ์สูตรในรูปแบบมาตรฐาน
+tfg preset      สร้างชุดไฟล์จากคำถามทดสอบที่มีชื่อ
+tfg formats     แสดงรายการรูปแบบที่บิลด์นี้รองรับ
+tfg damage      แสดงรายการวิธีที่บิลด์นี้ทำให้ไฟล์เสียหายโดยตั้งใจ
+tfg tool        เครื่องมือเล็กๆ สำหรับไฟล์ที่คุณมีอยู่แล้ว
+tfg version     พิมพ์เวอร์ชันของเครื่องมือ
+tfg license     พิมพ์ใบอนุญาตและความหมายสำหรับไฟล์ที่สร้างขึ้น</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>สร้างไฟล์เดียวที่ขนาดแม่นยำได้อย่างไร</h2>
+  <p>
+    ระบุรูปแบบ ขนาด และปลายทาง ขนาดนับเป็นทีละ 1024 ดังนั้น <code>2mb</code> คือ 2097152 ไบต์
+    ใช้จำนวนไบต์ธรรมดาก็ได้ ดังนั้น <code>--size 10485761</code> ขอจำนวนนั้นพอดี
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>แฟลกที่มีประโยชน์ของ <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>แฟลก</th><th>ทำอะไร</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>รูปแบบของไฟล์ เช่น <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>ขนาดที่แม่นยำของแต่ละไฟล์ เช่น <code>10mb</code> หรือจำนวนไบต์ธรรมดา</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>ขนาดที่สุ่มต่อไฟล์จากช่วง เช่น <code>1kb-8kb</code> การสุ่มมาจากซีด</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>สามไฟล์รอบขีดจำกัด: น้อยกว่าหนึ่งไบต์ เท่ากับขีดจำกัด และมากกว่าหนึ่งไบต์</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>จะสร้างกี่ไฟล์ ค่าเริ่มต้น <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>แม่แบบชื่อ เช่น <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>ไดเรกทอรีที่จะเขียนลงไป</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>ซีดของการรัน ซีดเดียวกันให้ไบต์เดียวกัน</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>การตั้งค่ารูปแบบ ระบุซ้ำได้</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>ทำให้ไฟล์เสียหายโดยตั้งใจ ระบุซ้ำได้และใช้ตามลำดับ รัน <code>tfg damage</code> เพื่อดูรายการ</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> หรือ <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>นับและแสดง ไม่เขียนอะไรเลย</td></tr>
+        <tr><td><code>--json</code></td><td>เขียนแมนิเฟสต์ไปยังเอาต์พุตมาตรฐาน</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>ทำไฟล์ที่เสียโดยตั้งใจได้อย่างไร</h2>
+  <p>
+    ไฟล์อื่นทุกไฟล์ที่เครื่องมือนี้เขียนถูกต้องโดยโครงสร้าง
+    ซึ่งตอบสองในสามคำถามที่ตัวตรวจสอบการอัปโหลดถาม <code>--damage</code> ตอบข้อที่สาม -
+    ไฟล์เปิดได้หรือไม่ ไฟล์ถูกสร้างตามปกติแล้วจึงถูกทำให้เสีย จึงยังคงมีขนาดที่คุณขอ
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    การตั้งค่าอยู่หลังเครื่องหมายทวิภาค แฟลกระบุซ้ำได้ และลำดับที่คุณเขียนคือลำดับที่ใช้ <code>tfg
+    damage</code> แสดงว่าบิลด์นี้ทำอะไรได้บ้างและแต่ละแบบรับอะไร
+  </p>
+  <p>ในสูตร คีย์เป็นรายการ ของชื่อหรือของการตั้งค่า:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    ไฟล์ที่เสียหายได้ <code>expected: reject</code> ในแมนิเฟสต์ พร้อมบันทึกความเสียหายไว้ข้างๆ
+    สองอย่างถูกปฏิเสธก่อนจะเขียนอะไร เพราะแต่ละอย่างจะวางไฟล์ที่แมนิเฟสต์อธิบายผิดไว้บนดิสก์:
+  </p>
+  <ul>
+    <li>ไฟล์ที่เล็กกว่าที่ความเสียหายต้องการ เพราะจะออกมาโดยไม่เปลี่ยนแปลง</li>
+    <li>
+      <code>expected: accept</code> ข้างความเสียหาย เพราะไม่มีสิ่งใดทำให้เป็นจริงได้ เขียน
+      <code>sanitize</code> ถ้าระบบที่ทดสอบควรซ่อมไฟล์ หรือ <code>unspecified</code>
+      ถ้านั่นคือคำถามที่คุณกำลังถาม
+    </li>
+  </ul>
+  <p>
+    ข้อที่สามรู้ล่วงหน้าไม่ได้ ถ้าความเสียหายทำงานแล้วไม่ขยับไบต์ใดเลย ไฟล์นั้นจะถูกทิ้งแทนที่จะถูกเขียน
+    - การรันดำเนินต่อ บอกว่าเป็นไฟล์ไหน และจบด้วยรหัสออกแบบบางส่วน
+  </p>
+  <p>
+    ทีละขั้น พร้อมการทดสอบที่อ่านแมนิเฟสต์:
+    <a href="/th/corrupt-test-files/">วิธีทำไฟล์เสียหายสำหรับการทดสอบ</a>
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>สูตรหน้าตาเป็นอย่างไร</h2>
+  <p>
+    สูตรคือไฟล์ YAML ที่อธิบายการรันทั้งหมด คอมมิตไว้ข้างการทดสอบของคุณ
+    แล้วฟิกซ์เจอร์จะไม่เป็นไบนารีในรีโพซิทอรีอีกต่อไป - ใครก็สร้างใหม่ได้ ไบต์ต่อไบต์
+    จากไฟล์ที่ยาวไม่กี่ร้อยอักขระ
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    แต่ละ target ต้องมี <code>size</code>, <code>size-range</code>, <code>boundary</code> หรือ
+    <code>contains</code> อย่างใดอย่างหนึ่งพอดี มีสองอย่างคือข้อผิดพลาด ไม่มีเลยก็เป็นข้อผิดพลาด
+    สูตรที่ไม่ถูกต้อง<strong>ไม่เขียนไฟล์ใดเลย</strong>
+    และรายงานปัญหาทั้งหมดพร้อมกันแทนที่จะรายงานแค่ข้อแรก โดยแต่ละข้อระบุการตั้งค่าที่เกี่ยวข้อง
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>ประกาศอย่างไรว่าระบบของฉันควรทำอะไรกับไฟล์</h2>
+  <p>ใช้รูปแบบสั้นเมื่อผลลัพธ์เพียงพอ ใช้รูปแบบยาวเมื่อเหตุผลสำคัญ:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    ผลลัพธ์คือ <code>accept</code>, <code>reject</code>, <code>sanitize</code> และ
+    <code>unspecified</code> เหตุผลเป็นรายการปิดเพื่อให้รายงานจัดกลุ่มตามได้:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> และ <code>size_zero</code>
+  </p>
+  <p>
+    เหตุผลระบุ<strong>กฎที่เกี่ยวข้อง</strong> ไม่ใช่คำตัดสิน
+    ด้วยเหตุนี้เหตุผลเดียวกันจึงอยู่ใต้ผลลัพธ์ใดก็ได้ - ไฟล์ที่น้อยกว่าขีดจำกัดหนึ่งไบต์คือ
+    <code>accept</code> และกฎที่เกี่ยวข้องก็ยังเป็น <code>size_limit</code>
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>แมนิเฟสต์มีอะไรบ้าง</h2>
+  <p>
+    ถูกเขียนไว้ข้างไฟล์เมื่อจบทุกการรัน รวมถึงการรันที่ถูกขัดจังหวะ หนึ่งรายการต่อไฟล์:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> จะถูกเพิ่มเมื่อการรันมาจากสูตร และ <code>preset</code> พร้อม
+    <code>overrides</code> เมื่อมาจากพรีเซ็ต แมนิเฟสต์จึงสืบย้อนไปถึงสิ่งที่สร้างมันได้เสมอ
+  </p>
+  <p>
+    ทุกรายการยังมี <code>target_id</code> ซึ่งเป็นรหัสของ target ในสูตรที่สร้างไฟล์ และ
+    <code>summary.by_target</code> นับจำนวนไฟล์ที่แต่ละ target สร้างได้ สูตรที่มีหลาย target
+    จึงตรวจทีละ target ได้โดยไม่ต้องอ่านชื่อไฟล์
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>พรีเซ็ตคืออะไร</h2>
+  <p>
+    ชุดไฟล์สำเร็จรูปที่ตอบคำถามการทดสอบที่พบบ่อย คุณจึงไม่ต้องออกแบบชุดเอง
+    พรีเซ็ตเป็นสูตรธรรมดาอยู่ข้างใน และ <code>eject</code>
+    พิมพ์สูตรออกมาเพื่อให้คุณแก้ไขต่อจากตรงนั้น
+    แต่ละพรีเซ็ตมี<a href="/th/presets/">หน้าของตัวเอง</a>ที่บอกว่าโดยทั่วไปมันพบอะไร ในชุดมีอะไร
+    และรับการตั้งค่าใดบ้าง
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/empty-and-minimal/">ไฟล์ว่างและขั้นต่ำ</a></p>
+    <p class="muted">ไฟล์ที่ถูกต้องและเล็กเท่าที่รูปแบบอนุญาตจะผ่านไหม</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/filename-handling/">การจัดการชื่อไฟล์</a></p>
+    <p class="muted">ระบบของฉันจะเก็บ แสดง และส่งคืนชื่อไฟล์ที่ไม่ได้คาดไว้ได้ไหม</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/size-boundaries/">ขอบเขตขนาด</a></p>
+    <p class="muted">ขีดจำกัดขนาดถูกบังคับใช้ตรงจุดที่ประกาศไว้พอดีหรือไม่</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/tabular-import/">การนำเข้าตาราง</a></p>
+    <p class="muted">การนำเข้าตารางของฉันรับมือกับสิ่งที่เครื่องมือจริงส่งออกได้ไหม</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/text-encoding/">การเข้ารหัสข้อความ</a></p>
+    <p class="muted">ตัวอ่านของฉันรู้ไหมว่าไฟล์ใช้การเข้ารหัสอะไร หรือกำลังเดาอยู่</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/th/presets/upload-validation/">การตรวจสอบการอัปโหลด</a></p>
+    <p class="muted">ฟอร์มอัปโหลดของฉันรับสิ่งที่ควรรับและปฏิเสธที่เหลือหรือไม่</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> บอกว่าชุดจะมีต้นทุนเท่าไรก่อนที่คุณจะสร้าง และบอกตรงๆ
+    เมื่อตัวเลขใดเป็นค่าชั่วคราวของเรา ไม่ใช่ขีดจำกัดของคุณ
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>รหัสออกมีความหมายอย่างไร</h2>
+  <p>
+    ทุกการจบมีรหัสของตัวเอง เอาต์พุตที่เครื่องอ่านได้ไปที่เอาต์พุตมาตรฐาน
+    และการรันที่ล้มเหลวไม่พิมพ์อะไรที่นั่น ตารางนี้เป็นสัญญาที่ตรึงไว้ -
+    การเปลี่ยนความหมายของรหัสต้องเลื่อนเวอร์ชันหลัก
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">รหัส</th>
+      <th>ความหมาย</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>ทุกอย่างทำงานได้</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>เกิดข้อผิดพลาดที่ไม่คาดคิดภายในเครื่องมือ</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>คำสั่งหรือแฟลกไม่ถูกต้อง</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>สูตรไม่ถูกต้อง</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>รูปแบบนี้ทำสิ่งที่ขอไม่ได้</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>การอ่านหรือเขียนล้มเหลว</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>พื้นที่ดิสก์ไม่พอ</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify พบความไม่ตรงกัน</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>การรันเสร็จสิ้น แต่สร้างไม่ครบทุกอย่าง</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>ถูกขัดจังหวะด้วย Ctrl&#43;C</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>ถูกหยุดด้วยสัญญาณ ซึ่งเป็นหน้าตาของการหมดเวลาใน CI</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    การรันที่หยุดด้วย Ctrl+C ยังทิ้งแมนิเฟสต์ไว้ และไม่เคยทิ้งไฟล์ที่เขียนค้างครึ่งหนึ่ง
+    งานที่ถูกยกเลิกจึงยังถูกทำความสะอาดโดยงานถัดไปได้
+  </p>
+  <p>
+    เวิร์กโฟลว์สำเร็จรูปสำหรับ GitHub Actions และ GitLab CI:
+    <a href="/th/test-files-in-ci/">วิธีสร้างไฟล์ทดสอบในไปป์ไลน์ CI</a>
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>มีหน้าต่างเดสก์ท็อปไหม</h2>
+  <p>
+    มี เป็นเอนจินเดียวกันที่มีหน้าต่างครอบอยู่ สำหรับการทดสอบที่ไม่ได้เขียนสคริปต์ ไม่ใช่ฉบับตัดทอน:
+    มีการทดสอบเปรียบเทียบสองอินเทอร์เฟซทีละความสามารถ
+    และสิ่งที่ทำได้เพียงฝั่งเดียวต้องถูกประกาศและให้เหตุผล แทนที่จะแยกจากกันไปอย่างเงียบๆ
+  </p>
+  <p>
+    หน้าจอมีชุดเดียว พรีเซ็ต หลายชุดพร้อมกัน และเกี่ยวกับ แสดงต้นทุนของการรันก่อนเขียนอะไร
+    รายงานความคืบหน้าขณะรัน และยกเลิกกลางคันได้โดยไม่ทิ้งไฟล์ที่เขียนค้างครึ่งหนึ่ง
+    ยังเปิดไฟล์สูตรไม่ได้ - ตอนนี้สูตรเป็นเรื่องของบรรทัดคำสั่ง และหน้าต่างสร้างชุดในฟอร์ม
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>

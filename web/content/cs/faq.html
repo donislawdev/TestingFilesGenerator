@@ -1,0 +1,19 @@
+<h1>Často kladené otázky</h1>
+<p class="lead">
+  Licence, soukromí, opakovatelnost a věci, které lidé ověřují, než generátor zařadí do build
+  pipeline. Pokud tu vaše otázka není, <a href="{{ .Facts.Issues }}">sledování issues</a> je
+  otevřené.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Ještě se rozhodujete?</h2>
+  <p>
+    <a href="/cs/pripady-pouziti/">Stránka případů použití</a> ukazuje úlohy, pro které je určen, a
+    <a href="/cs/formaty/">stránka formátů</a> uvádí každý formát s nejmenším souborem, který umí
+    vytvořit. <a href="{{ .Facts.Repo }}">README v repozitáři</a> je úplná reference.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

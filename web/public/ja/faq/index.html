@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ja">
+<title>FAQ - テストファイルの生成に関する質問</title>
+<meta name="description" content="ddやfsutilとの違い、ファイルをコミットしても安全か、実行結果がバイト単位で再現されるか、サイズに到達できない場合どうなるか。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="FAQ - テストファイルの生成に関する質問">
+<meta property="og:description" content="ddやfsutilとの違い、ファイルをコミットしても安全か、実行結果がバイト単位で再現されるか、サイズに到達できない場合どうなるか。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - テストファイルの生成に関する質問">
+<meta name="twitter:description" content="ddやfsutilとの違い、ファイルをコミットしても安全か、実行結果がバイト単位で再現されるか、サイズに到達できない場合どうなるか。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ja/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ja/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="メインメニュー">
+      <a href="/ja/">ホーム</a>
+      <a href="/ja/formats/">形式</a>
+      <a href="/ja/presets/">プリセット</a>
+      <a href="/ja/docs/">ドキュメント</a>
+      <a href="/ja/use-cases/">利用例</a>
+      <a href="/ja/create-file-exact-size/">正確なサイズ</a>
+      <a href="/ja/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="言語: 日本語">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>日本語</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>よくある質問</h1>
+<p class="lead">
+  ライセンス、プライバシー、再現性、そして生成ツールをビルドパイプラインに組み込む前に人々が確認すること。質問がここにない場合は、<a href="https://github.com/donislawdev/TestingFilesGenerator/issues">イシュートラッカー</a>をご利用ください。
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>ddやfsutil、truncateとは何が違いますか。</h2></summary>
+    <div class="qa-body">
+      <p>それらが作るのは、サイズだけ正しい中身のないファイルです。そうして作ったphoto.pngという2MBのファイルはPNGではないため、実際に解析するものはすべて誤った理由で拒否し、あなたのテストも誤った理由で通ります。このツールはちょうど2MBの本物のPNGを作ります。画像ビューアーで開け、システムがどう扱うべきかという宣言も付いてきます。</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>無料ですか。仕事で使えますか。</h2></summary>
+    <div class="qa-body">
+      <p>どちらも可能です。GPL-3.0で公開されており、費用はかかりません。アカウントもライセンスキーも有料プランもありません。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>生成したファイルをクローズドソースの製品で使えますか。</h2></summary>
+    <div class="qa-body">
+      <p>はい。ライセンスが対象とするのはツールのコードであり、ツールが生成するものではありません。生成されたファイル、レシピ、マニフェストは派生物ではなく出力ですので、コミットして配布しても何の義務も生じません。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>生成されたファイルに実在の個人情報は含まれますか。</h2></summary>
+    <div class="qa-body">
+      <p>いいえ。中身はすべてシードから合成されます。データセットは読み込まず、サービスにも接続せず、第三者のコンテンツも埋め込みません。生成されたメールアドレスは、未使用ではなく使用不可と見なしてください。ランダムな文字列がたまたま実在のものと一致することがあるからです。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>別のマシンでもまったく同じファイルになりますか。</h2></summary>
+    <div class="qa-body">
+      <p>はい。レシピとシードが同じなら、バイト単位で同じです。プロジェクトは変更のたびにこれをテストしており、破るにはメジャーバージョンを上げる必要があります。だからこそ、大きなバイナリのフィクスチャの代わりに小さなレシピをコミットできます。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>インターネット接続は必要ですか。</h2></summary>
+    <div class="qa-body">
+      <p>一切不要です。テレメトリも更新確認もクラウドクライアントもなく、コマンドラインのバイナリにはネットワークスタックがそもそもコンパイルされていません。ネットワークのないマシンでも、閉じた社内環境でも動きます。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>形式が到達できないサイズを要求するとどうなりますか。</h2></summary>
+    <div class="qa-body">
+      <p>形式名、可能な最小サイズ、その下限の理由、代わりにすべきことを示すエラーが返り、ファイルは書き込まれません。ツールがサイズを黙って丸めることはありません。各下限は形式ページに載っています。</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>意図的に壊れたファイルを生成できますか。</h2></summary>
+    <div class="qa-body">
+      <p>はい。--damage zero-headを加えると、ファイルは求めたとおりのサイズで、先頭のバイトがゼロで上書きされて出てきます。そのためリーダーはそれを拒否し、マニフェストにはシステムがそれを拒否すべきことが記録されます。詳細は破損したテストファイルのページにあります。</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>次に対応する形式は何ですか。</h2></summary>
+    <div class="qa-body">
+      <p>7z、mp3、mp4です。現在、26種類の形式がエンドツーエンドで動作します。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>どのOSで動かせますか。</h2></summary>
+    <div class="qa-body">
+      <p>コマンドラインは、WindowsとLinuxのIntelとARM、およびApple SiliconのMacで動作します。デスクトップウィンドウは、WindowsのIntel、LinuxのIntel、Apple SiliconのMac向けに提供されます。IntelのMacは非対応で、ビルドもされません。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>何かインストールする必要はありますか。</h2></summary>
+    <div class="qa-body">
+      <p>いいえ。お使いのOS向けのアーカイブをダウンロードして展開し、バイナリを実行するだけです。インストーラーも、追加するランタイムも、解決すべき依存関係もありません。Goをお持ちなら、go installコマンド1つでも動きます。</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>数千ファイルの実行がWindowsで遅いのはなぜですか。</h2></summary>
+    <div class="qa-body">
+      <p>Windowsは調べるパス1つあたりのコストが高く、数千ファイルを走査するコマンドは数千のパスを調べるからです。1kBのファイル3000個があるマシンで測定したところ、verifyはWindowsで約0.9秒、コンテナ内のLinuxで約0.2秒かかりました。出力パスを短くするとWindowsの数値は小さくなります。ファイルより上のフォルダーもすべて調べる対象に含まれるためです。</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "ddやfsutil、truncateとは何が違いますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "それらが作るのは、サイズだけ正しい中身のないファイルです。そうして作ったphoto.pngという2MBのファイルはPNGではないため、実際に解析するものはすべて誤った理由で拒否し、あなたのテストも誤った理由で通ります。このツールはちょうど2MBの本物のPNGを作ります。画像ビューアーで開け、システムがどう扱うべきかという宣言も付いてきます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "無料ですか。仕事で使えますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "どちらも可能です。GPL-3.0で公開されており、費用はかかりません。アカウントもライセンスキーも有料プランもありません。" }
+    },
+    {
+      "@type": "Question",
+      "name": "生成したファイルをクローズドソースの製品で使えますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "はい。ライセンスが対象とするのはツールのコードであり、ツールが生成するものではありません。生成されたファイル、レシピ、マニフェストは派生物ではなく出力ですので、コミットして配布しても何の義務も生じません。" }
+    },
+    {
+      "@type": "Question",
+      "name": "生成されたファイルに実在の個人情報は含まれますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "いいえ。中身はすべてシードから合成されます。データセットは読み込まず、サービスにも接続せず、第三者のコンテンツも埋め込みません。生成されたメールアドレスは、未使用ではなく使用不可と見なしてください。ランダムな文字列がたまたま実在のものと一致することがあるからです。" }
+    },
+    {
+      "@type": "Question",
+      "name": "別のマシンでもまったく同じファイルになりますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "はい。レシピとシードが同じなら、バイト単位で同じです。プロジェクトは変更のたびにこれをテストしており、破るにはメジャーバージョンを上げる必要があります。だからこそ、大きなバイナリのフィクスチャの代わりに小さなレシピをコミットできます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "インターネット接続は必要ですか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "一切不要です。テレメトリも更新確認もクラウドクライアントもなく、コマンドラインのバイナリにはネットワークスタックがそもそもコンパイルされていません。ネットワークのないマシンでも、閉じた社内環境でも動きます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "形式が到達できないサイズを要求するとどうなりますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "形式名、可能な最小サイズ、その下限の理由、代わりにすべきことを示すエラーが返り、ファイルは書き込まれません。ツールがサイズを黙って丸めることはありません。各下限は形式ページに載っています。" }
+    },
+    {
+      "@type": "Question",
+      "name": "意図的に壊れたファイルを生成できますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "はい。--damage zero-headを加えると、ファイルは求めたとおりのサイズで、先頭のバイトがゼロで上書きされて出てきます。そのためリーダーはそれを拒否し、マニフェストにはシステムがそれを拒否すべきことが記録されます。詳細は破損したテストファイルのページにあります。" }
+    },
+    {
+      "@type": "Question",
+      "name": "次に対応する形式は何ですか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z、mp3、mp4です。現在、26種類の形式がエンドツーエンドで動作します。" }
+    },
+    {
+      "@type": "Question",
+      "name": "どのOSで動かせますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "コマンドラインは、WindowsとLinuxのIntelとARM、およびApple SiliconのMacで動作します。デスクトップウィンドウは、WindowsのIntel、LinuxのIntel、Apple SiliconのMac向けに提供されます。IntelのMacは非対応で、ビルドもされません。" }
+    },
+    {
+      "@type": "Question",
+      "name": "何かインストールする必要はありますか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "いいえ。お使いのOS向けのアーカイブをダウンロードして展開し、バイナリを実行するだけです。インストーラーも、追加するランタイムも、解決すべき依存関係もありません。Goをお持ちなら、go installコマンド1つでも動きます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "数千ファイルの実行がWindowsで遅いのはなぜですか。",
+      "acceptedAnswer": { "@type": "Answer", "text": "Windowsは調べるパス1つあたりのコストが高く、数千ファイルを走査するコマンドは数千のパスを調べるからです。1kBのファイル3000個があるマシンで測定したところ、verifyはWindowsで約0.9秒、コンテナ内のLinuxで約0.2秒かかりました。出力パスを短くするとWindowsの数値は小さくなります。ファイルより上のフォルダーもすべて調べる対象に含まれるためです。" }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>まだ迷っていますか。</h2>
+  <p>
+    <a href="/ja/use-cases/">利用例のページ</a>では、このツールが想定する用途を、<a href="/ja/formats/">形式ページ</a>では、各形式と生成できる最小のファイルを紹介しています。<a href="https://github.com/donislawdev/TestingFilesGenerator">リポジトリのREADME</a>が完全なリファレンスです。
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">ソースコードを見る</a>
+</div>
+<p class="cta-note">無料のオープンソース、GPL-3.0。登録は不要です。WindowsとmacOS向けのダウンロードは署名済みで、警告なしで起動します。</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">プロジェクト</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHubのソースコード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">問題を報告</a></li>
+        <li><a href="https://donislawdev.com/support/">プロジェクトを支援</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">ページ</p>
+      <ul class="plain">
+        <li><a href="/ja/">ホーム</a></li>
+        <li><a href="/ja/formats/">形式</a></li>
+        <li><a href="/ja/presets/">プリセット</a></li>
+        <li><a href="/ja/docs/">ドキュメント</a></li>
+        <li><a href="/ja/use-cases/">利用例</a></li>
+        <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
+        <li><a href="/ja/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU一般公衆利用許諾契約書バージョン3の下で公開されています。生成したファイルはあなたのものです。ライセンスの対象はツールであり、その出力ではありません。</p>
+    <p class="muted">このサイトは、どこからもフォント、スクリプト、トラッカーを読み込みません。Cookieも設定しません。</p>
+  </div>
+</footer>
+</body>
+</html>

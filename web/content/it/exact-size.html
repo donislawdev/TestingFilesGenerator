@@ -1,0 +1,145 @@
+<h1>Come creare un file di dimensione esatta</h1>
+<p class="lead">
+  Ogni sistema ha un comando per farlo, e tutti e tre sono qui sotto. Ti danno un file con esattamente
+  il numero giusto di byte - e per molti test è tutto ciò che serve. <strong>Ogni comando di questa
+  pagina è stato eseguito prima della pubblicazione</strong>, sul sistema a cui appartiene.
+</p>
+
+<div class="note">
+  <p class="note-title">La risposta breve</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Le dimensioni sono in byte, e 10 MB
+    contati come li conta il tuo file manager sono 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, e una versione PowerShell che non richiede nulla di extra</h2>
+  <p>
+    <code>fsutil</code> è incluso in Windows. Prende la dimensione <strong>in byte</strong>, quindi
+    calcola prima il numero - 10 MB sono 10485760, 100 MB sono 104857600, 1 GB è 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Misurato su Windows 11: funziona da un prompt normale senza richiederne uno con privilegi elevati, e
+    il file esce di esattamente 10485760 byte.
+  </p>
+  <p>PowerShell può fare lo stesso senza chiamare un altro programma, e capisce le unità:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> in PowerShell significa 10485760 byte, lo stesso conteggio in base 1024 che usa
+    Esplora risorse, quindi i due comandi qui sopra producono la stessa dimensione.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate e fallocate, e la differenza che frega le persone</h2>
+  <p><code>dd</code> è quello che conoscono tutti. Scrive davvero i byte:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> è istantaneo, ed è questa la trappola. Misurato su Alpine Linux, il file
+    riporta 10485760 byte e occupa <strong>zero blocchi</strong> - è un <strong>file
+    sparso</strong>. Qualsiasi cosa lo legga ottiene dieci megabyte di zeri, ma il disco non ha mai
+    ceduto lo spazio:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Va bene per testare un limite di upload ed è fuorviante per testare una quota di disco.
+    <code>fallocate</code> è quello da usare quando lo spazio deve essere reale:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>E quando il contenuto deve essere incomprimibile, così un archiviatore non può ridurlo di nuovo:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, che non è sparso, e i due che conosci già</h2>
+  <p>
+    macOS include <code>mkfile</code>. Misurato su macOS 26.6.2: 10485760 byte e 20480 blocchi, quindi
+    lo spazio è davvero allocato invece che promesso:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p>Ci sono anche <code>dd</code> e <code>truncate</code>, e si comportano come su Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Dove questo smette di funzionare</p>
+  <h2>Un file della dimensione giusta non è un file del tipo giusto</h2>
+  <p>
+    Tutto quanto sopra ti dà un blocco di zeri. Basta quando ciò che è sotto test guarda solo la
+    dimensione - un limite di upload, una quota, un trasferimento. Smette di bastare nel momento in
+    cui qualcosa <strong>apre</strong> il file.
+  </p>
+  <p>
+    Misurato, e vale la pena provarlo di persona: crea un file da 2 MB con <code>fsutil</code>, chiamalo
+    <code>photo.png</code> e passalo a una libreria di immagini. Pillow risponde <code>cannot
+    identify image file</code>. Non è un PNG. Non lo è mai stato - lo diceva solo il nome.
+  </p>
+  <p>
+    Conta più di quanto sembri, per via di <strong>come il test fallisce a quel punto</strong>. Il tuo
+    endpoint di upload rifiuta il file, il tuo test diventa verde e concludi che il limite di
+    dimensione funziona. Non lo ha rifiutato per la dimensione. Lo ha rifiutato perché i byte non
+    erano un'immagine, e la regola che volevi testare non è mai stata raggiunta.
+  </p>
+  <ul class="ticks">
+    <li>un parser lo rifiuta prima che venga guardata qualsiasi regola di dimensione</li>
+    <li>un passaggio di miniatura fallisce e l'errore che leggi riguarda la miniatura</li>
+    <li>un antivirus o un controllo del contenuto lo rifiuta per un terzo motivo</li>
+    <li>un visualizzatore non mostra nulla, e nessuno sa dire se sia quello il bug</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">L'altra strada</p>
+  <h2>Un file reale di quel formato, della dimensione esatta che hai chiesto</h2>
+  <p>
+    È ciò che fa Testing Files Generator. Il file è un vero file del suo formato - si apre nel programma
+    che gli appartiene - e ha l'esatto numero di byte che hai chiesto, al byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Chiedi una dimensione che un formato non può raggiungere e ottieni un errore che nomina il minimo e
+    il suo motivo, mai un file della dimensione sbagliata. La <a href="/it/formati/">pagina dei
+    formati</a> elenca ogni formato con il file più piccolo che può produrre.
+  </p>
+  <p>E un limite sono tre casi di test anziché uno, quindi lo strumento li costruisce tutti e tre:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Ti dà 10485759, 10485760 e 10485761 byte, e un manifest che dice quali il tuo sistema deve accettare
+    e quali rifiutare. La <a href="/it/casi-d-uso/">pagina dei casi d'uso</a> ripercorre questo e
+    altri quattro compiti per cui è pensato.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Quindi, quale usare?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Usa il comando di sistema</p>
+      <p class="muted">
+        Quando nulla apre il file. Testare un limite di dimensione su un endpoint che controlla prima la
+        dimensione, un trasferimento, una quota, un disco pieno. È una riga ed è già installato.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Usa un generatore vero</p>
+      <p class="muted">
+        Quando qualcosa analizza, renderizza, importa o estrae il file - e quando ti servono le stesse
+        fixture domani, su un'altra macchina, byte per byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Entrambi sono su questa pagina perché entrambi hanno ragione una parte del tempo. L'errore da
+    evitare è usare il primo dove serve il secondo e leggere il test verde come una prova.
+  </p>
+</section>

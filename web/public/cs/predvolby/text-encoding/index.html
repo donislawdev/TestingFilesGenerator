@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Testovací soubory kódování textu - UTF-8, UTF-16, BOM, CRLF</title>
+<meta name="description" content="Stejný text v UTF-8, UTF-16LE a UTF-16BE, s označením pořadí bajtů i bez něj, a konce řádků CR LF a LF, k ověření, jak čtečka dekóduje text.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/text-encoding/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/text-encoding/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/text-encoding/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/text-encoding/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/text-encoding/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/text-encoding/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/text-encoding/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/text-encoding/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/text-encoding/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/text-encoding/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/text-encoding/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/text-encoding/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/text-encoding/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/text-encoding/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/text-encoding/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/text-encoding/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/text-encoding/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/text-encoding/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/text-encoding/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Testovací soubory kódování textu - UTF-8, UTF-16, BOM, CRLF">
+<meta property="og:description" content="Stejný text v UTF-8, UTF-16LE a UTF-16BE, s označením pořadí bajtů i bez něj, a konce řádků CR LF a LF, k ověření, jak čtečka dekóduje text.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Testovací soubory kódování textu - UTF-8, UTF-16, BOM, CRLF">
+<meta name="twitter:description" content="Stejný text v UTF-8, UTF-16LE a UTF-16BE, s označením pořadí bajtů i bez něj, a konce řádků CR LF a LF, k ověření, jak čtečka dekóduje text.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Předvolby",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/predvolby\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Kódování textu",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/predvolby\/text-encoding\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/" aria-current="true">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/text-encoding/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/text-encoding/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/de/presets/text-encoding/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/text-encoding/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/text-encoding/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/text-encoding/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/text-encoding/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/text-encoding/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/text-encoding/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/text-encoding/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/text-encoding/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/text-encoding/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/text-encoding/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/text-encoding/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/text-encoding/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/presets/text-encoding/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/hazir-ayarlar/text-encoding/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/text-encoding/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/text-encoding/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/text-encoding/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/text-encoding/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/cs/predvolby/">Předvolby</a></p>
+<h1>Kódování textu</h1>
+<p class="lead">Ví moje čtečka, v jakém kódování soubor je, nebo hádá?</p>
+<p>
+  Předvolba <code>text-encoding</code> sestaví jediným příkazem celou sadu skutečných testovacích souborů
+  pro tuto otázku a vedle nich <code>manifest.json</code>, který říká, jak má váš systém na každý
+  soubor reagovat. Vše níže se čte z programu při výchozích hodnotách této verze.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Co obvykle najde?</h2>
+  <ul class="ticks">
+    <li>čtečka, která předpokládá UTF-8 a zobrazí soubor UTF-16 jako každý třetí znak nebo jako řady čtverečků</li>
+    <li>označení pořadí bajtů přečtené jako obsah, takže první pole importu začíná třemi cizími znaky</li>
+    <li>importér, který hádá kódování z prvních bajtů a u delšího souboru hádá jinak</li>
+    <li>soubor CRLF rozdělený na řádky s prázdným řádkem za každým, nebo návrat vozíku zůstávající v posledním poli</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Co je v sadě?</h2>
+  <p>Při výchozích hodnotách, jak je hlásí <code>tfg preset show text-encoding</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Soubory</th><td>20</td></tr>
+        <tr><th scope="row">Targety v receptu</th><td>20</td></tr>
+        <tr><th scope="row">Celková velikost</th><td>81 920 B</td></tr>
+        <tr><th scope="row">Formáty</th><td>csv, log, md, txt, xml</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A co od vašeho systému očekává manifest té sady:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Očekáváno</th><th>Význam</th><th class="num">Soubory</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Váš systém má soubor přijmout.</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>Záleží na pravidlech vašeho systému. Rozhodnete vy, a pak ověříte, že to, co se stane, je to, co jste chtěli.</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Co můžete změnit?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Nastavení</th><th>Přijímá</th><th>Výchozí</th><th>Co dělá</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sample</code></td>
+          <td>velikost, například 2mb</td>
+          <td><code>4kb</code></td>
+          <td>Jak velký je každý soubor sady. UTF-16 ukládá dva bajty na znak, takže lichý počet je odmítnut.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Jak ji spustit?</h2>
+  <p>Podívejte se, kolik by sada stála, sestavte ji, nebo si vezměte její recept k úpravě:</p>
+  <pre><code>tfg preset show text-encoding
+tfg generate --preset text-encoding --out ./text-encoding
+tfg preset eject text-encoding &gt; text-encoding.yaml</code></pre>
+  <p>Nebo na ní stavte ve vlastním receptu vedle svých testů:</p>
+  <pre><code>version: 1
+extends: preset:text-encoding</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

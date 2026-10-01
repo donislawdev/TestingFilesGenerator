@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="id">
+<title>FAQ - Pertanyaan tentang Membuat File Uji</title>
+<meta name="description" content="Apa bedanya dengan dd dan fsutil, apakah file aman di-commit, apakah hasil run sama byte demi byte, dan apa yang terjadi bila ukuran tak tercapai.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="FAQ - Pertanyaan tentang Membuat File Uji">
+<meta property="og:description" content="Apa bedanya dengan dd dan fsutil, apakah file aman di-commit, apakah hasil run sama byte demi byte, dan apa yang terjadi bila ukuran tak tercapai.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - Pertanyaan tentang Membuat File Uji">
+<meta name="twitter:description" content="Apa bedanya dengan dd dan fsutil, apakah file aman di-commit, apakah hasil run sama byte demi byte, dan apa yang terjadi bila ukuran tak tercapai.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/id/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Lompat ke konten</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/id/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Utama">
+      <a href="/id/">Beranda</a>
+      <a href="/id/format/">Format</a>
+      <a href="/id/preset/">Preset</a>
+      <a href="/id/dokumentasi/">Dokumentasi</a>
+      <a href="/id/kasus-penggunaan/">Kasus Penggunaan</a>
+      <a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a>
+      <a href="/id/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Bahasa: Bahasa Indonesia">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Bahasa Indonesia</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Pertanyaan yang sering diajukan</h1>
+<p class="lead">
+  Lisensi, privasi, reproduksibilitas, dan hal-hal yang diperiksa orang sebelum memasukkan generator
+  ke pipeline build. Bila pertanyaan Anda tidak ada di sini, <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">pelacak
+  isu</a> terbuka.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Apa bedanya dengan dd, fsutil, atau truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Perintah itu memberi Anda file berukuran benar yang berisi kekosongan. File 2 MB bernama photo.png yang dibuat begitu bukanlah PNG, sehingga apa pun yang benar-benar mem-parsing-nya akan menolaknya karena alasan yang salah, dan pengujian Anda pun lolos karena alasan yang salah juga. Alat ini menghasilkan PNG asli berukuran tepat 2 MB yang terbuka di penampil gambar, dan disertai pernyataan tentang bagaimana sistem Anda harus memperlakukannya.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apakah gratis, dan bisakah saya pakai di tempat kerja?</h2></summary>
+    <div class="qa-body">
+      <p>Ya untuk keduanya. Dirilis di bawah GPL-3.0 dan tidak berbayar. Tidak ada akun, kunci lisensi, atau tingkat berbayar.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bisakah saya memakai file yang dihasilkan dalam produk closed source?</h2></summary>
+    <div class="qa-body">
+      <p>Bisa. Lisensi mencakup kode alatnya, bukan apa yang dihasilkan alat itu. File, resep, dan manifes yang dihasilkan adalah keluaran, bukan karya turunan, sehingga Anda dapat meng-commit dan mendistribusikannya tanpa kewajiban apa pun.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apakah file yang dihasilkan berisi data pribadi sungguhan?</h2></summary>
+    <div class="qa-body">
+      <p>Tidak. Semua isinya disintesis dari sebuah seed. Tidak ada dataset yang dibaca, tidak ada layanan yang dihubungi, dan tidak ada konten pihak ketiga yang disematkan. Perlakukan alamat e-mail yang dihasilkan sebagai tidak dapat dipakai, bukan sekadar belum dipakai, karena string acak apa pun bisa kebetulan sama dengan alamat sungguhan.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apakah saya akan mendapat file yang persis sama di mesin lain?</h2></summary>
+    <div class="qa-body">
+      <p>Ya, byte demi byte, dengan resep dan seed yang sama. Proyek ini mengujinya pada setiap perubahan, dan melanggarnya memerlukan kenaikan versi mayor. Itulah yang memungkinkan Anda meng-commit resep kecil alih-alih fixture biner besar.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apakah memerlukan koneksi internet?</h2></summary>
+    <div class="qa-body">
+      <p>Tidak pernah. Tidak ada telemetri, pemeriksaan pembaruan, atau klien cloud, dan biner baris perintah sama sekali tidak memiliki stack jaringan yang dikompilasi di dalamnya. Alat ini berjalan di mesin tanpa jaringan dan di lingkungan korporat yang tertutup.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apa yang terjadi bila saya meminta ukuran yang tidak dapat dicapai suatu format?</h2></summary>
+    <div class="qa-body">
+      <p>Anda mendapat galat yang menyebut format, ukuran terkecilnya, alasan batas bawah itu, dan apa yang harus dilakukan sebagai gantinya, dan tidak ada file yang ditulis. Alat ini tidak pernah membulatkan ukuran secara diam-diam. Setiap batas bawah tercantum di halaman format.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bisakah saya membuat file yang sengaja dirusak?</h2></summary>
+    <div class="qa-body">
+      <p>Ya. Tambahkan --damage zero-head dan file keluar dengan ukuran tepat seperti yang diminta, dengan byte pertamanya ditimpa nol, sehingga pembaca menolaknya, dan manifes menyatakan sistem Anda harus menolaknya. Rinciannya ada di halaman tentang file uji yang rusak.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Format apa yang akan hadir berikutnya?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3, dan mp4. Saat ini 26 format bekerja dari ujung ke ujung.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Di sistem apa saya bisa menjalankannya?</h2></summary>
+    <div class="qa-body">
+      <p>Baris perintah berjalan di Windows dan Linux pada Intel maupun ARM, dan di Mac Apple Silicon. Jendela desktop disediakan untuk Windows di Intel, Linux di Intel, dan Mac Apple Silicon. Mac Intel tidak didukung dan tidak ada build untuknya.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Apakah saya harus menginstal sesuatu?</h2></summary>
+    <div class="qa-body">
+      <p>Tidak. Unduh arsip untuk sistem Anda, ekstrak, dan jalankan binernya. Tidak ada installer, tidak ada runtime yang harus ditambahkan, dan tidak ada dependensi yang harus diselesaikan. Bila Anda punya Go, satu perintah go install juga bisa.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Mengapa run atas ribuan file lebih lambat di Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Karena Windows membebankan lebih banyak untuk setiap path yang diperiksanya, dan perintah yang menelusuri ribuan file memeriksa ribuan path. Diukur di satu mesin dengan 3000 file berukuran 1 kB, verify memakan sekitar 0,9 detik di Windows dan sekitar 0,2 detik di Linux dalam container. Path keluaran yang lebih pendek memperkecil angka Windows, karena setiap folder di atas file ikut diperiksa.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Apa bedanya dengan dd, fsutil, atau truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Perintah itu memberi Anda file berukuran benar yang berisi kekosongan. File 2 MB bernama photo.png yang dibuat begitu bukanlah PNG, sehingga apa pun yang benar-benar mem-parsing-nya akan menolaknya karena alasan yang salah, dan pengujian Anda pun lolos karena alasan yang salah juga. Alat ini menghasilkan PNG asli berukuran tepat 2 MB yang terbuka di penampil gambar, dan disertai pernyataan tentang bagaimana sistem Anda harus memperlakukannya." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah gratis, dan bisakah saya pakai di tempat kerja?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ya untuk keduanya. Dirilis di bawah GPL-3.0 dan tidak berbayar. Tidak ada akun, kunci lisensi, atau tingkat berbayar." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bisakah saya memakai file yang dihasilkan dalam produk closed source?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Bisa. Lisensi mencakup kode alatnya, bukan apa yang dihasilkan alat itu. File, resep, dan manifes yang dihasilkan adalah keluaran, bukan karya turunan, sehingga Anda dapat meng-commit dan mendistribusikannya tanpa kewajiban apa pun." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah file yang dihasilkan berisi data pribadi sungguhan?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tidak. Semua isinya disintesis dari sebuah seed. Tidak ada dataset yang dibaca, tidak ada layanan yang dihubungi, dan tidak ada konten pihak ketiga yang disematkan. Perlakukan alamat e-mail yang dihasilkan sebagai tidak dapat dipakai, bukan sekadar belum dipakai, karena string acak apa pun bisa kebetulan sama dengan alamat sungguhan." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah saya akan mendapat file yang persis sama di mesin lain?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ya, byte demi byte, dengan resep dan seed yang sama. Proyek ini mengujinya pada setiap perubahan, dan melanggarnya memerlukan kenaikan versi mayor. Itulah yang memungkinkan Anda meng-commit resep kecil alih-alih fixture biner besar." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah memerlukan koneksi internet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tidak pernah. Tidak ada telemetri, pemeriksaan pembaruan, atau klien cloud, dan biner baris perintah sama sekali tidak memiliki stack jaringan yang dikompilasi di dalamnya. Alat ini berjalan di mesin tanpa jaringan dan di lingkungan korporat yang tertutup." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apa yang terjadi bila saya meminta ukuran yang tidak dapat dicapai suatu format?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Anda mendapat galat yang menyebut format, ukuran terkecilnya, alasan batas bawah itu, dan apa yang harus dilakukan sebagai gantinya, dan tidak ada file yang ditulis. Alat ini tidak pernah membulatkan ukuran secara diam-diam. Setiap batas bawah tercantum di halaman format." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bisakah saya membuat file yang sengaja dirusak?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ya. Tambahkan --damage zero-head dan file keluar dengan ukuran tepat seperti yang diminta, dengan byte pertamanya ditimpa nol, sehingga pembaca menolaknya, dan manifes menyatakan sistem Anda harus menolaknya. Rinciannya ada di halaman tentang file uji yang rusak." }
+    },
+    {
+      "@type": "Question",
+      "name": "Format apa yang akan hadir berikutnya?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3, dan mp4. Saat ini 26 format bekerja dari ujung ke ujung." }
+    },
+    {
+      "@type": "Question",
+      "name": "Di sistem apa saya bisa menjalankannya?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Baris perintah berjalan di Windows dan Linux pada Intel maupun ARM, dan di Mac Apple Silicon. Jendela desktop disediakan untuk Windows di Intel, Linux di Intel, dan Mac Apple Silicon. Mac Intel tidak didukung dan tidak ada build untuknya." }
+    },
+    {
+      "@type": "Question",
+      "name": "Apakah saya harus menginstal sesuatu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tidak. Unduh arsip untuk sistem Anda, ekstrak, dan jalankan binernya. Tidak ada installer, tidak ada runtime yang harus ditambahkan, dan tidak ada dependensi yang harus diselesaikan. Bila Anda punya Go, satu perintah go install juga bisa." }
+    },
+    {
+      "@type": "Question",
+      "name": "Mengapa run atas ribuan file lebih lambat di Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Karena Windows membebankan lebih banyak untuk setiap path yang diperiksanya, dan perintah yang menelusuri ribuan file memeriksa ribuan path. Diukur di satu mesin dengan 3000 file berukuran 1 kB, verify memakan sekitar 0,9 detik di Windows dan sekitar 0,2 detik di Linux dalam container. Path keluaran yang lebih pendek memperkecil angka Windows, karena setiap folder di atas file ikut diperiksa." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Masih menimbang?</h2>
+  <p>
+    <a href="/id/kasus-penggunaan/">Halaman kasus penggunaan</a> menunjukkan pekerjaan yang untuknya
+    alat ini dibuat, dan <a href="/id/format/">halaman format</a> mencantumkan setiap format beserta
+    file terkecil yang dapat dibuatnya. <a href="https://github.com/donislawdev/TestingFilesGenerator">README di repositori</a> adalah
+    referensi lengkap.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduh</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Lihat kode sumber</a>
+</div>
+<p class="cta-note">Gratis dan open source, GPL-3.0. Tanpa pendaftaran. Unduhan Windows dan macOS sudah ditandatangani dan berjalan tanpa peringatan.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyek</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kode sumber di GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduhan</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Laporkan masalah</a></li>
+        <li><a href="https://donislawdev.com/support/">Dukung proyek ini</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Halaman</p>
+      <ul class="plain">
+        <li><a href="/id/">Beranda</a></li>
+        <li><a href="/id/format/">Format</a></li>
+        <li><a href="/id/preset/">Preset</a></li>
+        <li><a href="/id/dokumentasi/">Dokumentasi</a></li>
+        <li><a href="/id/kasus-penggunaan/">Kasus Penggunaan</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a></li>
+        <li><a href="/id/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Dirilis di bawah Lisensi Publik Umum GNU versi 3. File yang Anda buat adalah milik Anda - lisensi mencakup alatnya, bukan keluarannya.</p>
+    <p class="muted">Situs ini tidak memuat font, skrip, atau pelacak dari mana pun. Situs ini tidak memasang cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

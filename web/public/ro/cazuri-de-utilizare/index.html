@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ro">
+<title>Cazuri de utilizare - limite de încărcare, fixture-uri, teste</title>
+<meta name="description" content="Testarea unei limite de dimensiune la încărcare, fixture-uri reproductibile pentru CI, zece mii de fișiere generate și arhive umplute cu conținut real.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/use-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/use-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/use-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/use-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/use-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="Cazuri de utilizare - limite de încărcare, fixture-uri, teste">
+<meta property="og:description" content="Testarea unei limite de dimensiune la încărcare, fixture-uri reproductibile pentru CI, zece mii de fișiere generate și arhive umplute cu conținut real.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cazuri de utilizare - limite de încărcare, fixture-uri, teste">
+<meta name="twitter:description" content="Testarea unei limite de dimensiune la încărcare, fixture-uri reproductibile pentru CI, zece mii de fișiere generate și arhive umplute cu conținut real.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Acasă",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ro/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Cazuri de utilizare",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/cazuri-de-utilizare\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ro/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/ro/">Acasă</a>
+      <a href="/ro/formate/">Formate</a>
+      <a href="/ro/presetari/">Presetări</a>
+      <a href="/ro/documentatie/">Documentație</a>
+      <a href="/ro/cazuri-de-utilizare/" aria-current="page">Cazuri de utilizare</a>
+      <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
+      <a href="/ro/intrebari-frecvente/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Limba: Română">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Română</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/use-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/use-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/use-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/use-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ru/use-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/use-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/use-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/use-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/use-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Pentru ce îl folosesc oamenii</h1>
+<p class="lead">
+  Cinci sarcini care apar în aproape orice proiect care primește fișiere de la oameni și comanda care
+  face fiecare. Fiecare exemplu de mai jos rulează așa cum e scris.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limite de încărcare</p>
+  <h2>Testarea dacă o limită de dimensiune a fișierelor este aplicată acolo unde spune că este</h2>
+  <p>
+    O limită înseamnă trei cazuri de test, nu unul: puțin sub, exact pe ea și puțin peste. Să le faci de
+    mână înseamnă să calculezi numere de octeți și să speri că n-ai greșit cu unu. Cere în schimb
+    setul:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Primești trei PDF-uri reale de 1048575, 1048576 și 1048577 de octeți și un manifest care spune că
+    primele două trebuie acceptate, iar al treilea respins pentru <code>size_limit</code>. Testul
+    tău citește așteptarea în loc să scrii tu trei asertări de mână - iar când limita se schimbă,
+    schimbi un număr și rulezi din nou.
+  </p>
+  <p>
+    La fel merge fără presetare când vrei un singur set de limite inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integrare continuă</p>
+  <h2>Ținerea fixture-urilor în afara repository-ului fără a le pierde</h2>
+  <p>
+    Fixture-urile binare mari fac un repository lent la clonare și incomod la revizuire, și nimeni nu
+    poate spune ce s-a schimbat când una e înlocuită. O rețetă este câteva sute de caractere de YAML
+    care reconstruiesc fișierele identice - <strong>octet cu octet, pe orice mașină</strong> -
+    pentru că fiecare fișier derivă din seed-ul rulării.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Fiecare final are propriul cod de ieșire, așa că un pipeline poate deosebi o rețetă proastă de un
+    disc plin și de o nepotrivire la verificare. O rulare eșuată nu tipărește nimic la ieșirea
+    standard, ceea ce împiedică un parser de jurnale să citească o eroare drept date.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Scară</p>
+  <h2>Aflarea a ce se întâmplă când folderul e mare</h2>
+  <p>
+    Rutinele de import, joburile de noapte și listările de directoare se comportă altfel la zece mii de
+    fișiere decât la zece. Dimensiunile extrase dintr-un interval fac setul să semene cu trafic
+    real, nu cu zece mii de fișiere identice, iar extragerea vine din seed, deci setul e același
+    mâine.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Verifică cât ar costa o rulare înainte să scrie ceva, ceea ce contează când totalul se măsoară în
+    gigaocteți:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    O rulare mai mare decât spațiul liber de pe disc este refuzată înainte de a se scrie primul octet,
+    în loc să umple discul și să eșueze pe la jumătate.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arhive</p>
+  <h2>Testarea unui dezarhivator cu o arhivă care conține cu adevărat fișiere</h2>
+  <p>
+    O arhivă goală cu extensia potrivită nu dovedește nimic despre codul care o deschide și parcurge ce
+    e înăuntru. Declară conținutul și arhiva îl conține cu adevărat:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Adâncimea de imbricare, numărul de intrări și dimensiunea a ce e înăuntru sunt toate lucruri despre
+    care o rutină de import are păreri, iar așa afli care sunt acele păreri.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsere și vizualizatoare</p>
+  <h2>Verificarea că propriul tău cod citește un format cum o face software-ul real</h2>
+  <p>
+    Fiecare format de aici este verificat cu un cititor independent înainte de livrare - un PNG este
+    deschis și pixelii lui comparați, un DOCX este recitit de biblioteci separate, o arhivă este
+    extrasă. Asta înseamnă că un fișier pe care parserul tău îl respinge este o constatare despre
+    parserul tău, nu despre generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/ro/formate/">Pagina de formate</a> listează setările pe care le acceptă fiecare format și
+    cel mai mic fișier posibil pentru fiecare.
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">Ghiduri</p>
+  <h2>Două dintre ele mai în detaliu</h2>
+  <ul>
+    <li>
+      <a href="/ro/fisiere-de-test-corupte/">Fișiere de test corupte</a> - un fișier stricat intenționat,
+      de mărime exactă, cu ce trebuie să se întâmple cu el scris în manifest.
+    </li>
+    <li>
+      <a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a> - un workflow GitHub Actions, un job
+      GitLab și codurile de ieșire care fac un build să eșueze.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>Pentru cine este</h2>
+  <p>
+    Ingineri QA, automatizarea testelor și oricine are în spatele codului un formular de încărcare, o
+    rutină de import, un parser sau o cotă de stocare. Rulează pe o mașină fără nicio rețea, ceea ce
+    contează într-un mediu corporativ închis unde un generator din browser nu e o opțiune.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descarcă</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Vezi codul sursă</a>
+</div>
+<p class="cta-note">Gratuit și open source, GPL-3.0. Fără cont. Descărcările pentru Windows și macOS sunt semnate și pornesc fără avertisment.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proiect</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Cod sursă pe GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descărcări</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Raportează o problemă</a></li>
+        <li><a href="https://donislawdev.com/support/">Susține proiectul</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagini</p>
+      <ul class="plain">
+        <li><a href="/ro/">Acasă</a></li>
+        <li><a href="/ro/formate/">Formate</a></li>
+        <li><a href="/ro/presetari/">Presetări</a></li>
+        <li><a href="/ro/documentatie/">Documentație</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
+        <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.</p>
+    <p class="muted">Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>SSS - test dosyası üretimi hakkında sorular</title>
+<meta name="description" content="dd ve fsutil&#39;den farkı, dosyaların commit edilip edilemeyeceği, çalıştırmaların bayt bayt tekrar edip etmediği ve bir boyuta ulaşılamadığında ne olduğu.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="SSS - test dosyası üretimi hakkında sorular">
+<meta property="og:description" content="dd ve fsutil&#39;den farkı, dosyaların commit edilip edilemeyeceği, çalıştırmaların bayt bayt tekrar edip etmediği ve bir boyuta ulaşılamadığında ne olduğu.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SSS - test dosyası üretimi hakkında sorular">
+<meta name="twitter:description" content="dd ve fsutil&#39;den farkı, dosyaların commit edilip edilemeyeceği, çalıştırmaların bayt bayt tekrar edip etmediği ve bir boyuta ulaşılamadığında ne olduğu.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "SSS",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/sss\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
+      <a href="/tr/sss/" aria-current="page">SSS</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Sık sorulan sorular</h1>
+<p class="lead">
+  Lisans, gizlilik, tekrarlanabilirlik ve insanların bir üreticiyi derleme hattına koymadan önce
+  denetlediği şeyler. Sorunuz burada yoksa <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">sorun takipçisi</a> açık.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>dd, fsutil veya truncate&#39;ten farkı nedir?</h2></summary>
+    <div class="qa-body">
+      <p>Onlar size doğru boyutta, içi bomboş bir dosya verir. Bu şekilde yapılmış photo.png adlı 2 MB&#39;lık bir dosya PNG değildir, bu yüzden onu gerçekten ayrıştıran her şey yanlış nedenle reddeder ve testiniz de yanlış nedenle geçer. Bu araç tam 2 MB&#39;lık gerçek bir PNG üretir, resim görüntüleyicide açılır ve sisteminizin onu nasıl ele alması gerektiğine dair bir bildirimle gelir.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Ücretsiz mi, ve işte kullanabilir miyim?</h2></summary>
+    <div class="qa-body">
+      <p>İkisi de evet. GPL-3.0 altında yayımlanır ve hiçbir şeye mal olmaz. Hesap, lisans anahtarı veya ücretli katman yoktur.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Üretilen dosyaları kapalı kaynaklı bir üründe kullanabilir miyim?</h2></summary>
+    <div class="qa-body">
+      <p>Evet. Lisans aracın kodunu kapsar, aracın ürettiğini değil. Üretilen dosyalar, tarifler ve manifestler türev eser değil çıktıdır, bu yüzden hiçbir yükümlülük olmadan commit edip dağıtabilirsiniz.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Üretilen dosyalar gerçek kişisel veri içeriyor mu?</h2></summary>
+    <div class="qa-body">
+      <p>Hayır. İçindeki her şey bir seed&#39;den sentezlenir. Hiçbir veri kümesi okunmaz, hiçbir servise bağlanılmaz ve üçüncü taraf içeriği gömülmez. Üretilmiş bir e-posta adresini kullanılmamış değil kullanılamaz sayın, çünkü rastgele bir dize tesadüfen gerçek biriyle çakışabilir.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Başka bir makinede tam olarak aynı dosyaları alır mıyım?</h2></summary>
+    <div class="qa-body">
+      <p>Evet, aynı tarif ve aynı seed ile bayt bayt. Proje bunu her değişiklikte test eder ve bozmak büyük sürüm artışı gerektirir. Büyük ikili fixture&#39;lar yerine küçük bir tarifi commit etmenizi sağlayan da budur.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>İnternet bağlantısı gerekiyor mu?</h2></summary>
+    <div class="qa-body">
+      <p>Asla. Telemetri, güncelleme denetimi veya bulut istemcisi yoktur ve komut satırı ikilisinin içine hiç ağ yığını derlenmemiştir. Ağı olmayan bir makinede ve kapalı bir kurumsal ortamda çalışır.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bir biçimin ulaşamayacağı bir boyut istersem ne olur?</h2></summary>
+    <div class="qa-body">
+      <p>Biçimi, olabilecek en küçük boyutu, bu alt sınırın nedenini ve bunun yerine ne yapılacağını söyleyen bir hata alırsınız ve hiçbir dosya yazılmaz. Araç bir boyutu asla sessizce yuvarlamaz. Her alt sınır biçimler sayfasında listelenir.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Kasıtlı olarak bozuk bir dosya üretebilir miyim?</h2></summary>
+    <div class="qa-body">
+      <p>Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Sırada hangi biçimler var?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 ve mp4. Bugün 26 biçim uçtan uca çalışıyor.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Hangi sistemlerde çalıştırabilirim?</h2></summary>
+    <div class="qa-body">
+      <p>Komut satırı Windows ve Linux&#39;ta hem Intel hem ARM üzerinde, ayrıca Apple Silicon Mac&#39;lerde çalışır. Masaüstü penceresi Intel üzerinde Windows, Intel üzerinde Linux ve Apple Silicon Mac&#39;ler için sunulur. Intel Mac&#39;ler desteklenmez ve onlar için hiçbir şey derlenmez.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bir şey kurmam gerekiyor mu?</h2></summary>
+    <div class="qa-body">
+      <p>Hayır. Sisteminiz için arşivi indirin, açın ve ikiliyi çalıştırın. Yükleyici, eklenecek bir çalışma zamanı veya çözülecek bir bağımlılık yoktur. Go&#39;nuz varsa tek bir go install komutu da işe yarar.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Binlerce dosya üzerindeki çalıştırma Windows&#39;ta neden daha yavaş?</h2></summary>
+    <div class="qa-body">
+      <p>Çünkü Windows baktığı her yol için daha fazla bedel ister ve binlerce dosyayı dolaşan bir komut binlerce yola bakar. Her biri 1 kB&#39;lık 3000 dosyalı bir makinede ölçüldü: verify Windows&#39;ta yaklaşık 0,9 saniye, bir konteynerdeki Linux&#39;ta yaklaşık 0,2 saniye sürer. Daha kısa bir çıktı yolu Windows rakamını küçültür, çünkü dosyaların üstündeki her klasör bakılanın parçasıdır.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "dd, fsutil veya truncate\u0027ten farkı nedir?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Onlar size doğru boyutta, içi bomboş bir dosya verir. Bu şekilde yapılmış photo.png adlı 2 MB\u0027lık bir dosya PNG değildir, bu yüzden onu gerçekten ayrıştıran her şey yanlış nedenle reddeder ve testiniz de yanlış nedenle geçer. Bu araç tam 2 MB\u0027lık gerçek bir PNG üretir, resim görüntüleyicide açılır ve sisteminizin onu nasıl ele alması gerektiğine dair bir bildirimle gelir." }
+    },
+    {
+      "@type": "Question",
+      "name": "Ücretsiz mi, ve işte kullanabilir miyim?",
+      "acceptedAnswer": { "@type": "Answer", "text": "İkisi de evet. GPL-3.0 altında yayımlanır ve hiçbir şeye mal olmaz. Hesap, lisans anahtarı veya ücretli katman yoktur." }
+    },
+    {
+      "@type": "Question",
+      "name": "Üretilen dosyaları kapalı kaynaklı bir üründe kullanabilir miyim?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Evet. Lisans aracın kodunu kapsar, aracın ürettiğini değil. Üretilen dosyalar, tarifler ve manifestler türev eser değil çıktıdır, bu yüzden hiçbir yükümlülük olmadan commit edip dağıtabilirsiniz." }
+    },
+    {
+      "@type": "Question",
+      "name": "Üretilen dosyalar gerçek kişisel veri içeriyor mu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Hayır. İçindeki her şey bir seed\u0027den sentezlenir. Hiçbir veri kümesi okunmaz, hiçbir servise bağlanılmaz ve üçüncü taraf içeriği gömülmez. Üretilmiş bir e-posta adresini kullanılmamış değil kullanılamaz sayın, çünkü rastgele bir dize tesadüfen gerçek biriyle çakışabilir." }
+    },
+    {
+      "@type": "Question",
+      "name": "Başka bir makinede tam olarak aynı dosyaları alır mıyım?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Evet, aynı tarif ve aynı seed ile bayt bayt. Proje bunu her değişiklikte test eder ve bozmak büyük sürüm artışı gerektirir. Büyük ikili fixture\u0027lar yerine küçük bir tarifi commit etmenizi sağlayan da budur." }
+    },
+    {
+      "@type": "Question",
+      "name": "İnternet bağlantısı gerekiyor mu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Asla. Telemetri, güncelleme denetimi veya bulut istemcisi yoktur ve komut satırı ikilisinin içine hiç ağ yığını derlenmemiştir. Ağı olmayan bir makinede ve kapalı bir kurumsal ortamda çalışır." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bir biçimin ulaşamayacağı bir boyut istersem ne olur?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Biçimi, olabilecek en küçük boyutu, bu alt sınırın nedenini ve bunun yerine ne yapılacağını söyleyen bir hata alırsınız ve hiçbir dosya yazılmaz. Araç bir boyutu asla sessizce yuvarlamaz. Her alt sınır biçimler sayfasında listelenir." }
+    },
+    {
+      "@type": "Question",
+      "name": "Kasıtlı olarak bozuk bir dosya üretebilir miyim?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır." }
+    },
+    {
+      "@type": "Question",
+      "name": "Sırada hangi biçimler var?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 ve mp4. Bugün 26 biçim uçtan uca çalışıyor." }
+    },
+    {
+      "@type": "Question",
+      "name": "Hangi sistemlerde çalıştırabilirim?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Komut satırı Windows ve Linux\u0027ta hem Intel hem ARM üzerinde, ayrıca Apple Silicon Mac\u0027lerde çalışır. Masaüstü penceresi Intel üzerinde Windows, Intel üzerinde Linux ve Apple Silicon Mac\u0027ler için sunulur. Intel Mac\u0027ler desteklenmez ve onlar için hiçbir şey derlenmez." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bir şey kurmam gerekiyor mu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Hayır. Sisteminiz için arşivi indirin, açın ve ikiliyi çalıştırın. Yükleyici, eklenecek bir çalışma zamanı veya çözülecek bir bağımlılık yoktur. Go\u0027nuz varsa tek bir go install komutu da işe yarar." }
+    },
+    {
+      "@type": "Question",
+      "name": "Binlerce dosya üzerindeki çalıştırma Windows\u0027ta neden daha yavaş?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Çünkü Windows baktığı her yol için daha fazla bedel ister ve binlerce dosyayı dolaşan bir komut binlerce yola bakar. Her biri 1 kB\u0027lık 3000 dosyalı bir makinede ölçüldü: verify Windows\u0027ta yaklaşık 0,9 saniye, bir konteynerdeki Linux\u0027ta yaklaşık 0,2 saniye sürer. Daha kısa bir çıktı yolu Windows rakamını küçültür, çünkü dosyaların üstündeki her klasör bakılanın parçasıdır." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Hâlâ karar vermediniz mi?</h2>
+  <p>
+    <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları sayfası</a> aracın yapıldığı işleri
+    gösterir, <a href="/tr/bicimler/">biçimler sayfası</a> her biçimi üretebildiği en küçük dosyayla
+    listeler. <a href="https://github.com/donislawdev/TestingFilesGenerator">Depodaki README</a> tam başvurudur.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndir</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Kaynak kodu görüntüle</a>
+</div>
+<p class="cta-note">Ücretsiz ve açık kaynak, GPL-3.0. Kayıt gerekmez. Windows ve macOS indirmeleri imzalıdır ve uyarı vermeden başlar.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

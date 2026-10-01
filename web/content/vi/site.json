@@ -1,0 +1,328 @@
+{
+  "code": "vi",
+  "locale": "vi_VN",
+  "name": "Tiếng Việt",
+  "dir": "vi",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Trang chủ",
+      "title": "Trình tạo tệp kiểm thử cho QA - kích thước chính xác, {{ .Facts.FormatCount }} định dạng",
+      "description": "Trình tạo tệp kiểm thử miễn phí, mã nguồn mở cho QA. Tệp PDF, DOCX, PNG, ZIP thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng."
+    },
+    {
+      "key": "formats",
+      "slug": "dinh-dang",
+      "nav": "Định dạng",
+      "title": "{{ .Facts.FormatCount }} định dạng tệp được hỗ trợ - PDF, DOCX, PNG, ZIP và hơn nữa",
+      "description": "Mọi định dạng tệp mà trình tạo này tạo ra, tệp nhỏ nhất có thể của mỗi định dạng và các thiết lập nó nhận. Cả {{ .Facts.FormatCount }} đều mở được bằng phần mềm của chúng."
+    },
+    {
+      "key": "presets",
+      "slug": "preset",
+      "nav": "Preset",
+      "title": "Preset tệp kiểm thử - bộ tệp dựng sẵn cho câu hỏi QA",
+      "description": "Các bộ tệp kiểm thử dựng sẵn, mỗi bộ trả lời một câu hỏi kiểm thử: giới hạn tải lên, tên tệp, mã hóa, nhập bảng, tệp rỗng và kiểm tra hợp lệ."
+    },
+    {
+      "key": "docs",
+      "slug": "tai-lieu",
+      "nav": "Tài liệu",
+      "title": "Tài liệu - lệnh, công thức, manifest, mã thoát",
+      "description": "Cách tạo tệp kiểm thử từ dòng lệnh hoặc công thức YAML, manifest chứa gì và mỗi mã thoát có nghĩa gì khi công cụ chạy trong CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "truong-hop-su-dung",
+      "nav": "Trường hợp sử dụng",
+      "title": "Trường hợp sử dụng - giới hạn tải lên, fixture CI, kiểm thử",
+      "description": "Kiểm thử giới hạn kích thước tải lên, dựng fixture tái lập được cho CI, tạo mười nghìn tệp và nhồi nội dung thật vào tệp nén."
+    },
+    {
+      "key": "exact-size",
+      "slug": "tao-tep-kich-thuoc-chinh-xac",
+      "nav": "Kích thước chính xác",
+      "title": "Cách tạo tệp có kích thước chính xác - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate và mkfile, mỗi lệnh được đo trên hệ thống của nó, và vì sao tệp tạo kiểu đó không phải PDF hay PNG khi bài kiểm thử cần."
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "FAQ",
+      "title": "FAQ - câu hỏi về việc tạo tệp kiểm thử",
+      "description": "Khác gì dd và fsutil, tệp có commit an toàn không, các lần chạy có giống từng byte không và chuyện gì xảy ra khi không đạt được kích thước."
+    },
+    {
+      "key": "damage",
+      "slug": "tep-kiem-thu-bi-hong",
+      "nav": "Tệp bị hỏng",
+      "title": "Tệp kiểm thử bị hỏng - tệp hỏng đúng kích thước",
+      "description": "Một tệp cố ý làm hỏng, đúng kích thước, với manifest nói hệ thống của bạn phải từ chối nó. Để kiểm thử xác thực tải lên và trình phân tích cú pháp.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "tep-kiem-thu-trong-ci",
+      "nav": "Tệp kiểm thử trong CI",
+      "title": "Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell",
+      "description": "Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.",
+      "parent": "use-cases"
+    }
+  ],
+  "words": {
+    "skip": "Chuyển đến nội dung",
+    "navLabel": "Chính",
+    "langLabel": "Ngôn ngữ",
+    "breadcrumbHome": "Trang chủ",
+    "imageAlt": "Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp",
+    "schemaDescription": "Trình tạo tệp kiểm thử miễn phí, mã nguồn mở cho QA. Nó tạo tệp thật ở {{ .Facts.FormatCount }} định dạng, đúng kích thước, và ghi manifest nêu cách hệ thống được kiểm thử cần phản ứng với từng tệp.",
+    "ctaDownload": "Tải xuống",
+    "ctaSource": "Xem mã nguồn",
+    "ctaNote": "Miễn phí, mã nguồn mở, GPL-3.0. Không cần đăng ký. Bản tải cho Windows và macOS đã được ký nên khởi động không cảnh báo.",
+    "colFormat": "Định dạng",
+    "colName": "Tên",
+    "colExtension": "Phần mở rộng",
+    "colSmallest": "Tệp nhỏ nhất",
+    "colFidelity": "Độ đầy đủ",
+    "colChecked": "Kiểm tra bằng",
+    "colSetting": "Thiết lập",
+    "colAccepts": "Chấp nhận",
+    "colSystem": "Hệ thống",
+    "colCli": "Dòng lệnh",
+    "colWindow": "Cửa sổ desktop",
+    "noBinary": "chưa có bản nhị phân",
+    "colCode": "Mã",
+    "colMeaning": "Ý nghĩa",
+    "footerBlurb": "Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.",
+    "footerProject": "Dự án",
+    "footerSource": "Mã nguồn trên GitHub",
+    "footerReleases": "Tải xuống",
+    "footerIssues": "Báo lỗi",
+    "footerSupport": "Ủng hộ dự án",
+    "footerPages": "Trang",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.",
+    "footerPrivacy": "Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.",
+    "notFoundTitle": "Trang này không có ở đây",
+    "notFoundLead": "Địa chỉ bạn vừa theo không khớp với trang nào trên trang web này.",
+    "notFoundBack": "Về trang chủ",
+    "read.format": "Định dạng của mọi tệp trong bộ. Đây là một cờ của chính công cụ, và preset chỉ cho nó một giá trị mặc định.",
+    "readTakes.format": "id định dạng từ trang định dạng",
+    "colDamage": "Hỏng hóc",
+    "colEffect": "Nó làm gì với các byte",
+    "colSettings": "Cài đặt",
+    "noSettings": "không có"
+  },
+  "endings": {
+    "0": "Mọi thứ đều chạy tốt.",
+    "1": "Lỗi bất ngờ bên trong công cụ.",
+    "2": "Lệnh hoặc cờ sai.",
+    "3": "Công thức không hợp lệ.",
+    "4": "Định dạng không làm được điều được yêu cầu.",
+    "5": "Đọc hoặc ghi thất bại.",
+    "6": "Không đủ dung lượng đĩa.",
+    "7": "verify phát hiện sai lệch.",
+    "8": "Lần chạy đã xong nhưng không phải mọi thứ đều được tạo.",
+    "130": "Bị ngắt bằng Ctrl+C.",
+    "143": "Bị dừng bởi một tín hiệu, đó là hình dạng của việc CI hết thời gian."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Một tệp hợp lệ và nhỏ nhất mà định dạng cho phép có qua được không?",
+      "title": "Rỗng và tối thiểu",
+      "pageTitle": "Tệp kiểm thử hợp lệ nhỏ nhất và tệp rỗng ở mọi định dạng",
+      "description": "Tệp hợp lệ nhỏ nhất mà công cụ ghi ở mỗi trong {{ .Facts.FormatCount }} định dạng, cộng tệp rỗng nơi định dạng cho phép, mỗi tệp kèm phản ứng cần có.",
+      "catches": [
+        "tệp hợp lệ bị từ chối vì quá nhỏ, khi bước kiểm tra đếm byte thay vì đọc chúng",
+        "tệp rỗng làm trình đọc sập thay vì được báo cáo",
+        "ảnh rộng một pixel chia cho không trên đường tạo ảnh thu nhỏ",
+        "bộ lưu trữ đọc không byte như một lần tải lên thất bại và cứ thử lại mãi"
+      ],
+      "details": {
+        "formats": "Bộ được dựng từ những định dạng nào. Để all cho mọi định dạng của bản dựng này, hoặc nêu những định dạng hệ thống của bạn chấp nhận."
+      }
+    },
+    "filename-handling": {
+      "question": "Hệ thống của tôi có lưu, hiển thị và trả lại một tên tệp mà nó không ngờ tới không?",
+      "title": "Xử lý tên tệp",
+      "pageTitle": "Tên tệp gây rắc rối để kiểm thử - Unicode và độ dài",
+      "description": "Tệp có tên làm hỏng việc tải lên và lưu trữ: chữ viết khác và emoji, đảo chiều văn bản, ký tự vô hình, cú pháp shell và SQL, giới hạn độ dài.",
+      "catches": [
+        "một tên trông như tên khác trên màn hình, trong nhật ký hoặc trong danh sách",
+        "một tên bị cắt, xén hoặc viết lại giữa lúc tải lên và lưu trữ",
+        "giới hạn độ dài tính bằng ký tự trong khi bộ lưu trữ tính bằng byte"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Giới hạn kích thước có được áp dụng đúng nơi nó được khai báo không?",
+      "title": "Ranh giới kích thước",
+      "pageTitle": "Kiểm thử giới hạn kích thước tải lên - tệp đúng ranh giới",
+      "description": "Tệp thấp hơn một byte, đúng bằng và cao hơn một byte so với giới hạn hệ thống bạn khai báo, cùng các bước rộng hơn hai phía, mỗi tệp đánh dấu có nên được chấp nhận.",
+      "catches": [
+        "lỗi lệch một ở giới hạn",
+        "nhầm MB với MiB, tức 4,8 phần trăm và đủ để lọt một tệp lẽ ra không được qua",
+        "giới hạn được áp dụng ở trình duyệt chứ không phải ở máy chủ"
+      ],
+      "details": {
+        "limit": "Giới hạn kích thước mà hệ thống của bạn khai báo. Mọi thứ khác được đo từ đó.",
+        "spread": "Vươn ra xa bao nhiêu về hai phía của giới hạn, dưới dạng danh sách kích thước."
+      }
+    },
+    "tabular-import": {
+      "question": "Việc nhập bảng của tôi có chịu được những gì công cụ thật xuất ra không?",
+      "title": "Nhập bảng",
+      "pageTitle": "Tệp kiểm thử nhập CSV và Excel - dấu phân cách, tiêu đề",
+      "description": "CSV với dấu phân cách khác, kết thúc dòng CR LF, không tiêu đề và dấu trích dẫn khác, bảng rất rộng, sổ làm việc Excel và JSON ở vài bố cục.",
+      "catches": [
+        "tệp dùng dấu chấm phẩy bị đọc thành một cột, vì dấu phân cách được giả định thay vì được dò tìm",
+        "tệp CRLF bị tách thành các dòng với một dòng trống sau mỗi dòng",
+        "bảng không có tiêu đề mà dòng dữ liệu đầu bị nuốt làm tên cột",
+        "lần nhập giữ các cột nó hiển thị được và lặng lẽ bỏ phần còn lại",
+        "trình đọc lấy bản ghi JSON từng dòng một và dừng ở tài liệu thụt lề đầu tiên"
+      ],
+      "details": {
+        "rows": "Bảng tính có bao nhiêu dòng. Tệp được ghi đúng bằng kích thước mà chừng đó dòng đóng gói thành, nên ngân sách ở trên dịch chuyển theo giá trị này.",
+        "columns": "Mỗi dòng của bảng tính có bao nhiêu cột. Số dòng nhân số cột có trần, và yêu cầu vượt trần sẽ bị từ chối trước khi ghi bất cứ thứ gì."
+      }
+    },
+    "text-encoding": {
+      "question": "Trình đọc của tôi có biết tệp ở mã hóa nào, hay chỉ đoán?",
+      "title": "Mã hóa văn bản",
+      "pageTitle": "Tệp kiểm thử mã hóa văn bản - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Cùng một văn bản ở UTF-8, UTF-16LE và UTF-16BE, có và không có dấu thứ tự byte, cùng kết thúc dòng CR LF và LF, để kiểm thử cách trình đọc giải mã.",
+      "catches": [
+        "trình đọc giả định UTF-8 và hiện tệp UTF-16 thành cứ ba ký tự mới có một, hoặc thành hàng ô vuông",
+        "dấu thứ tự byte bị đọc như nội dung, nên trường đầu tiên của lần nhập bắt đầu bằng ba ký tự lạ",
+        "trình nhập đoán mã hóa từ các byte đầu và đoán khác đi với tệp dài hơn",
+        "tệp CRLF bị tách thành các dòng với một dòng trống sau mỗi dòng, hoặc ký tự xuống dòng còn sót trong trường cuối"
+      ],
+      "details": {
+        "sample": "Mỗi tệp trong bộ lớn bao nhiêu. UTF-16 lưu hai byte cho mỗi ký tự, nên số lẻ bị từ chối."
+      }
+    },
+    "upload-validation": {
+      "question": "Biểu mẫu tải lên của tôi có nhận đúng thứ nó cần và từ chối phần còn lại không?",
+      "title": "Kiểm tra tải lên",
+      "pageTitle": "Tệp kiểm thử kiểm tra tải lên - loại, kích thước và tên",
+      "description": "Tệp để kiểm thử biểu mẫu tải lên: loại được phép và bị cấm, nội dung không khớp phần mở rộng, giới hạn kích thước, tên độc hại và tải lên hàng loạt.",
+      "catches": [
+        "giới hạn được áp dụng ở trình duyệt chứ không phải ở máy chủ",
+        "tệp SVG hoặc HTML bị tưởng là ảnh hay văn bản thuần, một cách để lách tập lệnh qua biểu mẫu",
+        "tệp chỉ được kiểm bằng phần mở rộng mà không bao giờ mở, nên PDF đặt tên .jpg vẫn qua",
+        "biểu mẫu đọc cả phần thân vào bộ nhớ trước khi xem nó lớn đến đâu",
+        "lần tải lên tên PHOTO.JPG bị từ chối trong khi photo.jpg được nhận, hoặc ngược lại",
+        "tên có dấu cách, ngoặc hoặc ký tự ngoài ASCII được ghi xuống đĩa không thay đổi"
+      ],
+      "details": {
+        "limit": "Giới hạn kích thước mà biểu mẫu tải lên của bạn khai báo. Bộ này đi một bước về mỗi phía - muốn tệp ở mọi khoảng cách, hãy chạy preset size-boundaries.",
+        "allow": "Biểu mẫu của bạn nên chấp nhận những loại nào. Mỗi loại trở thành một tệp thật thuộc loại đó, và chúng là đối chứng dương của cả bộ.",
+        "deny": "Biểu mẫu của bạn nên từ chối những phần mở rộng nào. Phần mở rộng mà bản dựng này không có định dạng vẫn nhận một tệp mang tên đó, chứa văn bản thuần.",
+        "far-over": "Tệp lớn duy nhất vượt giới hạn bao xa. Tắt đi nếu ghi gấp nhiều lần giới hạn không đáng với dung lượng đĩa.",
+        "bulk": "Số tệp trong lần tải lên hàng loạt. Bằng không thì bỏ hẳn nhóm đó khỏi bộ."
+      }
+    }
+  },
+  "commands": {
+    "generate": "tạo tệp, từ công thức hoặc từ các cờ",
+    "validate": "kiểm tra công thức và không ghi gì cả",
+    "verify": "kiểm tra một thư mục đối chiếu với manifest",
+    "cleanup": "xóa các tệp mà manifest liệt kê",
+    "recipe fmt": "in công thức ở dạng chuẩn hóa",
+    "preset": "dựng một bộ tệp từ một câu hỏi kiểm thử có tên",
+    "formats": "liệt kê các định dạng bản dựng này hỗ trợ",
+    "damage": "liệt kê các cách bản dựng này có thể cố ý làm hỏng một tệp",
+    "tool": "các tiện ích nhỏ cho tệp bạn đã có",
+    "version": "in phiên bản công cụ",
+    "license": "in giấy phép và ý nghĩa của nó với tệp được tạo"
+  },
+  "outcomes": {
+    "accept": "Hệ thống của bạn nên nhận tệp.",
+    "reject": "Hệ thống của bạn nên từ chối tệp.",
+    "sanitize": "Hệ thống của bạn nên nhận tệp và làm sạch nó, ví dụ bằng cách đổi tên.",
+    "unspecified": "Tùy vào quy tắc của hệ thống bạn. Bạn quyết định, rồi kiểm tra điều xảy ra có đúng ý bạn không."
+  },
+  "damages": {
+    "zero-head": "Ghi đè các byte đầu của tệp bằng số không, giữ nguyên độ dài. Hầu hết trình đọc nhìn vào đó trước, nên gần như mọi thứ đều nhận ra hỏng hóc này."
+  },
+  "terms": {
+    "oracleNone": "không áp dụng",
+    "int": "số nguyên bất kỳ",
+    "choice": "một trong một tập cố định",
+    "bool": "đúng hoặc sai",
+    "size": "kích thước như 2mb",
+    "text": "văn bản",
+    "pixels": "pixel",
+    "paragraphs": "đoạn văn",
+    "rows": "dòng",
+    "columns": "cột",
+    "slides": "trang chiếu",
+    "hertz": "hertz",
+    "megapixels": "megapixel",
+    "million cells": "triệu ô",
+    "entries per second": "mục mỗi giây",
+    "files": "tệp",
+    "sizes separated by commas": "các kích thước cách nhau bằng dấu phẩy",
+    "format ids separated by commas": "các id định dạng cách nhau bằng dấu phẩy",
+    "format ids separated by commas, or all": "các id định dạng cách nhau bằng dấu phẩy, hoặc all",
+    "extensions separated by commas": "các phần mở rộng cách nhau bằng dấu phẩy",
+    "the id of a format, as tfg formats lists them": "id của một định dạng, như tfg formats liệt kê",
+    "the password, in plain text": "mật khẩu, ở dạng văn bản thuần",
+    "any text": "văn bản bất kỳ",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "ngày như 2024-02-29 hoặc 2024-02-29T13:45:00+02:00, hoặc none"
+  },
+  "faq": [
+    {
+      "q": "Điều này khác gì dd, fsutil hay truncate?",
+      "a": "Chúng cho bạn một tệp đúng kích thước nhưng đầy sự trống rỗng. Tệp 2 MB tên photo.png tạo kiểu đó không phải PNG, nên bất cứ thứ gì thực sự phân tích nó sẽ từ chối vì lý do sai, và bài kiểm thử của bạn cũng qua vì lý do sai. Công cụ này tạo ra một PNG thật đúng 2 MB, mở được trong trình xem ảnh, và đi kèm lời khai về cách hệ thống của bạn cần xử lý nó.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Nó có miễn phí không, và tôi dùng ở chỗ làm được không?",
+      "a": "Có cho cả hai. Nó phát hành theo GPL-3.0 và không tốn gì. Không có tài khoản, khóa giấy phép hay gói trả phí."
+    },
+    {
+      "q": "Tôi có dùng tệp được tạo trong sản phẩm mã nguồn đóng được không?",
+      "a": "Được. Giấy phép áp dụng cho mã của công cụ, không áp dụng cho thứ công cụ tạo ra. Tệp, công thức và manifest được tạo là đầu ra chứ không phải tác phẩm phái sinh, nên bạn có thể commit và phân phối mà không có nghĩa vụ nào."
+    },
+    {
+      "q": "Tệp được tạo có chứa dữ liệu cá nhân thật không?",
+      "a": "Không. Mọi thứ bên trong đều được tổng hợp từ một seed. Không có tập dữ liệu nào được đọc, không dịch vụ nào được liên hệ và không nội dung bên thứ ba nào được nhúng. Hãy coi địa chỉ e-mail được tạo là không dùng được thay vì chưa dùng, vì chuỗi ngẫu nhiên nào cũng có thể ngẫu nhiên trùng với địa chỉ thật."
+    },
+    {
+      "q": "Tôi có nhận đúng các tệp giống hệt trên máy khác không?",
+      "a": "Có, từng byte, với cùng công thức và cùng seed. Dự án kiểm thử điều đó ở mỗi thay đổi, và phá vỡ nó đòi hỏi tăng phiên bản chính. Đó là điều cho phép bạn commit một công thức nhỏ thay vì các fixture nhị phân lớn."
+    },
+    {
+      "q": "Nó có cần kết nối internet không?",
+      "a": "Không bao giờ. Không có telemetry, không kiểm tra cập nhật và không có máy khách đám mây, và bản nhị phân dòng lệnh hoàn toàn không biên dịch sẵn ngăn xếp mạng. Nó chạy trên máy không có mạng và trong môi trường doanh nghiệp đóng."
+    },
+    {
+      "q": "Chuyện gì xảy ra nếu tôi yêu cầu kích thước mà một định dạng không thể đạt tới?",
+      "a": "Bạn nhận một lỗi nêu định dạng, kích thước nhỏ nhất có thể, lý do của mức sàn đó và việc nên làm thay thế, và không có tệp nào được ghi. Công cụ không bao giờ làm tròn kích thước một cách lặng lẽ. Mỗi mức sàn đều được liệt kê trên trang định dạng.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Tôi có thể tạo một tệp cố ý bị hỏng không?",
+      "a": "Có. Thêm --damage zero-head và tệp ra đúng kích thước bạn yêu cầu, với các byte đầu bị ghi đè bằng số không, nên trình đọc từ chối nó, và manifest nói hệ thống của bạn phải từ chối nó. Chi tiết nằm ở trang về tệp kiểm thử bị hỏng.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
+    },
+    {
+      "q": "Những định dạng nào sắp có?",
+      "a": "7z, mp3 và mp4. Hôm nay có {{ .Facts.FormatCount }} định dạng hoạt động trọn vẹn từ đầu đến cuối."
+    },
+    {
+      "q": "Tôi chạy nó trên những hệ thống nào?",
+      "a": "Dòng lệnh chạy trên Windows và Linux cả Intel lẫn ARM, và trên Mac Apple Silicon. Cửa sổ desktop được cung cấp cho Windows trên Intel, Linux trên Intel và Mac Apple Silicon. Mac Intel không được hỗ trợ và không có gì được dựng cho chúng."
+    },
+    {
+      "q": "Tôi có phải cài gì không?",
+      "a": "Không. Tải kho lưu trữ cho hệ thống của bạn, giải nén và chạy bản nhị phân. Không có trình cài đặt, không có runtime cần thêm và không có phụ thuộc cần giải quyết. Nếu bạn có Go, một lệnh go install duy nhất cũng được.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Vì sao chạy trên hàng nghìn tệp chậm hơn trên Windows?",
+      "a": "Vì Windows tính phí nhiều hơn cho mỗi đường dẫn nó xem, và một lệnh duyệt hàng nghìn tệp xem hàng nghìn đường dẫn. Đo trên một máy với 3000 tệp 1 kB, verify mất khoảng 0,9 giây trên Windows và khoảng 0,2 giây trên Linux trong container. Đường dẫn đầu ra ngắn hơn làm con số Windows nhỏ đi, vì mỗi thư mục phía trên các tệp đều nằm trong thứ được xem."
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+<h1>Wofür Leute es einsetzen</h1>
+<p class="lead">
+  Fünf Aufgaben, die in fast jedem Projekt vorkommen, das Dateien von Menschen annimmt, und der
+  Befehl, der jede erledigt. Jedes Beispiel unten läuft so, wie es geschrieben steht.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Upload-Limits</p>
+  <h2>Testen, ob ein Dateigrößenlimit dort durchgesetzt wird, wo es angegeben ist</h2>
+  <p>
+    Ein Limit sind drei Testfälle, nicht einer: knapp darunter, genau darauf und knapp darüber. Die von
+    Hand zu bekommen heißt, Byte-Zahlen auszurechnen und zu hoffen, dass man sich nicht um eins
+    verzählt hat. Fordere stattdessen das Set an:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Du bekommst drei echte PDFs mit 1048575, 1048576 und 1048577 Bytes und ein Manifest, das sagt, dass
+    die ersten beiden akzeptiert und die dritte wegen <code>size_limit</code> abgelehnt werden soll.
+    Dein Test liest die Erwartung, statt dass du drei Assertions von Hand schreibst - und wenn sich
+    das Limit ändert, änderst du eine Zahl und startest neu.
+  </p>
+  <p>
+    Dasselbe geht ohne Preset, wenn du ein einzelnes Grenzen-Set inline willst:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Continuous Integration</p>
+  <h2>Fixtures aus dem Repository heraushalten, ohne sie zu verlieren</h2>
+  <p>
+    Große binäre Fixtures machen ein Repository langsam beim Klonen und mühsam beim Review, und niemand
+    sieht, was sich geändert hat, wenn eine ersetzt wird. Ein Rezept sind ein paar hundert Zeichen
+    YAML, die die identischen Dateien neu erzeugen - <strong>Byte für Byte, auf jedem
+    Rechner</strong> - weil jede Datei aus dem Seed des Laufs abgeleitet wird.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Jedes Ende hat einen eigenen Exit-Code, sodass eine Pipeline ein schlechtes Rezept von einem vollen
+    Datenträger und von einer Abweichung bei der Prüfung unterscheiden kann. Ein fehlgeschlagener
+    Lauf gibt nichts auf der Standardausgabe aus, wodurch ein Log-Parser einen Fehler nicht als
+    Daten liest.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Skalierung</p>
+  <h2>Herausfinden, was passiert, wenn der Ordner groß ist</h2>
+  <p>
+    Importroutinen, nächtliche Jobs und Verzeichnislisten verhalten sich bei zehntausend Dateien anders
+    als bei zehn. Aus einem Bereich gezogene Größen lassen das Set wie echten Datenverkehr aussehen
+    statt wie zehntausend identische Dateien, und die Ziehung kommt aus dem Seed, das Set ist also
+    morgen dasselbe.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Prüfe, was ein Lauf kosten würde, bevor er etwas schreibt, was zählt, wenn die Summe in Gigabyte
+    gemessen wird:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Ein Lauf, der größer ist als der freie Platz auf dem Datenträger, wird vor dem ersten geschriebenen
+    Byte abgelehnt, statt den Datenträger zu füllen und auf halbem Weg zu scheitern.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archive</p>
+  <h2>Einen Entpacker mit einem Archiv testen, das wirklich Dateien enthält</h2>
+  <p>
+    Ein leeres Archiv mit der richtigen Endung beweist nichts über Code, der es öffnet und durchläuft,
+    was darin ist. Deklariere den Inhalt, und das Archiv enthält ihn wirklich:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Verschachtelungstiefe, Eintragszahlen und die Größe dessen, was darin liegt, sind alles Dinge, zu
+    denen eine Importroutine Meinungen hat, und so findest du heraus, welche das sind.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parser und Viewer</p>
+  <h2>Prüfen, dass dein eigener Code ein Format so liest wie echte Software</h2>
+  <p>
+    Jedes Format hier wird vor der Auslieferung mit einem unabhängigen Leser geprüft - ein PNG wird
+    geöffnet und seine Pixel verglichen, ein DOCX von separaten Bibliotheken zurückgelesen, ein
+    Archiv entpackt. Das heißt, eine Datei, die dein Parser abweist, ist ein Befund über deinen
+    Parser, nicht über den Generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    Die <a href="/de/formate/">Formate-Seite</a> listet die Einstellungen jedes Formats und die kleinste
+    Datei auf, die es sein kann.
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">Anleitungen</p>
+  <h2>Zwei davon im Detail</h2>
+  <ul>
+    <li>
+      <a href="/de/beschaedigte-testdateien/">Beschädigte Testdateien</a> - eine absichtlich kaputte Datei
+      in exakter Größe, mit dem Manifest als Angabe, was mit ihr geschehen soll.
+    </li>
+    <li>
+      <a href="/de/testdateien-in-ci/">Testdateien in CI</a> - ein GitHub-Actions-Workflow, ein GitLab-Job
+      und die Exit-Codes, die einen Build scheitern lassen.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>Für wen das gedacht ist</h2>
+  <p>
+    QA-Engineers, Testautomatisierung und alle, deren Code ein Upload-Formular, eine Importroutine,
+    einen Parser oder ein Speicherkontingent hinter sich hat. Es läuft auf einem Rechner ganz ohne
+    Netz, was in einer abgeschotteten Unternehmensumgebung zählt, wo ein browserbasierter Generator
+    keine Option ist.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

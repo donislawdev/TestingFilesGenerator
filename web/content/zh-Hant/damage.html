@@ -1,0 +1,150 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>如何製作用於測試的損毀檔案</h1>
+<p class="lead">
+  一個只見過完好檔案的驗證器，並沒有真正被測試過。以下說明如何取得一個刻意弄壞的檔案：它的大小<strong>恰好就是你要求的大小</strong>，並附帶一份清單，說明你的系統該如何處理它。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> 會寫出一個恰好 2097152
+    位元組的 PNG，它開頭的幾個位元組是零，旁邊的清單則記錄你的系統應該拒絕它。
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">常見做法</p>
+  <h2>為什麼手工弄壞的檔案不是好測試</h2>
+  <p>
+    常見做法是用十六進位編輯器、用指令碼翻轉幾個隨機位元組，或用 <code>head</code> 或 <code>truncate</code> 把檔案截短。這些做法能用一次，之後就要付出代價：
+  </p>
+  <ul>
+    <li>
+      <strong>每次都不一樣。</strong>隨機位元組每次執行都落在新的位置，所以週二出現的失敗，週三可能不再出現。
+    </li>
+    <li>
+      <strong>它會改變大小。</strong>被截短的檔案比它本應低於的限制還要小，於是大小檢查先於內容檢查給出回答，測試因為錯誤的原因而通過。
+    </li>
+    <li>
+      <strong>它常常沒被發現。</strong>純文字中間改了一個位元組仍然可以讀，寬容的影像讀取器只會照樣畫出來，於是本該損毀的檔案被接受了。
+    </li>
+    <li>
+      <strong>它沒有說明應該發生什麼。</strong>檔案只是一堆位元組，之後讀這個測試的人只能猜測當初想要的是接受還是拒絕。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">你會得到什麼</p>
+  <h2>損毀的檔案仍然是你要求的大小</h2>
+  <p>
+    檔案先正常產生，再在寫入磁碟的途中被弄壞。它保持你要求的大小，同一個指令再次寫出的位元組也完全相同。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    設定寫在冒號之後。該選項可以重複，損毀依你寫下的順序逐一套用。它適用於全部 {{ .Facts.FormatCount }} 種格式。
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">它能做什麼</p>
+  <h2>有哪些損毀方式？</h2>
+  <p>
+    這是程式印出的清單，在建置本頁時從程式中讀取。<code>tfg damage</code> 印出的是同一份清單，<code>tfg damage &lt;id&gt;</code>
+    則說明其中某一項接受什麼設定。
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code>
+    把檔案開頭寫成零。大多數讀取器最先看的就是那裡，也就是說明檔案是什麼的簽章和檔頭，所以幾乎任何讀取器都會發現。純文字和日誌沒有簽章，同樣會被拒絕，因為一串零位元組不是文字。低於四個位元組時，有些格式產生的損毀沒有任何讀取器會抱怨，這就是該設定從四開始的原因。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">清單怎麼說</p>
+  <h2>一份說明應發生什麼的清單</h2>
+  <p>
+    每個損毀的檔案都會得到一筆記錄，說明你的系統應該拒絕它，損毀方式記在旁邊：
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    有兩種請求會在寫入任何內容之前被拒絕，因為各自都會在磁碟上留下一個清單描述有誤的檔案：
+  </p>
+  <ul>
+    <li>比損毀所需更小的檔案，它會原樣輸出</li>
+    <li>
+      在損毀旁邊寫 <code>expected: accept</code>，因為沒有什麼能滿足它。如果你的系統本應修復檔案，請寫
+      <code>sanitize</code>，如果你要問的恰恰就是這一點，請寫 <code>unspecified</code>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">在配方中</p>
+  <h2>一次執行中的完好檔案和損毀檔案</h2>
+  <p>
+    把兩者放進同一個配方，清單就帶有每個檔案的預期，測試因此不需要一份說明哪個是哪個的列表：
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在測試中</p>
+  <h2>把它變成測試</h2>
+  <p>
+    測試讀取清單，檢查實際發生的是否就是所宣告的。它不需要檔名列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    好的拒絕是乾淨的拒絕。一則說明錯在哪裡的訊息，就是你想要的答案。伺服器錯誤、卡死或只儲存了一半的檔案，正是這個測試要找出來的缺陷。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/presets/upload-validation/">upload-validation 預設集</a>向表單提出另外兩個問題，即大小和類型。
+    </li>
+    <li>
+      <a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a>會在流程裡執行這樣的配方。
+    </li>
+    <li>
+      <a href="/zh-hant/docs/#damage">文件</a>包含 <code>tfg generate</code> 的每個選項。
+    </li>
+  </ul>
+</section>

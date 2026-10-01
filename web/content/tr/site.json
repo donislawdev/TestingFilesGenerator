@@ -1,0 +1,328 @@
+{
+  "code": "tr",
+  "locale": "tr_TR",
+  "name": "Türkçe",
+  "dir": "tr",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Ana sayfa",
+      "title": "QA için test dosyası oluşturucu - tam boyut, {{ .Facts.FormatCount }} gerçek biçim",
+      "description": "QA için ücretsiz, açık kaynaklı test dosyası oluşturucu. Tam boyutta gerçek PDF, DOCX, PNG ve ZIP dosyaları ve sisteminizin tepkisini söyleyen bir manifest."
+    },
+    {
+      "key": "formats",
+      "slug": "bicimler",
+      "nav": "Biçimler",
+      "title": "{{ .Facts.FormatCount }} desteklenen dosya biçimi - PDF, DOCX, PNG, ZIP ve daha fazlası",
+      "description": "Üretilen tüm biçimler, her birinin mümkün olan en küçük dosyası ve kabul ettiği ayarlar. {{ .Facts.FormatCount }} biçimin hepsi kendi programında açılır."
+    },
+    {
+      "key": "presets",
+      "slug": "hazir-ayarlar",
+      "nav": "Hazır ayarlar",
+      "title": "Test dosyası hazır ayarları - QA için hazır setler",
+      "description": "Hazır test dosyası setleri, her biri tek bir test sorusunu yanıtlar: yükleme sınırları, dosya adları, kodlamalar, tablo içe aktarma, boş dosyalar ve doğrulama."
+    },
+    {
+      "key": "docs",
+      "slug": "dokumantasyon",
+      "nav": "Dokümantasyon",
+      "title": "Dokümantasyon - komutlar, tarifler, manifest, çıkış kodları",
+      "description": "Komut satırından veya bir YAML tarifinden test dosyası nasıl üretilir, manifestin içeriği ve araç CI içinde çalışırken her çıkış kodunun anlamı."
+    },
+    {
+      "key": "use-cases",
+      "slug": "kullanim-senaryolari",
+      "nav": "Kullanım senaryoları",
+      "title": "Kullanım senaryoları - yükleme sınırları, CI fixture'ları, testler",
+      "description": "Yükleme boyut sınırını test etmek, CI için tekrarlanabilir fixture'lar kurmak, on bin dosya üretmek ve arşivleri gerçek içerikle doldurmak."
+    },
+    {
+      "key": "exact-size",
+      "slug": "tam-boyutta-dosya-olusturma",
+      "nav": "Tam boyut",
+      "title": "Belirli boyutta dosya oluşturma - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate ve mkfile, her biri kendi sisteminde ölçüldü, ve bir test PDF veya PNG gerektirdiğinde bu yolla yapılan dosyanın neden onlar olmadığı."
+    },
+    {
+      "key": "faq",
+      "slug": "sss",
+      "nav": "SSS",
+      "title": "SSS - test dosyası üretimi hakkında sorular",
+      "description": "dd ve fsutil'den farkı, dosyaların commit edilip edilemeyeceği, çalıştırmaların bayt bayt tekrar edip etmediği ve bir boyuta ulaşılamadığında ne olduğu."
+    },
+    {
+      "key": "damage",
+      "slug": "bozuk-test-dosyalari",
+      "nav": "Bozuk dosyalar",
+      "title": "Bozuk test dosyaları - tam boyutta bozuk dosyalar",
+      "description": "Kasıtlı bozulmuş, tam boyutta bir dosya ve sisteminizin onu reddetmesi gerektiğini söyleyen bir bildirim. Yükleme doğrulaması ve ayrıştırıcıları sınamak için.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "ci-icinde-test-dosyalari",
+      "nav": "CI'da test dosyaları",
+      "title": "CI'da test dosyaları - GitHub Actions, GitLab CI ve PowerShell",
+      "description": "İkili dosya commit etmek yerine test dosyalarını hat içinde üretin: GitHub Actions iş akışı, GitLab işi, çıkış kodları ve PowerShell tuzağı.",
+      "parent": "use-cases"
+    }
+  ],
+  "words": {
+    "skip": "İçeriğe geç",
+    "navLabel": "Ana",
+    "langLabel": "Dil",
+    "breadcrumbHome": "Ana sayfa",
+    "imageAlt": "Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest",
+    "schemaDescription": "QA için ücretsiz ve açık kaynaklı bir test dosyası oluşturucu. {{ .Facts.FormatCount }} biçimde tam boyutta gerçek dosyalar üretir ve test edilen sistemin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest yazar.",
+    "ctaDownload": "İndir",
+    "ctaSource": "Kaynak kodu görüntüle",
+    "ctaNote": "Ücretsiz ve açık kaynak, GPL-3.0. Kayıt gerekmez. Windows ve macOS indirmeleri imzalıdır ve uyarı vermeden başlar.",
+    "colFormat": "Biçim",
+    "colName": "Ad",
+    "colExtension": "Uzantı",
+    "colSmallest": "En küçük dosya",
+    "colFidelity": "Bütünlük",
+    "colChecked": "Doğrulayan",
+    "colSetting": "Ayar",
+    "colAccepts": "Kabul eder",
+    "colSystem": "Sistem",
+    "colCli": "Komut satırı",
+    "colWindow": "Masaüstü penceresi",
+    "noBinary": "henüz ikili dosya yok",
+    "colCode": "Kod",
+    "colMeaning": "Anlamı",
+    "footerBlurb": "QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.",
+    "footerProject": "Proje",
+    "footerSource": "GitHub'da kaynak kod",
+    "footerReleases": "İndirmeler",
+    "footerIssues": "Sorun bildir",
+    "footerSupport": "Projeyi destekle",
+    "footerPages": "Sayfalar",
+    "footerLicence": "Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.",
+    "footerPrivacy": "Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.",
+    "notFoundTitle": "Bu sayfa burada yok",
+    "notFoundLead": "Takip ettiğiniz adres bu sitedeki hiçbir sayfayla eşleşmiyor.",
+    "notFoundBack": "Ana sayfaya git",
+    "read.format": "Setteki her dosyanın biçimi. Aracın kendi bayrağıdır ve hazır ayar yalnızca ona bir varsayılan verir.",
+    "readTakes.format": "biçimler sayfasındaki bir biçim kimliği",
+    "colDamage": "Hasar",
+    "colEffect": "Baytlara ne yapar",
+    "colSettings": "Ayarlar",
+    "noSettings": "yok"
+  },
+  "endings": {
+    "0": "Her şey çalıştı.",
+    "1": "Araç içinde beklenmeyen bir hata.",
+    "2": "Yanlış komut veya bayrak.",
+    "3": "Tarif geçerli değil.",
+    "4": "Biçim istenen şeyi yapamıyor.",
+    "5": "Bir okuma veya yazma başarısız oldu.",
+    "6": "Yeterli disk alanı yok.",
+    "7": "verify bir uyuşmazlık buldu.",
+    "8": "Çalıştırma bitti ama her şey üretilmedi.",
+    "130": "Ctrl+C ile kesildi.",
+    "143": "Bir sinyalle durduruldu, CI zaman aşımı böyle görünür."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Biçimin izin verdiği kadar küçük, geçerli bir dosya geçer mi?",
+      "title": "Boş ve asgari",
+      "pageTitle": "Her biçimde en küçük geçerli ve boş test dosyaları",
+      "description": "Aracın {{ .Facts.FormatCount }} biçiminin her birinde yazdığı en küçük geçerli dosya, biçim izin veriyorsa bir de boş dosya, her biri beklenen tepkiyle.",
+      "catches": [
+        "kontrol baytları okumak yerine saydığı için çok küçük diye reddedilen geçerli bir dosya",
+        "bildirilmek yerine okuyucuyu çökerten boş bir dosya",
+        "küçük resme giderken sıfıra bölen bir piksel genişliğinde görüntü",
+        "sıfır baytı başarısız yükleme sayıp durmadan yeniden deneyen depolama"
+      ],
+      "details": {
+        "formats": "Setin hangi biçimlerden oluştuğu. Bu sürümdeki tüm biçimler için all bırakın veya sisteminizin kabul ettiklerini yazın."
+      }
+    },
+    "filename-handling": {
+      "question": "Sistemim beklemediği bir dosya adını saklayıp gösterecek ve geri verecek mi?",
+      "title": "Dosya adı işleme",
+      "pageTitle": "Test için sorunlu dosya adları - Unicode ve uzunluk",
+      "description": "Yüklemeleri ve depolamayı bozan adlara sahip dosyalar: başka yazılar ve emoji, yön geçersiz kılma, görünmez karakterler, kabuk ve SQL sözdizimi, uzunluk sınırları.",
+      "catches": [
+        "ekranda, bir günlükte veya bir listede başka bir ad gibi görünen bir ad",
+        "yükleme ile depolama arasında kesilen, kırpılan veya yeniden yazılan bir ad",
+        "depolama bayt sayarken karakterle sayılan bir uzunluk sınırı"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Bir boyut sınırı tam bildirildiği yerde uygulanıyor mu?",
+      "title": "Boyut sınırları",
+      "pageTitle": "Yükleme boyut sınırını test etme - tam sınırdaki dosyalar",
+      "description": "Sisteminizin bildirdiği sınırın bir bayt altında, tam üzerinde ve bir bayt üstünde dosyalar, iki yanda daha geniş adımlar, her biri kabul bilgisiyle işaretli.",
+      "catches": [
+        "sınırda bir eksik veya fazla hataları",
+        "MB ile MiB'in karıştırılması, yani yüzde 4,8, geçmemesi gereken bir dosyayı geçirmeye yeter",
+        "tarayıcıda uygulanan ama sunucuda uygulanmayan bir sınır"
+      ],
+      "details": {
+        "limit": "Sisteminizin bildirdiği boyut sınırı. Geri kalan her şey buradan ölçülür.",
+        "spread": "Sınırın iki yanında ne kadar uzağa gidileceği, boyutlar listesi olarak."
+      }
+    },
+    "tabular-import": {
+      "question": "Tablo içe aktarmam gerçek araçların dışa aktardıklarına dayanıyor mu?",
+      "title": "Tablo içe aktarma",
+      "pageTitle": "CSV ve Excel içe aktarma test dosyaları - ayırıcılar, başlıklar",
+      "description": "Başka ayırıcılı, CR LF satır sonlu, başlıksız ve başka tırnaklı CSV, çok geniş bir tablo, bir Excel çalışma kitabı ve birkaç düzende JSON.",
+      "catches": [
+        "ayırıcı aranmak yerine varsayıldığı için tek sütun olarak okunan noktalı virgüllü dosya",
+        "her satırdan sonra boş bir satırla satırlara bölünen CRLF dosyası",
+        "ilk veri satırı sütun adı diye yutulan başlıksız bir tablo",
+        "gösterebildiği sütunları tutup geri kalanını tek söz etmeden atan bir içe aktarma",
+        "JSON kayıtlarını satır satır alıp ilk girintili belgede duran bir okuyucu"
+      ],
+      "details": {
+        "rows": "Elektronik tablonun kaç satır içerdiği. O kadar satırın paketlendiği tam boyutta yazılır, bu yüzden yukarıdaki bütçe bu değerle kayar.",
+        "columns": "Elektronik tablonun her satırında kaç sütun olduğu. Satır çarpı sütunun bir tavanı vardır ve aşılması bir şey yazılmadan önce reddedilir."
+      }
+    },
+    "text-encoding": {
+      "question": "Okuyucum bir dosyanın hangi kodlamada olduğunu biliyor mu, yoksa tahmin mi ediyor?",
+      "title": "Metin kodlaması",
+      "pageTitle": "Metin kodlaması test dosyaları - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Aynı metin UTF-8, UTF-16LE ve UTF-16BE olarak, bayt sırası işaretiyle ve işaretsiz, ayrıca CR LF ve LF satır sonlarıyla, okuyucunun metni nasıl çözdüğünü sınamak için.",
+      "catches": [
+        "UTF-8 varsayıp bir UTF-16 dosyasını üç karakterde bir karakter olarak veya kutu sıraları olarak gösteren okuyucu",
+        "içerik olarak okunan bir bayt sırası işareti, böylece bir içe aktarmanın ilk alanı üç yabancı karakterle başlar",
+        "kodlamayı ilk baytlardan tahmin edip daha uzun bir dosyada farklı tahmin eden bir içe aktarıcı",
+        "her satırdan sonra boş bir satırla satırlara bölünen CRLF dosyası veya son alanda kalan bir satır başı karakteri"
+      ],
+      "details": {
+        "sample": "Setteki her dosyanın büyüklüğü. UTF-16 her karakter için iki bayt saklar, bu yüzden tek sayı reddedilir."
+      }
+    },
+    "upload-validation": {
+      "question": "Yükleme formum alması gerekeni alıp geri kalanı reddediyor mu?",
+      "title": "Yükleme doğrulama",
+      "pageTitle": "Yükleme doğrulama test dosyaları - tür, boyut ve ad",
+      "description": "Yükleme formunu test etmek için dosyalar: izinli ve yasaklı türler, uzantıyla uyuşmayan içerik, boyut sınırı, düşmanca adlar ve toplu yükleme.",
+      "catches": [
+        "tarayıcıda uygulanan ama sunucuda uygulanmayan bir sınır",
+        "resim veya düz metin sanılan bir SVG ya da HTML dosyası, yani bir betiği formdan geçirmenin yolu",
+        "uzantısına bakılıp hiç açılmayan bir dosya, böylece .jpg adlı bir PDF geçer",
+        "ne kadar büyük olduğuna bakmadan önce tüm gövdeyi belleğe okuyan bir form",
+        "photo.jpg kabul edilirken reddedilen PHOTO.JPG adlı bir yükleme veya tersi",
+        "boşluk, parantez veya ASCII dışı karakter içeren bir adın diske değişmeden yazılması"
+      ],
+      "details": {
+        "limit": "Yükleme formunuzun bildirdiği boyut sınırı. Bu set her iki yanda birer adım atar - her uzaklıktaki dosya için size-boundaries hazır ayarını çalıştırın.",
+        "allow": "Formunuzun hangi türleri kabul etmesi gerektiği. Her biri o türden gerçek bir dosya olur ve tüm setin pozitif kontrolünü oluşturur.",
+        "deny": "Formunuzun hangi uzantıları reddetmesi gerektiği. Bu sürümde biçimi olmayan bir uzantı yine de o adla, düz metin içeren bir dosya alır.",
+        "far-over": "Tek büyük dosyanın sınırın ne kadar ötesine geçtiği. Sınırın birkaç katını yazmak diske değmiyorsa kapatın.",
+        "bulk": "Toplu yüklemenin kaç dosya içerdiği. Sıfır, bu grubu setten tamamen çıkarır."
+      }
+    }
+  },
+  "commands": {
+    "generate": "tariften veya bayraklardan dosya üret",
+    "validate": "bir tarifi denetle, hiçbir şey yazma",
+    "verify": "bir dizini bir manifeste göre denetle",
+    "cleanup": "bir manifestin listelediği dosyaları sil",
+    "recipe fmt": "bir tarifi oturmuş biçiminde yazdır",
+    "preset": "adlandırılmış bir test sorusundan dosya seti oluştur",
+    "formats": "bu sürümün desteklediği biçimleri listele",
+    "damage": "bu sürümün bir dosyayı kasıtlı bozma yollarını listele",
+    "tool": "elinizdeki dosyalar için küçük araçlar",
+    "version": "araç sürümünü yazdır",
+    "license": "lisansı ve üretilen dosyalar için anlamını yazdır"
+  },
+  "outcomes": {
+    "accept": "Sisteminiz dosyayı kabul etmeli.",
+    "reject": "Sisteminiz dosyayı reddetmeli.",
+    "sanitize": "Sisteminiz dosyayı kabul edip temizlemeli, örneğin yeniden adlandırarak.",
+    "unspecified": "Sisteminizin kurallarına bağlı. Siz karar verirsiniz, sonra olanın amaçladığınız şey olduğunu doğrularsınız."
+  },
+  "damages": {
+    "zero-head": "Dosyanın ilk baytlarını uzunluğuna dokunmadan sıfırlarla ezer. Okuyucuların çoğu önce oraya bakar, bu yüzden hemen her şey bu hasarı fark eder."
+  },
+  "terms": {
+    "oracleNone": "uygulanamaz",
+    "int": "herhangi bir tam sayı",
+    "choice": "sabit bir kümeden biri",
+    "bool": "doğru veya yanlış",
+    "size": "2mb gibi bir boyut",
+    "text": "metin",
+    "pixels": "piksel",
+    "paragraphs": "paragraf",
+    "rows": "satır",
+    "columns": "sütun",
+    "slides": "slayt",
+    "hertz": "hertz",
+    "megapixels": "megapiksel",
+    "million cells": "milyon hücre",
+    "entries per second": "saniyedeki girdi",
+    "files": "dosya",
+    "sizes separated by commas": "virgülle ayrılmış boyutlar",
+    "format ids separated by commas": "virgülle ayrılmış biçim kimlikleri",
+    "format ids separated by commas, or all": "virgülle ayrılmış biçim kimlikleri veya all",
+    "extensions separated by commas": "virgülle ayrılmış uzantılar",
+    "the id of a format, as tfg formats lists them": "tfg formats'ın listelediği gibi bir biçimin kimliği",
+    "the password, in plain text": "parola, düz metin olarak",
+    "any text": "herhangi bir metin",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29 veya 2024-02-29T13:45:00+02:00 gibi bir tarih, veya none"
+  },
+  "faq": [
+    {
+      "q": "dd, fsutil veya truncate'ten farkı nedir?",
+      "a": "Onlar size doğru boyutta, içi bomboş bir dosya verir. Bu şekilde yapılmış photo.png adlı 2 MB'lık bir dosya PNG değildir, bu yüzden onu gerçekten ayrıştıran her şey yanlış nedenle reddeder ve testiniz de yanlış nedenle geçer. Bu araç tam 2 MB'lık gerçek bir PNG üretir, resim görüntüleyicide açılır ve sisteminizin onu nasıl ele alması gerektiğine dair bir bildirimle gelir.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Ücretsiz mi, ve işte kullanabilir miyim?",
+      "a": "İkisi de evet. GPL-3.0 altında yayımlanır ve hiçbir şeye mal olmaz. Hesap, lisans anahtarı veya ücretli katman yoktur."
+    },
+    {
+      "q": "Üretilen dosyaları kapalı kaynaklı bir üründe kullanabilir miyim?",
+      "a": "Evet. Lisans aracın kodunu kapsar, aracın ürettiğini değil. Üretilen dosyalar, tarifler ve manifestler türev eser değil çıktıdır, bu yüzden hiçbir yükümlülük olmadan commit edip dağıtabilirsiniz."
+    },
+    {
+      "q": "Üretilen dosyalar gerçek kişisel veri içeriyor mu?",
+      "a": "Hayır. İçindeki her şey bir seed'den sentezlenir. Hiçbir veri kümesi okunmaz, hiçbir servise bağlanılmaz ve üçüncü taraf içeriği gömülmez. Üretilmiş bir e-posta adresini kullanılmamış değil kullanılamaz sayın, çünkü rastgele bir dize tesadüfen gerçek biriyle çakışabilir."
+    },
+    {
+      "q": "Başka bir makinede tam olarak aynı dosyaları alır mıyım?",
+      "a": "Evet, aynı tarif ve aynı seed ile bayt bayt. Proje bunu her değişiklikte test eder ve bozmak büyük sürüm artışı gerektirir. Büyük ikili fixture'lar yerine küçük bir tarifi commit etmenizi sağlayan da budur."
+    },
+    {
+      "q": "İnternet bağlantısı gerekiyor mu?",
+      "a": "Asla. Telemetri, güncelleme denetimi veya bulut istemcisi yoktur ve komut satırı ikilisinin içine hiç ağ yığını derlenmemiştir. Ağı olmayan bir makinede ve kapalı bir kurumsal ortamda çalışır."
+    },
+    {
+      "q": "Bir biçimin ulaşamayacağı bir boyut istersem ne olur?",
+      "a": "Biçimi, olabilecek en küçük boyutu, bu alt sınırın nedenini ve bunun yerine ne yapılacağını söyleyen bir hata alırsınız ve hiçbir dosya yazılmaz. Araç bir boyutu asla sessizce yuvarlamaz. Her alt sınır biçimler sayfasında listelenir.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Kasıtlı olarak bozuk bir dosya üretebilir miyim?",
+      "a": "Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
+    },
+    {
+      "q": "Sırada hangi biçimler var?",
+      "a": "7z, mp3 ve mp4. Bugün {{ .Facts.FormatCount }} biçim uçtan uca çalışıyor."
+    },
+    {
+      "q": "Hangi sistemlerde çalıştırabilirim?",
+      "a": "Komut satırı Windows ve Linux'ta hem Intel hem ARM üzerinde, ayrıca Apple Silicon Mac'lerde çalışır. Masaüstü penceresi Intel üzerinde Windows, Intel üzerinde Linux ve Apple Silicon Mac'ler için sunulur. Intel Mac'ler desteklenmez ve onlar için hiçbir şey derlenmez."
+    },
+    {
+      "q": "Bir şey kurmam gerekiyor mu?",
+      "a": "Hayır. Sisteminiz için arşivi indirin, açın ve ikiliyi çalıştırın. Yükleyici, eklenecek bir çalışma zamanı veya çözülecek bir bağımlılık yoktur. Go'nuz varsa tek bir go install komutu da işe yarar.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Binlerce dosya üzerindeki çalıştırma Windows'ta neden daha yavaş?",
+      "a": "Çünkü Windows baktığı her yol için daha fazla bedel ister ve binlerce dosyayı dolaşan bir komut binlerce yola bakar. Her biri 1 kB'lık 3000 dosyalı bir makinede ölçüldü: verify Windows'ta yaklaşık 0,9 saniye, bir konteynerdeki Linux'ta yaklaşık 0,2 saniye sürer. Daha kısa bir çıktı yolu Windows rakamını küçültür, çünkü dosyaların üstündeki her klasör bakılanın parçasıdır."
+    }
+  ]
+}

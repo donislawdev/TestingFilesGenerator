@@ -1,0 +1,15 @@
+<h1>よくある質問</h1>
+<p class="lead">
+  ライセンス、プライバシー、再現性、そして生成ツールをビルドパイプラインに組み込む前に人々が確認すること。質問がここにない場合は、<a href="{{ .Facts.Issues }}">イシュートラッカー</a>をご利用ください。
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>まだ迷っていますか。</h2>
+  <p>
+    <a href="/ja/use-cases/">利用例のページ</a>では、このツールが想定する用途を、<a href="/ja/formats/">形式ページ</a>では、各形式と生成できる最小のファイルを紹介しています。<a href="{{ .Facts.Repo }}">リポジトリのREADME</a>が完全なリファレンスです。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

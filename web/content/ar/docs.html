@@ -1,0 +1,269 @@
+<h1>التوثيق</h1>
+<p class="lead">
+  كل ما تفعله الأداة، مرتبًا على هيئة الأسئلة التي يأتي بها الناس فعلًا. ملف
+  <a href="{{ .Facts.Repo }}">README في المستودع</a> هو المرجع الكامل ويطابق دائمًا الإصدار الذي
+  نزّلته.
+</p>
+
+<section class="section" id="commands">
+  <h2>ما الأوامر المتاحة؟</h2>
+  <p>كل أمر يؤدي مهمة واحدة:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>كيف أولّد ملفًا واحدًا بحجم دقيق؟</h2>
+  <p>
+    حدد الصيغة والحجم ووجهة الملف. تُعدّ الأحجام بالمضاعفات 1024، فـ<code>2mb</code> تساوي 2097152
+    بايتًا. وعدد البايتات المجرد يصلح أيضًا، فـ<code>--size 10485761</code> يطلب هذا العدد بالضبط.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>الخيارات المفيدة في <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>الخيار</th><th>ما يفعله</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>صيغة الملفات، مثل <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>الحجم الدقيق لكل ملف، مثل <code>10mb</code> أو عدد بايتات مجرد</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>حجم يُسحب لكل ملف من نطاق، مثل <code>1kb-8kb</code>. يأتي السحب من البذرة</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>ثلاثة ملفات حول حد: أقل بايتًا واحدًا، والحد نفسه، وأكثر بايتًا واحدًا</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>عدد الملفات المراد إنتاجها. الافتراضي <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>قالب الاسم، مثل <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>المجلد الذي يُكتب فيه</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>بذرة التشغيل. البذرة نفسها تعطي البايتات نفسها</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>إعداد صيغة، يمكن تكراره</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>إتلاف الملفات عمدًا، يمكن تكراره ويُطبَّق بالترتيب. شغّل <code>tfg damage</code> للاطلاع على القائمة</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code> أو <code>reject</code> أو <code>sanitize</code> أو <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>عدّ وأظهر، ولا تكتب شيئًا إطلاقًا</td></tr>
+        <tr><td><code>--json</code></td><td>اكتب البيان إلى المخرج القياسي</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>كيف أصنع ملفًا تالفًا عمدًا؟</h2>
+  <p>
+    كل ملف آخر تكتبه هذه الأداة صحيح بحكم بنائه، وهذا يجيب عن اثنين من ثلاثة أسئلة يطرحها مدقق الرفع.
+    أما <code>--damage</code> فيجيب عن الثالث: هل يُفتح الملف أصلًا. يُنتَج الملف بشكل طبيعي ثم
+    يُتلف، فيبقى بالحجم الذي طلبته.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    تُكتب الإعدادات بعد نقطتين. يمكن تكرار الخيار، وترتيب كتابتها هو ترتيب تطبيقها. يسرد <code>tfg
+    damage</code> ما يستطيعه هذا الإصدار وما يقبله كل نوع.
+  </p>
+  <p>في الوصفة يكون المفتاح قائمة، من أسماء أو من إعدادات:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    يحصل الملف التالف على <code>expected: reject</code> في البيان، مع تسجيل الإتلاف بجانبه. يُرفض أمران
+    قبل كتابة أي شيء، لأن كلًّا منهما كان سيضع على القرص ملفًا يصفه البيان وصفًا خاطئًا:
+  </p>
+  <ul>
+    <li>ملف أصغر مما يحتاجه الإتلاف، لأنه كان سيخرج دون تغيير</li>
+    <li>
+      <code>expected: accept</code> بجانب إتلاف، لأن لا شيء يمكن أن يحققه. اكتب <code>sanitize</code> إن
+      كان المقصود أن يصلح النظام قيد الاختبار الملف، أو <code>unspecified</code> إن كان هذا هو
+      السؤال الذي تطرحه
+    </li>
+  </ul>
+  <p>
+    أما الثالث فلا يمكن معرفته مسبقًا. إذا نُفّذ إتلاف ولم يحرّك أي بايت، يُسقَط ذلك الملف بدل كتابته،
+    ويستمر التشغيل ويذكر أي ملف كان، وينتهي برمز الخروج الجزئي.
+  </p>
+  <p>
+    خطوة بخطوة، مع اختبار يقرأ البيان: <a href="/ar/corrupt-test-files/">كيف تصنع ملفًا تالفًا
+    للاختبار</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>كيف تبدو الوصفة؟</h2>
+  <p>
+    الوصفة ملف YAML يصف تشغيلًا كاملًا. أودعها بجانب اختباراتك فتتوقف بيانات الاختبار عن كونها ملفات
+    ثنائية في مستودعك، ويستطيع أي شخص إعادة بنائها، بايتًا ببايت، من ملف بضع مئات من الأحرف.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    يحتاج كل هدف إلى واحد فقط من <code>size</code> أو <code>size-range</code> أو <code>boundary</code>
+    أو <code>contains</code>. اثنان خطأ، وعدم وجود أي منها خطأ كذلك. الوصفة غير الصالحة <strong>لا
+    تكتب أي ملف</strong> وتبلّغ عن كل المشكلات دفعة واحدة لا عن أولها فقط، وتسمّي كل مشكلة الإعداد
+    الذي تخصه.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>كيف أصرّح بما يجب أن يفعله نظامي بملف ما؟</h2>
+  <p>الصيغة القصيرة حين تكفي النتيجة، والطويلة حين يهم السبب:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    النتائج هي <code>accept</code> و<code>reject</code> و<code>sanitize</code>
+    و<code>unspecified</code>. الأسباب قائمة مغلقة ليتمكن التقرير من التجميع بحسبها:
+    <code>content_malformed</code> و<code>count_limit</code> و<code>dimensions_limit</code>
+    و<code>duplicate</code> و<code>encoding_invalid</code> و<code>extension_rule</code>
+    و<code>filename_invalid</code> و<code>filename_too_long</code> و<code>filename_traversal</code>
+    و<code>malware_signature</code> و<code>mime_mismatch</code> و<code>nesting_depth</code>
+    و<code>none</code> و<code>size_limit</code> و<code>size_zero</code>.
+  </p>
+  <p>
+    يسمّي السبب <strong>القاعدة المعنية</strong> لا الحكم. ولهذا يمكن أن يقع السبب نفسه تحت أي من
+    النتيجتين: ملف أقل من الحد بايتًا واحدًا نتيجته <code>accept</code>، والقاعدة المعنية تبقى
+    <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>ماذا يوجد في البيان؟</h2>
+  <p>
+    يُكتب بجانب الملفات في نهاية كل تشغيل، بما في ذلك التشغيل الذي أُوقف. عنصر واحد لكل ملف:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    يُضاف <code>recipe_hash</code> حين يأتي التشغيل من وصفة، ويُضاف <code>preset</code> مع
+    <code>overrides</code> حين يأتي من إعداد مسبق، فيمكن دائمًا تتبّع البيان إلى ما أنتجه.
+  </p>
+  <p>
+    يحمل كل عنصر أيضًا <code>target_id</code>، وهو معرّف الهدف في الوصفة الذي أنتج الملف، ويحصي
+    <code>summary.by_target</code> الملفات التي انتهى إليها كل هدف. وهكذا يمكن فحص وصفة متعددة
+    الأهداف هدفًا هدفًا دون قراءة أسماء الملفات.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>ما الإعداد المسبق؟</h2>
+  <p>
+    مجموعة ملفات جاهزة تجيب عن سؤال اختبار شائع، فلا تحتاج إلى تصميم المجموعة بنفسك. الإعدادات المسبقة
+    وصفات عادية في جوهرها، ويطبع <code>eject</code> الوصفة لتعدّلها من هناك. لكل إعداد مسبق
+    <a href="/ar/presets/">صفحة خاصة</a> تذكر ما يكتشفه عادةً، وما في المجموعة، وكل إعداد يقبله.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    يخبرك <code>show</code> بكلفة المجموعة قبل أن تبنيها، ويقول صراحةً حين يكون رقم ما قيمة مؤقتة منا لا
+    حدًّا منك.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>ما معنى رموز الخروج؟</h2>
+  <p>
+    لكل نهاية رمزها الخاص، وتذهب المخرجات المقروءة آليًا إلى المخرج القياسي، ولا يطبع التشغيل الفاشل
+    شيئًا هناك. الجدول عقد مجمّد، وتغيير معنى رمز يتطلب رفع الإصدار الرئيسي.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    التشغيل الموقوف بـ Ctrl+C يترك بيانًا ولا يترك أبدًا ملفًا مكتوبًا نصفه، لذا يمكن للمهمة التالية أن
+    تنظّف مهمة أُلغيت.
+  </p>
+  <p>
+    مسارات عمل جاهزة لـ GitHub Actions وGitLab CI: <a href="/ar/test-files-in-ci/">كيف تولّد ملفات
+    الاختبار في خط CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>هل توجد نافذة سطح مكتب؟</h2>
+  <p>
+    نعم، المحرك نفسه بنافذة فوقه، للاختبار الذي لا يُكتب له سكربت. وهي ليست نسخة مبتورة: يقارن اختبار
+    الواجهتين ميزةً ميزة، وكل ما تستطيع إحداهما فعله دون الأخرى يجب أن يُعلَن ويُبرَّر بدل أن
+    يتباعدا بصمت.
+  </p>
+  <p>
+    الشاشات هي دفعة واحدة، والإعدادات المسبقة، وعدة دفعات معًا، وحول. تُظهر كلفة التشغيل قبل كتابة أي
+    شيء، وتبلّغ عن التقدم أثناء العمل، ويمكن إلغاؤها في منتصف الطريق دون ترك ملف مكتوب نصفه. لا تفتح
+    ملف وصفة بعد، فالوصفات شأن سطر الأوامر حاليًا، وتبني النافذة دفعاتها في النموذج.
+  </p>
+</section>

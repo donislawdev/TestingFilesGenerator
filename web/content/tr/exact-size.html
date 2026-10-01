@@ -1,0 +1,144 @@
+<h1>Tam boyutta dosya nasıl oluşturulur</h1>
+<p class="lead">
+  Her sistemin bunun için bir komutu var ve üçü de aşağıda. Size tam doğru bayt sayısında bir dosya
+  verirler - ve birçok test için gereken tek şey budur. <strong>Bu sayfadaki her komut,
+  yayımlanmadan önce ait olduğu sistemde çalıştırıldı</strong>.
+</p>
+
+<div class="note">
+  <p class="note-title">Kısa yanıt</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Boyutlar bayt cinsindendir ve dosya
+    yöneticinizin saydığı gibi 10 MB, 10485760'tır.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil ve fazladan hiçbir şey gerektirmeyen bir PowerShell sürümü</h2>
+  <p>
+    <code>fsutil</code> Windows ile gelir. Boyutu <strong>bayt cinsinden</strong> alır, bu yüzden sayıyı
+    önce hesaplayın - 10 MB 10485760, 100 MB 104857600, 1 GB 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11'de ölçüldü: sıradan bir istemden çalışır, yükseltilmiş bir istem gerektirmez ve dosya tam
+    10485760 bayt çıkar.
+  </p>
+  <p>PowerShell aynı şeyi başka bir programı çağırmadan yapabilir ve birimleri anlar:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell'de <code>10MB</code>, Gezgin'in kullandığı aynı 1024 tabanlı sayımla 10485760 bayt
+    demektir, yani yukarıdaki iki komut aynı boyutu üretir.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate ve fallocate ve insanları yakalayan fark</h2>
+  <p><code>dd</code> herkesin bildiğidir. Baytları gerçekten yazar:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> anlıktır ve tuzak da budur. Alpine Linux'ta ölçüldü: dosya 10485760 bayt
+    bildirir ve <strong>sıfır blok</strong> kaplar - bir <strong>seyrek dosyadır</strong>. Onu
+    okuyan her şey on megabayt sıfır alır ama disk alanı hiç vermemiştir:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Bu, yükleme sınırını sınamak için iyidir ve disk kotasını sınamak için yanıltıcıdır. Alan gerçek
+    olmalıysa başvurulacak olan <code>fallocate</code>'tir:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Ve içerik, bir arşivleyici onu yeniden sıkıştıramasın diye sıkıştırılamaz olmalıysa:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>seyrek olmayan mkfile ve zaten bildiğiniz iki komut</h2>
+  <p>
+    macOS <code>mkfile</code> ile gelir. macOS 26.6.2'de ölçüldü: 10485760 bayt ve 20480 blok, yani alan
+    söz verilmek yerine gerçekten ayrılır:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> ve <code>truncate</code> da var ve Linux'taki gibi davranır:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Bunun işe yaramadığı yer</p>
+  <h2>Doğru boyutta bir dosya doğru türde bir dosya değildir</h2>
+  <p>
+    Yukarıdakilerin hepsi size bir sıfır bloğu verir. Test edilen şey yalnızca boyuta bakıyorsa -
+    yükleme sınırı, kota, aktarım - bu yeterlidir. Bir şey dosyayı <strong>açtığı</strong> anda
+    yeterli olmaktan çıkar.
+  </p>
+  <p>
+    Ölçüldü ve kendiniz yapmaya değer: <code>fsutil</code> ile 2 MB'lık bir dosya yapın, adını
+    <code>photo.png</code> koyun ve bir görüntü kitaplığına verin. Pillow <code>cannot identify
+    image file</code> yanıtını verir. PNG değil. Hiç de olmadı - yalnızca adı öyle diyordu.
+  </p>
+  <p>
+    Bu, göründüğünden daha önemlidir, çünkü <strong>testin bundan sonra hangi yönde başarısız
+    olduğu</strong> belirleyicidir. Yükleme endpoint'iniz dosyayı reddeder, testiniz yeşile döner ve
+    boyut sınırının çalıştığı sonucuna varırsınız. Onu boyut yüzünden reddetmedi. Baytlar resim
+    olmadığı için reddetti ve sınamak istediğiniz kurala hiç ulaşılmadı.
+  </p>
+  <ul class="ticks">
+    <li>bir ayrıştırıcı herhangi bir boyut kuralına bakılmadan önce onu reddeder</li>
+    <li>küçük resim adımı başarısız olur ve okuduğunuz hata küçük resimle ilgilidir</li>
+    <li>bir antivirüs veya içerik denetimi onu üçüncü bir nedenle reddeder</li>
+    <li>bir görüntüleyici hiçbir şey göstermez ve bunun hata olup olmadığını kimse söyleyemez</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Öbür yol</p>
+  <h2>O biçimden gerçek bir dosya, tam istediğiniz boyutta</h2>
+  <p>
+    Testing Files Generator'ın yaptığı budur. Dosya biçiminin gerçek bir örneğidir - ait olduğu
+    programda açılır - ve istediğiniz tam bayt sayısındadır, bayta kadar:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Bir biçimin ulaşamayacağı bir boyut isteyin, alt sınırı ve nedenini adlandıran bir hata alırsınız,
+    asla yanlış boyutta bir dosya değil. <a href="/tr/bicimler/">Biçimler sayfası</a> her biçimi
+    üretebildiği en küçük dosyayla listeler.
+  </p>
+  <p>Ve bir sınır bir değil üç test durumudur, bu yüzden araç üçünü de kurar:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Bu size 10485759, 10485760 ve 10485761 bayt ile hangilerini sisteminizin kabul etmesi, hangilerini
+    reddetmesi gerektiğini söyleyen bir manifest verir. <a href="/tr/kullanim-senaryolari/">Kullanım
+    senaryoları sayfası</a> bunu ve aracın yapıldığı dört işi daha anlatır.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Peki hangisini kullanmalı?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Sistem komutunu kullanın</p>
+      <p class="muted">
+        Hiçbir şey dosyayı açmıyorsa. Önce boyuta bakan bir endpoint'te boyut sınırını sınamak, bir aktarım,
+        bir kota, disk dolu durumu. Tek satırdır ve zaten kuruludur.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Gerçek bir üretici kullanın</p>
+      <p class="muted">
+        Bir şey dosyayı ayrıştırıyor, işliyor, içe aktarıyor veya çıkarıyorsa - ve yarın başka bir makinede
+        aynı fixture'lara bayt bayt ihtiyacınız varsa.
+      </p>
+    </li>
+  </ul>
+  <p>
+    İkisi de bu sayfada çünkü ikisi de zamanın bir kısmında haklı. Kaçınılması gereken hata, ikincisinin
+    gerektiği yerde birincisini kullanmak ve yeşil testi kanıt saymaktır.
+  </p>
+</section>

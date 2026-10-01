@@ -1,0 +1,123 @@
+<h1>如何建立大小精確的檔案</h1>
+<p class="lead">
+  每個系統都有對應的指令，下面列出了全部三個。它們能給你一個位元組數恰好正確的檔案，對許多測試來說這就夠了。<strong>本頁的每個指令在發布前都在對應系統上執行過</strong>。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    Windows：<code>fsutil file createnew name 10485760</code>。Linux：<code>dd if=/dev/zero of=name bs=1M
+    count=10</code>。macOS：<code>mkfile 10m name</code>。大小以位元組計，依檔案管理員的算法，10 MB 就是 10485760 位元組。
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil，以及無需額外工具的 PowerShell 寫法</h2>
+  <p>
+    <code>fsutil</code> 隨 Windows 提供。它接受<strong>以位元組為單位</strong>的大小，所以先算出數字：10 MB 是 10485760，100 MB 是
+    104857600，1 GB 是 1073741824。
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    在 Windows 11 上實測：它可以在一般的命令提示字元下執行，不需要系統管理員權限，產生的檔案恰好是 10485760 位元組。
+  </p>
+  <p>PowerShell 不需要呼叫其他程式也能做到同樣的事，並且認得單位：</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell 中的 <code>10MB</code> 代表 10485760 位元組，與檔案總管使用的 1024 進位算法相同，所以上面兩個指令得到的大小一樣。
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd、truncate 與 fallocate，以及容易坑人的差別</h2>
+  <p><code>dd</code> 是人人皆知的那個。它真的會寫入這些位元組：</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> 是瞬間完成的，而這正是陷阱所在。在 Alpine Linux 上實測，該檔案回報 10485760
+    位元組，卻占用<strong>零個區塊</strong>，它是一個<strong>稀疏檔案</strong>。任何讀取它的程式會得到十 MB 的零，但磁碟從未真正讓出空間：
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    用它測試上傳限制沒問題，但用來測試磁碟配額就會誤導人。當空間必須真實占用時，應該使用 <code>fallocate</code>：
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>而當內容必須無法壓縮，讓封存程式無法再把它壓小時：</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile（不是稀疏檔案），以及你已經熟悉的另外兩個</h2>
+  <p>
+    macOS 內建 <code>mkfile</code>。在 macOS 26.6.2 上實測：10485760 位元組與 20480 個區塊，所以空間是真正配置的，而不只是承諾：
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> 與 <code>truncate</code> 也都有，行為與 Linux 上相同：</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">這種辦法在哪裡失效</p>
+  <h2>大小正確的檔案不等於類型正確的檔案</h2>
+  <p>
+    以上所有方法給你的都是一塊零。如果受測對象只看大小，比如上傳限制、配額或傳輸，這就夠了。一旦有任何東西<strong>開啟</strong>這個檔案，就不夠了。
+  </p>
+  <p>
+    實測過，而且值得你自己試一試：用 <code>fsutil</code> 做一個 2 MB 的檔案，把它命名為 <code>photo.png</code>，再交給影像函式庫處理。Pillow 會回答
+    <code>cannot identify image file</code>。它不是 PNG，從來就不是，只是名字這麼說。
+  </p>
+  <p>
+    這比聽起來更重要，因為<strong>測試隨後會以哪種方式失敗</strong>。你的上傳端點拒絕了這個檔案，測試變綠，於是你斷定大小限制有效。其實它並不是因為大小而拒絕的，而是因為這些位元組不是圖片，你本想測試的規則根本沒有被觸及。
+  </p>
+  <ul class="ticks">
+    <li>剖析器在檢查任何大小規則之前就拒絕了它</li>
+    <li>縮圖步驟失敗，你讀到的錯誤是關於縮圖的</li>
+    <li>防毒軟體或內容檢查基於第三個原因拒絕了它</li>
+    <li>檢視器什麼也不顯示，沒人說得清這是不是那個 bug</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">另一種辦法</p>
+  <h2>該格式的真實檔案，大小恰好是你要求的</h2>
+  <p>
+    這就是 Testing Files Generator 所做的事。檔案是該格式的真實檔案，能在對應軟體中開啟，位元組數恰好等於你的要求，精確到位元組：
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    要求格式無法達到的大小，你會得到一個說明下限及其原因的錯誤，絕不會得到大小錯誤的檔案。<a href="/zh-hant/formats/">格式頁面</a>列出了每種格式及其能產生的最小檔案。
+  </p>
+  <p>而一個限制對應的是三個測試案例，而不是一個，所以工具會把三個都建置出來：</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    這會給你 10485759、10485760 與 10485761
+    位元組的檔案，以及一份清單，說明你的系統應該接受哪些、拒絕哪些。<a href="/zh-hant/use-cases/">使用情境頁面</a>會講解這一點，以及它為之而生的另外四項任務。
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>那麼該用哪個？</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">使用系統指令</p>
+      <p class="muted">
+        當沒有任何東西會開啟這個檔案時。例如在先檢查大小的端點上測試大小限制、傳輸、配額、磁碟寫滿的情況。只要一行，而且已經裝好了。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">使用真正的產生器</p>
+      <p class="muted">
+        當有任何東西要剖析、轉譯、匯入或解壓縮這個檔案時，以及當你明天要在另一台電腦上拿到逐位元組相同的 fixture 時。
+      </p>
+    </li>
+  </ul>
+  <p>
+    兩種辦法都在本頁，因為它們各自在一部分情況下是對的。要避免的錯誤，是在需要後者的地方用了前者，還把變綠的測試當成證明。
+  </p>
+</section>

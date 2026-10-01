@@ -1,0 +1,150 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>如何制作用于测试的损坏文件</h1>
+<p class="lead">
+  一个只见过完好文件的校验器，并没有真正被测试过。下面介绍如何得到一个故意弄坏的文件：它的大小<strong>恰好就是你要求的大小</strong>，并附带一份清单，说明你的系统该如何处理它。
+</p>
+
+<div class="note">
+  <p class="note-title">简短回答</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> 会写出一个恰好 2097152 字节的
+    PNG，它的开头几个字节是零，旁边的清单则记录你的系统应该拒绝它。
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">常见做法</p>
+  <h2>为什么手工弄坏的文件不是好测试</h2>
+  <p>
+    常见做法是用十六进制编辑器、用脚本翻转几个随机字节，或用 <code>head</code> 或 <code>truncate</code> 把文件截短。它们能用一次，之后就要付出代价：
+  </p>
+  <ul>
+    <li>
+      <strong>每次都不一样。</strong>随机字节每次运行都落在新的位置，所以周二出现的失败，周三可能不再出现。
+    </li>
+    <li>
+      <strong>它会改变大小。</strong>被截短的文件比它本应低于的限制还要小，于是大小检查先于内容检查给出回答，测试因为错误的原因而通过。
+    </li>
+    <li>
+      <strong>它常常没被发现。</strong>纯文本中间改了一个字节仍然可以读，宽容的图像读取器只会照样画出来，于是本该损坏的文件被接受了。
+    </li>
+    <li>
+      <strong>它没有说明应该发生什么。</strong>文件只是一堆字节，之后读这个测试的人只能猜测当初想要的是接受还是拒绝。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">你会得到什么</p>
+  <h2>损坏的文件仍然是你要求的大小</h2>
+  <p>
+    文件先正常生成，再在写入磁盘的途中被弄坏。它保持你要求的大小，同一条命令再次写出的字节也完全相同。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    设置写在冒号之后。该选项可以重复，损坏按你写下的顺序依次应用。它适用于全部 {{ .Facts.FormatCount }} 种格式。
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">它能做什么</p>
+  <h2>有哪些损坏方式？</h2>
+  <p>
+    这是程序打印出的列表，在构建本页时从程序中读取。<code>tfg damage</code> 打印的是同一份列表，<code>tfg damage &lt;id&gt;</code>
+    则说明其中某一项接受什么设置。
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code>
+    把文件开头写成零。大多数读取器最先看的就是那里，也就是说明文件是什么的签名和文件头，所以几乎任何读取器都会发现。纯文本和日志没有签名，同样会被拒绝，因为一串零字节不是文本。低于四个字节时，有些格式产生的损坏没有任何读取器会抱怨，这就是该设置从四开始的原因。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">清单怎么说</p>
+  <h2>一份说明应发生什么的清单</h2>
+  <p>
+    每个损坏的文件都会得到一条记录，说明你的系统应该拒绝它，损坏方式记在旁边：
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    有两种请求会在写入任何内容之前被拒绝，因为各自都会在磁盘上留下一个清单描述有误的文件：
+  </p>
+  <ul>
+    <li>比损坏所需更小的文件，它会原样输出</li>
+    <li>
+      在损坏旁边写 <code>expected: accept</code>，因为没有什么能满足它。如果你的系统本应修复文件，请写
+      <code>sanitize</code>，如果你要问的恰恰就是这一点，请写 <code>unspecified</code>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">在配方中</p>
+  <h2>一次运行中的完好文件和损坏文件</h2>
+  <p>
+    把两者放进同一个配方，清单就带有每个文件的预期，测试因此不需要一份说明哪个是哪个的列表：
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在测试中</p>
+  <h2>把它变成测试</h2>
+  <p>
+    测试读取清单，检查实际发生的是否就是所声明的。它不需要文件名列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    好的拒绝是干净的拒绝。一条说明错在哪里的消息，就是你想要的答案。服务器错误、卡死或只保存了一半的文件，正是这个测试要找出来的缺陷。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下来</p>
+  <h2>从这里去哪里</h2>
+  <ul>
+    <li>
+      <a href="/zh-hans/presets/upload-validation/">upload-validation 预设</a>向表单提出另外两个问题，即大小和类型。
+    </li>
+    <li>
+      <a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>会在流水线里运行这样的配方。
+    </li>
+    <li>
+      <a href="/zh-hans/docs/#damage">文档</a>包含 <code>tfg generate</code> 的每个选项。
+    </li>
+  </ul>
+</section>

@@ -1,0 +1,176 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>CI 파이프라인에서 테스트 파일을 생성하는 방법</h1>
+<p class="lead">
+  저장소의 바이너리 픽스처는 기록에 영원히 남고, diff에서 검토할 수 없으며, 파일이 커지면 아예 불가능해집니다. 대신 파이프라인 안에서 레시피로 파일을 생성하세요. 레시피는
+  텍스트이고, 바이트는 매번 같게 나오며, 마지막 단계가 아무것도 움직이지 않았음을 증명합니다.
+</p>
+
+<div class="note">
+  <p class="note-title">짧은 답</p>
+  <p>
+    <code>tfg</code>를 설치하고, 테스트 전에 <code>tfg generate fixtures.yaml --out ./fixtures</code>를, 테스트 후에
+    <code>tfg verify ./fixtures/manifest.json</code>을 실행하세요. 두 단계 모두 스스로 빌드를 실패시키며, 이유를 알려 주는 종료 코드를
+    남깁니다.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">커밋하지 않는 이유</p>
+  <h2>픽스처가 저장소에 있으면 안 되는 이유</h2>
+  <ul>
+    <li>
+      <strong>기록에 남습니다.</strong> 바이너리를 나중에 삭제해도 모든 버전이 그대로 있으므로 클론은 작아지지 않습니다.
+    </li>
+    <li>
+      <strong>diff로는 무엇이 바뀌었는지 알 수 없습니다.</strong> 검토자는 PDF가 다르다는 것만 볼 뿐 그 이상은 모릅니다. 레시피는 한 줄만 바뀝니다.
+    </li>
+    <li>
+      <strong>큰 파일은 들어가지 않습니다.</strong> GitHub는 100 MB를 넘는 파일이 든 푸시를 거부하므로, 500 MB 업로드 한도를 테스트하려면 커밋할 것이
+      없습니다.
+    </li>
+  </ul>
+  <p>
+    커밋할 것은 레시피입니다. 같은 레시피와 같은 시드는 어느 머신에서나 같은 바이트를 쓰므로, 파이프라인에서 생성한 파일은 노트북에 있던 바로 그 파일입니다.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">레시피</p>
+  <h2>테스트 옆에 두는 레시피</h2>
+  <p>
+    이 레시피는 수락되어야 하는 청구서 25건과 한도를 넘어 거부되어야 하는 이미지 2장을 쓰며, 매니페스트는 두 기대 결과를 모두 기록합니다.
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code>은 아무것도 쓰지 않고 레시피를 검사하며 모든 문제를 한 번에 알려 줍니다.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>도구를 설치하고 픽스처를 만드는 워크플로</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    체크섬 줄은 아카이브를 같은 릴리스의 <code>verify-SHA256SUMS.txt</code>와 비교합니다. 버전이 고정되어 있어서 새 릴리스가 손대지 않은 빌드를 바꾸는
+    일은 없습니다.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>같은 일을 GitLab 작업으로</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">빨갛게 변했을 때</p>
+  <h2>무엇이 단계를 실패시키는지, 그리고 이유</h2>
+  <p>
+    끝나는 방식마다 고유한 종료 코드가 있으므로 단계는 스스로 실패하고 로그가 어느 것인지 알려 줍니다. 파이프라인이 만나는 코드는 다음과 같습니다.
+  </p>
+  <ul>
+    <li><code>3</code> - 레시피가 유효하지 않습니다. 아무것도 쓰이지 않았고 모든 문제가 지목됩니다</li>
+    <li><code>4</code> - 형식이 요청받은 일을 할 수 없습니다. 예를 들어 최소보다 작은 크기입니다</li>
+    <li><code>6</code> - 디스크 공간이 부족합니다</li>
+    <li><code>7</code> - <code>tfg verify</code>가 매니페스트와 맞지 않는 파일을 찾았습니다</li>
+    <li><code>8</code> - 실행은 끝났지만 모든 것이 만들어지지는 않았습니다</li>
+  </ul>
+  <p>
+    실패한 실행은 표준 출력에 아무것도 출력하지 않으므로 로그 파서가 오류를 데이터로 착각하는 일이 없습니다. 전체 표는 <a href="/ko/docs/#ci">문서 페이지</a>에
+    있습니다.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShell 스크립트에는 한 줄이 더 필요합니다</h2>
+  <p>
+    PowerShell은 프로그램의 종료 코드를 <code>.ps1</code> 파일 밖으로 전달하지 않습니다. <code>-File</code>로 실행하면 안에 있는 도구가 작업을
+    거부했더라도 스크립트는 <code>0</code>으로 답하므로, 빨갛게 되어야 할 빌드가 초록이 됩니다. 마지막 한 줄이 수정의 전부입니다.
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    이것은 PowerShell의 동작이지 이 도구와는 무관합니다. <code>cmd</code>, <code>bash</code>, <code>zsh</code>에는 따로 필요한 것이
+    없습니다.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">여러 작업</p>
+  <h2>작업 사이에서 픽스처 공유하기</h2>
+  <p>
+    보통은 업로드할 필요가 없습니다. 같은 레시피가 같은 바이트를 쓰므로 각 작업이 자기 <code>tfg generate</code>를 실행할 수 있고, 이것이 업로드 후
+    다운로드보다 빠릅니다. 한 작업이 다른 작업에서 파일을 받아야 한다면 전송 후 매니페스트에 <code>tfg verify</code>를 실행하세요. 도착한 것이 기록된 것과
+    같은지 알려 줍니다.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">다음</p>
+  <h2>여기서 어디로</h2>
+  <ul>
+    <li>
+      <a href="/ko/corrupt-test-files/">손상된 테스트 파일</a>은 같은 레시피에 일부러 망가뜨린 파일을 더합니다.
+    </li>
+    <li>
+      <a href="/ko/use-cases/">사용 사례</a>는 파이프라인의 실행이 그 밖에 무엇을 확인할 수 있는지 보여 줍니다.
+    </li>
+    <li>
+      <a href="/ko/docs/">문서</a>에는 모든 명령, 레시피 키, 종료 코드가 있습니다.
+    </li>
+  </ul>
+</section>

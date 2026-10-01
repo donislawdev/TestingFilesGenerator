@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="nl">
+<title>Testbestanden genereren - exacte grootte, 26 echte formaten</title>
+<meta name="description" content="Gratis open source generator van testbestanden voor QA. Echte PDF-, DOCX-, PNG- en ZIP-bestanden in exacte grootte, met een manifest over de verwachte reactie.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/nl/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Testbestanden genereren - exacte grootte, 26 echte formaten">
+<meta property="og:description" content="Gratis open source generator van testbestanden voor QA. Echte PDF-, DOCX-, PNG- en ZIP-bestanden in exacte grootte, met een manifest over de verwachte reactie.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/nl/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Testbestanden genereren - exacte grootte, 26 echte formaten">
+<meta name="twitter:description" content="Gratis open source generator van testbestanden voor QA. Echte PDF-, DOCX-, PNG- en ZIP-bestanden in exacte grootte, met een manifest over de verwachte reactie.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Testing Files Generator",
+  "alternateName": "tfg",
+  "description": "Een gratis open source generator van testbestanden voor QA. Hij maakt echte bestanden in 26 formaten in elke exacte grootte en schrijft een manifest dat zegt hoe het geteste systeem op elk bestand moet reageren.",
+  "url": "https:\/\/testingfilesgenerator.donislawdev.com/",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Software Testing",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareVersion": "0.4.0",
+  "downloadUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "installUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "softwareHelp": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "DonislawDev",
+    "url": "https://donislawdev.com/"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Direct naar de inhoud</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/nl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hoofdmenu">
+      <a href="/nl/" aria-current="page">Home</a>
+      <a href="/nl/formaten/">Formaten</a>
+      <a href="/nl/presets/">Presets</a>
+      <a href="/nl/documentatie/">Documentatie</a>
+      <a href="/nl/toepassingen/">Toepassingen</a>
+      <a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a>
+      <a href="/nl/veelgestelde-vragen/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Taal: Nederlands">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Nederlands</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/pl/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<section class="hero">
+  <div class="hero-text">
+  <h1>Genereer echte testbestanden in elke exacte grootte</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>26 formaten in totaal</strong>, en elk is een
+    echt bestand dat opent in het programma waartoe het behoort, in <strong>precies de grootte die
+    je vroeg</strong>. Elke run schrijft ook op wat je applicatie met elk bestand moet doen.
+    Opdrachtregel en bureaubladvenster, gratis en open source, volledig op je eigen machine.
+  </p>
+
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloaden</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Bekijk de broncode</a>
+</div>
+<p class="cta-note">Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.</p>
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Het bureaubladvenster van Testing Files Generator, klaargezet om een reeks testbestanden te schrijven">
+    <figcaption>Het bureaubladvenster, klaargezet om een reeks bestanden te schrijven. Dezelfde engine draait achter de opdrachtregel.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">26</span>
+      <p class="fact-label">echte formaten, elk opent in het programma waartoe het behoort</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 byte</span>
+      <p class="fact-label">de nauwkeurigheid van elke grootte die je vraagt, nooit stilzwijgend afgerond</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">verbindingen naar wat dan ook - geen account, geen telemetrie, geen updatecontrole</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Het probleem</p>
+  <h2>Eén testbestand maken is makkelijk. De juiste duizend maken is het vervelende deel</h2>
+  <p>Je test software die bestanden van mensen aanneemt. Vroeg of laat heb je nodig:</p>
+  <ul class="ticks">
+    <li>een PDF van <strong>precies</strong> 10 MB, om uit te zoeken of de uploadlimiet echt is</li>
+    <li>de drie bestanden aan weerszijden van die limiet, om off-by-one-fouten te vangen</li>
+    <li>10.000 logbestanden, om te zien wat de nachtelijke taak doet als de map groot is</li>
+    <li>een ZIP die echt 200 documenten bevat, geen lege huls met de juiste extensie</li>
+    <li>een bestand van 4 GB, zonder een bestand van 4 GB in je repository te bewaren</li>
+    <li><strong>dezelfde</strong> fixtures op je laptop en op de buildserver, byte voor byte</li>
+  </ul>
+  <p>
+    Dat is wat dit vervangt. Het is gebouwd voor QA-engineers, testautomatisering en iedereen wiens code
+    een uploadformulier, een importroutine, een parser of een opslagquotum achter zich heeft.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Wat het anders maakt</p>
+  <h2>Andere generatoren stoppen bij de bytes. Deze beantwoordt wat je test werkelijk vraagt</h2>
+  <p>
+    Een map met bestanden laat je nog steeds beslissen wat elk bestand moet bewijzen. Elke run schrijft
+    hier een <code>manifest.json</code> naast de bestanden - een eenvoudige lijst van alles wat is
+    gemaakt, en bij elk item een <strong>gedeclareerde verwachting</strong>.
+  </p>
+  <p>Stel dat je upload-endpoint 1 MB toestaat. Vraag de drie bestanden die op die lijn zitten:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Bestand</th><th class="num">Bytes</th><th>Je systeem moet</th><th>Omdat</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>accepteren</strong></td><td>het valt binnen de limiet</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>accepteren</strong></td><td>de limiet zelf is toegestaan</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>weigeren</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Drie bestanden, drie verschillende antwoorden, in machineleesbare vorm. Je test leest het manifest in plaats van dat jij de asserties met de hand schrijft:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Waar het antwoord van je eigen beleid afhangt, zegt het manifest dat</p>
+    <p>
+      Het legt <code>unspecified</code> vast in plaats van een verwachting te verzinnen. Een generator die
+      gokt levert valse fouten op, en een suite die loos alarm slaat wordt uitgezet.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presets</p>
+  <h2>Kies de vraag, krijg de hele set</h2>
+  <p>
+    Een preset is een set testbestanden ontworpen rond één testvraag, zodat je zelf niet hoeft uit te
+    zoeken welke bestanden wat bewijzen. Elke heeft een pagina die zegt wat hij meestal vindt, wat
+    er in de set zit en welke instellingen hij kent.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/empty-and-minimal/">Leeg en minimaal</a></p>
+    <p class="muted">Komt een geldig bestand dat zo klein is als het formaat toestaat door de controle?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/filename-handling/">Omgaan met bestandsnamen</a></p>
+    <p class="muted">Slaat mijn systeem een bestandsnaam op, toont en geeft het die terug, ook als het die niet verwachtte?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/size-boundaries/">Groottegrenzen</a></p>
+    <p class="muted">Wordt een groottelimiet precies afgedwongen waar hij is opgegeven?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/tabular-import/">Tabelimport</a></p>
+    <p class="muted">Overleeft mijn tabelimport wat echte tools exporteren?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/text-encoding/">Tekencodering</a></p>
+    <p class="muted">Weet mijn lezer in welke codering een bestand staat, of gokt hij?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/nl/presets/upload-validation/">Uploadvalidatie</a></p>
+    <p class="muted">Neemt mijn uploadformulier aan wat het moet en weigert het de rest?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <p><a href="/nl/presets/">Alle presets, en hoe ze zich tot recepten verhouden</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Snel starten</p>
+  <h2>Drie opdrachten om het te zien werken</h2>
+  <ol class="steps">
+    <li>
+      <h3>Maak een bestand</h3>
+      <p>Eén PNG, precies twee megabyte:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Maak veel bestanden</h3>
+      <p>
+        Tienduizend logbestanden, elk tussen één en acht kilobyte, met groottes getrokken uit de seed zodat
+        morgen dezelfde set oplevert. <strong>Geef elke run een eigen map</strong> - het manifest is
+        het enige verslag van wat een run schreef, dus de tool weigert er een tweede overheen te
+        schrijven:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Controleer ze en verwijder ze dan</h3>
+      <p><code>verify</code> zegt je dat er niets verschoven is. <code>cleanup</code> verwijdert precies wat is geschreven en niets anders:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Groottes tellen in 1024-tallen, zoals je bestandsbeheer doet, dus <code>2mb</code> betekent 2097152
+    bytes. Een gewoon aantal bytes werkt ook. De <a href="/nl/documentatie/">documentatie</a>
+    behandelt recepten, het manifest en de afsluitcodes.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Wat je krijgt</p>
+  <h2>Gebouwd voor een suite die onbeheerd draait</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Exacte grootte, tot op de byte</p>
+      <p class="muted">Vraag 10485761 bytes en krijg precies dat. Een grootte die een formaat niet kan halen is een fout met een reden, nooit een bestand van de verkeerde grootte.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">26 echte formaten</p>
+      <p class="muted">Geen opgevulde nullen met een extensie. Een gegenereerde PNG opent in een afbeeldingsviewer, een DOCX opent in Word, een ZIP pakt uit. Elk wordt vóór levering gecontroleerd met onafhankelijke lezers.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Een manifest dat een testorakel is</p>
+      <p class="muted">Pad, grootte, SHA-256, formaat, seed, toolversie - en wat je systeem met het bestand moet doen.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproduceerbaar</p>
+      <p class="muted">Hetzelfde recept en dezelfde seed, dezelfde bytes, op elke machine. Commit een klein YAML-recept in plaats van grote binaire fixtures.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Twee interfaces, één engine</p>
+      <p class="muted">Een opdrachtregel gebouwd voor CI en een bureaubladvenster voor verkennend testen. Geen van beide is een uitgeklede versie van de ander, en een test vergelijkt ze mogelijkheid voor mogelijkheid.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Volledig offline</p>
+      <p class="muted">Geen account, geen cloud, geen telemetrie, geen updatecontrole. In de opdrachtregel-binary is helemaal geen netwerkstack gecompileerd.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Download</p>
+  <h2>Kies de build voor je systeem</h2>
+  <p>
+    Pak het archief uit en start het. <code>tfg</code> is de opdrachtregel en <code>tfg-gui</code> is
+    het bureaubladvenster. Er is geen installatieprogramma en niets om aan je machine toe te voegen.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Systeem</th>
+      <th>Opdrachtregel</th>
+      <th>Bureaubladvenster</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td><code>arm64</code></td>
+      <td><code>arm64</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <div class="note">
+    <p class="note-title">Wat is ondertekend, en wat niet</p>
+    <p>
+      De downloads voor Windows en macOS zijn ondertekend, dus ze starten zonder waarschuwing over een
+      onbekende ontwikkelaar. Die voor Linux niet, omdat desktop-Linux niets vergelijkbaars heeft om
+      ze mee te ondertekenen. Elk archief staat in <code>verify-SHA256SUMS.txt</code> op de
+      releasepagina, zodat je kunt controleren wat je hebt gedownload.
+    </p>
+  </div>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloaden</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Bekijk de broncode</a>
+</div>
+<p class="cta-note">Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.</p>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Broncode op GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Een probleem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Steun het project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagina&#39;s</p>
+      <ul class="plain">
+        <li><a href="/nl/">Home</a></li>
+        <li><a href="/nl/formaten/">Formaten</a></li>
+        <li><a href="/nl/presets/">Presets</a></li>
+        <li><a href="/nl/documentatie/">Documentatie</a></li>
+        <li><a href="/nl/toepassingen/">Toepassingen</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a></li>
+        <li><a href="/nl/veelgestelde-vragen/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.</p>
+    <p class="muted">Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

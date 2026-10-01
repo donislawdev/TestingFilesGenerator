@@ -1,0 +1,92 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Presetarea <code>{{ .ID }}</code> construiește cu o singură comandă un set întreg de fișiere de test
+  reale pentru această întrebare, și un <code>manifest.json</code> alături care spune cum trebuie să
+  reacționeze sistemul tău la fiecare fișier. Tot ce urmează este citit din program, la valorile
+  implicite ale acestei versiuni.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Ce găsește de obicei?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Ce este în set?</h2>
+  <p>La valorile implicite, așa cum le raportează <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Fișiere</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Targeturi în rețeta lui</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Dimensiune totală</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Formate</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Și ce așteaptă manifestul acelui set de la sistemul tău:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Așteptat</th><th>Semnificație</th><th class="num">Fișiere</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Ce poți schimba?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Setare</th><th>Primește</th><th>Implicit</th><th>Ce face</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Această valoare implicită este valoarea noastră provizorie, nu valoarea sistemului tău. Dă-o pe a ta.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Această presetare nu are setări. Setul este același de fiecare dată.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Cum o rulezi?</h2>
+  <p>Vezi cât ar costa setul, construiește-l sau ia-i rețeta ca s-o editezi:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Sau construiește peste ea într-o rețetă proprie, lângă testele tale:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

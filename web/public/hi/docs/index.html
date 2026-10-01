@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>दस्तावेज़ीकरण - कमांड, रेसिपी, मैनिफ़ेस्ट, एग्ज़िट कोड</title>
+<meta name="description" content="कमांड लाइन या YAML रेसिपी से टेस्ट फ़ाइलें कैसे बनाएँ, मैनिफ़ेस्ट में क्या होता है, और CI में चलाने पर हर एग्ज़िट कोड का क्या अर्थ है।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="दस्तावेज़ीकरण - कमांड, रेसिपी, मैनिफ़ेस्ट, एग्ज़िट कोड">
+<meta property="og:description" content="कमांड लाइन या YAML रेसिपी से टेस्ट फ़ाइलें कैसे बनाएँ, मैनिफ़ेस्ट में क्या होता है, और CI में चलाने पर हर एग्ज़िट कोड का क्या अर्थ है।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="दस्तावेज़ीकरण - कमांड, रेसिपी, मैनिफ़ेस्ट, एग्ज़िट कोड">
+<meta name="twitter:description" content="कमांड लाइन या YAML रेसिपी से टेस्ट फ़ाइलें कैसे बनाएँ, मैनिफ़ेस्ट में क्या होता है, और CI में चलाने पर हर एग्ज़िट कोड का क्या अर्थ है।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "दस्तावेज़ीकरण",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/docs\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/" aria-current="page">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>दस्तावेज़ीकरण</h1>
+<p class="lead">
+  टूल जो कुछ भी करता है, उन सवालों के रूप में सजाया गया जिन्हें लेकर लोग सच में आते हैं।
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">रिपॉज़िटरी का README</a> पूरा संदर्भ है और हमेशा आपके डाउनलोड किए
+  बिल्ड से मेल खाता है।
+</p>
+
+<section class="section" id="commands">
+  <h2>कौन सी कमांड हैं?</h2>
+  <p>हर एक सिर्फ़ एक काम करती है:</p>
+  <pre><code>tfg generate    रेसिपी या फ़्लैग से फ़ाइलें बनाएँ
+tfg validate    रेसिपी जाँचें और कुछ न लिखें
+tfg verify      किसी डायरेक्टरी को मैनिफ़ेस्ट से मिलाकर जाँचें
+tfg cleanup     मैनिफ़ेस्ट में सूचीबद्ध फ़ाइलें हटाएँ
+tfg recipe fmt  रेसिपी को उसके स्थिर रूप में छापें
+tfg preset      किसी नामित टेस्ट सवाल से फ़ाइलों का सेट बनाएँ
+tfg formats     इस बिल्ड के समर्थित फ़ॉर्मैट सूचीबद्ध करें
+tfg damage      इस बिल्ड द्वारा किसी फ़ाइल को जानबूझकर बिगाड़ने के तरीके सूचीबद्ध करें
+tfg tool        आपके पास पहले से मौजूद फ़ाइलों के लिए छोटे टूल
+tfg version     टूल का संस्करण छापें
+tfg license     लाइसेंस और बनाई गई फ़ाइलों के लिए उसका अर्थ छापें</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>सटीक आकार की एक फ़ाइल कैसे बनाऊँ?</h2>
+  <p>
+    फ़ॉर्मैट, आकार और जगह बताएँ। आकार 1024 के गुणकों में गिने जाते हैं, इसलिए <code>2mb</code> 2097152
+    बाइट है। सादी बाइट संख्या भी चलती है, इसलिए <code>--size 10485761</code> ठीक उतने ही बाइट माँगता
+    है।
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code> के काम के फ़्लैग:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>फ़्लैग</th><th>क्या करता है</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>फ़ाइलों का फ़ॉर्मैट, जैसे <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>हर फ़ाइल का सटीक आकार, जैसे <code>10mb</code> या सादी बाइट संख्या</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>किसी सीमा में से हर फ़ाइल के लिए निकाला गया आकार, जैसे <code>1kb-8kb</code>। निकालना सीड से होता है</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>सीमा के आसपास तीन फ़ाइलें: एक बाइट नीचे, सीमा, एक बाइट ऊपर</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>कितनी फ़ाइलें बनानी हैं। डिफ़ॉल्ट <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>नाम का साँचा, जैसे <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>जिस डायरेक्टरी में लिखना है</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>रन का सीड। वही सीड वही बाइट देता है</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>फ़ॉर्मैट की एक सेटिंग, दोहराई जा सकती है</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>फ़ाइलों को जानबूझकर बिगाड़ें, दोहराया जा सकता है और क्रम से लागू होता है। सूची के लिए <code>tfg damage</code> चलाएँ</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> या <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>गिनें और दिखाएँ, कुछ भी न लिखें</td></tr>
+        <tr><td><code>--json</code></td><td>मैनिफ़ेस्ट को स्टैंडर्ड आउटपुट पर लिखें</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>जानबूझकर टूटी फ़ाइल कैसे बनाऊँ?</h2>
+  <p>
+    यह टूल जो भी दूसरी फ़ाइल लिखता है वह बनावट से सही होती है, और इससे अपलोड वैलिडेटर के तीन सवालों में
+    से दो का जवाब मिल जाता है। <code>--damage</code> तीसरे का जवाब देता है - क्या फ़ाइल खुलती भी है।
+    फ़ाइल सामान्य रूप से बनती है और फिर बिगाड़ी जाती है, इसलिए उसका आकार वही रहता है जो आपने माँगा।
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    सेटिंग कोलन के बाद आती हैं। फ़्लैग दोहराया जा सकता है, और आप जिस क्रम में लिखते हैं वही उनके लागू
+    होने का क्रम है। <code>tfg damage</code> बताता है कि यह बिल्ड क्या कर सकता है और हर एक क्या लेता
+    है।
+  </p>
+  <p>रेसिपी में कुंजी एक सूची है, नामों की या सेटिंग की:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    बिगाड़ी गई फ़ाइल को मैनिफ़ेस्ट में <code>expected: reject</code> मिलता है, और बिगाड़ने का ब्योरा
+    उसके बगल में दर्ज होता है। दो चीज़ें कुछ भी लिखे जाने से पहले ठुकरा दी जाती हैं, क्योंकि हर एक
+    डिस्क पर ऐसी फ़ाइल छोड़ देती जिसे मैनिफ़ेस्ट गलत बताता:
+  </p>
+  <ul>
+    <li>बिगाड़ने के लिए ज़रूरी से छोटी फ़ाइल, क्योंकि वह बिना बदले निकल आती</li>
+    <li>
+      बिगाड़ के बगल में <code>expected: accept</code>, क्योंकि कुछ भी उसे पूरा नहीं कर सकता। अगर जाँचे जा
+      रहे सिस्टम को फ़ाइल सुधारनी है तो <code>sanitize</code> लिखें, या अगर आप यही सवाल पूछ रहे हैं
+      तो <code>unspecified</code>
+    </li>
+  </ul>
+  <p>
+    तीसरी बात पहले से नहीं जानी जा सकती। अगर कोई बिगाड़ चलता है और एक भी बाइट नहीं हिलाता, तो वह फ़ाइल
+    लिखे जाने के बजाय छोड़ दी जाती है - रन चलता रहता है, बताता है कि वह कौन सी फ़ाइल थी, और आंशिक
+    एग्ज़िट कोड के साथ ख़त्म होता है।
+  </p>
+  <p>
+    कदम दर कदम, मैनिफ़ेस्ट पढ़ने वाले एक टेस्ट के साथ: <a href="/hi/corrupt-test-files/">परीक्षण के लिए
+    खराब फ़ाइल कैसे बनाएँ</a>।
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>रेसिपी कैसी दिखती है?</h2>
+  <p>
+    रेसिपी एक YAML फ़ाइल है जो पूरे रन का वर्णन करती है। इसे अपने टेस्ट के बगल में कमिट करें और
+    फ़िक्स्चर आपकी रिपॉज़िटरी में बाइनरी नहीं रह जाते - कोई भी उन्हें कुछ सौ अक्षरों की फ़ाइल से
+    बाइट-दर-बाइट दोबारा बना सकता है।
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    हर टार्गेट को <code>size</code>, <code>size-range</code>, <code>boundary</code> या
+    <code>contains</code> में से ठीक एक चाहिए। दो होना त्रुटि है और एक भी न होना भी। अमान्य रेसिपी
+    <strong>कोई फ़ाइल नहीं लिखती</strong> और सिर्फ़ पहली नहीं, सारी समस्याएँ एक साथ बताती है, हर एक
+    उस सेटिंग का नाम लेकर जिससे वह जुड़ी है।
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>मैं कैसे बताऊँ कि मेरे सिस्टम को किसी फ़ाइल के साथ क्या करना चाहिए?</h2>
+  <p>जब नतीजा काफ़ी हो तो छोटा रूप, जब कारण मायने रखे तो लंबा रूप:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    नतीजे हैं <code>accept</code>, <code>reject</code>, <code>sanitize</code> और
+    <code>unspecified</code>। कारण एक बंद सूची हैं ताकि रिपोर्ट उनके आधार पर समूह बना सके:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> और <code>size_zero</code>।
+  </p>
+  <p>
+    कारण <strong>काम कर रहे नियम</strong> का नाम लेता है, फ़ैसले का नहीं। इसीलिए एक ही कारण किसी भी
+    नतीजे के नीचे आ सकता है - सीमा से एक बाइट नीचे की फ़ाइल <code>accept</code> है, और जिस नियम की
+    बात है वह फिर भी <code>size_limit</code> है।
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>मैनिफ़ेस्ट में क्या है?</h2>
+  <p>
+    यह हर रन के अंत में फ़ाइलों के बगल में लिखा जाता है, बीच में रोके गए रन में भी। हर फ़ाइल के लिए एक
+    प्रविष्टि:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    रन रेसिपी से आया हो तो <code>recipe_hash</code> जुड़ता है, और प्रीसेट से आया हो तो
+    <code>overrides</code> के साथ <code>preset</code>, इसलिए मैनिफ़ेस्ट को हमेशा उसके स्रोत तक खोजा
+    जा सकता है।
+  </p>
+  <p>
+    हर प्रविष्टि में <code>target_id</code> भी होता है, यानी रेसिपी के उस टार्गेट का id जिसने फ़ाइल
+    बनाई, और <code>summary.by_target</code> गिनता है कि हर टार्गेट के हिस्से कितनी फ़ाइलें आईं।
+    इसलिए कई टार्गेट वाली रेसिपी को फ़ाइल नाम पढ़े बिना टार्गेट-दर-टार्गेट जाँचा जा सकता है।
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>प्रीसेट क्या है?</h2>
+  <p>
+    किसी आम टेस्ट सवाल का जवाब देने वाला फ़ाइलों का तैयार सेट, ताकि आपको सेट खुद डिज़ाइन न करना पड़े।
+    प्रीसेट अंदर से सामान्य रेसिपी हैं, और <code>eject</code> रेसिपी छापता है ताकि आप वहीं से उसे
+    संपादित कर सकें। हर प्रीसेट का <a href="/hi/presets/">अपना पेज</a> है जो बताता है कि वह आम तौर
+    पर क्या पकड़ता है, सेट में क्या है और वह कौन सी सेटिंग लेता है।
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/empty-and-minimal/">खाली और न्यूनतम</a></p>
+    <p class="muted">क्या फ़ॉर्मैट की अनुमति जितनी छोटी वैध फ़ाइल पास हो जाती है?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/filename-handling/">फ़ाइल नाम का प्रबंधन</a></p>
+    <p class="muted">क्या मेरा सिस्टम ऐसा फ़ाइल नाम सहेजेगा, दिखाएगा और लौटाएगा जिसकी उसे उम्मीद नहीं थी?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/size-boundaries/">आकार की सीमाएँ</a></p>
+    <p class="muted">क्या आकार की सीमा ठीक वहीं लागू होती है जहाँ उसकी घोषणा की गई है?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/tabular-import/">टेबल इंपोर्ट</a></p>
+    <p class="muted">क्या मेरा टेबल इंपोर्ट वह झेल पाता है जो असली टूल एक्सपोर्ट करते हैं?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/text-encoding/">टेक्स्ट एन्कोडिंग</a></p>
+    <p class="muted">क्या मेरा रीडर जानता है कि फ़ाइल किस एन्कोडिंग में है, या अंदाज़ा लगा रहा है?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/hi/presets/upload-validation/">अपलोड सत्यापन</a></p>
+    <p class="muted">क्या मेरा अपलोड फ़ॉर्म वह लेता है जो उसे लेना चाहिए और बाकी को लौटा देता है?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> सेट बनाने से पहले बताता है कि उसकी क़ीमत क्या होगी, और साफ़ कहता है जब कोई संख्या
+    आपकी सीमा नहीं बल्कि हमारी अस्थायी जगह-धारक संख्या हो।
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>एग्ज़िट कोड का क्या अर्थ है?</h2>
+  <p>
+    हर अंत का अपना कोड है, मशीन के पढ़ने लायक आउटपुट स्टैंडर्ड आउटपुट पर जाता है, और विफल रन वहाँ कुछ
+    नहीं छापता। तालिका एक जमाया हुआ अनुबंध है - किसी कोड का अर्थ बदलने के लिए मुख्य संस्करण बढ़ाना
+    पड़ता है।
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">कोड</th>
+      <th>अर्थ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>सब कुछ ठीक चला।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>टूल के अंदर एक अप्रत्याशित त्रुटि।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>गलत कमांड या फ़्लैग।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>रेसिपी मान्य नहीं है।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>फ़ॉर्मैट वह नहीं कर सकता जो माँगा गया।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>पढ़ना या लिखना विफल रहा।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>डिस्क पर पर्याप्त जगह नहीं है।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify को असंगति मिली।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>रन पूरा हुआ, पर सब कुछ नहीं बना।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Ctrl&#43;C से रोका गया।</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>एक सिग्नल से रोका गया, CI का टाइमआउट ऐसा ही दिखता है।</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+C से रोका गया रन फिर भी मैनिफ़ेस्ट छोड़ता है और कभी आधी लिखी फ़ाइल नहीं छोड़ता, इसलिए रद्द किए
+    गए जॉब को अगला जॉब साफ़ कर सकता है।
+  </p>
+  <p>
+    GitHub Actions और GitLab CI के लिए तैयार वर्कफ़्लो: <a href="/hi/test-files-in-ci/">CI पाइपलाइन में
+    टेस्ट फ़ाइलें कैसे बनाएँ</a>।
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>क्या डेस्कटॉप विंडो है?</h2>
+  <p>
+    हाँ, वही इंजन जिस पर एक विंडो लगी है, उस टेस्टिंग के लिए जो स्क्रिप्ट से नहीं होती। यह घटाया हुआ रूप
+    नहीं है: एक टेस्ट दोनों इंटरफ़ेस की क्षमता-दर-क्षमता तुलना करता है, और जो सिर्फ़ एक ही कर सकता
+    है उसे चुपचाप अलग होने देने के बजाय घोषित और उचित ठहराना पड़ता है।
+  </p>
+  <p>
+    स्क्रीन हैं एक बैच, प्रीसेट, एक साथ कई बैच, और परिचय। यह कुछ भी लिखने से पहले रन की क़ीमत दिखाती है,
+    चलते समय प्रगति बताती है, और बीच में रद्द की जा सकती है बिना आधी लिखी फ़ाइल छोड़े। यह अभी रेसिपी
+    फ़ाइल नहीं खोलती - फ़िलहाल रेसिपी कमांड लाइन की चीज़ हैं, और विंडो अपने बैच फ़ॉर्म में बनाती है।
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

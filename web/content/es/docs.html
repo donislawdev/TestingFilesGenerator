@@ -1,0 +1,280 @@
+<h1>Documentación</h1>
+<p class="lead">
+  Todo lo que hace la herramienta, ordenado según las preguntas con las que la gente llega de verdad.
+  El <a href="{{ .Facts.Repo }}">README del repositorio</a> es la referencia completa y siempre
+  coincide con la versión que descargaste.
+</p>
+
+<section class="section" id="commands">
+  <h2>¿Qué comandos hay?</h2>
+  <p>Cada uno hace una sola cosa:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>¿Cómo genero un único archivo de tamaño exacto?</h2>
+  <p>
+    Indica el formato, el tamaño y dónde va. Los tamaños cuentan de 1024 en 1024, así que
+    <code>2mb</code> son 2097152 bytes. Un número de bytes simple también sirve, de modo que
+    <code>--size 10485761</code> pide exactamente esa cantidad.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Las opciones útiles de <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Opción</th><th>Qué hace</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formato de los archivos, por ejemplo <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>tamaño exacto de cada archivo, como <code>10mb</code> o un número de bytes simple</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>un tamaño sacado por archivo de un intervalo, como <code>1kb-8kb</code>. El sorteo viene de la semilla</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>tres archivos alrededor de un límite: un byte por debajo, el límite, un byte por encima</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>cuántos archivos producir. Por defecto <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>plantilla de nombre, por ejemplo <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>directorio donde escribir</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>semilla de la ejecución. La misma semilla da los mismos bytes</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>un ajuste de formato, repetible</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>romper los archivos a propósito, repetible y aplicado en orden. Ejecuta <code>tfg damage</code> para ver la lista</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> o <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>contar y mostrar, sin escribir absolutamente nada</td></tr>
+        <tr><td><code>--json</code></td><td>escribir el manifiesto en la salida estándar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>¿Cómo hago un archivo roto a propósito?</h2>
+  <p>
+    Todos los demás archivos que escribe esta herramienta son correctos por construcción, lo que
+    responde a dos de las tres preguntas que hace un validador de subidas. <code>--damage</code>
+    responde a la tercera - si el archivo se abre siquiera. El archivo se produce con normalidad y
+    luego se rompe, así que conserva el tamaño que pediste.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Los ajustes van después de dos puntos. La opción se repite, y el orden en que las escribes es el
+    orden en que se aplican. <code>tfg damage</code> lista lo que puede hacer esta versión y qué
+    admite cada una.
+  </p>
+  <p>En una receta la clave es una lista, de nombres o de ajustes:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Un archivo dañado recibe <code>expected: reject</code> en el manifiesto, con el daño registrado a su
+    lado. Dos cosas se rechazan antes de escribir nada, porque cada una dejaría en disco un archivo
+    que el manifiesto describe mal:
+  </p>
+  <ul>
+    <li>un archivo más pequeño de lo que necesita el daño, porque saldría sin cambios</li>
+    <li>
+      <code>expected: accept</code> junto a un daño, porque nada podría cumplirlo. Escribe
+      <code>sanitize</code> si el sistema bajo prueba debe reparar el archivo, o
+      <code>unspecified</code> si esa es la pregunta que haces
+    </li>
+  </ul>
+  <p>
+    Una tercera no se puede saber de antemano. Si un daño se ejecuta y no mueve ningún byte, ese archivo
+    se descarta en lugar de escribirse - la ejecución continúa, dice de qué archivo se trató y
+    termina con el código de salida parcial.
+  </p>
+  <p>
+    Paso a paso, con una prueba que lee el manifiesto: <a href="/es/archivos-de-prueba-corruptos/">cómo
+    crear un archivo corrupto para pruebas</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>¿Qué aspecto tiene una receta?</h2>
+  <p>
+    Una receta es un archivo YAML que describe una ejecución completa. Súbela al repositorio junto a tus
+    pruebas y los fixtures dejan de ser binarios en tu repositorio - cualquiera puede
+    reconstruirlos, byte a byte, a partir de un archivo de unos cientos de caracteres.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Cada target necesita exactamente una de estas claves: <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> o <code>contains</code>. Dos es un error y ninguna también. Una receta
+    inválida escribe <strong>ningún archivo</strong> e informa de todos los problemas a la vez en
+    lugar de solo del primero, cada uno nombrando el ajuste al que se refiere.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>¿Cómo declaro qué debe hacer mi sistema con un archivo?</h2>
+  <p>Forma corta cuando basta con el resultado, forma larga cuando importa el motivo:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Los resultados son <code>accept</code>, <code>reject</code>, <code>sanitize</code> y
+    <code>unspecified</code>. Los motivos son una lista cerrada para que un informe pueda
+    agruparlos: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> y <code>size_zero</code>.
+  </p>
+  <p>
+    Un motivo nombra <strong>la regla en juego</strong>, no el veredicto. Por eso el mismo motivo puede
+    estar bajo cualquiera de los dos resultados - un archivo un byte por debajo de un límite es
+    <code>accept</code>, y la regla de la que trata sigue siendo <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>¿Qué hay en el manifiesto?</h2>
+  <p>
+    Se escribe junto a los archivos al final de cada ejecución, incluida una ejecución interrumpida. Una
+    entrada por archivo:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Se añade un <code>recipe_hash</code> cuando la ejecución viene de una receta, y <code>preset</code>
+    con <code>overrides</code> cuando viene de un preset, de modo que un manifiesto siempre se puede
+    rastrear hasta lo que lo produjo.
+  </p>
+  <p>
+    Cada entrada lleva también <code>target_id</code>, el id del target de la receta que produjo el
+    archivo, y <code>summary.by_target</code> cuenta los archivos a los que llegó cada target. Una
+    receta con varios targets se puede comprobar así target por target sin leer nombres de archivo.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>¿Qué es un preset?</h2>
+  <p>
+    Un conjunto de archivos listo que responde a una pregunta de prueba habitual, para que no tengas que
+    diseñar el conjunto tú. Los presets son recetas normales por debajo, y <code>eject</code>
+    imprime la receta para que la edites desde ahí. Cada preset tiene <a href="/es/presets/">una
+    página propia</a> con lo que suele encontrar, qué hay en el conjunto y cada ajuste que admite.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> te dice cuánto costaría el conjunto antes de construirlo, y dice sin rodeos cuándo
+    un número es un marcador nuestro en lugar de un límite tuyo.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>¿Qué significan los códigos de salida?</h2>
+  <p>
+    Cada final tiene su propio código, la salida legible por máquina va a la salida estándar, y una
+    ejecución fallida no imprime nada allí. La tabla es un contrato congelado - cambiar lo que
+    significa un código exige una versión mayor.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Una ejecución detenida con Ctrl+C sigue dejando un manifiesto y nunca deja un archivo a medio
+    escribir, así que un trabajo cancelado aún puede limpiarlo el siguiente.
+  </p>
+  <p>
+    Workflows listos para GitHub Actions y GitLab CI: <a href="/es/archivos-de-prueba-en-ci/">cómo
+    generar archivos de prueba en un pipeline de CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>¿Hay una ventana de escritorio?</h2>
+  <p>
+    Sí, el mismo motor con una ventana encima, para las pruebas que no se automatizan. No es una versión
+    recortada: una prueba compara las dos interfaces capacidad por capacidad, y todo lo que solo una
+    de ellas puede hacer debe declararse y justificarse en lugar de divergir en silencio.
+  </p>
+  <p>
+    Las pantallas son un lote, presets, varios lotes a la vez y Acerca de. Muestra lo que costaría una
+    ejecución antes de escribir nada, informa del progreso mientras corre y se puede cancelar a
+    medias sin dejar un archivo a medio escribir. Todavía no abre un archivo de receta - por ahora
+    las recetas son cosa de la línea de comandos, y la ventana construye sus lotes en el formulario.
+  </p>
+</section>

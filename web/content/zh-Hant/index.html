@@ -1,0 +1,183 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>產生大小精確的真實測試檔案</h1>
+  <p class="lead">
+    PDF、PNG、DOCX、ZIP，<strong>共 {{ .Facts.FormatCount }}
+    種格式</strong>，每一種都是能在對應軟體中開啟的真實檔案，大小<strong>恰好等於你的要求</strong>。每次執行還會寫下你的應用程式應該如何處理每個檔案。命令列加桌面視窗，免費開源，完全在你的電腦上執行。
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Testing Files Generator 的桌面視窗，已準備好寫出一批測試檔案">
+    <figcaption>桌面視窗，已準備好寫出一批檔案。命令列背後執行的是同一個引擎。</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">種真實格式，每一種都能在對應軟體中開啟</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 位元組</span>
+      <p class="fact-label">你要求的每個大小都精確無誤，絕不默默四捨五入</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">個對外連線，無帳號、無遙測、無更新檢查</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">問題所在</p>
+  <h2>做一個測試檔案很容易，做出對的一千個才是麻煩所在</h2>
+  <p>你在測試接收使用者檔案的軟體。遲早你會需要：</p>
+  <ul class="ticks">
+    <li>一個<strong>恰好</strong> 10 MB 的 PDF，用來弄清上傳限制是否真實</li>
+    <li>位於該限制兩側的三個檔案，用來抓出差一錯誤</li>
+    <li>10,000 個記錄檔，用來看夜間工作在資料夾很大時會怎樣</li>
+    <li>一個真正包含 200 份文件的 ZIP，而不是只有正確副檔名的空殼</li>
+    <li>一個 4 GB 的檔案，同時不必在儲存庫裡保存 4 GB 的檔案</li>
+    <li>筆電與建置伺服器上<strong>完全相同</strong>的 fixture，逐位元組一致</li>
+  </ul>
+  <p>
+    這正是它要取代的。它為 QA 工程師、測試自動化，以及程式碼背後有上傳表單、匯入程式、剖析器或儲存配額的所有人而做。
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">它的與眾不同之處</p>
+  <h2>其他產生器止步於位元組。這個工具回答你的測試真正要問的問題</h2>
+  <p>
+    一個滿是檔案的資料夾仍然要你自己判斷每個檔案應該證明什麼。這裡每次執行都會在檔案旁寫出一個
+    <code>manifest.json</code>，它是所產生內容的簡單清單，並為每一項給出<strong>宣告的預期</strong>。
+  </p>
+  <p>假設你的上傳端點允許 1 MB。請求恰好位於這條線上的三個檔案：</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>檔案</th><th class="num">位元組</th><th>你的系統應該</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>接受</strong></td><td>在限制之內</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>接受</strong></td><td>限制本身是允許的</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>拒絕</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>三個檔案，三種不同的答案，以機器可讀的形式給出。你的測試讀取清單，而不是由你手寫斷言：</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">當答案取決於你自己的政策時，清單會如實說明</p>
+    <p>
+      它記錄的是 <code>unspecified</code>，而不是憑空捏造預期。會猜測的產生器會製造誤報，而總是誤報的測試套件最終會被關掉。
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">預設集</p>
+  <h2>選好問題，拿到整組檔案</h2>
+  <p>
+    預設集是圍繞一個測試問題設計的測試檔案組，你不必自己琢磨哪些檔案能證明什麼。每個預設集都有一個頁面，說明它通常能發現什麼、組合裡有什麼，以及它接受的每項設定。
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/zh-hant/presets/">全部預設集，以及它們與配方的關係</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">快速開始</p>
+  <h2>三個指令，看它如何運作</h2>
+  <ol class="steps">
+    <li>
+      <h3>產生一個檔案</h3>
+      <p>一個 PNG，恰好兩 MB：</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>產生大量檔案</h3>
+      <p>
+        一萬個記錄檔，每個介於 1 到 8 KB
+        之間，大小由種子抽取，因此明天會得到同樣的檔案組。<strong>給每次執行一個獨立的目錄</strong>，清單是一次執行所寫內容的唯一記錄，所以工具拒絕在其上再寫第二份：
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>先檢查，再刪除</h3>
+      <p><code>verify</code> 告訴你沒有任何變動。<code>cleanup</code> 只刪除寫出的內容，不動其他任何東西：</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    大小以 1024 進位計算，與你的檔案管理員一致，所以 <code>2mb</code> 代表 2097152
+    位元組。直接寫位元組數也可以。<a href="/zh-hant/docs/">文件</a>涵蓋配方、清單與結束碼。
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">你將得到什麼</p>
+  <h2>為無人看管的測試套件而生</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">精確大小，精確到位元組</p>
+      <p class="muted">要求 10485761 位元組，就得到恰好這麼多。格式無法達到的大小會得到附上原因的錯誤，絕不會得到大小錯誤的檔案。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} 種真實格式</p>
+      <p class="muted">不是帶副檔名的填充零。產生的 PNG 能在圖片檢視器中開啟，DOCX 能在 Word 中開啟，ZIP 能解壓縮。每種格式在發布前都經過獨立讀取器驗證。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">本身就是測試依據的清單</p>
+      <p class="muted">路徑、大小、SHA-256、格式、種子、工具版本，以及你的系統應該如何處理該檔案。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">可重現</p>
+      <p class="muted">配方與種子相同，位元組就相同，在任何電腦上都一樣。提交一個小小的 YAML 配方，而不是龐大的二進位 fixture。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">兩種介面，一個引擎</p>
+      <p class="muted">一個為 CI 打造的命令列，和一個用於探索式測試的桌面視窗。兩者都不是對方的縮水版，並且有測試逐項比對它們的功能。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">完全離線</p>
+      <p class="muted">沒有帳號，沒有雲端，沒有遙測，沒有更新檢查。命令列執行檔裡根本沒有編譯進網路堆疊。</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">下載</p>
+  <h2>選擇適合你系統的版本</h2>
+  <p>
+    解壓縮後執行即可。<code>tfg</code> 是命令列，<code>tfg-gui</code> 是桌面視窗。沒有安裝程式，也無需向你的電腦新增任何東西。
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">哪些已簽署，哪些沒有</p>
+    <p>
+      Windows 與 macOS 的下載檔已簽署，因此啟動時不會出現未知開發者的警告。Linux 的沒有簽署，因為桌面 Linux 沒有可用的對應簽署機制。每個壓縮檔都列在發布頁面的
+      <code>verify-SHA256SUMS.txt</code> 中，你可以據此核對所下載的內容。
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

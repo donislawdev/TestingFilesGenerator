@@ -1,0 +1,26 @@
+<h1>테스트 파일 프리셋, 테스트 질문마다 한 세트</h1>
+<p class="lead">
+  프리셋은 하나의 질문을 중심으로 설계한 테스트 파일 세트 전체이며, 시스템이 각 파일에 어떻게 반응해야 하는지 알려 주는 매니페스트가 함께 제공됩니다. 질문을 고르면 도구가 세트를
+  만듭니다. 각 프리셋에는 보통 무엇을 찾아내는지, 세트에 무엇이 들어 있는지, 어떤 설정을 받는지 설명하는 고유한 페이지가 있습니다.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>프리셋과 레시피는 어떻게 다른가요?</h2>
+  <p>
+    내부적으로는 다르지 않습니다. 프리셋은 몇 가지 설정으로 도구가 대신 써 주는 레시피입니다. <code>tfg preset eject</code>가 그 레시피를 출력하므로 테스트
+    옆에 두고 편집할 수 있으며, 직접 만든 레시피는 <code>extends: preset:</code> 뒤에 id를 붙인 한 줄로 프리셋을 바탕으로 할 수 있습니다.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>기본값을 믿어도 되나요?</h2>
+  <p>
+    파일에 대해서는 그렇습니다. 업로드 양식의 한도처럼 여러분의 시스템만 아는 숫자라면 기본값은 우리 쪽의 임시값이며, 도구는 임시값을 쓸 때마다 그렇게 알려 줍니다. 각 프리셋의
+    페이지는 그러한 설정을 표시하고, <code>tfg preset show</code>는 무엇이든 쓰기 전에 그 사실을 알려 줍니다.
+  </p>
+</section>

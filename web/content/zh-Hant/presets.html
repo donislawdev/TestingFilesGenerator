@@ -1,0 +1,25 @@
+<h1>測試檔案預設集，每個測試問題一組檔案</h1>
+<p class="lead">
+  預設集是圍繞一個問題設計的整組測試檔案，並附上說明你的系統應如何回應每個檔案的清單。你選擇問題，工具建置檔案組。每個預設集都有自己的頁面，說明它通常能發現什麼、組合裡有什麼，以及它接受的每項設定。
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>預設集與配方有何不同？</h2>
+  <p>
+    在底層沒有不同。預設集就是工具根據幾項設定替你寫出的配方。<code>tfg preset eject</code>
+    會把這個配方列印出來，方便你與測試放在一起並加以編輯，你自己的配方也可以用一行以某個預設集為基礎，也就是 <code>extends: preset:</code> 後面接上它的 id。
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>我可以信任預設值嗎？</h2>
+  <p>
+    對檔案來說可以。對於只有你的系統才知道的數字，比如上傳表單的限制，預設值是我們的預留值，工具每次使用時都會這樣說明。每個預設集的頁面都會標出這些設定，<code>tfg preset
+    show</code> 會在寫入任何內容之前告知你。
+  </p>
+</section>

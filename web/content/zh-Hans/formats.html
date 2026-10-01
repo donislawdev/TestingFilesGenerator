@@ -1,0 +1,65 @@
+<h1>{{ .Facts.FormatCount }} 种文件格式，每一种都按精确大小生成</h1>
+<p class="lead">
+  它们每一个都是<strong>该格式的真实文件</strong>。它能在对应软件中打开，字节数恰好等于你的要求。没有一个是粘上扩展名的填充零。
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>各列的含义</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">最小文件</p>
+      <p class="muted">
+        本工具对该格式接受的最少字节数，包括它写在文件里的标签。请求更小的值，你会得到说明下限及其原因的错误，绝不会得到大小错误的文件。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">完整度</p>
+      <p class="muted">
+        文件有多完整。<code>full</code> 表示真正解析该格式的读取器会接受它，而不只是扩展名匹配。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">验证方式</p>
+      <p class="muted">
+        在格式发布之前打开每个生成文件的独立读取器，它是另一套独立实现，而不是我们自己的代码给自己批改作业。
+      </p>
+    </li>
+  </ul>
+  <p>
+    每种格式也都能精确到字节地重复：相同的配方和种子在任何机器上都生成相同的文件，这正是提交配方来代替 fixture 本身是安全的原因。
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>每种格式接受的设置</h2>
+  <p>
+    大多数格式有自己的设置，比如图片尺寸、JPEG 质量、PDF 页数、电子表格的行数和列数、压缩包里放多少条目。在命令行用 <code>--set key=value</code> 设置，或在配方的
+    <code>properties:</code> 下设置。
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    超出设置所接受范围的值会被拒绝，并给出指明该设置、允许范围以及应改用什么的消息。未知的设置同样是错误，绝不会静默使用默认值，因为悄悄接受的拼写错误会生成设置有误的文件，让你花一小时纳闷为什么该失败的测试却通过了。
+  </p>
+  <p>
+    运行 <code>tfg formats &lt;id&gt;</code> 即可查看某个格式在你当前版本中接受哪些设置。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>压缩包里装的是真实文件</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} 和 {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    可以填入条目，而不是只留一个空壳。生成的压缩包确实包含它声称包含的文档，所以测试期间解压它的任何程序都会在里面找到真实文件。
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

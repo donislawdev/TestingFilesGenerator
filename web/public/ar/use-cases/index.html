@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ar">
+<title>حالات الاستخدام - حدود الرفع وبيانات CI والاختبار الكمي</title>
+<meta name="description" content="اختبار حد حجم الرفع، وبناء بيانات اختبار قابلة لإعادة الإنتاج لـ CI، وتوليد عشرة آلاف ملف، وملء الأرشيفات بمحتوى حقيقي.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/use-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/use-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/use-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/use-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/use-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:title" content="حالات الاستخدام - حدود الرفع وبيانات CI والاختبار الكمي">
+<meta property="og:description" content="اختبار حد حجم الرفع، وبناء بيانات اختبار قابلة لإعادة الإنتاج لـ CI، وتوليد عشرة آلاف ملف، وملء الأرشيفات بمحتوى حقيقي.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="حالات الاستخدام - حدود الرفع وبيانات CI والاختبار الكمي">
+<meta name="twitter:description" content="اختبار حد حجم الرفع، وبناء بيانات اختبار قابلة لإعادة الإنتاج لـ CI، وتوليد عشرة آلاف ملف، وملء الأرشيفات بمحتوى حقيقي.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "الرئيسية",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ar/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "حالات الاستخدام",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/use-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ar/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="القائمة الرئيسية">
+      <a href="/ar/">الرئيسية</a>
+      <a href="/ar/formats/">الصيغ</a>
+      <a href="/ar/presets/">الإعدادات المسبقة</a>
+      <a href="/ar/docs/">التوثيق</a>
+      <a href="/ar/use-cases/" aria-current="page">حالات الاستخدام</a>
+      <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
+      <a href="/ar/faq/">الأسئلة الشائعة</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="اللغة: العربية">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>العربية</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/use-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/use-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/use-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/use-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/use-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/use-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/use-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/use-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>فيمَ يستخدمه الناس</h1>
+<p class="lead">
+  خمس مهام تظهر في كل مشروع تقريبًا يقبل ملفات من الناس، والأمر الذي ينفذ كلًّا منها. كل مثال أدناه
+  يعمل كما هو مكتوب.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">حدود الرفع</p>
+  <h2>اختبار ما إذا كان حد حجم الملف يُطبَّق حيث يقول إنه يُطبَّق</h2>
+  <p>
+    الحد ثلاث حالات اختبار لا حالة واحدة: أقل منه بقليل، وعنده تمامًا، وأعلى منه بقليل. الحصول عليها
+    يدويًا يعني حساب أعداد البايتات والأمل في ألا تخطئ بواحد. اطلب المجموعة بدلًا من ذلك:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    تحصل على ثلاثة ملفات PDF حقيقية بحجم 1048575 و1048576 و1048577 بايتًا، وبيان يقول إن الأولين يجب
+    قبولهما والثالث يُرفض بسبب <code>size_limit</code>. يقرأ اختبارك التوقّع بدل أن تكتب ثلاثة
+    تأكيدات يدويًا، وحين يتغير الحد تغيّر رقمًا واحدًا وتعيد التشغيل.
+  </p>
+  <p>
+    ويعمل الأمر نفسه دون إعداد مسبق حين تريد مجموعة حدود واحدة داخل الأمر:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">التكامل المستمر</p>
+  <h2>إبقاء بيانات الاختبار خارج المستودع دون فقدانها</h2>
+  <p>
+    بيانات الاختبار الثنائية الكبيرة تُبطئ استنساخ المستودع وتُصعّب مراجعته، ولا أحد يعرف ما الذي تغيّر
+    حين تُستبدل واحدة. الوصفة بضع مئات من أحرف YAML تعيد بناء الملفات المطابقة، <strong>بايتًا ببايت
+    وعلى أي جهاز</strong>، لأن كل ملف مشتق من بذرة التشغيل.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    لكل نهاية رمز خروج خاص بها، فيستطيع خط البناء التمييز بين وصفة سيئة وقرص ممتلئ وعدم تطابق في التحقق.
+    والتشغيل الفاشل لا يطبع شيئًا على المخرج القياسي، فلا يقرأ محلل السجلات خطأً على أنه بيانات.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">الحجم الكبير</p>
+  <h2>معرفة ما يحدث حين يكون المجلد كبيرًا</h2>
+  <p>
+    تتصرف روتينات الاستيراد والمهام الليلية وقوائم المجلدات بشكل مختلف عند عشرة آلاف ملف عنه عند عشرة.
+    الأحجام المسحوبة من نطاق تجعل المجموعة تبدو كحركة حقيقية لا كعشرة آلاف ملف متطابق، ويأتي السحب
+    من البذرة، فتكون المجموعة نفسها غدًا.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    تحقق من كلفة التشغيل قبل أن يكتب أي شيء، وهذا مهم حين يُقاس المجموع بالغيغابايت:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    التشغيل الأكبر من المساحة الحرة على القرص يُرفض قبل كتابة أول بايت، بدل أن يملأ القرص ويفشل في منتصف
+    الطريق.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">الأرشيفات</p>
+  <h2>اختبار أداة فك الضغط بأرشيف يحتوي ملفات حقيقية فعلًا</h2>
+  <p>
+    أرشيف فارغ بالامتداد الصحيح لا يثبت شيئًا عن شيفرة تفتحه وتجتاز ما بداخله. صرّح بالمحتوى فيحتويه
+    الأرشيف فعلًا:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    عمق التداخل وعدد العناصر وحجم ما بالداخل كلها أمور لروتين الاستيراد رأي فيها، وهكذا تعرف ما هي تلك
+    الآراء.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">المحللات والعارضات</p>
+  <h2>التحقق من أن شيفرتك تقرأ الصيغة كما يفعل البرنامج الحقيقي</h2>
+  <p>
+    كل صيغة هنا تُفحص بقارئ مستقل قبل إصدارها: يُفتح PNG وتُقارَن بكسلاته، ويُقرأ DOCX من جديد بمكتبات
+    منفصلة، ويُفك أرشيف. وهذا يعني أن ملفًا يرفضه محللك هو نتيجة عن محللك، لا عن المولّد.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    تسرد <a href="/ar/formats/">صفحة الصيغ</a> الإعدادات التي تقبلها كل صيغة وأصغر ملف يمكن أن تكونه.
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">أدلة</p>
+  <h2>اثنان منها بتفصيل أكبر</h2>
+  <ul>
+    <li>
+      <a href="/ar/corrupt-test-files/">ملفات اختبار تالفة</a> - ملف أُتلف عمدًا بحجم دقيق، وما ينبغي أن
+      يحدث له مكتوب في البيان.
+    </li>
+    <li>
+      <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a> - سير عمل لـ GitHub Actions ومهمة في GitLab
+      ورموز الخروج التي تُفشل البناء.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>لمن هذا</h2>
+  <p>
+    لمهندسي ضمان الجودة وأتمتة الاختبار، ولكل من خلف شيفرته نموذج رفع أو روتين استيراد أو محلل أو حصة
+    تخزين. يعمل على جهاز بلا شبكة إطلاقًا، وهذا مهم في بيئة مؤسسية مغلقة لا يكون فيها المولّد القائم
+    على المتصفح خيارًا.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">تنزيل</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">عرض الشيفرة المصدرية</a>
+</div>
+<p class="cta-note">مجاني ومفتوح المصدر، GPL-3.0. لا حاجة إلى التسجيل. تنزيلات ويندوز وماك موقّعة وتعمل دون تحذير.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ملفات اختبار لضمان الجودة بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">المشروع</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">الشيفرة المصدرية على GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">التنزيلات</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">الإبلاغ عن مشكلة</a></li>
+        <li><a href="https://donislawdev.com/support/">ادعم المشروع</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">الصفحات</p>
+      <ul class="plain">
+        <li><a href="/ar/">الرئيسية</a></li>
+        <li><a href="/ar/formats/">الصيغ</a></li>
+        <li><a href="/ar/presets/">الإعدادات المسبقة</a></li>
+        <li><a href="/ar/docs/">التوثيق</a></li>
+        <li><a href="/ar/use-cases/">حالات الاستخدام</a></li>
+        <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
+        <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. مُصدَر بموجب رخصة جنو العمومية العامة، الإصدار 3. الملفات التي تولّدها ملكك، فالرخصة تشمل الأداة لا مخرجاتها.</p>
+    <p class="muted">لا يحمّل هذا الموقع خطوطًا ولا سكربتات ولا متتبعات من أي مكان. ولا يضبط ملفات تعريف الارتباط.</p>
+  </div>
+</footer>
+</body>
+</html>

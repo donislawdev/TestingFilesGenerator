@@ -1,0 +1,81 @@
+<h1>{{ .Facts.FormatCount }} Dateiformate, jedes in exakter Größe erzeugt</h1>
+<p class="lead">
+  Jedes davon ist eine <strong>echte Datei dieses Formats</strong>. Sie öffnet sich in der Software,
+  zu der sie gehört, und hat genau die Byte-Zahl, die du verlangt hast. Keines davon besteht aus
+  aufgefüllten Nullen mit einer angeklebten Endung.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Was die Spalten bedeuten</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Kleinste Datei</p>
+      <p class="muted">
+        Die wenigsten Bytes, die dieses Tool für das Format akzeptiert, einschließlich des Labels, das es in
+        die Datei schreibt. Verlangst du weniger, bekommst du einen Fehler, der die Untergrenze und
+        ihren Grund nennt, nie eine Datei in der falschen Größe.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Vollständigkeit</p>
+      <p class="muted">
+        Wie vollständig die Datei ist. <code>full</code> heißt, dass ein Leser, der das Format wirklich
+        parst, sie akzeptiert, nicht nur, dass die Endung passt.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Geprüft mit</p>
+      <p class="muted">
+        Der unabhängige Leser, der jede erzeugte Datei öffnet, bevor das Format ausgeliefert wird - eine
+        eigene Implementierung, nicht unser eigener Code, der seine Hausaufgaben selbst korrigiert.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Jedes Format wiederholt sich außerdem bis aufs Byte: Dasselbe Rezept und derselbe Seed erzeugen auf
+    jedem Rechner identische Dateien, und genau das macht ein Rezept sicher einzuchecken statt der
+    Fixtures selbst.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Einstellungen, die jedes Format kennt</h2>
+  <p>
+    Die meisten Formate haben eigene Einstellungen - Bildmaße, JPEG-Qualität, PDF-Seitenzahl, Zeilen und
+    Spalten in einer Tabelle, wie viele Einträge in ein Archiv kommen. Setze sie mit <code>--set
+    key=value</code> auf der Kommandozeile oder unter <code>properties:</code> in einem Rezept.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Ein Wert außerhalb dessen, was eine Einstellung zulässt, wird mit einer Meldung abgewiesen, die die
+    Einstellung, den erlaubten Bereich und eine Alternative nennt. Eine unbekannte Einstellung ist
+    ebenfalls ein Fehler, nie ein stiller Standardwert - ein stillschweigend akzeptierter Tippfehler
+    ergibt eine Datei mit den falschen Einstellungen und eine Stunde Rätselraten, warum der Test
+    besteht, obwohl er es nicht sollte.
+  </p>
+  <p>
+    Mit <code>tfg formats &lt;id&gt;</code> siehst du genau, was ein Format in dem Build akzeptiert, den
+    du hast.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Archive enthalten echte Dateien</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} und {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    lassen sich mit Einträgen füllen, statt als leere Hülle zu bleiben. Ein erzeugtes Archiv enthält
+    wirklich die Dokumente, die es zu enthalten vorgibt, sodass alles, was es während eines Tests
+    entpackt, echte Dateien darin findet.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

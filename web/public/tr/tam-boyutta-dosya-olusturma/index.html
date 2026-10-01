@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>Belirli boyutta dosya oluşturma - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate ve mkfile, her biri kendi sisteminde ölçüldü, ve bir test PDF veya PNG gerektirdiğinde bu yolla yapılan dosyanın neden onlar olmadığı.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Belirli boyutta dosya oluşturma - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate ve mkfile, her biri kendi sisteminde ölçüldü, ve bir test PDF veya PNG gerektirdiğinde bu yolla yapılan dosyanın neden onlar olmadığı.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Belirli boyutta dosya oluşturma - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate ve mkfile, her biri kendi sisteminde ölçüldü, ve bir test PDF veya PNG gerektirdiğinde bu yolla yapılan dosyanın neden onlar olmadığı.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tam boyut",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/tam-boyutta-dosya-olusturma\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/" aria-current="page">Tam boyut</a>
+      <a href="/tr/sss/">SSS</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/create-file-exact-size/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/create-file-exact-size/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/create-file-exact-size/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/create-file-exact-size/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/create-file-exact-size/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Tam boyutta dosya nasıl oluşturulur</h1>
+<p class="lead">
+  Her sistemin bunun için bir komutu var ve üçü de aşağıda. Size tam doğru bayt sayısında bir dosya
+  verirler - ve birçok test için gereken tek şey budur. <strong>Bu sayfadaki her komut,
+  yayımlanmadan önce ait olduğu sistemde çalıştırıldı</strong>.
+</p>
+
+<div class="note">
+  <p class="note-title">Kısa yanıt</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Boyutlar bayt cinsindendir ve dosya
+    yöneticinizin saydığı gibi 10 MB, 10485760'tır.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil ve fazladan hiçbir şey gerektirmeyen bir PowerShell sürümü</h2>
+  <p>
+    <code>fsutil</code> Windows ile gelir. Boyutu <strong>bayt cinsinden</strong> alır, bu yüzden sayıyı
+    önce hesaplayın - 10 MB 10485760, 100 MB 104857600, 1 GB 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11'de ölçüldü: sıradan bir istemden çalışır, yükseltilmiş bir istem gerektirmez ve dosya tam
+    10485760 bayt çıkar.
+  </p>
+  <p>PowerShell aynı şeyi başka bir programı çağırmadan yapabilir ve birimleri anlar:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell'de <code>10MB</code>, Gezgin'in kullandığı aynı 1024 tabanlı sayımla 10485760 bayt
+    demektir, yani yukarıdaki iki komut aynı boyutu üretir.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate ve fallocate ve insanları yakalayan fark</h2>
+  <p><code>dd</code> herkesin bildiğidir. Baytları gerçekten yazar:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> anlıktır ve tuzak da budur. Alpine Linux'ta ölçüldü: dosya 10485760 bayt
+    bildirir ve <strong>sıfır blok</strong> kaplar - bir <strong>seyrek dosyadır</strong>. Onu
+    okuyan her şey on megabayt sıfır alır ama disk alanı hiç vermemiştir:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Bu, yükleme sınırını sınamak için iyidir ve disk kotasını sınamak için yanıltıcıdır. Alan gerçek
+    olmalıysa başvurulacak olan <code>fallocate</code>'tir:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Ve içerik, bir arşivleyici onu yeniden sıkıştıramasın diye sıkıştırılamaz olmalıysa:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>seyrek olmayan mkfile ve zaten bildiğiniz iki komut</h2>
+  <p>
+    macOS <code>mkfile</code> ile gelir. macOS 26.6.2'de ölçüldü: 10485760 bayt ve 20480 blok, yani alan
+    söz verilmek yerine gerçekten ayrılır:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> ve <code>truncate</code> da var ve Linux'taki gibi davranır:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Bunun işe yaramadığı yer</p>
+  <h2>Doğru boyutta bir dosya doğru türde bir dosya değildir</h2>
+  <p>
+    Yukarıdakilerin hepsi size bir sıfır bloğu verir. Test edilen şey yalnızca boyuta bakıyorsa -
+    yükleme sınırı, kota, aktarım - bu yeterlidir. Bir şey dosyayı <strong>açtığı</strong> anda
+    yeterli olmaktan çıkar.
+  </p>
+  <p>
+    Ölçüldü ve kendiniz yapmaya değer: <code>fsutil</code> ile 2 MB'lık bir dosya yapın, adını
+    <code>photo.png</code> koyun ve bir görüntü kitaplığına verin. Pillow <code>cannot identify
+    image file</code> yanıtını verir. PNG değil. Hiç de olmadı - yalnızca adı öyle diyordu.
+  </p>
+  <p>
+    Bu, göründüğünden daha önemlidir, çünkü <strong>testin bundan sonra hangi yönde başarısız
+    olduğu</strong> belirleyicidir. Yükleme endpoint'iniz dosyayı reddeder, testiniz yeşile döner ve
+    boyut sınırının çalıştığı sonucuna varırsınız. Onu boyut yüzünden reddetmedi. Baytlar resim
+    olmadığı için reddetti ve sınamak istediğiniz kurala hiç ulaşılmadı.
+  </p>
+  <ul class="ticks">
+    <li>bir ayrıştırıcı herhangi bir boyut kuralına bakılmadan önce onu reddeder</li>
+    <li>küçük resim adımı başarısız olur ve okuduğunuz hata küçük resimle ilgilidir</li>
+    <li>bir antivirüs veya içerik denetimi onu üçüncü bir nedenle reddeder</li>
+    <li>bir görüntüleyici hiçbir şey göstermez ve bunun hata olup olmadığını kimse söyleyemez</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Öbür yol</p>
+  <h2>O biçimden gerçek bir dosya, tam istediğiniz boyutta</h2>
+  <p>
+    Testing Files Generator'ın yaptığı budur. Dosya biçiminin gerçek bir örneğidir - ait olduğu
+    programda açılır - ve istediğiniz tam bayt sayısındadır, bayta kadar:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Bir biçimin ulaşamayacağı bir boyut isteyin, alt sınırı ve nedenini adlandıran bir hata alırsınız,
+    asla yanlış boyutta bir dosya değil. <a href="/tr/bicimler/">Biçimler sayfası</a> her biçimi
+    üretebildiği en küçük dosyayla listeler.
+  </p>
+  <p>Ve bir sınır bir değil üç test durumudur, bu yüzden araç üçünü de kurar:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Bu size 10485759, 10485760 ve 10485761 bayt ile hangilerini sisteminizin kabul etmesi, hangilerini
+    reddetmesi gerektiğini söyleyen bir manifest verir. <a href="/tr/kullanim-senaryolari/">Kullanım
+    senaryoları sayfası</a> bunu ve aracın yapıldığı dört işi daha anlatır.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndir</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Kaynak kodu görüntüle</a>
+</div>
+<p class="cta-note">Ücretsiz ve açık kaynak, GPL-3.0. Kayıt gerekmez. Windows ve macOS indirmeleri imzalıdır ve uyarı vermeden başlar.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>Peki hangisini kullanmalı?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Sistem komutunu kullanın</p>
+      <p class="muted">
+        Hiçbir şey dosyayı açmıyorsa. Önce boyuta bakan bir endpoint'te boyut sınırını sınamak, bir aktarım,
+        bir kota, disk dolu durumu. Tek satırdır ve zaten kuruludur.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Gerçek bir üretici kullanın</p>
+      <p class="muted">
+        Bir şey dosyayı ayrıştırıyor, işliyor, içe aktarıyor veya çıkarıyorsa - ve yarın başka bir makinede
+        aynı fixture'lara bayt bayt ihtiyacınız varsa.
+      </p>
+    </li>
+  </ul>
+  <p>
+    İkisi de bu sayfada çünkü ikisi de zamanın bir kısmında haklı. Kaçınılması gereken hata, ikincisinin
+    gerektiği yerde birincisini kullanmak ve yeşil testi kanıt saymaktır.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

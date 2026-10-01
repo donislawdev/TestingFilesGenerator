@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell</title>
+<meta name="description" content="바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell">
+<meta property="og:description" content="바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell">
+<meta name="twitter:description" content="바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "활용 사례",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "CI의 테스트 파일",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/test-files-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/">문서</a>
+      <a href="/ko/use-cases/" aria-current="true">활용 사례</a>
+      <a href="/ko/create-file-exact-size/">정확한 크기</a>
+      <a href="/ko/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ko/use-cases/">활용 사례</a></p>
+<h1>CI 파이프라인에서 테스트 파일을 생성하는 방법</h1>
+<p class="lead">
+  저장소의 바이너리 픽스처는 기록에 영원히 남고, diff에서 검토할 수 없으며, 파일이 커지면 아예 불가능해집니다. 대신 파이프라인 안에서 레시피로 파일을 생성하세요. 레시피는
+  텍스트이고, 바이트는 매번 같게 나오며, 마지막 단계가 아무것도 움직이지 않았음을 증명합니다.
+</p>
+
+<div class="note">
+  <p class="note-title">짧은 답</p>
+  <p>
+    <code>tfg</code>를 설치하고, 테스트 전에 <code>tfg generate fixtures.yaml --out ./fixtures</code>를, 테스트 후에
+    <code>tfg verify ./fixtures/manifest.json</code>을 실행하세요. 두 단계 모두 스스로 빌드를 실패시키며, 이유를 알려 주는 종료 코드를
+    남깁니다.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">커밋하지 않는 이유</p>
+  <h2>픽스처가 저장소에 있으면 안 되는 이유</h2>
+  <ul>
+    <li>
+      <strong>기록에 남습니다.</strong> 바이너리를 나중에 삭제해도 모든 버전이 그대로 있으므로 클론은 작아지지 않습니다.
+    </li>
+    <li>
+      <strong>diff로는 무엇이 바뀌었는지 알 수 없습니다.</strong> 검토자는 PDF가 다르다는 것만 볼 뿐 그 이상은 모릅니다. 레시피는 한 줄만 바뀝니다.
+    </li>
+    <li>
+      <strong>큰 파일은 들어가지 않습니다.</strong> GitHub는 100 MB를 넘는 파일이 든 푸시를 거부하므로, 500 MB 업로드 한도를 테스트하려면 커밋할 것이
+      없습니다.
+    </li>
+  </ul>
+  <p>
+    커밋할 것은 레시피입니다. 같은 레시피와 같은 시드는 어느 머신에서나 같은 바이트를 쓰므로, 파이프라인에서 생성한 파일은 노트북에 있던 바로 그 파일입니다.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">레시피</p>
+  <h2>테스트 옆에 두는 레시피</h2>
+  <p>
+    이 레시피는 수락되어야 하는 청구서 25건과 한도를 넘어 거부되어야 하는 이미지 2장을 쓰며, 매니페스트는 두 기대 결과를 모두 기록합니다.
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code>은 아무것도 쓰지 않고 레시피를 검사하며 모든 문제를 한 번에 알려 줍니다.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>도구를 설치하고 픽스처를 만드는 워크플로</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    체크섬 줄은 아카이브를 같은 릴리스의 <code>verify-SHA256SUMS.txt</code>와 비교합니다. 버전이 고정되어 있어서 새 릴리스가 손대지 않은 빌드를 바꾸는
+    일은 없습니다.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>같은 일을 GitLab 작업으로</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">빨갛게 변했을 때</p>
+  <h2>무엇이 단계를 실패시키는지, 그리고 이유</h2>
+  <p>
+    끝나는 방식마다 고유한 종료 코드가 있으므로 단계는 스스로 실패하고 로그가 어느 것인지 알려 줍니다. 파이프라인이 만나는 코드는 다음과 같습니다.
+  </p>
+  <ul>
+    <li><code>3</code> - 레시피가 유효하지 않습니다. 아무것도 쓰이지 않았고 모든 문제가 지목됩니다</li>
+    <li><code>4</code> - 형식이 요청받은 일을 할 수 없습니다. 예를 들어 최소보다 작은 크기입니다</li>
+    <li><code>6</code> - 디스크 공간이 부족합니다</li>
+    <li><code>7</code> - <code>tfg verify</code>가 매니페스트와 맞지 않는 파일을 찾았습니다</li>
+    <li><code>8</code> - 실행은 끝났지만 모든 것이 만들어지지는 않았습니다</li>
+  </ul>
+  <p>
+    실패한 실행은 표준 출력에 아무것도 출력하지 않으므로 로그 파서가 오류를 데이터로 착각하는 일이 없습니다. 전체 표는 <a href="/ko/docs/#ci">문서 페이지</a>에
+    있습니다.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShell 스크립트에는 한 줄이 더 필요합니다</h2>
+  <p>
+    PowerShell은 프로그램의 종료 코드를 <code>.ps1</code> 파일 밖으로 전달하지 않습니다. <code>-File</code>로 실행하면 안에 있는 도구가 작업을
+    거부했더라도 스크립트는 <code>0</code>으로 답하므로, 빨갛게 되어야 할 빌드가 초록이 됩니다. 마지막 한 줄이 수정의 전부입니다.
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    이것은 PowerShell의 동작이지 이 도구와는 무관합니다. <code>cmd</code>, <code>bash</code>, <code>zsh</code>에는 따로 필요한 것이
+    없습니다.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">여러 작업</p>
+  <h2>작업 사이에서 픽스처 공유하기</h2>
+  <p>
+    보통은 업로드할 필요가 없습니다. 같은 레시피가 같은 바이트를 쓰므로 각 작업이 자기 <code>tfg generate</code>를 실행할 수 있고, 이것이 업로드 후
+    다운로드보다 빠릅니다. 한 작업이 다른 작업에서 파일을 받아야 한다면 전송 후 매니페스트에 <code>tfg verify</code>를 실행하세요. 도착한 것이 기록된 것과
+    같은지 알려 줍니다.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">다음</p>
+  <h2>여기서 어디로</h2>
+  <ul>
+    <li>
+      <a href="/ko/corrupt-test-files/">손상된 테스트 파일</a>은 같은 레시피에 일부러 망가뜨린 파일을 더합니다.
+    </li>
+    <li>
+      <a href="/ko/use-cases/">사용 사례</a>는 파이프라인의 실행이 그 밖에 무엇을 확인할 수 있는지 보여 줍니다.
+    </li>
+    <li>
+      <a href="/ko/docs/">문서</a>에는 모든 명령, 레시피 키, 종료 코드가 있습니다.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

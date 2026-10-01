@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pt-BR">
+<title>Documentação - comandos, receitas, manifesto, códigos de saída</title>
+<meta name="description" content="Como gerar arquivos de teste pela linha de comando ou com uma receita YAML, o que o manifesto contém e o que cada código de saída significa no CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Documentação - comandos, receitas, manifesto, códigos de saída">
+<meta property="og:description" content="Como gerar arquivos de teste pela linha de comando ou com uma receita YAML, o que o manifesto contém e o que cada código de saída significa no CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Documentação - comandos, receitas, manifesto, códigos de saída">
+<meta name="twitter:description" content="Como gerar arquivos de teste pela linha de comando ou com uma receita YAML, o que o manifesto contém e o que cada código de saída significa no CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Início",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pt-br/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentação",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/documentacao\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pt-br/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/pt-br/">Início</a>
+      <a href="/pt-br/formatos/">Formatos</a>
+      <a href="/pt-br/presets/">Presets</a>
+      <a href="/pt-br/documentacao/" aria-current="page">Documentação</a>
+      <a href="/pt-br/casos-de-uso/">Casos de uso</a>
+      <a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a>
+      <a href="/pt-br/perguntas-frequentes/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Português (Brasil)">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Português (Brasil)</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Documentação</h1>
+<p class="lead">
+  Tudo o que a ferramenta faz, organizado como as perguntas com que as pessoas realmente chegam. O
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README do repositório</a> é a referência completa e sempre corresponde
+  à versão que você baixou.
+</p>
+
+<section class="section" id="commands">
+  <h2>Quais comandos existem?</h2>
+  <p>Cada um faz uma única coisa:</p>
+  <pre><code>tfg generate    produzir arquivos, a partir de uma receita ou de opções
+tfg validate    verificar uma receita sem escrever nada
+tfg verify      verificar um diretório contra um manifesto
+tfg cleanup     remover os arquivos que um manifesto lista
+tfg recipe fmt  imprimir uma receita na sua forma normalizada
+tfg preset      montar um conjunto de arquivos a partir de uma pergunta de teste nomeada
+tfg formats     listar os formatos que esta versão suporta
+tfg damage      listar as formas como esta versão pode quebrar um arquivo de propósito
+tfg tool        pequenas utilidades para arquivos que você já tem
+tfg version     imprimir a versão da ferramenta
+tfg license     imprimir a licença e o que ela significa para os arquivos gerados</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Como gero um único arquivo de tamanho exato?</h2>
+  <p>
+    Informe o formato, o tamanho e o destino. Os tamanhos contam de 1024 em 1024, então <code>2mb</code>
+    são 2097152 bytes. Uma contagem simples de bytes também funciona, então <code>--size
+    10485761</code> pede exatamente essa quantidade.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>As opções úteis de <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Opção</th><th>O que faz</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formato dos arquivos, por exemplo <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>tamanho exato de cada arquivo, como <code>10mb</code> ou uma contagem simples de bytes</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>um tamanho sorteado por arquivo dentro de um intervalo, como <code>1kb-8kb</code>. O sorteio vem do seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>três arquivos ao redor de um limite: um byte abaixo, o limite, um byte acima</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>quantos arquivos produzir. Padrão <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>modelo de nome, por exemplo <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>diretório onde escrever</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed da execução. O mesmo seed dá os mesmos bytes</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>uma configuração de formato, repetível</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>quebrar os arquivos de propósito, repetível e aplicado em ordem. Rode <code>tfg damage</code> para ver a lista</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> ou <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>contar e mostrar, sem escrever absolutamente nada</td></tr>
+        <tr><td><code>--json</code></td><td>escrever o manifesto na saída padrão</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Como faço um arquivo quebrado de propósito?</h2>
+  <p>
+    Todo outro arquivo que esta ferramenta escreve é correto por construção, o que responde a duas das
+    três perguntas que um validador de upload faz. <code>--damage</code> responde à terceira - se o
+    arquivo abre, afinal. O arquivo é produzido normalmente e depois quebrado, então continua com o
+    tamanho que você pediu.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    As configurações vão depois de dois-pontos. A opção se repete, e a ordem em que você as escreve é a
+    ordem em que são aplicadas. <code>tfg damage</code> lista o que esta versão pode fazer e o que
+    cada uma aceita.
+  </p>
+  <p>Em uma receita a chave é uma lista, de nomes ou de configurações:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Um arquivo danificado recebe <code>expected: reject</code> no manifesto, com o dano registrado ao
+    lado. Duas coisas são recusadas antes de escrever qualquer coisa, porque cada uma deixaria no
+    disco um arquivo que o manifesto descreve errado:
+  </p>
+  <ul>
+    <li>um arquivo menor do que o dano precisa, porque sairia sem alteração</li>
+    <li>
+      <code>expected: accept</code> ao lado de um dano, porque nada poderia cumpri-lo. Escreva
+      <code>sanitize</code> se o sistema sob teste deve reparar o arquivo, ou
+      <code>unspecified</code> se essa é a pergunta que você está fazendo
+    </li>
+  </ul>
+  <p>
+    Uma terceira não pode ser conhecida de antemão. Se um dano roda e não move nenhum byte, esse arquivo
+    é descartado em vez de escrito - a execução continua, diz qual arquivo foi e termina com o
+    código de saída parcial.
+  </p>
+  <p>
+    Passo a passo, com um teste que lê o manifesto: <a href="/pt-br/arquivos-de-teste-corrompidos/">como
+    criar um arquivo corrompido para testes</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Como é uma receita?</h2>
+  <p>
+    Uma receita é um arquivo YAML que descreve uma execução inteira. Versione-a ao lado dos seus testes
+    e as fixtures deixam de ser binários no seu repositório - qualquer pessoa pode reconstruí-las,
+    byte a byte, a partir de um arquivo de algumas centenas de caracteres.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Cada target precisa de exatamente uma destas chaves: <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> ou <code>contains</code>. Duas é um erro e nenhuma também. Uma receita
+    inválida escreve <strong>nenhum arquivo</strong> e relata todos os problemas de uma vez em vez
+    de só o primeiro, cada um nomeando a configuração a que se refere.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Como declaro o que meu sistema deve fazer com um arquivo?</h2>
+  <p>Forma curta quando o resultado basta, forma longa quando o motivo importa:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Os resultados são <code>accept</code>, <code>reject</code>, <code>sanitize</code> e
+    <code>unspecified</code>. Os motivos são uma lista fechada para que um relatório possa agrupar
+    por eles: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> e <code>size_zero</code>.
+  </p>
+  <p>
+    Um motivo nomeia <strong>a regra em jogo</strong>, não o veredito. Por isso o mesmo motivo pode
+    ficar sob qualquer um dos resultados - um arquivo um byte abaixo de um limite é
+    <code>accept</code>, e a regra de que se trata continua sendo <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>O que há no manifesto?</h2>
+  <p>
+    Ele é escrito ao lado dos arquivos no fim de cada execução, inclusive de uma execução interrompida.
+    Uma entrada por arquivo:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Um <code>recipe_hash</code> é adicionado quando a execução veio de uma receita, e
+    <code>preset</code> com <code>overrides</code> quando veio de um preset, de modo que um
+    manifesto sempre pode ser rastreado até o que o produziu.
+  </p>
+  <p>
+    Cada entrada também traz <code>target_id</code>, o id do target da receita que produziu o arquivo, e
+    <code>summary.by_target</code> conta os arquivos a que cada target chegou. Uma receita com
+    vários targets pode assim ser verificada target por target sem ler nomes de arquivo.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>O que é um preset?</h2>
+  <p>
+    Um conjunto de arquivos pronto que responde a uma pergunta de teste comum, para que você não precise
+    desenhar o conjunto. Presets são receitas comuns por baixo, e <code>eject</code> imprime a
+    receita para você editá-la a partir dali. Cada preset tem <a href="/pt-br/presets/">uma página
+    própria</a> com o que costuma encontrar, o que há no conjunto e cada configuração que aceita.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/empty-and-minimal/">Vazio e mínimo</a></p>
+    <p class="muted">Um arquivo válido e tão pequeno quanto o formato permite passa?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/filename-handling/">Tratamento de nomes de arquivo</a></p>
+    <p class="muted">Meu sistema vai guardar, mostrar e devolver um nome de arquivo que ele não esperava?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/size-boundaries/">Limites de tamanho</a></p>
+    <p class="muted">Um limite de tamanho é aplicado exatamente onde foi declarado?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/tabular-import/">Importação de tabelas</a></p>
+    <p class="muted">A minha importação de tabelas sobrevive ao que ferramentas reais exportam?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/text-encoding/">Codificação de texto</a></p>
+    <p class="muted">Meu leitor sabe em que codificação um arquivo está, ou está adivinhando?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/pt-br/presets/upload-validation/">Validação de upload</a></p>
+    <p class="muted">Meu formulário de upload aceita o que deve e recusa o resto?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> diz quanto o conjunto custaria antes de você montá-lo, e diz abertamente quando um
+    número é um valor provisório nosso, e não um limite seu.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>O que significam os códigos de saída?</h2>
+  <p>
+    Cada término tem seu próprio código, a saída legível por máquina vai para a saída padrão, e uma
+    execução com falha não imprime nada lá. A tabela é um contrato congelado - mudar o que um código
+    significa exige uma versão maior.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Código</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Tudo funcionou.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Um erro inesperado dentro da ferramenta.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Comando ou opção incorretos.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>A receita não é válida.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>O formato não consegue fazer o que foi pedido.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Uma leitura ou escrita falhou.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Espaço em disco insuficiente.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify encontrou uma divergência.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>A execução terminou, mas nem tudo foi produzido.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Interrompido com Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Encerrado por um sinal, que é a cara de um timeout de CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Uma execução parada com Ctrl+C ainda deixa um manifesto e nunca deixa um arquivo pela metade, então
+    um job cancelado ainda pode ser limpo pelo seguinte.
+  </p>
+  <p>
+    Workflows prontos para GitHub Actions e GitLab CI: <a href="/pt-br/arquivos-de-teste-no-ci/">como
+    gerar arquivos de teste em um pipeline de CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Existe uma janela de desktop?</h2>
+  <p>
+    Sim, o mesmo motor com uma janela por cima, para o teste que não é automatizado. Não é uma versão
+    reduzida: um teste compara as duas interfaces capacidade por capacidade, e tudo que só uma delas
+    pode fazer precisa ser declarado e justificado em vez de divergir em silêncio.
+  </p>
+  <p>
+    As telas são um lote, presets, vários lotes de uma vez e Sobre. Ela mostra quanto uma execução
+    custaria antes de escrever qualquer coisa, informa o progresso enquanto roda e pode ser
+    cancelada no meio sem deixar um arquivo pela metade. Ainda não abre um arquivo de receita - por
+    enquanto receitas são coisa de linha de comando, e a janela monta seus lotes no formulário.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Arquivos de teste para QA, no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projeto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código no GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Relatar um problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoiar o projeto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/pt-br/">Início</a></li>
+        <li><a href="/pt-br/formatos/">Formatos</a></li>
+        <li><a href="/pt-br/presets/">Presets</a></li>
+        <li><a href="/pt-br/documentacao/">Documentação</a></li>
+        <li><a href="/pt-br/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Distribuído sob a Licença Pública Geral GNU, versão 3. Os arquivos que você gera são seus - a licença cobre a ferramenta, não a sua saída.</p>
+    <p class="muted">Este site não carrega fontes, scripts nem rastreadores de lugar nenhum. Não usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

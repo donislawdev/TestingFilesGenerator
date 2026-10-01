@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ro">
+<title>FAQ - întrebări despre generarea fișierelor de test</title>
+<meta name="description" content="Prin ce diferă de dd și fsutil, dacă fișierele pot fi comise, dacă rulările se repetă octet cu octet și ce se întâmplă când o dimensiune nu poate fi atinsă.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="FAQ - întrebări despre generarea fișierelor de test">
+<meta property="og:description" content="Prin ce diferă de dd și fsutil, dacă fișierele pot fi comise, dacă rulările se repetă octet cu octet și ce se întâmplă când o dimensiune nu poate fi atinsă.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - întrebări despre generarea fișierelor de test">
+<meta name="twitter:description" content="Prin ce diferă de dd și fsutil, dacă fișierele pot fi comise, dacă rulările se repetă octet cu octet și ce se întâmplă când o dimensiune nu poate fi atinsă.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Acasă",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ro/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/intrebari-frecvente\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ro/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/ro/">Acasă</a>
+      <a href="/ro/formate/">Formate</a>
+      <a href="/ro/presetari/">Presetări</a>
+      <a href="/ro/documentatie/">Documentație</a>
+      <a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a>
+      <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
+      <a href="/ro/intrebari-frecvente/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Limba: Română">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Română</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Întrebări frecvente</h1>
+<p class="lead">
+  Licență, confidențialitate, reproductibilitate și lucrurile pe care oamenii le verifică înainte să
+  pună un generator într-un pipeline de build. Dacă întrebarea ta nu e aici,
+  <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">sistemul de issue-uri</a> este deschis.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Prin ce diferă de dd, fsutil sau truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Acelea îți dau un fișier de dimensiunea potrivită, plin de nimic. Un fișier de 2 MB numit photo.png făcut așa nu este un PNG, deci tot ce îl analizează cu adevărat îl respinge din motivul greșit, iar testul tău trece apoi tot din motivul greșit. Acesta produce un PNG real de exact 2 MB care se deschide într-un vizualizator de imagini și vine cu o declarație despre cum trebuie să îl trateze sistemul tău.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Este gratuit și îl pot folosi la serviciu?</h2></summary>
+    <div class="qa-body">
+      <p>Da la amândouă. Este publicat sub GPL-3.0 și nu costă nimic. Nu există cont, cheie de licență sau nivel plătit.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Pot folosi fișierele generate într-un produs cu cod închis?</h2></summary>
+    <div class="qa-body">
+      <p>Da. Licența acoperă codul instrumentului, nu ce produce el. Fișierele, rețetele și manifestele generate sunt rezultat și nu lucrări derivate, deci le poți comite și distribui fără nicio obligație.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Conțin fișierele generate date personale reale?</h2></summary>
+    <div class="qa-body">
+      <p>Nu. Tot ce se află în ele este sintetizat dintr-un seed. Nu se citește niciun set de date, nu se contactează niciun serviciu și nu se încorporează conținut de la terți. Tratează o adresă de e-mail generată ca inutilizabilă, nu ca neutilizată, pentru că orice șir aleatoriu poate coincide din întâmplare cu una reală.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Voi obține exact aceleași fișiere pe altă mașină?</h2></summary>
+    <div class="qa-body">
+      <p>Da, octet cu octet, cu aceeași rețetă și același seed. Proiectul testează asta la fiecare modificare, iar încălcarea ei cere o versiune majoră. Asta îți permite să comiți o rețetă mică în loc de fixture-uri binare mari.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Are nevoie de conexiune la internet?</h2></summary>
+    <div class="qa-body">
+      <p>Niciodată. Nu există telemetrie, verificare de actualizări sau client cloud, iar binarul liniei de comandă nu are compilat în el niciun stack de rețea. Funcționează pe o mașină fără rețea și într-un mediu corporativ închis.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Ce se întâmplă dacă cer o dimensiune pe care un format nu o poate atinge?</h2></summary>
+    <div class="qa-body">
+      <p>Primești o eroare care numește formatul, cea mai mică dimensiune posibilă, motivul acelui prag și ce să faci în loc, și nu se scrie niciun fișier. Instrumentul nu rotunjește niciodată o dimensiune pe tăcute. Fiecare prag este listat în pagina de formate.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Pot genera un fișier stricat în mod deliberat?</h2></summary>
+    <div class="qa-body">
+      <p>Da. Adaugă --damage zero-head și fișierul iese cu exact mărimea cerută, cu primii octeți suprascriși cu zerouri, așa că un cititor îl respinge, iar manifestul spune că sistemul tău trebuie să îl respingă. Detaliile sunt pe pagina despre fișierele de test corupte.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Ce formate urmează?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 și mp4. Azi funcționează de la un capăt la altul 26 formate.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Pe ce sisteme îl pot rula?</h2></summary>
+    <div class="qa-body">
+      <p>Linia de comandă rulează pe Windows și Linux, atât pe Intel, cât și pe ARM, și pe Mac-uri cu Apple Silicon. Fereastra desktop este livrată pentru Windows pe Intel, Linux pe Intel și Mac-uri cu Apple Silicon. Mac-urile Intel nu sunt acceptate și nu se construiește nimic pentru ele.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Trebuie să instalez ceva?</h2></summary>
+    <div class="qa-body">
+      <p>Nu. Descarcă arhiva pentru sistemul tău, dezarhiveaz-o și rulează binarul. Nu există instalator, mediu de execuție de adăugat sau dependență de rezolvat. Dacă ai Go, funcționează și o singură comandă go install.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>De ce o rulare peste mii de fișiere este mai lentă pe Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Pentru că Windows cere mai mult pentru fiecare cale pe care o examinează, iar o comandă care parcurge mii de fișiere examinează mii de căi. Măsurat pe o mașină cu 3000 de fișiere de 1 kB, verify durează aproximativ 0,9 secunde pe Windows și aproximativ 0,2 secunde pe Linux într-un container. O cale de ieșire mai scurtă micșorează cifra de pe Windows, pentru că fiecare folder de deasupra fișierelor face parte din ce se examinează.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Prin ce diferă de dd, fsutil sau truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Acelea îți dau un fișier de dimensiunea potrivită, plin de nimic. Un fișier de 2 MB numit photo.png făcut așa nu este un PNG, deci tot ce îl analizează cu adevărat îl respinge din motivul greșit, iar testul tău trece apoi tot din motivul greșit. Acesta produce un PNG real de exact 2 MB care se deschide într-un vizualizator de imagini și vine cu o declarație despre cum trebuie să îl trateze sistemul tău." }
+    },
+    {
+      "@type": "Question",
+      "name": "Este gratuit și îl pot folosi la serviciu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Da la amândouă. Este publicat sub GPL-3.0 și nu costă nimic. Nu există cont, cheie de licență sau nivel plătit." }
+    },
+    {
+      "@type": "Question",
+      "name": "Pot folosi fișierele generate într-un produs cu cod închis?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Da. Licența acoperă codul instrumentului, nu ce produce el. Fișierele, rețetele și manifestele generate sunt rezultat și nu lucrări derivate, deci le poți comite și distribui fără nicio obligație." }
+    },
+    {
+      "@type": "Question",
+      "name": "Conțin fișierele generate date personale reale?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nu. Tot ce se află în ele este sintetizat dintr-un seed. Nu se citește niciun set de date, nu se contactează niciun serviciu și nu se încorporează conținut de la terți. Tratează o adresă de e-mail generată ca inutilizabilă, nu ca neutilizată, pentru că orice șir aleatoriu poate coincide din întâmplare cu una reală." }
+    },
+    {
+      "@type": "Question",
+      "name": "Voi obține exact aceleași fișiere pe altă mașină?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Da, octet cu octet, cu aceeași rețetă și același seed. Proiectul testează asta la fiecare modificare, iar încălcarea ei cere o versiune majoră. Asta îți permite să comiți o rețetă mică în loc de fixture-uri binare mari." }
+    },
+    {
+      "@type": "Question",
+      "name": "Are nevoie de conexiune la internet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Niciodată. Nu există telemetrie, verificare de actualizări sau client cloud, iar binarul liniei de comandă nu are compilat în el niciun stack de rețea. Funcționează pe o mașină fără rețea și într-un mediu corporativ închis." }
+    },
+    {
+      "@type": "Question",
+      "name": "Ce se întâmplă dacă cer o dimensiune pe care un format nu o poate atinge?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Primești o eroare care numește formatul, cea mai mică dimensiune posibilă, motivul acelui prag și ce să faci în loc, și nu se scrie niciun fișier. Instrumentul nu rotunjește niciodată o dimensiune pe tăcute. Fiecare prag este listat în pagina de formate." }
+    },
+    {
+      "@type": "Question",
+      "name": "Pot genera un fișier stricat în mod deliberat?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Da. Adaugă --damage zero-head și fișierul iese cu exact mărimea cerută, cu primii octeți suprascriși cu zerouri, așa că un cititor îl respinge, iar manifestul spune că sistemul tău trebuie să îl respingă. Detaliile sunt pe pagina despre fișierele de test corupte." }
+    },
+    {
+      "@type": "Question",
+      "name": "Ce formate urmează?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 și mp4. Azi funcționează de la un capăt la altul 26 formate." }
+    },
+    {
+      "@type": "Question",
+      "name": "Pe ce sisteme îl pot rula?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Linia de comandă rulează pe Windows și Linux, atât pe Intel, cât și pe ARM, și pe Mac-uri cu Apple Silicon. Fereastra desktop este livrată pentru Windows pe Intel, Linux pe Intel și Mac-uri cu Apple Silicon. Mac-urile Intel nu sunt acceptate și nu se construiește nimic pentru ele." }
+    },
+    {
+      "@type": "Question",
+      "name": "Trebuie să instalez ceva?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nu. Descarcă arhiva pentru sistemul tău, dezarhiveaz-o și rulează binarul. Nu există instalator, mediu de execuție de adăugat sau dependență de rezolvat. Dacă ai Go, funcționează și o singură comandă go install." }
+    },
+    {
+      "@type": "Question",
+      "name": "De ce o rulare peste mii de fișiere este mai lentă pe Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Pentru că Windows cere mai mult pentru fiecare cale pe care o examinează, iar o comandă care parcurge mii de fișiere examinează mii de căi. Măsurat pe o mașină cu 3000 de fișiere de 1 kB, verify durează aproximativ 0,9 secunde pe Windows și aproximativ 0,2 secunde pe Linux într-un container. O cale de ieșire mai scurtă micșorează cifra de pe Windows, pentru că fiecare folder de deasupra fișierelor face parte din ce se examinează." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Încă te decizi?</h2>
+  <p>
+    <a href="/ro/cazuri-de-utilizare/">Pagina de cazuri de utilizare</a> arată sarcinile pentru care a
+    fost făcut, iar <a href="/ro/formate/">pagina de formate</a> listează fiecare format cu cel mai
+    mic fișier pe care îl poate produce. <a href="https://github.com/donislawdev/TestingFilesGenerator">README-ul din repository</a>
+    este referința completă.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descarcă</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Vezi codul sursă</a>
+</div>
+<p class="cta-note">Gratuit și open source, GPL-3.0. Fără cont. Descărcările pentru Windows și macOS sunt semnate și pornesc fără avertisment.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proiect</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Cod sursă pe GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descărcări</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Raportează o problemă</a></li>
+        <li><a href="https://donislawdev.com/support/">Susține proiectul</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagini</p>
+      <ul class="plain">
+        <li><a href="/ro/">Acasă</a></li>
+        <li><a href="/ro/formate/">Formate</a></li>
+        <li><a href="/ro/presetari/">Presetări</a></li>
+        <li><a href="/ro/documentatie/">Documentație</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
+        <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.</p>
+    <p class="muted">Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.</p>
+  </div>
+</footer>
+</body>
+</html>

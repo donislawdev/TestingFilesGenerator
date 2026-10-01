@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hant">
+<title>CI 中的測試檔案 - GitHub Actions、GitLab CI 和 PowerShell</title>
+<meta name="description" content="在流程中產生測試檔案，而不是提交二進位檔案：GitHub Actions 工作流程、GitLab 作業、讓建置失敗的結束碼，以及 PowerShell 的陷阱。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="CI 中的測試檔案 - GitHub Actions、GitLab CI 和 PowerShell">
+<meta property="og:description" content="在流程中產生測試檔案，而不是提交二進位檔案：GitHub Actions 工作流程、GitLab 作業、讓建置失敗的結束碼，以及 PowerShell 的陷阱。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CI 中的測試檔案 - GitHub Actions、GitLab CI 和 PowerShell">
+<meta name="twitter:description" content="在流程中產生測試檔案，而不是提交二進位檔案：GitHub Actions 工作流程、GitLab 作業、讓建置失敗的結束碼，以及 PowerShell 的陷阱。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hant/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "使用情境",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "CI 中的測試檔案",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/test-files-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到內容</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hant/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主選單">
+      <a href="/zh-hant/">首頁</a>
+      <a href="/zh-hant/formats/">格式</a>
+      <a href="/zh-hant/presets/">預設集</a>
+      <a href="/zh-hant/docs/">文件</a>
+      <a href="/zh-hant/use-cases/" aria-current="true">使用情境</a>
+      <a href="/zh-hant/create-file-exact-size/">精確大小</a>
+      <a href="/zh-hant/faq/">常見問題</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="語言: 繁體中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>繁體中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/zh-hant/use-cases/">使用情境</a></p>
+<h1>如何在 CI 流程中產生測試檔案</h1>
+<p class="lead">
+  儲存庫裡的二進位 fixture 會永遠留在歷史中，無法在 diff
+  裡審查，檔案一大就根本行不通。請改為在流程內部用配方產生這些檔案。配方是文字，每次產生的位元組都相同，最後一步還能證明什麼都沒有變動。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    安裝 <code>tfg</code>，在測試之前執行 <code>tfg generate fixtures.yaml --out ./fixtures</code>，在測試之後執行
+    <code>tfg verify ./fixtures/manifest.json</code>。這兩步都會自行讓建置失敗，並給出說明原因的結束碼。
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">為什麼不提交</p>
+  <h2>為什麼 fixture 不該放在儲存庫裡</h2>
+  <ul>
+    <li>
+      <strong>它會留在歷史中。</strong>之後再刪除二進位檔案也不會讓複本變小，因為它的每個版本都還在。
+    </li>
+    <li>
+      <strong>diff 看不出改了什麼。</strong>審查者只看到一個 PDF 不同了，僅此而已。配方的變化只有一行。
+    </li>
+    <li>
+      <strong>大檔案放不下。</strong>GitHub 會拒絕包含超過 100 MB 檔案的推送，所以一個 500 MB 上傳限制的測試沒有什麼可提交的。
+    </li>
+  </ul>
+  <p>
+    該提交的是配方。相同的配方和種子在每台機器上寫出相同的位元組，所以在流程裡產生的檔案，就是你在筆電上用過的那個檔案。
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">配方</p>
+  <h2>放在測試旁邊的配方</h2>
+  <p>
+    這個配方寫出二十五張應被接受的發票和兩張超過限制、應被拒絕的圖片，清單會記錄這兩種預期：
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> 會檢查它而不寫入任何內容，並一次列出所有問題。
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>安裝工具並建置 fixture 的工作流程</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    檢查碼那一行把壓縮檔與同一發行版中的 <code>verify-SHA256SUMS.txt</code> 比對。版本是固定的，所以新發行版絕不會改變你沒動過的建置。
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>同樣的事，寫成 GitLab 作業</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">變紅的時候</p>
+  <h2>什麼會讓一個步驟失敗，為什麼</h2>
+  <p>
+    每種結局都有自己的結束碼，所以步驟會自行失敗，日誌會說明是哪一種。流程會遇到的有：
+  </p>
+  <ul>
+    <li><code>3</code> - 配方無效。沒有寫入任何內容，每個問題都會被指出</li>
+    <li><code>4</code> - 格式做不到所要求的事，例如小於它最小值的大小</li>
+    <li><code>6</code> - 磁碟空間不足</li>
+    <li><code>7</code> - <code>tfg verify</code> 發現一個與其清單不符的檔案</li>
+    <li><code>8</code> - 執行已結束，但並非所有內容都已產生</li>
+  </ul>
+  <p>
+    失敗的執行不會向標準輸出印出任何內容，所以日誌剖析器永遠不會把錯誤當成資料。完整的表格在<a href="/zh-hant/docs/#ci">文件頁面</a>上。
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShell 指令碼還需要多寫一行</h2>
+  <p>
+    PowerShell 不會把程式的結束碼帶出 <code>.ps1</code> 檔案。用 <code>-File</code> 執行一個指令碼，即使裡面的工具拒絕了工作，指令碼也會回傳
+    <code>0</code>，於是本該變紅的建置變成了綠色。最後一行就是全部的修正：
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    這是 PowerShell 的行為，與本工具無關。<code>cmd</code>、<code>bash</code> 和 <code>zsh</code> 不需要額外處理。
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">多個作業</p>
+  <h2>在作業之間共用 fixture</h2>
+  <p>
+    通常不需要上傳它們。因為相同的配方寫出相同的位元組，每個作業都可以執行自己的 <code>tfg
+    generate</code>，這比上傳再下載更快。當一個作業必須接收另一個作業的檔案時，在傳輸之後對清單執行 <code>tfg verify</code>，它會告訴你收到的是否就是寫出的。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/corrupt-test-files/">損毀的測試檔案</a>把刻意弄壞的檔案加入同一個配方。
+    </li>
+    <li>
+      <a href="/zh-hant/use-cases/">使用情境</a>展示流程中的執行還能檢查什麼。
+    </li>
+    <li>
+      <a href="/zh-hant/docs/">文件</a>包含每個指令、每個配方鍵和每個結束碼。
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">專案</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的原始碼</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">回報問題</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本專案</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">頁面</p>
+      <ul class="plain">
+        <li><a href="/zh-hant/">首頁</a></li>
+        <li><a href="/zh-hant/formats/">格式</a></li>
+        <li><a href="/zh-hant/presets/">預設集</a></li>
+        <li><a href="/zh-hant/docs/">文件</a></li>
+        <li><a href="/zh-hant/use-cases/">使用情境</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
+        <li><a href="/zh-hant/faq/">常見問題</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。依 GNU 通用公共授權條款第 3 版發布。你產生的檔案歸你所有，授權涵蓋的是工具本身，而不是它的輸出。</p>
+    <p class="muted">本站不會從任何地方載入字型、指令碼或追蹤器，也不會設定 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

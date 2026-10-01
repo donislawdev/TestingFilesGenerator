@@ -1,0 +1,174 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Jak zrobić uszkodzony plik do testów</h1>
+<p class="lead">
+  Walidator, któremu pokazywano tylko zdrowe pliki, nie został naprawdę przetestowany. Oto jak dostać
+  plik zepsuty celowo, o <strong>dokładnie takim rozmiarze, jaki podasz</strong>, z manifestem
+  mówiącym, co system ma z nim zrobić.
+</p>
+
+<div class="note">
+  <p class="note-title">Krótka odpowiedź</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> zapisuje PNG o
+    dokładnie 2097152 bajtach, którego pierwsze bajty są zerami, a manifest obok zapisuje, że system
+    powinien go odrzucić.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Zwykła droga</p>
+  <h2>Dlaczego plik uszkodzony ręcznie to kiepski test</h2>
+  <p>
+    Zwykle używa się edytora szesnastkowego, skryptu zmieniającego kilka losowych bajtów albo ucięcia
+    pliku przez <code>head</code> lub <code>truncate</code>. Za pierwszym razem działa, a potem
+    kosztuje:
+  </p>
+  <ul>
+    <li>
+      <strong>Za każdym razem jest inaczej.</strong> Losowy bajt trafia w nowe miejsce przy każdym
+      przebiegu, więc błąd z wtorku może nie wrócić w środę.
+    </li>
+    <li>
+      <strong>Zmienia rozmiar.</strong> Plik ucięty jest mniejszy niż limit, pod którym miał się mieścić,
+      więc kontrola rozmiaru odpowiada przed kontrolą zawartości, a test przechodzi z niewłaściwego
+      powodu.
+    </li>
+    <li>
+      <strong>Często nikt tego nie zauważa.</strong> Zwykły tekst da się czytać mimo zmienionego bajtu w
+      środku, a pobłażliwy czytnik obrazów po prostu go narysuje, więc plik, który miał być zepsuty,
+      zostaje przyjęty.
+    </li>
+    <li>
+      <strong>Nic nie mówi o tym, co ma się stać.</strong> Plik to same bajty, a ten, kto później czyta
+      test, musi zgadywać, czy chodziło o przyjęcie, czy o odrzucenie.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Co dostajesz</p>
+  <h2>Uszkodzony plik ma nadal rozmiar, o który prosiłeś</h2>
+  <p>
+    Plik jest generowany normalnie, a psuty dopiero w drodze na dysk. Zachowuje rozmiar, który podałeś,
+    a to samo polecenie zapisuje znowu te same bajty.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Ustawienia podaje się po dwukropku. Flagę można powtarzać, a uszkodzenia są stosowane w kolejności,
+    w jakiej je zapiszesz. Działa z każdym z {{ .Facts.FormatCount }} formatów.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Co potrafi</p>
+  <h2>Jakie są uszkodzenia?</h2>
+  <p>
+    To lista, którą wypisuje program, odczytana z niego w chwili budowania tej strony. <code>tfg
+    damage</code> wypisuje to samo, a <code>tfg damage &lt;id&gt;</code> mówi, co przyjmuje jedno z
+    nich.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> zapisuje zera na początku pliku. Większość czytników zagląda tam najpierw, w
+    sygnaturę i nagłówek mówiące, czym jest plik, więc zauważy to prawie każdy czytnik. Zwykły tekst
+    i logi nie mają sygnatury i też są odrzucane, bo ciąg zerowych bajtów nie jest tekstem. Poniżej
+    czterech bajtów niektóre formaty wychodzą z uszkodzeniem, na które nie skarży się żaden czytnik,
+    dlatego ustawienie zaczyna się od czterech.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Co mówi manifest</p>
+  <h2>Manifest, który mówi, co ma się stać</h2>
+  <p>
+    Każdy uszkodzony plik dostaje wpis mówiący, że system powinien go odrzucić, a obok zapisane jest
+    uszkodzenie:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Dwie prośby są odrzucane, zanim cokolwiek powstanie, bo każda zostawiłaby na dysku plik, który
+    manifest opisuje błędnie:
+  </p>
+  <ul>
+    <li>plik mniejszy, niż potrzebuje uszkodzenie, bo wyszedłby nietknięty</li>
+    <li>
+      <code>expected: accept</code> obok uszkodzenia, bo nic nie mogłoby tego spełnić. Napisz
+      <code>sanitize</code>, jeśli system ma plik naprawić, albo <code>unspecified</code>, jeśli
+      właśnie o to pytasz
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">W przepisie</p>
+  <h2>Zdrowe i zepsute pliki w jednym przebiegu</h2>
+  <p>
+    Włóż jedno i drugie do jednego przepisu, a manifest niesie oczekiwanie każdego pliku, więc test nie
+    potrzebuje listy, który jest który:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">W teście</p>
+  <h2>Zamiana tego w test</h2>
+  <p>
+    Test czyta manifest i sprawdza, czy to, co się stało, jest tym, co zadeklarowano. Nie potrzebuje
+    listy nazw plików:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Dobre odrzucenie jest czyste. Komunikat mówiący, co było nie tak, to odpowiedź, o którą chodzi. Błąd
+    serwera, zawieszenie albo plik zapisany do połowy to wada, którą ten test ma znaleźć.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dalej</p>
+  <h2>Dokąd pójść stąd</h2>
+  <ul>
+    <li>
+      <a href="/pl/presety/upload-validation/">Preset upload-validation</a> zadaje formularzowi pozostałe
+      dwa pytania, o rozmiar i o typ.
+    </li>
+    <li>
+      <a href="/pl/pliki-testowe-w-ci/">Pliki testowe w CI</a> uruchamiają taki przepis w potoku.
+    </li>
+    <li>
+      <a href="/pl/dokumentacja/#damage">Dokumentacja</a> ma każdą flagę <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

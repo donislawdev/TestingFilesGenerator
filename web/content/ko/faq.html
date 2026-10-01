@@ -1,0 +1,17 @@
+<h1>자주 묻는 질문</h1>
+<p class="lead">
+  라이선스, 개인정보, 재현성, 그리고 사람들이 생성기를 빌드 파이프라인에 넣기 전에 확인하는 것들. 질문이 여기에 없다면 <a href="{{ .Facts.Issues }}">이슈
+  트래커</a>가 열려 있습니다.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>아직 고민 중이신가요?</h2>
+  <p>
+    <a href="/ko/use-cases/">활용 사례 페이지</a>는 이 도구가 대상으로 하는 작업을, <a href="/ko/formats/">형식 페이지</a>는 각 형식과
+    만들 수 있는 가장 작은 파일을 보여 줍니다. <a href="{{ .Facts.Repo }}">저장소의 README</a>가 전체 레퍼런스입니다.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

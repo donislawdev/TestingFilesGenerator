@@ -1,0 +1,278 @@
+<h1>दस्तावेज़ीकरण</h1>
+<p class="lead">
+  टूल जो कुछ भी करता है, उन सवालों के रूप में सजाया गया जिन्हें लेकर लोग सच में आते हैं।
+  <a href="{{ .Facts.Repo }}">रिपॉज़िटरी का README</a> पूरा संदर्भ है और हमेशा आपके डाउनलोड किए
+  बिल्ड से मेल खाता है।
+</p>
+
+<section class="section" id="commands">
+  <h2>कौन सी कमांड हैं?</h2>
+  <p>हर एक सिर्फ़ एक काम करती है:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>सटीक आकार की एक फ़ाइल कैसे बनाऊँ?</h2>
+  <p>
+    फ़ॉर्मैट, आकार और जगह बताएँ। आकार 1024 के गुणकों में गिने जाते हैं, इसलिए <code>2mb</code> 2097152
+    बाइट है। सादी बाइट संख्या भी चलती है, इसलिए <code>--size 10485761</code> ठीक उतने ही बाइट माँगता
+    है।
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code> के काम के फ़्लैग:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>फ़्लैग</th><th>क्या करता है</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>फ़ाइलों का फ़ॉर्मैट, जैसे <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>हर फ़ाइल का सटीक आकार, जैसे <code>10mb</code> या सादी बाइट संख्या</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>किसी सीमा में से हर फ़ाइल के लिए निकाला गया आकार, जैसे <code>1kb-8kb</code>। निकालना सीड से होता है</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>सीमा के आसपास तीन फ़ाइलें: एक बाइट नीचे, सीमा, एक बाइट ऊपर</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>कितनी फ़ाइलें बनानी हैं। डिफ़ॉल्ट <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>नाम का साँचा, जैसे <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>जिस डायरेक्टरी में लिखना है</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>रन का सीड। वही सीड वही बाइट देता है</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>फ़ॉर्मैट की एक सेटिंग, दोहराई जा सकती है</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>फ़ाइलों को जानबूझकर बिगाड़ें, दोहराया जा सकता है और क्रम से लागू होता है। सूची के लिए <code>tfg damage</code> चलाएँ</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> या <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>गिनें और दिखाएँ, कुछ भी न लिखें</td></tr>
+        <tr><td><code>--json</code></td><td>मैनिफ़ेस्ट को स्टैंडर्ड आउटपुट पर लिखें</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>जानबूझकर टूटी फ़ाइल कैसे बनाऊँ?</h2>
+  <p>
+    यह टूल जो भी दूसरी फ़ाइल लिखता है वह बनावट से सही होती है, और इससे अपलोड वैलिडेटर के तीन सवालों में
+    से दो का जवाब मिल जाता है। <code>--damage</code> तीसरे का जवाब देता है - क्या फ़ाइल खुलती भी है।
+    फ़ाइल सामान्य रूप से बनती है और फिर बिगाड़ी जाती है, इसलिए उसका आकार वही रहता है जो आपने माँगा।
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    सेटिंग कोलन के बाद आती हैं। फ़्लैग दोहराया जा सकता है, और आप जिस क्रम में लिखते हैं वही उनके लागू
+    होने का क्रम है। <code>tfg damage</code> बताता है कि यह बिल्ड क्या कर सकता है और हर एक क्या लेता
+    है।
+  </p>
+  <p>रेसिपी में कुंजी एक सूची है, नामों की या सेटिंग की:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    बिगाड़ी गई फ़ाइल को मैनिफ़ेस्ट में <code>expected: reject</code> मिलता है, और बिगाड़ने का ब्योरा
+    उसके बगल में दर्ज होता है। दो चीज़ें कुछ भी लिखे जाने से पहले ठुकरा दी जाती हैं, क्योंकि हर एक
+    डिस्क पर ऐसी फ़ाइल छोड़ देती जिसे मैनिफ़ेस्ट गलत बताता:
+  </p>
+  <ul>
+    <li>बिगाड़ने के लिए ज़रूरी से छोटी फ़ाइल, क्योंकि वह बिना बदले निकल आती</li>
+    <li>
+      बिगाड़ के बगल में <code>expected: accept</code>, क्योंकि कुछ भी उसे पूरा नहीं कर सकता। अगर जाँचे जा
+      रहे सिस्टम को फ़ाइल सुधारनी है तो <code>sanitize</code> लिखें, या अगर आप यही सवाल पूछ रहे हैं
+      तो <code>unspecified</code>
+    </li>
+  </ul>
+  <p>
+    तीसरी बात पहले से नहीं जानी जा सकती। अगर कोई बिगाड़ चलता है और एक भी बाइट नहीं हिलाता, तो वह फ़ाइल
+    लिखे जाने के बजाय छोड़ दी जाती है - रन चलता रहता है, बताता है कि वह कौन सी फ़ाइल थी, और आंशिक
+    एग्ज़िट कोड के साथ ख़त्म होता है।
+  </p>
+  <p>
+    कदम दर कदम, मैनिफ़ेस्ट पढ़ने वाले एक टेस्ट के साथ: <a href="/hi/corrupt-test-files/">परीक्षण के लिए
+    खराब फ़ाइल कैसे बनाएँ</a>।
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>रेसिपी कैसी दिखती है?</h2>
+  <p>
+    रेसिपी एक YAML फ़ाइल है जो पूरे रन का वर्णन करती है। इसे अपने टेस्ट के बगल में कमिट करें और
+    फ़िक्स्चर आपकी रिपॉज़िटरी में बाइनरी नहीं रह जाते - कोई भी उन्हें कुछ सौ अक्षरों की फ़ाइल से
+    बाइट-दर-बाइट दोबारा बना सकता है।
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    हर टार्गेट को <code>size</code>, <code>size-range</code>, <code>boundary</code> या
+    <code>contains</code> में से ठीक एक चाहिए। दो होना त्रुटि है और एक भी न होना भी। अमान्य रेसिपी
+    <strong>कोई फ़ाइल नहीं लिखती</strong> और सिर्फ़ पहली नहीं, सारी समस्याएँ एक साथ बताती है, हर एक
+    उस सेटिंग का नाम लेकर जिससे वह जुड़ी है।
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>मैं कैसे बताऊँ कि मेरे सिस्टम को किसी फ़ाइल के साथ क्या करना चाहिए?</h2>
+  <p>जब नतीजा काफ़ी हो तो छोटा रूप, जब कारण मायने रखे तो लंबा रूप:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    नतीजे हैं <code>accept</code>, <code>reject</code>, <code>sanitize</code> और
+    <code>unspecified</code>। कारण एक बंद सूची हैं ताकि रिपोर्ट उनके आधार पर समूह बना सके:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> और <code>size_zero</code>।
+  </p>
+  <p>
+    कारण <strong>काम कर रहे नियम</strong> का नाम लेता है, फ़ैसले का नहीं। इसीलिए एक ही कारण किसी भी
+    नतीजे के नीचे आ सकता है - सीमा से एक बाइट नीचे की फ़ाइल <code>accept</code> है, और जिस नियम की
+    बात है वह फिर भी <code>size_limit</code> है।
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>मैनिफ़ेस्ट में क्या है?</h2>
+  <p>
+    यह हर रन के अंत में फ़ाइलों के बगल में लिखा जाता है, बीच में रोके गए रन में भी। हर फ़ाइल के लिए एक
+    प्रविष्टि:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    रन रेसिपी से आया हो तो <code>recipe_hash</code> जुड़ता है, और प्रीसेट से आया हो तो
+    <code>overrides</code> के साथ <code>preset</code>, इसलिए मैनिफ़ेस्ट को हमेशा उसके स्रोत तक खोजा
+    जा सकता है।
+  </p>
+  <p>
+    हर प्रविष्टि में <code>target_id</code> भी होता है, यानी रेसिपी के उस टार्गेट का id जिसने फ़ाइल
+    बनाई, और <code>summary.by_target</code> गिनता है कि हर टार्गेट के हिस्से कितनी फ़ाइलें आईं।
+    इसलिए कई टार्गेट वाली रेसिपी को फ़ाइल नाम पढ़े बिना टार्गेट-दर-टार्गेट जाँचा जा सकता है।
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>प्रीसेट क्या है?</h2>
+  <p>
+    किसी आम टेस्ट सवाल का जवाब देने वाला फ़ाइलों का तैयार सेट, ताकि आपको सेट खुद डिज़ाइन न करना पड़े।
+    प्रीसेट अंदर से सामान्य रेसिपी हैं, और <code>eject</code> रेसिपी छापता है ताकि आप वहीं से उसे
+    संपादित कर सकें। हर प्रीसेट का <a href="/hi/presets/">अपना पेज</a> है जो बताता है कि वह आम तौर
+    पर क्या पकड़ता है, सेट में क्या है और वह कौन सी सेटिंग लेता है।
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> सेट बनाने से पहले बताता है कि उसकी क़ीमत क्या होगी, और साफ़ कहता है जब कोई संख्या
+    आपकी सीमा नहीं बल्कि हमारी अस्थायी जगह-धारक संख्या हो।
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>एग्ज़िट कोड का क्या अर्थ है?</h2>
+  <p>
+    हर अंत का अपना कोड है, मशीन के पढ़ने लायक आउटपुट स्टैंडर्ड आउटपुट पर जाता है, और विफल रन वहाँ कुछ
+    नहीं छापता। तालिका एक जमाया हुआ अनुबंध है - किसी कोड का अर्थ बदलने के लिए मुख्य संस्करण बढ़ाना
+    पड़ता है।
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+C से रोका गया रन फिर भी मैनिफ़ेस्ट छोड़ता है और कभी आधी लिखी फ़ाइल नहीं छोड़ता, इसलिए रद्द किए
+    गए जॉब को अगला जॉब साफ़ कर सकता है।
+  </p>
+  <p>
+    GitHub Actions और GitLab CI के लिए तैयार वर्कफ़्लो: <a href="/hi/test-files-in-ci/">CI पाइपलाइन में
+    टेस्ट फ़ाइलें कैसे बनाएँ</a>।
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>क्या डेस्कटॉप विंडो है?</h2>
+  <p>
+    हाँ, वही इंजन जिस पर एक विंडो लगी है, उस टेस्टिंग के लिए जो स्क्रिप्ट से नहीं होती। यह घटाया हुआ रूप
+    नहीं है: एक टेस्ट दोनों इंटरफ़ेस की क्षमता-दर-क्षमता तुलना करता है, और जो सिर्फ़ एक ही कर सकता
+    है उसे चुपचाप अलग होने देने के बजाय घोषित और उचित ठहराना पड़ता है।
+  </p>
+  <p>
+    स्क्रीन हैं एक बैच, प्रीसेट, एक साथ कई बैच, और परिचय। यह कुछ भी लिखने से पहले रन की क़ीमत दिखाती है,
+    चलते समय प्रगति बताती है, और बीच में रद्द की जा सकती है बिना आधी लिखी फ़ाइल छोड़े। यह अभी रेसिपी
+    फ़ाइल नहीं खोलती - फ़िलहाल रेसिपी कमांड लाइन की चीज़ हैं, और विंडो अपने बैच फ़ॉर्म में बनाती है।
+  </p>
+</section>

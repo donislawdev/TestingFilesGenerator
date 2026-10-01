@@ -1,0 +1,31 @@
+<h1>Presets voor testbestanden, een set voor elke testvraag</h1>
+<p class="lead">
+  Een preset is een hele set testbestanden ontworpen rond één vraag, met een manifest dat zegt hoe je
+  systeem op elk bestand moet reageren. Jij kiest de vraag, de tool bouwt de set. Elke preset heeft
+  een eigen pagina met wat hij meestal vindt, wat er in de set zit en welke instellingen hij kent.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Hoe verschilt een preset van een recept?</h2>
+  <p>
+    Eronder niet. Een preset is een recept dat de tool voor je schrijft uit een paar instellingen.
+    <code>tfg preset eject</code> drukt dat recept af zodat je het naast je tests kunt bewaren en
+    bewerken, en een eigen recept kan met één regel op een preset voortbouwen, <code>extends:
+    preset:</code> gevolgd door zijn id.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Kan ik de standaardwaarden vertrouwen?</h2>
+  <p>
+    Voor de bestanden wel. Voor een getal dat alleen je systeem kent, zoals de limiet van een
+    uploadformulier, is een standaardwaarde een tijdelijke waarde van ons, en de tool zegt dat elke
+    keer dat hij er een gebruikt. De pagina van elke preset markeert die instellingen, en <code>tfg
+    preset show</code> zegt het voordat er iets wordt geschreven.
+  </p>
+</section>

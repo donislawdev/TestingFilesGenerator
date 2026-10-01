@@ -1,0 +1,274 @@
+<h1>Tài liệu</h1>
+<p class="lead">
+  Mọi thứ công cụ làm, sắp xếp theo những câu hỏi mà mọi người thật sự mang đến.
+  <a href="{{ .Facts.Repo }}">README trong kho mã</a> là tài liệu tham chiếu đầy đủ và luôn khớp với
+  bản dựng bạn đã tải.
+</p>
+
+<section class="section" id="commands">
+  <h2>Có những lệnh nào?</h2>
+  <p>Mỗi lệnh làm đúng một việc:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Làm sao tạo một tệp đơn có kích thước chính xác?</h2>
+  <p>
+    Nêu định dạng, kích thước và nơi đặt. Kích thước đếm theo 1024, nên <code>2mb</code> là 2097152
+    byte. Số byte thuần cũng được, nên <code>--size 10485761</code> yêu cầu đúng chừng đó.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Các cờ hữu ích của <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Cờ</th><th>Tác dụng</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>định dạng của các tệp, ví dụ <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>kích thước chính xác của mỗi tệp, như <code>10mb</code> hoặc số byte thuần</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>kích thước rút cho từng tệp từ một khoảng, như <code>1kb-8kb</code>. Lần rút lấy từ seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>ba tệp quanh một giới hạn: thấp hơn một byte, đúng giới hạn, cao hơn một byte</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>tạo bao nhiêu tệp. Mặc định <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>mẫu tên, ví dụ <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>thư mục để ghi vào</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed của lần chạy. Cùng seed cho cùng các byte</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>một thiết lập định dạng, lặp lại được</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>cố ý làm hỏng tệp, lặp lại được và áp dụng theo thứ tự. Chạy <code>tfg damage</code> để xem danh sách</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> hoặc <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>đếm và hiển thị, hoàn toàn không ghi gì</td></tr>
+        <tr><td><code>--json</code></td><td>ghi manifest ra đầu ra chuẩn</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Làm sao tạo một tệp cố ý bị hỏng?</h2>
+  <p>
+    Mọi tệp khác mà công cụ này ghi đều đúng theo cách xây dựng, điều đó trả lời hai trong ba câu hỏi mà
+    trình kiểm tra tải lên đặt ra. <code>--damage</code> trả lời câu thứ ba - tệp có mở được không.
+    Tệp được tạo bình thường rồi bị làm hỏng, nên nó vẫn có kích thước bạn đã yêu cầu.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Các thiết lập đặt sau dấu hai chấm. Cờ lặp lại được, và thứ tự bạn viết là thứ tự chúng được áp
+    dụng. <code>tfg damage</code> liệt kê những gì bản dựng này làm được và mỗi kiểu nhận gì.
+  </p>
+  <p>Trong công thức, khóa là một danh sách, gồm tên hoặc thiết lập:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Tệp bị làm hỏng nhận <code>expected: reject</code> trong manifest, kèm kiểu hỏng được ghi bên cạnh.
+    Hai thứ bị từ chối trước khi ghi bất cứ gì, vì mỗi thứ sẽ đặt lên đĩa một tệp mà manifest mô tả
+    sai:
+  </p>
+  <ul>
+    <li>tệp nhỏ hơn mức kiểu hỏng cần, vì nó sẽ ra mà không thay đổi</li>
+    <li>
+      <code>expected: accept</code> bên cạnh một kiểu hỏng, vì không gì có thể đáp ứng. Hãy viết
+      <code>sanitize</code> nếu hệ thống được kiểm thử phải sửa tệp, hoặc <code>unspecified</code>
+      nếu đó chính là câu hỏi bạn đang đặt
+    </li>
+  </ul>
+  <p>
+    Thứ ba không thể biết trước. Nếu một kiểu hỏng chạy mà không đổi byte nào, tệp đó bị bỏ thay vì được
+    ghi - lần chạy tiếp tục, nói đó là tệp nào và kết thúc bằng mã thoát một phần.
+  </p>
+  <p>
+    Từng bước, với một bài kiểm thử đọc manifest: <a href="/vi/tep-kiem-thu-bi-hong/">cách tạo tệp bị
+    hỏng để kiểm thử</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Một công thức trông thế nào?</h2>
+  <p>
+    Công thức là một tệp YAML mô tả cả một lần chạy. Hãy commit nó bên cạnh các bài kiểm thử và fixture
+    thôi là tệp nhị phân trong kho mã - ai cũng có thể dựng lại chúng, từng byte, từ một tệp vài
+    trăm ký tự.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Mỗi target cần đúng một trong <code>size</code>, <code>size-range</code>, <code>boundary</code> hoặc
+    <code>contains</code>. Hai cái là lỗi và không cái nào cũng là lỗi. Công thức không hợp lệ ghi
+    <strong>không tệp nào</strong> và báo mọi vấn đề cùng lúc thay vì chỉ cái đầu, mỗi cái nêu thiết
+    lập mà nó nói đến.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Làm sao khai báo hệ thống của tôi cần làm gì với một tệp?</h2>
+  <p>Dạng ngắn khi kết quả là đủ, dạng dài khi lý do quan trọng:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Các kết quả là <code>accept</code>, <code>reject</code>, <code>sanitize</code> và
+    <code>unspecified</code>. Các lý do là một danh sách đóng để báo cáo có thể nhóm theo chúng:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> và <code>size_zero</code>.
+  </p>
+  <p>
+    Một lý do nêu <strong>quy tắc đang áp dụng</strong>, không phải phán quyết. Vì vậy cùng một lý do có
+    thể nằm dưới cả hai kết quả - tệp thấp hơn giới hạn một byte là <code>accept</code>, và quy tắc
+    liên quan vẫn là <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Manifest chứa gì?</h2>
+  <p>
+    Nó được ghi bên cạnh các tệp ở cuối mỗi lần chạy, kể cả lần chạy bị ngắt. Một mục cho mỗi tệp:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> được thêm khi lần chạy đến từ một công thức, và <code>preset</code> cùng
+    <code>overrides</code> khi nó đến từ một preset, nên manifest luôn truy ngược được về thứ đã tạo
+    ra nó.
+  </p>
+  <p>
+    Mỗi mục còn mang <code>target_id</code>, id của target trong công thức đã tạo tệp, và
+    <code>summary.by_target</code> đếm số tệp mà mỗi target tạo ra. Một công thức có nhiều target
+    nhờ vậy kiểm tra được từng target mà không cần đọc tên tệp.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Preset là gì?</h2>
+  <p>
+    Một bộ tệp dựng sẵn trả lời một câu hỏi kiểm thử thường gặp, để bạn không phải tự thiết kế bộ.
+    Preset thực chất là công thức bình thường, và <code>eject</code> in công thức ra để bạn chỉnh
+    sửa từ đó. Mỗi preset có <a href="/vi/preset/">trang riêng</a> nói nó thường tìm thấy gì, trong
+    bộ có gì và mọi thiết lập nó nhận.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> cho bạn biết bộ sẽ tốn bao nhiêu trước khi dựng, và nói thẳng khi một con số là
+    giá trị tạm của chúng tôi chứ không phải giới hạn của bạn.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Các mã thoát có nghĩa gì?</h2>
+  <p>
+    Mỗi kết cục có mã riêng, đầu ra máy đọc được đi ra đầu ra chuẩn, và lần chạy thất bại không in gì ở
+    đó. Bảng này là một hợp đồng đóng băng - đổi nghĩa của một mã đòi hỏi tăng phiên bản chính.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Lần chạy bị dừng bằng Ctrl+C vẫn để lại manifest và không bao giờ để lại tệp ghi dở, nên tác vụ bị
+    hủy vẫn có thể được dọn bởi tác vụ sau.
+  </p>
+  <p>
+    Workflow có sẵn cho GitHub Actions và GitLab CI: <a href="/vi/tep-kiem-thu-trong-ci/">cách tạo tệp
+    kiểm thử trong pipeline CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Có cửa sổ desktop không?</h2>
+  <p>
+    Có, cùng một động cơ với một cửa sổ phủ lên, cho kiểu kiểm thử không viết kịch bản. Nó không phải
+    bản cắt giảm: một bài kiểm thử so sánh hai giao diện từng khả năng một, và bất cứ điều gì chỉ
+    một bên làm được đều phải được khai báo và biện minh thay vì lặng lẽ lệch nhau.
+  </p>
+  <p>
+    Các màn hình là một lô, preset, nhiều lô cùng lúc và giới thiệu. Nó cho biết một lần chạy sẽ tốn bao
+    nhiêu trước khi ghi gì, báo tiến độ khi đang chạy và có thể hủy giữa chừng mà không để lại tệp
+    ghi dở. Nó chưa mở được tệp công thức - hiện công thức là việc của dòng lệnh, còn cửa sổ dựng
+    các lô trong biểu mẫu.
+  </p>
+</section>

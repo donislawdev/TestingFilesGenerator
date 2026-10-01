@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="nl">
+<title>FAQ - vragen over het genereren van testbestanden</title>
+<meta name="description" content="Hoe dit verschilt van dd en fsutil, of je de bestanden kunt committen, of runs byte voor byte herhaalbaar zijn en wat er gebeurt als een grootte onhaalbaar is.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="FAQ - vragen over het genereren van testbestanden">
+<meta property="og:description" content="Hoe dit verschilt van dd en fsutil, of je de bestanden kunt committen, of runs byte voor byte herhaalbaar zijn en wat er gebeurt als een grootte onhaalbaar is.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - vragen over het genereren van testbestanden">
+<meta name="twitter:description" content="Hoe dit verschilt van dd en fsutil, of je de bestanden kunt committen, of runs byte voor byte herhaalbaar zijn en wat er gebeurt als een grootte onhaalbaar is.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/nl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/nl\/veelgestelde-vragen\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Direct naar de inhoud</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/nl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hoofdmenu">
+      <a href="/nl/">Home</a>
+      <a href="/nl/formaten/">Formaten</a>
+      <a href="/nl/presets/">Presets</a>
+      <a href="/nl/documentatie/">Documentatie</a>
+      <a href="/nl/toepassingen/">Toepassingen</a>
+      <a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a>
+      <a href="/nl/veelgestelde-vragen/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Taal: Nederlands">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Nederlands</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Veelgestelde vragen</h1>
+<p class="lead">
+  Licentie, privacy, reproduceerbaarheid en de dingen die mensen nagaan voordat ze een generator in
+  een buildpipeline zetten. Staat je vraag er niet bij, dan staat de
+  <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">issuetracker</a> open.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Waarin verschilt dit van dd, fsutil of truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Die geven je een bestand van de juiste grootte vol met niets. Een bestand van 2 MB met de naam photo.png dat zo is gemaakt is geen PNG, dus alles wat het echt parset weigert het om de verkeerde reden, en je test slaagt dan ook om de verkeerde reden. Dit maakt een echte PNG van precies 2 MB die opent in een afbeeldingsviewer, en komt met een verklaring over hoe je systeem ermee om moet gaan.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Is het gratis, en mag ik het op het werk gebruiken?</h2></summary>
+    <div class="qa-body">
+      <p>Ja op beide. Het is uitgebracht onder de GPL-3.0 en kost niets. Er is geen account, geen licentiesleutel en geen betaalde variant.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Mag ik de gegenereerde bestanden in een closed source product gebruiken?</h2></summary>
+    <div class="qa-body">
+      <p>Ja. De licentie geldt voor de code van de tool, niet voor wat de tool produceert. Gegenereerde bestanden, recepten en manifesten zijn uitvoer en geen afgeleide werken, dus je kunt ze committen en verspreiden zonder enige verplichting.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bevatten de gegenereerde bestanden echte persoonsgegevens?</h2></summary>
+    <div class="qa-body">
+      <p>Nee. Alles erin wordt gesynthetiseerd uit een seed. Er wordt geen dataset gelezen, geen dienst benaderd en geen inhoud van derden ingebed. Behandel een gegenereerd e-mailadres als onbruikbaar in plaats van als ongebruikt, want elke willekeurige tekenreeks kan bij toeval samenvallen met een echte.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Krijg ik op een andere machine precies dezelfde bestanden?</h2></summary>
+    <div class="qa-body">
+      <p>Ja, byte voor byte, bij hetzelfde recept en dezelfde seed. Het project test dat bij elke wijziging, en het breken ervan vereist een major-versie. Daardoor kun je een klein recept committen in plaats van grote binaire fixtures.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Heeft het een internetverbinding nodig?</h2></summary>
+    <div class="qa-body">
+      <p>Nooit. Er is geen telemetrie, geen updatecontrole en geen cloudclient, en in de opdrachtregel-binary is helemaal geen netwerkstack gecompileerd. Het werkt op een machine zonder netwerk en binnen een afgesloten bedrijfsomgeving.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Wat gebeurt er als ik een grootte vraag die een formaat niet kan halen?</h2></summary>
+    <div class="qa-body">
+      <p>Je krijgt een fout die het formaat noemt, de kleinst mogelijke grootte, de reden voor die ondergrens en wat je in plaats daarvan kunt doen, en er wordt geen bestand geschreven. De tool rondt een grootte nooit stilzwijgend af. Elke ondergrens staat op de pagina met formaten.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Kan ik een bewust kapot bestand genereren?</h2></summary>
+    <div class="qa-body">
+      <p>Ja. Voeg --damage zero-head toe en het bestand komt uit op precies de gevraagde grootte, met de eerste bytes overschreven door nullen, zodat een lezer het weigert, en het manifest zegt dat je systeem het moet weigeren. De details staan op de pagina over beschadigde testbestanden.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Welke formaten komen er nog?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 en mp4. Vandaag werken 26 formaten van begin tot eind.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Op welke systemen kan ik het draaien?</h2></summary>
+    <div class="qa-body">
+      <p>De opdrachtregel draait op Windows en Linux, zowel op Intel als op ARM, en op Macs met Apple Silicon. Het bureaubladvenster wordt geleverd voor Windows op Intel, Linux op Intel en Macs met Apple Silicon. Intel-Macs worden niet ondersteund en daar wordt niets voor gebouwd.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Moet ik iets installeren?</h2></summary>
+    <div class="qa-body">
+      <p>Nee. Download het archief voor je systeem, pak het uit en start de binary. Er is geen installatieprogramma, geen runtime om toe te voegen en geen afhankelijkheid om op te lossen. Als je Go hebt, werkt ook één enkele go install-opdracht.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Waarom is een run over duizenden bestanden trager op Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Omdat Windows meer rekent voor elk pad dat het bekijkt, en een opdracht die over duizenden bestanden gaat bekijkt duizenden paden. Gemeten op één machine met 3000 bestanden van 1 kB doet verify er ongeveer 0,9 seconde over op Windows en ongeveer 0,2 seconde op Linux in een container. Een korter uitvoerpad maakt het cijfer voor Windows kleiner, omdat elke map boven de bestanden deel uitmaakt van wat wordt bekeken.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Waarin verschilt dit van dd, fsutil of truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Die geven je een bestand van de juiste grootte vol met niets. Een bestand van 2 MB met de naam photo.png dat zo is gemaakt is geen PNG, dus alles wat het echt parset weigert het om de verkeerde reden, en je test slaagt dan ook om de verkeerde reden. Dit maakt een echte PNG van precies 2 MB die opent in een afbeeldingsviewer, en komt met een verklaring over hoe je systeem ermee om moet gaan." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is het gratis, en mag ik het op het werk gebruiken?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja op beide. Het is uitgebracht onder de GPL-3.0 en kost niets. Er is geen account, geen licentiesleutel en geen betaalde variant." }
+    },
+    {
+      "@type": "Question",
+      "name": "Mag ik de gegenereerde bestanden in een closed source product gebruiken?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. De licentie geldt voor de code van de tool, niet voor wat de tool produceert. Gegenereerde bestanden, recepten en manifesten zijn uitvoer en geen afgeleide werken, dus je kunt ze committen en verspreiden zonder enige verplichting." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bevatten de gegenereerde bestanden echte persoonsgegevens?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nee. Alles erin wordt gesynthetiseerd uit een seed. Er wordt geen dataset gelezen, geen dienst benaderd en geen inhoud van derden ingebed. Behandel een gegenereerd e-mailadres als onbruikbaar in plaats van als ongebruikt, want elke willekeurige tekenreeks kan bij toeval samenvallen met een echte." }
+    },
+    {
+      "@type": "Question",
+      "name": "Krijg ik op een andere machine precies dezelfde bestanden?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, byte voor byte, bij hetzelfde recept en dezelfde seed. Het project test dat bij elke wijziging, en het breken ervan vereist een major-versie. Daardoor kun je een klein recept committen in plaats van grote binaire fixtures." }
+    },
+    {
+      "@type": "Question",
+      "name": "Heeft het een internetverbinding nodig?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nooit. Er is geen telemetrie, geen updatecontrole en geen cloudclient, en in de opdrachtregel-binary is helemaal geen netwerkstack gecompileerd. Het werkt op een machine zonder netwerk en binnen een afgesloten bedrijfsomgeving." }
+    },
+    {
+      "@type": "Question",
+      "name": "Wat gebeurt er als ik een grootte vraag die een formaat niet kan halen?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Je krijgt een fout die het formaat noemt, de kleinst mogelijke grootte, de reden voor die ondergrens en wat je in plaats daarvan kunt doen, en er wordt geen bestand geschreven. De tool rondt een grootte nooit stilzwijgend af. Elke ondergrens staat op de pagina met formaten." }
+    },
+    {
+      "@type": "Question",
+      "name": "Kan ik een bewust kapot bestand genereren?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. Voeg --damage zero-head toe en het bestand komt uit op precies de gevraagde grootte, met de eerste bytes overschreven door nullen, zodat een lezer het weigert, en het manifest zegt dat je systeem het moet weigeren. De details staan op de pagina over beschadigde testbestanden." }
+    },
+    {
+      "@type": "Question",
+      "name": "Welke formaten komen er nog?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 en mp4. Vandaag werken 26 formaten van begin tot eind." }
+    },
+    {
+      "@type": "Question",
+      "name": "Op welke systemen kan ik het draaien?",
+      "acceptedAnswer": { "@type": "Answer", "text": "De opdrachtregel draait op Windows en Linux, zowel op Intel als op ARM, en op Macs met Apple Silicon. Het bureaubladvenster wordt geleverd voor Windows op Intel, Linux op Intel en Macs met Apple Silicon. Intel-Macs worden niet ondersteund en daar wordt niets voor gebouwd." }
+    },
+    {
+      "@type": "Question",
+      "name": "Moet ik iets installeren?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nee. Download het archief voor je systeem, pak het uit en start de binary. Er is geen installatieprogramma, geen runtime om toe te voegen en geen afhankelijkheid om op te lossen. Als je Go hebt, werkt ook één enkele go install-opdracht." }
+    },
+    {
+      "@type": "Question",
+      "name": "Waarom is een run over duizenden bestanden trager op Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Omdat Windows meer rekent voor elk pad dat het bekijkt, en een opdracht die over duizenden bestanden gaat bekijkt duizenden paden. Gemeten op één machine met 3000 bestanden van 1 kB doet verify er ongeveer 0,9 seconde over op Windows en ongeveer 0,2 seconde op Linux in een container. Een korter uitvoerpad maakt het cijfer voor Windows kleiner, omdat elke map boven de bestanden deel uitmaakt van wat wordt bekeken." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Nog aan het twijfelen?</h2>
+  <p>
+    De <a href="/nl/toepassingen/">pagina met toepassingen</a> toont de taken waarvoor het is gebouwd,
+    en de <a href="/nl/formaten/">pagina met formaten</a> toont elk formaat met het kleinste bestand
+    dat het kan maken. De <a href="https://github.com/donislawdev/TestingFilesGenerator">README in de repository</a> is de volledige
+    referentie.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloaden</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Bekijk de broncode</a>
+</div>
+<p class="cta-note">Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Broncode op GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Een probleem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Steun het project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagina&#39;s</p>
+      <ul class="plain">
+        <li><a href="/nl/">Home</a></li>
+        <li><a href="/nl/formaten/">Formaten</a></li>
+        <li><a href="/nl/presets/">Presets</a></li>
+        <li><a href="/nl/documentatie/">Documentatie</a></li>
+        <li><a href="/nl/toepassingen/">Toepassingen</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a></li>
+        <li><a href="/nl/veelgestelde-vragen/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.</p>
+    <p class="muted">Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

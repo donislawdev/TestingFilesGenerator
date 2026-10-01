@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="it">
+<title>FAQ - domande sulla generazione di file di test</title>
+<meta name="description" content="In cosa differisce da dd e fsutil, se i file si possono committare, se le esecuzioni si ripetono byte per byte e cosa succede quando una dimensione è irraggiungibile.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="FAQ - domande sulla generazione di file di test">
+<meta property="og:description" content="In cosa differisce da dd e fsutil, se i file si possono committare, se le esecuzioni si ripetono byte per byte e cosa succede quando una dimensione è irraggiungibile.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - domande sulla generazione di file di test">
+<meta name="twitter:description" content="In cosa differisce da dd e fsutil, se i file si possono committare, se le esecuzioni si ripetono byte per byte e cosa succede quando una dimensione è irraggiungibile.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/it/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/it\/domande-frequenti\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/it/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principale">
+      <a href="/it/">Home</a>
+      <a href="/it/formati/">Formati</a>
+      <a href="/it/preset/">Preset</a>
+      <a href="/it/documentazione/">Documentazione</a>
+      <a href="/it/casi-d-uso/">Casi d&#39;uso</a>
+      <a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a>
+      <a href="/it/domande-frequenti/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Lingua: Italiano">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Italiano</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Domande frequenti</h1>
+<p class="lead">
+  Licenza, privacy, riproducibilità e le cose che le persone controllano prima di mettere un
+  generatore in una pipeline di build. Se la tua domanda non c'è, il
+  <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">tracker delle issue</a> è aperto.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>In cosa è diverso da dd, fsutil o truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Quei comandi ti danno un file della dimensione giusta pieno di niente. Un file da 2 MB chiamato photo.png fatto così non è un PNG, quindi qualsiasi cosa lo analizzi davvero lo rifiuta per il motivo sbagliato, e anche il tuo test passa per il motivo sbagliato. Questo produce un vero PNG di esattamente 2 MB che si apre in un visualizzatore di immagini, e arriva con una dichiarazione su come il tuo sistema deve trattarlo.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>È gratuito, e posso usarlo al lavoro?</h2></summary>
+    <div class="qa-body">
+      <p>Sì a entrambe. È rilasciato sotto GPL-3.0 e non costa nulla. Non c&#39;è un account, né una chiave di licenza, né un livello a pagamento.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Posso usare i file generati in un prodotto closed source?</h2></summary>
+    <div class="qa-body">
+      <p>Sì. La licenza copre il codice dello strumento, non ciò che lo strumento produce. File, ricette e manifest generati sono output e non opere derivate, quindi puoi committarli e distribuirli senza alcun obbligo.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>I file generati contengono dati personali reali?</h2></summary>
+    <div class="qa-body">
+      <p>No. Tutto ciò che contengono è sintetizzato da un seed. Nessun dataset viene letto, nessun servizio viene contattato e nessun contenuto di terzi è incorporato. Considera un indirizzo e-mail generato inutilizzabile anziché inutilizzato, perché qualsiasi stringa casuale può coincidere per caso con uno reale.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Otterrò esattamente gli stessi file su un&#39;altra macchina?</h2></summary>
+    <div class="qa-body">
+      <p>Sì, byte per byte, con la stessa ricetta e lo stesso seed. Il progetto lo verifica a ogni modifica, e romperlo richiede una versione maggiore. È ciò che ti permette di committare una piccola ricetta invece di grandi fixture binarie.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Serve una connessione a internet?</h2></summary>
+    <div class="qa-body">
+      <p>Mai. Non c&#39;è telemetria, né controllo degli aggiornamenti, né client cloud, e il binario della riga di comando non ha alcuno stack di rete compilato al suo interno. Funziona su una macchina senza rete e in un ambiente aziendale chiuso.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Cosa succede se chiedo una dimensione che un formato non può raggiungere?</h2></summary>
+    <div class="qa-body">
+      <p>Ottieni un errore che nomina il formato, il minimo possibile, il motivo di quel limite inferiore e cosa fare invece, e nessun file viene scritto. Lo strumento non arrotonda mai una dimensione in silenzio. Ogni minimo è elencato nella pagina dei formati.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Posso generare un file deliberatamente rotto?</h2></summary>
+    <div class="qa-body">
+      <p>Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Quali formati arrivano dopo?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 e mp4. Oggi 26 formati funzionano da un capo all&#39;altro.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Su quali sistemi posso eseguirlo?</h2></summary>
+    <div class="qa-body">
+      <p>La riga di comando gira su Windows e Linux sia su Intel sia su ARM, e sui Mac con Apple Silicon. La finestra desktop è fornita per Windows su Intel, Linux su Intel e Mac con Apple Silicon. I Mac Intel non sono supportati e non viene compilato nulla per loro.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Devo installare qualcosa?</h2></summary>
+    <div class="qa-body">
+      <p>No. Scarica l&#39;archivio per il tuo sistema, decomprimilo ed esegui il binario. Non c&#39;è un installer, né un runtime da aggiungere, né una dipendenza da risolvere. Se hai Go, funziona anche un solo comando go install.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Perché un&#39;esecuzione su migliaia di file è più lenta su Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Perché Windows fa pagare di più ogni percorso che esamina, e un comando che passa su migliaia di file esamina migliaia di percorsi. Misurato su una macchina con 3000 file da 1 kB, verify impiega circa 0,9 secondi su Windows e circa 0,2 secondi su Linux in un container. Un percorso di output più corto abbassa il valore di Windows, perché ogni cartella sopra i file fa parte di ciò che viene esaminato.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "In cosa è diverso da dd, fsutil o truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Quei comandi ti danno un file della dimensione giusta pieno di niente. Un file da 2 MB chiamato photo.png fatto così non è un PNG, quindi qualsiasi cosa lo analizzi davvero lo rifiuta per il motivo sbagliato, e anche il tuo test passa per il motivo sbagliato. Questo produce un vero PNG di esattamente 2 MB che si apre in un visualizzatore di immagini, e arriva con una dichiarazione su come il tuo sistema deve trattarlo." }
+    },
+    {
+      "@type": "Question",
+      "name": "È gratuito, e posso usarlo al lavoro?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sì a entrambe. È rilasciato sotto GPL-3.0 e non costa nulla. Non c\u0027è un account, né una chiave di licenza, né un livello a pagamento." }
+    },
+    {
+      "@type": "Question",
+      "name": "Posso usare i file generati in un prodotto closed source?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sì. La licenza copre il codice dello strumento, non ciò che lo strumento produce. File, ricette e manifest generati sono output e non opere derivate, quindi puoi committarli e distribuirli senza alcun obbligo." }
+    },
+    {
+      "@type": "Question",
+      "name": "I file generati contengono dati personali reali?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Tutto ciò che contengono è sintetizzato da un seed. Nessun dataset viene letto, nessun servizio viene contattato e nessun contenuto di terzi è incorporato. Considera un indirizzo e-mail generato inutilizzabile anziché inutilizzato, perché qualsiasi stringa casuale può coincidere per caso con uno reale." }
+    },
+    {
+      "@type": "Question",
+      "name": "Otterrò esattamente gli stessi file su un\u0027altra macchina?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sì, byte per byte, con la stessa ricetta e lo stesso seed. Il progetto lo verifica a ogni modifica, e romperlo richiede una versione maggiore. È ciò che ti permette di committare una piccola ricetta invece di grandi fixture binarie." }
+    },
+    {
+      "@type": "Question",
+      "name": "Serve una connessione a internet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Mai. Non c\u0027è telemetria, né controllo degli aggiornamenti, né client cloud, e il binario della riga di comando non ha alcuno stack di rete compilato al suo interno. Funziona su una macchina senza rete e in un ambiente aziendale chiuso." }
+    },
+    {
+      "@type": "Question",
+      "name": "Cosa succede se chiedo una dimensione che un formato non può raggiungere?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ottieni un errore che nomina il formato, il minimo possibile, il motivo di quel limite inferiore e cosa fare invece, e nessun file viene scritto. Lo strumento non arrotonda mai una dimensione in silenzio. Ogni minimo è elencato nella pagina dei formati." }
+    },
+    {
+      "@type": "Question",
+      "name": "Posso generare un file deliberatamente rotto?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti." }
+    },
+    {
+      "@type": "Question",
+      "name": "Quali formati arrivano dopo?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 e mp4. Oggi 26 formati funzionano da un capo all\u0027altro." }
+    },
+    {
+      "@type": "Question",
+      "name": "Su quali sistemi posso eseguirlo?",
+      "acceptedAnswer": { "@type": "Answer", "text": "La riga di comando gira su Windows e Linux sia su Intel sia su ARM, e sui Mac con Apple Silicon. La finestra desktop è fornita per Windows su Intel, Linux su Intel e Mac con Apple Silicon. I Mac Intel non sono supportati e non viene compilato nulla per loro." }
+    },
+    {
+      "@type": "Question",
+      "name": "Devo installare qualcosa?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Scarica l\u0027archivio per il tuo sistema, decomprimilo ed esegui il binario. Non c\u0027è un installer, né un runtime da aggiungere, né una dipendenza da risolvere. Se hai Go, funziona anche un solo comando go install." }
+    },
+    {
+      "@type": "Question",
+      "name": "Perché un\u0027esecuzione su migliaia di file è più lenta su Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Perché Windows fa pagare di più ogni percorso che esamina, e un comando che passa su migliaia di file esamina migliaia di percorsi. Misurato su una macchina con 3000 file da 1 kB, verify impiega circa 0,9 secondi su Windows e circa 0,2 secondi su Linux in un container. Un percorso di output più corto abbassa il valore di Windows, perché ogni cartella sopra i file fa parte di ciò che viene esaminato." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Ancora indeciso?</h2>
+  <p>
+    La <a href="/it/casi-d-uso/">pagina dei casi d'uso</a> mostra i compiti per cui è pensato, e la
+    <a href="/it/formati/">pagina dei formati</a> elenca ogni formato con il file più piccolo che
+    può produrre. Il <a href="https://github.com/donislawdev/TestingFilesGenerator">README nel repository</a> è il riferimento
+    completo.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Scarica</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Vedi il codice sorgente</a>
+</div>
+<p class="cta-note">Gratuito e open source, GPL-3.0. Nessuna registrazione. I download per Windows e macOS sono firmati e si avviano senza avvisi.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">File di test per la QA, della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Progetto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Codice su GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Download</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Segnala un problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Sostieni il progetto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagine</p>
+      <ul class="plain">
+        <li><a href="/it/">Home</a></li>
+        <li><a href="/it/formati/">Formati</a></li>
+        <li><a href="/it/preset/">Preset</a></li>
+        <li><a href="/it/documentazione/">Documentazione</a></li>
+        <li><a href="/it/casi-d-uso/">Casi d&#39;uso</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a></li>
+        <li><a href="/it/domande-frequenti/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Rilasciato sotto la GNU General Public License, versione 3. I file che generi sono tuoi - la licenza copre lo strumento, non il suo output.</p>
+    <p class="muted">Questo sito non carica font, script o tracker da nessuna parte. Non imposta cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cum generezi fișiere de test într-un pipeline CI</h1>
+<p class="lead">
+  Un fixture binar într-un repository rămâne pentru totdeauna în istoricul lui, nu poate fi revizuit
+  într-un diff și devine imposibil când fișierul este mare. Generează în schimb fișierele în
+  pipeline, dintr-o rețetă. Rețeta este text, octeții ies la fel de fiecare dată, iar un ultim pas
+  dovedește că nimic nu s-a mișcat.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    Instalează <code>tfg</code>, rulează <code>tfg generate fixtures.yaml --out ./fixtures</code>
+    înaintea testelor și <code>tfg verify ./fixtures/manifest.json</code> după ele. Ambii pași fac
+    singuri build-ul să eșueze, cu un cod de ieșire care spune de ce.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">De ce să nu le comiți</p>
+  <h2>De ce un fixture nu trebuie să stea în repository</h2>
+  <ul>
+    <li>
+      <strong>Rămâne în istoric.</strong> Ștergerea ulterioară a unui binar nu face un clon mai mic,
+      pentru că fiecare versiune a lui este încă acolo.
+    </li>
+    <li>
+      <strong>Un diff nu arată ce s-a schimbat.</strong> Cel care revizuiește vede că un PDF este diferit
+      și nimic altceva. O rețetă se schimbă cu o linie.
+    </li>
+    <li>
+      <strong>Fișierele mari nu încap.</strong> GitHub refuză un push care conține un fișier de peste 100
+      MB, așa că un test al unei limite de încărcare de 500 MB nu are ce comite.
+    </li>
+  </ul>
+  <p>
+    Ce trebuie comis este rețeta. Aceeași rețetă și același seed scriu aceiași octeți pe orice mașină,
+    deci fișierul generat în pipeline este fișierul pe care l-ai avut pe laptop.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Rețeta</p>
+  <h2>O rețetă care stă lângă teste</h2>
+  <p>
+    Aceasta scrie douăzeci și cinci de facturi care trebuie acceptate și două imagini peste o limită
+    care trebuie respinse, iar manifestul notează ambele așteptări:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> o verifică fără să scrie nimic și numește toate problemele
+    deodată.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Un workflow care instalează instrumentul și construiește fixture-urile</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Linia cu suma de control compară arhiva cu <code>verify-SHA256SUMS.txt</code> din aceeași versiune.
+    Versiunea este fixată, așa că o versiune nouă nu schimbă niciodată un build pe care nu l-ai
+    atins.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Același lucru ca job GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Când se face roșu</p>
+  <h2>Ce face un pas să eșueze, și de ce</h2>
+  <p>
+    Fiecare final are propriul cod de ieșire, deci pasul eșuează singur, iar jurnalul spune care a fost.
+    Cele pe care le întâlnește un pipeline:
+  </p>
+  <ul>
+    <li><code>3</code> - rețeta nu este validă. Nu s-a scris nimic, iar fiecare problemă este numită</li>
+    <li><code>4</code> - formatul nu poate face ce s-a cerut, de exemplu o mărime sub minimul lui</li>
+    <li><code>6</code> - nu este destul spațiu pe disc</li>
+    <li><code>7</code> - <code>tfg verify</code> a găsit un fișier care nu se potrivește cu manifestul lui</li>
+    <li><code>8</code> - rularea s-a încheiat, dar nu s-a produs totul</li>
+  </ul>
+  <p>
+    O rulare eșuată nu afișează nimic la ieșirea standard, așa că un parser de jurnale nu ia niciodată o
+    eroare drept date. Tabelul complet este pe <a href="/ro/documentatie/#ci">pagina de
+    documentație</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Un script PowerShell mai are nevoie de o linie</h2>
+  <p>
+    PowerShell nu scoate codul de ieșire al unui program dintr-un fișier <code>.ps1</code>. Rulează unul
+    cu <code>-File</code> și scriptul răspunde <code>0</code> chiar și când instrumentul dinăuntru a
+    refuzat lucrul, așa că un build care ar trebui să fie roșu devine verde. Ultima linie este toată
+    soluția:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Așa se comportă PowerShell, nu este ceva legat de acest instrument. <code>cmd</code>,
+    <code>bash</code> și <code>zsh</code> nu au nevoie de nimic în plus.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Mai multe joburi</p>
+  <h2>Împărțirea fixture-urilor între joburi</h2>
+  <p>
+    De obicei nu e nevoie să le încarci. Fiindcă aceeași rețetă scrie aceiași octeți, fiecare job își
+    poate rula propriul <code>tfg generate</code>, ceea ce e mai rapid decât o încărcare și o
+    descărcare. Când un job trebuie să primească fișiere de la altul, rulează <code>tfg
+    verify</code> pe manifest după transfer, și îți spune dacă ce a ajuns este ce s-a scris.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Mai departe</p>
+  <h2>Unde să mergi de aici</h2>
+  <ul>
+    <li>
+      <a href="/ro/fisiere-de-test-corupte/">Fișiere de test corupte</a> adaugă aceleiași rețete fișiere
+      stricate intenționat.
+    </li>
+    <li>
+      <a href="/ro/cazuri-de-utilizare/">Cazurile de utilizare</a> arată ce altceva poate verifica o
+      rulare într-un pipeline.
+    </li>
+    <li>
+      <a href="/ro/documentatie/">Documentația</a> cuprinde fiecare comandă, fiecare cheie de rețetă și
+      fiecare cod de ieșire.
+    </li>
+  </ul>
+</section>

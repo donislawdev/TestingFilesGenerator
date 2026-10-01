@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>FAQ - otázky ke generování testovacích souborů</title>
+<meta name="description" content="Čím se liší od dd a fsutil, zda lze soubory commitovat, zda se běhy opakují bajt po bajtu a co se stane, když nelze velikosti dosáhnout.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="FAQ - otázky ke generování testovacích souborů">
+<meta property="og:description" content="Čím se liší od dd a fsutil, zda lze soubory commitovat, zda se běhy opakují bajt po bajtu a co se stane, když nelze velikosti dosáhnout.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - otázky ke generování testovacích souborů">
+<meta name="twitter:description" content="Čím se liší od dd a fsutil, zda lze soubory commitovat, zda se běhy opakují bajt po bajtu a co se stane, když nelze velikosti dosáhnout.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Často kladené otázky</h1>
+<p class="lead">
+  Licence, soukromí, opakovatelnost a věci, které lidé ověřují, než generátor zařadí do build
+  pipeline. Pokud tu vaše otázka není, <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">sledování issues</a> je
+  otevřené.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Čím se to liší od dd, fsutil nebo truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Ty vám dají soubor správné velikosti plný ničeho. Soubor o 2 MB pojmenovaný photo.png vytvořený takto není PNG, takže ho cokoli, co ho skutečně zpracovává, odmítne z nesprávného důvodu a váš test pak projde také z nesprávného důvodu. Tohle vytvoří skutečné PNG o přesně 2 MB, které se otevře v prohlížeči obrázků, a přichází s prohlášením, jak s ním má váš systém naložit.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Je to zdarma a mohu to používat v práci?</h2></summary>
+    <div class="qa-body">
+      <p>Ano k obojímu. Je vydáno pod GPL-3.0 a nestojí nic. Není tu účet, licenční klíč ani placená úroveň.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Mohu generované soubory použít v produktu s uzavřeným zdrojovým kódem?</h2></summary>
+    <div class="qa-body">
+      <p>Ano. Licence se vztahuje na kód nástroje, ne na to, co nástroj vytváří. Generované soubory, recepty a manifesty jsou výstup, nikoli odvozená díla, takže je můžete commitovat a dodávat bez jakékoli povinnosti.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Obsahují generované soubory skutečné osobní údaje?</h2></summary>
+    <div class="qa-body">
+      <p>Ne. Vše uvnitř je syntetizováno ze seedu. Nečte se žádný datový soubor, nekontaktuje se žádná služba a nevkládá se obsah třetích stran. Vygenerovanou e-mailovou adresu považujte za nepoužitelnou, ne za nepoužitou, protože libovolný náhodný řetězec se může shodou okolností shodovat se skutečným.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Dostanu na jiném počítači přesně stejné soubory?</h2></summary>
+    <div class="qa-body">
+      <p>Ano, bajt po bajtu, při stejném receptu a stejném seedu. Projekt to testuje při každé změně a porušit to vyžaduje novou hlavní verzi. Díky tomu můžete commitovat malý recept místo velkých binárních fixtures.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Potřebuje připojení k internetu?</h2></summary>
+    <div class="qa-body">
+      <p>Nikdy. Není tu telemetrie, kontrola aktualizací ani cloudový klient a do binárky příkazového řádku není zkompilován žádný síťový zásobník. Funguje na počítači bez sítě i v uzavřeném firemním prostředí.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Co se stane, když požádám o velikost, které formát nedosáhne?</h2></summary>
+    <div class="qa-body">
+      <p>Dostanete chybu, která pojmenuje formát, nejmenší možnou velikost, důvod tohoto minima a co dělat místo toho, a nezapíše se žádný soubor. Nástroj nikdy velikost mlčky nezaokrouhlí. Každé minimum je uvedeno na stránce formátů.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Mohu vygenerovat soubor, který je záměrně rozbitý?</h2></summary>
+    <div class="qa-body">
+      <p>Ano. Přidejte --damage zero-head a soubor vyjde v přesně požadované velikosti, s prvními bajty přepsanými nulami, takže ho čtečka odmítne, a manifest říká, že ho má váš systém odmítnout. Podrobnosti jsou na stránce o poškozených testovacích souborech.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Které formáty přijdou dál?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 a mp4. Dnes funguje od začátku do konce 26 formátů.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Na kterých systémech to mohu spustit?</h2></summary>
+    <div class="qa-body">
+      <p>Příkazový řádek běží na Windows a Linuxu na Intelu i ARM a na Macích s Apple Silicon. Desktopové okno se dodává pro Windows na Intelu, Linux na Intelu a Macy s Apple Silicon. Intel Macy nejsou podporovány a nic se pro ně nesestavuje.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Musím něco instalovat?</h2></summary>
+    <div class="qa-body">
+      <p>Ne. Stáhněte archiv pro svůj systém, rozbalte ho a spusťte binárku. Není tu instalátor, běhové prostředí k doplnění ani závislost k vyřešení. Pokud máte Go, funguje i jediný příkaz go install.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Proč je běh nad tisíci soubory na Windows pomalejší?</h2></summary>
+    <div class="qa-body">
+      <p>Protože Windows si účtuje víc za každou cestu, na kterou se podívá, a příkaz, který prochází tisíce souborů, se dívá na tisíce cest. Změřeno na jednom počítači s 3000 soubory po 1 kB: verify trvá na Windows asi 0,9 sekundy a na Linuxu v kontejneru asi 0,2 sekundy. Kratší výstupní cesta číslo na Windows zmenší, protože každá složka nad soubory je součástí toho, na co se dívá.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Čím se to liší od dd, fsutil nebo truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ty vám dají soubor správné velikosti plný ničeho. Soubor o 2 MB pojmenovaný photo.png vytvořený takto není PNG, takže ho cokoli, co ho skutečně zpracovává, odmítne z nesprávného důvodu a váš test pak projde také z nesprávného důvodu. Tohle vytvoří skutečné PNG o přesně 2 MB, které se otevře v prohlížeči obrázků, a přichází s prohlášením, jak s ním má váš systém naložit." }
+    },
+    {
+      "@type": "Question",
+      "name": "Je to zdarma a mohu to používat v práci?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ano k obojímu. Je vydáno pod GPL-3.0 a nestojí nic. Není tu účet, licenční klíč ani placená úroveň." }
+    },
+    {
+      "@type": "Question",
+      "name": "Mohu generované soubory použít v produktu s uzavřeným zdrojovým kódem?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ano. Licence se vztahuje na kód nástroje, ne na to, co nástroj vytváří. Generované soubory, recepty a manifesty jsou výstup, nikoli odvozená díla, takže je můžete commitovat a dodávat bez jakékoli povinnosti." }
+    },
+    {
+      "@type": "Question",
+      "name": "Obsahují generované soubory skutečné osobní údaje?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ne. Vše uvnitř je syntetizováno ze seedu. Nečte se žádný datový soubor, nekontaktuje se žádná služba a nevkládá se obsah třetích stran. Vygenerovanou e-mailovou adresu považujte za nepoužitelnou, ne za nepoužitou, protože libovolný náhodný řetězec se může shodou okolností shodovat se skutečným." }
+    },
+    {
+      "@type": "Question",
+      "name": "Dostanu na jiném počítači přesně stejné soubory?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ano, bajt po bajtu, při stejném receptu a stejném seedu. Projekt to testuje při každé změně a porušit to vyžaduje novou hlavní verzi. Díky tomu můžete commitovat malý recept místo velkých binárních fixtures." }
+    },
+    {
+      "@type": "Question",
+      "name": "Potřebuje připojení k internetu?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nikdy. Není tu telemetrie, kontrola aktualizací ani cloudový klient a do binárky příkazového řádku není zkompilován žádný síťový zásobník. Funguje na počítači bez sítě i v uzavřeném firemním prostředí." }
+    },
+    {
+      "@type": "Question",
+      "name": "Co se stane, když požádám o velikost, které formát nedosáhne?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Dostanete chybu, která pojmenuje formát, nejmenší možnou velikost, důvod tohoto minima a co dělat místo toho, a nezapíše se žádný soubor. Nástroj nikdy velikost mlčky nezaokrouhlí. Každé minimum je uvedeno na stránce formátů." }
+    },
+    {
+      "@type": "Question",
+      "name": "Mohu vygenerovat soubor, který je záměrně rozbitý?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ano. Přidejte --damage zero-head a soubor vyjde v přesně požadované velikosti, s prvními bajty přepsanými nulami, takže ho čtečka odmítne, a manifest říká, že ho má váš systém odmítnout. Podrobnosti jsou na stránce o poškozených testovacích souborech." }
+    },
+    {
+      "@type": "Question",
+      "name": "Které formáty přijdou dál?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 a mp4. Dnes funguje od začátku do konce 26 formátů." }
+    },
+    {
+      "@type": "Question",
+      "name": "Na kterých systémech to mohu spustit?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Příkazový řádek běží na Windows a Linuxu na Intelu i ARM a na Macích s Apple Silicon. Desktopové okno se dodává pro Windows na Intelu, Linux na Intelu a Macy s Apple Silicon. Intel Macy nejsou podporovány a nic se pro ně nesestavuje." }
+    },
+    {
+      "@type": "Question",
+      "name": "Musím něco instalovat?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ne. Stáhněte archiv pro svůj systém, rozbalte ho a spusťte binárku. Není tu instalátor, běhové prostředí k doplnění ani závislost k vyřešení. Pokud máte Go, funguje i jediný příkaz go install." }
+    },
+    {
+      "@type": "Question",
+      "name": "Proč je běh nad tisíci soubory na Windows pomalejší?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Protože Windows si účtuje víc za každou cestu, na kterou se podívá, a příkaz, který prochází tisíce souborů, se dívá na tisíce cest. Změřeno na jednom počítači s 3000 soubory po 1 kB: verify trvá na Windows asi 0,9 sekundy a na Linuxu v kontejneru asi 0,2 sekundy. Kratší výstupní cesta číslo na Windows zmenší, protože každá složka nad soubory je součástí toho, na co se dívá." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Ještě se rozhodujete?</h2>
+  <p>
+    <a href="/cs/pripady-pouziti/">Stránka případů použití</a> ukazuje úlohy, pro které je určen, a
+    <a href="/cs/formaty/">stránka formátů</a> uvádí každý formát s nejmenším souborem, který umí
+    vytvořit. <a href="https://github.com/donislawdev/TestingFilesGenerator">README v repozitáři</a> je úplná reference.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stáhnout</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Zobrazit zdrojový kód</a>
+</div>
+<p class="cta-note">Zdarma a open source, GPL-3.0. Žádná registrace. Stažené soubory pro Windows a macOS jsou podepsané a spustí se bez varování.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

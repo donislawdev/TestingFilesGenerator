@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ru">
+<title>Повреждённые тестовые файлы - сломанные файлы точного размера</title>
+<meta name="description" content="Намеренно испорченный файл точного размера с манифестом, который говорит, что ваша система должна его отклонить. Для проверки валидации загрузки и парсеров.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Повреждённые тестовые файлы - сломанные файлы точного размера">
+<meta property="og:description" content="Намеренно испорченный файл точного размера с манифестом, который говорит, что ваша система должна его отклонить. Для проверки валидации загрузки и парсеров.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Повреждённые тестовые файлы - сломанные файлы точного размера">
+<meta name="twitter:description" content="Намеренно испорченный файл точного размера с манифестом, который говорит, что ваша система должна его отклонить. Для проверки валидации загрузки и парсеров.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Главная",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ru/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Сценарии",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Повреждённые файлы",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/corrupt-test-files\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ru/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основное">
+      <a href="/ru/">Главная</a>
+      <a href="/ru/formats/">Форматы</a>
+      <a href="/ru/presets/">Пресеты</a>
+      <a href="/ru/docs/">Документация</a>
+      <a href="/ru/use-cases/" aria-current="true">Сценарии</a>
+      <a href="/ru/create-file-exact-size/">Точный размер</a>
+      <a href="/ru/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Язык: Русский">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Русский</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/corrupt-test-files/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/corrupt-test-files/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/beschaedigte-testdateien/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-corruptos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-corrompus/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/corrupt-test-files/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-rusak/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-corrotti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/corrupt-test-files/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/corrupt-test-files/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/uszkodzone-pliki-testowe/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-corrompidos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-corupte/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/th/corrupt-test-files/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/corrupt-test-files/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/corrupt-test-files/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ru/use-cases/">Сценарии</a></p>
+<h1>Как сделать повреждённый файл для тестов</h1>
+<p class="lead">
+  Валидатор, которому показывали только здоровые файлы, на самом деле не проверен. Вот как получить
+  файл, намеренно испорченный, выходящий <strong>точно того размера, который вы просите</strong>, и
+  несущий манифест с указанием, что ваша система должна с ним сделать.
+</p>
+
+<div class="note">
+  <p class="note-title">Короткий ответ</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> записывает PNG
+    ровно в 2097152 байта, первые байты которого нули, а манифест рядом фиксирует, что ваша система
+    должна его отклонить.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Обычный путь</p>
+  <h2>Почему файл, испорченный вручную, - плохой тест</h2>
+  <p>
+    Обычно берут шестнадцатеричный редактор, скрипт, переворачивающий несколько случайных байтов, или
+    укорачивают файл через <code>head</code> либо <code>truncate</code>. Один раз это работает, а
+    потом обходится дорого:
+  </p>
+  <ul>
+    <li>
+      <strong>Каждый раз по-разному.</strong> Случайный байт при каждом запуске попадает в новое место,
+      поэтому сбой во вторник в среду может не повториться.
+    </li>
+    <li>
+      <strong>Меняется размер.</strong> Обрезанный файл меньше лимита, под которым он должен был
+      оставаться, поэтому проверка размера отвечает раньше проверки содержимого, и тест проходит по
+      неверной причине.
+    </li>
+    <li>
+      <strong>Это часто остаётся незамеченным.</strong> Простой текст читается и с изменённым байтом
+      посередине, а снисходительная программа чтения изображений просто рисует его, так что файл,
+      который должен быть испорчен, принимается.
+    </li>
+    <li>
+      <strong>Не сказано, что должно произойти.</strong> Файл - это просто байты, и тому, кто будет читать
+      тест позже, придётся гадать, имелось в виду принятие или отклонение.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Что вы получаете</p>
+  <h2>Повреждённый файл остаётся нужного размера</h2>
+  <p>
+    Файл создаётся как обычно и портится потом, по пути на диск. Он сохраняет заданный размер, а та же
+    команда снова записывает те же байты.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Настройки пишутся после двоеточия. Параметр можно повторять, а повреждения применяются в том
+    порядке, в каком вы их записали. Это работает с каждым из 26 форматов.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Что он умеет</p>
+  <h2>Какие бывают повреждения?</h2>
+  <p>
+    Это список, который печатает программа, прочитанный из неё при сборке этой страницы. <code>tfg
+    damage</code> печатает тот же список, а <code>tfg damage &lt;id&gt;</code> говорит, что
+    принимает одно из них.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Повреждение</th>
+      <th>Что оно делает с байтами</th>
+      <th class="num">Наименьший файл</th>
+      <th>Настройки</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>zero-head</code></td>
+      <td>Перезаписывает первые байты файла нулями, не меняя его длину. Большинство программ чтения смотрят сначала туда, поэтому это повреждение замечает почти всё.</td>
+      <td class="num">8</td>
+      <td><code>bytes</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    <code>zero-head</code> записывает нули поверх начала файла. Большинство программ чтения смотрят
+    сначала туда, на сигнатуру и заголовок, которые говорят, что это за файл, поэтому замечает почти
+    любая. У простого текста и журналов сигнатуры нет, и их тоже отклоняют, потому что
+    последовательность нулевых байтов не является текстом. Меньше четырёх байтов у некоторых
+    форматов получается повреждение, на которое не жалуется ни одна программа чтения, поэтому
+    настройка начинается с четырёх.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Что говорит манифест</p>
+  <h2>Манифест, который говорит, что должно произойти</h2>
+  <p>
+    Каждый повреждённый файл получает запись о том, что ваша система должна его отклонить, а рядом
+    записано повреждение:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Два запроса отклоняются до того, как что-либо записано, потому что каждый оставил бы на диске файл,
+    который манифест описывает неверно:
+  </p>
+  <ul>
+    <li>файл меньше, чем нужно повреждению, который вышел бы нетронутым</li>
+    <li>
+      <code>expected: accept</code> рядом с повреждением, потому что ничто не могло бы этого выполнить.
+      Напишите <code>sanitize</code>, если ваша система должна починить файл, или
+      <code>unspecified</code>, если именно это вы и проверяете
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">В рецепте</p>
+  <h2>Здоровые и сломанные файлы за один запуск</h2>
+  <p>
+    Положите оба вида в один рецепт, и манифест несёт ожидание для каждого файла, так что тесту не нужен
+    список, какой файл какой:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">В тесте</p>
+  <h2>Превращаем это в тест</h2>
+  <p>
+    Тест читает манифест и проверяет, что произошедшее совпадает с заявленным. Список имён файлов ему не
+    нужен:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Хороший отказ - это чистый отказ. Сообщение, говорящее, что было не так, - тот ответ, который вам
+    нужен. Ошибка сервера, зависание или наполовину сохранённый файл - тот дефект, ради которого
+    этот тест и существует.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Дальше</p>
+  <h2>Куда идти отсюда</h2>
+  <ul>
+    <li>
+      <a href="/ru/presets/upload-validation/">Пресет upload-validation</a> задаёт форме два других
+      вопроса, о размере и о типе.
+    </li>
+    <li>
+      <a href="/ru/test-files-in-ci/">Тестовые файлы в CI</a> запускают такой рецепт в конвейере.
+    </li>
+    <li>
+      <a href="/ru/docs/#damage">Документация</a> содержит каждый параметр <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Тестовые файлы для QA точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проект</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Исходный код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Загрузки</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Сообщить о проблеме</a></li>
+        <li><a href="https://donislawdev.com/support/">Поддержать проект</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Страницы</p>
+      <ul class="plain">
+        <li><a href="/ru/">Главная</a></li>
+        <li><a href="/ru/formats/">Форматы</a></li>
+        <li><a href="/ru/presets/">Пресеты</a></li>
+        <li><a href="/ru/docs/">Документация</a></li>
+        <li><a href="/ru/use-cases/">Сценарии</a></li>
+        <li><a href="/ru/create-file-exact-size/">Точный размер</a></li>
+        <li><a href="/ru/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Распространяется по лицензии GNU General Public License версии 3. Файлы, которые вы создаёте, принадлежат вам - лицензия охватывает инструмент, а не его результат.</p>
+    <p class="muted">Этот сайт не загружает шрифты, скрипты и трекеры ниоткуда. Он не устанавливает куки.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell</title>
+<meta name="description" content="Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell">
+<meta property="og:description" content="Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell">
+<meta name="twitter:description" content="Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Trường hợp sử dụng",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/truong-hop-su-dung\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Tệp kiểm thử trong CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/tep-kiem-thu-trong-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/">Preset</a>
+      <a href="/vi/tai-lieu/">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/" aria-current="true">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a>
+      <a href="/vi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></p>
+<h1>Cách tạo tệp kiểm thử trong pipeline CI</h1>
+<p class="lead">
+  Một fixture nhị phân trong kho mã nằm lại mãi trong lịch sử của nó, không thể review trong diff và
+  trở nên bất khả thi khi tệp lớn. Hãy tạo tệp ngay trong pipeline từ một công thức. Công thức là
+  văn bản, các byte ra giống hệt mỗi lần, và một bước cuối chứng minh không có gì xê dịch.
+</p>
+
+<div class="note">
+  <p class="note-title">Câu trả lời ngắn</p>
+  <p>
+    Cài <code>tfg</code>, chạy <code>tfg generate fixtures.yaml --out ./fixtures</code> trước các bài
+    kiểm thử và <code>tfg verify ./fixtures/manifest.json</code> sau đó. Cả hai bước tự làm bản dựng
+    thất bại, với một mã thoát nói lý do.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Vì sao không commit</p>
+  <h2>Vì sao fixture không nên nằm trong kho mã</h2>
+  <ul>
+    <li>
+      <strong>Nó ở lại trong lịch sử.</strong> Xóa một tệp nhị phân sau này không làm bản clone nhỏ đi, vì
+      mọi phiên bản của nó vẫn còn đó.
+    </li>
+    <li>
+      <strong>Diff không cho thấy cái gì đã đổi.</strong> Người review thấy một tệp PDF khác đi và không
+      biết gì thêm. Công thức thì đổi một dòng.
+    </li>
+    <li>
+      <strong>Tệp lớn không vừa.</strong> GitHub từ chối một lần push có tệp lớn hơn 100 MB, nên bài kiểm
+      thử giới hạn tải lên 500 MB không có gì để commit.
+    </li>
+  </ul>
+  <p>
+    Thứ cần commit là công thức. Cùng công thức và cùng seed ghi ra cùng các byte trên mọi máy, nên tệp
+    tạo trong pipeline chính là tệp bạn có trên laptop.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Công thức</p>
+  <h2>Một công thức nằm cạnh các bài kiểm thử</h2>
+  <p>
+    Công thức này ghi hai mươi lăm hóa đơn phải được chấp nhận và hai ảnh vượt giới hạn phải bị từ chối,
+    và manifest ghi cả hai kỳ vọng:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> kiểm tra nó mà không ghi gì, và nêu mọi vấn đề cùng một lúc.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Một workflow cài công cụ và dựng các fixture</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Dòng checksum so sánh tệp lưu trữ với <code>verify-SHA256SUMS.txt</code> của cùng bản phát hành.
+    Phiên bản được ghim cố định, nên một bản phát hành mới không bao giờ đổi một bản dựng bạn chưa
+    đụng tới.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Cùng việc đó dưới dạng job GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Khi nó chuyển đỏ</p>
+  <h2>Điều gì làm một bước thất bại, và vì sao</h2>
+  <p>
+    Mỗi kết cục có mã thoát riêng, nên bước tự thất bại và nhật ký nói là mã nào. Những mã một pipeline
+    gặp:
+  </p>
+  <ul>
+    <li><code>3</code> - công thức không hợp lệ. Không có gì được ghi, và mọi vấn đề đều được nêu</li>
+    <li><code>4</code> - định dạng không làm được điều được yêu cầu, ví dụ kích thước dưới mức nhỏ nhất của nó</li>
+    <li><code>6</code> - không đủ dung lượng đĩa</li>
+    <li><code>7</code> - <code>tfg verify</code> tìm thấy một tệp không khớp với manifest của nó</li>
+    <li><code>8</code> - lần chạy đã xong, nhưng không phải mọi thứ đều được tạo ra</li>
+  </ul>
+  <p>
+    Lần chạy thất bại không in gì ra đầu ra chuẩn, nên trình phân tích nhật ký không bao giờ nhầm một
+    lỗi là dữ liệu. Cả bảng nằm ở <a href="/vi/tai-lieu/#ci">trang tài liệu</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Script PowerShell cần thêm một dòng</h2>
+  <p>
+    PowerShell không mang mã thoát của một chương trình ra khỏi tệp <code>.ps1</code>. Chạy một script
+    với <code>-File</code> và script trả lời <code>0</code> ngay cả khi công cụ bên trong đã từ chối
+    công việc, nên một bản dựng lẽ ra phải đỏ lại thành xanh. Dòng cuối là toàn bộ cách sửa:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    PowerShell hành xử như vậy, không phải điều gì của công cụ này. <code>cmd</code>, <code>bash</code>
+    và <code>zsh</code> không cần thêm gì.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Nhiều job</p>
+  <h2>Chia sẻ fixture giữa các job</h2>
+  <p>
+    Thường không cần tải chúng lên. Vì cùng công thức ghi cùng các byte, mỗi job có thể chạy <code>tfg
+    generate</code> của riêng nó, nhanh hơn một lần tải lên rồi tải xuống. Khi một job phải nhận tệp
+    từ job khác, hãy chạy <code>tfg verify</code> trên manifest sau khi chuyển, và nó cho biết thứ
+    đến nơi có đúng là thứ đã được ghi không.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Tiếp theo</p>
+  <h2>Đi đâu từ đây</h2>
+  <ul>
+    <li>
+      <a href="/vi/tep-kiem-thu-bi-hong/">Tệp kiểm thử bị hỏng</a> thêm vào cùng công thức những tệp cố ý
+      làm hỏng.
+    </li>
+    <li>
+      <a href="/vi/truong-hop-su-dung/">Các trường hợp sử dụng</a> cho thấy một lần chạy trong pipeline
+      còn kiểm tra được gì nữa.
+    </li>
+    <li>
+      <a href="/vi/tai-lieu/">Tài liệu</a> có mọi lệnh, mọi khóa công thức và mọi mã thoát.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

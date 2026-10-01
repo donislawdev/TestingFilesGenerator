@@ -1,0 +1,283 @@
+<h1>Dokumentasi</h1>
+<p class="lead">
+  Semua yang dilakukan alat ini, disusun sebagai pertanyaan yang benar-benar dibawa orang.
+  <a href="{{ .Facts.Repo }}">README di repositori</a> adalah referensi lengkap dan selalu sesuai
+  dengan build yang Anda unduh.
+</p>
+
+<section class="section" id="commands">
+  <h2>Perintah apa saja yang ada?</h2>
+  <p>Masing-masing melakukan satu hal:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Bagaimana cara membuat satu file dengan ukuran tepat?</h2>
+  <p>
+    Sebutkan format, ukuran, dan tujuannya. Ukuran dihitung dalam kelipatan 1024, jadi <code>2mb</code>
+    adalah 2097152 byte. Jumlah byte biasa juga bisa, jadi <code>--size 10485761</code> meminta
+    persis sebanyak itu.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Opsi yang berguna pada <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Opsi</th><th>Fungsinya</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>format file, misalnya <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>ukuran tepat setiap file, seperti <code>10mb</code> atau jumlah byte biasa</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>ukuran yang diundi per file dari suatu rentang, seperti <code>1kb-8kb</code>. Undiannya berasal dari seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>tiga file di sekitar batas: satu byte di bawah, batas itu sendiri, satu byte di atas</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>berapa banyak file yang dibuat. Bawaan <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>templat nama, misalnya <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>direktori tujuan penulisan</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed run. Seed yang sama menghasilkan byte yang sama</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>pengaturan format, dapat diulang</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>merusak file dengan sengaja, dapat diulang dan diterapkan berurutan. Jalankan <code>tfg damage</code> untuk daftarnya</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code>, atau <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>menghitung dan menampilkan, tidak menulis apa pun</td></tr>
+        <tr><td><code>--json</code></td><td>menulis manifes ke keluaran standar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Bagaimana membuat file yang sengaja dirusak?</h2>
+  <p>
+    Setiap file lain yang ditulis alat ini benar menurut konstruksinya, yang menjawab dua dari tiga
+    pertanyaan yang diajukan validator unggahan. <code>--damage</code> menjawab yang ketiga - apakah
+    file itu dapat dibuka sama sekali. File dibuat secara normal lalu dirusak, sehingga ukurannya
+    tetap seperti yang Anda minta.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Pengaturan ditulis setelah titik dua. Opsinya dapat diulang, dan urutan penulisannya adalah urutan
+    penerapannya. <code>tfg damage</code> mendaftar apa yang bisa dilakukan build ini dan apa yang
+    diterima masing-masing.
+  </p>
+  <p>Dalam resep, kuncinya adalah daftar, berisi nama atau pengaturan:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    File yang dirusak mendapat <code>expected: reject</code> di manifes, dengan kerusakan dicatat di
+    sampingnya. Dua hal ditolak sebelum apa pun ditulis, karena masing-masing akan menaruh file di
+    disk yang digambarkan manifes secara keliru:
+  </p>
+  <ul>
+    <li>file yang lebih kecil dari yang dibutuhkan kerusakan, karena akan keluar tanpa perubahan</li>
+    <li>
+      <code>expected: accept</code> di samping kerusakan, karena tidak ada yang dapat memenuhinya. Tulis
+      <code>sanitize</code> bila sistem yang diuji dimaksudkan memperbaiki file, atau
+      <code>unspecified</code> bila itulah pertanyaan yang Anda ajukan
+    </li>
+  </ul>
+  <p>
+    Yang ketiga tidak dapat diketahui sebelumnya. Bila suatu kerusakan berjalan dan tidak menggeser satu
+    byte pun, file itu dibuang alih-alih ditulis - run berlanjut, menyebut file mana itu, dan
+    berakhir dengan kode keluar parsial.
+  </p>
+  <p>
+    Langkah demi langkah, dengan tes yang membaca manifes: <a href="/id/file-uji-rusak/">cara membuat
+    file rusak untuk pengujian</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Seperti apa bentuk sebuah resep?</h2>
+  <p>
+    Resep adalah file YAML yang menggambarkan satu run utuh. Commit di samping pengujian Anda dan
+    fixture berhenti menjadi biner di repositori Anda - siapa pun dapat membangunnya kembali, byte
+    demi byte, dari file berisi beberapa ratus karakter.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Setiap target memerlukan tepat satu dari <code>size</code>, <code>size-range</code>,
+    <code>boundary</code>, atau <code>contains</code>. Dua adalah galat dan tidak ada juga galat.
+    Resep yang tidak valid menulis <strong>tidak ada file sama sekali</strong> dan melaporkan semua
+    masalah sekaligus, bukan hanya yang pertama, masing-masing menyebut pengaturan yang dimaksud.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Bagaimana menyatakan apa yang harus dilakukan sistem saya terhadap sebuah file?</h2>
+  <p>Bentuk pendek bila hasilnya sudah cukup, bentuk panjang bila alasannya penting:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Hasilnya adalah <code>accept</code>, <code>reject</code>, <code>sanitize</code>, dan
+    <code>unspecified</code>. Alasannya adalah daftar tertutup agar laporan dapat mengelompokkan
+    berdasarkan itu: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code>, dan
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Alasan menyebut <strong>aturan yang berlaku</strong>, bukan putusannya. Itulah sebabnya alasan yang
+    sama dapat berada di bawah kedua hasil - file satu byte di bawah batas adalah
+    <code>accept</code>, dan aturan yang dimaksud tetap <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Apa isi manifes?</h2>
+  <p>
+    Manifes ditulis di samping file pada akhir setiap run, termasuk run yang terhenti. Satu entri per
+    file:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> ditambahkan bila run berasal dari resep, dan <code>preset</code> dengan
+    <code>overrides</code> bila berasal dari preset, sehingga manifes selalu dapat ditelusuri ke apa
+    yang menghasilkannya.
+  </p>
+  <p>
+    Setiap entri juga membawa <code>target_id</code>, id target dalam resep yang menghasilkan file, dan
+    <code>summary.by_target</code> menghitung file yang dihasilkan tiap target. Resep dengan
+    beberapa target dapat diperiksa target demi target tanpa membaca nama file.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Apa itu preset?</h2>
+  <p>
+    Set file siap pakai yang menjawab pertanyaan pengujian umum, sehingga Anda tidak perlu merancang
+    setnya sendiri. Preset pada dasarnya resep biasa, dan <code>eject</code> mencetak resepnya agar
+    dapat Anda sunting dari sana. Setiap preset memiliki <a href="/id/preset/">halamannya
+    sendiri</a> berisi apa yang biasanya ditemukan, isi set, dan setiap pengaturan yang diterimanya.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> memberi tahu berapa biaya set sebelum Anda membuatnya, dan menyatakan terus terang
+    bila sebuah angka adalah nilai sementara dari kami, bukan batas dari Anda.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Apa arti kode keluar?</h2>
+  <p>
+    Setiap akhir punya kodenya sendiri, keluaran yang terbaca mesin masuk ke keluaran standar, dan run
+    yang gagal tidak mencetak apa pun di sana. Tabelnya adalah kontrak beku - mengubah arti sebuah
+    kode memerlukan kenaikan versi mayor.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Run yang dihentikan dengan Ctrl+C tetap meninggalkan manifes dan tidak pernah meninggalkan file yang
+    tertulis setengah, sehingga job yang dibatalkan masih dapat dibersihkan oleh yang berikutnya.
+  </p>
+  <p>
+    Workflow siap pakai untuk GitHub Actions dan GitLab CI: <a href="/id/file-uji-di-ci/">cara membuat
+    file uji di pipeline CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Apakah ada jendela desktop?</h2>
+  <p>
+    Ada, mesin yang sama dengan jendela di atasnya, untuk pengujian yang tidak diskripkan. Ini bukan
+    versi terpangkas: sebuah pengujian membandingkan kedua antarmuka kemampuan demi kemampuan, dan
+    apa pun yang hanya dapat dilakukan salah satunya harus dinyatakan dan dibenarkan alih-alih
+    diam-diam menyimpang.
+  </p>
+  <p>
+    Layarnya adalah satu batch, preset, beberapa batch sekaligus, dan tentang. Jendela ini menunjukkan
+    biaya sebuah run sebelum menulis apa pun, melaporkan kemajuan selama berjalan, dan dapat
+    dibatalkan di tengah jalan tanpa meninggalkan file yang tertulis setengah. Jendela ini belum
+    membuka file resep - untuk saat ini resep urusan baris perintah, dan jendela membangun batch-nya
+    di formulir.
+  </p>
+</section>

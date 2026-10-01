@@ -1,0 +1,236 @@
+<h1>ドキュメント</h1>
+<p class="lead">
+  ツールの機能を、実際に寄せられる質問の形で整理しています。<a href="{{ .Facts.Repo }}">リポジトリのREADME</a>が完全なリファレンスで、ダウンロードしたビルドと常に一致しています。
+</p>
+
+<section class="section" id="commands">
+  <h2>どんなコマンドがありますか。</h2>
+  <p>それぞれが1つのことだけを行います。</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>正確なサイズのファイルを1つ生成するには。</h2>
+  <p>
+    形式、サイズ、出力先を指定します。サイズは1024単位で数えるため、<code>2mb</code>は2097152バイトです。バイト数をそのまま指定することもでき、<code>--size
+    10485761</code>はちょうどその数のバイトを要求します。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code>で便利なフラグ:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>フラグ</th><th>動作</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>ファイルの形式。例:<code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>各ファイルの正確なサイズ。<code>10mb</code>のような指定、またはバイト数</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>範囲からファイルごとに決めるサイズ。例:<code>1kb-8kb</code>。抽選はシードから決まります</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>制限の前後の3ファイル。1バイト下、制限値ちょうど、1バイト上</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>作成するファイル数。既定は<code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>名前のテンプレート。例:<code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>書き込み先のディレクトリ</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>実行のシード。同じシードなら同じバイトになります</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>形式の設定。繰り返し指定できます</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>ファイルを意図的に壊します。繰り返し指定でき、順番に適用されます。一覧は<code>tfg damage</code>で確認できます</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>、<code>reject</code>、<code>sanitize</code>、<code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>数えて表示するだけで、何も書き込みません</td></tr>
+        <tr><td><code>--json</code></td><td>マニフェストを標準出力に書き出します</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>意図的に壊れたファイルを作るには。</h2>
+  <p>
+    このツールが書き込むそれ以外のファイルは、構造上すべて正しく、アップロード検証が問う3つの疑問のうち2つに答えます。<code>--damage</code>は3つ目、つまりファイルがそもそも開けるかに答えます。ファイルは通常どおり生成されてから壊されるため、要求したサイズのままです。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    設定はコロンの後ろに書きます。フラグは繰り返せて、書いた順に適用されます。<code>tfg damage</code>は、このビルドで何ができるか、それぞれが何を受け付けるかを一覧表示します。
+  </p>
+  <p>レシピでは、キーは名前または設定のリストになります。</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    壊されたファイルには、マニフェストで<code>expected:
+    reject</code>が付き、横に壊した内容が記録されます。次の2つは、何かを書き込む前に拒否されます。どちらもマニフェストの記述と食い違うファイルをディスクに残してしまうためです。
+  </p>
+  <ul>
+    <li>破壊に必要なサイズより小さいファイル。変更されないまま出てきてしまうため</li>
+    <li>
+      破壊と併記された<code>expected:
+      accept</code>。どのファイルもそれを満たせないためです。テスト対象のシステムがファイルを修復する想定なら<code>sanitize</code>を、まさにそれが調べたい点なら<code>unspecified</code>を書いてください
+    </li>
+  </ul>
+  <p>
+    3つ目は事前には分かりません。破壊が実行されても1バイトも変わらなかった場合、そのファイルは書き込まれずに破棄されます。実行は続き、どのファイルだったかを伝え、一部のみ完了した終了コードで終わります。
+  </p>
+  <p>
+    手順を追って、マニフェストを読むテストつきで説明します。<a href="/ja/corrupt-test-files/">テスト用の破損ファイルを作る方法</a>。
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>レシピはどんな見た目ですか。</h2>
+  <p>
+    レシピは、実行全体を記述するYAMLファイルです。テストの隣にコミットすれば、フィクスチャはリポジトリ内のバイナリではなくなります。数百文字のファイルから、誰でもバイト単位で再構築できます。
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    各ターゲットには、<code>size</code>、<code>size-range</code>、<code>boundary</code>、<code>contains</code>のうち、ちょうど1つが必要です。2つはエラーで、ゼロもエラーです。無効なレシピは<strong>ファイルを1つも書き込まず</strong>、最初の問題だけでなくすべての問題をまとめて報告し、それぞれ該当する設定名を示します。
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>システムがファイルをどう扱うべきかを宣言するには。</h2>
+  <p>結果だけで足りるなら短い形式を、理由が重要なら長い形式を使います。</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    結果は<code>accept</code>、<code>reject</code>、<code>sanitize</code>、<code>unspecified</code>です。理由は閉じたリストで、レポートで理由ごとにグループ化できます。<code>content_malformed</code>、<code>count_limit</code>、<code>dimensions_limit</code>、<code>duplicate</code>、<code>encoding_invalid</code>、<code>extension_rule</code>、<code>filename_invalid</code>、<code>filename_too_long</code>、<code>filename_traversal</code>、<code>malware_signature</code>、<code>mime_mismatch</code>、<code>nesting_depth</code>、<code>none</code>、<code>size_limit</code>、<code>size_zero</code>。
+  </p>
+  <p>
+    理由が示すのは判定ではなく<strong>問題になっているルール</strong>です。そのため、同じ理由が両方の結果の下に現れることがあります。制限より1バイト小さいファイルは<code>accept</code>ですが、対象となるルールは依然として<code>size_limit</code>です。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>マニフェストには何が入っていますか。</h2>
+  <p>
+    中断された実行も含め、すべての実行の終了時にファイルの隣へ書き出されます。ファイルごとに1項目です。
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    実行がレシピから来た場合は<code>recipe_hash</code>が、プリセットから来た場合は<code>preset</code>と<code>overrides</code>が追加されるため、マニフェストは常に生成元までたどれます。
+  </p>
+  <p>
+    各項目には、ファイルを生成したレシピ内のターゲットのIDである<code>target_id</code>も入り、<code>summary.by_target</code>が各ターゲットのファイル数を数えます。複数のターゲットを持つレシピも、ファイル名を読まずにターゲットごとに確認できます。
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>プリセットとは何ですか。</h2>
+  <p>
+    一般的なテストの疑問に答える既製のファイルセットで、セットを自分で設計する必要がありません。プリセットの中身は普通のレシピで、<code>eject</code>がそのレシピを出力するので、そこから編集できます。各プリセットには、普通は何を見つけるか、セットの内容、受け付ける設定をまとめた<a href="/ja/presets/">専用ページ</a>があります。
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code>は、セットを作る前にかかるコストを伝え、数値があなたの制限ではなくこちらの仮の値である場合は、はっきりそう伝えます。
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>終了コードは何を意味しますか。</h2>
+  <p>
+    終わり方ごとに専用のコードがあり、機械可読な出力は標準出力に出て、失敗した実行はそこに何も出力しません。この表は凍結された契約で、コードの意味を変えるにはメジャーバージョンを上げる必要があります。
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+Cで止めた実行でも、マニフェストは残り、書きかけのファイルは決して残りません。そのため、キャンセルされたジョブも次のジョブが片付けられます。
+  </p>
+  <p>
+    GitHub ActionsとGitLab CI向けのすぐ使えるワークフロー。<a href="/ja/test-files-in-ci/">CIパイプラインでテストファイルを生成する方法</a>。
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>デスクトップウィンドウはありますか。</h2>
+  <p>
+    はい。同じエンジンにウィンドウを載せたもので、スクリプト化しないテスト向けです。機能削減版ではありません。テストが2つのインターフェースを機能ごとに比較しており、片方にしかできないことは、静かに食い違うのではなく、宣言して理由を示す必要があります。
+  </p>
+  <p>
+    画面は、単一バッチ、プリセット、複数バッチ同時、バージョン情報です。書き込む前に実行のコストを表示し、実行中は進捗を報告し、途中でキャンセルしても書きかけのファイルは残りません。レシピファイルはまだ開けません。レシピは今のところコマンドラインのもので、ウィンドウはフォームでバッチを組み立てます。
+  </p>
+</section>

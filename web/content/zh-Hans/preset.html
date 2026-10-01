@@ -1,0 +1,90 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  <code>{{ .ID }}</code> 预设用一条命令为这个问题构建出整套真实测试文件，并在旁边放一个
+  <code>manifest.json</code>，说明你的系统应如何响应每个文件。以下所有内容都按此版本的默认值从程序中读取。
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>它通常能发现什么？</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>集合里有什么？</h2>
+  <p>使用默认值时，如 <code>tfg preset show {{ .ID }}</code> 所报告的：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">文件数</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">其配方中的 target 数</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">总大小</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">格式</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>以及该集合的清单对你的系统有何预期：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>预期</th><th>含义</th><th class="num">文件数</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>你可以更改什么？</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>设置</th><th>接受</th><th>默认值</th><th>作用</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>这个默认值是我们的占位值，不是你的系统的值。请传入你自己的值。</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>这个预设没有任何设置。每次得到的集合都相同。</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>如何运行？</h2>
+  <p>查看集合的开销、构建它，或取出它的配方来编辑：</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>也可以在你自己的配方中基于它构建，放在测试旁边：</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="nl">
+<title>Een bestand van een exacte grootte maken - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate en mkfile, elk gemeten op het systeem waarvoor het bedoeld is, en waarom zo&#39;n bestand geen PDF of PNG is wanneer een test dat nodig heeft.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Een bestand van een exacte grootte maken - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate en mkfile, elk gemeten op het systeem waarvoor het bedoeld is, en waarom zo&#39;n bestand geen PDF of PNG is wanneer een test dat nodig heeft.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Een bestand van een exacte grootte maken - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate en mkfile, elk gemeten op het systeem waarvoor het bedoeld is, en waarom zo&#39;n bestand geen PDF of PNG is wanneer een test dat nodig heeft.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/nl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Exacte grootte",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/nl\/bestand-met-exacte-grootte-maken\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Direct naar de inhoud</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/nl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hoofdmenu">
+      <a href="/nl/">Home</a>
+      <a href="/nl/formaten/">Formaten</a>
+      <a href="/nl/presets/">Presets</a>
+      <a href="/nl/documentatie/">Documentatie</a>
+      <a href="/nl/toepassingen/">Toepassingen</a>
+      <a href="/nl/bestand-met-exacte-grootte-maken/" aria-current="page">Exacte grootte</a>
+      <a href="/nl/veelgestelde-vragen/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Taal: Nederlands">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Nederlands</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/create-file-exact-size/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/create-file-exact-size/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/create-file-exact-size/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/create-file-exact-size/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/create-file-exact-size/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Hoe maak je een bestand van een exacte grootte</h1>
+<p class="lead">
+  Elk systeem heeft er een opdracht voor, en alle drie staan hieronder. Ze geven je een bestand met
+  precies het juiste aantal bytes - en voor veel tests is dat alles wat je nodig hebt. <strong>Elke
+  opdracht op deze pagina is uitgevoerd vóór publicatie</strong>, op het systeem waartoe hij
+  behoort.
+</p>
+
+<div class="note">
+  <p class="note-title">Het korte antwoord</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Groottes zijn in bytes, en 10 MB
+    geteld zoals je bestandsbeheer telt is 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, en een PowerShell-versie die niets extra's nodig heeft</h2>
+  <p>
+    <code>fsutil</code> wordt met Windows meegeleverd. Het neemt de grootte <strong>in bytes</strong>,
+    reken het getal dus eerst uit - 10 MB is 10485760, 100 MB is 104857600, 1 GB is 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Gemeten op Windows 11: het werkt vanaf een gewone prompt en heeft geen verhoogde nodig, en het
+    bestand komt uit op precies 10485760 bytes.
+  </p>
+  <p>PowerShell kan hetzelfde zonder een ander programma aan te roepen, en begrijpt eenheden:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> betekent in PowerShell 10485760 bytes, dezelfde telling op basis van 1024 die
+    Verkenner gebruikt, dus de twee opdrachten hierboven geven dezelfde grootte.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate en fallocate, en het verschil dat mensen te pakken neemt</h2>
+  <p><code>dd</code> is degene die iedereen kent. Het schrijft de bytes echt:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> is direct klaar, en dat is de adder onder het gras. Gemeten op Alpine Linux
+    meldt het bestand 10485760 bytes en neemt het <strong>nul blokken</strong> in beslag - het is
+    een <strong>sparse bestand</strong>. Alles wat het leest krijgt tien megabyte aan nullen, maar
+    de schijf heeft de ruimte nooit afgestaan:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Dat is prima om een uploadlimiet te testen en misleidend om een schijfquotum te testen.
+    <code>fallocate</code> is degene waar je naar grijpt als de ruimte echt moet zijn:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>En als de inhoud onsamendrukbaar moet zijn, zodat een archiefprogramma hem niet weer kan verkleinen:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, dat niet sparse is, en de twee die je al kent</h2>
+  <p>
+    macOS levert <code>mkfile</code> mee. Gemeten op macOS 26.6.2: 10485760 bytes en 20480 blokken, dus
+    de ruimte is echt toegewezen in plaats van beloofd:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> en <code>truncate</code> zijn er ook en gedragen zich zoals op Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Waar dit ophoudt te werken</p>
+  <h2>Een bestand van de juiste grootte is geen bestand van het juiste soort</h2>
+  <p>
+    Alles hierboven geeft je een blok nullen. Dat is genoeg als wat getest wordt alleen naar de grootte
+    kijkt - een uploadlimiet, een quotum, een overdracht. Het is niet meer genoeg zodra iets het
+    bestand <strong>opent</strong>.
+  </p>
+  <p>
+    Gemeten, en het is de moeite waard om het zelf te doen: maak een bestand van 2 MB met
+    <code>fsutil</code>, noem het <code>photo.png</code> en geef het aan een afbeeldingsbibliotheek.
+    Pillow antwoordt <code>cannot identify image file</code>. Het is geen PNG. Dat is het ook nooit
+    geweest - alleen de naam zei het.
+  </p>
+  <p>
+    Dat doet er meer toe dan het klinkt, vanwege <strong>de kant waarop de test dan faalt</strong>. Je
+    upload-endpoint weigert het bestand, je test wordt groen en je concludeert dat de groottelimiet
+    werkt. Het weigerde het niet vanwege de grootte. Het weigerde het omdat de bytes geen afbeelding
+    waren, en de regel die je wilde testen is nooit bereikt.
+  </p>
+  <ul class="ticks">
+    <li>een parser weigert het voordat een groottegrens wordt bekeken</li>
+    <li>een miniatuurstap faalt en de fout die je leest gaat over het miniatuur</li>
+    <li>een virusscanner of inhoudscontrole weigert het om een derde reden</li>
+    <li>een viewer toont niets, en niemand kan zeggen of dat de bug is</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">De andere weg</p>
+  <h2>Een echt bestand van dat formaat, in precies de grootte die je vroeg</h2>
+  <p>
+    Dit is wat Testing Files Generator doet. Het bestand is een echt bestand van zijn formaat - het
+    opent in het programma waartoe het behoort - en het heeft het exacte aantal bytes dat je vroeg,
+    tot op de byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Vraag een grootte die een formaat niet kan halen en je krijgt een fout die de ondergrens en de reden
+    noemt, nooit een bestand van de verkeerde grootte. De <a href="/nl/formaten/">pagina met
+    formaten</a> toont elk formaat met het kleinste bestand dat het kan maken.
+  </p>
+  <p>En een limiet is drie testgevallen in plaats van één, dus de tool bouwt ze alle drie:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Dat geeft je 10485759, 10485760 en 10485761 bytes, en een manifest dat zegt welke je systeem moet
+    accepteren en welke het moet weigeren. De <a href="/nl/toepassingen/">pagina met
+    toepassingen</a> loopt dat en vier andere taken door waarvoor het is gebouwd.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloaden</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Bekijk de broncode</a>
+</div>
+<p class="cta-note">Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>Dus wat moet je gebruiken?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Gebruik de systeemopdracht</p>
+      <p class="muted">
+        Als niets het bestand opent. Een groottelimiet testen op een endpoint dat eerst de grootte
+        controleert, een overdracht, een quotum, een volle schijf. Het is één regel en het is al
+        geïnstalleerd.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Gebruik een echte generator</p>
+      <p class="muted">
+        Als iets het bestand parset, rendert, importeert of uitpakt - en als je morgen op een andere machine
+        dezelfde fixtures nodig hebt, byte voor byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Beide staan op deze pagina omdat beide soms goed zijn. De fout die je moet vermijden is de eerste
+    gebruiken waar de tweede nodig is en de groene test als bewijs lezen.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Broncode op GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Een probleem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Steun het project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagina&#39;s</p>
+      <ul class="plain">
+        <li><a href="/nl/">Home</a></li>
+        <li><a href="/nl/formaten/">Formaten</a></li>
+        <li><a href="/nl/presets/">Presets</a></li>
+        <li><a href="/nl/documentatie/">Documentatie</a></li>
+        <li><a href="/nl/toepassingen/">Toepassingen</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a></li>
+        <li><a href="/nl/veelgestelde-vragen/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.</p>
+    <p class="muted">Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

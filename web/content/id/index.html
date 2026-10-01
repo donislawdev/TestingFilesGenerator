@@ -1,0 +1,198 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Buat file uji asli dengan ukuran tepat</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} format seluruhnya</strong>, dan setiap file
+    adalah file asli yang terbuka di aplikasi yang memilikinya, dengan <strong>ukuran persis seperti
+    yang Anda minta</strong>. Setiap run juga mencatat apa yang harus dilakukan aplikasi Anda
+    terhadap tiap file. Baris perintah dan jendela desktop, gratis dan open source, bekerja
+    sepenuhnya di mesin Anda.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Jendela desktop Testing Files Generator, siap menulis sekumpulan file uji">
+    <figcaption>Jendela desktop, siap menulis sekumpulan file. Mesin yang sama berjalan di balik baris perintah.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">format asli, masing-masing terbuka di aplikasi yang memilikinya</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 byte</span>
+      <p class="fact-label">ketepatan setiap ukuran yang Anda minta, tidak pernah dibulatkan diam-diam</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">koneksi ke mana pun - tanpa akun, tanpa telemetri, tanpa pemeriksaan pembaruan</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Masalahnya</p>
+  <h2>Membuat satu file uji itu mudah. Membuat seribu yang tepat adalah bagian yang membosankan</h2>
+  <p>Anda menguji perangkat lunak yang menerima file dari orang. Cepat atau lambat Anda memerlukan:</p>
+  <ul class="ticks">
+    <li>PDF berukuran <strong>tepat</strong> 10 MB, untuk mengetahui apakah batas unggahan itu nyata</li>
+    <li>tiga file di kedua sisi batas itu, untuk menangkap kesalahan selisih satu</li>
+    <li>10.000 file log, untuk melihat apa yang dilakukan job malam saat foldernya besar</li>
+    <li>ZIP yang benar-benar berisi 200 dokumen, bukan cangkang kosong dengan ekstensi yang tepat</li>
+    <li>file 4 GB, tanpa menyimpan file 4 GB di repositori Anda</li>
+    <li>fixture yang <strong>sama</strong> di laptop Anda dan di server build, byte demi byte</li>
+  </ul>
+  <p>
+    Itulah yang digantikan oleh alat ini. Dibuat untuk insinyur QA, otomasi pengujian, dan siapa pun
+    yang kodenya memiliki formulir unggah, rutinitas impor, parser, atau kuota penyimpanan di
+    baliknya.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Apa yang membuatnya berbeda</p>
+  <h2>Generator lain berhenti di byte. Alat ini menjawab apa yang sebenarnya ditanyakan pengujian Anda</h2>
+  <p>
+    Sebuah folder berisi file masih membuat Anda yang memutuskan apa yang seharusnya dibuktikan tiap
+    file. Setiap run di sini menulis <code>manifest.json</code> di samping file - daftar sederhana
+    semua yang dihasilkan, dan untuk tiap entri sebuah <strong>ekspektasi yang dinyatakan</strong>.
+  </p>
+  <p>Misalkan endpoint unggah Anda mengizinkan 1 MB. Mintalah tiga file yang berada di garis itu:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>File</th><th class="num">Byte</th><th>Sistem Anda harus</th><th>Karena</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>menerima</strong></td><td>berada di dalam batas</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>menerima</strong></td><td>batas itu sendiri diizinkan</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>menolak</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Tiga file, tiga jawaban berbeda, dalam bentuk yang terbaca mesin. Pengujian Anda membaca manifes alih-alih Anda menulis asersi secara manual:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Bila jawabannya bergantung pada kebijakan Anda sendiri, manifes mengatakannya</p>
+    <p>
+      Alat ini mencatat <code>unspecified</code> alih-alih mengarang ekspektasi. Generator yang menebak
+      menghasilkan kegagalan palsu, dan suite yang berteriak serigala akhirnya dimatikan.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Preset</p>
+  <h2>Pilih pertanyaannya, dapatkan seluruh setnya</h2>
+  <p>
+    Preset adalah set file uji yang dirancang di sekitar satu pertanyaan pengujian, sehingga Anda tidak
+    perlu mencari tahu file mana yang membuktikan apa. Masing-masing punya halaman yang menjelaskan
+    apa yang biasanya ditemukan, isi set, dan setiap pengaturan yang diterimanya.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/id/preset/">Semua preset, dan hubungannya dengan resep</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Mulai cepat</p>
+  <h2>Tiga perintah untuk melihatnya bekerja</h2>
+  <ol class="steps">
+    <li>
+      <h3>Buat satu file</h3>
+      <p>Satu PNG, tepat dua megabyte:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Buat banyak file</h3>
+      <p>
+        Sepuluh ribu file log, masing-masing antara satu dan delapan kilobyte, dengan ukuran diundi dari
+        seed sehingga besok menghasilkan set yang sama. <strong>Beri setiap run direktorinya
+        sendiri</strong> - manifes adalah satu-satunya catatan tentang apa yang ditulis sebuah run,
+        sehingga alat ini menolak menulis manifes kedua di atasnya:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Periksa, lalu hapus</h3>
+      <p><code>verify</code> memberi tahu bahwa tidak ada yang bergeser. <code>cleanup</code> menghapus persis apa yang ditulis dan tidak lebih:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Ukuran dihitung dalam kelipatan 1024, seperti pengelola file Anda, jadi <code>2mb</code> berarti
+    2097152 byte. Jumlah byte biasa juga bisa. <a href="/id/dokumentasi/">Dokumentasi</a> membahas
+    resep, manifes, dan kode keluar.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Yang Anda dapatkan</p>
+  <h2>Dibuat untuk suite yang berjalan tanpa pengawasan</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Ukuran tepat, sampai ke byte</p>
+      <p class="muted">Minta 10485761 byte dan dapatkan persis itu. Ukuran yang tidak dapat dicapai format adalah galat dengan alasan, tidak pernah file berukuran salah.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} format asli</p>
+      <p class="muted">Bukan nol pengisi dengan ekstensi. PNG yang dihasilkan terbuka di penampil gambar, DOCX terbuka di Word, ZIP bisa diekstrak. Masing-masing diperiksa dengan pembaca independen sebelum dirilis.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Manifes yang menjadi oracle pengujian</p>
+      <p class="muted">Path, ukuran, SHA-256, format, seed, versi alat - dan apa yang harus dilakukan sistem Anda terhadap file itu.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dapat direproduksi</p>
+      <p class="muted">Resep dan seed yang sama, byte yang sama, di mesin mana pun. Commit resep YAML kecil alih-alih fixture biner besar.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dua antarmuka, satu mesin</p>
+      <p class="muted">Baris perintah yang dibuat untuk CI dan jendela desktop untuk pengujian eksploratif. Tidak ada yang merupakan versi terpangkas dari yang lain, dan sebuah pengujian membandingkannya kemampuan demi kemampuan.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Sepenuhnya offline</p>
+      <p class="muted">Tanpa akun, tanpa cloud, tanpa telemetri, tanpa pemeriksaan pembaruan. Biner baris perintah sama sekali tidak memiliki stack jaringan yang dikompilasi di dalamnya.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Unduh</p>
+  <h2>Pilih build untuk sistem Anda</h2>
+  <p>
+    Ekstrak arsip dan jalankan. <code>tfg</code> adalah baris perintah dan <code>tfg-gui</code> adalah
+    jendela desktop. Tidak ada installer dan tidak ada yang perlu ditambahkan ke mesin Anda.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Apa yang ditandatangani, dan apa yang tidak</p>
+    <p>
+      Unduhan Windows dan macOS ditandatangani, sehingga berjalan tanpa peringatan tentang pengembang tak
+      dikenal. Yang untuk Linux tidak, karena Linux desktop tidak punya padanan untuk
+      menandatanganinya. Setiap arsip tercantum di <code>verify-SHA256SUMS.txt</code> pada halaman
+      rilis, sehingga Anda dapat memeriksa apa yang Anda unduh.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

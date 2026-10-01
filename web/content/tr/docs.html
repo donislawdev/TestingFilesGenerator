@@ -1,0 +1,278 @@
+<h1>Dokümantasyon</h1>
+<p class="lead">
+  Aracın yaptığı her şey, insanların gerçekten geldiği sorular şeklinde düzenlendi.
+  <a href="{{ .Facts.Repo }}">Depodaki README</a> tam başvurudur ve her zaman indirdiğiniz sürümle
+  eşleşir.
+</p>
+
+<section class="section" id="commands">
+  <h2>Hangi komutlar var?</h2>
+  <p>Her biri tek bir iş yapar:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Tam boyutta tek bir dosyayı nasıl üretirim?</h2>
+  <p>
+    Biçimi, boyutu ve nereye gideceğini söyleyin. Boyutlar 1024'lerle sayılır, yani <code>2mb</code>
+    2097152 bayttır. Düz bir bayt sayısı da olur, yani <code>--size 10485761</code> tam o kadarını
+    ister.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code> için işe yarar bayraklar:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Bayrak</th><th>Ne yapar</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>dosyaların biçimi, örneğin <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>her dosyanın tam boyutu, <code>10mb</code> gibi veya düz bir bayt sayısı</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>bir aralıktan dosya başına çekilen boyut, <code>1kb-8kb</code> gibi. Çekiliş seed'den gelir</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>bir sınırın çevresinde üç dosya: bir bayt altı, sınırın kendisi, bir bayt üstü</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>kaç dosya üretileceği. Varsayılan <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>ad şablonu, örneğin <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>yazılacak dizin</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>çalıştırmanın seed'i. Aynı seed aynı baytları verir</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>bir biçim ayarı, tekrarlanabilir</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>dosyaları kasıtlı bozar, tekrarlanabilir ve sırayla uygulanır. Liste için <code>tfg damage</code> çalıştırın</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> veya <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>say ve göster, hiçbir şey yazma</td></tr>
+        <tr><td><code>--json</code></td><td>manifesti standart çıktıya yaz</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Kasıtlı bozuk bir dosyayı nasıl yaparım?</h2>
+  <p>
+    Bu aracın yazdığı diğer her dosya yapısı gereği doğrudur ve bu, bir yükleme doğrulayıcısının sorduğu
+    üç sorudan ikisini yanıtlar. <code>--damage</code> üçüncüsünü yanıtlar - dosya hiç açılıyor mu.
+    Dosya normal üretilir, sonra bozulur, böylece hâlâ istediğiniz boyuttadır.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Ayarlar iki noktadan sonra gelir. Bayrak tekrarlanır ve yazdığınız sıra uygulanma sırasıdır.
+    <code>tfg damage</code> bu sürümün neler yapabildiğini ve her birinin ne aldığını listeler.
+  </p>
+  <p>Bir tarifte anahtar, adlardan veya ayarlardan oluşan bir listedir:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Hasarlı bir dosya manifestte <code>expected: reject</code> alır, hasar yanında kaydedilir. İki şey
+    bir şey yazılmadan önce reddedilir, çünkü her biri aksi hâlde diske manifestin yanlış tarif
+    ettiği bir dosya koyardı:
+  </p>
+  <ul>
+    <li>hasarın gerektirdiğinden küçük bir dosya, çünkü değişmeden çıkardı</li>
+    <li>
+      bir hasarın yanında <code>expected: accept</code>, çünkü hiçbir şey bunu karşılayamaz. Test edilen
+      sistemin dosyayı onarması amaçlanıyorsa <code>sanitize</code>, sorduğunuz soru buysa
+      <code>unspecified</code> yazın
+    </li>
+  </ul>
+  <p>
+    Üçüncüsü önceden bilinemez. Bir hasar çalışıp hiçbir baytı oynatmazsa o dosya yazılmak yerine atılır
+    - çalıştırma sürer, hangi dosya olduğunu söyler ve kısmi çıkış koduyla biter.
+  </p>
+  <p>
+    Adım adım, bildirimi okuyan bir testle: <a href="/tr/bozuk-test-dosyalari/">test için bozuk dosya
+    nasıl yapılır</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Bir tarif nasıl görünür?</h2>
+  <p>
+    Tarif, tüm bir çalıştırmayı anlatan bir YAML dosyasıdır. Testlerinizin yanına commit edin,
+    fixture'lar deponuzda ikili dosya olmaktan çıkar - herkes onları birkaç yüz karakterlik bir
+    dosyadan bayt bayt yeniden kurabilir.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Her target, <code>size</code>, <code>size-range</code>, <code>boundary</code> veya
+    <code>contains</code> anahtarlarından tam birine ihtiyaç duyar. İkisi hatadır, hiçbiri de öyle.
+    Geçersiz bir tarif <strong>hiç dosya yazmaz</strong> ve yalnızca ilkini değil tüm sorunları bir
+    seferde bildirir, her biri ilgili ayarı adlandırır.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Sistemimin bir dosyayla ne yapması gerektiğini nasıl bildiririm?</h2>
+  <p>Sonuç yeterliyse kısa biçim, neden önemliyse uzun biçim:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Sonuçlar <code>accept</code>, <code>reject</code>, <code>sanitize</code> ve
+    <code>unspecified</code>. Nedenler, bir rapor onlara göre gruplayabilsin diye kapalı bir
+    listedir: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> ve
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Bir neden <strong>söz konusu kuralı</strong> adlandırır, hükmü değil. Bu yüzden aynı neden iki
+    sonucun altında da durabilir - sınırın bir bayt altındaki dosya <code>accept</code> olur ve söz
+    konusu kural yine <code>size_limit</code> kalır.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Manifestte ne var?</h2>
+  <p>
+    Her çalıştırmanın sonunda, kesilen çalıştırma dahil, dosyaların yanına yazılır. Dosya başına bir
+    girdi:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Çalıştırma bir tariften geldiyse bir <code>recipe_hash</code>, bir hazır ayardan geldiyse
+    <code>overrides</code> ile birlikte <code>preset</code> eklenir, böylece bir manifest her zaman
+    onu üreten şeye kadar izlenebilir.
+  </p>
+  <p>
+    Her girdi ayrıca dosyayı üreten tarifteki hedefin kimliği olan <code>target_id</code> taşır ve
+    <code>summary.by_target</code> her hedefin kaç dosyaya vardığını sayar. Birkaç hedefli bir tarif
+    böylece dosya adlarını okumadan hedef hedef denetlenebilir.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Hazır ayar nedir?</h2>
+  <p>
+    Yaygın bir test sorusunu yanıtlayan hazır bir dosya seti, böylece seti kendiniz tasarlamanız
+    gerekmez. Hazır ayarlar altta sıradan tariflerdir ve <code>eject</code> tarifi yazdırır, oradan
+    düzenleyebilirsiniz. Her hazır ayarın genelde ne bulduğunu, sette ne olduğunu ve kabul ettiği
+    her ayarı anlatan <a href="/tr/hazir-ayarlar/">kendi sayfası</a> vardır.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code>, seti kurmadan önce neye mal olacağını söyler ve bir sayının sizin sınırınız değil
+    bizim geçici değerimiz olduğunu açıkça belirtir.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Çıkış kodları ne anlama gelir?</h2>
+  <p>
+    Her sonun kendi kodu vardır, makine tarafından okunabilir çıktı standart çıktıya gider ve başarısız
+    bir çalıştırma orada hiçbir şey yazdırmaz. Tablo dondurulmuş bir sözleşmedir - bir kodun
+    anlamını değiştirmek büyük sürüm artışı gerektirir.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+C ile durdurulan bir çalıştırma yine bir manifest bırakır ve asla yarım yazılmış bir dosya
+    bırakmaz, böylece iptal edilen bir işi bir sonraki temizleyebilir.
+  </p>
+  <p>
+    GitHub Actions ve GitLab CI için hazır iş akışları: <a href="/tr/ci-icinde-test-dosyalari/">CI
+    hattında test dosyaları nasıl üretilir</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Masaüstü penceresi var mı?</h2>
+  <p>
+    Evet, betiklenmeyen test için üzerine bir pencere konmuş aynı motor. Kırpılmış bir sürüm değildir:
+    bir test iki arayüzü yetenek yetenek karşılaştırır ve yalnızca birinin yapabildiği her şey
+    sessizce ayrışmak yerine bildirilip gerekçelendirilmelidir.
+  </p>
+  <p>
+    Ekranlar tek bir grup, hazır ayarlar, aynı anda birkaç grup ve hakkında. Bir çalıştırmanın neye mal
+    olacağını bir şey yazmadan önce gösterir, çalışırken ilerlemeyi bildirir ve yarım yazılmış dosya
+    bırakmadan yarıda iptal edilebilir. Henüz bir tarif dosyası açmaz - tarifler şimdilik komut
+    satırının işidir ve pencere gruplarını formda kurar.
+  </p>
+</section>

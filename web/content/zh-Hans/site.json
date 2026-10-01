@@ -1,0 +1,328 @@
+{
+  "code": "zh-Hans",
+  "locale": "zh_CN",
+  "name": "简体中文",
+  "dir": "zh-hans",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "首页",
+      "title": "测试文件生成器 - 精确大小，{{ .Facts.FormatCount }} 种真实格式",
+      "description": "免费开源的 QA 测试文件生成器。生成精确大小的真实 PDF、DOCX、PNG、ZIP 文件，并附带说明系统应如何响应的清单。"
+    },
+    {
+      "key": "formats",
+      "slug": "formats",
+      "nav": "格式",
+      "title": "{{ .Facts.FormatCount }} 种支持的文件格式 - PDF、DOCX、PNG、ZIP 等",
+      "description": "生成器支持的全部文件格式、每种格式可能的最小文件，以及各自接受的设置。全部 {{ .Facts.FormatCount }} 种都能在对应软件中打开。"
+    },
+    {
+      "key": "presets",
+      "slug": "presets",
+      "nav": "预设",
+      "title": "测试文件预设 - 面向 QA 问题的现成文件集",
+      "description": "现成的测试文件集，每套回答一个测试问题：上传限制、文件名、编码、表格导入、空文件和上传校验。"
+    },
+    {
+      "key": "docs",
+      "slug": "docs",
+      "nav": "文档",
+      "title": "文档 - 命令、配方、清单、退出码",
+      "description": "如何通过命令行或 YAML 配方生成测试文件，清单包含什么，以及在 CI 中运行时每个退出码的含义。"
+    },
+    {
+      "key": "use-cases",
+      "slug": "use-cases",
+      "nav": "使用场景",
+      "title": "使用场景 - 上传限制、CI fixture、批量测试",
+      "description": "测试上传大小限制，为 CI 构建可复现的 fixture，生成一万个文件，并用真实内容填充压缩包。"
+    },
+    {
+      "key": "exact-size",
+      "slug": "create-file-exact-size",
+      "nav": "精确大小",
+      "title": "如何创建指定大小的文件 - Windows、Linux、macOS",
+      "description": "fsutil、dd、truncate 和 mkfile，每个都在对应系统上实测，以及当测试需要 PDF 或 PNG 时，这样生成的文件为何不行。"
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "常见问题",
+      "title": "常见问题 - 关于生成测试文件",
+      "description": "与 dd 和 fsutil 有何不同，文件能否放心提交，每次运行是否逐字节一致，以及大小无法达到时会怎样。"
+    },
+    {
+      "key": "damage",
+      "slug": "corrupt-test-files",
+      "nav": "损坏文件",
+      "title": "损坏的测试文件 - 大小精确的损坏文件",
+      "description": "一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "test-files-in-ci",
+      "nav": "CI 中的测试文件",
+      "title": "CI 中的测试文件 - GitHub Actions、GitLab CI 和 PowerShell",
+      "description": "在流水线中生成测试文件，而不是提交二进制文件：GitHub Actions 工作流、GitLab 作业、让构建失败的退出码，以及 PowerShell 的陷阱。",
+      "parent": "use-cases"
+    }
+  ],
+  "words": {
+    "skip": "跳到正文",
+    "navLabel": "主导航",
+    "langLabel": "语言",
+    "breadcrumbHome": "首页",
+    "imageAlt": "Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单",
+    "schemaDescription": "面向 QA 的免费开源测试文件生成器。它生成 {{ .Facts.FormatCount }} 种格式、大小精确的真实文件，并写出说明被测系统应如何响应每个文件的清单。",
+    "ctaDownload": "下载",
+    "ctaSource": "查看源代码",
+    "ctaNote": "免费开源，GPL-3.0。无需注册。Windows 和 macOS 的下载包已签名，启动时没有警告。",
+    "colFormat": "格式",
+    "colName": "名称",
+    "colExtension": "扩展名",
+    "colSmallest": "最小文件",
+    "colFidelity": "完整度",
+    "colChecked": "验证方式",
+    "colSetting": "设置",
+    "colAccepts": "接受",
+    "colSystem": "系统",
+    "colCli": "命令行",
+    "colWindow": "桌面窗口",
+    "noBinary": "暂无二进制文件",
+    "colCode": "代码",
+    "colMeaning": "含义",
+    "footerBlurb": "面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。",
+    "footerProject": "项目",
+    "footerSource": "GitHub 上的源代码",
+    "footerReleases": "下载",
+    "footerIssues": "报告问题",
+    "footerSupport": "支持本项目",
+    "footerPages": "页面",
+    "footerLicence": "Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。",
+    "footerPrivacy": "本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。",
+    "notFoundTitle": "找不到这个页面",
+    "notFoundLead": "你访问的地址与本站任何页面都不匹配。",
+    "notFoundBack": "返回首页",
+    "read.format": "集合中每个文件的格式。它是工具本身的参数，预设只是给它一个默认值。",
+    "readTakes.format": "格式页面中的格式 id",
+    "colDamage": "损坏方式",
+    "colEffect": "对字节做了什么",
+    "colSettings": "设置",
+    "noSettings": "无"
+  },
+  "endings": {
+    "0": "一切正常。",
+    "1": "工具内部出现意外错误。",
+    "2": "命令或参数有误。",
+    "3": "配方无效。",
+    "4": "该格式无法完成所请求的操作。",
+    "5": "读取或写入失败。",
+    "6": "磁盘空间不足。",
+    "7": "verify 发现了不一致。",
+    "8": "运行已结束，但并非所有文件都已生成。",
+    "130": "被 Ctrl+C 中断。",
+    "143": "被信号终止，CI 超时就是这个样子。"
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "一个合法且达到格式允许的最小大小的文件能通过吗？",
+      "title": "空文件与最小文件",
+      "pageTitle": "各格式最小的合法文件与空文件",
+      "description": "本工具在 {{ .Facts.FormatCount }} 种格式中各自写出的最小合法文件，以及格式允许时的空文件，每个都附带应有的响应。",
+      "catches": [
+        "合法文件因过小被拒绝，因为检查按字节数判断而不是去读取内容",
+        "空文件让读取器崩溃，而不是被如实报告",
+        "只有一像素宽的图片在生成缩略图的途中发生除零错误",
+        "存储把零字节当成上传失败，并不断重试"
+      ],
+      "details": {
+        "formats": "集合由哪些格式构成。填 all 表示此版本的所有格式，也可以只列出你的系统接受的格式。"
+      }
+    },
+    "filename-handling": {
+      "question": "我的系统能否正确保存、显示并返回它没料到的文件名？",
+      "title": "文件名处理",
+      "pageTitle": "用于测试的问题文件名 - Unicode 与长度",
+      "description": "文件名会破坏上传和存储：其他文字与 emoji、从右到左覆盖、不可见字符、shell 与 SQL 语法、长度限制。",
+      "catches": [
+        "在屏幕、日志或列表中看起来像另一个名字的文件名",
+        "在上传与存储之间被截断、裁剪或改写的文件名",
+        "按字符计数的长度限制，而存储是按字节计数的"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "大小限制是否恰好在声明的位置生效？",
+      "title": "大小边界",
+      "pageTitle": "测试上传大小限制 - 恰好在边界上的文件",
+      "description": "比系统声明的大小限制小一字节、恰好等于以及大一字节的文件，外加两侧更宽的梯度，每个都标明是否应被接受。",
+      "catches": [
+        "限制处的差一错误",
+        "把 MB 与 MiB 混淆，相差 4.8%，足以放过本不该通过的文件",
+        "限制只在浏览器中生效，而不在服务器上"
+      ],
+      "details": {
+        "limit": "你的系统声明的大小限制。其他一切都以它为基准测量。",
+        "spread": "在限制两侧各延伸多远，以大小列表表示。"
+      }
+    },
+    "tabular-import": {
+      "question": "我的表格导入能应付真实工具导出的内容吗？",
+      "title": "表格导入",
+      "pageTitle": "CSV 与 Excel 导入测试文件 - 分隔符、表头",
+      "description": "使用其他分隔符、CR LF 换行、无表头和其他引号的 CSV，一张极宽的表格，一个 Excel 工作簿，以及多种布局的 JSON。",
+      "catches": [
+        "用分号分隔的文件被读成单列，因为分隔符是假定的而不是探测出来的",
+        "CRLF 文件被拆成行，每行后面多出一个空行",
+        "没有表头的表格，第一行数据被当成列名吞掉",
+        "导入只保留能显示的列，其余的悄悄丢弃",
+        "读取器逐行读取 JSON 记录，遇到第一个带缩进的文档就停下"
+      ],
+      "details": {
+        "rows": "表格有多少行。文件会写成这么多行恰好打包出的大小，所以上面的预算会随这个值变化。",
+        "columns": "表格每行有多少列。行数乘列数有上限，超出时会在写入任何内容之前被拒绝。"
+      }
+    },
+    "text-encoding": {
+      "question": "我的读取器知道文件是什么编码，还是在猜？",
+      "title": "文本编码",
+      "pageTitle": "文本编码测试文件 - UTF-8、UTF-16、BOM、CRLF",
+      "description": "同一段文本分别用 UTF-8、UTF-16LE 和 UTF-16BE 编码，带或不带字节顺序标记，并使用 CR LF 与 LF 换行，用来测试读取器如何解码文本。",
+      "catches": [
+        "读取器假定为 UTF-8，把 UTF-16 文件显示成每三个字符一个，或一排排方框",
+        "字节顺序标记被当成内容读取，导致导入的第一个字段以三个多余字符开头",
+        "导入器根据开头几个字节猜测编码，遇到更长的文件却猜成了别的",
+        "CRLF 文件被拆成行，每行后面多出一个空行，或回车符残留在最后一个字段里"
+      ],
+      "details": {
+        "sample": "集合中每个文件的大小。UTF-16 每个字符占两个字节，所以奇数会被拒绝。"
+      }
+    },
+    "upload-validation": {
+      "question": "我的上传表单是否接受该接受的，并拒绝其余的？",
+      "title": "上传校验",
+      "pageTitle": "上传校验测试文件 - 类型、大小与文件名",
+      "description": "用于测试上传表单的文件：允许与拒绝的类型、内容与扩展名不符、大小限制两侧、恶意文件名，以及批量上传。",
+      "catches": [
+        "限制只在浏览器中生效，而不在服务器上",
+        "SVG 或 HTML 文件被当成图片或纯文本，这是让脚本绕过表单的一种办法",
+        "只按扩展名检查而从不打开文件，于是名为 .jpg 的 PDF 蒙混过关",
+        "表单在查看大小之前就把整个请求体读进内存",
+        "名为 PHOTO.JPG 的上传被拒绝，而 photo.jpg 被接受，或者相反",
+        "含空格、括号或非 ASCII 字符的文件名被原样写入磁盘"
+      ],
+      "details": {
+        "limit": "你的上传表单声明的大小限制。这个集合在限制两侧各取一步，若要覆盖任意距离的文件，请运行 size-boundaries 预设。",
+        "allow": "你的表单应该接受哪些类型。每种类型都会变成该类型的真实文件，它们构成整个集合的阳性对照。",
+        "deny": "你的表单应该拒绝哪些扩展名。此版本没有对应格式的扩展名，仍会得到一个同名文件，内容为纯文本。",
+        "far-over": "那个超大文件超出限制多少。如果写入限制数倍大小的文件不值得占用磁盘，可以关闭。",
+        "bulk": "批量上传包含多少个文件。设为零则完全不包含这一组。"
+      }
+    }
+  },
+  "commands": {
+    "generate": "根据配方或参数生成文件",
+    "validate": "检查配方，不写入任何内容",
+    "verify": "对照清单检查目录",
+    "cleanup": "删除清单中列出的文件",
+    "recipe fmt": "以规范形式打印配方",
+    "preset": "根据具名测试问题构建一组文件",
+    "formats": "列出此版本支持的格式",
+    "damage": "列出此版本可以故意破坏文件的方式",
+    "tool": "处理现有文件的小工具",
+    "version": "打印工具版本",
+    "license": "打印许可证及其对生成文件的含义"
+  },
+  "outcomes": {
+    "accept": "你的系统应该接受这个文件。",
+    "reject": "你的系统应该拒绝这个文件。",
+    "sanitize": "你的系统应该接受这个文件并加以清理，例如重命名。",
+    "unspecified": "取决于你的系统规则。由你决定，然后检查实际发生的是否符合你的本意。"
+  },
+  "damages": {
+    "zero-head": "用零覆盖文件开头的若干字节，长度保持不变。大多数读取器最先看的就是那里，所以几乎任何东西都会发现这种损坏。"
+  },
+  "terms": {
+    "oracleNone": "不适用",
+    "int": "任意整数",
+    "choice": "固定集合中的一个",
+    "bool": "真或假",
+    "size": "形如 2mb 的大小",
+    "text": "文本",
+    "pixels": "像素",
+    "paragraphs": "段落",
+    "rows": "行",
+    "columns": "列",
+    "slides": "幻灯片",
+    "hertz": "赫兹",
+    "megapixels": "百万像素",
+    "million cells": "百万个单元格",
+    "entries per second": "条目每秒",
+    "files": "个文件",
+    "sizes separated by commas": "以逗号分隔的大小",
+    "format ids separated by commas": "以逗号分隔的格式 id",
+    "format ids separated by commas, or all": "以逗号分隔的格式 id，或 all",
+    "extensions separated by commas": "以逗号分隔的扩展名",
+    "the id of a format, as tfg formats lists them": "格式的 id，与 tfg formats 列出的一致",
+    "the password, in plain text": "明文密码",
+    "any text": "任意文本",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "形如 2024-02-29 或 2024-02-29T13:45:00+02:00 的日期，或 none"
+  },
+  "faq": [
+    {
+      "q": "这与 dd、fsutil 或 truncate 有何不同？",
+      "a": "它们给你的是大小正确但内容空空如也的文件。用这种方式做出的名为 photo.png 的 2 MB 文件并不是 PNG，所以任何真正解析它的程序都会因为错误的原因拒绝它，而你的测试也会因为错误的原因通过。本工具生成的是大小恰好 2 MB 的真实 PNG，可以在图片查看器中打开，并附带一份说明，告诉你的系统该如何处理它。",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "它免费吗，我能在工作中使用吗？",
+      "a": "两者都可以。它以 GPL-3.0 发布，不收取任何费用。没有账号，没有许可证密钥，也没有付费版本。"
+    },
+    {
+      "q": "我能在闭源产品中使用生成的文件吗？",
+      "a": "可以。许可证涵盖的是工具的代码，而不是工具生成的内容。生成的文件、配方和清单属于输出而非衍生作品，所以你可以提交它们并随产品分发，不负任何义务。"
+    },
+    {
+      "q": "生成的文件包含真实的个人数据吗？",
+      "a": "不包含。里面的一切都由种子合成。不读取任何数据集，不联系任何服务，也不嵌入任何第三方内容。请把生成的电子邮件地址视为不可用，而不是未被使用，因为任何随机字符串都有可能碰巧与真实地址相同。"
+    },
+    {
+      "q": "在另一台机器上能得到完全相同的文件吗？",
+      "a": "能，只要配方和种子相同，就能逐字节一致。项目在每次改动时都会测试这一点，要打破它必须提升主版本号。这正是你可以提交一个小配方，而不是大型二进制 fixture 的原因。"
+    },
+    {
+      "q": "它需要联网吗？",
+      "a": "从不需要。没有遥测，没有更新检查，也没有云客户端，命令行二进制文件里甚至没有编译进网络栈。它可以在没有网络的机器上运行，也能在封闭的企业环境中使用。"
+    },
+    {
+      "q": "如果我请求格式无法达到的大小会怎样？",
+      "a": "你会收到一个错误，说明格式、可能的最小大小、该下限的原因以及应改用什么，并且不会写入任何文件。工具从不会悄悄取整。每个下限都列在格式页面上。",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "我能生成故意损坏的文件吗？",
+      "a": "可以。加上 --damage zero-head，文件就会以恰好所要求的大小输出，开头几个字节被零覆盖，读取器会拒绝它，清单也会说明你的系统应该拒绝它。详情见关于损坏测试文件的页面。",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
+    },
+    {
+      "q": "接下来会支持哪些格式？",
+      "a": "7z、mp3 和 mp4。目前有 {{ .Facts.FormatCount }} 种格式可以端到端使用。"
+    },
+    {
+      "q": "我可以在哪些系统上运行？",
+      "a": "命令行可在 Windows 和 Linux 上运行，支持 Intel 和 ARM，也支持 Apple 芯片的 Mac。桌面窗口提供 Windows（Intel）、Linux（Intel）和 Apple 芯片 Mac 版本。不支持 Intel Mac，也不会为其构建。"
+    },
+    {
+      "q": "我需要安装什么吗？",
+      "a": "不需要。下载适合你系统的压缩包，解压后运行二进制文件即可。没有安装程序，没有需要添加的运行时，也没有需要解决的依赖。如果你装有 Go，一条 go install 命令同样可用。",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "为什么在 Windows 上处理数千个文件更慢？",
+      "a": "因为 Windows 对查看的每个路径收取更多开销，而遍历数千个文件的命令要查看数千个路径。在一台有 3000 个 1 kB 文件的机器上实测，verify 在 Windows 上约需 0.9 秒，在容器中的 Linux 上约需 0.2 秒。输出路径更短会让 Windows 的数字变小，因为文件上方的每一级文件夹都属于被查看的内容。"
+    }
+  ]
+}

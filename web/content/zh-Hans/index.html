@@ -1,0 +1,183 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>生成大小精确的真实测试文件</h1>
+  <p class="lead">
+    PDF、PNG、DOCX、ZIP，<strong>共 {{ .Facts.FormatCount }}
+    种格式</strong>，每一种都是能在对应软件中打开的真实文件，大小<strong>恰好等于你的要求</strong>。每次运行还会写下你的应用应该如何处理每个文件。命令行加桌面窗口，免费开源，完全在你的机器上运行。
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Testing Files Generator 的桌面窗口，已准备好写出一批测试文件">
+    <figcaption>桌面窗口，已准备好写出一批文件。命令行背后运行的是同一个引擎。</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">种真实格式，每一种都能在对应软件中打开</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 字节</span>
+      <p class="fact-label">你要求的每个大小都精确无误，绝不悄悄取整</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">个对外连接，无账号、无遥测、无更新检查</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">问题所在</p>
+  <h2>做一个测试文件很容易，做出对的一千个才是麻烦所在</h2>
+  <p>你在测试接收用户文件的软件。迟早你会需要：</p>
+  <ul class="ticks">
+    <li>一个<strong>恰好</strong> 10 MB 的 PDF，用来弄清上传限制是否真实</li>
+    <li>位于该限制两侧的三个文件，用来抓出差一错误</li>
+    <li>10,000 个日志文件，用来看夜间任务在文件夹很大时会怎样</li>
+    <li>一个真正包含 200 份文档的 ZIP，而不是只有正确扩展名的空壳</li>
+    <li>一个 4 GB 的文件，同时不必在仓库里保存 4 GB 的文件</li>
+    <li>笔记本和构建服务器上<strong>完全相同</strong>的 fixture，逐字节一致</li>
+  </ul>
+  <p>
+    这正是它要取代的。它为 QA 工程师、测试自动化，以及代码背后有上传表单、导入程序、解析器或存储配额的所有人而做。
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">它的与众不同之处</p>
+  <h2>其他生成器止步于字节。这个工具回答你的测试真正要问的问题</h2>
+  <p>
+    一个满是文件的文件夹仍然要你自己判断每个文件应该证明什么。这里每次运行都会在文件旁写出一个
+    <code>manifest.json</code>，它是所生成内容的简单清单，并为每一项给出<strong>声明的预期</strong>。
+  </p>
+  <p>假设你的上传接口允许 1 MB。请求恰好位于这条线上的三个文件：</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>文件</th><th class="num">字节</th><th>你的系统应该</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>接受</strong></td><td>在限制之内</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>接受</strong></td><td>限制本身是允许的</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>拒绝</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>三个文件，三种不同的答案，以机器可读的形式给出。你的测试读取清单，而不是由你手写断言：</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">当答案取决于你自己的策略时，清单会如实说明</p>
+    <p>
+      它记录的是 <code>unspecified</code>，而不是凭空编造预期。会猜测的生成器会制造误报，而总是误报的测试套件最终会被关掉。
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">预设</p>
+  <h2>选好问题，拿到整套文件</h2>
+  <p>
+    预设是围绕一个测试问题设计的测试文件集，你不必自己琢磨哪些文件能证明什么。每个预设都有一个页面，说明它通常能发现什么、集合里有什么，以及它接受的每项设置。
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/zh-hans/presets/">全部预设，以及它们与配方的关系</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">快速开始</p>
+  <h2>三条命令，看它如何工作</h2>
+  <ol class="steps">
+    <li>
+      <h3>生成一个文件</h3>
+      <p>一个 PNG，恰好两兆字节：</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>生成大量文件</h3>
+      <p>
+        一万个日志文件，每个在 1 到 8 KB
+        之间，大小由种子抽取，因此明天会得到同样的文件集。<strong>给每次运行一个独立的目录</strong>，清单是一次运行所写内容的唯一记录，所以工具拒绝在其上再写第二份：
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>先检查，再删除</h3>
+      <p><code>verify</code> 告诉你没有任何变动。<code>cleanup</code> 只删除写出的内容，不动其他任何东西：</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    大小按 1024 进制计算，与你的文件管理器一致，所以 <code>2mb</code> 表示 2097152
+    字节。直接写字节数也可以。<a href="/zh-hans/docs/">文档</a>涵盖配方、清单和退出码。
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">你将得到什么</p>
+  <h2>为无人值守的测试套件而生</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">精确大小，精确到字节</p>
+      <p class="muted">请求 10485761 字节，就得到恰好这么多。格式无法达到的大小会得到带原因的错误，绝不会得到大小错误的文件。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} 种真实格式</p>
+      <p class="muted">不是带扩展名的填充零。生成的 PNG 能在图片查看器中打开，DOCX 能在 Word 中打开，ZIP 能解压。每种格式在发布前都经过独立读取器验证。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">本身就是测试依据的清单</p>
+      <p class="muted">路径、大小、SHA-256、格式、种子、工具版本，以及你的系统应该如何处理该文件。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">可复现</p>
+      <p class="muted">配方和种子相同，字节就相同，在任何机器上都一样。提交一个小小的 YAML 配方，而不是庞大的二进制 fixture。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">两种界面，一个引擎</p>
+      <p class="muted">一个为 CI 打造的命令行，和一个用于探索性测试的桌面窗口。两者都不是对方的缩水版，并且有测试逐项对比它们的功能。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">完全离线</p>
+      <p class="muted">没有账号，没有云，没有遥测，没有更新检查。命令行二进制文件里根本没有编译进网络栈。</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">下载</p>
+  <h2>选择适合你系统的版本</h2>
+  <p>
+    解压压缩包后运行即可。<code>tfg</code> 是命令行，<code>tfg-gui</code> 是桌面窗口。没有安装程序，也无需向你的机器添加任何东西。
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">哪些已签名，哪些没有</p>
+    <p>
+      Windows 和 macOS 的下载包已签名，因此启动时不会出现未知开发者的警告。Linux 的没有签名，因为桌面 Linux 没有可用的对应签名机制。每个压缩包都列在发布页面的
+      <code>verify-SHA256SUMS.txt</code> 中，你可以据此核对所下载的内容。
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

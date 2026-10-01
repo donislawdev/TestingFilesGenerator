@@ -1,0 +1,187 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>How to generate test files in a CI pipeline</h1>
+<p class="lead">
+  A binary fixture in a repository stays in its history for good, cannot be reviewed in a diff, and
+  stops being possible once the file is large. Generate the files inside the pipeline from a recipe
+  instead. The recipe is text, the bytes come out the same every time, and a last step proves that
+  nothing moved.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    Install <code>tfg</code>, run <code>tfg generate fixtures.yaml --out ./fixtures</code> before the
+    tests, and <code>tfg verify ./fixtures/manifest.json</code> after them. Both steps fail the build
+    by themselves, with an exit code that says why.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Why not commit them</p>
+  <h2>Why a fixture should not live in the repository</h2>
+  <ul>
+    <li>
+      <strong>It stays in the history.</strong> Deleting a binary later does not make a clone smaller,
+      because every version of it is still there.
+    </li>
+    <li>
+      <strong>A diff cannot show what changed.</strong> A reviewer sees that a PDF is different and
+      nothing else. A recipe changes by a line.
+    </li>
+    <li>
+      <strong>Large files do not fit.</strong> GitHub refuses a push that holds a file over 100 MB, so
+      a test of a 500 MB upload limit has nothing to commit.
+    </li>
+  </ul>
+  <p>
+    The recipe is the thing to commit. The same recipe and seed write the same bytes on every machine,
+    so the file generated in the pipeline is the file you had on your laptop.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">The recipe</p>
+  <h2>A recipe that lives beside the tests</h2>
+  <p>
+    This one writes twenty five invoices that should be accepted and two images over a limit that
+    should be turned away, and the manifest records both expectations:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> checks it without writing anything, and names every
+    problem at once.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>A workflow that installs the tool and builds the fixtures</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    The checksum line compares the archive with <code>verify-SHA256SUMS.txt</code> from the same
+    release. The version is pinned, so a new release never changes a build you did not touch.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>The same thing as a GitLab job</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">When it goes red</p>
+  <h2>What makes a step fail, and why</h2>
+  <p>
+    Every ending has its own exit code, so the step fails on its own and the log says which one. The
+    ones a pipeline meets:
+  </p>
+  <ul>
+    <li><code>3</code> - the recipe is not valid. Nothing was written, and every problem is named</li>
+    <li><code>4</code> - the format cannot do what was asked, for example a size below its smallest</li>
+    <li><code>6</code> - there is not enough disk space</li>
+    <li><code>7</code> - <code>tfg verify</code> found a file that does not match its manifest</li>
+    <li><code>8</code> - the run finished, but not everything was produced</li>
+  </ul>
+  <p>
+    A failed run prints nothing on standard output, so a log parser never reads an error as data. The
+    whole table is on <a href="/docs/#ci">the documentation page</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>A PowerShell script needs one more line</h2>
+  <p>
+    PowerShell does not carry the exit code of a program out of a <code>.ps1</code> file. Run one with
+    <code>-File</code> and the script answers <code>0</code> even when the tool inside refused the
+    work, so a build that should be red goes green. The last line is the whole fix:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    That is how PowerShell behaves, not something about this tool. <code>cmd</code>,
+    <code>bash</code> and <code>zsh</code> need nothing extra.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Several jobs</p>
+  <h2>Sharing the fixtures between jobs</h2>
+  <p>
+    There is usually no need to upload them. Because the same recipe writes the same bytes, each job
+    can run its own <code>tfg generate</code>, which is quicker than an upload and a download. When a
+    job has to receive files from another, run <code>tfg verify</code> on the manifest after the
+    transfer, and it tells you whether what arrived is what was written.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Next</p>
+  <h2>Where to go from here</h2>
+  <ul>
+    <li>
+      <a href="/corrupt-test-files/">Corrupt test files</a> adds files that are broken on purpose to
+      the same recipe.
+    </li>
+    <li>
+      <a href="/use-cases/">The use cases</a> show what else a run in a pipeline can check.
+    </li>
+    <li>
+      <a href="/docs/">The documentation</a> has every command, recipe key and exit code.
+    </li>
+  </ul>
+</section>

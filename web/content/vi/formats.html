@@ -1,0 +1,76 @@
+<h1>{{ .Facts.FormatCount }} định dạng tệp, mỗi định dạng được tạo ở kích thước chính xác</h1>
+<p class="lead">
+  Mỗi cái là một <strong>tệp thật của định dạng đó</strong>. Nó mở được bằng phần mềm của nó và có
+  đúng số byte bạn đã yêu cầu. Không cái nào là số không độn với phần mở rộng dán vào.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Ý nghĩa các cột</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Tệp nhỏ nhất</p>
+      <p class="muted">
+        Số byte ít nhất mà công cụ này chấp nhận cho định dạng đó, gồm cả nhãn nó ghi vào trong tệp. Yêu cầu
+        ít hơn và bạn nhận một lỗi nêu mức sàn cùng lý do, không bao giờ là tệp sai kích thước.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Độ đầy đủ</p>
+      <p class="muted">
+        Tệp đầy đủ đến đâu. <code>full</code> nghĩa là một trình đọc thật sự phân tích định dạng sẽ chấp
+        nhận nó, chứ không chỉ là phần mở rộng khớp.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Kiểm tra bằng</p>
+      <p class="muted">
+        Trình đọc độc lập mở mọi tệp được tạo trước khi định dạng được phát hành - một bản cài đặt riêng,
+        không phải mã của chính chúng tôi tự chấm bài tập của mình.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Mỗi định dạng cũng lặp lại đến từng byte: cùng công thức và cùng seed cho các tệp giống hệt trên mọi
+    máy, điều làm cho việc commit một công thức thay cho chính các fixture trở nên an toàn.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Các thiết lập mỗi định dạng nhận</h2>
+  <p>
+    Hầu hết định dạng có thiết lập riêng - kích thước ảnh, chất lượng JPEG, số trang PDF, số dòng và cột
+    trong bảng tính, số mục nằm trong một tệp nén. Đặt chúng bằng <code>--set key=value</code> trên
+    dòng lệnh, hoặc dưới <code>properties:</code> trong công thức.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Giá trị nằm ngoài thứ một thiết lập chấp nhận bị từ chối bằng thông báo nêu thiết lập, khoảng cho
+    phép và nên dùng gì thay thế. Thiết lập lạ cũng là lỗi, không bao giờ là mặc định im lặng - lỗi
+    gõ được chấp nhận trong im lặng cho ra tệp sai thiết lập và một giờ tự hỏi vì sao bài kiểm thử
+    qua khi lẽ ra không.
+  </p>
+  <p>
+    Chạy <code>tfg formats &lt;id&gt;</code> để xem chính xác một định dạng nhận gì trong bản dựng bạn
+    có.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Tệp nén chứa tệp thật</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} và {{ end }}<code>{{ $c.ID }}</code>{{ end }} có
+    thể được nhồi các mục thay vì để thành cái vỏ rỗng. Tệp nén được tạo thật sự chứa các tài liệu
+    nó tuyên bố chứa, nên bất cứ thứ gì giải nén nó trong lúc kiểm thử đều thấy tệp thật bên trong.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

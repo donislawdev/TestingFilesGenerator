@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Das Preset <code>{{ .ID }}</code> baut mit einem Befehl ein ganzes Set echter Testdateien für diese
+  Frage und ein <code>manifest.json</code> daneben, das beschreibt, wie dein System auf jede Datei
+  reagieren soll. Alles unten wird aus dem Programm gelesen, mit den Standardwerten dieser Version.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Was findet es meistens?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Was steckt im Set?</h2>
+  <p>Mit den Standardwerten, wie es <code>tfg preset show {{ .ID }}</code> ausgibt:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Dateien</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Targets in seinem Rezept</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Gesamtgröße</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Formate</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Und was das Manifest dieses Sets von deinem System erwartet:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Erwartet</th><th>Bedeutung</th><th class="num">Dateien</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Was kannst du ändern?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Einstellung</th><th>Nimmt</th><th>Standard</th><th>Was es tut</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Dieser Standardwert ist unser Platzhalter, nicht der Wert deines Systems. Gib deinen eigenen an.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Dieses Preset hat keine Einstellungen. Das Set ist jedes Mal dasselbe.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Wie führst du es aus?</h2>
+  <p>Sieh nach, was das Set kosten würde, baue es oder nimm sein Rezept zum Bearbeiten:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Oder baue in einem eigenen Rezept darauf auf, neben deinen Tests:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

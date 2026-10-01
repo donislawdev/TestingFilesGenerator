@@ -1,0 +1,170 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Jak vytvořit poškozený soubor pro testy</h1>
+<p class="lead">
+  Validátor, kterému se ukazovaly jen zdravé soubory, nebyl opravdu otestován. Tady je postup, jak
+  získat soubor záměrně rozbitý, který vyjde <strong>přesně v požadované velikosti</strong> a nese
+  manifest říkající, co s ním má váš systém udělat.
+</p>
+
+<div class="note">
+  <p class="note-title">Stručná odpověď</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> zapíše PNG o přesně
+    2097152 bajtech, jehož první bajty jsou nuly, a manifest vedle něj zaznamená, že ho má váš
+    systém odmítnout.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Obvyklý způsob</p>
+  <h2>Proč je ručně poškozený soubor špatný test</h2>
+  <p>
+    Obvykle se sáhne po hexadecimálním editoru, skriptu, který převrátí pár náhodných bajtů, nebo po
+    zkrácení souboru pomocí <code>head</code> či <code>truncate</code>. Jednou to funguje a pak to
+    stojí:
+  </p>
+  <ul>
+    <li>
+      <strong>Pokaždé je to jiné.</strong> Náhodný bajt padne při každém spuštění jinam, takže chyba z
+      úterý se ve středu nemusí vrátit.
+    </li>
+    <li>
+      <strong>Mění to velikost.</strong> Zkrácený soubor je menší než limit, pod kterým měl zůstat, takže
+      kontrola velikosti odpoví dřív než kontrola obsahu a test projde z nesprávného důvodu.
+    </li>
+    <li>
+      <strong>Často si toho nikdo nevšimne.</strong> Prostý text se dá číst i se změněným bajtem uprostřed
+      a shovívavá čtečka obrázků ho prostě vykreslí, takže soubor, který měl být rozbitý, se přijme.
+    </li>
+    <li>
+      <strong>Neříká, co se má stát.</strong> Soubor jsou jen bajty a ten, kdo test čte později, musí
+      hádat, zda se mělo přijmout, nebo odmítnout.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Co dostanete</p>
+  <h2>Poškozený soubor má stále velikost, kterou jste chtěli</h2>
+  <p>
+    Soubor se vygeneruje normálně a poškodí se až potom, cestou na disk. Zachová velikost, kterou jste
+    chtěli, a stejný příkaz zapíše znovu stejné bajty.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Nastavení se píše za dvojtečku. Přepínač lze opakovat a poškození se použijí v pořadí, v jakém je
+    zapíšete. Funguje s každým z {{ .Facts.FormatCount }} formátů.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Co umí</p>
+  <h2>Jaká poškození existují?</h2>
+  <p>
+    Toto je seznam, který program vypisuje, načtený z něj při sestavení této stránky. <code>tfg
+    damage</code> vypíše totéž a <code>tfg damage &lt;id&gt;</code> řekne, co které z nich přijímá.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> zapíše nuly přes začátek souboru. Většina čteček se dívá nejdřív tam, na
+    signaturu a hlavičku, které říkají, co soubor je, takže si toho všimne téměř každá. Prostý text
+    a logy signaturu nemají a odmítnou se také, protože řada nulových bajtů není text. Pod čtyřmi
+    bajty některé formáty vyjdou s poškozením, na které si žádná čtečka nestěžuje, proto nastavení
+    začíná na čtyřech.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Co říká manifest</p>
+  <h2>Manifest, který říká, co se má stát</h2>
+  <p>
+    Každý poškozený soubor dostane záznam, že ho má váš systém odmítnout, s poškozením zapsaným vedle:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Dva požadavky se odmítnou dřív, než se cokoli zapíše, protože každý by na disku nechal soubor, který
+    manifest popisuje špatně:
+  </p>
+  <ul>
+    <li>soubor menší, než poškození potřebuje, který by vyšel nezměněný</li>
+    <li>
+      <code>expected: accept</code> vedle poškození, protože by to nic nemohlo splnit. Napište
+      <code>sanitize</code>, pokud má váš systém soubor opravit, nebo <code>unspecified</code>,
+      pokud je právě to vaše otázka
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">V receptu</p>
+  <h2>Zdravé a rozbité soubory v jednom běhu</h2>
+  <p>
+    Dejte obojí do jednoho receptu a manifest ponese očekávání každého souboru, takže test nepotřebuje
+    seznam, který je který:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">V testu</p>
+  <h2>Z toho udělat test</h2>
+  <p>
+    Test přečte manifest a ověří, že to, co se stalo, je to, co bylo uvedeno. Nepotřebuje seznam názvů
+    souborů:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Dobré odmítnutí je čisté. Zpráva, která říká, co bylo špatně, je odpověď, kterou chcete. Chyba
+    serveru, zaseknutí nebo napůl uložený soubor je vada, kterou má tento test najít.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dál</p>
+  <h2>Kam jít odtud</h2>
+  <ul>
+    <li>
+      <a href="/cs/predvolby/upload-validation/">Předvolba upload-validation</a> klade formuláři zbývající
+      dvě otázky, na velikost a na typ.
+    </li>
+    <li>
+      <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a> spouštějí takový recept v pipeline.
+    </li>
+    <li>
+      <a href="/cs/dokumentace/#damage">Dokumentace</a> obsahuje každý přepínač <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

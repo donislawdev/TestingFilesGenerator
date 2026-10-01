@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pt-BR">
+<title>Arquivos de teste corrompidos - arquivos quebrados, tamanho exato</title>
+<meta name="description" content="Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Arquivos de teste corrompidos - arquivos quebrados, tamanho exato">
+<meta property="og:description" content="Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Arquivos de teste corrompidos - arquivos quebrados, tamanho exato">
+<meta name="twitter:description" content="Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Início",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pt-br/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Casos de uso",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/casos-de-uso\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Arquivos corrompidos",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/arquivos-de-teste-corrompidos\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pt-br/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/pt-br/">Início</a>
+      <a href="/pt-br/formatos/">Formatos</a>
+      <a href="/pt-br/presets/">Presets</a>
+      <a href="/pt-br/documentacao/">Documentação</a>
+      <a href="/pt-br/casos-de-uso/" aria-current="true">Casos de uso</a>
+      <a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a>
+      <a href="/pt-br/perguntas-frequentes/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Português (Brasil)">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Português (Brasil)</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/corrupt-test-files/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/corrupt-test-files/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/beschaedigte-testdateien/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-corruptos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-corrompus/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/corrupt-test-files/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-rusak/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-corrotti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/corrupt-test-files/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/corrupt-test-files/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/uszkodzone-pliki-testowe/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/ro/fisiere-de-test-corupte/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/corrupt-test-files/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/corrupt-test-files/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/corrupt-test-files/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/corrupt-test-files/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/pt-br/casos-de-uso/">Casos de uso</a></p>
+<h1>Como criar um arquivo corrompido para testes</h1>
+<p class="lead">
+  Um validador que só viu arquivos saudáveis não foi realmente testado. Veja como obter um arquivo
+  quebrado de propósito, que sai com <strong>exatamente o tamanho que você pede</strong> e traz um
+  manifesto dizendo o que o seu sistema deve fazer com ele.
+</p>
+
+<div class="note">
+  <p class="note-title">A resposta curta</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> grava um PNG de
+    exatamente 2097152 bytes cujos primeiros bytes são zeros, e o manifesto ao lado registra que o
+    seu sistema deve rejeitá-lo.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">O jeito de sempre</p>
+  <h2>Por que um arquivo corrompido à mão é um teste ruim</h2>
+  <p>
+    O jeito de sempre é um editor hexadecimal, um script que troca alguns bytes aleatórios ou cortar um
+    arquivo com <code>head</code> ou <code>truncate</code>. Funciona uma vez, e depois sai caro:
+  </p>
+  <ul>
+    <li>
+      <strong>É diferente a cada vez.</strong> Um byte aleatório cai num lugar novo a cada execução, então
+      uma falha de terça pode não voltar na quarta.
+    </li>
+    <li>
+      <strong>Muda o tamanho.</strong> Um arquivo cortado fica menor que o limite abaixo do qual deveria
+      ficar, então a checagem de tamanho responde antes da checagem de conteúdo e o teste passa pelo
+      motivo errado.
+    </li>
+    <li>
+      <strong>Muitas vezes passa despercebido.</strong> Texto simples continua legível com um byte
+      alterado no meio, e um leitor de imagens tolerante simplesmente o desenha, então o arquivo que
+      deveria estar quebrado é aceito.
+    </li>
+    <li>
+      <strong>Não diz nada sobre o que deve acontecer.</strong> O arquivo é só bytes, e quem ler o teste
+      depois precisa adivinhar se a intenção era aceitação ou rejeição.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">O que você recebe</p>
+  <h2>Um arquivo danificado continua com o tamanho que você pediu</h2>
+  <p>
+    O arquivo é gerado normalmente e quebrado depois, a caminho do disco. Ele mantém o tamanho pedido, e
+    o mesmo comando grava os mesmos bytes outra vez.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    As configurações vão depois de dois-pontos. A opção pode ser repetida, e os danos são aplicados na
+    ordem em que você os escreve. Funciona com cada um dos 26 formatos.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">O que ele sabe fazer</p>
+  <h2>Quais danos existem?</h2>
+  <p>
+    Esta é a lista que o programa imprime, lida dele quando esta página é construída. <code>tfg
+    damage</code> imprime a mesma, e <code>tfg damage &lt;id&gt;</code> diz o que cada um aceita.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Dano</th>
+      <th>O que faz com os bytes</th>
+      <th class="num">Menor arquivo</th>
+      <th>Configurações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>zero-head</code></td>
+      <td>Sobrescreve os primeiros bytes do arquivo com zeros, sem mexer no comprimento. A maioria dos leitores olha ali primeiro, então quase tudo percebe este dano.</td>
+      <td class="num">8</td>
+      <td><code>bytes</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    <code>zero-head</code> grava zeros sobre o início do arquivo. A maioria dos leitores olha ali
+    primeiro, para a assinatura e o cabeçalho que dizem o que o arquivo é, então quase todo leitor
+    percebe. Texto simples e logs não têm assinatura e também são recusados, porque uma sequência de
+    bytes zero não é texto. Abaixo de quatro bytes, alguns formatos saem com um dano de que nenhum
+    leitor reclama, e por isso a configuração começa em quatro.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">O que o manifesto diz</p>
+  <h2>Um manifesto que diz o que deve acontecer</h2>
+  <p>
+    Cada arquivo danificado recebe uma entrada dizendo que o seu sistema deve rejeitá-lo, com o dano
+    registrado ao lado:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Dois pedidos são recusados antes de qualquer coisa ser gravada, porque cada um deixaria no disco um
+    arquivo que o manifesto descreve errado:
+  </p>
+  <ul>
+    <li>um arquivo menor do que o dano precisa, que sairia intacto</li>
+    <li>
+      <code>expected: accept</code> ao lado de um dano, porque nada poderia cumprir isso. Escreva
+      <code>sanitize</code> se o seu sistema deve consertar o arquivo, ou <code>unspecified</code>
+      se essa é justamente a pergunta que você faz
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Em uma receita</p>
+  <h2>Arquivos saudáveis e quebrados em uma execução</h2>
+  <p>
+    Ponha os dois em uma receita, e o manifesto leva a expectativa de cada arquivo, então o teste não
+    precisa de uma lista de qual é qual:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Em um teste</p>
+  <h2>Transformando em um teste</h2>
+  <p>
+    O teste lê o manifesto e confere se o que aconteceu é o que foi declarado. Não precisa de uma lista
+    de nomes de arquivo:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Uma boa recusa é uma recusa limpa. Uma mensagem que diz o que estava errado é a resposta que você
+    quer. Um erro de servidor, uma trava ou um arquivo salvo pela metade é o defeito que este teste
+    existe para achar.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">A seguir</p>
+  <h2>Para onde ir daqui</h2>
+  <ul>
+    <li>
+      <a href="/pt-br/presets/upload-validation/">O preset upload-validation</a> faz a um formulário as
+      outras duas perguntas, a do tamanho e a do tipo.
+    </li>
+    <li>
+      <a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a> executa uma receita como esta
+      em um pipeline.
+    </li>
+    <li>
+      <a href="/pt-br/documentacao/#damage">A documentação</a> traz cada opção de <code>tfg
+      generate</code>.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Arquivos de teste para QA, no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projeto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código no GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Relatar um problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoiar o projeto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/pt-br/">Início</a></li>
+        <li><a href="/pt-br/formatos/">Formatos</a></li>
+        <li><a href="/pt-br/presets/">Presets</a></li>
+        <li><a href="/pt-br/documentacao/">Documentação</a></li>
+        <li><a href="/pt-br/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Distribuído sob a Licença Pública Geral GNU, versão 3. Os arquivos que você gera são seus - a licença cobre a ferramenta, não a sua saída.</p>
+    <p class="muted">Este site não carrega fontes, scripts nem rastreadores de lugar nenhum. Não usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,149 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>テスト用の破損ファイルを作る方法</h1>
+<p class="lead">
+  健全なファイルしか見せたことのない検証は、本当にはテストされていません。ここでは、意図的に壊してあり、<strong>求めたとおりのサイズ</strong>で出てきて、システムがそれをどう扱うべきかを示すマニフェストを伴うファイルの作り方を説明します。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out
+    ./out</code>は、ちょうど2097152バイトで先頭のバイトがゼロのPNGを書き出し、隣のマニフェストにはシステムがそれを拒否すべきだと記録されます。
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">よくあるやり方</p>
+  <h2>手作業で壊したファイルがよくないテストになる理由</h2>
+  <p>
+    よくあるのは、16進エディタ、いくつかのランダムなバイトを反転させるスクリプト、<code>head</code>や<code>truncate</code>でファイルを短く切る方法です。一度は使えますが、あとで手間がかかります。
+  </p>
+  <ul>
+    <li>
+      <strong>毎回違います。</strong>ランダムなバイトは実行のたびに別の場所に当たるので、火曜日の失敗が水曜日には再現しないことがあります。
+    </li>
+    <li>
+      <strong>サイズが変わります。</strong>切り詰めたファイルは、本来下回るはずだった上限よりも小さくなるため、サイズの検査が内容の検査より先に答えてしまい、テストは誤った理由で通ります。
+    </li>
+    <li>
+      <strong>気づかれないことが多くあります。</strong>プレーンテキストは途中の1バイトが変わっても読めますし、寛容な画像リーダーはそのまま描画するので、壊れているはずのファイルが受け入れられてしまいます。
+    </li>
+    <li>
+      <strong>何が起こるべきかを伝えません。</strong>ファイルはただのバイト列で、後からテストを読む人は、受け入れと拒否のどちらが意図だったのかを推測するしかありません。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">得られるもの</p>
+  <h2>破損したファイルも、求めたサイズのままです</h2>
+  <p>
+    ファイルは通常どおり生成され、ディスクへ向かう途中で壊されます。求めたサイズは保たれ、同じコマンドは同じバイトをもう一度書き出します。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    設定はコロンの後ろに書きます。オプションは繰り返せて、破損は書いた順に適用されます。{{ .Facts.FormatCount }}種類すべての形式で使えます。
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">できること</p>
+  <h2>どんな破損がありますか。</h2>
+  <p>
+    これはプログラムが出力する一覧で、このページを作るときにプログラムから読み取っています。<code>tfg damage</code>は同じ一覧を出力し、<code>tfg damage
+    &lt;id&gt;</code>はそのうちの1つが受け取る設定を示します。
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code>はファイルの先頭をゼロで上書きします。ほとんどのリーダーはまずそこを見ます。ファイルが何であるかを示すシグネチャとヘッダーです。そのため、ほぼどのリーダーでも気づきます。プレーンテキストやログにはシグネチャがありませんが、これらも拒否されます。ゼロのバイトの連なりはテキストではないからです。4バイト未満では、どのリーダーも文句を言わない破損になる形式があります。設定が4から始まるのはそのためです。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">マニフェストの内容</p>
+  <h2>何が起こるべきかを示すマニフェスト</h2>
+  <p>
+    破損したファイルにはそれぞれ、システムがそれを拒否すべきことを示す項目が付き、破損の内容がその横に記録されます。
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    2種類のリクエストは、何かが書き込まれる前に拒否されます。どちらもマニフェストの記述が誤ったファイルをディスクに残してしまうからです。
+  </p>
+  <ul>
+    <li>破損に必要なサイズより小さいファイル。そのままの状態で出てきてしまいます</li>
+    <li>
+      破損と並べた<code>expected:
+      accept</code>。何もそれを満たせないためです。システムがファイルを修復するはずなら<code>sanitize</code>を、まさにそれを確かめたいなら<code>unspecified</code>を書いてください
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">レシピで</p>
+  <h2>1回の実行に健全なファイルと壊れたファイルを</h2>
+  <p>
+    両方を1つのレシピに入れると、マニフェストが各ファイルの期待を持つので、テストにどれがどれかの一覧は要りません。
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">テストで</p>
+  <h2>テストにする</h2>
+  <p>
+    テストはマニフェストを読み、起きたことが宣言どおりかどうかを確かめます。ファイル名の一覧は要りません。
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    よい拒否は、きれいな拒否です。何が悪かったかを伝えるメッセージが、求めている答えです。サーバーエラー、ハング、書きかけで保存されたファイルは、このテストが見つけるために存在する欠陥です。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">次へ</p>
+  <h2>ここからどこへ</h2>
+  <ul>
+    <li>
+      <a href="/ja/presets/upload-validation/">upload-validationプリセット</a>は、フォームにほかの2つの問い、つまりサイズと種類を尋ねます。
+    </li>
+    <li>
+      <a href="/ja/test-files-in-ci/">CIでのテストファイル</a>は、このようなレシピをパイプラインで実行します。
+    </li>
+    <li>
+      <a href="/ja/docs/#damage">ドキュメント</a>には<code>tfg generate</code>のすべてのオプションが載っています。
+    </li>
+  </ul>
+</section>

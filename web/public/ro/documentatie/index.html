@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ro">
+<title>Documentație - comenzi, rețete, manifest, coduri de ieșire</title>
+<meta name="description" content="Cum generezi fișiere de test din linia de comandă sau dintr-o rețetă YAML, ce conține manifestul și ce înseamnă fiecare cod de ieșire în CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="Documentație - comenzi, rețete, manifest, coduri de ieșire">
+<meta property="og:description" content="Cum generezi fișiere de test din linia de comandă sau dintr-o rețetă YAML, ce conține manifestul și ce înseamnă fiecare cod de ieșire în CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Documentație - comenzi, rețete, manifest, coduri de ieșire">
+<meta name="twitter:description" content="Cum generezi fișiere de test din linia de comandă sau dintr-o rețetă YAML, ce conține manifestul și ce înseamnă fiecare cod de ieșire în CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Acasă",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ro/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentație",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/documentatie\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ro/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/ro/">Acasă</a>
+      <a href="/ro/formate/">Formate</a>
+      <a href="/ro/presetari/">Presetări</a>
+      <a href="/ro/documentatie/" aria-current="page">Documentație</a>
+      <a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a>
+      <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
+      <a href="/ro/intrebari-frecvente/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Limba: Română">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Română</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Documentație</h1>
+<p class="lead">
+  Tot ce face instrumentul, aranjat ca întrebările cu care vin oamenii de fapt.
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README-ul din repository</a> este referința completă și se potrivește
+  mereu cu versiunea pe care ai descărcat-o.
+</p>
+
+<section class="section" id="commands">
+  <h2>Ce comenzi există?</h2>
+  <p>Fiecare face un singur lucru:</p>
+  <pre><code>tfg generate    produce fișiere, dintr-o rețetă sau din opțiuni
+tfg validate    verifică o rețetă fără a scrie nimic
+tfg verify      verifică un director față de un manifest
+tfg cleanup     șterge fișierele pe care le listează un manifest
+tfg recipe fmt  afișează o rețetă în forma ei normalizată
+tfg preset      construiește un set de fișiere dintr-o întrebare de test cu nume
+tfg formats     listează formatele acceptate de această versiune
+tfg damage      listează modurile în care această versiune poate strica un fișier intenționat
+tfg tool        mici unelte pentru fișiere pe care le ai deja
+tfg version     afișează versiunea instrumentului
+tfg license     afișează licența și ce înseamnă ea pentru fișierele generate</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Cum generez un singur fișier de dimensiune exactă?</h2>
+  <p>
+    Spune formatul, dimensiunea și unde merge. Dimensiunile se numără din 1024 în 1024, deci
+    <code>2mb</code> sunt 2097152 octeți. Merge și un simplu număr de octeți, deci <code>--size
+    10485761</code> cere exact atât.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Opțiunile utile ale comenzii <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Opțiune</th><th>Ce face</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formatul fișierelor, de exemplu <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>dimensiunea exactă a fiecărui fișier, precum <code>10mb</code> sau un simplu număr de octeți</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>o dimensiune extrasă pentru fiecare fișier dintr-un interval, precum <code>1kb-8kb</code>. Extragerea vine din seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>trei fișiere în jurul unei limite: un octet sub, limita, un octet peste</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>câte fișiere să producă. Implicit <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>șablon de nume, de exemplu <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>directorul în care se scrie</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed-ul rulării. Același seed dă aceiași octeți</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>o setare de format, repetabilă</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>strică fișierele intenționat, repetabil și aplicat în ordine. Rulează <code>tfg damage</code> pentru listă</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> sau <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>numără și arată, nu scrie absolut nimic</td></tr>
+        <tr><td><code>--json</code></td><td>scrie manifestul la ieșirea standard</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Cum fac un fișier stricat intenționat?</h2>
+  <p>
+    Orice alt fișier scris de acest instrument este corect prin construcție, ceea ce răspunde la două
+    din cele trei întrebări pe care le pune un validator de încărcare. <code>--damage</code>
+    răspunde la a treia - se deschide oare fișierul. Fișierul este produs normal și apoi stricat,
+    deci are în continuare dimensiunea cerută.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Setările se pun după două puncte. Opțiunea se repetă, iar ordinea în care le scrii este ordinea în
+    care se aplică. <code>tfg damage</code> listează ce poate face această versiune și ce acceptă
+    fiecare.
+  </p>
+  <p>Într-o rețetă cheia este o listă, de nume sau de setări:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Un fișier deteriorat primește <code>expected: reject</code> în manifest, cu deteriorarea consemnată
+    alături. Două lucruri sunt refuzate înainte de a se scrie ceva, pentru că fiecare ar pune pe
+    disc un fișier pe care manifestul îl descrie greșit:
+  </p>
+  <ul>
+    <li>un fișier mai mic decât are nevoie deteriorarea, pentru că ar ieși neschimbat</li>
+    <li>
+      <code>expected: accept</code> alături de o deteriorare, pentru că nimic nu l-ar putea îndeplini.
+      Scrie <code>sanitize</code> dacă sistemul testat trebuie să repare fișierul sau
+      <code>unspecified</code> dacă exact asta e întrebarea pe care o pui
+    </li>
+  </ul>
+  <p>
+    O a treia nu se poate ști dinainte. Dacă o deteriorare rulează și nu mută niciun octet, fișierul
+    respectiv este abandonat în loc să fie scris - rularea continuă, spune care a fost fișierul și
+    se termină cu codul de ieșire parțial.
+  </p>
+  <p>
+    Pas cu pas, cu un test care citește manifestul: <a href="/ro/fisiere-de-test-corupte/">cum faci un
+    fișier corupt pentru teste</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Cum arată o rețetă?</h2>
+  <p>
+    O rețetă este un fișier YAML care descrie o rulare întreagă. Comite-o lângă testele tale și
+    fixture-urile nu mai sunt binare în repository - oricine le poate reconstrui, octet cu octet,
+    dintr-un fișier de câteva sute de caractere.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Fiecare target are nevoie de exact una dintre cheile <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> sau <code>contains</code>. Două este o eroare și la fel niciuna. O rețetă
+    invalidă nu scrie <strong>niciun fișier</strong> și raportează toate problemele deodată, nu doar
+    prima, fiecare numind setarea la care se referă.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Cum declar ce trebuie să facă sistemul meu cu un fișier?</h2>
+  <p>Formă scurtă când rezultatul e de ajuns, formă lungă când contează motivul:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Rezultatele sunt <code>accept</code>, <code>reject</code>, <code>sanitize</code> și
+    <code>unspecified</code>. Motivele sunt o listă închisă ca un raport să poată grupa după ele:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> și <code>size_zero</code>.
+  </p>
+  <p>
+    Un motiv numește <strong>regula în joc</strong>, nu verdictul. De aceea același motiv poate sta sub
+    oricare dintre rezultate - un fișier cu un octet sub o limită este <code>accept</code>, iar
+    regula la care se referă rămâne <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Ce conține manifestul?</h2>
+  <p>
+    Se scrie lângă fișiere la sfârșitul fiecărei rulări, inclusiv a uneia întrerupte. O intrare pentru
+    fiecare fișier:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Se adaugă un <code>recipe_hash</code> când rularea a venit dintr-o rețetă și <code>preset</code> cu
+    <code>overrides</code> când a venit dintr-o presetare, astfel încât un manifest poate fi mereu
+    urmărit până la ce l-a produs.
+  </p>
+  <p>
+    Fiecare intrare poartă și <code>target_id</code>, id-ul targetului din rețeta care a produs
+    fișierul, iar <code>summary.by_target</code> numără fișierele la care a ajuns fiecare target. O
+    rețetă cu mai multe targeturi poate fi verificată astfel target cu target, fără a citi nume de
+    fișiere.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Ce este o presetare?</h2>
+  <p>
+    Un set de fișiere gata făcut care răspunde unei întrebări de test obișnuite, ca să nu trebuiască să
+    proiectezi tu setul. Presetările sunt rețete obișnuite pe dedesubt, iar <code>eject</code>
+    afișează rețeta ca s-o poți edita de acolo. Fiecare presetare are <a href="/ro/presetari/">o
+    pagină proprie</a> cu ce găsește de obicei, ce este în set și fiecare setare pe care o acceptă.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/empty-and-minimal/">Gol și minimal</a></p>
+    <p class="muted">Trece un fișier valid, cât de mic permite formatul?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/filename-handling/">Gestionarea numelor de fișiere</a></p>
+    <p class="muted">Va stoca, va afișa și va returna sistemul meu un nume de fișier la care nu se aștepta?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/size-boundaries/">Limite de dimensiune</a></p>
+    <p class="muted">Este o limită de dimensiune aplicată exact acolo unde este declarată?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/tabular-import/">Import de tabele</a></p>
+    <p class="muted">Supraviețuiește importul meu de tabele la ce exportă instrumentele reale?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/text-encoding/">Codarea textului</a></p>
+    <p class="muted">Știe cititorul meu în ce codare este un fișier sau doar ghicește?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ro/presetari/upload-validation/">Validarea încărcării</a></p>
+    <p class="muted">Acceptă formularul meu de încărcare ce trebuie și respinge restul?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> îți spune cât ar costa setul înainte să-l construiești și spune pe față când un
+    număr este o valoare provizorie de-a noastră, nu o limită de-a ta.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Ce înseamnă codurile de ieșire?</h2>
+  <p>
+    Fiecare final are propriul cod, ieșirea citibilă de mașină merge la ieșirea standard, iar o rulare
+    eșuată nu tipărește nimic acolo. Tabelul este un contract înghețat - schimbarea sensului unui
+    cod cere o versiune majoră.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Cod</th>
+      <th>Semnificație</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Totul a mers.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>O eroare neașteptată în interiorul instrumentului.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Comandă sau opțiune greșită.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Rețeta nu este validă.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Formatul nu poate face ce s-a cerut.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>O citire sau o scriere a eșuat.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Nu este destul spațiu pe disc.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify a găsit o nepotrivire.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Rularea s-a terminat, dar nu s-a produs totul.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Întreruptă cu Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Oprită de un semnal, așa arată o depășire de timp în CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    O rulare oprită cu Ctrl+C lasă totuși un manifest și nu lasă niciodată un fișier scris pe jumătate,
+    așa că un job anulat poate fi curățat de următorul.
+  </p>
+  <p>
+    Workflow-uri gata făcute pentru GitHub Actions și GitLab CI:
+    <a href="/ro/fisiere-de-test-in-ci/">cum generezi fișiere de test într-un pipeline CI</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Există o fereastră desktop?</h2>
+  <p>
+    Da, același motor cu o fereastră deasupra, pentru testarea care nu e automatizată. Nu e o versiune
+    redusă: un test compară cele două interfețe capacitate cu capacitate, iar tot ce poate face doar
+    una dintre ele trebuie declarat și justificat, nu lăsat să divergă pe tăcute.
+  </p>
+  <p>
+    Ecranele sunt un lot, presetări, mai multe loturi deodată și Despre. Arată cât ar costa o rulare
+    înainte să scrie ceva, raportează progresul cât rulează și poate fi anulată pe la jumătate fără
+    să lase un fișier scris pe jumătate. Nu deschide încă un fișier de rețetă - rețetele sunt
+    deocamdată treaba liniei de comandă, iar fereastra își construiește loturile în formular.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proiect</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Cod sursă pe GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descărcări</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Raportează o problemă</a></li>
+        <li><a href="https://donislawdev.com/support/">Susține proiectul</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagini</p>
+      <ul class="plain">
+        <li><a href="/ro/">Acasă</a></li>
+        <li><a href="/ro/formate/">Formate</a></li>
+        <li><a href="/ro/presetari/">Presetări</a></li>
+        <li><a href="/ro/documentatie/">Documentație</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
+        <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.</p>
+    <p class="muted">Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.</p>
+  </div>
+</footer>
+</body>
+</html>

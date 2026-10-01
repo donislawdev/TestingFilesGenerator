@@ -1,0 +1,82 @@
+<h1>{{ .Facts.FormatCount }} formati di file, ognuno generato a una dimensione esatta</h1>
+<p class="lead">
+  Ognuno è un <strong>file reale di quel formato</strong>. Si apre nel programma che gli appartiene ed
+  è esattamente il numero di byte che hai chiesto. Nessuno è riempimento di zeri con un'estensione
+  appiccicata.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Cosa significano le colonne</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">File più piccolo</p>
+      <p class="muted">
+        Il minimo di byte che questo strumento accetta per quel formato, compresa l'etichetta che scrive
+        dentro il file. Chiedi meno e ottieni un errore che nomina il minimo e il suo motivo, mai un
+        file della dimensione sbagliata.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Fedeltà</p>
+      <p class="muted">
+        Quanto è completo il file. <code>full</code> significa che un lettore che analizza davvero il
+        formato lo accetta, non solo che l'estensione corrisponde.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Verificato con</p>
+      <p class="muted">
+        Il lettore indipendente che apre ogni file generato prima che il formato venga rilasciato -
+        un'implementazione separata, non il nostro codice che corregge i propri compiti.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Ogni formato si ripete anche al byte: la stessa ricetta e lo stesso seed producono file identici su
+    qualsiasi macchina, ed è ciò che rende sicuro committare una ricetta al posto delle fixture
+    stesse.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Impostazioni che ogni formato accetta</h2>
+  <p>
+    La maggior parte dei formati ha impostazioni proprie - dimensioni dell'immagine, qualità JPEG,
+    numero di pagine PDF, righe e colonne di un foglio di calcolo, quante voci vanno dentro un
+    archivio. Impostale con <code>--set key=value</code> dalla riga di comando, o sotto
+    <code>properties:</code> in una ricetta.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Un valore fuori da ciò che un'impostazione accetta viene rifiutato con un messaggio che nomina
+    l'impostazione, l'intervallo consentito e cosa usare al suo posto. Anche un'impostazione
+    sconosciuta è un errore, mai un valore predefinito silenzioso - un refuso accettato in silenzio
+    dà un file con le impostazioni sbagliate e un'ora a chiedersi perché il test passa quando non
+    dovrebbe.
+  </p>
+  <p>
+    Esegui <code>tfg formats &lt;id&gt;</code> per vedere esattamente cosa accetta un formato nella
+    build che hai.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Gli archivi contengono file reali</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} e {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    possono essere riempiti di voci invece di restare un guscio vuoto. Un archivio generato contiene
+    davvero i documenti che dichiara di contenere, quindi qualsiasi cosa lo decomprima durante un
+    test trova file reali al suo interno.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

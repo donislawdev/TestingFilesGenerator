@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>FAQ - टेस्ट फ़ाइलें बनाने के बारे में सवाल</title>
+<meta name="description" content="dd और fsutil से अंतर, क्या फ़ाइलें कमिट करना सुरक्षित है, क्या हर रन बाइट-दर-बाइट दोहराया जाता है, और आकार न मिल पाने पर क्या होता है।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="FAQ - टेस्ट फ़ाइलें बनाने के बारे में सवाल">
+<meta property="og:description" content="dd और fsutil से अंतर, क्या फ़ाइलें कमिट करना सुरक्षित है, क्या हर रन बाइट-दर-बाइट दोहराया जाता है, और आकार न मिल पाने पर क्या होता है।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - टेस्ट फ़ाइलें बनाने के बारे में सवाल">
+<meta name="twitter:description" content="dd और fsutil से अंतर, क्या फ़ाइलें कमिट करना सुरक्षित है, क्या हर रन बाइट-दर-बाइट दोहराया जाता है, और आकार न मिल पाने पर क्या होता है।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>अक्सर पूछे जाने वाले सवाल</h1>
+<p class="lead">
+  लाइसेंस, निजता, दोहराव, और वे बातें जो लोग जनरेटर को बिल्ड पाइपलाइन में लगाने से पहले जाँचते हैं।
+  अगर आपका सवाल यहाँ नहीं है, तो <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">इश्यू ट्रैकर</a> खुला है।
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>यह dd, fsutil या truncate से कैसे अलग है?</h2></summary>
+    <div class="qa-body">
+      <p>वे आपको सही आकार की फ़ाइल देते हैं जो खालीपन से भरी होती है। इस तरह बनी photo.png नाम की 2 MB की फ़ाइल PNG नहीं होती, इसलिए जो भी उसे सच में पार्स करता है वह गलत कारण से उसे ठुकरा देता है, और आपका टेस्ट भी गलत कारण से पास हो जाता है। यह टूल ठीक 2 MB की असली PNG बनाता है जो इमेज व्यूअर में खुलती है, और उसके साथ यह घोषणा आती है कि आपके सिस्टम को उसके साथ क्या करना चाहिए।</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या यह मुफ़्त है, और क्या मैं इसे काम पर इस्तेमाल कर सकता हूँ?</h2></summary>
+    <div class="qa-body">
+      <p>दोनों के लिए हाँ। यह GPL-3.0 के तहत जारी है और इसकी कोई कीमत नहीं। कोई खाता, लाइसेंस कुंजी या सशुल्क स्तर नहीं है।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या मैं बनाई गई फ़ाइलें क्लोज़्ड सोर्स उत्पाद में इस्तेमाल कर सकता हूँ?</h2></summary>
+    <div class="qa-body">
+      <p>हाँ। लाइसेंस टूल के कोड पर लागू होता है, उस पर नहीं जो टूल बनाता है। बनाई गई फ़ाइलें, रेसिपी और मैनिफ़ेस्ट आउटपुट हैं, व्युत्पन्न कृतियाँ नहीं, इसलिए आप उन्हें बिना किसी बाध्यता के कमिट और वितरित कर सकते हैं।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या बनाई गई फ़ाइलों में असली निजी डेटा होता है?</h2></summary>
+    <div class="qa-body">
+      <p>नहीं। अंदर का सब कुछ एक सीड से बनाया जाता है। कोई डेटासेट नहीं पढ़ा जाता, किसी सेवा से संपर्क नहीं किया जाता और किसी तीसरे पक्ष की सामग्री नहीं जोड़ी जाती। बनाए गए ईमेल पते को अप्रयुक्त नहीं, बल्कि अनुपयोगी मानें, क्योंकि कोई भी यादृच्छिक स्ट्रिंग संयोग से किसी असली पते से मेल खा सकती है।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या मुझे दूसरी मशीन पर ठीक वही फ़ाइलें मिलेंगी?</h2></summary>
+    <div class="qa-body">
+      <p>हाँ, बाइट-दर-बाइट, उसी रेसिपी और उसी सीड के साथ। प्रोजेक्ट हर बदलाव पर इसका परीक्षण करता है, और इसे तोड़ने के लिए मुख्य संस्करण बढ़ाना पड़ता है। इसी वजह से आप बड़े बाइनरी फ़िक्स्चर की जगह एक छोटी रेसिपी कमिट कर सकते हैं।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या इसे इंटरनेट कनेक्शन चाहिए?</h2></summary>
+    <div class="qa-body">
+      <p>कभी नहीं। कोई टेलीमेट्री नहीं, कोई अपडेट जाँच नहीं और कोई क्लाउड क्लाइंट नहीं, और कमांड लाइन बाइनरी में नेटवर्क स्टैक कंपाइल ही नहीं किया गया है। यह बिना नेटवर्क की मशीन पर और बंद कॉर्पोरेट माहौल में भी चलता है।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>अगर मैं ऐसा आकार माँगूँ जो कोई फ़ॉर्मैट हासिल नहीं कर सकता, तो क्या होता है?</h2></summary>
+    <div class="qa-body">
+      <p>आपको एक त्रुटि मिलती है जो फ़ॉर्मैट, सबसे छोटा संभव आकार, उस न्यूनतम सीमा का कारण और इसके बदले क्या करें यह बताती है, और कोई फ़ाइल नहीं लिखी जाती। टूल कभी आकार को चुपचाप राउंड नहीं करता। हर न्यूनतम सीमा फ़ॉर्मैट पेज पर सूचीबद्ध है।</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या मैं जानबूझकर टूटी हुई फ़ाइल बना सकता हूँ?</h2></summary>
+    <div class="qa-body">
+      <p>हाँ। --damage zero-head जोड़ें और फ़ाइल ठीक माँगे गए आकार में निकलती है, शुरुआती बाइट शून्य से ढके हुए, इसलिए रीडर उसे ठुकरा देता है, और मैनिफ़ेस्ट कहता है कि आपके सिस्टम को उसे अस्वीकार करना चाहिए। ब्योरा खराब टेस्ट फ़ाइलों वाले पेज पर है।</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>आगे कौन से फ़ॉर्मैट आ रहे हैं?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 और mp4। आज 26 फ़ॉर्मैट शुरू से अंत तक काम करते हैं।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>मैं इसे किन सिस्टम पर चला सकता हूँ?</h2></summary>
+    <div class="qa-body">
+      <p>कमांड लाइन Windows और Linux पर Intel और ARM दोनों पर, और Apple Silicon Mac पर चलती है। डेस्कटॉप विंडो Intel पर Windows, Intel पर Linux और Apple Silicon Mac के लिए आती है। Intel Mac समर्थित नहीं हैं और उनके लिए कुछ नहीं बनाया जाता।</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>क्या मुझे कुछ इंस्टॉल करना होगा?</h2></summary>
+    <div class="qa-body">
+      <p>नहीं। अपने सिस्टम का आर्काइव डाउनलोड करें, खोलें और बाइनरी चलाएँ। कोई इंस्टॉलर नहीं, जोड़ने के लिए कोई रनटाइम नहीं और सुलझाने के लिए कोई निर्भरता नहीं। अगर आपके पास Go है तो एक ही go install कमांड भी काम करती है।</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>हज़ारों फ़ाइलों पर रन Windows पर धीमा क्यों है?</h2></summary>
+    <div class="qa-body">
+      <p>क्योंकि Windows हर उस पाथ के लिए ज़्यादा वसूलता है जिसे वह देखता है, और हज़ारों फ़ाइलों से गुज़रने वाली कमांड हज़ारों पाथ देखती है। 1 kB की 3000 फ़ाइलों वाली एक मशीन पर मापने पर, verify को Windows पर लगभग 0.9 सेकंड और कंटेनर में Linux पर लगभग 0.2 सेकंड लगे। छोटा आउटपुट पाथ Windows का आँकड़ा घटाता है, क्योंकि फ़ाइलों के ऊपर का हर फ़ोल्डर उसमें शामिल होता है जिसे देखा जाता है।</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "यह dd, fsutil या truncate से कैसे अलग है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "वे आपको सही आकार की फ़ाइल देते हैं जो खालीपन से भरी होती है। इस तरह बनी photo.png नाम की 2 MB की फ़ाइल PNG नहीं होती, इसलिए जो भी उसे सच में पार्स करता है वह गलत कारण से उसे ठुकरा देता है, और आपका टेस्ट भी गलत कारण से पास हो जाता है। यह टूल ठीक 2 MB की असली PNG बनाता है जो इमेज व्यूअर में खुलती है, और उसके साथ यह घोषणा आती है कि आपके सिस्टम को उसके साथ क्या करना चाहिए।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या यह मुफ़्त है, और क्या मैं इसे काम पर इस्तेमाल कर सकता हूँ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "दोनों के लिए हाँ। यह GPL-3.0 के तहत जारी है और इसकी कोई कीमत नहीं। कोई खाता, लाइसेंस कुंजी या सशुल्क स्तर नहीं है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या मैं बनाई गई फ़ाइलें क्लोज़्ड सोर्स उत्पाद में इस्तेमाल कर सकता हूँ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "हाँ। लाइसेंस टूल के कोड पर लागू होता है, उस पर नहीं जो टूल बनाता है। बनाई गई फ़ाइलें, रेसिपी और मैनिफ़ेस्ट आउटपुट हैं, व्युत्पन्न कृतियाँ नहीं, इसलिए आप उन्हें बिना किसी बाध्यता के कमिट और वितरित कर सकते हैं।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या बनाई गई फ़ाइलों में असली निजी डेटा होता है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "नहीं। अंदर का सब कुछ एक सीड से बनाया जाता है। कोई डेटासेट नहीं पढ़ा जाता, किसी सेवा से संपर्क नहीं किया जाता और किसी तीसरे पक्ष की सामग्री नहीं जोड़ी जाती। बनाए गए ईमेल पते को अप्रयुक्त नहीं, बल्कि अनुपयोगी मानें, क्योंकि कोई भी यादृच्छिक स्ट्रिंग संयोग से किसी असली पते से मेल खा सकती है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या मुझे दूसरी मशीन पर ठीक वही फ़ाइलें मिलेंगी?",
+      "acceptedAnswer": { "@type": "Answer", "text": "हाँ, बाइट-दर-बाइट, उसी रेसिपी और उसी सीड के साथ। प्रोजेक्ट हर बदलाव पर इसका परीक्षण करता है, और इसे तोड़ने के लिए मुख्य संस्करण बढ़ाना पड़ता है। इसी वजह से आप बड़े बाइनरी फ़िक्स्चर की जगह एक छोटी रेसिपी कमिट कर सकते हैं।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या इसे इंटरनेट कनेक्शन चाहिए?",
+      "acceptedAnswer": { "@type": "Answer", "text": "कभी नहीं। कोई टेलीमेट्री नहीं, कोई अपडेट जाँच नहीं और कोई क्लाउड क्लाइंट नहीं, और कमांड लाइन बाइनरी में नेटवर्क स्टैक कंपाइल ही नहीं किया गया है। यह बिना नेटवर्क की मशीन पर और बंद कॉर्पोरेट माहौल में भी चलता है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "अगर मैं ऐसा आकार माँगूँ जो कोई फ़ॉर्मैट हासिल नहीं कर सकता, तो क्या होता है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "आपको एक त्रुटि मिलती है जो फ़ॉर्मैट, सबसे छोटा संभव आकार, उस न्यूनतम सीमा का कारण और इसके बदले क्या करें यह बताती है, और कोई फ़ाइल नहीं लिखी जाती। टूल कभी आकार को चुपचाप राउंड नहीं करता। हर न्यूनतम सीमा फ़ॉर्मैट पेज पर सूचीबद्ध है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या मैं जानबूझकर टूटी हुई फ़ाइल बना सकता हूँ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "हाँ। --damage zero-head जोड़ें और फ़ाइल ठीक माँगे गए आकार में निकलती है, शुरुआती बाइट शून्य से ढके हुए, इसलिए रीडर उसे ठुकरा देता है, और मैनिफ़ेस्ट कहता है कि आपके सिस्टम को उसे अस्वीकार करना चाहिए। ब्योरा खराब टेस्ट फ़ाइलों वाले पेज पर है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "आगे कौन से फ़ॉर्मैट आ रहे हैं?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 और mp4। आज 26 फ़ॉर्मैट शुरू से अंत तक काम करते हैं।" }
+    },
+    {
+      "@type": "Question",
+      "name": "मैं इसे किन सिस्टम पर चला सकता हूँ?",
+      "acceptedAnswer": { "@type": "Answer", "text": "कमांड लाइन Windows और Linux पर Intel और ARM दोनों पर, और Apple Silicon Mac पर चलती है। डेस्कटॉप विंडो Intel पर Windows, Intel पर Linux और Apple Silicon Mac के लिए आती है। Intel Mac समर्थित नहीं हैं और उनके लिए कुछ नहीं बनाया जाता।" }
+    },
+    {
+      "@type": "Question",
+      "name": "क्या मुझे कुछ इंस्टॉल करना होगा?",
+      "acceptedAnswer": { "@type": "Answer", "text": "नहीं। अपने सिस्टम का आर्काइव डाउनलोड करें, खोलें और बाइनरी चलाएँ। कोई इंस्टॉलर नहीं, जोड़ने के लिए कोई रनटाइम नहीं और सुलझाने के लिए कोई निर्भरता नहीं। अगर आपके पास Go है तो एक ही go install कमांड भी काम करती है।" }
+    },
+    {
+      "@type": "Question",
+      "name": "हज़ारों फ़ाइलों पर रन Windows पर धीमा क्यों है?",
+      "acceptedAnswer": { "@type": "Answer", "text": "क्योंकि Windows हर उस पाथ के लिए ज़्यादा वसूलता है जिसे वह देखता है, और हज़ारों फ़ाइलों से गुज़रने वाली कमांड हज़ारों पाथ देखती है। 1 kB की 3000 फ़ाइलों वाली एक मशीन पर मापने पर, verify को Windows पर लगभग 0.9 सेकंड और कंटेनर में Linux पर लगभग 0.2 सेकंड लगे। छोटा आउटपुट पाथ Windows का आँकड़ा घटाता है, क्योंकि फ़ाइलों के ऊपर का हर फ़ोल्डर उसमें शामिल होता है जिसे देखा जाता है।" }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>अभी तय कर रहे हैं?</h2>
+  <p>
+    <a href="/hi/use-cases/">उपयोग के मामलों का पेज</a> वे काम दिखाता है जिनके लिए यह बना है, और
+    <a href="/hi/formats/">फ़ॉर्मैट पेज</a> हर फ़ॉर्मैट को उसकी सबसे छोटी संभव फ़ाइल के साथ सूचीबद्ध
+    करता है। <a href="https://github.com/donislawdev/TestingFilesGenerator">रिपॉज़िटरी का README</a> पूरा संदर्भ है।
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड करें</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">सोर्स कोड देखें</a>
+</div>
+<p class="cta-note">मुफ़्त और ओपन सोर्स, GPL-3.0। साइन अप की ज़रूरत नहीं। Windows और macOS के डाउनलोड हस्ताक्षरित हैं और बिना चेतावनी के शुरू होते हैं।</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

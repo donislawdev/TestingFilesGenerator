@@ -1,0 +1,20 @@
+<h1>Domande frequenti</h1>
+<p class="lead">
+  Licenza, privacy, riproducibilità e le cose che le persone controllano prima di mettere un
+  generatore in una pipeline di build. Se la tua domanda non c'è, il
+  <a href="{{ .Facts.Issues }}">tracker delle issue</a> è aperto.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Ancora indeciso?</h2>
+  <p>
+    La <a href="/it/casi-d-uso/">pagina dei casi d'uso</a> mostra i compiti per cui è pensato, e la
+    <a href="/it/formati/">pagina dei formati</a> elenca ogni formato con il file più piccolo che
+    può produrre. Il <a href="{{ .Facts.Repo }}">README nel repository</a> è il riferimento
+    completo.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

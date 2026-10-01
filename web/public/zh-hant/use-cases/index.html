@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hant">
+<title>使用情境 - 上傳限制、CI fixture、大量測試</title>
+<meta name="description" content="測試上傳大小限制、為 CI 建立可重現的 fixture、產生一萬個檔案，並用真實內容填滿壓縮檔。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/use-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/use-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/use-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/use-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/use-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="使用情境 - 上傳限制、CI fixture、大量測試">
+<meta property="og:description" content="測試上傳大小限制、為 CI 建立可重現的 fixture、產生一萬個檔案，並用真實內容填滿壓縮檔。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="使用情境 - 上傳限制、CI fixture、大量測試">
+<meta name="twitter:description" content="測試上傳大小限制、為 CI 建立可重現的 fixture、產生一萬個檔案，並用真實內容填滿壓縮檔。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hant/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "使用情境",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/use-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到內容</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hant/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主選單">
+      <a href="/zh-hant/">首頁</a>
+      <a href="/zh-hant/formats/">格式</a>
+      <a href="/zh-hant/presets/">預設集</a>
+      <a href="/zh-hant/docs/">文件</a>
+      <a href="/zh-hant/use-cases/" aria-current="page">使用情境</a>
+      <a href="/zh-hant/create-file-exact-size/">精確大小</a>
+      <a href="/zh-hant/faq/">常見問題</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="語言: 繁體中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>繁體中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/use-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/use-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/use-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/use-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/use-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/use-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/use-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/use-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>人們用它來做什麼</h1>
+<p class="lead">
+  幾乎每個接收使用者檔案的專案都會遇到的五項任務，以及完成每一項的指令。下面的每個範例都能照原樣執行。
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">上傳限制</p>
+  <h2>測試檔案大小限制是否在宣稱的位置生效</h2>
+  <p>
+    一個限制對應三個測試案例，而不是一個：剛好低於、恰好等於和剛好高於。手工做這些意味著計算位元組數，並祈禱自己沒有算錯一位。不如直接要求整組檔案：
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    你會得到三個真實的 PDF，大小分別是 1048575、1048576 與 1048577 位元組，以及一份清單，說明前兩個應被接受，第三個應因 <code>size_limit</code>
+    被拒絕。你的測試讀取預期，而不是由你手寫三個斷言，限制改變時，你只需改一個數字再重新執行。
+  </p>
+  <p>
+    如果你只想要一組內嵌的邊界檔案，不用預設集也可以做到：
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">持續整合</p>
+  <h2>讓 fixture 留在儲存庫之外又不遺失</h2>
+  <p>
+    大型二進位 fixture 會拖慢儲存庫複製，也讓審查變得彆扭，而且替換其中一個時沒有人能看出改了什麼。配方只是幾百個字元的
+    YAML，就能重建出完全相同的檔案，<strong>在任何電腦上逐位元組一致</strong>，因為每個檔案都由執行的種子衍生。
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    每種結束方式都有自己的結束碼，所以流程可以區分配方錯誤、磁碟已滿和驗證不一致。失敗的執行不會在標準輸出上列印任何內容，這樣記錄剖析器就不會把錯誤當成資料。
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">規模</p>
+  <h2>弄清資料夾很大時會發生什麼</h2>
+  <p>
+    匯入程式、夜間工作與目錄列表在一萬個檔案時的表現與十個檔案時不同。從範圍中抽取的大小讓檔案組看起來像真實流量，而不是一萬個完全相同的檔案，並且抽取來自種子，所以明天檔案組依然相同。
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    在執行寫入任何內容之前先查看它的開銷，當總量以 GB 計時這一點很重要：
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    比磁碟可用空間更大的執行會在寫入第一個位元組之前就被拒絕，而不是把磁碟寫滿再半途失敗。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">壓縮檔</p>
+  <h2>用真正裝有檔案的壓縮檔測試解壓縮程式</h2>
+  <p>
+    只有正確副檔名的空壓縮檔，無法證明任何關於開啟它並走訪內容的程式碼的事情。宣告內容，壓縮檔就真的包含它們：
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    巢狀深度、項目數量和內部內容的大小，匯入程式都有自己的看法，而這正是你弄清這些看法的辦法。
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">剖析器與檢視器</p>
+  <h2>檢查你自己的程式碼讀取格式的方式是否與真實軟體一致</h2>
+  <p>
+    這裡的每種格式在發布前都用獨立讀取器驗證過：PNG 被開啟並比對像素，DOCX 由另外的函式庫讀回，壓縮檔被解壓縮。這意味著你的剖析器拒絕的檔案，是關於你的剖析器的發現，而不是關於產生器的。
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/zh-hant/formats/">格式頁面</a>列出了每種格式接受的設定，以及每種格式能達到的最小檔案。
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">指南</p>
+  <h2>其中兩項的詳細說明</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/corrupt-test-files/">損毀的測試檔案</a> - 一個刻意弄壞、大小精確的檔案，對它應有的處理寫在清單裡。
+    </li>
+    <li>
+      <a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a> - 一個 GitHub Actions 工作流程、一個 GitLab
+      作業，以及讓建置失敗的結束碼。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>適合誰</h2>
+  <p>
+    QA 工程師、測試自動化，以及程式碼背後有上傳表單、匯入程式、剖析器或儲存配額的所有人。它可以在完全沒有網路的電腦上執行，這在以瀏覽器為基礎的產生器行不通的封閉企業環境中尤為重要。
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">檢視原始碼</a>
+</div>
+<p class="cta-note">免費開源，GPL-3.0。無需註冊。Windows 與 macOS 的下載檔已簽署，啟動時不會出現警告。</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">專案</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的原始碼</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">回報問題</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本專案</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">頁面</p>
+      <ul class="plain">
+        <li><a href="/zh-hant/">首頁</a></li>
+        <li><a href="/zh-hant/formats/">格式</a></li>
+        <li><a href="/zh-hant/presets/">預設集</a></li>
+        <li><a href="/zh-hant/docs/">文件</a></li>
+        <li><a href="/zh-hant/use-cases/">使用情境</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
+        <li><a href="/zh-hant/faq/">常見問題</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。依 GNU 通用公共授權條款第 3 版發布。你產生的檔案歸你所有，授權涵蓋的是工具本身，而不是它的輸出。</p>
+    <p class="muted">本站不會從任何地方載入字型、指令碼或追蹤器，也不會設定 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

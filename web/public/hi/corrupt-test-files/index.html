@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>खराब टेस्ट फ़ाइलें - सटीक आकार की बिगड़ी फ़ाइलें</title>
+<meta name="description" content="जानबूझकर बिगाड़ी गई, सटीक आकार की फ़ाइल, साथ में ऐसा मैनिफ़ेस्ट जो कहता है कि सिस्टम को उसे अस्वीकार करना चाहिए। अपलोड वैलिडेशन और पार्सर परखने के लिए।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="खराब टेस्ट फ़ाइलें - सटीक आकार की बिगड़ी फ़ाइलें">
+<meta property="og:description" content="जानबूझकर बिगाड़ी गई, सटीक आकार की फ़ाइल, साथ में ऐसा मैनिफ़ेस्ट जो कहता है कि सिस्टम को उसे अस्वीकार करना चाहिए। अपलोड वैलिडेशन और पार्सर परखने के लिए।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="खराब टेस्ट फ़ाइलें - सटीक आकार की बिगड़ी फ़ाइलें">
+<meta name="twitter:description" content="जानबूझकर बिगाड़ी गई, सटीक आकार की फ़ाइल, साथ में ऐसा मैनिफ़ेस्ट जो कहता है कि सिस्टम को उसे अस्वीकार करना चाहिए। अपलोड वैलिडेशन और पार्सर परखने के लिए।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "उपयोग के मामले",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "खराब फ़ाइलें",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/corrupt-test-files\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/" aria-current="true">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/corrupt-test-files/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/corrupt-test-files/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/beschaedigte-testdateien/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-corruptos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-corrompus/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/file-uji-rusak/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-corrotti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/corrupt-test-files/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/corrupt-test-files/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/uszkodzone-pliki-testowe/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-corrompidos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-corupte/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/corrupt-test-files/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/corrupt-test-files/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/corrupt-test-files/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/corrupt-test-files/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/hi/use-cases/">उपयोग के मामले</a></p>
+<h1>परीक्षण के लिए खराब फ़ाइल कैसे बनाएँ</h1>
+<p class="lead">
+  जिस वैलिडेटर को केवल स्वस्थ फ़ाइलें दिखाई गई हों, उसे सचमुच परखा नहीं गया है। यहाँ बताया गया है कि
+  ऐसी फ़ाइल कैसे पाएँ जो जानबूझकर बिगाड़ी गई हो, <strong>ठीक उतने आकार की निकले जितना आपने
+  माँगा</strong>, और ऐसा मैनिफ़ेस्ट साथ लाए जो बताता है कि आपके सिस्टम को उसका क्या करना चाहिए।
+</p>
+
+<div class="note">
+  <p class="note-title">छोटा जवाब</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> ठीक 2097152 बाइट की
+    एक PNG लिखता है जिसके शुरुआती बाइट शून्य हैं, और उसके बगल का मैनिफ़ेस्ट दर्ज करता है कि आपके
+    सिस्टम को उसे अस्वीकार करना चाहिए।
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">आम तरीका</p>
+  <h2>हाथ से बिगाड़ी गई फ़ाइल खराब टेस्ट क्यों है</h2>
+  <p>
+    आम तरीके हैं हेक्स एडिटर, कुछ यादृच्छिक बाइट पलटने वाली स्क्रिप्ट, या <code>head</code> अथवा
+    <code>truncate</code> से फ़ाइल को छोटा काट देना। ये एक बार चलते हैं, फिर महँगे पड़ते हैं:
+  </p>
+  <ul>
+    <li>
+      <strong>हर बार अलग होता है।</strong> यादृच्छिक बाइट हर रन में नई जगह पड़ता है, इसलिए मंगलवार की
+      विफलता बुधवार को लौटे, यह ज़रूरी नहीं।
+    </li>
+    <li>
+      <strong>यह आकार बदल देता है।</strong> कटी हुई फ़ाइल उस सीमा से छोटी होती है जिसके नीचे उसे रहना था,
+      इसलिए आकार की जाँच सामग्री की जाँच से पहले जवाब दे देती है और टेस्ट गलत कारण से पास हो जाता
+      है।
+    </li>
+    <li>
+      <strong>यह अक्सर किसी की नज़र में नहीं आता।</strong> सादा पाठ बीच में एक बाइट बदलने पर भी पढ़ा जाता
+      है, और उदार इमेज रीडर उसे बस बना देता है, इसलिए जो फ़ाइल खराब होनी थी वह स्वीकार हो जाती है।
+    </li>
+    <li>
+      <strong>यह नहीं बताता कि क्या होना चाहिए।</strong> फ़ाइल सिर्फ़ बाइट है, और जो बाद में टेस्ट पढ़ेगा
+      उसे अंदाज़ा लगाना पड़ेगा कि इरादा स्वीकार करने का था या अस्वीकार करने का।
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">आपको क्या मिलता है</p>
+  <h2>खराब फ़ाइल का आकार वही रहता है जो आपने माँगा था</h2>
+  <p>
+    फ़ाइल सामान्य रूप से बनती है और बाद में, डिस्क तक जाते समय, बिगाड़ी जाती है। वह माँगा हुआ आकार बनाए
+    रखती है, और वही कमांड फिर वही बाइट लिखता है।
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    सेटिंग कोलन के बाद लिखी जाती है। विकल्प दोहराया जा सकता है, और बिगाड़ आपके लिखे क्रम में लागू होते
+    हैं। यह सभी 26 फ़ॉर्मैट के साथ चलता है।
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">यह क्या कर सकता है</p>
+  <h2>कौन-कौन से बिगाड़ हैं?</h2>
+  <p>
+    यह वह सूची है जो प्रोग्राम छापता है, इस पेज को बनाते समय उसी से पढ़ी गई। <code>tfg damage</code> यही
+    सूची छापता है, और <code>tfg damage &lt;id&gt;</code> बताता है कि उनमें से एक क्या लेता है।
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>बिगाड़</th>
+      <th>बाइट के साथ क्या करता है</th>
+      <th class="num">सबसे छोटी फ़ाइल</th>
+      <th>सेटिंग</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>zero-head</code></td>
+      <td>फ़ाइल के शुरुआती बाइट को शून्य से ढक देता है और लंबाई नहीं छेड़ता। ज़्यादातर रीडर सबसे पहले वहीं देखते हैं, इसलिए यह बिगाड़ लगभग हर चीज़ पकड़ लेती है।</td>
+      <td class="num">8</td>
+      <td><code>bytes</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    <code>zero-head</code> फ़ाइल की शुरुआत पर शून्य लिख देता है। ज़्यादातर रीडर सबसे पहले वहीं देखते
+    हैं, उस सिग्नेचर और हेडर पर जो बताते हैं कि फ़ाइल क्या है, इसलिए लगभग हर रीडर इसे भाँप लेता है।
+    सादे पाठ और लॉग में सिग्नेचर नहीं होता और वे भी अस्वीकार होते हैं, क्योंकि शून्य बाइट की कतार
+    पाठ नहीं है। चार बाइट से नीचे कुछ फ़ॉर्मैट ऐसे बिगाड़ के साथ निकलते हैं जिसकी कोई रीडर शिकायत
+    नहीं करता, इसीलिए सेटिंग चार से शुरू होती है।
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">मैनिफ़ेस्ट क्या कहता है</p>
+  <h2>एक मैनिफ़ेस्ट जो बताता है कि क्या होना चाहिए</h2>
+  <p>
+    हर खराब फ़ाइल को एक प्रविष्टि मिलती है जो कहती है कि आपके सिस्टम को उसे अस्वीकार करना चाहिए, और
+    बिगाड़ उसके बगल में दर्ज रहता है:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    दो अनुरोध कुछ भी लिखे जाने से पहले ठुकरा दिए जाते हैं, क्योंकि हर एक डिस्क पर ऐसी फ़ाइल छोड़ देता
+    जिसका मैनिफ़ेस्ट गलत वर्णन करता:
+  </p>
+  <ul>
+    <li>बिगाड़ को जितना चाहिए उससे छोटी फ़ाइल, जो ज्यों की त्यों निकलती</li>
+    <li>
+      बिगाड़ के साथ <code>expected: accept</code>, क्योंकि कोई भी उसे पूरा नहीं कर सकता। अगर आपके सिस्टम
+      को फ़ाइल सुधारनी है तो <code>sanitize</code> लिखें, या अगर आप यही सवाल पूछ रहे हैं तो
+      <code>unspecified</code>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">रेसिपी में</p>
+  <h2>एक रन में स्वस्थ और खराब फ़ाइलें</h2>
+  <p>
+    दोनों को एक रेसिपी में रखें, और मैनिफ़ेस्ट हर फ़ाइल की अपेक्षा साथ रखता है, इसलिए टेस्ट को यह बताने
+    वाली सूची नहीं चाहिए कि कौन-सी कौन-सी है:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">टेस्ट में</p>
+  <h2>इसे टेस्ट बनाना</h2>
+  <p>
+    टेस्ट मैनिफ़ेस्ट पढ़ता है और जाँचता है कि जो हुआ वही है जो घोषित किया गया था। उसे फ़ाइल नामों की
+    सूची नहीं चाहिए:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    अच्छा इनकार साफ़ इनकार होता है। जो संदेश बताए कि क्या गलत था, वही वह जवाब है जो आप चाहते हैं। सर्वर
+    त्रुटि, अटक जाना या आधी सहेजी फ़ाइल वह खराबी है जिसे ढूँढ़ने के लिए यह टेस्ट है।
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">आगे</p>
+  <h2>यहाँ से कहाँ जाएँ</h2>
+  <ul>
+    <li>
+      <a href="/hi/presets/upload-validation/">upload-validation प्रीसेट</a> किसी फ़ॉर्म से बाकी दो सवाल
+      पूछता है, आकार का और प्रकार का।
+    </li>
+    <li>
+      <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a> ऐसी रेसिपी को पाइपलाइन में चलाती हैं।
+    </li>
+    <li>
+      <a href="/hi/docs/#damage">दस्तावेज़</a> में <code>tfg generate</code> का हर विकल्प है।
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

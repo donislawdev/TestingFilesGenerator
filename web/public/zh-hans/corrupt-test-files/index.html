@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hans">
+<title>损坏的测试文件 - 大小精确的损坏文件</title>
+<meta name="description" content="一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="损坏的测试文件 - 大小精确的损坏文件">
+<meta property="og:description" content="一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="损坏的测试文件 - 大小精确的损坏文件">
+<meta name="twitter:description" content="一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首页",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hans/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "使用场景",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "损坏文件",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/corrupt-test-files\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hans/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主导航">
+      <a href="/zh-hans/">首页</a>
+      <a href="/zh-hans/formats/">格式</a>
+      <a href="/zh-hans/presets/">预设</a>
+      <a href="/zh-hans/docs/">文档</a>
+      <a href="/zh-hans/use-cases/" aria-current="true">使用场景</a>
+      <a href="/zh-hans/create-file-exact-size/">精确大小</a>
+      <a href="/zh-hans/faq/">常见问题</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="语言: 简体中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>简体中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/corrupt-test-files/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/corrupt-test-files/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/beschaedigte-testdateien/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-corruptos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-corrompus/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/corrupt-test-files/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-rusak/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-corrotti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/corrupt-test-files/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/corrupt-test-files/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/uszkodzone-pliki-testowe/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-corrompidos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-corupte/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/corrupt-test-files/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/corrupt-test-files/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/corrupt-test-files/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/zh-hans/use-cases/">使用场景</a></p>
+<h1>如何制作用于测试的损坏文件</h1>
+<p class="lead">
+  一个只见过完好文件的校验器，并没有真正被测试过。下面介绍如何得到一个故意弄坏的文件：它的大小<strong>恰好就是你要求的大小</strong>，并附带一份清单，说明你的系统该如何处理它。
+</p>
+
+<div class="note">
+  <p class="note-title">简短回答</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> 会写出一个恰好 2097152 字节的
+    PNG，它的开头几个字节是零，旁边的清单则记录你的系统应该拒绝它。
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">常见做法</p>
+  <h2>为什么手工弄坏的文件不是好测试</h2>
+  <p>
+    常见做法是用十六进制编辑器、用脚本翻转几个随机字节，或用 <code>head</code> 或 <code>truncate</code> 把文件截短。它们能用一次，之后就要付出代价：
+  </p>
+  <ul>
+    <li>
+      <strong>每次都不一样。</strong>随机字节每次运行都落在新的位置，所以周二出现的失败，周三可能不再出现。
+    </li>
+    <li>
+      <strong>它会改变大小。</strong>被截短的文件比它本应低于的限制还要小，于是大小检查先于内容检查给出回答，测试因为错误的原因而通过。
+    </li>
+    <li>
+      <strong>它常常没被发现。</strong>纯文本中间改了一个字节仍然可以读，宽容的图像读取器只会照样画出来，于是本该损坏的文件被接受了。
+    </li>
+    <li>
+      <strong>它没有说明应该发生什么。</strong>文件只是一堆字节，之后读这个测试的人只能猜测当初想要的是接受还是拒绝。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">你会得到什么</p>
+  <h2>损坏的文件仍然是你要求的大小</h2>
+  <p>
+    文件先正常生成，再在写入磁盘的途中被弄坏。它保持你要求的大小，同一条命令再次写出的字节也完全相同。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    设置写在冒号之后。该选项可以重复，损坏按你写下的顺序依次应用。它适用于全部 26 种格式。
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">它能做什么</p>
+  <h2>有哪些损坏方式？</h2>
+  <p>
+    这是程序打印出的列表，在构建本页时从程序中读取。<code>tfg damage</code> 打印的是同一份列表，<code>tfg damage &lt;id&gt;</code>
+    则说明其中某一项接受什么设置。
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>损坏方式</th>
+      <th>对字节做了什么</th>
+      <th class="num">最小文件</th>
+      <th>设置</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>zero-head</code></td>
+      <td>用零覆盖文件开头的若干字节，长度保持不变。大多数读取器最先看的就是那里，所以几乎任何东西都会发现这种损坏。</td>
+      <td class="num">8</td>
+      <td><code>bytes</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    <code>zero-head</code>
+    把文件开头写成零。大多数读取器最先看的就是那里，也就是说明文件是什么的签名和文件头，所以几乎任何读取器都会发现。纯文本和日志没有签名，同样会被拒绝，因为一串零字节不是文本。低于四个字节时，有些格式产生的损坏没有任何读取器会抱怨，这就是该设置从四开始的原因。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">清单怎么说</p>
+  <h2>一份说明应发生什么的清单</h2>
+  <p>
+    每个损坏的文件都会得到一条记录，说明你的系统应该拒绝它，损坏方式记在旁边：
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    有两种请求会在写入任何内容之前被拒绝，因为各自都会在磁盘上留下一个清单描述有误的文件：
+  </p>
+  <ul>
+    <li>比损坏所需更小的文件，它会原样输出</li>
+    <li>
+      在损坏旁边写 <code>expected: accept</code>，因为没有什么能满足它。如果你的系统本应修复文件，请写
+      <code>sanitize</code>，如果你要问的恰恰就是这一点，请写 <code>unspecified</code>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">在配方中</p>
+  <h2>一次运行中的完好文件和损坏文件</h2>
+  <p>
+    把两者放进同一个配方，清单就带有每个文件的预期，测试因此不需要一份说明哪个是哪个的列表：
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在测试中</p>
+  <h2>把它变成测试</h2>
+  <p>
+    测试读取清单，检查实际发生的是否就是所声明的。它不需要文件名列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    好的拒绝是干净的拒绝。一条说明错在哪里的消息，就是你想要的答案。服务器错误、卡死或只保存了一半的文件，正是这个测试要找出来的缺陷。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下来</p>
+  <h2>从这里去哪里</h2>
+  <ul>
+    <li>
+      <a href="/zh-hans/presets/upload-validation/">upload-validation 预设</a>向表单提出另外两个问题，即大小和类型。
+    </li>
+    <li>
+      <a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>会在流水线里运行这样的配方。
+    </li>
+    <li>
+      <a href="/zh-hans/docs/#damage">文档</a>包含 <code>tfg generate</code> 的每个选项。
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">项目</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的源代码</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">报告问题</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本项目</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">页面</p>
+      <ul class="plain">
+        <li><a href="/zh-hans/">首页</a></li>
+        <li><a href="/zh-hans/formats/">格式</a></li>
+        <li><a href="/zh-hans/presets/">预设</a></li>
+        <li><a href="/zh-hans/docs/">文档</a></li>
+        <li><a href="/zh-hans/use-cases/">使用场景</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
+        <li><a href="/zh-hans/faq/">常见问题</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。</p>
+    <p class="muted">本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

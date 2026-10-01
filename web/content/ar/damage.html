@@ -1,0 +1,164 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>كيف تصنع ملفًا تالفًا للاختبار</h1>
+<p class="lead">
+  المدقق الذي لم يُعرض عليه إلا ملفات سليمة لم يُختبر حقًّا. إليك طريقة الحصول على ملف أُتلف عمدًا،
+  ويخرج <strong>بالحجم الذي تطلبه تمامًا</strong>، ويحمل بيانًا يقول ما الذي ينبغي أن يفعله نظامك
+  به.
+</p>
+
+<div class="note">
+  <p class="note-title">الجواب المختصر</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> يكتب ملف PNG حجمه
+    2097152 بايتًا بالضبط، وبايتاته الأولى أصفار، ويسجّل البيان المجاور له أن نظامك ينبغي أن يرفضه.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">الطريقة المعتادة</p>
+  <h2>لماذا يُعدّ الملف المتلف يدويًا اختبارًا رديئًا</h2>
+  <p>
+    الطرق المعتادة هي محرر سداسي عشري، أو سكربت يقلب بضع بايتات عشوائية، أو قصّ الملف بـ
+    <code>head</code> أو <code>truncate</code>. تنجح مرة واحدة، ثم تكلّفك:
+  </p>
+  <ul>
+    <li>
+      <strong>يختلف في كل مرة.</strong> البايت العشوائي يقع في مكان جديد عند كل تشغيل، فقد لا يعود فشل يوم
+      الثلاثاء يوم الأربعاء.
+    </li>
+    <li>
+      <strong>يغيّر الحجم.</strong> الملف المقصوص أصغر من الحد الذي كان ينبغي أن يبقى تحته، فيجيب فحص
+      الحجم قبل فحص المحتوى، ويمرّ الاختبار لسبب خاطئ.
+    </li>
+    <li>
+      <strong>كثيرًا ما يمرّ دون أن يلاحظه أحد.</strong> النص العادي يبقى مقروءًا مع تغيير بايت في الوسط،
+      وقارئ الصور المتسامح يرسمه ببساطة، فيُقبل الملف الذي كان يُفترض أن يكون تالفًا.
+    </li>
+    <li>
+      <strong>لا يقول شيئًا عمّا ينبغي أن يحدث.</strong> الملف مجرد بايتات، ومن يقرأ الاختبار لاحقًا عليه
+      أن يخمّن هل كان المقصود القبول أم الرفض.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">ما تحصل عليه</p>
+  <h2>الملف التالف يبقى بالحجم الذي طلبته</h2>
+  <p>
+    يُولَّد الملف كالمعتاد ثم يُتلَف في طريقه إلى القرص. يحتفظ بالحجم الذي طلبته، ويكتب الأمر نفسه
+    البايتات نفسها مرة أخرى.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    تُكتب الإعدادات بعد النقطتين. يمكن تكرار الخيار، وتُطبَّق أنواع التلف بالترتيب الذي تكتبه. ويعمل مع
+    كل واحدة من {{ .Facts.FormatCount }} صيغة.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">ما الذي يستطيعه</p>
+  <h2>ما أنواع التلف المتاحة؟</h2>
+  <p>
+    هذه هي القائمة التي يطبعها البرنامج، وتُقرأ منه عند بناء هذه الصفحة. يطبع <code>tfg damage</code>
+    القائمة نفسها، ويبيّن <code>tfg damage &lt;id&gt;</code> ما يقبله واحد منها.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    يكتب <code>zero-head</code> أصفارًا فوق بداية الملف. معظم القارئات تنظر إلى هناك أولًا، إلى التوقيع
+    والترويسة اللذين يقولان ما هو الملف، فتلاحظ ذلك أي قارئة تقريبًا. والنص العادي والسجلات لا توقيع
+    لها وتُرفض أيضًا، لأن سلسلة من البايتات الصفرية ليست نصًّا. وتحت أربعة بايتات تخرج بعض الصيغ
+    بتلف لا تشتكي منه أي قارئة، ولهذا يبدأ الإعداد من أربعة.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">ما يقوله البيان</p>
+  <h2>بيان يقول ما ينبغي أن يحدث</h2>
+  <p>
+    كل ملف تالف يحصل على مدخل يقول إن نظامك ينبغي أن يرفضه، ويُسجَّل التلف بجانبه:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    يُرفض طلبان قبل أن يُكتب أي شيء، لأن كلًّا منهما سيترك على القرص ملفًا يصفه البيان وصفًا خاطئًا:
+  </p>
+  <ul>
+    <li>ملف أصغر مما يحتاجه التلف، وكان سيخرج دون تغيير</li>
+    <li>
+      <code>expected: accept</code> بجانب تلف، لأن لا شيء يمكنه تحقيق ذلك. اكتب <code>sanitize</code> إن
+      كان نظامك مقصودًا به إصلاح الملف، أو <code>unspecified</code> إن كان هذا هو السؤال الذي تطرحه
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">في وصفة</p>
+  <h2>ملفات سليمة وتالفة في تشغيل واحد</h2>
+  <p>
+    ضع الاثنين في وصفة واحدة، فيحمل البيان المتوقَّع لكل ملف، ولا يحتاج الاختبار إلى قائمة تقول أيها
+    أيّ:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">في اختبار</p>
+  <h2>تحويله إلى اختبار</h2>
+  <p>
+    يقرأ الاختبار البيان ويتحقق من أن ما حدث هو ما أُعلن. لا يحتاج إلى قائمة بأسماء الملفات:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    الرفض الجيد هو الرفض النظيف. رسالة تقول ما الخطأ هي الجواب الذي تريده. أما خطأ الخادم أو التعليق أو
+    ملف حُفظ نصفه فهو العيب الذي وُجد هذا الاختبار لاكتشافه.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">التالي</p>
+  <h2>إلى أين من هنا</h2>
+  <ul>
+    <li>
+      <a href="/ar/presets/upload-validation/">الإعداد المسبق upload-validation</a> يوجّه إلى النموذج
+      السؤالين الآخرين، عن الحجم وعن النوع.
+    </li>
+    <li>
+      <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a> تشغّل وصفة كهذه في خط البناء.
+    </li>
+    <li>
+      <a href="/ar/docs/#damage">التوثيق</a> يضم كل خيار من خيارات <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

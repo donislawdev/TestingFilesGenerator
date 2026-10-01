@@ -1,0 +1,187 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>정확한 크기의 실제 테스트 파일을 만드세요</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP 등 <strong>모두 {{ .Facts.FormatCount }}가지 형식</strong>이며, 모두 해당 소프트웨어에서 열리는 실제 파일로
+    <strong>요청한 크기와 정확히 같습니다</strong>. 매 실행마다 애플리케이션이 각 파일을 어떻게 처리해야 하는지도 함께 기록합니다. 명령줄과 데스크톱 창, 무료
+    오픈 소스이며, 모두 여러분의 컴퓨터에서 동작합니다.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="테스트 파일 배치를 쓸 준비가 된 Testing Files Generator 데스크톱 창">
+    <figcaption>파일 배치를 쓸 준비가 된 데스크톱 창. 명령줄 뒤에서도 같은 엔진이 동작합니다.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">가지 실제 형식, 각각 해당 소프트웨어에서 열립니다</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1바이트</span>
+      <p class="fact-label">요청한 모든 크기의 정확도, 조용히 반올림되는 일은 없습니다</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">어디로도 연결하지 않습니다. 계정도, 텔레메트리도, 업데이트 확인도 없습니다</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">문제</p>
+  <h2>테스트 파일 하나를 만드는 것은 쉽습니다. 알맞은 천 개를 만드는 것이 번거로운 부분입니다</h2>
+  <p>여러분은 사람들에게서 파일을 받는 소프트웨어를 테스트하고 있습니다. 머지않아 다음이 필요해집니다.</p>
+  <ul class="ticks">
+    <li>업로드 한도가 실제인지 확인할 <strong>정확히</strong> 10MB인 PDF</li>
+    <li>하나 차이 오류를 잡기 위한 그 한도 양쪽의 파일 세 개</li>
+    <li>폴더가 클 때 야간 작업이 어떻게 되는지 보기 위한 로그 파일 10,000개</li>
+    <li>확장자만 맞춘 빈 껍데기가 아니라 실제로 문서 200개가 들어 있는 ZIP</li>
+    <li>저장소에 4GB 파일을 두지 않고도 쓸 수 있는 4GB 파일</li>
+    <li>노트북과 빌드 서버에서 바이트 단위로 <strong>같은</strong> 픽스처</li>
+  </ul>
+  <p>
+    이것이 바로 이 도구가 대체하는 일입니다. QA 엔지니어, 테스트 자동화, 그리고 코드 뒤에 업로드 양식, 가져오기 루틴, 파서, 저장 용량 할당이 있는 모든 분을 위해
+    만들었습니다.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">무엇이 다른가</p>
+  <h2>다른 생성기는 바이트에서 멈춥니다. 이 도구는 테스트가 실제로 묻는 것에 답합니다</h2>
+  <p>
+    파일이 가득한 폴더만으로는 각 파일이 무엇을 증명해야 하는지 여전히 직접 정해야 합니다. 여기서는 실행할 때마다 파일 옆에 <code>manifest.json</code>을
+    씁니다. 만들어진 모든 것의 단순한 목록이며, 항목마다 <strong>선언된 기대값</strong>이 있습니다.
+  </p>
+  <p>업로드 엔드포인트가 1MB까지 허용한다고 해 봅시다. 그 경계선 위에 놓인 파일 세 개를 요청합니다.</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>파일</th><th class="num">바이트</th><th>시스템의 처리</th><th>이유</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>수락</strong></td><td>한도 안쪽입니다</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>수락</strong></td><td>한도 값 자체는 허용됩니다</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>거부</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>파일 세 개, 서로 다른 세 가지 답을 기계가 읽을 수 있는 형태로 줍니다. 어서션을 직접 쓰는 대신 테스트가 매니페스트를 읽습니다.</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">답이 여러분의 정책에 달려 있는 경우, 매니페스트는 그렇다고 말합니다</p>
+    <p>
+      기대값을 지어내지 않고 <code>unspecified</code>를 기록합니다. 추측하는 생성기는 거짓 실패를 만들고, 거짓 경보를 울려 대는 테스트 묶음은 결국 꺼집니다.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">프리셋</p>
+  <h2>질문을 고르면 세트 전체를 얻습니다</h2>
+  <p>
+    프리셋은 하나의 테스트 질문을 중심으로 설계한 테스트 파일 세트로, 어떤 파일이 무엇을 증명하는지 직접 따져 볼 필요가 없습니다. 각 프리셋에는 보통 무엇을 찾아내는지, 세트에
+    무엇이 들어 있는지, 어떤 설정을 받는지 설명하는 페이지가 있습니다.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/ko/presets/">모든 프리셋과 레시피와의 관계</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">빠른 시작</p>
+  <h2>동작을 확인하는 명령 세 개</h2>
+  <ol class="steps">
+    <li>
+      <h3>파일 하나 만들기</h3>
+      <p>PNG 하나, 정확히 2메가바이트:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>많은 파일 만들기</h3>
+      <p>
+        각각 1KB에서 8KB 사이이고 크기를 시드에서 뽑은 로그 파일 1만 개로, 내일도 같은 세트가 나옵니다. <strong>실행마다 고유한 디렉터리를 쓰세요</strong>.
+        매니페스트는 실행이 쓴 내용의 유일한 기록이므로, 도구는 그 위에 두 번째 매니페스트를 쓰기를 거부합니다.
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>검사한 뒤 삭제하기</h3>
+      <p><code>verify</code>는 아무것도 바뀌지 않았음을 알려 줍니다. <code>cleanup</code>은 쓰인 것만 정확히 삭제하고 다른 것은 건드리지 않습니다.</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    크기는 파일 관리자처럼 1024 단위로 세므로 <code>2mb</code>는 2097152바이트입니다. 바이트 수를 그대로 써도 됩니다.
+    <a href="/ko/docs/">문서</a>에서 레시피, 매니페스트, 종료 코드를 다룹니다.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">얻는 것</p>
+  <h2>무인으로 실행되는 테스트 묶음을 위해 만들었습니다</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">정확한 크기, 바이트 단위까지</p>
+      <p class="muted">10485761바이트를 요청하면 정확히 그 크기가 나옵니다. 형식이 도달할 수 없는 크기는 이유가 붙은 오류가 되며, 크기가 틀린 파일이 되는 일은 없습니다.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">실제 형식 {{ .Facts.FormatCount }}가지</p>
+      <p class="muted">확장자만 붙인 채운 0이 아닙니다. 생성된 PNG는 이미지 뷰어에서 열리고, DOCX는 Word에서 열리며, ZIP은 풀립니다. 모든 형식은 출시 전에 독립적인 리더로 검증됩니다.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">테스트 오라클이 되는 매니페스트</p>
+      <p class="muted">경로, 크기, SHA-256, 형식, 시드, 도구 버전, 그리고 시스템이 그 파일을 어떻게 처리해야 하는지.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">재현 가능</p>
+      <p class="muted">같은 레시피와 같은 시드라면 어느 컴퓨터에서나 바이트까지 같습니다. 큰 바이너리 픽스처 대신 작은 YAML 레시피를 커밋하세요.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">두 가지 인터페이스, 하나의 엔진</p>
+      <p class="muted">CI를 위해 만든 명령줄과 탐색적 테스트를 위한 데스크톱 창. 어느 쪽도 다른 쪽의 축소판이 아니며, 테스트가 두 인터페이스를 기능별로 비교합니다.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">완전한 오프라인</p>
+      <p class="muted">계정도, 클라우드도, 텔레메트리도, 업데이트 확인도 없습니다. 명령줄 바이너리에는 네트워크 스택이 아예 컴파일되어 있지 않습니다.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">다운로드</p>
+  <h2>시스템에 맞는 빌드를 고르세요</h2>
+  <p>
+    압축 파일을 풀고 실행하세요. <code>tfg</code>는 명령줄이고 <code>tfg-gui</code>는 데스크톱 창입니다. 설치 프로그램은 없으며 컴퓨터에 추가할 것도
+    없습니다.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">서명된 것과 그렇지 않은 것</p>
+    <p>
+      Windows와 macOS 다운로드는 서명되어 있어 확인되지 않은 개발자 경고 없이 실행됩니다. Linux용은 데스크톱 Linux에 서명할 수 있는 대응 수단이 없어 서명되어 있지
+      않습니다. 모든 압축 파일은 릴리스 페이지의 <code>verify-SHA256SUMS.txt</code>에 나열되어 있으므로 내려받은 것을 확인할 수 있습니다.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ru">
+<title>FAQ - вопросы о создании тестовых файлов</title>
+<meta name="description" content="Чем это отличается от dd и fsutil, можно ли коммитить файлы, повторяются ли запуски байт в байт и что будет, если размер недостижим.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="FAQ - вопросы о создании тестовых файлов">
+<meta property="og:description" content="Чем это отличается от dd и fsutil, можно ли коммитить файлы, повторяются ли запуски байт в байт и что будет, если размер недостижим.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - вопросы о создании тестовых файлов">
+<meta name="twitter:description" content="Чем это отличается от dd и fsutil, можно ли коммитить файлы, повторяются ли запуски байт в байт и что будет, если размер недостижим.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Главная",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ru/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ru/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основное">
+      <a href="/ru/">Главная</a>
+      <a href="/ru/formats/">Форматы</a>
+      <a href="/ru/presets/">Пресеты</a>
+      <a href="/ru/docs/">Документация</a>
+      <a href="/ru/use-cases/">Сценарии</a>
+      <a href="/ru/create-file-exact-size/">Точный размер</a>
+      <a href="/ru/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Язык: Русский">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Русский</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/th/faq/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Часто задаваемые вопросы</h1>
+<p class="lead">
+  Лицензия, приватность, воспроизводимость и то, что люди проверяют, прежде чем включать генератор в
+  конвейер сборки. Если вашего вопроса здесь нет, <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">трекер задач</a>
+  открыт.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Чем это отличается от dd, fsutil или truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Они дают файл нужного размера, набитый пустотой. Файл photo.png на 2 МБ, сделанный так, не является PNG, поэтому всё, что действительно его разбирает, отклоняет его по неверной причине, и ваш тест тоже проходит по неверной причине. Этот инструмент создаёт настоящий PNG ровно на 2 МБ, который открывается в просмотрщике изображений, и сопровождает его заявлением о том, как ваша система должна с ним поступать.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Это бесплатно, и можно ли использовать на работе?</h2></summary>
+    <div class="qa-body">
+      <p>Да в обоих случаях. Инструмент выпущен под GPL-3.0 и ничего не стоит. Нет ни учётной записи, ни лицензионного ключа, ни платного тарифа.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Можно ли использовать созданные файлы в продукте с закрытым кодом?</h2></summary>
+    <div class="qa-body">
+      <p>Да. Лицензия охватывает код инструмента, а не то, что он создаёт. Созданные файлы, рецепты и манифесты являются результатом, а не производными произведениями, поэтому их можно коммитить и поставлять без каких-либо обязательств.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Содержат ли созданные файлы настоящие персональные данные?</h2></summary>
+    <div class="qa-body">
+      <p>Нет. Всё внутри синтезируется из seed. Никакой набор данных не читается, ни к какому сервису не обращаются и никакое стороннее содержимое не встраивается. Считайте созданный адрес электронной почты непригодным, а не неиспользованным, потому что любая случайная строка может случайно совпасть с настоящим адресом.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Получу ли я точно такие же файлы на другой машине?</h2></summary>
+    <div class="qa-body">
+      <p>Да, байт в байт, при том же рецепте и том же seed. Проект проверяет это при каждом изменении, а нарушить это можно только повышением мажорной версии. Именно поэтому вы можете коммитить небольшой рецепт вместо больших бинарных фикстур.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Нужно ли подключение к интернету?</h2></summary>
+    <div class="qa-body">
+      <p>Никогда. Нет ни телеметрии, ни проверки обновлений, ни облачного клиента, а в бинарный файл командной строки вообще не скомпилирован сетевой стек. Он работает на машине без сети и в закрытой корпоративной среде.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Что будет, если запросить размер, которого формат не может достичь?</h2></summary>
+    <div class="qa-body">
+      <p>Вы получите ошибку с названием формата, наименьшим возможным размером, причиной этого минимума и тем, что делать вместо этого, а файл записан не будет. Инструмент никогда не округляет размер молча. Каждый минимум указан на странице форматов.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Можно ли создать намеренно сломанный файл?</h2></summary>
+    <div class="qa-body">
+      <p>Да. Добавьте --damage zero-head, и файл выйдет точно заданного размера, с первыми байтами, перезаписанными нулями, так что программа чтения его отклонит, а манифест скажет, что ваша система должна его отклонить. Подробности на странице о повреждённых тестовых файлах.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Какие форматы появятся дальше?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 и mp4. Сегодня полностью работают 26 форматов.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>На каких системах это можно запускать?</h2></summary>
+    <div class="qa-body">
+      <p>Командная строка работает в Windows и Linux на Intel и ARM, а также на Mac с Apple Silicon. Десктопное окно поставляется для Windows на Intel, Linux на Intel и Mac с Apple Silicon. Mac на Intel не поддерживаются, и для них ничего не собирается.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Нужно ли что-нибудь устанавливать?</h2></summary>
+    <div class="qa-body">
+      <p>Нет. Скачайте архив для своей системы, распакуйте и запустите бинарный файл. Нет установщика, среды выполнения, которую нужно добавлять, и зависимостей, которые нужно разрешать. Если у вас есть Go, подойдёт и одна команда go install.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Почему запуск на тысячах файлов в Windows медленнее?</h2></summary>
+    <div class="qa-body">
+      <p>Потому что Windows берёт больше за каждый просматриваемый путь, а команда, обходящая тысячи файлов, просматривает тысячи путей. Измерено на одной машине с 3000 файлов по 1 КБ: verify занимает около 0,9 секунды в Windows и около 0,2 секунды в Linux в контейнере. Более короткий путь вывода уменьшает цифру для Windows, потому что каждая папка над файлами входит в то, что просматривается.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Чем это отличается от dd, fsutil или truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Они дают файл нужного размера, набитый пустотой. Файл photo.png на 2 МБ, сделанный так, не является PNG, поэтому всё, что действительно его разбирает, отклоняет его по неверной причине, и ваш тест тоже проходит по неверной причине. Этот инструмент создаёт настоящий PNG ровно на 2 МБ, который открывается в просмотрщике изображений, и сопровождает его заявлением о том, как ваша система должна с ним поступать." }
+    },
+    {
+      "@type": "Question",
+      "name": "Это бесплатно, и можно ли использовать на работе?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Да в обоих случаях. Инструмент выпущен под GPL-3.0 и ничего не стоит. Нет ни учётной записи, ни лицензионного ключа, ни платного тарифа." }
+    },
+    {
+      "@type": "Question",
+      "name": "Можно ли использовать созданные файлы в продукте с закрытым кодом?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Да. Лицензия охватывает код инструмента, а не то, что он создаёт. Созданные файлы, рецепты и манифесты являются результатом, а не производными произведениями, поэтому их можно коммитить и поставлять без каких-либо обязательств." }
+    },
+    {
+      "@type": "Question",
+      "name": "Содержат ли созданные файлы настоящие персональные данные?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Нет. Всё внутри синтезируется из seed. Никакой набор данных не читается, ни к какому сервису не обращаются и никакое стороннее содержимое не встраивается. Считайте созданный адрес электронной почты непригодным, а не неиспользованным, потому что любая случайная строка может случайно совпасть с настоящим адресом." }
+    },
+    {
+      "@type": "Question",
+      "name": "Получу ли я точно такие же файлы на другой машине?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Да, байт в байт, при том же рецепте и том же seed. Проект проверяет это при каждом изменении, а нарушить это можно только повышением мажорной версии. Именно поэтому вы можете коммитить небольшой рецепт вместо больших бинарных фикстур." }
+    },
+    {
+      "@type": "Question",
+      "name": "Нужно ли подключение к интернету?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Никогда. Нет ни телеметрии, ни проверки обновлений, ни облачного клиента, а в бинарный файл командной строки вообще не скомпилирован сетевой стек. Он работает на машине без сети и в закрытой корпоративной среде." }
+    },
+    {
+      "@type": "Question",
+      "name": "Что будет, если запросить размер, которого формат не может достичь?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Вы получите ошибку с названием формата, наименьшим возможным размером, причиной этого минимума и тем, что делать вместо этого, а файл записан не будет. Инструмент никогда не округляет размер молча. Каждый минимум указан на странице форматов." }
+    },
+    {
+      "@type": "Question",
+      "name": "Можно ли создать намеренно сломанный файл?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Да. Добавьте --damage zero-head, и файл выйдет точно заданного размера, с первыми байтами, перезаписанными нулями, так что программа чтения его отклонит, а манифест скажет, что ваша система должна его отклонить. Подробности на странице о повреждённых тестовых файлах." }
+    },
+    {
+      "@type": "Question",
+      "name": "Какие форматы появятся дальше?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 и mp4. Сегодня полностью работают 26 форматов." }
+    },
+    {
+      "@type": "Question",
+      "name": "На каких системах это можно запускать?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Командная строка работает в Windows и Linux на Intel и ARM, а также на Mac с Apple Silicon. Десктопное окно поставляется для Windows на Intel, Linux на Intel и Mac с Apple Silicon. Mac на Intel не поддерживаются, и для них ничего не собирается." }
+    },
+    {
+      "@type": "Question",
+      "name": "Нужно ли что-нибудь устанавливать?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Нет. Скачайте архив для своей системы, распакуйте и запустите бинарный файл. Нет установщика, среды выполнения, которую нужно добавлять, и зависимостей, которые нужно разрешать. Если у вас есть Go, подойдёт и одна команда go install." }
+    },
+    {
+      "@type": "Question",
+      "name": "Почему запуск на тысячах файлов в Windows медленнее?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Потому что Windows берёт больше за каждый просматриваемый путь, а команда, обходящая тысячи файлов, просматривает тысячи путей. Измерено на одной машине с 3000 файлов по 1 КБ: verify занимает около 0,9 секунды в Windows и около 0,2 секунды в Linux в контейнере. Более короткий путь вывода уменьшает цифру для Windows, потому что каждая папка над файлами входит в то, что просматривается." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Всё ещё выбираете?</h2>
+  <p>
+    <a href="/ru/use-cases/">Страница сценариев</a> показывает задачи, для которых инструмент создан, а
+    <a href="/ru/formats/">страница форматов</a> перечисляет каждый формат с наименьшим файлом,
+    который он может создать. <a href="https://github.com/donislawdev/TestingFilesGenerator">README в репозитории</a> - полный
+    справочник.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Скачать</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Исходный код</a>
+</div>
+<p class="cta-note">Бесплатно, открытый код, GPL-3.0. Без регистрации. Сборки для Windows и macOS подписаны и запускаются без предупреждений.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Тестовые файлы для QA точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проект</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Исходный код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Загрузки</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Сообщить о проблеме</a></li>
+        <li><a href="https://donislawdev.com/support/">Поддержать проект</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Страницы</p>
+      <ul class="plain">
+        <li><a href="/ru/">Главная</a></li>
+        <li><a href="/ru/formats/">Форматы</a></li>
+        <li><a href="/ru/presets/">Пресеты</a></li>
+        <li><a href="/ru/docs/">Документация</a></li>
+        <li><a href="/ru/use-cases/">Сценарии</a></li>
+        <li><a href="/ru/create-file-exact-size/">Точный размер</a></li>
+        <li><a href="/ru/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Распространяется по лицензии GNU General Public License версии 3. Файлы, которые вы создаёте, принадлежат вам - лицензия охватывает инструмент, а не его результат.</p>
+    <p class="muted">Этот сайт не загружает шрифты, скрипты и трекеры ниоткуда. Он не устанавливает куки.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="uk">
+<title>Тестові файли кодування тексту - UTF-8, UTF-16, BOM, CRLF</title>
+<meta name="description" content="Той самий текст в UTF-8, UTF-16LE та UTF-16BE, з позначкою порядку байтів і без неї, та кінці рядків CR LF і LF, щоб перевірити, як читач декодує текст.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/uk/presets/text-encoding/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/text-encoding/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/text-encoding/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/text-encoding/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/text-encoding/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/text-encoding/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/text-encoding/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/text-encoding/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/text-encoding/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/text-encoding/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/text-encoding/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/text-encoding/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/text-encoding/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/text-encoding/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/text-encoding/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/text-encoding/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/text-encoding/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/text-encoding/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/text-encoding/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/text-encoding/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="uk_UA">
+<meta property="og:title" content="Тестові файли кодування тексту - UTF-8, UTF-16, BOM, CRLF">
+<meta property="og:description" content="Той самий текст в UTF-8, UTF-16LE та UTF-16BE, з позначкою порядку байтів і без неї, та кінці рядків CR LF і LF, щоб перевірити, як читач декодує текст.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/uk/presets/text-encoding/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Тестові файли кодування тексту - UTF-8, UTF-16, BOM, CRLF">
+<meta name="twitter:description" content="Той самий текст в UTF-8, UTF-16LE та UTF-16BE, з позначкою порядку байтів і без неї, та кінці рядків CR LF і LF, щоб перевірити, як читач декодує текст.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Головна",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/uk/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Пресети",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/uk\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Кодування тексту",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/uk\/presets\/text-encoding\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти до вмісту</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/uk/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основне">
+      <a href="/uk/">Головна</a>
+      <a href="/uk/formats/">Формати</a>
+      <a href="/uk/presets/" aria-current="true">Пресети</a>
+      <a href="/uk/docs/">Документація</a>
+      <a href="/uk/use-cases/">Сценарії</a>
+      <a href="/uk/create-file-exact-size/">Точний розмір</a>
+      <a href="/uk/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Мова: Українська">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Українська</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/text-encoding/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/text-encoding/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/predvolby/text-encoding/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/text-encoding/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/text-encoding/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/text-encoding/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/text-encoding/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/text-encoding/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/text-encoding/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/text-encoding/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/text-encoding/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/text-encoding/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/text-encoding/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/text-encoding/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/text-encoding/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/text-encoding/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/presets/text-encoding/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/hazir-ayarlar/text-encoding/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/preset/text-encoding/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/text-encoding/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/text-encoding/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/uk/presets/">Пресети</a></p>
+<h1>Кодування тексту</h1>
+<p class="lead">Чи знає мій читач, у якому кодуванні файл, чи вгадує?</p>
+<p>
+  Пресет <code>text-encoding</code> однією командою збирає цілий набір справжніх тестових файлів для цього
+  питання та поруч <code>manifest.json</code> з очікуваною реакцією вашої системи на кожен файл. Усе
+  нижче прочитано з програми зі значеннями за замовчуванням цієї версії.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Що він зазвичай знаходить?</h2>
+  <ul class="ticks">
+    <li>читач, що припускає UTF-8 і показує файл UTF-16 з одним символом із трьох або рядами квадратиків</li>
+    <li>позначка порядку байтів, прочитана як вміст, через що перше поле імпорту починається з трьох зайвих символів</li>
+    <li>імпортер, що вгадує кодування за першими байтами й вгадує інакше для довшого файлу</li>
+    <li>файл CRLF, розбитий на рядки з порожнім рядком після кожного, або повернення каретки, що залишилося в останньому полі</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Що входить у набір?</h2>
+  <p>Зі значеннями за замовчуванням, як повідомляє <code>tfg preset show text-encoding</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Файлів</th><td>20</td></tr>
+        <tr><th scope="row">Цілей у його рецепті</th><td>20</td></tr>
+        <tr><th scope="row">Загальний розмір</th><td>81 920 B</td></tr>
+        <tr><th scope="row">Формати</th><td>csv, log, md, txt, xml</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>І чого маніфест цього набору очікує від вашої системи:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Очікується</th><th>Значення</th><th class="num">Файлів</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Ваша система має прийняти файл.</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>Залежить від правил вашої системи. Ви вирішуєте, а потім перевіряєте, що відбувається саме те, що ви мали на увазі.</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Що можна змінити?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Налаштування</th><th>Приймає</th><th>За замовчуванням</th><th>Що робить</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sample</code></td>
+          <td>розмір, наприклад 2mb</td>
+          <td><code>4kb</code></td>
+          <td>Розмір кожного файлу набору. UTF-16 зберігає по два байти на символ, тому непарне число відхиляється.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Як його запустити?</h2>
+  <p>Подивіться, скільки коштував би набір, зберіть його або візьміть його рецепт для правки:</p>
+  <pre><code>tfg preset show text-encoding
+tfg generate --preset text-encoding --out ./text-encoding
+tfg preset eject text-encoding &gt; text-encoding.yaml</code></pre>
+  <p>Або будуйте на ньому у власному рецепті поряд із тестами:</p>
+  <pre><code>version: 1
+extends: preset:text-encoding</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Тестові файли для QA точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проєкт</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Вихідний код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Завантаження</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Повідомити про проблему</a></li>
+        <li><a href="https://donislawdev.com/support/">Підтримати проєкт</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Сторінки</p>
+      <ul class="plain">
+        <li><a href="/uk/">Головна</a></li>
+        <li><a href="/uk/formats/">Формати</a></li>
+        <li><a href="/uk/presets/">Пресети</a></li>
+        <li><a href="/uk/docs/">Документація</a></li>
+        <li><a href="/uk/use-cases/">Сценарії</a></li>
+        <li><a href="/uk/create-file-exact-size/">Точний розмір</a></li>
+        <li><a href="/uk/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Поширюється за ліцензією GNU General Public License версії 3. Файли, які ви створюєте, належать вам - ліцензія охоплює інструмент, а не його результат.</p>
+    <p class="muted">Цей сайт не завантажує шрифти, скрипти чи трекери звідки б то не було. Він не встановлює куки.</p>
+  </div>
+</footer>
+</body>
+</html>

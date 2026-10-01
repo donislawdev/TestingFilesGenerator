@@ -1,0 +1,185 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>วิธีสร้างไฟล์ทดสอบในไปป์ไลน์ CI</h1>
+<p class="lead">
+  ฟิกซ์เจอร์ไบนารีในรีโพซิทอรีจะค้างอยู่ในประวัติตลอดไป รีวิวใน diff ไม่ได้
+  และเป็นไปไม่ได้เลยเมื่อไฟล์ใหญ่ ให้สร้างไฟล์ในไปป์ไลน์จากสูตรแทน สูตรเป็นข้อความ
+  ไบต์ออกมาเหมือนกันทุกครั้ง และขั้นสุดท้ายพิสูจน์ว่าไม่มีอะไรขยับ
+</p>
+
+<div class="note">
+  <p class="note-title">คำตอบสั้นๆ</p>
+  <p>
+    ติดตั้ง <code>tfg</code> รัน <code>tfg generate fixtures.yaml --out ./fixtures</code> ก่อนการทดสอบ
+    และ <code>tfg verify ./fixtures/manifest.json</code> หลังการทดสอบ
+    ทั้งสองขั้นทำให้บิลด์ล้มเหลวได้เอง พร้อมรหัสออกที่บอกเหตุผล
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">ทำไมไม่คอมมิต</p>
+  <h2>ทำไมฟิกซ์เจอร์ไม่ควรอยู่ในรีโพซิทอรี</h2>
+  <ul>
+    <li>
+      <strong>มันค้างอยู่ในประวัติ</strong> การลบไฟล์ไบนารีทีหลังไม่ได้ทำให้โคลนเล็กลง
+      เพราะทุกเวอร์ชันของมันยังอยู่ตรงนั้น
+    </li>
+    <li>
+      <strong>diff ไม่แสดงว่าอะไรเปลี่ยน</strong> ผู้รีวิวเห็นแค่ว่า PDF ต่างไป ไม่มีอะไรมากกว่านั้น
+      ส่วนสูตรเปลี่ยนแค่บรรทัดเดียว
+    </li>
+    <li>
+      <strong>ไฟล์ใหญ่ไม่พอดี</strong> GitHub ปฏิเสธการพุชที่มีไฟล์ใหญ่กว่า 100 MB การทดสอบขีดจำกัดอัปโหลด
+      500 MB จึงไม่มีอะไรให้คอมมิต
+    </li>
+  </ul>
+  <p>
+    สิ่งที่ควรคอมมิตคือสูตร สูตรเดียวกันกับซีดเดียวกันเขียนไบต์เดียวกันบนทุกเครื่อง
+    ไฟล์ที่สร้างในไปป์ไลน์จึงเป็นไฟล์เดียวกับที่คุณมีบนแล็ปท็อป
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">สูตร</p>
+  <h2>สูตรที่อยู่ข้างๆ การทดสอบ</h2>
+  <p>
+    สูตรนี้เขียนใบแจ้งหนี้ยี่สิบห้าใบที่ควรถูกรับ และรูปสองรูปที่เกินขีดจำกัดซึ่งควรถูกปฏิเสธ
+    และแมนิเฟสต์บันทึกสิ่งที่คาดหวังทั้งสองอย่าง:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> ตรวจสูตรโดยไม่เขียนอะไร และบอกทุกปัญหาในครั้งเดียว
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>เวิร์กโฟลว์ที่ติดตั้งเครื่องมือและสร้างฟิกซ์เจอร์</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    บรรทัดผลรวมตรวจสอบเทียบไฟล์เก็บถาวรกับ <code>verify-SHA256SUMS.txt</code> จากรุ่นเดียวกัน
+    เวอร์ชันถูกตรึงไว้ รุ่นใหม่จึงไม่มีวันเปลี่ยนบิลด์ที่คุณไม่ได้แตะ
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>เรื่องเดียวกันในรูปแบบงานของ GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">เมื่อกลายเป็นสีแดง</p>
+  <h2>อะไรทำให้ขั้นหนึ่งล้มเหลว และเพราะอะไร</h2>
+  <p>
+    ทุกการจบมีรหัสออกของตัวเอง ขั้นจึงล้มเหลวได้เอง และล็อกบอกว่าเป็นรหัสไหน รหัสที่ไปป์ไลน์พบ:
+  </p>
+  <ul>
+    <li><code>3</code> - สูตรไม่ถูกต้อง ไม่มีอะไรถูกเขียน และทุกปัญหามีชื่อบอก</li>
+    <li><code>4</code> - รูปแบบทำสิ่งที่ขอไม่ได้ เช่น ขนาดต่ำกว่าขนาดเล็กสุดของมัน</li>
+    <li><code>6</code> - พื้นที่ดิสก์ไม่พอ</li>
+    <li><code>7</code> - <code>tfg verify</code> พบไฟล์ที่ไม่ตรงกับแมนิเฟสต์ของมัน</li>
+    <li><code>8</code> - การรันจบแล้ว แต่ไม่ได้สร้างครบทุกอย่าง</li>
+  </ul>
+  <p>
+    การรันที่ล้มเหลวไม่พิมพ์อะไรออกทางเอาต์พุตมาตรฐาน
+    ตัวแยกวิเคราะห์ล็อกจึงไม่มีวันเข้าใจผิดว่าข้อผิดพลาดเป็นข้อมูล
+    ตารางทั้งหมดอยู่ใน<a href="/th/docs/#ci">หน้าเอกสาร</a>
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>สคริปต์ PowerShell ต้องการอีกหนึ่งบรรทัด</h2>
+  <p>
+    PowerShell ไม่นำรหัสออกของโปรแกรมออกมานอกไฟล์ <code>.ps1</code> รันสคริปต์ด้วย <code>-File</code>
+    แล้วสคริปต์จะตอบ <code>0</code> แม้เครื่องมือข้างในปฏิเสธงาน
+    ทำให้บิลด์ที่ควรเป็นสีแดงกลายเป็นสีเขียว บรรทัดสุดท้ายคือวิธีแก้ทั้งหมด:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    นี่คือวิธีที่ PowerShell ทำงาน ไม่ใช่เรื่องของเครื่องมือนี้ <code>cmd</code> <code>bash</code> และ
+    <code>zsh</code> ไม่ต้องการอะไรเพิ่ม
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">หลายงาน</p>
+  <h2>แบ่งปันฟิกซ์เจอร์ระหว่างงาน</h2>
+  <p>
+    โดยปกติไม่จำเป็นต้องอัปโหลด เพราะสูตรเดียวกันเขียนไบต์เดียวกัน แต่ละงานจึงรัน <code>tfg
+    generate</code> ของตัวเองได้ ซึ่งเร็วกว่าการอัปโหลดแล้วดาวน์โหลด
+    เมื่องานหนึ่งต้องรับไฟล์จากอีกงานหนึ่ง ให้รัน <code>tfg verify</code> กับแมนิเฟสต์หลังการถ่ายโอน
+    แล้วมันจะบอกว่าสิ่งที่มาถึงตรงกับที่เขียนไว้หรือไม่
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">ถัดไป</p>
+  <h2>จากตรงนี้ไปไหนต่อ</h2>
+  <ul>
+    <li>
+      <a href="/th/corrupt-test-files/">ไฟล์ทดสอบที่เสียหาย</a>
+      เพิ่มไฟล์ที่ตั้งใจทำให้เสียลงในสูตรเดียวกัน
+    </li>
+    <li>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a> แสดงว่าการรันในไปป์ไลน์ตรวจอะไรได้อีก
+    </li>
+    <li>
+      <a href="/th/docs/">เอกสาร</a> มีทุกคำสั่ง ทุกคีย์ของสูตร และทุกรหัสออก
+    </li>
+  </ul>
+</section>

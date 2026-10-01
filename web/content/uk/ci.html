@@ -1,0 +1,190 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Як генерувати тестові файли в конвеєрі CI</h1>
+<p class="lead">
+  Двійкова фікстура в репозиторії лишається в його історії назавжди, її не можна перевірити в діфі, і
+  вона перестає бути можливою, коли файл великий. Генеруйте файли всередині конвеєра з рецепта.
+  Рецепт - це текст, байти щоразу виходять однакові, а останній крок доводить, що нічого не
+  зсунулося.
+</p>
+
+<div class="note">
+  <p class="note-title">Коротка відповідь</p>
+  <p>
+    Установіть <code>tfg</code>, запустіть <code>tfg generate fixtures.yaml --out ./fixtures</code>
+    перед тестами і <code>tfg verify ./fixtures/manifest.json</code> після них. Обидва кроки самі
+    валять збірку, з кодом завершення, який каже чому.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Чому не комітити</p>
+  <h2>Чому фікстурі не місце в репозиторії</h2>
+  <ul>
+    <li>
+      <strong>Вона лишається в історії.</strong> Видалення двійкового файлу пізніше не робить клон меншим,
+      бо кожна його версія все ще там.
+    </li>
+    <li>
+      <strong>Діф не показує, що змінилося.</strong> Рецензент бачить, що PDF інший, і нічого більше.
+      Рецепт змінюється на один рядок.
+    </li>
+    <li>
+      <strong>Великі файли не вміщаються.</strong> GitHub відхиляє push, у якому є файл більший за 100 МБ,
+      тож тесту ліміту завантаження в 500 МБ нічого комітити.
+    </li>
+  </ul>
+  <p>
+    Комітити потрібно рецепт. Той самий рецепт із тим самим зерном записує ті самі байти на будь-якій
+    машині, тож файл, створений у конвеєрі, - це файл, який був у вас на ноутбуці.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Рецепт</p>
+  <h2>Рецепт, що лежить поруч із тестами</h2>
+  <p>
+    Цей записує двадцять п'ять рахунків, які мають бути прийняті, і два зображення понад ліміт, які
+    мають бути відхилені, а маніфест фіксує обидва очікування:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> перевіряє його, нічого не записуючи, і називає одразу всі
+    проблеми.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Workflow, що встановлює інструмент і збирає фікстури</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Рядок із контрольною сумою звіряє архів із <code>verify-SHA256SUMS.txt</code> з того самого випуску.
+    Версію закріплено, тож новий випуск ніколи не змінить збірку, якої ви не торкалися.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Те саме як завдання GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Коли стає червоно</p>
+  <h2>Що валить крок і чому</h2>
+  <p>
+    У кожного завершення свій код, тож крок падає сам, а журнал каже, який саме. Ті, що трапляються
+    конвеєру:
+  </p>
+  <ul>
+    <li><code>3</code> - рецепт недопустимий. Нічого не записано, і названо кожну проблему</li>
+    <li><code>4</code> - формат не вміє того, про що попросили, наприклад розміру менше за свій мінімум</li>
+    <li><code>6</code> - не вистачає місця на диску</li>
+    <li><code>7</code> - <code>tfg verify</code> знайшов файл, що не збігається зі своїм маніфестом</li>
+    <li><code>8</code> - запуск закінчився, але створено не все</li>
+  </ul>
+  <p>
+    Невдалий запуск нічого не друкує у стандартний вивід, тож розбирач журналів ніколи не сприйме
+    помилку за дані. Уся таблиця на <a href="/uk/docs/#ci">сторінці документації</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Скрипту PowerShell потрібен ще один рядок</h2>
+  <p>
+    PowerShell не виносить код завершення програми з файлу <code>.ps1</code>. Запустіть такий файл із
+    <code>-File</code>, і скрипт відповість <code>0</code>, навіть коли інструмент усередині
+    відмовився працювати, тож збірка, яка мала б бути червоною, стає зеленою. Останній рядок - це
+    все виправлення:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Так поводиться PowerShell, а не цей інструмент. <code>cmd</code>, <code>bash</code> і
+    <code>zsh</code> нічого зайвого не потребують.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Кілька завдань</p>
+  <h2>Як ділитися фікстурами між завданнями</h2>
+  <p>
+    Зазвичай завантажувати їх не треба. Оскільки той самий рецепт записує ті самі байти, кожне завдання
+    може запустити власний <code>tfg generate</code>, що швидше за завантаження й скачування. Коли
+    завдання має отримати файли від іншого, запустіть після передачі <code>tfg verify</code> на
+    маніфесті, і він скаже, чи збігається отримане із записаним.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Далі</p>
+  <h2>Куди йти звідси</h2>
+  <ul>
+    <li>
+      <a href="/uk/corrupt-test-files/">Пошкоджені тестові файли</a> додають до того самого рецепта файли,
+      навмисно зіпсовані.
+    </li>
+    <li>
+      <a href="/uk/use-cases/">Сценарії використання</a> показують, що ще може перевірити запуск у
+      конвеєрі.
+    </li>
+    <li>
+      <a href="/uk/docs/">Документація</a> містить кожну команду, кожен ключ рецепта і кожен код
+      завершення.
+    </li>
+  </ul>
+</section>

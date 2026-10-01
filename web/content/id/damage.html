@@ -1,0 +1,174 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cara membuat file rusak untuk pengujian</h1>
+<p class="lead">
+  Validator yang hanya pernah diberi file sehat belum benar-benar diuji. Inilah cara mendapatkan file
+  yang sengaja dirusak, keluar dengan <strong>tepat sebesar yang Anda minta</strong>, dan membawa
+  manifes yang menyatakan apa yang harus dilakukan sistem Anda terhadapnya.
+</p>
+
+<div class="note">
+  <p class="note-title">Jawaban singkat</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> menulis PNG
+    berukuran tepat 2097152 byte yang byte pertamanya nol, dan manifes di sebelahnya mencatat bahwa
+    sistem Anda harus menolaknya.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Cara yang biasa</p>
+  <h2>Mengapa file yang dirusak dengan tangan adalah tes yang buruk</h2>
+  <p>
+    Cara yang biasa adalah editor hex, skrip yang membalik beberapa byte acak, atau memotong file dengan
+    <code>head</code> atau <code>truncate</code>. Berhasil sekali, lalu merugikan Anda:
+  </p>
+  <ul>
+    <li>
+      <strong>Hasilnya berbeda setiap kali.</strong> Byte acak jatuh di tempat baru pada setiap proses,
+      jadi kegagalan hari Selasa mungkin tidak muncul lagi hari Rabu.
+    </li>
+    <li>
+      <strong>Ukurannya berubah.</strong> File yang dipotong lebih kecil daripada batas yang seharusnya
+      tidak dilewatinya, sehingga pemeriksaan ukuran menjawab sebelum pemeriksaan isi dan tes lulus
+      karena alasan yang salah.
+    </li>
+    <li>
+      <strong>Sering tidak terdeteksi.</strong> Teks biasa masih terbaca dengan satu byte berubah di
+      tengah, dan pembaca gambar yang toleran hanya menggambarnya, sehingga file yang seharusnya
+      rusak malah diterima.
+    </li>
+    <li>
+      <strong>Tidak mengatakan apa yang seharusnya terjadi.</strong> File hanyalah byte, dan siapa pun
+      yang membaca tes itu kemudian harus menebak apakah yang dimaksud penerimaan atau penolakan.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Yang Anda dapatkan</p>
+  <h2>File yang rusak tetap berukuran seperti yang Anda minta</h2>
+  <p>
+    File dibuat seperti biasa lalu dirusak, dalam perjalanan ke disk. Ukurannya tetap seperti yang Anda
+    minta, dan perintah yang sama menulis byte yang sama lagi.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Pengaturan ditulis setelah titik dua. Opsi ini bisa diulang, dan kerusakan diterapkan menurut urutan
+    yang Anda tulis. Berlaku untuk semua {{ .Facts.FormatCount }} format.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Yang bisa dilakukan</p>
+  <h2>Kerusakan apa saja yang ada?</h2>
+  <p>
+    Ini daftar yang dicetak program, dibaca darinya saat halaman ini dibangun. <code>tfg damage</code>
+    mencetak daftar yang sama, dan <code>tfg damage &lt;id&gt;</code> menjelaskan apa yang diterima
+    salah satunya.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> menulis nol di atas awal file. Sebagian besar pembaca melihat ke sana lebih
+    dulu, ke tanda pengenal dan header yang menyatakan file itu apa, jadi hampir semua pembaca
+    menyadarinya. Teks biasa dan log tidak punya tanda pengenal dan juga ditolak, karena deretan
+    byte nol bukan teks. Di bawah empat byte, sebagian format keluar dengan kerusakan yang tidak
+    dikeluhkan pembaca mana pun, itulah sebabnya pengaturan dimulai dari empat.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Yang dikatakan manifes</p>
+  <h2>Manifes yang menyatakan apa yang harus terjadi</h2>
+  <p>
+    Setiap file yang rusak mendapat catatan yang menyatakan sistem Anda harus menolaknya, dengan
+    kerusakannya dicatat di sampingnya:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Dua permintaan ditolak sebelum apa pun ditulis, karena masing-masing akan meninggalkan file di disk
+    yang dijelaskan keliru oleh manifes:
+  </p>
+  <ul>
+    <li>file yang lebih kecil dari yang dibutuhkan kerusakan, yang akan keluar tanpa perubahan</li>
+    <li>
+      <code>expected: accept</code> di samping kerusakan, karena tidak ada yang bisa memenuhinya. Tulis
+      <code>sanitize</code> jika sistem Anda memang harus memperbaiki file itu, atau
+      <code>unspecified</code> jika justru itu pertanyaan Anda
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Dalam resep</p>
+  <h2>File sehat dan rusak dalam satu proses</h2>
+  <p>
+    Taruh keduanya dalam satu resep, dan manifes membawa harapan setiap file, sehingga tes tidak butuh
+    daftar mana yang mana:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Dalam tes</p>
+  <h2>Menjadikannya tes</h2>
+  <p>
+    Tes membaca manifes dan memeriksa bahwa yang terjadi sama dengan yang dinyatakan. Tidak perlu daftar
+    nama file:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Penolakan yang baik adalah penolakan yang bersih. Pesan yang menyebut apa yang salah adalah jawaban
+    yang Anda inginkan. Kesalahan server, macet, atau file yang tersimpan setengah adalah cacat yang
+    ingin ditemukan tes ini.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Berikutnya</p>
+  <h2>Ke mana dari sini</h2>
+  <ul>
+    <li>
+      <a href="/id/preset/upload-validation/">Preset upload-validation</a> mengajukan dua pertanyaan lain
+      kepada sebuah formulir, soal ukuran dan soal jenis.
+    </li>
+    <li>
+      <a href="/id/file-uji-di-ci/">File uji di CI</a> menjalankan resep seperti ini di pipeline.
+    </li>
+    <li>
+      <a href="/id/dokumentasi/#damage">Dokumentasi</a> memuat setiap opsi <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

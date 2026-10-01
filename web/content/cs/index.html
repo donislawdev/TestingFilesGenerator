@@ -1,0 +1,195 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Generujte skutečné testovací soubory v přesné velikosti</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>celkem {{ .Facts.FormatCount }} formátů</strong> a každý je skutečný
+    soubor, který se otevře v programu, kam patří, v <strong>přesně té velikosti, o kterou jste
+    požádali</strong>. Každý běh také zapisuje, co má vaše aplikace s každým souborem udělat.
+    Příkazový řádek a desktopové okno, zdarma a open source, celé na vašem počítači.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Desktopové okno Testing Files Generator připravené zapsat dávku testovacích souborů">
+    <figcaption>Desktopové okno připravené zapsat dávku souborů. Za příkazovým řádkem běží stejný motor.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">skutečných formátů, každý se otevře v programu, kam patří</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 bajt</span>
+      <p class="fact-label">přesnost každé požadované velikosti, nikdy mlčky nezaokrouhlená</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">spojení kamkoli - žádný účet, žádná telemetrie, žádná kontrola aktualizací</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Problém</p>
+  <h2>Vytvořit jeden testovací soubor je snadné. Vytvořit těch správných tisíc je ta únavná část</h2>
+  <p>Testujete software, který přijímá soubory od lidí. Dříve nebo později budete potřebovat:</p>
+  <ul class="ticks">
+    <li>PDF o <strong>přesně</strong> 10 MB, abyste zjistili, zda je limit nahrávání skutečný</li>
+    <li>tři soubory po obou stranách tohoto limitu, abyste zachytili chyby o jedna</li>
+    <li>10 000 souborů logu, abyste viděli, co udělá noční úloha, když je složka velká</li>
+    <li>ZIP, který skutečně obsahuje 200 dokumentů, ne prázdnou skořápku se správnou příponou</li>
+    <li>soubor o 4 GB, aniž byste ve svém repozitáři drželi soubor o 4 GB</li>
+    <li><strong>stejné</strong> fixtures na notebooku i na build serveru, bajt po bajtu</li>
+  </ul>
+  <p>
+    To je to, co toto nahrazuje. Je určeno pro QA inženýry, automatizaci testů a každého, za jehož kódem
+    stojí formulář pro nahrávání, importní rutina, parser nebo kvóta úložiště.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Čím se liší</p>
+  <h2>Jiné generátory končí u bajtů. Tento odpovídá na to, na co se váš test skutečně ptá</h2>
+  <p>
+    Složka souborů vás stále nechává rozhodovat, co má který dokazovat. Každý běh tady zapíše vedle
+    souborů <code>manifest.json</code> - prostý seznam všeho vytvořeného a u každé položky
+    <strong>deklarované očekávání</strong>.
+  </p>
+  <p>Řekněme, že váš endpoint pro nahrávání povoluje 1 MB. Požádejte o tři soubory, které leží na té hranici:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Soubor</th><th class="num">Bajty</th><th>Váš systém má</th><th>Protože</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>přijmout</strong></td><td>je uvnitř limitu</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>přijmout</strong></td><td>samotný limit je povolen</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>odmítnout</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Tři soubory, tři různé odpovědi, ve strojově čitelné podobě. Váš test čte manifest místo toho, abyste vy ručně psali aserce:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Kde odpověď závisí na vaší vlastní politice, manifest to říká</p>
+    <p>
+      Zapíše <code>unspecified</code>, místo aby vymýšlel očekávání. Generátor, který hádá, vytváří
+      falešná selhání a sada testů, která křičí vlk, bude vypnuta.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Předvolby</p>
+  <h2>Vyberte otázku, získejte celou sadu</h2>
+  <p>
+    Předvolba je sada testovacích souborů navržená kolem jedné testovací otázky, abyste nemuseli
+    vymýšlet, které soubory co dokazují. Každá má stránku, která říká, co obvykle najde, co je v
+    sadě a jaké nastavení přijímá.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/cs/predvolby/">Všechny předvolby a jak souvisejí s recepty</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Rychlý start</p>
+  <h2>Tři příkazy, abyste to viděli fungovat</h2>
+  <ol class="steps">
+    <li>
+      <h3>Vytvořte soubor</h3>
+      <p>Jedno PNG, přesně dva megabajty:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Vytvořte hodně souborů</h3>
+      <p>
+        Deset tisíc souborů logu, každý mezi jedním a osmi kilobajty, s velikostmi losovanými ze seedu, aby
+        zítra vyšla stejná sada. <strong>Dejte každému běhu vlastní adresář</strong> - manifest je
+        jediný záznam o tom, co běh zapsal, takže nástroj odmítne zapsat druhý přes něj:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Ověřte je a pak je odstraňte</h3>
+      <p><code>verify</code> vám řekne, že se nic nepohnulo. <code>cleanup</code> odstraní přesně to, co bylo zapsáno, a nic jiného:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Velikosti se počítají po 1024, jak to dělá váš správce souborů, takže <code>2mb</code> znamená
+    2097152 bajtů. Funguje i prostý počet bajtů. <a href="/cs/dokumentace/">Dokumentace</a> pokrývá
+    recepty, manifest a návratové kódy.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Co získáte</p>
+  <h2>Vytvořeno pro sadu testů, která běží bez dozoru</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Přesná velikost, na bajt</p>
+      <p class="muted">Požádejte o 10485761 bajtů a dostanete přesně tolik. Velikost, které formát nedosáhne, je chyba s důvodem, nikdy soubor špatné velikosti.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} skutečných formátů</p>
+      <p class="muted">Ne vycpávkové nuly s příponou. Vygenerované PNG se otevře v prohlížeči obrázků, DOCX ve Wordu, ZIP se rozbalí. Každý formát je před vydáním ověřen nezávislými čtečkami.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Manifest, který je testovací orákulum</p>
+      <p class="muted">Cesta, velikost, SHA-256, formát, seed, verze nástroje - a co má váš systém se souborem udělat.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Opakovatelné</p>
+      <p class="muted">Stejný recept a stejný seed, stejné bajty, na jakémkoli počítači. Commitujte malý recept YAML místo velkých binárních fixtures.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dvě rozhraní, jeden motor</p>
+      <p class="muted">Příkazový řádek vytvořený pro CI a desktopové okno pro průzkumné testování. Ani jedno není osekanou verzí druhého a test je porovnává schopnost po schopnosti.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Zcela offline</p>
+      <p class="muted">Žádný účet, žádný cloud, žádná telemetrie, žádná kontrola aktualizací. V binárce příkazového řádku není zkompilován vůbec žádný síťový zásobník.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Stažení</p>
+  <h2>Vyberte verzi pro svůj systém</h2>
+  <p>
+    Rozbalte archiv a spusťte ho. <code>tfg</code> je příkazový řádek a <code>tfg-gui</code> je
+    desktopové okno. Není tu instalátor a nic, co by se do vašeho počítače přidávalo.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Co je podepsáno a co ne</p>
+    <p>
+      Soubory ke stažení pro Windows a macOS jsou podepsané, takže se spustí bez varování o neznámém
+      vývojáři. Ty pro Linux ne, protože desktopový Linux nemá ekvivalent, kterým by je šlo
+      podepsat. Každý archiv je uveden v <code>verify-SHA256SUMS.txt</code> na stránce vydání, takže
+      můžete ověřit, co jste stáhli.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

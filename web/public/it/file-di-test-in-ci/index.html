@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="it">
+<title>File di test in CI - GitHub Actions, GitLab CI e PowerShell</title>
+<meta name="description" content="Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="File di test in CI - GitHub Actions, GitLab CI e PowerShell">
+<meta property="og:description" content="Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="File di test in CI - GitHub Actions, GitLab CI e PowerShell">
+<meta name="twitter:description" content="Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/it/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Casi d\u0027uso",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/it\/casi-d-uso\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "File di test in CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/it\/file-di-test-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/it/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principale">
+      <a href="/it/">Home</a>
+      <a href="/it/formati/">Formati</a>
+      <a href="/it/preset/">Preset</a>
+      <a href="/it/documentazione/">Documentazione</a>
+      <a href="/it/casi-d-uso/" aria-current="true">Casi d&#39;uso</a>
+      <a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a>
+      <a href="/it/domande-frequenti/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Lingua: Italiano">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Italiano</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/it/casi-d-uso/">Casi d&#39;uso</a></p>
+<h1>Come generare file di test in una pipeline CI</h1>
+<p class="lead">
+  Una fixture binaria in un repository resta per sempre nella sua cronologia, non si può rivedere in
+  un diff e diventa impossibile quando il file è grande. Genera invece i file dentro la pipeline a
+  partire da una ricetta. La ricetta è testo, i byte escono uguali ogni volta e un ultimo passo
+  dimostra che nulla si è mosso.
+</p>
+
+<div class="note">
+  <p class="note-title">La risposta breve</p>
+  <p>
+    Installa <code>tfg</code>, esegui <code>tfg generate fixtures.yaml --out ./fixtures</code> prima dei
+    test e <code>tfg verify ./fixtures/manifest.json</code> dopo. Entrambi i passi fanno fallire la
+    build da soli, con un codice di uscita che dice perché.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Perché non committarli</p>
+  <h2>Perché una fixture non deve stare nel repository</h2>
+  <ul>
+    <li>
+      <strong>Resta nella cronologia.</strong> Cancellare un binario in seguito non rende più piccolo un
+      clone, perché ogni sua versione è ancora lì.
+    </li>
+    <li>
+      <strong>Un diff non mostra cosa è cambiato.</strong> Chi rivede vede che un PDF è diverso e
+      nient'altro. Una ricetta cambia di una riga.
+    </li>
+    <li>
+      <strong>I file grandi non ci stanno.</strong> GitHub rifiuta un push che contiene un file sopra i
+      100 MB, quindi un test di un limite di upload di 500 MB non ha nulla da committare.
+    </li>
+  </ul>
+  <p>
+    Quello da committare è la ricetta. La stessa ricetta con lo stesso seme scrive gli stessi byte su
+    ogni macchina, quindi il file generato nella pipeline è il file che avevi sul portatile.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">La ricetta</p>
+  <h2>Una ricetta che vive accanto ai test</h2>
+  <p>
+    Questa scrive venticinque fatture che devono essere accettate e due immagini oltre un limite che
+    devono essere rifiutate, e il manifest registra entrambe le aspettative:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> la controlla senza scrivere nulla e nomina tutti i problemi
+    in una volta.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Un workflow che installa lo strumento e costruisce le fixture</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    La riga della somma di controllo confronta l'archivio con <code>verify-SHA256SUMS.txt</code> della
+    stessa versione. La versione è fissata, quindi una nuova versione non cambia mai una build che
+    non hai toccato.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Lo stesso come job GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Quando diventa rosso</p>
+  <h2>Cosa fa fallire un passo, e perché</h2>
+  <p>
+    Ogni conclusione ha il suo codice di uscita, quindi il passo fallisce da solo e il log dice quale.
+    Quelli che incontra una pipeline:
+  </p>
+  <ul>
+    <li><code>3</code> - la ricetta non è valida. Non è stato scritto nulla e ogni problema è nominato</li>
+    <li><code>4</code> - il formato non può fare ciò che è stato chiesto, per esempio una dimensione sotto il suo minimo</li>
+    <li><code>6</code> - non c'è abbastanza spazio su disco</li>
+    <li><code>7</code> - <code>tfg verify</code> ha trovato un file che non corrisponde al suo manifest</li>
+    <li><code>8</code> - l'esecuzione è finita, ma non tutto è stato prodotto</li>
+  </ul>
+  <p>
+    Un'esecuzione fallita non stampa nulla sullo standard output, così un parser di log non scambia mai
+    un errore per dati. La tabella completa è nella <a href="/it/documentazione/#ci">pagina della
+    documentazione</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Uno script PowerShell richiede una riga in più</h2>
+  <p>
+    PowerShell non porta fuori da un file <code>.ps1</code> il codice di uscita di un programma.
+    Eseguine uno con <code>-File</code> e lo script risponde <code>0</code> anche quando lo
+    strumento al suo interno ha rifiutato il lavoro, così una build che dovrebbe essere rossa
+    diventa verde. L'ultima riga è tutta la correzione:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    È così che si comporta PowerShell, non qualcosa di questo strumento. <code>cmd</code>,
+    <code>bash</code> e <code>zsh</code> non richiedono nulla di più.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Più job</p>
+  <h2>Condividere le fixture tra i job</h2>
+  <p>
+    Di solito non serve caricarle. Poiché la stessa ricetta scrive gli stessi byte, ogni job può
+    eseguire il proprio <code>tfg generate</code>, che è più rapido di un upload e di un download.
+    Quando un job deve ricevere file da un altro, esegui <code>tfg verify</code> sul manifest dopo
+    il trasferimento, e ti dice se ciò che è arrivato è ciò che è stato scritto.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Avanti</p>
+  <h2>Dove andare da qui</h2>
+  <ul>
+    <li>
+      <a href="/it/file-di-test-corrotti/">File di test corrotti</a> aggiunge alla stessa ricetta file
+      rotti di proposito.
+    </li>
+    <li>
+      <a href="/it/casi-d-uso/">I casi d'uso</a> mostrano cos'altro può controllare un'esecuzione in una
+      pipeline.
+    </li>
+    <li>
+      <a href="/it/documentazione/">La documentazione</a> riporta ogni comando, ogni chiave della ricetta
+      e ogni codice di uscita.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">File di test per la QA, della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Progetto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Codice su GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Download</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Segnala un problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Sostieni il progetto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagine</p>
+      <ul class="plain">
+        <li><a href="/it/">Home</a></li>
+        <li><a href="/it/formati/">Formati</a></li>
+        <li><a href="/it/preset/">Preset</a></li>
+        <li><a href="/it/documentazione/">Documentazione</a></li>
+        <li><a href="/it/casi-d-uso/">Casi d&#39;uso</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a></li>
+        <li><a href="/it/domande-frequenti/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Rilasciato sotto la GNU General Public License, versione 3. I file che generi sono tuoi - la licenza copre lo strumento, non il suo output.</p>
+    <p class="muted">Questo sito non carica font, script o tracker da nessuna parte. Non imposta cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

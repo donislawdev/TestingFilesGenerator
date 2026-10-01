@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/site"
@@ -121,6 +122,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		Version:   version.Version,
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
+		Damages:   damagesTheProgramHas(),
 		Presets:   presetFactsFromTheProgram(t),
 		Commands:  commandsTheToolPrints(t),
 		Downloads: declaredDownloads(),
@@ -139,6 +141,17 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		Support:  "https://donislawdev.com/support/",
 		Origin:   siteOrigin,
 	}
+}
+
+// damagesTheProgramHas is every damage in the order tfg damage lists it, with
+// the smallest file it takes at its defaults - the number that command prints,
+// from the same call.
+func damagesTheProgramHas() []site.Damage {
+	out := make([]site.Damage, 0, len(damage.All()))
+	for _, d := range damage.All() {
+		out = append(out, site.Damage{ID: d.ID, Smallest: d.Floor(d.Defaults()), Settings: d.ParameterNames()})
+	}
+	return out
 }
 
 // languagesOnDisk reads every language description under web/content.
@@ -483,47 +496,6 @@ func TestEveryPageExistsInEveryLanguage(t *testing.T) {
 				t.Errorf("the %s page %q has no title or no description, and a search engine writes its own when we do not", l.Code, p.Key)
 			}
 		}
-	}
-}
-
-// TestThePolishTextStaysOnThePolishPages holds the boundary the owner set when
-// the site was allowed into this repository on 2026-08-26.
-//
-// D9 says text in the repository is English, and the criterion is the place
-// rather than the reader. The site extends that rule to a second language and
-// the extension is only as good as its border - so the border is machine
-// checked here rather than remembered. Anything outside a pl directory that
-// carries a character above ASCII is either a translation that leaked or an
-// English page somebody typed a curly quote into, and both are defects.
-func TestThePolishTextStaysOnThePolishPages(t *testing.T) {
-	root := webRoot(t)
-	text := map[string]bool{".html": true, ".json": true, ".css": true, ".xml": true, ".txt": true}
-	err := filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !text[strings.ToLower(filepath.Ext(p))] {
-			return err
-		}
-		rel, relErr := filepath.Rel(root, p)
-		if relErr != nil {
-			return relErr
-		}
-		slashed := filepath.ToSlash(rel)
-		polish := strings.Contains(slashed, "/pl/") || strings.HasPrefix(slashed, "pl/")
-		b, readErr := os.ReadFile(p)
-		if readErr != nil {
-			return readErr
-		}
-		for n, line := range strings.Split(string(b), "\n") {
-			for col, r := range line {
-				if r > 127 && !polish {
-					t.Errorf("web/%s:%d:%d holds %q - only the Polish pages may carry it", slashed, n+1, col+1, r)
-					return nil
-				}
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("walking the site: %v", err)
 	}
 }
 

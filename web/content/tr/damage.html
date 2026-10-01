@@ -1,0 +1,174 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Test için bozuk dosya nasıl yapılır</h1>
+<p class="lead">
+  Yalnızca sağlam dosyalar gösterilmiş bir doğrulayıcı gerçekten sınanmış sayılmaz. İşte kasıtlı
+  bozulmuş, <strong>tam istediğiniz boyutta</strong> çıkan ve sisteminizin onunla ne yapması
+  gerektiğini söyleyen bir bildirimle gelen bir dosyayı nasıl elde edeceğiniz.
+</p>
+
+<div class="note">
+  <p class="note-title">Kısa yanıt</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> tam 2097152 bayt
+    boyutunda, ilk baytları sıfır olan bir PNG yazar ve yanındaki bildirim sisteminizin onu
+    reddetmesi gerektiğini kaydeder.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Olağan yol</p>
+  <h2>Elle bozulmuş bir dosya neden kötü bir testtir</h2>
+  <p>
+    Olağan yollar bir onaltılık düzenleyici, birkaç rastgele baytı çeviren bir betik ya da bir dosyayı
+    <code>head</code> veya <code>truncate</code> ile kısaltmaktır. Bir kez işe yarar, sonra size
+    pahalıya mal olur:
+  </p>
+  <ul>
+    <li>
+      <strong>Her seferinde farklıdır.</strong> Rastgele bir bayt her çalıştırmada başka bir yere düşer,
+      bu yüzden salı günkü bir hata çarşamba dönmeyebilir.
+    </li>
+    <li>
+      <strong>Boyutu değiştirir.</strong> Kesilmiş bir dosya, altında kalması gereken sınırdan küçüktür.
+      Böylece boyut denetimi içerik denetiminden önce yanıt verir ve test yanlış nedenle geçer.
+    </li>
+    <li>
+      <strong>Çoğu zaman fark edilmez.</strong> Düz metin ortasında değişmiş bir baytla da okunur,
+      hoşgörülü bir görüntü okuyucusu ise onu olduğu gibi çizer. Böylece bozuk olması gereken dosya
+      kabul edilir.
+    </li>
+    <li>
+      <strong>Ne olması gerektiğini söylemez.</strong> Dosya yalnızca bayttır ve testi sonradan okuyan,
+      kabulün mü reddin mi amaçlandığını tahmin etmek zorunda kalır.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Ne elde edersiniz</p>
+  <h2>Hasarlı bir dosya yine istediğiniz boyuttadır</h2>
+  <p>
+    Dosya normal üretilir, sonra diske giderken bozulur. İstediğiniz boyutu korur ve aynı komut yine
+    aynı baytları yazar.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Ayarlar iki noktadan sonra yazılır. Seçenek tekrarlanabilir ve hasarlar yazdığınız sırayla
+    uygulanır. {{ .Facts.FormatCount }} biçimin her biriyle çalışır.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Neler yapabilir</p>
+  <h2>Hangi hasarlar var?</h2>
+  <p>
+    Bu, programın yazdırdığı listedir ve bu sayfa oluşturulurken programdan okunur. <code>tfg
+    damage</code> aynısını yazdırır, <code>tfg damage &lt;id&gt;</code> ise birinin neyi kabul
+    ettiğini söyler.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> dosyanın başına sıfırlar yazar. Okuyucuların çoğu önce oraya bakar, dosyanın
+    ne olduğunu söyleyen imzaya ve başlığa, bu yüzden hemen her okuyucu fark eder. Düz metin ve
+    günlüklerin imzası yoktur ve onlar da reddedilir, çünkü bir sıfır baytı dizisi metin değildir.
+    Dört baytın altında bazı biçimler hiçbir okuyucunun şikâyet etmediği bir hasarla çıkar, ayarın
+    dörtten başlamasının nedeni budur.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Bildirim ne söyler</p>
+  <h2>Ne olması gerektiğini söyleyen bir bildirim</h2>
+  <p>
+    Hasarlı her dosya, sisteminizin onu reddetmesi gerektiğini söyleyen bir kayıt alır ve hasar yanına
+    yazılır:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    İki istek, bir şey yazılmadan önce reddedilir, çünkü her biri diskte bildirimin yanlış tarif ettiği
+    bir dosya bırakırdı:
+  </p>
+  <ul>
+    <li>hasarın gerektirdiğinden küçük bir dosya, ki değişmeden çıkardı</li>
+    <li>
+      Bir hasarın yanında <code>expected: accept</code>, çünkü hiçbir şey bunu karşılayamaz. Sisteminiz
+      dosyayı onarmalıysa <code>sanitize</code>, tam da bunu soruyorsanız <code>unspecified</code>
+      yazın
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Bir tarifte</p>
+  <h2>Tek çalıştırmada sağlam ve bozuk dosyalar</h2>
+  <p>
+    İkisini de tek bir tarife koyun, bildirim her dosyanın beklentisini taşır. Böylece testin hangisinin
+    hangisi olduğuna dair bir listeye ihtiyacı kalmaz:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Bir testte</p>
+  <h2>Bunu bir teste dönüştürmek</h2>
+  <p>
+    Test bildirimi okur ve olanın bildirilenle aynı olup olmadığına bakar. Dosya adı listesine ihtiyacı
+    yoktur:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    İyi bir ret temiz bir rettir. Neyin yanlış olduğunu söyleyen bir ileti istediğiniz yanıttır. Sunucu
+    hatası, takılma ya da yarım kaydedilmiş dosya, bu testin bulmak için var olduğu kusurdur.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Sonraki</p>
+  <h2>Buradan nereye gidilir</h2>
+  <ul>
+    <li>
+      <a href="/tr/hazir-ayarlar/upload-validation/">upload-validation hazır ayarı</a> bir forma diğer iki
+      soruyu sorar, boyutu ve türü.
+    </li>
+    <li>
+      <a href="/tr/ci-icinde-test-dosyalari/">CI'da test dosyaları</a> böyle bir tarifi bir hatta
+      çalıştırır.
+    </li>
+    <li>
+      <a href="/tr/dokumantasyon/#damage">Belgeler</a> <code>tfg generate</code> için her seçeneği içerir.
+    </li>
+  </ul>
+</section>

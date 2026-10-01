@@ -3,15 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pl">
 <title>Problematyczne nazwy plików do testów - Unicode i długość</title>
 <meta name="description" content="Pliki z nazwami, które psują przesyłanie i zapis: inne alfabety i emoji, odwrócony kierunek tekstu, znaki niewidoczne, składnia powłoki i SQL, limity długości.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/filename-handling/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/filename-handling/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/filename-handling/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/filename-handling/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/filename-handling/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/filename-handling/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/filename-handling/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/filename-handling/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/filename-handling/">
 <link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/filename-handling/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/filename-handling/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/filename-handling/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/filename-handling/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/filename-handling/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/filename-handling/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/filename-handling/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/filename-handling/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/filename-handling/">
 <link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
-<meta property="og:locale" content="pl">
+<meta property="og:locale" content="pl_PL">
 <meta property="og:title" content="Problematyczne nazwy plików do testów - Unicode i długość">
 <meta property="og:description" content="Pliki z nazwami, które psują przesyłanie i zapis: inne alfabety i emoji, odwrócony kierunek tekstu, znaki niewidoczne, składnia powłoki i SQL, limity długości.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
@@ -19,7 +40,27 @@
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
-<meta property="og:locale:alternate" content="en">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Problematyczne nazwy plików do testów - Unicode i długość">
 <meta name="twitter:description" content="Pliki z nazwami, które psują przesyłanie i zapis: inne alfabety i emoji, odwrócony kierunek tekstu, znaki niewidoczne, składnia powłoki i SQL, limity długości.">
@@ -74,9 +115,35 @@
       <a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a>
       <a href="/pl/faq/">FAQ</a>
     </nav>
-    <div class="langswitch">
-      <a href="/presets/filename-handling/" hreflang="en" lang="en" rel="alternate">English</a>
-    </div>
+    <details class="langmenu">
+      <summary aria-label="Język: Polski">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Polski</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/filename-handling/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/filename-handling/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/predvolby/filename-handling/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/filename-handling/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/filename-handling/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/filename-handling/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/filename-handling/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/filename-handling/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/filename-handling/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/filename-handling/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/filename-handling/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/filename-handling/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pt-br/presets/filename-handling/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/filename-handling/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/filename-handling/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/presets/filename-handling/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/hazir-ayarlar/filename-handling/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/filename-handling/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/filename-handling/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/filename-handling/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/filename-handling/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ja">
+<title>指定サイズのファイルを作る方法 - Windows、Linux、macOS</title>
+<meta name="description" content="fsutil、dd、truncate、mkfileを各OSで実測しました。テストがPDFやPNGを必要とするとき、この方法で作ったファイルでは足りない理由も解説します。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="指定サイズのファイルを作る方法 - Windows、Linux、macOS">
+<meta property="og:description" content="fsutil、dd、truncate、mkfileを各OSで実測しました。テストがPDFやPNGを必要とするとき、この方法で作ったファイルでは足りない理由も解説します。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="指定サイズのファイルを作る方法 - Windows、Linux、macOS">
+<meta name="twitter:description" content="fsutil、dd、truncate、mkfileを各OSで実測しました。テストがPDFやPNGを必要とするとき、この方法で作ったファイルでは足りない理由も解説します。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ja/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "正確なサイズ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/create-file-exact-size\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ja/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="メインメニュー">
+      <a href="/ja/">ホーム</a>
+      <a href="/ja/formats/">形式</a>
+      <a href="/ja/presets/">プリセット</a>
+      <a href="/ja/docs/">ドキュメント</a>
+      <a href="/ja/use-cases/">利用例</a>
+      <a href="/ja/create-file-exact-size/" aria-current="page">正確なサイズ</a>
+      <a href="/ja/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="言語: 日本語">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>日本語</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/create-file-exact-size/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/create-file-exact-size/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ko/create-file-exact-size/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/create-file-exact-size/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>正確なサイズのファイルを作る方法</h1>
+<p class="lead">
+  どのOSにもそのためのコマンドがあり、3つとも以下に載せています。正確なバイト数のファイルが作れ、多くのテストではそれで十分です。<strong>このページのコマンドはすべて、公開前に対応するOS上で実行しました</strong>。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    Windows:<code>fsutil file createnew name 10485760</code>。Linux:<code>dd if=/dev/zero of=name bs=1M
+    count=10</code>。macOS:<code>mkfile 10m name</code>。サイズはバイトで指定し、ファイルマネージャーの数え方での10MBは10485760です。
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutilと、追加不要のPowerShell版</h2>
+  <p>
+    <code>fsutil</code>はWindowsに付属しています。サイズは<strong>バイト単位</strong>で指定するため、先に数値を計算してください。10MBは10485760、100MBは104857600、1GBは1073741824です。
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11で実測しました。通常のプロンプトから実行でき、管理者権限は不要で、ファイルはちょうど10485760バイトになります。
+  </p>
+  <p>PowerShellは別のプログラムを呼び出さずに同じことができ、単位も理解します。</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShellの<code>10MB</code>は、エクスプローラーと同じ1024基準の数え方で10485760バイトを意味するため、上の2つのコマンドは同じサイズになります。
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd、truncate、fallocate、そして人がつまずく違い</h2>
+  <p><code>dd</code>は誰もが知っているコマンドです。実際にバイトを書き込みます。</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code>は一瞬で終わりますが、そこが落とし穴です。Alpine
+    Linuxで実測すると、ファイルは10485760バイトと報告されるのに、占有するのは<strong>0ブロック</strong>で、<strong>スパースファイル</strong>になっています。読み込むものには10メガバイトのゼロが返りますが、ディスクは領域を実際には確保していません。
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    アップロード制限のテストには問題ありませんが、ディスク容量の制限のテストでは誤解を招きます。領域が実際に必要なときは<code>fallocate</code>を使います。
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>圧縮できない内容が必要で、アーカイバーが再び小さくできないようにしたいときは:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>スパースではないmkfileと、すでにご存じの2つ</h2>
+  <p>
+    macOSには<code>mkfile</code>が付属しています。macOS
+    26.6.2で実測したところ、10485760バイトで20480ブロックでした。領域は約束だけでなく実際に確保されています。
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code>と<code>truncate</code>もあり、Linuxと同じように動作します。</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">これが通用しなくなる場所</p>
+  <h2>正しいサイズのファイルは、正しい種類のファイルではありません</h2>
+  <p>
+    上記はどれも、ゼロのかたまりを作ります。テスト対象がサイズだけを見る場合、たとえばアップロード制限、割り当て、転送なら、それで十分です。何かがそのファイルを<strong>開いた</strong>瞬間に、十分ではなくなります。
+  </p>
+  <p>
+    実測しましたので、ぜひご自身でも試してください。<code>fsutil</code>で2MBのファイルを作り、<code>photo.png</code>という名前を付けて、画像ライブラリに渡します。Pillowは<code>cannot
+    identify image file</code>と答えます。それはPNGではありません。最初からそうではなく、名前がそう言っていただけです。
+  </p>
+  <p>
+    これは見た目以上に重要です。<strong>テストがどちらの向きで失敗するか</strong>が関わるからです。アップロードのエンドポイントがファイルを拒否し、テストが緑になり、サイズ制限は機能していると結論します。しかし、サイズが理由で拒否したのではありません。バイトが画像ではなかったから拒否したのであり、テストしたかったルールには届いていません。
+  </p>
+  <ul class="ticks">
+    <li>サイズのルールを見る前に、パーサーが拒否する</li>
+    <li>サムネイル作成が失敗し、読むエラーがサムネイルに関するものになる</li>
+    <li>ウイルス対策ソフトやコンテンツ検査が、3つ目の理由で拒否する</li>
+    <li>ビューアーが何も表示せず、それがバグなのか誰にも分からない</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">もう1つの方法</p>
+  <h2>その形式の本物のファイルを、要求したとおりのサイズで</h2>
+  <p>
+    これがTesting Files Generatorの役割です。ファイルはその形式の本物で、対応するソフトウェアで開け、要求したバイト数とぴったり一致します。
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    形式が到達できないサイズを要求すると、下限とその理由を示すエラーが返り、サイズの違うファイルが作られることはありません。<a href="/ja/formats/">形式ページ</a>に、各形式と、生成できる最小のファイルを載せています。
+  </p>
+  <p>そして制限は1つではなく3つのテストケースなので、ツールは3つとも作ります。</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    10485759、10485760、10485761バイトのファイルと、システムがどれを受け入れどれを拒否するべきかを示すマニフェストが得られます。<a href="/ja/use-cases/">利用例のページ</a>では、これと、このツールが想定する他の4つの用途を紹介しています。
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">ソースコードを見る</a>
+</div>
+<p class="cta-note">無料のオープンソース、GPL-3.0。登録は不要です。WindowsとmacOS向けのダウンロードは署名済みで、警告なしで起動します。</p>
+</section>
+
+<section class="section" id="which">
+  <h2>では、どちらを使うべきでしょうか。</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">OSのコマンドを使う場合</p>
+      <p class="muted">
+        何もそのファイルを開かないとき。先にサイズを確認するエンドポイントでのサイズ制限のテスト、転送、割り当て、ディスク満杯の状況。1行で済み、すでにインストールされています。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">本物の生成ツールを使う場合</p>
+      <p class="muted">
+        何かがファイルを解析、描画、取り込み、展開するとき。そして、明日別のマシンで同じフィクスチャをバイト単位で再び必要とするとき。
+      </p>
+    </li>
+  </ul>
+  <p>
+    どちらも状況によって正しいため、このページに両方載せています。避けるべき間違いは、後者が必要な場面で前者を使い、緑になったテストを証明と受け取ることです。
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">プロジェクト</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHubのソースコード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">問題を報告</a></li>
+        <li><a href="https://donislawdev.com/support/">プロジェクトを支援</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">ページ</p>
+      <ul class="plain">
+        <li><a href="/ja/">ホーム</a></li>
+        <li><a href="/ja/formats/">形式</a></li>
+        <li><a href="/ja/presets/">プリセット</a></li>
+        <li><a href="/ja/docs/">ドキュメント</a></li>
+        <li><a href="/ja/use-cases/">利用例</a></li>
+        <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
+        <li><a href="/ja/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU一般公衆利用許諾契約書バージョン3の下で公開されています。生成したファイルはあなたのものです。ライセンスの対象はツールであり、その出力ではありません。</p>
+    <p class="muted">このサイトは、どこからもフォント、スクリプト、トラッカーを読み込みません。Cookieも設定しません。</p>
+  </div>
+</footer>
+</body>
+</html>

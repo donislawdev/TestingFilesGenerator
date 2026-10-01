@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="de">
+<title>Dokumentation - Befehle, Rezepte, Manifest, Exit-Codes</title>
+<meta name="description" content="So erzeugst du Testdateien über die Kommandozeile oder ein YAML-Rezept, was das Manifest enthält und was jeder Exit-Code bedeutet, wenn das Tool in der CI läuft.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Dokumentation - Befehle, Rezepte, Manifest, Exit-Codes">
+<meta property="og:description" content="So erzeugst du Testdateien über die Kommandozeile oder ein YAML-Rezept, was das Manifest enthält und was jeder Exit-Code bedeutet, wenn das Tool in der CI läuft.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dokumentation - Befehle, Rezepte, Manifest, Exit-Codes">
+<meta name="twitter:description" content="So erzeugst du Testdateien über die Kommandozeile oder ein YAML-Rezept, was das Manifest enthält und was jeder Exit-Code bedeutet, wenn das Tool in der CI läuft.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/de/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokumentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/de\/dokumentation\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/de/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hauptnavigation">
+      <a href="/de/">Start</a>
+      <a href="/de/formate/">Formate</a>
+      <a href="/de/presets/">Presets</a>
+      <a href="/de/dokumentation/" aria-current="page">Dokumentation</a>
+      <a href="/de/anwendungsfaelle/">Anwendungsfälle</a>
+      <a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a>
+      <a href="/de/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Sprache: Deutsch">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Deutsch</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Dokumentation</h1>
+<p class="lead">
+  Alles, was das Tool kann, geordnet nach den Fragen, mit denen die Leute tatsächlich kommen. Die
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README im Repository</a> ist die vollständige Referenz und passt immer
+  zu dem Build, den du heruntergeladen hast.
+</p>
+
+<section class="section" id="commands">
+  <h2>Welche Befehle gibt es?</h2>
+  <p>Jeder tut genau eine Sache:</p>
+  <pre><code>tfg generate    Dateien erzeugen, aus einem Rezept oder über Flags
+tfg validate    ein Rezept prüfen und nichts schreiben
+tfg verify      ein Verzeichnis gegen ein Manifest prüfen
+tfg cleanup     die Dateien entfernen, die ein Manifest auflistet
+tfg recipe fmt  ein Rezept in seiner festen Form ausgeben
+tfg preset      ein Set von Dateien aus einer benannten Testfrage erzeugen
+tfg formats     die Formate dieses Builds auflisten
+tfg damage      die Arten auflisten, wie dieser Build eine Datei absichtlich beschädigen kann
+tfg tool        kleine Helfer für Dateien, die du schon hast
+tfg version     die Version des Tools ausgeben
+tfg license     die Lizenz ausgeben und was sie für erzeugte Dateien bedeutet</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Wie erzeuge ich eine einzelne Datei in exakter Größe?</h2>
+  <p>
+    Nenne das Format, die Größe und das Ziel. Größen zählen in 1024ern, <code>2mb</code> sind also
+    2097152 Bytes. Eine einfache Byte-Zahl funktioniert auch, <code>--size 10485761</code> verlangt
+    also genau so viele.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Die nützlichen Flags von <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Flag</th><th>Was es tut</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>Format der Dateien, zum Beispiel <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>exakte Größe jeder Datei, etwa <code>10mb</code> oder eine einfache Byte-Zahl</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>eine Größe, die pro Datei aus einem Bereich gezogen wird, etwa <code>1kb-8kb</code>. Die Ziehung kommt aus dem Seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>drei Dateien rund um ein Limit: ein Byte darunter, das Limit, ein Byte darüber</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>wie viele Dateien erzeugt werden. Standard <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>Namensvorlage, zum Beispiel <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>Verzeichnis, in das geschrieben wird</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>Seed des Laufs. Derselbe Seed ergibt dieselben Bytes</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>eine Formateinstellung, wiederholbar</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>Dateien absichtlich beschädigen, wiederholbar und der Reihe nach angewendet. Mit <code>tfg damage</code> bekommst du die Liste</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> oder <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>zählen und anzeigen, überhaupt nichts schreiben</td></tr>
+        <tr><td><code>--json</code></td><td>das Manifest auf die Standardausgabe schreiben</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Wie erzeuge ich eine absichtlich kaputte Datei?</h2>
+  <p>
+    Jede andere Datei, die dieses Tool schreibt, ist per Konstruktion korrekt, was zwei der drei Fragen
+    beantwortet, die ein Upload-Validator stellt. <code>--damage</code> beantwortet die dritte -
+    lässt sich die Datei überhaupt öffnen. Die Datei wird normal erzeugt und dann beschädigt, sie
+    hat also weiterhin die verlangte Größe.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Einstellungen stehen hinter einem Doppelpunkt. Das Flag lässt sich wiederholen, und die Reihenfolge,
+    in der du sie schreibst, ist die Reihenfolge, in der sie angewendet werden. <code>tfg
+    damage</code> listet auf, was dieser Build kann und was jede Variante annimmt.
+  </p>
+  <p>In einem Rezept ist der Schlüssel eine Liste, aus Namen oder aus Einstellungen:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Eine beschädigte Datei bekommt im Manifest <code>expected: reject</code>, mit der daneben
+    festgehaltenen Beschädigung. Zwei Dinge werden abgelehnt, bevor etwas geschrieben wird, weil
+    sonst jeweils eine Datei auf die Platte käme, die das Manifest falsch beschreibt:
+  </p>
+  <ul>
+    <li>eine Datei, die kleiner ist, als die Beschädigung braucht, weil sie unverändert herauskäme</li>
+    <li>
+      <code>expected: accept</code> neben einer Beschädigung, weil es keine Datei geben kann, die das
+      erfüllt. Schreibe <code>sanitize</code>, wenn das getestete System die Datei reparieren soll,
+      oder <code>unspecified</code>, wenn genau das die Frage ist, die du stellst
+    </li>
+  </ul>
+  <p>
+    Eine dritte lässt sich nicht im Voraus wissen. Wenn eine Beschädigung läuft und kein Byte verändert,
+    wird diese Datei verworfen statt geschrieben - der Lauf macht weiter, sagt, um welche Datei es
+    ging, und endet mit dem Exit-Code für teilweise erfolgreiche Läufe.
+  </p>
+  <p>
+    Schritt für Schritt, mit einem Test, der das Manifest liest:
+    <a href="/de/beschaedigte-testdateien/">So erzeugen Sie eine beschädigte Datei zum Testen</a>.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Wie sieht ein Rezept aus?</h2>
+  <p>
+    Ein Rezept ist eine YAML-Datei, die einen ganzen Lauf beschreibt. Checke sie neben deinen Tests ein,
+    und die Fixtures sind keine Binärdateien mehr in deinem Repository - jeder kann sie Byte für
+    Byte aus einer Datei von wenigen hundert Zeichen neu erzeugen.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Jedes Target braucht genau eines von <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> oder <code>contains</code>. Zwei davon sind ein Fehler, und keines
+    ebenfalls. Ein ungültiges Rezept schreibt <strong>überhaupt keine Dateien</strong> und meldet
+    alle Probleme auf einmal statt nur das erste, jedes mit der Einstellung, um die es geht.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Wie lege ich fest, was mein System mit einer Datei tun soll?</h2>
+  <p>Kurzform, wenn das Ergebnis reicht, Langform, wenn der Grund zählt:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Die Ergebnisse sind <code>accept</code>, <code>reject</code>, <code>sanitize</code> und
+    <code>unspecified</code>. Die Gründe sind eine geschlossene Liste, damit ein Report danach
+    gruppieren kann: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> und
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Ein Grund benennt <strong>die Regel, um die es geht</strong>, nicht das Urteil. Deshalb kann
+    derselbe Grund unter beiden Ergebnissen stehen - eine Datei ein Byte unter einem Limit ist
+    <code>accept</code>, und die Regel, um die es geht, ist trotzdem <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Was steht im Manifest?</h2>
+  <p>
+    Es wird am Ende jedes Laufs neben die Dateien geschrieben, auch bei einem unterbrochenen Lauf. Ein
+    Eintrag pro Datei:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Ein <code>recipe_hash</code> kommt hinzu, wenn der Lauf aus einem Rezept stammt, und
+    <code>preset</code> mit <code>overrides</code>, wenn er aus einem Preset stammt, sodass sich ein
+    Manifest immer auf das zurückführen lässt, was es erzeugt hat.
+  </p>
+  <p>
+    Jeder Eintrag trägt außerdem <code>target_id</code>, die ID des Targets im Rezept, das die Datei
+    erzeugt hat, und <code>summary.by_target</code> zählt, auf wie viele Dateien jedes Target kam.
+    Ein Rezept mit mehreren Targets lässt sich so Target für Target prüfen, ohne Dateinamen zu
+    lesen.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Was ist ein Preset?</h2>
+  <p>
+    Ein fertiges Set aus Dateien, das eine gängige Testfrage beantwortet, damit du das Set nicht selbst
+    entwerfen musst. Presets sind darunter ganz normale Rezepte, und <code>eject</code> gibt das
+    Rezept aus, damit du es von dort aus bearbeiten kannst. Jedes Preset hat
+    <a href="/de/presets/">eine eigene Seite</a> mit dem, was es meist findet, was im Set steckt und
+    welche Einstellungen es kennt.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/empty-and-minimal/">Leer und minimal</a></p>
+    <p class="muted">Kommt eine gültige Datei durch, die so klein ist, wie das Format es erlaubt?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/filename-handling/">Umgang mit Dateinamen</a></p>
+    <p class="muted">Speichert, zeigt und liefert mein System einen Dateinamen korrekt, mit dem es nicht gerechnet hat?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/size-boundaries/">Größengrenzen</a></p>
+    <p class="muted">Wird ein Größenlimit genau dort durchgesetzt, wo es angegeben ist?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/tabular-import/">Tabellenimport</a></p>
+    <p class="muted">Übersteht mein Tabellenimport das, was echte Tools exportieren?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/text-encoding/">Textkodierung</a></p>
+    <p class="muted">Weiß mein Leser, in welcher Kodierung eine Datei vorliegt, oder rät er?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/upload-validation/">Upload-Validierung</a></p>
+    <p class="muted">Nimmt mein Upload-Formular an, was es soll, und weist den Rest ab?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> sagt dir, was das Set kosten würde, bevor du es baust, und sagt
+    unmissverständlich, wenn eine Zahl ein Platzhalter von uns statt ein Limit von dir ist.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Was bedeuten die Exit-Codes?</h2>
+  <p>
+    Jedes Ende hat einen eigenen Code, maschinenlesbare Ausgabe geht auf die Standardausgabe, und ein
+    fehlgeschlagener Lauf gibt dort nichts aus. Die Tabelle ist ein eingefrorener Vertrag - die
+    Bedeutung eines Codes zu ändern erfordert einen Major-Versionssprung.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Code</th>
+      <th>Bedeutung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Alles hat funktioniert.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Ein unerwarteter Fehler im Tool.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Falscher Befehl oder falsches Flag.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Das Rezept ist ungültig.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Das Format kann nicht, was verlangt wurde.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Lesen oder Schreiben ist fehlgeschlagen.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Nicht genug Speicherplatz.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify hat eine Abweichung gefunden.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Der Lauf ist beendet, aber nicht alles wurde erzeugt.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Mit Strg&#43;C abgebrochen.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Durch ein Signal beendet, so sieht ein CI-Timeout aus.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ein mit Strg+C gestoppter Lauf hinterlässt trotzdem ein Manifest und nie eine halb geschriebene
+    Datei, sodass ein abgebrochener Job vom nächsten noch aufgeräumt werden kann.
+  </p>
+  <p>
+    Fertige Workflows für GitHub Actions und GitLab CI: <a href="/de/testdateien-in-ci/">So erzeugen Sie
+    Testdateien in einer CI-Pipeline</a>.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Gibt es ein Desktop-Fenster?</h2>
+  <p>
+    Ja, dieselbe Engine mit einem Fenster davor, für das Testen, das nicht skriptbar ist. Es ist keine
+    abgespeckte Version: Ein Test vergleicht die beiden Oberflächen Fähigkeit für Fähigkeit, und
+    alles, was nur eine von beiden kann, muss deklariert und begründet werden, statt unbemerkt
+    auseinanderzudriften.
+  </p>
+  <p>
+    Die Bildschirme sind ein Stapel, Presets, mehrere Stapel gleichzeitig und Info. Es zeigt, was ein
+    Lauf kosten würde, bevor etwas geschrieben wird, meldet den Fortschritt während des Laufs und
+    lässt sich mittendrin abbrechen, ohne eine halb geschriebene Datei zu hinterlassen. Eine
+    Rezeptdatei öffnet es noch nicht - Rezepte gibt es vorerst nur auf der Kommandozeile, und das
+    Fenster baut seine Stapel im Formular.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testdateien für die QA in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode auf GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Problem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Projekt unterstützen</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Seiten</p>
+      <ul class="plain">
+        <li><a href="/de/">Start</a></li>
+        <li><a href="/de/formate/">Formate</a></li>
+        <li><a href="/de/presets/">Presets</a></li>
+        <li><a href="/de/dokumentation/">Dokumentation</a></li>
+        <li><a href="/de/anwendungsfaelle/">Anwendungsfälle</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a></li>
+        <li><a href="/de/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Veröffentlicht unter der GNU General Public License, Version 3. Die Dateien, die du erzeugst, gehören dir - die Lizenz gilt für das Tool, nicht für seine Ausgabe.</p>
+    <p class="muted">Diese Website lädt von nirgendwo Schriften, Skripte oder Tracker. Sie setzt keine Cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<h1>Cara membuat file dengan ukuran tepat</h1>
+<p class="lead">
+  Setiap sistem punya perintah untuk itu, dan ketiganya ada di bawah. Perintah-perintah itu memberi
+  Anda file dengan jumlah byte yang tepat - dan untuk banyak pengujian itu sudah cukup.
+  <strong>Setiap perintah di halaman ini dijalankan sebelum dipublikasikan</strong>, di sistem
+  tempat perintah itu berada.
+</p>
+
+<div class="note">
+  <p class="note-title">Jawaban singkat</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Ukuran dalam byte, dan 10 MB yang
+    dihitung seperti pengelola file Anda menghitung adalah 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, dan versi PowerShell yang tidak memerlukan tambahan apa pun</h2>
+  <p>
+    <code>fsutil</code> disertakan dengan Windows. Perintah ini menerima ukuran <strong>dalam
+    byte</strong>, jadi hitung dulu angkanya - 10 MB adalah 10485760, 100 MB adalah 104857600, 1 GB
+    adalah 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Diukur di Windows 11: berjalan dari prompt biasa dan tidak memerlukan prompt dengan hak istimewa,
+    dan file keluar tepat 10485760 byte.
+  </p>
+  <p>PowerShell dapat melakukan hal yang sama tanpa memanggil program lain, dan memahami satuan:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> di PowerShell berarti 10485760 byte, hitungan berbasis 1024 yang sama dengan yang
+    dipakai Explorer, sehingga kedua perintah di atas menghasilkan ukuran yang sama.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate, dan fallocate, dan perbedaan yang menjebak orang</h2>
+  <p><code>dd</code> adalah yang dikenal semua orang. Perintah ini benar-benar menulis byte:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> instan, dan di situlah jebakannya. Diukur di Alpine Linux, file melaporkan
+    10485760 byte dan menempati <strong>nol blok</strong> - ini adalah <strong>sparse file</strong>.
+    Apa pun yang membacanya mendapat sepuluh megabyte nol, tetapi disk tidak pernah menyerahkan
+    ruangnya:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Itu baik untuk menguji batas unggahan dan menyesatkan untuk menguji kuota disk.
+    <code>fallocate</code> adalah yang dipakai bila ruangnya harus nyata:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Dan bila isinya harus tak dapat dikompres, agar pengarsip tidak bisa memadatkannya kembali:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, yang bukan sparse, dan dua yang sudah Anda kenal</h2>
+  <p>
+    macOS menyertakan <code>mkfile</code>. Diukur di macOS 26.6.2: 10485760 byte dan 20480 blok,
+    sehingga ruangnya benar-benar dialokasikan, bukan dijanjikan:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> dan <code>truncate</code> juga ada dan berperilaku seperti di Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Di mana ini berhenti berfungsi</p>
+  <h2>File dengan ukuran yang benar bukan file dengan jenis yang benar</h2>
+  <p>
+    Semua di atas memberi Anda blok nol. Itu cukup bila yang diuji hanya melihat ukuran - batas
+    unggahan, kuota, transfer. Itu berhenti cukup begitu ada yang <strong>membuka</strong> file itu.
+  </p>
+  <p>
+    Diukur, dan layak Anda coba sendiri: buat file 2 MB dengan <code>fsutil</code>, namai
+    <code>photo.png</code>, dan serahkan ke pustaka gambar. Pillow menjawab <code>cannot identify
+    image file</code>. Itu bukan PNG. Tidak pernah - hanya namanya yang berkata begitu.
+  </p>
+  <p>
+    Itu lebih penting daripada kedengarannya, karena <strong>arah kegagalan pengujian itu
+    kemudian</strong>. Endpoint unggah Anda menolak file, pengujian Anda hijau, dan Anda
+    menyimpulkan batas ukuran berfungsi. Endpoint itu tidak menolaknya karena ukuran. Ia menolaknya
+    karena byte-nya bukan gambar, dan aturan yang ingin Anda uji tidak pernah tercapai.
+  </p>
+  <ul class="ticks">
+    <li>parser menolaknya sebelum aturan ukuran apa pun diperiksa</li>
+    <li>langkah thumbnail gagal dan galat yang Anda baca adalah tentang thumbnail</li>
+    <li>antivirus atau pemeriksaan konten menolaknya karena alasan ketiga</li>
+    <li>penampil tidak menampilkan apa pun, dan tak seorang pun tahu apakah itu bug-nya</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Jalan lainnya</p>
+  <h2>File asli dari format itu, dengan ukuran persis seperti yang Anda minta</h2>
+  <p>
+    Inilah yang dilakukan Testing Files Generator. File itu adalah file asli dari formatnya - terbuka di
+    aplikasi yang memilikinya - dan berjumlah byte persis seperti yang Anda minta, sampai ke byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Minta ukuran yang tidak dapat dicapai suatu format dan Anda mendapat galat yang menyebut batas bawah
+    dan alasannya, tidak pernah file berukuran salah. <a href="/id/format/">Halaman format</a>
+    mencantumkan setiap format beserta file terkecil yang dapat dibuatnya.
+  </p>
+  <p>Dan sebuah batas adalah tiga kasus uji, bukan satu, jadi alat ini membuat ketiganya:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Itu memberi Anda 10485759, 10485760, dan 10485761 byte, dan manifes yang menyatakan mana yang harus
+    diterima sistem Anda dan mana yang harus ditolak. <a href="/id/kasus-penggunaan/">Halaman kasus
+    penggunaan</a> membahas itu dan empat pekerjaan lain yang untuknya alat ini dibuat.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Jadi mana yang sebaiknya dipakai?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Pakai perintah sistem</p>
+      <p class="muted">
+        Bila tidak ada yang membuka file. Menguji batas ukuran pada endpoint yang memeriksa ukuran lebih
+        dulu, transfer, kuota, disk penuh. Hanya satu baris dan sudah terpasang.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Pakai generator sungguhan</p>
+      <p class="muted">
+        Bila ada yang mem-parsing, merender, mengimpor, atau mengekstrak file - dan bila Anda memerlukan
+        fixture yang sama besok, di mesin lain, byte demi byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Keduanya ada di halaman ini karena keduanya benar sebagian waktu. Kesalahan yang perlu dihindari
+    adalah memakai yang pertama di tempat yang kedua dibutuhkan dan membaca pengujian hijau sebagai
+    bukti.
+  </p>
+</section>

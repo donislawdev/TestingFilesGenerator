@@ -1,0 +1,81 @@
+<h1>{{ .Facts.FormatCount }} formats de fichiers, chacun généré à une taille exacte</h1>
+<p class="lead">
+  Chacun est un <strong>vrai fichier de ce format</strong>. Il s'ouvre dans le logiciel qui lui
+  correspond et fait exactement le nombre d'octets que vous avez demandé. Aucun n'est du remplissage
+  de zéros avec une extension collée dessus.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Ce que signifient les colonnes</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Plus petit fichier</p>
+      <p class="muted">
+        Le moins d'octets que cet outil accepte pour ce format, y compris l'étiquette qu'il écrit dans le
+        fichier. Demandez moins et vous obtenez une erreur qui nomme le plancher et sa raison,
+        jamais un fichier de mauvaise taille.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Fidélité</p>
+      <p class="muted">
+        À quel point le fichier est complet. <code>full</code> signifie qu'un lecteur qui analyse vraiment
+        le format l'accepte, et pas seulement que l'extension correspond.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Vérifié avec</p>
+      <p class="muted">
+        Le lecteur indépendant qui ouvre chaque fichier généré avant la livraison du format - une
+        implémentation distincte, pas notre propre code qui corrige ses propres devoirs.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Chaque format se répète aussi à l'octet près&nbsp;: la même recette et la même graine produisent des
+    fichiers identiques sur n'importe quelle machine, ce qui rend une recette sûre à commiter à la
+    place des fixtures elles-mêmes.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Réglages que chaque format accepte</h2>
+  <p>
+    La plupart des formats ont des réglages propres - dimensions d'image, qualité JPEG, nombre de pages
+    PDF, lignes et colonnes d'un tableur, nombre d'entrées dans une archive. Définissez-les avec
+    <code>--set key=value</code> en ligne de commande, ou sous <code>properties:</code> dans une
+    recette.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Une valeur hors de ce qu'un réglage accepte est refusée avec un message qui nomme le réglage, la
+    plage autorisée et quoi utiliser à la place. Un réglage inconnu est aussi une erreur, jamais une
+    valeur par défaut silencieuse - une faute de frappe acceptée en silence donne un fichier aux
+    mauvais réglages et une heure à se demander pourquoi le test passe alors qu'il ne devrait pas.
+  </p>
+  <p>
+    Lancez <code>tfg formats &lt;id&gt;</code> pour voir exactement ce qu'un format accepte dans la
+    version que vous avez.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Les archives contiennent de vrais fichiers</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} et {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    peuvent être remplis d'entrées plutôt que laissés en coquille vide. Une archive générée contient
+    réellement les documents qu'elle prétend contenir, si bien que tout ce qui la décompresse
+    pendant un test y trouve de vrais fichiers.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

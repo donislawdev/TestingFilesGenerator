@@ -1,0 +1,92 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  <code>{{ .ID }}</code> hazır ayarı, bu soru için tek komutla gerçek test dosyalarından oluşan bütün
+  bir set ve yanında sisteminizin her dosyaya nasıl tepki vermesi gerektiğini söyleyen bir
+  <code>manifest.json</code> kurar. Aşağıdaki her şey programdan, bu sürümün varsayılanlarıyla
+  okunur.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Genelde ne bulur?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Sette ne var?</h2>
+  <p>Varsayılanlarda, <code>tfg preset show {{ .ID }}</code> çıktısının bildirdiği gibi:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Dosya</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Tarifindeki hedefler</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Toplam boyut</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Biçimler</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Ve o setin manifestinin sisteminizden beklediği:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Beklenen</th><th>Anlamı</th><th class="num">Dosya</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Neyi değiştirebilirsiniz?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Ayar</th><th>Aldığı</th><th>Varsayılan</th><th>Ne yapar</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Bu varsayılan sizin sisteminizin değeri değil, bizim geçici değerimizdir. Kendinizinkini verin.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Bu hazır ayarın ayarı yok. Set her seferinde aynıdır.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Nasıl çalıştırılır?</h2>
+  <p>Setin neye mal olacağına bakın, kurun veya düzenlemek için tarifini alın:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Ya da testlerinizin yanında kendi tarifinizde onun üzerine kurun:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

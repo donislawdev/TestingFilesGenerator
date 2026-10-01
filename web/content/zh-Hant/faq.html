@@ -1,0 +1,16 @@
+<h1>常見問題</h1>
+<p class="lead">
+  授權、隱私、可重現性，以及人們在把產生器放進建置流程之前會確認的事項。如果這裡沒有你的問題，<a href="{{ .Facts.Issues }}">問題追蹤器</a>是開放的。
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>還在猶豫？</h2>
+  <p>
+    <a href="/zh-hant/use-cases/">使用情境頁面</a>展示了它為之而生的任務，<a href="/zh-hant/formats/">格式頁面</a>列出了每種格式及其能產生的最小檔案。<a href="{{ .Facts.Repo }}">儲存庫中的
+    README</a> 是完整參考。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

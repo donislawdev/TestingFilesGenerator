@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ro">
+<title>Fișiere de test în CI - GitHub Actions, GitLab CI și PowerShell</title>
+<meta name="description" content="Generează fișiere de test în pipeline în loc să comiți binare: workflow GitHub Actions, job GitLab, coduri de ieșire și capcana PowerShell.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="Fișiere de test în CI - GitHub Actions, GitLab CI și PowerShell">
+<meta property="og:description" content="Generează fișiere de test în pipeline în loc să comiți binare: workflow GitHub Actions, job GitLab, coduri de ieșire și capcana PowerShell.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fișiere de test în CI - GitHub Actions, GitLab CI și PowerShell">
+<meta name="twitter:description" content="Generează fișiere de test în pipeline în loc să comiți binare: workflow GitHub Actions, job GitLab, coduri de ieșire și capcana PowerShell.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Acasă",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ro/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Cazuri de utilizare",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/cazuri-de-utilizare\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Fișiere de test în CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/fisiere-de-test-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ro/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/ro/">Acasă</a>
+      <a href="/ro/formate/">Formate</a>
+      <a href="/ro/presetari/">Presetări</a>
+      <a href="/ro/documentatie/">Documentație</a>
+      <a href="/ro/cazuri-de-utilizare/" aria-current="true">Cazuri de utilizare</a>
+      <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
+      <a href="/ro/intrebari-frecvente/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Limba: Română">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Română</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></p>
+<h1>Cum generezi fișiere de test într-un pipeline CI</h1>
+<p class="lead">
+  Un fixture binar într-un repository rămâne pentru totdeauna în istoricul lui, nu poate fi revizuit
+  într-un diff și devine imposibil când fișierul este mare. Generează în schimb fișierele în
+  pipeline, dintr-o rețetă. Rețeta este text, octeții ies la fel de fiecare dată, iar un ultim pas
+  dovedește că nimic nu s-a mișcat.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    Instalează <code>tfg</code>, rulează <code>tfg generate fixtures.yaml --out ./fixtures</code>
+    înaintea testelor și <code>tfg verify ./fixtures/manifest.json</code> după ele. Ambii pași fac
+    singuri build-ul să eșueze, cu un cod de ieșire care spune de ce.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">De ce să nu le comiți</p>
+  <h2>De ce un fixture nu trebuie să stea în repository</h2>
+  <ul>
+    <li>
+      <strong>Rămâne în istoric.</strong> Ștergerea ulterioară a unui binar nu face un clon mai mic,
+      pentru că fiecare versiune a lui este încă acolo.
+    </li>
+    <li>
+      <strong>Un diff nu arată ce s-a schimbat.</strong> Cel care revizuiește vede că un PDF este diferit
+      și nimic altceva. O rețetă se schimbă cu o linie.
+    </li>
+    <li>
+      <strong>Fișierele mari nu încap.</strong> GitHub refuză un push care conține un fișier de peste 100
+      MB, așa că un test al unei limite de încărcare de 500 MB nu are ce comite.
+    </li>
+  </ul>
+  <p>
+    Ce trebuie comis este rețeta. Aceeași rețetă și același seed scriu aceiași octeți pe orice mașină,
+    deci fișierul generat în pipeline este fișierul pe care l-ai avut pe laptop.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Rețeta</p>
+  <h2>O rețetă care stă lângă teste</h2>
+  <p>
+    Aceasta scrie douăzeci și cinci de facturi care trebuie acceptate și două imagini peste o limită
+    care trebuie respinse, iar manifestul notează ambele așteptări:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> o verifică fără să scrie nimic și numește toate problemele
+    deodată.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Un workflow care instalează instrumentul și construiește fixture-urile</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Linia cu suma de control compară arhiva cu <code>verify-SHA256SUMS.txt</code> din aceeași versiune.
+    Versiunea este fixată, așa că o versiune nouă nu schimbă niciodată un build pe care nu l-ai
+    atins.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Același lucru ca job GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Când se face roșu</p>
+  <h2>Ce face un pas să eșueze, și de ce</h2>
+  <p>
+    Fiecare final are propriul cod de ieșire, deci pasul eșuează singur, iar jurnalul spune care a fost.
+    Cele pe care le întâlnește un pipeline:
+  </p>
+  <ul>
+    <li><code>3</code> - rețeta nu este validă. Nu s-a scris nimic, iar fiecare problemă este numită</li>
+    <li><code>4</code> - formatul nu poate face ce s-a cerut, de exemplu o mărime sub minimul lui</li>
+    <li><code>6</code> - nu este destul spațiu pe disc</li>
+    <li><code>7</code> - <code>tfg verify</code> a găsit un fișier care nu se potrivește cu manifestul lui</li>
+    <li><code>8</code> - rularea s-a încheiat, dar nu s-a produs totul</li>
+  </ul>
+  <p>
+    O rulare eșuată nu afișează nimic la ieșirea standard, așa că un parser de jurnale nu ia niciodată o
+    eroare drept date. Tabelul complet este pe <a href="/ro/documentatie/#ci">pagina de
+    documentație</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Un script PowerShell mai are nevoie de o linie</h2>
+  <p>
+    PowerShell nu scoate codul de ieșire al unui program dintr-un fișier <code>.ps1</code>. Rulează unul
+    cu <code>-File</code> și scriptul răspunde <code>0</code> chiar și când instrumentul dinăuntru a
+    refuzat lucrul, așa că un build care ar trebui să fie roșu devine verde. Ultima linie este toată
+    soluția:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Așa se comportă PowerShell, nu este ceva legat de acest instrument. <code>cmd</code>,
+    <code>bash</code> și <code>zsh</code> nu au nevoie de nimic în plus.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Mai multe joburi</p>
+  <h2>Împărțirea fixture-urilor între joburi</h2>
+  <p>
+    De obicei nu e nevoie să le încarci. Fiindcă aceeași rețetă scrie aceiași octeți, fiecare job își
+    poate rula propriul <code>tfg generate</code>, ceea ce e mai rapid decât o încărcare și o
+    descărcare. Când un job trebuie să primească fișiere de la altul, rulează <code>tfg
+    verify</code> pe manifest după transfer, și îți spune dacă ce a ajuns este ce s-a scris.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Mai departe</p>
+  <h2>Unde să mergi de aici</h2>
+  <ul>
+    <li>
+      <a href="/ro/fisiere-de-test-corupte/">Fișiere de test corupte</a> adaugă aceleiași rețete fișiere
+      stricate intenționat.
+    </li>
+    <li>
+      <a href="/ro/cazuri-de-utilizare/">Cazurile de utilizare</a> arată ce altceva poate verifica o
+      rulare într-un pipeline.
+    </li>
+    <li>
+      <a href="/ro/documentatie/">Documentația</a> cuprinde fiecare comandă, fiecare cheie de rețetă și
+      fiecare cod de ieșire.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proiect</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Cod sursă pe GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descărcări</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Raportează o problemă</a></li>
+        <li><a href="https://donislawdev.com/support/">Susține proiectul</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagini</p>
+      <ul class="plain">
+        <li><a href="/ro/">Acasă</a></li>
+        <li><a href="/ro/formate/">Formate</a></li>
+        <li><a href="/ro/presetari/">Presetări</a></li>
+        <li><a href="/ro/documentatie/">Documentație</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
+        <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.</p>
+    <p class="muted">Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>उपयोग के मामले - अपलोड सीमा, CI फ़िक्स्चर, बड़े पैमाने पर टेस्ट</title>
+<meta name="description" content="अपलोड आकार सीमा की जाँच, CI के लिए दोहराए जा सकने वाले फ़िक्स्चर, दस हज़ार फ़ाइलें बनाना, और आर्काइव में असली सामग्री भरना।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/use-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/use-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/use-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/use-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/use-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="उपयोग के मामले - अपलोड सीमा, CI फ़िक्स्चर, बड़े पैमाने पर टेस्ट">
+<meta property="og:description" content="अपलोड आकार सीमा की जाँच, CI के लिए दोहराए जा सकने वाले फ़िक्स्चर, दस हज़ार फ़ाइलें बनाना, और आर्काइव में असली सामग्री भरना।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/use-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="उपयोग के मामले - अपलोड सीमा, CI फ़िक्स्चर, बड़े पैमाने पर टेस्ट">
+<meta name="twitter:description" content="अपलोड आकार सीमा की जाँच, CI के लिए दोहराए जा सकने वाले फ़िक्स्चर, दस हज़ार फ़ाइलें बनाना, और आर्काइव में असली सामग्री भरना।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "उपयोग के मामले",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/use-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/" aria-current="page">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/use-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/use-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/use-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/use-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/use-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/use-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/use-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/use-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>लोग इसका इस्तेमाल किसलिए करते हैं</h1>
+<p class="lead">
+  पाँच काम जो लोगों से फ़ाइलें लेने वाले लगभग हर प्रोजेक्ट में आते हैं, और हर एक को करने वाली कमांड।
+  नीचे का हर उदाहरण जैसा लिखा है वैसा चलता है।
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">अपलोड सीमाएँ</p>
+  <h2>यह जाँचना कि फ़ाइल आकार सीमा वहीं लागू होती है जहाँ वह कहती है</h2>
+  <p>
+    एक सीमा एक नहीं, तीन टेस्ट केस है: ठीक नीचे, ठीक पर, और ठीक ऊपर। इन्हें हाथ से बनाने का मतलब बाइट
+    संख्या निकालना और उम्मीद करना है कि आप एक से नहीं चूके। इसके बजाय सेट माँगें:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    आपको 1048575, 1048576 और 1048577 बाइट की तीन असली PDF मिलती हैं, और एक मैनिफ़ेस्ट जो कहता है कि पहली
+    दो स्वीकार होनी चाहिए और तीसरी <code>size_limit</code> के कारण अस्वीकार। आपका टेस्ट तीन असर्शन
+    हाथ से लिखने के बजाय अपेक्षा पढ़ता है - और जब सीमा बदलती है तो आप एक संख्या बदलकर दोबारा चलाते
+    हैं।
+  </p>
+  <p>
+    जब आप इनलाइन एक ही सीमा सेट चाहें तो यही प्रीसेट के बिना भी चलता है:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">सतत एकीकरण</p>
+  <h2>फ़िक्स्चर को खोए बिना रिपॉज़िटरी से बाहर रखना</h2>
+  <p>
+    बड़े बाइनरी फ़िक्स्चर रिपॉज़िटरी क्लोन करना धीमा और रिव्यू करना कठिन बनाते हैं, और किसी एक के बदले
+    जाने पर कोई नहीं बता सकता कि क्या बदला। रेसिपी कुछ सौ अक्षरों की YAML है जो वही फ़ाइलें दोबारा
+    बना देती है - <strong>किसी भी मशीन पर बाइट-दर-बाइट</strong> - क्योंकि हर फ़ाइल रन के सीड से
+    निकलती है।
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    हर अंत का अपना एग्ज़िट कोड है, इसलिए पाइपलाइन खराब रेसिपी, भरी डिस्क और सत्यापन असंगति में अंतर कर
+    सकती है। विफल रन स्टैंडर्ड आउटपुट पर कुछ नहीं छापता, जिससे लॉग पार्सर किसी त्रुटि को डेटा नहीं
+    पढ़ता।
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">पैमाना</p>
+  <h2>यह जानना कि फ़ोल्डर बड़ा होने पर क्या होता है</h2>
+  <p>
+    इंपोर्ट रूटीन, रात के जॉब और डायरेक्टरी सूचियाँ दस हज़ार फ़ाइलों पर दस की तुलना में अलग व्यवहार करती
+    हैं। किसी सीमा से निकाले गए आकार सेट को दस हज़ार एक जैसी फ़ाइलों के बजाय असली ट्रैफ़िक जैसा
+    दिखाते हैं, और निकालना सीड से होता है, इसलिए सेट कल भी वही रहता है।
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    कुछ भी लिखे जाने से पहले देखें कि रन की क़ीमत क्या होगी, जो तब मायने रखता है जब कुल गीगाबाइट में
+    नापा जाए:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    डिस्क की खाली जगह से बड़ा रन पहला बाइट लिखे जाने से पहले ठुकरा दिया जाता है, डिस्क भरकर बीच में विफल
+    होने के बजाय।
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">आर्काइव</p>
+  <h2>ऐसे आर्काइव से अनपैकर का परीक्षण जिसमें सच में फ़ाइलें हैं</h2>
+  <p>
+    सही एक्सटेंशन वाला खाली आर्काइव उस कोड के बारे में कुछ साबित नहीं करता जो उसे खोलकर अंदर की चीज़ों
+    से गुज़रता है। सामग्री घोषित करें और आर्काइव सच में उसे रखता है:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    नेस्टिंग की गहराई, प्रविष्टियों की संख्या और अंदर की चीज़ों का आकार, ये सब वे बातें हैं जिन पर
+    इंपोर्ट रूटीन की अपनी राय होती है, और इसी तरह आप जानते हैं कि वह राय क्या है।
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">पार्सर और व्यूअर</p>
+  <h2>यह जाँचना कि आपका अपना कोड फ़ॉर्मैट को असली सॉफ़्टवेयर की तरह पढ़ता है</h2>
+  <p>
+    यहाँ का हर फ़ॉर्मैट भेजे जाने से पहले स्वतंत्र रीडर से जाँचा जाता है - PNG खोली जाती है और उसके
+    पिक्सेल मिलाए जाते हैं, DOCX अलग लाइब्रेरी से वापस पढ़ा जाता है, आर्काइव खोला जाता है। इसका मतलब
+    है कि जो फ़ाइल आपका पार्सर ठुकराता है वह आपके पार्सर के बारे में एक खोज है, जनरेटर के बारे में
+    नहीं।
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/hi/formats/">फ़ॉर्मैट पेज</a> हर एक की स्वीकार की जाने वाली सेटिंग और हर एक की सबसे छोटी
+    संभव फ़ाइल सूचीबद्ध करता है।
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">गाइड</p>
+  <h2>इनमें से दो, विस्तार से</h2>
+  <ul>
+    <li>
+      <a href="/hi/corrupt-test-files/">खराब टेस्ट फ़ाइलें</a> - जानबूझकर बिगाड़ी गई, ठीक-ठीक आकार की
+      फ़ाइल, जिसके साथ क्या होना चाहिए वह मैनिफ़ेस्ट में लिखा है।
+    </li>
+    <li>
+      <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a> - GitHub Actions का वर्कफ़्लो, GitLab का
+      जॉब और वे एग्ज़िट कोड जो बिल्ड को विफल करते हैं।
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>यह किसके लिए है</h2>
+  <p>
+    QA इंजीनियर, टेस्ट ऑटोमेशन और हर वह व्यक्ति जिसके कोड के पीछे अपलोड फ़ॉर्म, इंपोर्ट रूटीन, पार्सर या
+    स्टोरेज कोटा है। यह बिना किसी नेटवर्क की मशीन पर चलता है, जो बंद कॉर्पोरेट माहौल में मायने रखता
+    है जहाँ ब्राउज़र आधारित जनरेटर विकल्प नहीं होता।
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड करें</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">सोर्स कोड देखें</a>
+</div>
+<p class="cta-note">मुफ़्त और ओपन सोर्स, GPL-3.0। साइन अप की ज़रूरत नहीं। Windows और macOS के डाउनलोड हस्ताक्षरित हैं और बिना चेतावनी के शुरू होते हैं।</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

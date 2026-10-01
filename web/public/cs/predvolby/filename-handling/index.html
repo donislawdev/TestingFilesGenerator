@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Problematické názvy souborů pro testování - Unicode a délka</title>
+<meta name="description" content="Soubory s názvy, které rozbíjejí nahrávání a úložiště: jiná písma a emoji, přepsání směru textu, neviditelné znaky, syntaxe shellu a SQL, limity délky.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/filename-handling/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/filename-handling/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/filename-handling/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/filename-handling/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/filename-handling/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/filename-handling/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/filename-handling/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/filename-handling/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/filename-handling/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/filename-handling/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/filename-handling/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/filename-handling/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/filename-handling/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/filename-handling/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/filename-handling/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/filename-handling/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/filename-handling/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/filename-handling/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/filename-handling/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Problematické názvy souborů pro testování - Unicode a délka">
+<meta property="og:description" content="Soubory s názvy, které rozbíjejí nahrávání a úložiště: jiná písma a emoji, přepsání směru textu, neviditelné znaky, syntaxe shellu a SQL, limity délky.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/predvolby/filename-handling/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Problematické názvy souborů pro testování - Unicode a délka">
+<meta name="twitter:description" content="Soubory s názvy, které rozbíjejí nahrávání a úložiště: jiná písma a emoji, přepsání směru textu, neviditelné znaky, syntaxe shellu a SQL, limity délky.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Předvolby",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/predvolby\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Zacházení s názvy souborů",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/predvolby\/filename-handling\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/" aria-current="true">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/filename-handling/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/filename-handling/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/de/presets/filename-handling/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/filename-handling/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/filename-handling/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/filename-handling/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/filename-handling/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/filename-handling/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/filename-handling/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/filename-handling/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/filename-handling/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/filename-handling/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/filename-handling/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/filename-handling/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/filename-handling/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/presets/filename-handling/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/hazir-ayarlar/filename-handling/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/filename-handling/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/filename-handling/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/filename-handling/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/filename-handling/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/cs/predvolby/">Předvolby</a></p>
+<h1>Zacházení s názvy souborů</h1>
+<p class="lead">Uloží, zobrazí a vrátí můj systém název souboru, který nečekal?</p>
+<p>
+  Předvolba <code>filename-handling</code> sestaví jediným příkazem celou sadu skutečných testovacích souborů
+  pro tuto otázku a vedle nich <code>manifest.json</code>, který říká, jak má váš systém na každý
+  soubor reagovat. Vše níže se čte z programu při výchozích hodnotách této verze.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Co obvykle najde?</h2>
+  <ul class="ticks">
+    <li>název, který na obrazovce, v logu nebo v seznamu vypadá jako jiný</li>
+    <li>název oříznutý, zkrácený nebo přepsaný mezi nahráním a uložením</li>
+    <li>limit délky počítaný ve znacích tam, kde úložiště počítá bajty</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Co je v sadě?</h2>
+  <p>Při výchozích hodnotách, jak je hlásí <code>tfg preset show filename-handling</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Soubory</th><td>50</td></tr>
+        <tr><th scope="row">Targety v receptu</th><td>50</td></tr>
+        <tr><th scope="row">Celková velikost</th><td>51 200 B</td></tr>
+        <tr><th scope="row">Formáty</th><td>txt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A co od vašeho systému očekává manifest té sady:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Očekáváno</th><th>Význam</th><th class="num">Soubory</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Váš systém má soubor přijmout.</td><td class="num">4</td></tr>
+        <tr><td><code>unspecified</code></td><td>Záleží na pravidlech vašeho systému. Rozhodnete vy, a pak ověříte, že to, co se stane, je to, co jste chtěli.</td><td class="num">46</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Co můžete změnit?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Nastavení</th><th>Přijímá</th><th>Výchozí</th><th>Co dělá</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--format</code></td>
+          <td>id formátu ze stránky formátů</td>
+          <td><code>txt</code></td>
+          <td>Formát každého souboru v sadě. Je to přepínač samotného nástroje a předvolba mu jen dává výchozí hodnotu.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Jak ji spustit?</h2>
+  <p>Podívejte se, kolik by sada stála, sestavte ji, nebo si vezměte její recept k úpravě:</p>
+  <pre><code>tfg preset show filename-handling
+tfg generate --preset filename-handling --out ./filename-handling
+tfg preset eject filename-handling &gt; filename-handling.yaml</code></pre>
+  <p>Nebo na ní stavte ve vlastním receptu vedle svých testů:</p>
+  <pre><code>version: 1
+extends: preset:filename-handling</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

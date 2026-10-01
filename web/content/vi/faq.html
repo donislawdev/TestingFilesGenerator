@@ -1,0 +1,20 @@
+<h1>Câu hỏi thường gặp</h1>
+<p class="lead">
+  Giấy phép, quyền riêng tư, khả năng tái lập và những điều mọi người kiểm tra trước khi đưa một trình
+  tạo vào pipeline build. Nếu câu hỏi của bạn chưa có ở đây, <a href="{{ .Facts.Issues }}">trình
+  theo dõi issue</a> luôn mở.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Vẫn đang cân nhắc?</h2>
+  <p>
+    <a href="/vi/truong-hop-su-dung/">Trang trường hợp sử dụng</a> cho thấy các việc nó được làm ra để
+    giải quyết, và <a href="/vi/dinh-dang/">trang định dạng</a> liệt kê mỗi định dạng cùng tệp nhỏ
+    nhất nó có thể tạo. <a href="{{ .Facts.Repo }}">README trong kho mã</a> là tài liệu tham chiếu
+    đầy đủ.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

@@ -1,0 +1,145 @@
+<h1>Cum creezi un fișier de dimensiune exactă</h1>
+<p class="lead">
+  Fiecare sistem are o comandă pentru asta, iar toate trei sunt mai jos. Îți dau un fișier cu exact
+  numărul potrivit de octeți - și pentru multe teste atât îți trebuie. <strong>Fiecare comandă de pe
+  această pagină a fost rulată înainte de publicare</strong>, pe sistemul căruia îi aparține.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Dimensiunile sunt în octeți, iar 10
+    MB numărați cum numără managerul tău de fișiere sunt 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil și o variantă PowerShell care nu are nevoie de nimic în plus</h2>
+  <p>
+    <code>fsutil</code> vine cu Windows. Primește dimensiunea <strong>în octeți</strong>, așa că
+    calculează mai întâi numărul - 10 MB sunt 10485760, 100 MB sunt 104857600, 1 GB este 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Măsurat pe Windows 11: merge dintr-un prompt obișnuit, fără să ceară unul cu privilegii ridicate,
+    iar fișierul iese de exact 10485760 de octeți.
+  </p>
+  <p>PowerShell poate face același lucru fără să cheme alt program și înțelege unitățile:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> în PowerShell înseamnă 10485760 de octeți, aceeași numărare în baza 1024 pe care o
+    folosește Explorer, deci cele două comenzi de mai sus produc aceeași dimensiune.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate și fallocate, și diferența care îi prinde pe oameni</h2>
+  <p><code>dd</code> este cel pe care îl știe toată lumea. Scrie într-adevăr octeții:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> e instantaneu și asta e capcana. Măsurat pe Alpine Linux, fișierul raportează
+    10485760 de octeți și ocupă <strong>zero blocuri</strong> - este un <strong>fișier rar</strong>
+    (sparse). Tot ce îl citește primește zece megaocteți de zerouri, dar discul nu a cedat niciodată
+    spațiul:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    E bine pentru a testa o limită de încărcare și înșelător pentru a testa o cotă de disc.
+    <code>fallocate</code> este cel de folosit când spațiul trebuie să fie real:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Și când conținutul trebuie să fie incompresibil, ca un arhivator să nu-l poată strânge la loc:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, care nu e rar, și cele două pe care le știi deja</h2>
+  <p>
+    macOS vine cu <code>mkfile</code>. Măsurat pe macOS 26.6.2: 10485760 de octeți și 20480 de blocuri,
+    deci spațiul este alocat cu adevărat, nu doar promis:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> și <code>truncate</code> sunt și ele acolo și se comportă ca pe Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Unde nu mai merge asta</p>
+  <h2>Un fișier de dimensiunea potrivită nu este un fișier de tipul potrivit</h2>
+  <p>
+    Tot ce e mai sus îți dă un bloc de zerouri. Asta ajunge când ce se testează se uită doar la
+    dimensiune - o limită de încărcare, o cotă, un transfer. Nu mai ajunge din clipa în care ceva
+    <strong>deschide</strong> fișierul.
+  </p>
+  <p>
+    Măsurat, și merită să încerci singur: fă un fișier de 2 MB cu <code>fsutil</code>, numește-l
+    <code>photo.png</code> și dă-l unei biblioteci de imagini. Pillow răspunde <code>cannot identify
+    image file</code>. Nu e un PNG. N-a fost niciodată - doar numele o spunea.
+  </p>
+  <p>
+    Contează mai mult decât pare, din cauza <strong>direcției în care eșuează testul</strong>.
+    Endpointul tău de încărcare respinge fișierul, testul tău devine verde și tragi concluzia că
+    limita de dimensiune funcționează. Nu l-a respins pentru dimensiune. L-a respins pentru că
+    octeții nu erau o imagine, iar regula pe care voiai s-o testezi n-a fost niciodată atinsă.
+  </p>
+  <ul class="ticks">
+    <li>un parser îl respinge înainte să se uite vreo regulă de dimensiune</li>
+    <li>un pas de miniatură eșuează și eroarea pe care o citești e despre miniatură</li>
+    <li>un antivirus sau o verificare de conținut îl refuză dintr-un al treilea motiv</li>
+    <li>un vizualizator nu arată nimic și nimeni nu poate spune dacă asta e bug-ul</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Cealaltă cale</p>
+  <h2>Un fișier real de acel format, la exact dimensiunea cerută</h2>
+  <p>
+    Asta face Testing Files Generator. Fișierul este unul autentic al formatului său - se deschide în
+    programul căruia îi aparține - și are numărul exact de octeți pe care l-ai cerut, la octet:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Cere o dimensiune pe care un format nu o poate atinge și primești o eroare care numește pragul și
+    motivul lui, niciodată un fișier de dimensiune greșită. <a href="/ro/formate/">Pagina de
+    formate</a> listează fiecare format cu cel mai mic fișier pe care îl poate produce.
+  </p>
+  <p>Iar o limită înseamnă trei cazuri de test, nu unul, așa că instrumentul le construiește pe toate trei:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Asta îți dă 10485759, 10485760 și 10485761 de octeți și un manifest care spune pe care sistemul tău
+    trebuie să le accepte și pe care să le respingă. <a href="/ro/cazuri-de-utilizare/">Pagina de
+    cazuri de utilizare</a> parcurge asta și alte patru sarcini pentru care a fost făcut.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Deci pe care să-l folosești?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Folosește comanda sistemului</p>
+      <p class="muted">
+        Când nimic nu deschide fișierul. Testarea unei limite de dimensiune pe un endpoint care verifică
+        întâi dimensiunea, un transfer, o cotă, un disc plin. E o singură linie și e deja instalat.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Folosește un generator adevărat</p>
+      <p class="muted">
+        Când ceva analizează, randează, importă sau extrage fișierul - și când ai nevoie de aceleași
+        fixture-uri mâine, pe altă mașină, octet cu octet.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Ambele sunt pe această pagină pentru că ambele au dreptate o parte din timp. Greșeala de evitat este
+    să-l folosești pe primul unde îl trebuie pe al doilea și să citești testul verde drept dovadă.
+  </p>
+</section>

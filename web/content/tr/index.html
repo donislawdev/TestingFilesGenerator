@@ -1,0 +1,196 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Tam boyutta gerçek test dosyaları üretin</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>toplam {{ .Facts.FormatCount }} biçim</strong> ve her biri ait olduğu
+    programda açılan, <strong>tam istediğiniz boyutta</strong> gerçek bir dosya. Her çalıştırma
+    ayrıca uygulamanızın her dosyayla ne yapması gerektiğini de yazar. Komut satırı ve masaüstü
+    penceresi, ücretsiz ve açık kaynak, tamamen makinenizde çalışır.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Bir grup test dosyası yazmaya hazırlanmış Testing Files Generator masaüstü penceresi">
+    <figcaption>Bir dosya grubu yazmaya hazırlanmış masaüstü penceresi. Aynı motor komut satırının arkasında çalışır.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">gerçek biçim, her biri ait olduğu programda açılır</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 bayt</span>
+      <p class="fact-label">istediğiniz her boyutun doğruluğu, asla sessizce yuvarlanmaz</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">hiçbir yere bağlantı - hesap yok, telemetri yok, güncelleme denetimi yok</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Sorun</p>
+  <h2>Bir test dosyası yapmak kolay. Doğru bini yapmak sıkıcı kısım</h2>
+  <p>İnsanlardan dosya kabul eden bir yazılımı test ediyorsunuz. Er ya da geç şunlara ihtiyacınız olur:</p>
+  <ul class="ticks">
+    <li>yükleme sınırının gerçek olup olmadığını anlamak için <strong>tam</strong> 10 MB'lık bir PDF</li>
+    <li>bir eksik veya fazla hatalarını yakalamak için o sınırın iki yanındaki üç dosya</li>
+    <li>klasör büyükken gece işinin ne yaptığını görmek için 10.000 günlük dosyası</li>
+    <li>doğru uzantılı boş bir kabuk değil, gerçekten 200 belge içeren bir ZIP</li>
+    <li>deponuzda 4 GB'lık bir dosya tutmadan 4 GB'lık bir dosya</li>
+    <li>dizüstü bilgisayarınızda ve derleme sunucusunda <strong>aynı</strong> fixture'lar, bayt bayt</li>
+  </ul>
+  <p>
+    Bunun yerini alan şey bu. QA mühendisleri, test otomasyonu ve kodunun arkasında bir yükleme formu,
+    içe aktarma rutini, ayrıştırıcı veya depolama kotası olan herkes için yapıldı.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Onu farklı kılan</p>
+  <h2>Diğer üreticiler baytlarda durur. Bu, testinizin gerçekte ne sorduğunu yanıtlar</h2>
+  <p>
+    Bir dosya klasörü, her birinin neyi kanıtlaması gerektiğine yine sizin karar vermenize bırakır.
+    Burada her çalıştırma dosyaların yanına bir <code>manifest.json</code> yazar - üretilen her
+    şeyin düz bir listesi ve her girdi için bir <strong>bildirilmiş beklenti</strong>.
+  </p>
+  <p>Yükleme endpoint'inizin 1 MB'a izin verdiğini varsayalım. O çizgideki üç dosyayı isteyin:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Dosya</th><th class="num">Bayt</th><th>Sisteminiz</th><th>Çünkü</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>kabul etmeli</strong></td><td>sınırın içinde</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>kabul etmeli</strong></td><td>sınırın kendisine izin verilir</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>reddetmeli</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Üç dosya, üç farklı yanıt, makine tarafından okunabilir biçimde. Testiniz, sizin elle assertion yazmanız yerine manifesti okur:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Yanıt kendi politikanıza bağlıysa manifest bunu söyler</p>
+    <p>
+      Bir beklenti uydurmak yerine <code>unspecified</code> kaydeder. Tahmin yürüten bir üretici yanlış
+      hatalar üretir ve sürekli yalancı alarm veren bir test takımı kapatılır.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Hazır ayarlar</p>
+  <h2>Soruyu seçin, setin tamamını alın</h2>
+  <p>
+    Hazır ayar, hangi dosyanın neyi kanıtladığını sizin çözmeniz gerekmesin diye tek bir test sorusu
+    etrafında tasarlanmış bir test dosyası setidir. Her birinin, genelde ne bulduğunu, sette ne
+    olduğunu ve kabul ettiği her ayarı anlatan bir sayfası vardır.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/tr/hazir-ayarlar/">Tüm hazır ayarlar ve tariflerle ilişkileri</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Hızlı başlangıç</p>
+  <h2>Çalıştığını görmek için üç komut</h2>
+  <ol class="steps">
+    <li>
+      <h3>Bir dosya üretin</h3>
+      <p>Bir PNG, tam iki megabayt:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Çok sayıda dosya üretin</h3>
+      <p>
+        Her biri bir ile sekiz kilobayt arasında on bin günlük dosyası, boyutlar seed'den çekilir ki yarın
+        aynı seti versin. <strong>Her çalıştırmaya kendi dizinini verin</strong> - manifest bir
+        çalıştırmanın ne yazdığının tek kaydıdır, bu yüzden araç üzerine ikincisini yazmayı
+        reddeder:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Denetleyin, sonra silin</h3>
+      <p><code>verify</code> hiçbir şeyin kımıldamadığını söyler. <code>cleanup</code> yazılanı tam olarak ve başka hiçbir şeyi silmez:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Boyutlar, dosya yöneticinizin yaptığı gibi 1024'lerle sayılır, yani <code>2mb</code> 2097152 bayt
+    demektir. Düz bir bayt sayısı da olur. <a href="/tr/dokumantasyon/">Dokümantasyon</a> tarifleri,
+    manifesti ve çıkış kodlarını kapsar.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Neler elde edersiniz</p>
+  <h2>Gözetimsiz çalışan bir test takımı için yapıldı</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Tam boyut, bayta kadar</p>
+      <p class="muted">10485761 bayt isteyin ve tam olarak onu alın. Bir biçimin ulaşamayacağı boyut nedeni olan bir hatadır, asla yanlış boyutta bir dosya değil.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} gerçek biçim</p>
+      <p class="muted">Uzantılı dolgu sıfırları değil. Üretilmiş bir PNG resim görüntüleyicide, bir DOCX Word'de açılır, bir ZIP çıkarılır. Her biri yayımlanmadan önce bağımsız okuyucularla doğrulanır.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Test oracle'ı olan bir manifest</p>
+      <p class="muted">Yol, boyut, SHA-256, biçim, seed, araç sürümü - ve sisteminizin dosyayla ne yapması gerektiği.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Tekrarlanabilir</p>
+      <p class="muted">Aynı tarif ve aynı seed, aynı baytlar, her makinede. Büyük ikili fixture'lar yerine küçük bir YAML tarifini commit edin.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">İki arayüz, tek motor</p>
+      <p class="muted">CI için yapılmış bir komut satırı ve keşif amaçlı testler için bir masaüstü penceresi. Hiçbiri diğerinin kırpılmış sürümü değildir ve bir test ikisini yetenek yetenek karşılaştırır.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Tamamen çevrimdışı</p>
+      <p class="muted">Hesap yok, bulut yok, telemetri yok, güncelleme denetimi yok. Komut satırı ikilisinin içine hiç ağ yığını derlenmemiştir.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">İndirme</p>
+  <h2>Sisteminiz için derlemeyi seçin</h2>
+  <p>
+    Arşivi açın ve çalıştırın. <code>tfg</code> komut satırı, <code>tfg-gui</code> masaüstü
+    penceresidir. Yükleyici yok ve makinenize eklenecek hiçbir şey yok.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Neler imzalı, neler değil</p>
+    <p>
+      Windows ve macOS indirmeleri imzalıdır, bu yüzden bilinmeyen geliştirici uyarısı olmadan başlar.
+      Linux olanlar değildir, çünkü masaüstü Linux'ta onları imzalayacak bir karşılık yoktur. Her
+      arşiv sürüm sayfasındaki <code>verify-SHA256SUMS.txt</code> içinde listelenir, böylece
+      indirdiğinizi doğrulayabilirsiniz.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

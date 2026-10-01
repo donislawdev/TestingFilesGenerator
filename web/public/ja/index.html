@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ja">
+<title>テストファイル生成ツール - 正確なサイズ、26種類の本物の形式</title>
+<meta name="description" content="QA向けの無料オープンソースのテストファイル生成ツール。正確なサイズの本物のPDF、DOCX、PNG、ZIPと、システムの期待される反応を示すマニフェストを出力します。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ja/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="テストファイル生成ツール - 正確なサイズ、26種類の本物の形式">
+<meta property="og:description" content="QA向けの無料オープンソースのテストファイル生成ツール。正確なサイズの本物のPDF、DOCX、PNG、ZIPと、システムの期待される反応を示すマニフェストを出力します。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ja/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="テストファイル生成ツール - 正確なサイズ、26種類の本物の形式">
+<meta name="twitter:description" content="QA向けの無料オープンソースのテストファイル生成ツール。正確なサイズの本物のPDF、DOCX、PNG、ZIPと、システムの期待される反応を示すマニフェストを出力します。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Testing Files Generator",
+  "alternateName": "tfg",
+  "description": "QA向けの無料オープンソースのテストファイル生成ツールです。26種類の形式で正確なサイズの本物のファイルを作り、テスト対象のシステムが各ファイルにどう反応すべきかを示すマニフェストを書き出します。",
+  "url": "https:\/\/testingfilesgenerator.donislawdev.com/",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Software Testing",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareVersion": "0.4.0",
+  "downloadUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "installUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "softwareHelp": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "DonislawDev",
+    "url": "https://donislawdev.com/"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ja/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="メインメニュー">
+      <a href="/ja/" aria-current="page">ホーム</a>
+      <a href="/ja/formats/">形式</a>
+      <a href="/ja/presets/">プリセット</a>
+      <a href="/ja/docs/">ドキュメント</a>
+      <a href="/ja/use-cases/">利用例</a>
+      <a href="/ja/create-file-exact-size/">正確なサイズ</a>
+      <a href="/ja/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="言語: 日本語">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>日本語</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ko/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<section class="hero">
+  <div class="hero-text">
+  <h1>正確なサイズの本物のテストファイルを生成</h1>
+  <p class="lead">
+    PDF、PNG、DOCX、ZIPなど、<strong>全26種類の形式</strong>に対応し、どれも対応するソフトウェアで開ける本物のファイルで、サイズは<strong>要求したとおりちょうど</strong>です。各実行では、アプリが各ファイルをどう扱うべきかも書き出します。コマンドラインとデスクトップウィンドウの両方に対応し、無料のオープンソースで、すべてあなたのマシン上で動きます。
+  </p>
+
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">ソースコードを見る</a>
+</div>
+<p class="cta-note">無料のオープンソース、GPL-3.0。登録は不要です。WindowsとmacOS向けのダウンロードは署名済みで、警告なしで起動します。</p>
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="テストファイルのバッチを書き出す準備ができたTesting Files Generatorのデスクトップウィンドウ">
+    <figcaption>ファイルのバッチを書き出す準備ができたデスクトップウィンドウ。コマンドラインの裏でも同じエンジンが動いています。</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">26</span>
+      <p class="fact-label">種類の本物の形式、どれも対応するソフトウェアで開けます</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1バイト</span>
+      <p class="fact-label">要求したすべてのサイズの正確さ。黙って丸められることはありません</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">外部への接続。アカウント、テレメトリ、更新確認はありません</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">課題</p>
+  <h2>テストファイルを1つ作るのは簡単です。適切な1000個を作るのが面倒な部分です</h2>
+  <p>あなたは、人からファイルを受け取るソフトウェアをテストしています。遅かれ早かれ、次のものが必要になります。</p>
+  <ul class="ticks">
+    <li>アップロード制限が本物かどうかを確かめるための、<strong>ちょうど</strong>10MBのPDF</li>
+    <li>1つずれのバグを見つけるための、その制限の両側にある3つのファイル</li>
+    <li>フォルダーが大きいとき夜間ジョブがどうなるかを見るための、1万個のログファイル</li>
+    <li>拡張子だけ合わせた空の殻ではなく、実際に200個のドキュメントが入ったZIP</li>
+    <li>リポジトリに4GBのファイルを置かずに用意する4GBのファイル</li>
+    <li>ノートPCとビルドサーバーで<strong>同じ</strong>フィクスチャをバイト単位で</li>
+  </ul>
+  <p>
+    これが置き換える対象です。QAエンジニア、テスト自動化、そしてコードの先にアップロードフォーム、取り込み処理、パーサー、ストレージの割り当てがあるすべての人のために作られています。
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">他とどう違うか</p>
+  <h2>他の生成ツールはバイトで終わります。これは、あなたのテストが本当に問うことに答えます</h2>
+  <p>
+    ファイルが入ったフォルダーだけでは、各ファイルが何を証明すべきかを自分で決めることになります。ここでは実行のたびに、ファイルの横に<code>manifest.json</code>を書き出します。生成物の単純な一覧で、各項目に<strong>宣言された期待値</strong>が付きます。
+  </p>
+  <p>アップロードのエンドポイントが1MBまでを許可するとします。その線上にある3つのファイルを要求します。</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>ファイル</th><th class="num">バイト</th><th>システムの対応</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>受け入れる</strong></td><td>制限の内側にあるため</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>受け入れる</strong></td><td>制限値ちょうどは許可されるため</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>拒否する</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>3つのファイル、3つの異なる答えを、機械可読な形で示します。アサーションを手書きする代わりに、テストがマニフェストを読みます。</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">答えが自分たちのポリシー次第の場合、マニフェストはそう述べます</p>
+    <p>
+      期待値をでっち上げず、<code>unspecified</code>と記録します。推測する生成ツールは誤検出を生み、狼少年のようなテストスイートは最終的に無効にされます。
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">プリセット</p>
+  <h2>疑問を選べば、セット一式が手に入ります</h2>
+  <p>
+    プリセットは、1つのテストの疑問を軸に設計したテストファイルのセットです。どのファイルが何を証明するのかを自分で考える必要はありません。それぞれに、普通は何を見つけるか、セットの内容、受け付ける設定をまとめたページがあります。
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/empty-and-minimal/">空ファイルと最小ファイル</a></p>
+    <p class="muted">形式が許す最小サイズの有効なファイルは通るでしょうか。</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/filename-handling/">ファイル名の扱い</a></p>
+    <p class="muted">想定外のファイル名を、システムは保存し、表示し、返せるでしょうか。</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/size-boundaries/">サイズの境界</a></p>
+    <p class="muted">サイズ制限は、宣言された位置ちょうどで適用されているでしょうか。</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/tabular-import/">表の取り込み</a></p>
+    <p class="muted">実際のツールが出力する表を、取り込みは正しく処理できるでしょうか。</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/text-encoding/">文字コード</a></p>
+    <p class="muted">読み取り側はファイルの文字コードを知っているのでしょうか。それとも推測でしょうか。</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ja/presets/upload-validation/">アップロードの検証</a></p>
+    <p class="muted">アップロードフォームは、受け入れるべきものを受け入れ、それ以外を拒否できるでしょうか。</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <p><a href="/ja/presets/">すべてのプリセットと、レシピとの関係</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">クイックスタート</p>
+  <h2>動作を確かめる3つのコマンド</h2>
+  <ol class="steps">
+    <li>
+      <h3>ファイルを1つ作る</h3>
+      <p>PNGを1つ、ちょうど2メガバイトで:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>たくさんのファイルを作る</h3>
+      <p>
+        1KBから8KBの間で、シードから決めたサイズのログファイルを1万個。明日も同じセットになります。<strong>実行ごとに専用のディレクトリを使ってください</strong>。マニフェストは実行が書いた内容の唯一の記録なので、ツールはその上に2つ目を書くことを拒否します。
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>検証してから削除する</h3>
+      <p><code>verify</code>は何も動いていないことを伝えます。<code>cleanup</code>は書き込まれたものだけを正確に削除します。</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    サイズはファイルマネージャーと同じく1024単位で数えるため、<code>2mb</code>は2097152バイトです。バイト数をそのまま指定することもできます。<a href="/ja/docs/">ドキュメント</a>で、レシピ、マニフェスト、終了コードを説明しています。
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">得られるもの</p>
+  <h2>無人で動くテストスイートのために作られています</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">正確なサイズ、1バイト単位で</p>
+      <p class="muted">10485761バイトを要求すれば、ちょうどその大きさになります。形式が到達できないサイズは理由付きのエラーになり、サイズの違うファイルが作られることはありません。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">26種類の本物の形式</p>
+      <p class="muted">拡張子を付けただけのゼロ埋めではありません。生成したPNGは画像ビューアーで開け、DOCXはWordで開け、ZIPは展開できます。どれも出荷前に独立したリーダーで検証されます。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">テストオラクルとしてのマニフェスト</p>
+      <p class="muted">パス、サイズ、SHA-256、形式、シード、ツールのバージョン、そしてシステムがそのファイルをどう扱うべきか。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">再現可能</p>
+      <p class="muted">レシピとシードが同じなら、どのマシンでもバイトまで同じです。大きなバイナリのフィクスチャの代わりに、小さなYAMLレシピをコミットしてください。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">2つのインターフェース、1つのエンジン</p>
+      <p class="muted">CI向けに作られたコマンドラインと、探索的テスト向けのデスクトップウィンドウ。どちらも一方の機能削減版ではなく、テストが機能ごとに両者を比較しています。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">完全オフライン</p>
+      <p class="muted">アカウント、クラウド、テレメトリ、更新確認はありません。コマンドラインのバイナリには、ネットワークスタックがそもそもコンパイルされていません。</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">ダウンロード</p>
+  <h2>お使いのOS向けのビルドを選んでください</h2>
+  <p>
+    アーカイブを展開して実行します。<code>tfg</code>がコマンドライン、<code>tfg-gui</code>がデスクトップウィンドウです。インストーラーはなく、マシンに追加するものもありません。
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>OS</th>
+      <th>コマンドライン</th>
+      <th>デスクトップウィンドウ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td><code>arm64</code></td>
+      <td><code>arm64</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <div class="note">
+    <p class="note-title">署名済みのものと、そうでないもの</p>
+    <p>
+      WindowsとmacOS向けのダウンロードは署名されているため、未確認の開発元という警告なしで起動します。Linux向けは、デスクトップLinuxに署名できる仕組みがないため署名されていません。すべてのアーカイブはリリースページの<code>verify-SHA256SUMS.txt</code>に載っているので、ダウンロードしたものを確認できます。
+    </p>
+  </div>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">ソースコードを見る</a>
+</div>
+<p class="cta-note">無料のオープンソース、GPL-3.0。登録は不要です。WindowsとmacOS向けのダウンロードは署名済みで、警告なしで起動します。</p>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">プロジェクト</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHubのソースコード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">問題を報告</a></li>
+        <li><a href="https://donislawdev.com/support/">プロジェクトを支援</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">ページ</p>
+      <ul class="plain">
+        <li><a href="/ja/">ホーム</a></li>
+        <li><a href="/ja/formats/">形式</a></li>
+        <li><a href="/ja/presets/">プリセット</a></li>
+        <li><a href="/ja/docs/">ドキュメント</a></li>
+        <li><a href="/ja/use-cases/">利用例</a></li>
+        <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
+        <li><a href="/ja/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU一般公衆利用許諾契約書バージョン3の下で公開されています。生成したファイルはあなたのものです。ライセンスの対象はツールであり、その出力ではありません。</p>
+    <p class="muted">このサイトは、どこからもフォント、スクリプト、トラッカーを読み込みません。Cookieも設定しません。</p>
+  </div>
+</footer>
+</body>
+</html>

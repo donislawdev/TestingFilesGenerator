@@ -1,0 +1,108 @@
+<h1>何に使われているか</h1>
+<p class="lead">
+  人からファイルを受け取るほぼすべてのプロジェクトで出てくる5つの作業と、それぞれを実行するコマンド。以下の例はすべて、書かれたとおりに動きます。
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">アップロード制限</p>
+  <h2>ファイルサイズ制限が、言っている位置で適用されているかをテストする</h2>
+  <p>
+    制限は1つではなく3つのテストケースです。直前、ちょうど、直後。これを手作業で用意するとバイト数を計算することになり、1つずれていないことを祈るしかありません。代わりにセットを要求します。
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    1048575、1048576、1048577バイトの本物のPDFが3つ得られ、マニフェストは、最初の2つを受け入れ、3つ目を<code>size_limit</code>で拒否すべきだと示します。アサーションを3つ手書きする代わりに、テストは期待値を読みます。制限が変わったら、数値を1つ変えて再実行するだけです。
+  </p>
+  <p>
+    1つの境界セットをインラインで用意したいときは、プリセットなしでも同じことができます。
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">継続的インテグレーション</p>
+  <h2>フィクスチャを失わずに、リポジトリの外に置く</h2>
+  <p>
+    大きなバイナリのフィクスチャは、リポジトリのクローンを遅くし、レビューを難しくし、1つが置き換えられても何が変わったのか誰にも分かりません。レシピは数百文字のYAMLで、同一のファイルを再構築します。<strong>どのマシンでもバイト単位で同じ</strong>です。すべてのファイルが実行のシードから導かれるためです。
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    終わり方ごとに専用の終了コードがあるため、パイプラインは、誤ったレシピ、ディスク満杯、検証の不一致を区別できます。失敗した実行は標準出力に何も出力しないので、ログパーサーがエラーをデータとして読み取ることもありません。
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">規模</p>
+  <h2>フォルダーが大きいときに何が起きるかを確かめる</h2>
+  <p>
+    取り込み処理、夜間ジョブ、ディレクトリ一覧は、10ファイルのときと1万ファイルのときで挙動が変わります。範囲から決めたサイズを使うと、1万個の同一ファイルではなく実際のトラフィックに近いセットになります。抽選はシードから決まるため、セットは明日も同じです。
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    合計がギガバイト単位になるときは特に、何かを書き込む前に実行のコストを確認します。
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    ディスクの空き容量より大きい実行は、最初の1バイトを書く前に拒否されます。ディスクを埋めて途中で失敗することはありません。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">アーカイブ</p>
+  <h2>実際にファイルが入ったアーカイブで、展開処理をテストする</h2>
+  <p>
+    拡張子だけ正しい空のアーカイブでは、それを開いて中身をたどるコードについて何も証明できません。中身を宣言すれば、アーカイブは実際にそれを含みます。
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    ネストの深さ、エントリ数、中身のサイズは、どれも取り込み処理が意見を持つ項目で、これが、その意見を知る方法です。
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">パーサーとビューアー</p>
+  <h2>自分のコードが、実際のソフトウェアと同じように形式を読めているかを確かめる</h2>
+  <p>
+    ここにあるすべての形式は、出荷前に独立したリーダーで検証されています。PNGは開かれてピクセルが比較され、DOCXは別のライブラリで読み直され、アーカイブは展開されます。つまり、あなたのパーサーが拒否するファイルは、生成ツールではなくあなたのパーサーに関する発見です。
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/ja/formats/">形式ページ</a>に、各形式が受け付ける設定と、取りうる最小のファイルを載せています。
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">ガイド</p>
+  <h2>そのうち2つを詳しく</h2>
+  <ul>
+    <li>
+      <a href="/ja/corrupt-test-files/">破損したテストファイル</a> - 意図的に壊した、サイズが正確なファイル。そのファイルをどう扱うべきかはマニフェストに書かれます。
+    </li>
+    <li>
+      <a href="/ja/test-files-in-ci/">CIでのテストファイル</a> - GitHub
+      Actionsのワークフロー、GitLabのジョブ、そしてビルドを失敗させる終了コード。
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>誰のためのものか</h2>
+  <p>
+    QAエンジニア、テスト自動化、そしてコードの先にアップロードフォーム、取り込み処理、パーサー、ストレージの割り当てがあるすべての人のためのものです。ネットワークが一切ないマシンで動くため、ブラウザーベースの生成ツールが使えない閉じた社内環境でも役立ちます。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

@@ -1,0 +1,80 @@
+<h1>{{ .Facts.FormatCount }} format file, masing-masing dibuat dengan ukuran tepat</h1>
+<p class="lead">
+  Masing-masing adalah <strong>file asli dari format itu</strong>. File terbuka di aplikasi yang
+  memilikinya dan persis berjumlah byte yang Anda minta. Tidak ada yang berupa nol pengisi dengan
+  ekstensi yang ditempelkan.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Arti kolom-kolom</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">File terkecil</p>
+      <p class="muted">
+        Jumlah byte paling sedikit yang akan diterima alat ini untuk format itu, termasuk label yang
+        ditulisnya di dalam file. Minta lebih kecil dan Anda mendapat galat yang menyebut batas
+        bawah dan alasannya, tidak pernah file berukuran salah.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Kelengkapan</p>
+      <p class="muted">
+        Seberapa lengkap file itu. <code>full</code> berarti pembaca yang benar-benar mem-parsing format
+        menerimanya, bukan sekadar ekstensinya cocok.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Diperiksa dengan</p>
+      <p class="muted">
+        Pembaca independen yang membuka setiap file yang dihasilkan sebelum format dirilis - implementasi
+        terpisah, bukan kode kami sendiri yang menilai pekerjaan rumahnya sendiri.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Setiap format juga berulang sampai ke byte: resep dan seed yang sama menghasilkan file identik di
+    mesin mana pun, dan itulah yang membuat resep aman di-commit menggantikan fixture-nya.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Pengaturan yang diterima setiap format</h2>
+  <p>
+    Sebagian besar format punya pengaturan sendiri - dimensi gambar, kualitas JPEG, jumlah halaman PDF,
+    baris dan kolom spreadsheet, berapa banyak entri di dalam arsip. Atur dengan <code>--set
+    key=value</code> di baris perintah, atau di bawah <code>properties:</code> dalam resep.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Nilai di luar yang diterima suatu pengaturan ditolak dengan pesan yang menyebut pengaturan, rentang
+    yang diizinkan, dan apa yang dipakai sebagai gantinya. Pengaturan yang tidak dikenal juga galat,
+    tidak pernah nilai bawaan diam-diam - salah ketik yang diterima diam-diam menghasilkan file
+    dengan pengaturan yang salah dan satu jam bertanya-tanya mengapa pengujian lolos padahal
+    seharusnya tidak.
+  </p>
+  <p>
+    Jalankan <code>tfg formats &lt;id&gt;</code> untuk melihat persis apa yang diterima satu format pada
+    build yang Anda miliki.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Arsip berisi file asli</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} dan {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    dapat diisi dengan entri alih-alih dibiarkan sebagai cangkang kosong. Arsip yang dihasilkan
+    benar-benar berisi dokumen yang diklaimnya, sehingga apa pun yang mengekstraknya selama
+    pengujian menemukan file asli di dalamnya.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

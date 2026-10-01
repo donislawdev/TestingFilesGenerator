@@ -124,6 +124,31 @@
 </div>
 {{- end -}}
 
+{{- define "damagesTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .Word "colDamage" }}</th>
+      <th>{{ .Word "colEffect" }}</th>
+      <th class="num">{{ .Word "colSmallest" }}</th>
+      <th>{{ .Word "colSettings" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .DamageList }}
+    <tr>
+      <td><code>{{ .ID }}</code></td>
+      <td>{{ .Effect }}</td>
+      <td class="num">{{ .Smallest }}</td>
+      <td>{{ if .Settings }}{{ range $i, $name := .Settings }}{{ if $i }}, {{ end }}<code>{{ $name }}</code>{{ end }}{{ else }}<span class="muted">{{ .None }}</span>{{ end }}</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
 {{- define "propertiesTable" -}}
 <div class="tablewrap">
 <table class="data">

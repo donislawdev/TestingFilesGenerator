@@ -1,0 +1,31 @@
+<h1>Preset tệp kiểm thử, một bộ cho mỗi câu hỏi kiểm thử</h1>
+<p class="lead">
+  Preset là cả một bộ tệp kiểm thử được thiết kế quanh một câu hỏi, kèm manifest nêu cách hệ thống của
+  bạn cần phản ứng với từng tệp. Bạn chọn câu hỏi, công cụ dựng bộ. Mỗi preset có trang riêng nói nó
+  thường tìm thấy gì, trong bộ có gì và mọi thiết lập nó nhận.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Preset khác công thức thế nào?</h2>
+  <p>
+    Về bản chất thì không khác. Preset là công thức mà công cụ viết cho bạn từ vài thiết lập. <code>tfg
+    preset eject</code> in công thức đó ra để bạn giữ cạnh các bài kiểm thử và chỉnh sửa, và công
+    thức của riêng bạn có thể xây trên một preset bằng một dòng, <code>extends: preset:</code> theo
+    sau là id của nó.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Tôi có thể tin các giá trị mặc định không?</h2>
+  <p>
+    Với các tệp thì có. Với con số chỉ hệ thống của bạn biết, như giới hạn của một biểu mẫu tải lên, giá
+    trị mặc định là giá trị tạm của chúng tôi, và công cụ nói vậy mỗi lần dùng một giá trị như thế.
+    Trang của mỗi preset đánh dấu các thiết lập đó, và <code>tfg preset show</code> nói điều đó
+    trước khi ghi bất cứ gì.
+  </p>
+</section>

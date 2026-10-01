@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hant">
+<title>CSV 與 Excel 匯入測試檔案 - 分隔符號、標題列</title>
+<meta name="description" content="使用其他分隔符號、CR LF 換行、無標題列和其他引號的 CSV，一張極寬的表格、一個 Excel 活頁簿，以及多種版面的 JSON。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/tabular-import/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/tabular-import/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/tabular-import/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/tabular-import/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/tabular-import/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/tabular-import/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/tabular-import/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/tabular-import/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/tabular-import/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/tabular-import/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/tabular-import/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/tabular-import/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/tabular-import/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/tabular-import/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/tabular-import/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/tabular-import/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/tabular-import/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/tabular-import/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/tabular-import/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/tabular-import/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/tabular-import/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/tabular-import/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/tabular-import/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="CSV 與 Excel 匯入測試檔案 - 分隔符號、標題列">
+<meta property="og:description" content="使用其他分隔符號、CR LF 換行、無標題列和其他引號的 CSV，一張極寬的表格、一個 Excel 活頁簿，以及多種版面的 JSON。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/tabular-import/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CSV 與 Excel 匯入測試檔案 - 分隔符號、標題列">
+<meta name="twitter:description" content="使用其他分隔符號、CR LF 換行、無標題列和其他引號的 CSV，一張極寬的表格、一個 Excel 活頁簿，以及多種版面的 JSON。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hant/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "預設集",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "表格匯入",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/presets\/tabular-import\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到內容</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hant/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主選單">
+      <a href="/zh-hant/">首頁</a>
+      <a href="/zh-hant/formats/">格式</a>
+      <a href="/zh-hant/presets/" aria-current="true">預設集</a>
+      <a href="/zh-hant/docs/">文件</a>
+      <a href="/zh-hant/use-cases/">使用情境</a>
+      <a href="/zh-hant/create-file-exact-size/">精確大小</a>
+      <a href="/zh-hant/faq/">常見問題</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="語言: 繁體中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>繁體中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/tabular-import/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/tabular-import/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/predvolby/tabular-import/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/tabular-import/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/tabular-import/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/tabular-import/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/tabular-import/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/tabular-import/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/tabular-import/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/tabular-import/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/tabular-import/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/tabular-import/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/tabular-import/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/tabular-import/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/tabular-import/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/tabular-import/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/presets/tabular-import/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/hazir-ayarlar/tabular-import/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/tabular-import/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/tabular-import/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/tabular-import/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/zh-hant/presets/">預設集</a></p>
+<h1>表格匯入</h1>
+<p class="lead">我的表格匯入能應付真實工具匯出的內容嗎？</p>
+<p>
+  <code>tabular-import</code> 預設集用一個指令為這個問題建立出整組真實測試檔案，並在旁邊放一個
+  <code>manifest.json</code>，說明你的系統應如何回應每個檔案。以下所有內容都依此版本的預設值從程式中讀取。
+</p>
+
+
+<section class="section" id="catches">
+  <h2>它通常能發現什麼？</h2>
+  <ul class="ticks">
+    <li>以分號分隔的檔案被讀成單一欄位，因為分隔符號是假設的，而不是偵測出來的</li>
+    <li>CRLF 檔案被拆成多列，每列後面多出一個空列</li>
+    <li>沒有標題列的表格，第一列資料被當成欄位名稱吞掉</li>
+    <li>匯入只保留能顯示的欄位，其餘的默默丟棄</li>
+    <li>讀取器逐行讀取 JSON 記錄，遇到第一個有縮排的文件就停下來</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>組合裡有什麼？</h2>
+  <p>使用預設值時，如 <code>tfg preset show tabular-import</code> 所回報的：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">檔案數</th><td>13</td></tr>
+        <tr><th scope="row">其配方中的 target 數</th><td>13</td></tr>
+        <tr><th scope="row">總大小</th><td>3 080 060 B</td></tr>
+        <tr><th scope="row">格式</th><td>csv, json, xlsx</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>以及該組合的清單對你的系統有何預期：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>預期</th><th>意義</th><th class="num">檔案數</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>你的系統應該接受這個檔案。</td><td class="num">8</td></tr>
+        <tr><td><code>unspecified</code></td><td>取決於你的系統規則。由你決定，然後檢查實際發生的是否符合你的本意。</td><td class="num">5</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>你可以變更什麼？</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>設定</th><th>接受</th><th>預設值</th><th>作用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--rows</code></td>
+          <td>1 - 200000 列</td>
+          <td><code>1000</code></td>
+          <td>試算表有多少列。檔案會寫成這麼多列恰好打包出的大小，所以上面的預算會隨這個值變動。</td>
+        </tr>
+        <tr>
+          <td><code>--columns</code></td>
+          <td>1 - 32768 欄</td>
+          <td><code>10</code></td>
+          <td>試算表每列有多少欄。列數乘以欄數有上限，超出時會在寫入任何內容之前被拒絕。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>如何執行？</h2>
+  <p>查看組合的開銷、建置它，或取出它的配方來編輯：</p>
+  <pre><code>tfg preset show tabular-import
+tfg generate --preset tabular-import --out ./tabular-import
+tfg preset eject tabular-import &gt; tabular-import.yaml</code></pre>
+  <p>也可以在你自己的配方中以它為基礎，放在測試旁邊：</p>
+  <pre><code>version: 1
+extends: preset:tabular-import</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">專案</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的原始碼</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">回報問題</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本專案</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">頁面</p>
+      <ul class="plain">
+        <li><a href="/zh-hant/">首頁</a></li>
+        <li><a href="/zh-hant/formats/">格式</a></li>
+        <li><a href="/zh-hant/presets/">預設集</a></li>
+        <li><a href="/zh-hant/docs/">文件</a></li>
+        <li><a href="/zh-hant/use-cases/">使用情境</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
+        <li><a href="/zh-hant/faq/">常見問題</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。依 GNU 通用公共授權條款第 3 版發布。你產生的檔案歸你所有，授權涵蓋的是工具本身，而不是它的輸出。</p>
+    <p class="muted">本站不會從任何地方載入字型、指令碼或追蹤器，也不會設定 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

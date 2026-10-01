@@ -1,0 +1,328 @@
+{
+  "code": "it",
+  "locale": "it_IT",
+  "name": "Italiano",
+  "dir": "it",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Home",
+      "title": "Generatore di file di test - dimensione esatta, {{ .Facts.FormatCount }} formati reali",
+      "description": "Generatore gratuito e open source di file di test per la QA. PDF, DOCX, PNG e ZIP reali della dimensione esatta, con un manifest su come il tuo sistema deve reagire."
+    },
+    {
+      "key": "formats",
+      "slug": "formati",
+      "nav": "Formati",
+      "title": "{{ .Facts.FormatCount }} formati di file supportati - PDF, DOCX, PNG, ZIP e altri",
+      "description": "Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i {{ .Facts.FormatCount }} si aprono nel loro programma."
+    },
+    {
+      "key": "presets",
+      "slug": "preset",
+      "nav": "Preset",
+      "title": "Preset di file di test - set pronti per la QA",
+      "description": "Set pronti di file di test, ognuno risponde a una domanda: limiti di upload, nomi dei file, codifiche, importazione di tabelle, file vuoti e validazione."
+    },
+    {
+      "key": "docs",
+      "slug": "documentazione",
+      "nav": "Documentazione",
+      "title": "Documentazione - comandi, ricette, manifest, codici di uscita",
+      "description": "Come generare file di test dalla riga di comando o con una ricetta YAML, cosa contiene il manifest e cosa significa ogni codice di uscita in CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "casi-d-uso",
+      "nav": "Casi d'uso",
+      "title": "Casi d'uso - limiti di upload, fixture per la CI, test di massa",
+      "description": "Testare un limite di dimensione dell'upload, costruire fixture riproducibili per la CI, generare diecimila file e riempire archivi con contenuti reali."
+    },
+    {
+      "key": "exact-size",
+      "slug": "creare-file-di-dimensione-esatta",
+      "nav": "Dimensione esatta",
+      "title": "Creare un file di dimensione esatta - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate e mkfile, ciascuno misurato sul proprio sistema, e perché un file fatto così non è un PDF né un PNG quando un test ne richiede uno."
+    },
+    {
+      "key": "faq",
+      "slug": "domande-frequenti",
+      "nav": "FAQ",
+      "title": "FAQ - domande sulla generazione di file di test",
+      "description": "In cosa differisce da dd e fsutil, se i file si possono committare, se le esecuzioni si ripetono byte per byte e cosa succede quando una dimensione è irraggiungibile."
+    },
+    {
+      "key": "damage",
+      "slug": "file-di-test-corrotti",
+      "nav": "File corrotti",
+      "title": "File di test corrotti - file rotti di dimensione esatta",
+      "description": "Un file rotto di proposito, della dimensione esatta, con un manifest che dice che il tuo sistema deve rifiutarlo. Per testare validazione degli upload e parser.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "file-di-test-in-ci",
+      "nav": "File di test in CI",
+      "title": "File di test in CI - GitHub Actions, GitLab CI e PowerShell",
+      "description": "Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.",
+      "parent": "use-cases"
+    }
+  ],
+  "words": {
+    "skip": "Vai al contenuto",
+    "navLabel": "Principale",
+    "langLabel": "Lingua",
+    "breadcrumbHome": "Home",
+    "imageAlt": "Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno",
+    "schemaDescription": "Un generatore gratuito e open source di file di test per la QA. Produce file reali in {{ .Facts.FormatCount }} formati della dimensione esatta e scrive un manifest che dice come il sistema sotto test deve reagire a ciascuno.",
+    "ctaDownload": "Scarica",
+    "ctaSource": "Vedi il codice sorgente",
+    "ctaNote": "Gratuito e open source, GPL-3.0. Nessuna registrazione. I download per Windows e macOS sono firmati e si avviano senza avvisi.",
+    "colFormat": "Formato",
+    "colName": "Nome",
+    "colExtension": "Estensione",
+    "colSmallest": "File più piccolo",
+    "colFidelity": "Fedeltà",
+    "colChecked": "Verificato con",
+    "colSetting": "Impostazione",
+    "colAccepts": "Accetta",
+    "colSystem": "Sistema",
+    "colCli": "Riga di comando",
+    "colWindow": "Finestra desktop",
+    "noBinary": "ancora nessun binario",
+    "colCode": "Codice",
+    "colMeaning": "Significato",
+    "footerBlurb": "File di test per la QA, della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno.",
+    "footerProject": "Progetto",
+    "footerSource": "Codice su GitHub",
+    "footerReleases": "Download",
+    "footerIssues": "Segnala un problema",
+    "footerSupport": "Sostieni il progetto",
+    "footerPages": "Pagine",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Rilasciato sotto la GNU General Public License, versione 3. I file che generi sono tuoi - la licenza copre lo strumento, non il suo output.",
+    "footerPrivacy": "Questo sito non carica font, script o tracker da nessuna parte. Non imposta cookie.",
+    "notFoundTitle": "Questa pagina non esiste",
+    "notFoundLead": "L'indirizzo che hai seguito non corrisponde a nessuna pagina di questo sito.",
+    "notFoundBack": "Vai alla home",
+    "read.format": "Il formato di ogni file del set. È un'opzione dello strumento stesso, e il preset le dà solo un valore predefinito.",
+    "readTakes.format": "un id di formato dalla pagina dei formati",
+    "colDamage": "Danno",
+    "colEffect": "Cosa fa ai byte",
+    "colSettings": "Impostazioni",
+    "noSettings": "nessuna"
+  },
+  "endings": {
+    "0": "Tutto ha funzionato.",
+    "1": "Un errore imprevisto dentro lo strumento.",
+    "2": "Comando od opzione errati.",
+    "3": "La ricetta non è valida.",
+    "4": "Il formato non può fare ciò che è stato chiesto.",
+    "5": "Una lettura o una scrittura è fallita.",
+    "6": "Spazio su disco insufficiente.",
+    "7": "verify ha trovato una discrepanza.",
+    "8": "L'esecuzione è terminata ma non tutto è stato prodotto.",
+    "130": "Interrotto con Ctrl+C.",
+    "143": "Fermato da un segnale, che è l'aspetto di un timeout della CI."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Un file valido e piccolo quanto il formato consente passa?",
+      "title": "Vuoto e minimo",
+      "pageTitle": "File di test validi minimi e vuoti in ogni formato",
+      "description": "Il file valido più piccolo che lo strumento scrive in ciascuno dei suoi {{ .Facts.FormatCount }} formati, più un file vuoto dove il formato lo permette, ognuno con la reazione attesa.",
+      "catches": [
+        "un file valido respinto perché troppo piccolo, quando il controllo conta i byte invece di leggerli",
+        "un file vuoto che manda in crash il lettore invece di essere segnalato",
+        "un'immagine larga un pixel che divide per zero lungo la strada verso la miniatura",
+        "uno storage che legge zero byte come un upload fallito e continua a riprovare"
+      ],
+      "details": {
+        "formats": "Da quali formati è composto il set. Lascia all per tutti i formati di questa versione, oppure indica quelli che il tuo sistema accetta."
+      }
+    },
+    "filename-handling": {
+      "question": "Il mio sistema salverà, mostrerà e restituirà un nome di file che non si aspettava?",
+      "title": "Gestione dei nomi di file",
+      "pageTitle": "Nomi di file problematici da testare - Unicode e lunghezza",
+      "description": "File con nomi che mettono in crisi upload e storage: altri alfabeti, emoji, inversione di direzione, caratteri invisibili, sintassi di shell e SQL, lunghezza.",
+      "catches": [
+        "un nome che sembra un altro sullo schermo, in un log o in un elenco",
+        "un nome tagliato, accorciato o riscritto tra l'upload e il salvataggio",
+        "un limite di lunghezza contato in caratteri dove lo storage conta byte"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Un limite di dimensione viene applicato esattamente dove è dichiarato?",
+      "title": "Limiti di dimensione",
+      "pageTitle": "Testare un limite di dimensione dell'upload - file al limite",
+      "description": "File un byte sotto, esattamente al limite e un byte sopra il limite dichiarato dal tuo sistema, più passi più ampi ai due lati, ognuno marcato se va accettato.",
+      "catches": [
+        "errori di uno in più o in meno al limite",
+        "MB confuso con MiB, che fa il 4,8 per cento e basta a far passare un file che non dovrebbe passare",
+        "un limite applicato nel browser e non sul server"
+      ],
+      "details": {
+        "limit": "Il limite di dimensione dichiarato dal tuo sistema. Tutto il resto si misura a partire da esso.",
+        "spread": "Fin dove spingersi ai due lati del limite, come elenco di dimensioni."
+      }
+    },
+    "tabular-import": {
+      "question": "La mia importazione di tabelle regge a ciò che esportano gli strumenti reali?",
+      "title": "Importazione di tabelle",
+      "pageTitle": "File di test per importare CSV ed Excel - delimitatori",
+      "description": "CSV con altri delimitatori, fine riga CR LF, senza intestazione e con altre virgolette, una tabella molto larga, una cartella Excel e JSON in più layout.",
+      "catches": [
+        "un file con punto e virgola letto come una sola colonna, perché il delimitatore è stato dato per scontato invece di cercarlo",
+        "un file CRLF diviso in righe con una riga vuota dopo ciascuna",
+        "una tabella senza intestazione la cui prima riga di dati viene mangiata come nomi di colonna",
+        "un'importazione che tiene le colonne che sa mostrare e scarta il resto senza dire nulla",
+        "un lettore che prende i record JSON una riga alla volta e si ferma al primo documento indentato"
+      ],
+      "details": {
+        "rows": "Quante righe contiene il foglio di calcolo. Viene scritto esattamente alla dimensione che occupano tante righe, quindi il budget qui sopra si sposta con questo valore.",
+        "columns": "Quante colonne ha ogni riga del foglio di calcolo. Righe per colonne ha un tetto, e chiedere oltre viene rifiutato prima di scrivere qualsiasi cosa."
+      }
+    },
+    "text-encoding": {
+      "question": "Il mio lettore sa in quale codifica è un file, o tira a indovinare?",
+      "title": "Codifica del testo",
+      "pageTitle": "File di test per la codifica del testo - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Lo stesso testo in UTF-8, UTF-16LE e UTF-16BE, con e senza byte order mark, e fine riga CR LF e LF, per testare come un lettore decodifica il testo.",
+      "catches": [
+        "un lettore che presume UTF-8 e mostra un file UTF-16 con un carattere ogni tre, o come file di quadratini",
+        "un byte order mark letto come contenuto, così il primo campo di un'importazione inizia con tre caratteri estranei",
+        "un importatore che indovina la codifica dai primi byte e indovina in modo diverso con un file più lungo",
+        "un file CRLF diviso in righe con una riga vuota dopo ciascuna, o un ritorno a capo rimasto nell'ultimo campo"
+      ],
+      "details": {
+        "sample": "Quanto è grande ogni file del set. UTF-16 memorizza due byte per carattere, quindi un numero dispari viene rifiutato."
+      }
+    },
+    "upload-validation": {
+      "question": "Il mio modulo di upload accetta ciò che deve e respinge il resto?",
+      "title": "Validazione dell'upload",
+      "pageTitle": "File di test per la validazione dell'upload - tipo e nome",
+      "description": "File per testare un modulo di upload: tipi consentiti e negati, contenuto che non corrisponde all'estensione, limite di dimensione, nomi ostili e upload di massa.",
+      "catches": [
+        "un limite applicato nel browser e non sul server",
+        "un SVG o un HTML scambiato per un'immagine o per testo semplice, che è un modo per far passare uno script attraverso un modulo",
+        "un file controllato dall'estensione e mai aperto, così un PDF chiamato .jpg passa",
+        "un modulo che legge l'intero corpo in memoria prima di guardare quanto è grande",
+        "un upload chiamato PHOTO.JPG respinto dove photo.jpg viene accettato, o il contrario",
+        "un nome con spazi, parentesi o caratteri fuori dall'ASCII scritto su disco senza modifiche"
+      ],
+      "details": {
+        "limit": "Il limite di dimensione dichiarato dal tuo modulo di upload. Questo set fa un passo per lato - per un file a ogni distanza, esegui il preset size-boundaries.",
+        "allow": "Quali tipi il tuo modulo deve accettare. Ognuno diventa un file reale di quel tipo, e sono il controllo positivo dell'intero set.",
+        "deny": "Quali estensioni il tuo modulo deve respingere. Un'estensione per cui questa versione non ha un formato riceve comunque un file con quel nome, contenente testo semplice.",
+        "far-over": "Quanto oltre il limite arriva l'unico file grande. Disattivalo dove scrivere diverse volte il limite non vale il disco.",
+        "bulk": "Quanti file contiene l'upload di massa. Zero lascia del tutto fuori dal set quel gruppo."
+      }
+    }
+  },
+  "commands": {
+    "generate": "produrre file, da una ricetta o da opzioni",
+    "validate": "controllare una ricetta senza scrivere nulla",
+    "verify": "controllare una directory rispetto a un manifest",
+    "cleanup": "rimuovere i file elencati da un manifest",
+    "recipe fmt": "stampare una ricetta nella sua forma normalizzata",
+    "preset": "costruire un set di file a partire da una domanda di test con nome",
+    "formats": "elencare i formati supportati da questa versione",
+    "damage": "elencare i modi in cui questa versione può rompere un file di proposito",
+    "tool": "piccole utilità per file che hai già",
+    "version": "stampare la versione dello strumento",
+    "license": "stampare la licenza e cosa significa per i file generati"
+  },
+  "outcomes": {
+    "accept": "Il tuo sistema deve accettare il file.",
+    "reject": "Il tuo sistema deve rifiutare il file.",
+    "sanitize": "Il tuo sistema deve accettare il file e ripulirlo, per esempio rinominandolo.",
+    "unspecified": "Dipende dalle regole del tuo sistema. Decidi tu, poi controlli che ciò che accade sia ciò che intendevi."
+  },
+  "damages": {
+    "zero-head": "Sovrascrive con zeri i primi byte del file, lasciandone intatta la lunghezza. La maggior parte dei lettori guarda prima lì, quindi quasi tutto si accorge di questo danno."
+  },
+  "terms": {
+    "oracleNone": "non applicabile",
+    "int": "qualsiasi numero intero",
+    "choice": "uno di un insieme fisso",
+    "bool": "vero o falso",
+    "size": "una dimensione come 2mb",
+    "text": "testo",
+    "pixels": "pixel",
+    "paragraphs": "paragrafi",
+    "rows": "righe",
+    "columns": "colonne",
+    "slides": "diapositive",
+    "hertz": "hertz",
+    "megapixels": "megapixel",
+    "million cells": "milioni di celle",
+    "entries per second": "voci al secondo",
+    "files": "file",
+    "sizes separated by commas": "dimensioni separate da virgole",
+    "format ids separated by commas": "id di formato separati da virgole",
+    "format ids separated by commas, or all": "id di formato separati da virgole, oppure all",
+    "extensions separated by commas": "estensioni separate da virgole",
+    "the id of a format, as tfg formats lists them": "l'id di un formato, come lo elenca tfg formats",
+    "the password, in plain text": "la password, in chiaro",
+    "any text": "qualsiasi testo",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "una data come 2024-02-29 o 2024-02-29T13:45:00+02:00, oppure none"
+  },
+  "faq": [
+    {
+      "q": "In cosa è diverso da dd, fsutil o truncate?",
+      "a": "Quei comandi ti danno un file della dimensione giusta pieno di niente. Un file da 2 MB chiamato photo.png fatto così non è un PNG, quindi qualsiasi cosa lo analizzi davvero lo rifiuta per il motivo sbagliato, e anche il tuo test passa per il motivo sbagliato. Questo produce un vero PNG di esattamente 2 MB che si apre in un visualizzatore di immagini, e arriva con una dichiarazione su come il tuo sistema deve trattarlo.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "È gratuito, e posso usarlo al lavoro?",
+      "a": "Sì a entrambe. È rilasciato sotto GPL-3.0 e non costa nulla. Non c'è un account, né una chiave di licenza, né un livello a pagamento."
+    },
+    {
+      "q": "Posso usare i file generati in un prodotto closed source?",
+      "a": "Sì. La licenza copre il codice dello strumento, non ciò che lo strumento produce. File, ricette e manifest generati sono output e non opere derivate, quindi puoi committarli e distribuirli senza alcun obbligo."
+    },
+    {
+      "q": "I file generati contengono dati personali reali?",
+      "a": "No. Tutto ciò che contengono è sintetizzato da un seed. Nessun dataset viene letto, nessun servizio viene contattato e nessun contenuto di terzi è incorporato. Considera un indirizzo e-mail generato inutilizzabile anziché inutilizzato, perché qualsiasi stringa casuale può coincidere per caso con uno reale."
+    },
+    {
+      "q": "Otterrò esattamente gli stessi file su un'altra macchina?",
+      "a": "Sì, byte per byte, con la stessa ricetta e lo stesso seed. Il progetto lo verifica a ogni modifica, e romperlo richiede una versione maggiore. È ciò che ti permette di committare una piccola ricetta invece di grandi fixture binarie."
+    },
+    {
+      "q": "Serve una connessione a internet?",
+      "a": "Mai. Non c'è telemetria, né controllo degli aggiornamenti, né client cloud, e il binario della riga di comando non ha alcuno stack di rete compilato al suo interno. Funziona su una macchina senza rete e in un ambiente aziendale chiuso."
+    },
+    {
+      "q": "Cosa succede se chiedo una dimensione che un formato non può raggiungere?",
+      "a": "Ottieni un errore che nomina il formato, il minimo possibile, il motivo di quel limite inferiore e cosa fare invece, e nessun file viene scritto. Lo strumento non arrotonda mai una dimensione in silenzio. Ogni minimo è elencato nella pagina dei formati.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Posso generare un file deliberatamente rotto?",
+      "a": "Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
+    },
+    {
+      "q": "Quali formati arrivano dopo?",
+      "a": "7z, mp3 e mp4. Oggi {{ .Facts.FormatCount }} formati funzionano da un capo all'altro."
+    },
+    {
+      "q": "Su quali sistemi posso eseguirlo?",
+      "a": "La riga di comando gira su Windows e Linux sia su Intel sia su ARM, e sui Mac con Apple Silicon. La finestra desktop è fornita per Windows su Intel, Linux su Intel e Mac con Apple Silicon. I Mac Intel non sono supportati e non viene compilato nulla per loro."
+    },
+    {
+      "q": "Devo installare qualcosa?",
+      "a": "No. Scarica l'archivio per il tuo sistema, decomprimilo ed esegui il binario. Non c'è un installer, né un runtime da aggiungere, né una dipendenza da risolvere. Se hai Go, funziona anche un solo comando go install.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Perché un'esecuzione su migliaia di file è più lenta su Windows?",
+      "a": "Perché Windows fa pagare di più ogni percorso che esamina, e un comando che passa su migliaia di file esamina migliaia di percorsi. Misurato su una macchina con 3000 file da 1 kB, verify impiega circa 0,9 secondi su Windows e circa 0,2 secondi su Linux in un container. Un percorso di output più corto abbassa il valore di Windows, perché ogni cartella sopra i file fa parte di ciò che viene esaminato."
+    }
+  ]
+}

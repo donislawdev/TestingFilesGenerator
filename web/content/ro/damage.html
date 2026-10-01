@@ -1,0 +1,177 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cum faci un fișier corupt pentru teste</h1>
+<p class="lead">
+  Un validator căruia i s-au arătat doar fișiere sănătoase nu a fost cu adevărat testat. Iată cum
+  obții un fișier stricat intenționat, care iese cu <strong>exact mărimea pe care o ceri</strong> și
+  vine cu un manifest care spune ce trebuie să facă sistemul tău cu el.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> scrie un PNG de
+    exact 2097152 de octeți ai cărui primi octeți sunt zerouri, iar manifestul de lângă el notează
+    că sistemul tău trebuie să îl respingă.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Calea obișnuită</p>
+  <h2>De ce un fișier corupt de mână face un test prost</h2>
+  <p>
+    Căile obișnuite sunt un editor hexazecimal, un script care schimbă câțiva octeți la întâmplare sau
+    un fișier scurtat cu <code>head</code> ori <code>truncate</code>. Merg o dată, apoi te costă:
+  </p>
+  <ul>
+    <li>
+      <strong>Este altfel de fiecare dată.</strong> Un octet ales la întâmplare cade în alt loc la fiecare
+      rulare, deci o eroare de marți poate să nu se mai întoarcă miercuri.
+    </li>
+    <li>
+      <strong>Schimbă mărimea.</strong> Un fișier tăiat este mai mic decât limita sub care trebuia să
+      stea, deci verificarea mărimii răspunde înaintea celei a conținutului, iar testul trece din
+      motivul greșit.
+    </li>
+    <li>
+      <strong>Adesea trece neobservat.</strong> Textul simplu se citește în continuare cu un octet
+      schimbat la mijloc, iar un cititor de imagini îngăduitor îl desenează pur și simplu, așa că
+      fișierul care trebuia să fie stricat este acceptat.
+    </li>
+    <li>
+      <strong>Nu spune nimic despre ce trebuie să se întâmple.</strong> Fișierul este doar octeți, iar
+      cine citește testul mai târziu trebuie să ghicească dacă s-a urmărit acceptarea sau
+      respingerea.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Ce primești</p>
+  <h2>Un fișier deteriorat are în continuare mărimea cerută</h2>
+  <p>
+    Fișierul este generat normal și stricat după aceea, pe drumul spre disc. Păstrează mărimea cerută,
+    iar aceeași comandă scrie din nou aceiași octeți.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Setările se scriu după două puncte. Opțiunea poate fi repetată, iar deteriorările se aplică în
+    ordinea în care le scrii. Funcționează cu fiecare dintre cele {{ .Facts.FormatCount }} formate.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Ce poate face</p>
+  <h2>Ce deteriorări există?</h2>
+  <p>
+    Aceasta este lista pe care o afișează programul, citită din el când se construiește pagina.
+    <code>tfg damage</code> o afișează pe aceeași, iar <code>tfg damage &lt;id&gt;</code> spune ce
+    primește una dintre ele.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> scrie zerouri peste începutul fișierului. Majoritatea cititorilor se uită
+    întâi acolo, la semnătura și antetul care spun ce este fișierul, așa că aproape orice cititor
+    observă. Textul simplu și jurnalele nu au semnătură și sunt respinse și ele, pentru că un șir de
+    octeți nuli nu este text. Sub patru octeți, unele formate ies cu o deteriorare de care nu se
+    plânge niciun cititor, de aceea setarea începe de la patru.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Ce spune manifestul</p>
+  <h2>Un manifest care spune ce trebuie să se întâmple</h2>
+  <p>
+    Fiecare fișier deteriorat primește o intrare care spune că sistemul tău trebuie să îl respingă, cu
+    deteriorarea notată alături:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Două cereri sunt refuzate înainte să se scrie ceva, pentru că fiecare ar lăsa pe disc un fișier pe
+    care manifestul îl descrie greșit:
+  </p>
+  <ul>
+    <li>un fișier mai mic decât are nevoie deteriorarea, care ar ieși neschimbat</li>
+    <li>
+      <code>expected: accept</code> lângă o deteriorare, pentru că nimic nu ar putea îndeplini asta. Scrie
+      <code>sanitize</code> dacă sistemul tău trebuie să repare fișierul sau
+      <code>unspecified</code> dacă tocmai asta este întrebarea pe care o pui
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Într-o rețetă</p>
+  <h2>Fișiere sănătoase și stricate într-o singură rulare</h2>
+  <p>
+    Pune-le pe amândouă într-o rețetă, iar manifestul poartă așteptarea fiecărui fișier, deci testul nu
+    are nevoie de o listă cu care este care:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Într-un test</p>
+  <h2>Transformarea într-un test</h2>
+  <p>
+    Testul citește manifestul și verifică dacă ce s-a întâmplat este ce s-a declarat. Nu are nevoie de o
+    listă de nume de fișiere:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    O respingere bună este una curată. Un mesaj care spune ce a fost greșit este răspunsul pe care îl
+    vrei. O eroare de server, o blocare sau un fișier salvat pe jumătate este defectul pe care acest
+    test există ca să îl găsească.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Mai departe</p>
+  <h2>Unde să mergi de aici</h2>
+  <ul>
+    <li>
+      <a href="/ro/presetari/upload-validation/">Presetarea upload-validation</a> pune unui formular
+      celelalte două întrebări, cea despre mărime și cea despre tip.
+    </li>
+    <li>
+      <a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a> rulează într-un pipeline o rețetă ca
+      aceasta.
+    </li>
+    <li>
+      <a href="/ro/documentatie/#damage">Documentația</a> cuprinde fiecare opțiune a lui <code>tfg
+      generate</code>.
+    </li>
+  </ul>
+</section>

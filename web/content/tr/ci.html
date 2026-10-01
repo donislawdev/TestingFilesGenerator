@@ -1,0 +1,188 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>CI hattında test dosyaları nasıl üretilir</h1>
+<p class="lead">
+  Bir depodaki ikili fixture sonsuza dek geçmişinde kalır, bir diff'te incelenemez ve dosya
+  büyüdüğünde olanaksız hale gelir. Bunun yerine dosyaları hat içinde bir tariften üretin. Tarif
+  metindir, baytlar her seferinde aynı çıkar ve son bir adım hiçbir şeyin kaymadığını kanıtlar.
+</p>
+
+<div class="note">
+  <p class="note-title">Kısa yanıt</p>
+  <p>
+    <code>tfg</code>'yi kurun, testlerden önce <code>tfg generate fixtures.yaml --out ./fixtures</code>,
+    sonra <code>tfg verify ./fixtures/manifest.json</code> çalıştırın. Her iki adım da derlemeyi
+    kendiliğinden başarısız kılar ve nedenini söyleyen bir çıkış koduyla bunu yapar.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Neden commit edilmez</p>
+  <h2>Bir fixture neden depoda durmamalı</h2>
+  <ul>
+    <li>
+      <strong>Geçmişte kalır.</strong> Bir ikili dosyayı sonradan silmek klonu küçültmez, çünkü onun her
+      sürümü hâlâ oradadır.
+    </li>
+    <li>
+      <strong>Diff neyin değiştiğini göstermez.</strong> İnceleyen kişi bir PDF'nin farklı olduğunu görür,
+      başka bir şey değil. Bir tarif ise bir satırla değişir.
+    </li>
+    <li>
+      <strong>Büyük dosyalar sığmaz.</strong> GitHub, 100 MB'ın üzerinde bir dosya içeren bir push'u
+      reddeder. Bu yüzden 500 MB'lık bir yükleme sınırı testinin commit edecek bir şeyi olmaz.
+    </li>
+  </ul>
+  <p>
+    Commit edilecek olan tariftir. Aynı tarif ve aynı tohum her makinede aynı baytları yazar, bu yüzden
+    hatta üretilen dosya dizüstünüzde sahip olduğunuz dosyadır.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Tarif</p>
+  <h2>Testlerin yanında duran bir tarif</h2>
+  <p>
+    Bu tarif, kabul edilmesi gereken yirmi beş fatura ile bir sınırın üzerinde olup reddedilmesi gereken
+    iki görüntü yazar ve bildirim iki beklentiyi de kaydeder:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> onu hiçbir şey yazmadan denetler ve tüm sorunları tek
+    seferde adlandırır.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Aracı kuran ve fixture'ları oluşturan bir iş akışı</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Sağlama toplamı satırı arşivi aynı sürümdeki <code>verify-SHA256SUMS.txt</code> ile karşılaştırır.
+    Sürüm sabitlenmiştir, bu yüzden yeni bir sürüm dokunmadığınız bir derlemeyi asla değiştirmez.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Aynısı bir GitLab işi olarak</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Kırmızıya döndüğünde</p>
+  <h2>Bir adımı ne başarısız kılar ve neden</h2>
+  <p>
+    Her sonun kendi çıkış kodu vardır, bu yüzden adım kendiliğinden başarısız olur ve günlük hangisi
+    olduğunu söyler. Bir hattın karşılaştıkları:
+  </p>
+  <ul>
+    <li><code>3</code> - tarif geçerli değil. Hiçbir şey yazılmadı ve her sorun adlandırıldı</li>
+    <li><code>4</code> - biçim istenileni yapamıyor, örneğin kendi en küçüğünün altında bir boyut</li>
+    <li><code>6</code> - yeterli disk alanı yok</li>
+    <li><code>7</code> - <code>tfg verify</code> bildirimiyle uyuşmayan bir dosya buldu</li>
+    <li><code>8</code> - çalıştırma bitti ama her şey üretilmedi</li>
+  </ul>
+  <p>
+    Başarısız bir çalıştırma standart çıktıya hiçbir şey yazmaz, bu yüzden bir günlük ayrıştırıcısı
+    hatayı asla veri sanmaz. Tablonun tamamı <a href="/tr/dokumantasyon/#ci">belgeler
+    sayfasında</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Bir PowerShell betiği bir satır daha ister</h2>
+  <p>
+    PowerShell, bir programın çıkış kodunu bir <code>.ps1</code> dosyasının dışına taşımaz. Birini
+    <code>-File</code> ile çalıştırın. İçindeki araç işi reddetse bile betik <code>0</code> yanıtı
+    verir ve kırmızı olması gereken bir derleme yeşile döner. Son satır düzeltmenin tamamıdır:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    PowerShell böyle davranır, bu aracla ilgili bir şey değildir. <code>cmd</code>, <code>bash</code> ve
+    <code>zsh</code> fazladan hiçbir şeye gerek duymaz.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Birkaç iş</p>
+  <h2>Fixture'ları işler arasında paylaşmak</h2>
+  <p>
+    Genellikle yüklemeye gerek yoktur. Aynı tarif aynı baytları yazdığı için her iş kendi <code>tfg
+    generate</code> komutunu çalıştırabilir ve bu, yükleyip indirmekten daha hızlıdır. Bir işin
+    başka bir işten dosya alması gerekiyorsa, aktarımdan sonra bildirim üzerinde <code>tfg
+    verify</code> çalıştırın. Gelenin yazılanla aynı olup olmadığını söyler.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Sonraki</p>
+  <h2>Buradan nereye gidilir</h2>
+  <ul>
+    <li>
+      <a href="/tr/bozuk-test-dosyalari/">Bozuk test dosyaları</a> aynı tarife kasıtlı bozulmuş dosyalar
+      ekler.
+    </li>
+    <li>
+      <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a> bir hat içindeki çalıştırmanın başka
+      neleri denetleyebileceğini gösterir.
+    </li>
+    <li>
+      <a href="/tr/dokumantasyon/">Belgeler</a> her komutu, tarif anahtarını ve çıkış kodunu içerir.
+    </li>
+  </ul>
+</section>

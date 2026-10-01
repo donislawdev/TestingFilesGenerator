@@ -1,0 +1,92 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Preset <code>{{ .ID }}</code> membuat satu set lengkap file uji asli untuk pertanyaan ini dengan
+  satu perintah, dan <code>manifest.json</code> di sampingnya yang menyatakan bagaimana sistem Anda
+  harus bereaksi terhadap tiap file. Semua di bawah dibaca dari program, pada nilai bawaan versi
+  ini.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Apa yang biasanya ditemukan?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Apa isi set?</h2>
+  <p>Pada nilai bawaan, seperti yang dilaporkan <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">File</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Target dalam resepnya</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Ukuran total</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Format</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Dan apa yang diharapkan manifes set itu dari sistem Anda:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Diharapkan</th><th>Arti</th><th class="num">File</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Apa yang dapat Anda ubah?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Pengaturan</th><th>Menerima</th><th>Bawaan</th><th>Fungsinya</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Nilai bawaan ini adalah nilai sementara dari kami, bukan nilai sistem Anda. Berikan nilai Anda sendiri.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Preset ini tidak memiliki pengaturan. Setnya sama setiap kali.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Bagaimana menjalankannya?</h2>
+  <p>Lihat biaya set, buat, atau ambil resepnya untuk disunting:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Atau bangun di atasnya dalam resep Anda sendiri, di samping pengujian Anda:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

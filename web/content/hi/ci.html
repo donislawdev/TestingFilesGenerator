@@ -1,0 +1,187 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>CI पाइपलाइन में टेस्ट फ़ाइलें कैसे बनाएँ</h1>
+<p class="lead">
+  रिपॉज़िटरी में बाइनरी फ़िक्स्चर उसके इतिहास में हमेशा के लिए रह जाता है, diff में उसकी समीक्षा नहीं
+  हो सकती, और फ़ाइल बड़ी हो तो वह संभव ही नहीं रहता। इसके बजाय फ़ाइलें पाइपलाइन के भीतर रेसिपी से
+  बनाएँ। रेसिपी पाठ है, बाइट हर बार एक जैसे निकलते हैं, और आख़िरी कदम साबित करता है कि कुछ नहीं
+  खिसका।
+</p>
+
+<div class="note">
+  <p class="note-title">छोटा जवाब</p>
+  <p>
+    <code>tfg</code> इंस्टॉल करें, टेस्ट से पहले <code>tfg generate fixtures.yaml --out
+    ./fixtures</code> चलाएँ और उनके बाद <code>tfg verify ./fixtures/manifest.json</code>। दोनों कदम
+    अपने आप बिल्ड को विफल करते हैं, एक ऐसे एग्ज़िट कोड के साथ जो कारण बताता है।
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">कमिट क्यों न करें</p>
+  <h2>फ़िक्स्चर रिपॉज़िटरी में क्यों नहीं रहना चाहिए</h2>
+  <ul>
+    <li>
+      <strong>यह इतिहास में रह जाता है।</strong> बाद में बाइनरी हटाने से क्लोन छोटा नहीं होता, क्योंकि
+      उसका हर संस्करण अब भी वहीं है।
+    </li>
+    <li>
+      <strong>diff नहीं दिखाता कि क्या बदला।</strong> समीक्षक को बस दिखता है कि PDF अलग है, और कुछ नहीं।
+      रेसिपी एक पंक्ति से बदलती है।
+    </li>
+    <li>
+      <strong>बड़ी फ़ाइलें समाती नहीं।</strong> GitHub 100 MB से बड़ी फ़ाइल वाले पुश को ठुकरा देता है,
+      इसलिए 500 MB की अपलोड सीमा के टेस्ट के पास कमिट करने को कुछ नहीं है।
+    </li>
+  </ul>
+  <p>
+    कमिट करने की चीज़ रेसिपी है। वही रेसिपी और वही सीड हर मशीन पर वही बाइट लिखते हैं, इसलिए पाइपलाइन में
+    बनी फ़ाइल वही फ़ाइल है जो आपके लैपटॉप पर थी।
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">रेसिपी</p>
+  <h2>टेस्ट के बगल में रहने वाली रेसिपी</h2>
+  <p>
+    यह पच्चीस चालान लिखती है जिन्हें स्वीकार होना चाहिए और सीमा से ऊपर की दो छवियाँ जिन्हें अस्वीकार
+    होना चाहिए, और मैनिफ़ेस्ट दोनों अपेक्षाएँ दर्ज करता है:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> उसे बिना कुछ लिखे जाँचता है और सारी समस्याएँ एक साथ बता देता
+    है।
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>एक वर्कफ़्लो जो टूल इंस्टॉल करता है और फ़िक्स्चर बनाता है</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    चेकसम वाली पंक्ति संग्रह को उसी रिलीज़ की <code>verify-SHA256SUMS.txt</code> से मिलाती है। संस्करण
+    तय कर दिया गया है, इसलिए नई रिलीज़ कभी ऐसे बिल्ड को नहीं बदलती जिसे आपने छुआ नहीं।
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>वही बात GitLab जॉब के रूप में</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">जब यह लाल हो जाए</p>
+  <h2>क्या किसी कदम को विफल करता है, और क्यों</h2>
+  <p>
+    हर अंत का अपना एग्ज़िट कोड है, इसलिए कदम अपने आप विफल होता है और लॉग बताता है कि कौन-सा था। जो
+    पाइपलाइन को मिलते हैं:
+  </p>
+  <ul>
+    <li><code>3</code> - रेसिपी मान्य नहीं है। कुछ नहीं लिखा गया, और हर समस्या का नाम लिया गया है</li>
+    <li><code>4</code> - फ़ॉर्मैट वह नहीं कर सकता जो माँगा गया, जैसे अपने न्यूनतम से नीचे का आकार</li>
+    <li><code>6</code> - डिस्क पर पर्याप्त जगह नहीं है</li>
+    <li><code>7</code> - <code>tfg verify</code> को एक फ़ाइल मिली जो अपने मैनिफ़ेस्ट से मेल नहीं खाती</li>
+    <li><code>8</code> - रन पूरा हुआ, पर सब कुछ बना नहीं</li>
+  </ul>
+  <p>
+    विफल रन स्टैंडर्ड आउटपुट पर कुछ नहीं छापता, इसलिए लॉग पार्सर कभी किसी त्रुटि को डेटा नहीं समझता।
+    पूरी तालिका <a href="/hi/docs/#ci">दस्तावेज़ के पेज</a> पर है।
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShell स्क्रिप्ट को एक पंक्ति और चाहिए</h2>
+  <p>
+    PowerShell किसी प्रोग्राम का एग्ज़िट कोड <code>.ps1</code> फ़ाइल से बाहर नहीं ले जाता। एक को
+    <code>-File</code> से चलाएँ तो स्क्रिप्ट <code>0</code> देती है, चाहे भीतर के टूल ने काम से
+    इनकार कर दिया हो, और जो बिल्ड लाल होना चाहिए वह हरा हो जाता है। आख़िरी पंक्ति ही पूरा सुधार है:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    PowerShell ऐसा ही बरतता है, यह इस टूल की बात नहीं है। <code>cmd</code>, <code>bash</code> और
+    <code>zsh</code> को कुछ अतिरिक्त नहीं चाहिए।
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">कई जॉब</p>
+  <h2>जॉब के बीच फ़िक्स्चर साझा करना</h2>
+  <p>
+    आम तौर पर उन्हें अपलोड करने की ज़रूरत नहीं होती। क्योंकि वही रेसिपी वही बाइट लिखती है, हर जॉब अपना
+    <code>tfg generate</code> चला सकता है, जो अपलोड और डाउनलोड से तेज़ है। जब किसी जॉब को दूसरे से
+    फ़ाइलें लेनी हों, तो ट्रांसफ़र के बाद मैनिफ़ेस्ट पर <code>tfg verify</code> चलाएँ, और वह बताएगा
+    कि जो पहुँचा वही है जो लिखा गया था।
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">आगे</p>
+  <h2>यहाँ से कहाँ जाएँ</h2>
+  <ul>
+    <li>
+      <a href="/hi/corrupt-test-files/">खराब टेस्ट फ़ाइलें</a> उसी रेसिपी में जानबूझकर बिगाड़ी गई फ़ाइलें
+      जोड़ती हैं।
+    </li>
+    <li>
+      <a href="/hi/use-cases/">उपयोग के मामले</a> दिखाते हैं कि पाइपलाइन में एक रन और क्या जाँच सकता है।
+    </li>
+    <li>
+      <a href="/hi/docs/">दस्तावेज़</a> में हर कमांड, हर रेसिपी कुंजी और हर एग्ज़िट कोड है।
+    </li>
+  </ul>
+</section>

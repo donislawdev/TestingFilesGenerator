@@ -1,0 +1,122 @@
+<h1>正確なサイズのファイルを作る方法</h1>
+<p class="lead">
+  どのOSにもそのためのコマンドがあり、3つとも以下に載せています。正確なバイト数のファイルが作れ、多くのテストではそれで十分です。<strong>このページのコマンドはすべて、公開前に対応するOS上で実行しました</strong>。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    Windows:<code>fsutil file createnew name 10485760</code>。Linux:<code>dd if=/dev/zero of=name bs=1M
+    count=10</code>。macOS:<code>mkfile 10m name</code>。サイズはバイトで指定し、ファイルマネージャーの数え方での10MBは10485760です。
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutilと、追加不要のPowerShell版</h2>
+  <p>
+    <code>fsutil</code>はWindowsに付属しています。サイズは<strong>バイト単位</strong>で指定するため、先に数値を計算してください。10MBは10485760、100MBは104857600、1GBは1073741824です。
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11で実測しました。通常のプロンプトから実行でき、管理者権限は不要で、ファイルはちょうど10485760バイトになります。
+  </p>
+  <p>PowerShellは別のプログラムを呼び出さずに同じことができ、単位も理解します。</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShellの<code>10MB</code>は、エクスプローラーと同じ1024基準の数え方で10485760バイトを意味するため、上の2つのコマンドは同じサイズになります。
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd、truncate、fallocate、そして人がつまずく違い</h2>
+  <p><code>dd</code>は誰もが知っているコマンドです。実際にバイトを書き込みます。</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code>は一瞬で終わりますが、そこが落とし穴です。Alpine
+    Linuxで実測すると、ファイルは10485760バイトと報告されるのに、占有するのは<strong>0ブロック</strong>で、<strong>スパースファイル</strong>になっています。読み込むものには10メガバイトのゼロが返りますが、ディスクは領域を実際には確保していません。
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    アップロード制限のテストには問題ありませんが、ディスク容量の制限のテストでは誤解を招きます。領域が実際に必要なときは<code>fallocate</code>を使います。
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>圧縮できない内容が必要で、アーカイバーが再び小さくできないようにしたいときは:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>スパースではないmkfileと、すでにご存じの2つ</h2>
+  <p>
+    macOSには<code>mkfile</code>が付属しています。macOS
+    26.6.2で実測したところ、10485760バイトで20480ブロックでした。領域は約束だけでなく実際に確保されています。
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code>と<code>truncate</code>もあり、Linuxと同じように動作します。</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">これが通用しなくなる場所</p>
+  <h2>正しいサイズのファイルは、正しい種類のファイルではありません</h2>
+  <p>
+    上記はどれも、ゼロのかたまりを作ります。テスト対象がサイズだけを見る場合、たとえばアップロード制限、割り当て、転送なら、それで十分です。何かがそのファイルを<strong>開いた</strong>瞬間に、十分ではなくなります。
+  </p>
+  <p>
+    実測しましたので、ぜひご自身でも試してください。<code>fsutil</code>で2MBのファイルを作り、<code>photo.png</code>という名前を付けて、画像ライブラリに渡します。Pillowは<code>cannot
+    identify image file</code>と答えます。それはPNGではありません。最初からそうではなく、名前がそう言っていただけです。
+  </p>
+  <p>
+    これは見た目以上に重要です。<strong>テストがどちらの向きで失敗するか</strong>が関わるからです。アップロードのエンドポイントがファイルを拒否し、テストが緑になり、サイズ制限は機能していると結論します。しかし、サイズが理由で拒否したのではありません。バイトが画像ではなかったから拒否したのであり、テストしたかったルールには届いていません。
+  </p>
+  <ul class="ticks">
+    <li>サイズのルールを見る前に、パーサーが拒否する</li>
+    <li>サムネイル作成が失敗し、読むエラーがサムネイルに関するものになる</li>
+    <li>ウイルス対策ソフトやコンテンツ検査が、3つ目の理由で拒否する</li>
+    <li>ビューアーが何も表示せず、それがバグなのか誰にも分からない</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">もう1つの方法</p>
+  <h2>その形式の本物のファイルを、要求したとおりのサイズで</h2>
+  <p>
+    これがTesting Files Generatorの役割です。ファイルはその形式の本物で、対応するソフトウェアで開け、要求したバイト数とぴったり一致します。
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    形式が到達できないサイズを要求すると、下限とその理由を示すエラーが返り、サイズの違うファイルが作られることはありません。<a href="/ja/formats/">形式ページ</a>に、各形式と、生成できる最小のファイルを載せています。
+  </p>
+  <p>そして制限は1つではなく3つのテストケースなので、ツールは3つとも作ります。</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    10485759、10485760、10485761バイトのファイルと、システムがどれを受け入れどれを拒否するべきかを示すマニフェストが得られます。<a href="/ja/use-cases/">利用例のページ</a>では、これと、このツールが想定する他の4つの用途を紹介しています。
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>では、どちらを使うべきでしょうか。</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">OSのコマンドを使う場合</p>
+      <p class="muted">
+        何もそのファイルを開かないとき。先にサイズを確認するエンドポイントでのサイズ制限のテスト、転送、割り当て、ディスク満杯の状況。1行で済み、すでにインストールされています。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">本物の生成ツールを使う場合</p>
+      <p class="muted">
+        何かがファイルを解析、描画、取り込み、展開するとき。そして、明日別のマシンで同じフィクスチャをバイト単位で再び必要とするとき。
+      </p>
+    </li>
+  </ul>
+  <p>
+    どちらも状況によって正しいため、このページに両方載せています。避けるべき間違いは、後者が必要な場面で前者を使い、緑になったテストを証明と受け取ることです。
+  </p>
+</section>

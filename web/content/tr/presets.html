@@ -1,0 +1,32 @@
+<h1>Test dosyası hazır ayarları, her test sorusu için bir set</h1>
+<p class="lead">
+  Hazır ayar, tek bir soru etrafında tasarlanmış, sisteminizin her dosyaya nasıl tepki vermesi
+  gerektiğini söyleyen bir manifestle gelen bütün bir test dosyası setidir. Soruyu siz seçersiniz,
+  aracın seti kurar. Her hazır ayarın genelde ne bulduğunu, sette ne olduğunu ve kabul ettiği her
+  ayarı anlatan kendi sayfası vardır.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Hazır ayar bir tariften nasıl farklıdır?</h2>
+  <p>
+    Altta, hiç farklı değildir. Hazır ayar, aracın sizin için birkaç ayardan yazdığı bir tariftir.
+    <code>tfg preset eject</code> o tarifi yazdırır, böylece testlerinizin yanında tutup
+    düzenleyebilirsiniz ve kendi tarifiniz tek satırla bir hazır ayarın üzerine kurulabilir:
+    <code>extends: preset:</code> ve ardından kimliği.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Varsayılanlara güvenebilir miyim?</h2>
+  <p>
+    Dosyalar için evet. Yükleme formunun sınırı gibi yalnızca sisteminizin bildiği bir sayı için
+    varsayılan bizim geçici değerimizdir ve araç birini kullandığı her seferde bunu söyler. Her
+    hazır ayarın sayfası bu ayarları işaretler ve <code>tfg preset show</code> bir şey yazılmadan
+    önce söyler.
+  </p>
+</section>

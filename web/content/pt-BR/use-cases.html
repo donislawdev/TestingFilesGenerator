@@ -1,0 +1,135 @@
+<h1>Para que as pessoas usam</h1>
+<p class="lead">
+  Cinco tarefas que aparecem em quase todo projeto que aceita arquivos de pessoas, e o comando que faz
+  cada uma. Todo exemplo abaixo roda como está escrito.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limites de upload</p>
+  <h2>Testar se um limite de tamanho de arquivo é aplicado onde diz que é</h2>
+  <p>
+    Um limite são três casos de teste, não um: logo abaixo, exatamente nele e logo acima. Conseguir
+    esses à mão significa calcular contagens de bytes e torcer para não ter errado por um. Peça o
+    conjunto no lugar:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Você recebe três PDFs reais com 1048575, 1048576 e 1048577 bytes, e um manifesto dizendo que os dois
+    primeiros devem ser aceitos e o terceiro rejeitado por <code>size_limit</code>. Seu teste lê a
+    expectativa em vez de você escrever três asserções à mão - e quando o limite muda, você muda um
+    número e roda de novo.
+  </p>
+  <p>
+    O mesmo funciona sem preset quando você quer um único conjunto de limites embutido:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integração contínua</p>
+  <h2>Manter fixtures fora do repositório sem perdê-las</h2>
+  <p>
+    Fixtures binárias grandes deixam um repositório lento de clonar e chato de revisar, e ninguém sabe
+    dizer o que mudou quando uma é substituída. Uma receita são algumas centenas de caracteres de
+    YAML que reconstroem os arquivos idênticos - <strong>byte a byte, em qualquer máquina</strong> -
+    porque cada arquivo é derivado do seed da execução.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Cada término tem seu próprio código de saída, então um pipeline consegue distinguir uma receita ruim
+    de um disco cheio e de uma divergência de verificação. Uma execução com falha não imprime nada
+    na saída padrão, o que impede um parser de logs de ler um erro como dado.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Escala</p>
+  <h2>Descobrir o que acontece quando a pasta é grande</h2>
+  <p>
+    Rotinas de importação, jobs noturnos e listagens de diretório se comportam diferente com dez mil
+    arquivos do que com dez. Tamanhos sorteados de um intervalo fazem o conjunto parecer tráfego
+    real em vez de dez mil arquivos idênticos, e o sorteio vem do seed, então o conjunto é o mesmo
+    amanhã.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Confira quanto uma execução custaria antes de ela escrever qualquer coisa, o que importa quando o
+    total é medido em gigabytes:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Uma execução maior que o espaço livre no disco é recusada antes de o primeiro byte ser escrito, em
+    vez de encher o disco e falhar no meio.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arquivos compactados</p>
+  <h2>Testar um descompactador com um arquivo compactado que realmente contém arquivos</h2>
+  <p>
+    Um arquivo compactado vazio com a extensão certa não prova nada sobre o código que o abre e percorre
+    o que há dentro. Declare o conteúdo e o arquivo compactado realmente o contém:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Profundidade de aninhamento, contagem de entradas e tamanho do que há dentro são coisas sobre as
+    quais uma rotina de importação tem opinião, e é assim que você descobre quais são.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsers e visualizadores</p>
+  <h2>Conferir se o seu próprio código lê um formato como o software real</h2>
+  <p>
+    Todo formato aqui é verificado com um leitor independente antes de ser liberado - um PNG é aberto e
+    seus pixels comparados, um DOCX é relido por bibliotecas separadas, um arquivo compactado é
+    extraído. Isso significa que um arquivo que o seu parser recusa é uma descoberta sobre o seu
+    parser, não sobre o gerador.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    A <a href="/pt-br/formatos/">página de formatos</a> lista as configurações que cada um aceita e o
+    menor arquivo que cada um pode ser.
+  </p>
+</section>
+
+<section class="section" id="guides">
+  <p class="eyebrow">Guias</p>
+  <h2>Dois deles em detalhe</h2>
+  <ul>
+    <li>
+      <a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos de teste corrompidos</a> - um arquivo
+      quebrado de propósito, com o tamanho exato e com o que deve acontecer com ele escrito no
+      manifesto.
+    </li>
+    <li>
+      <a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a> - um workflow do GitHub
+      Actions, um job do GitLab e os códigos de saída que fazem um build falhar.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="who">
+  <h2>Para quem é</h2>
+  <p>
+    Engenheiros de QA, automação de testes e qualquer pessoa cujo código tenha atrás um formulário de
+    upload, uma rotina de importação, um parser ou uma cota de armazenamento. Roda em uma máquina
+    sem rede nenhuma, o que importa em um ambiente corporativo fechado onde um gerador baseado em
+    navegador não é opção.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

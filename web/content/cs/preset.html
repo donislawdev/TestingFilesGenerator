@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Předvolba <code>{{ .ID }}</code> sestaví jediným příkazem celou sadu skutečných testovacích souborů
+  pro tuto otázku a vedle nich <code>manifest.json</code>, který říká, jak má váš systém na každý
+  soubor reagovat. Vše níže se čte z programu při výchozích hodnotách této verze.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Co obvykle najde?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Co je v sadě?</h2>
+  <p>Při výchozích hodnotách, jak je hlásí <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Soubory</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Targety v receptu</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Celková velikost</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Formáty</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A co od vašeho systému očekává manifest té sady:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Očekáváno</th><th>Význam</th><th class="num">Soubory</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Co můžete změnit?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Nastavení</th><th>Přijímá</th><th>Výchozí</th><th>Co dělá</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Tato výchozí hodnota je náš zástupný údaj, ne hodnota vašeho systému. Zadejte vlastní.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Tato předvolba nemá žádná nastavení. Sada je pokaždé stejná.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Jak ji spustit?</h2>
+  <p>Podívejte se, kolik by sada stála, sestavte ji, nebo si vezměte její recept k úpravě:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Nebo na ní stavte ve vlastním receptu vedle svých testů:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

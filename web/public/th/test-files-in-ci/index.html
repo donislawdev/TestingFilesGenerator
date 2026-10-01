@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>ไฟล์ทดสอบใน CI - GitHub Actions, GitLab CI และ PowerShell</title>
+<meta name="description" content="สร้างไฟล์ทดสอบในไปป์ไลน์แทนการคอมมิตไบนารี: เวิร์กโฟลว์ GitHub Actions งาน GitLab รหัสออก และกับดักของ PowerShell">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="ไฟล์ทดสอบใน CI - GitHub Actions, GitLab CI และ PowerShell">
+<meta property="og:description" content="สร้างไฟล์ทดสอบในไปป์ไลน์แทนการคอมมิตไบนารี: เวิร์กโฟลว์ GitHub Actions งาน GitLab รหัสออก และกับดักของ PowerShell">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ไฟล์ทดสอบใน CI - GitHub Actions, GitLab CI และ PowerShell">
+<meta name="twitter:description" content="สร้างไฟล์ทดสอบในไปป์ไลน์แทนการคอมมิตไบนารี: เวิร์กโฟลว์ GitHub Actions งาน GitLab รหัสออก และกับดักของ PowerShell">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "กรณีการใช้งาน",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "ไฟล์ทดสอบใน CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/test-files-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/">พรีเซ็ต</a>
+      <a href="/th/docs/">เอกสาร</a>
+      <a href="/th/use-cases/" aria-current="true">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/">คำถามที่พบบ่อย</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/th/use-cases/">กรณีการใช้งาน</a></p>
+<h1>วิธีสร้างไฟล์ทดสอบในไปป์ไลน์ CI</h1>
+<p class="lead">
+  ฟิกซ์เจอร์ไบนารีในรีโพซิทอรีจะค้างอยู่ในประวัติตลอดไป รีวิวใน diff ไม่ได้
+  และเป็นไปไม่ได้เลยเมื่อไฟล์ใหญ่ ให้สร้างไฟล์ในไปป์ไลน์จากสูตรแทน สูตรเป็นข้อความ
+  ไบต์ออกมาเหมือนกันทุกครั้ง และขั้นสุดท้ายพิสูจน์ว่าไม่มีอะไรขยับ
+</p>
+
+<div class="note">
+  <p class="note-title">คำตอบสั้นๆ</p>
+  <p>
+    ติดตั้ง <code>tfg</code> รัน <code>tfg generate fixtures.yaml --out ./fixtures</code> ก่อนการทดสอบ
+    และ <code>tfg verify ./fixtures/manifest.json</code> หลังการทดสอบ
+    ทั้งสองขั้นทำให้บิลด์ล้มเหลวได้เอง พร้อมรหัสออกที่บอกเหตุผล
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">ทำไมไม่คอมมิต</p>
+  <h2>ทำไมฟิกซ์เจอร์ไม่ควรอยู่ในรีโพซิทอรี</h2>
+  <ul>
+    <li>
+      <strong>มันค้างอยู่ในประวัติ</strong> การลบไฟล์ไบนารีทีหลังไม่ได้ทำให้โคลนเล็กลง
+      เพราะทุกเวอร์ชันของมันยังอยู่ตรงนั้น
+    </li>
+    <li>
+      <strong>diff ไม่แสดงว่าอะไรเปลี่ยน</strong> ผู้รีวิวเห็นแค่ว่า PDF ต่างไป ไม่มีอะไรมากกว่านั้น
+      ส่วนสูตรเปลี่ยนแค่บรรทัดเดียว
+    </li>
+    <li>
+      <strong>ไฟล์ใหญ่ไม่พอดี</strong> GitHub ปฏิเสธการพุชที่มีไฟล์ใหญ่กว่า 100 MB การทดสอบขีดจำกัดอัปโหลด
+      500 MB จึงไม่มีอะไรให้คอมมิต
+    </li>
+  </ul>
+  <p>
+    สิ่งที่ควรคอมมิตคือสูตร สูตรเดียวกันกับซีดเดียวกันเขียนไบต์เดียวกันบนทุกเครื่อง
+    ไฟล์ที่สร้างในไปป์ไลน์จึงเป็นไฟล์เดียวกับที่คุณมีบนแล็ปท็อป
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">สูตร</p>
+  <h2>สูตรที่อยู่ข้างๆ การทดสอบ</h2>
+  <p>
+    สูตรนี้เขียนใบแจ้งหนี้ยี่สิบห้าใบที่ควรถูกรับ และรูปสองรูปที่เกินขีดจำกัดซึ่งควรถูกปฏิเสธ
+    และแมนิเฟสต์บันทึกสิ่งที่คาดหวังทั้งสองอย่าง:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> ตรวจสูตรโดยไม่เขียนอะไร และบอกทุกปัญหาในครั้งเดียว
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>เวิร์กโฟลว์ที่ติดตั้งเครื่องมือและสร้างฟิกซ์เจอร์</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    บรรทัดผลรวมตรวจสอบเทียบไฟล์เก็บถาวรกับ <code>verify-SHA256SUMS.txt</code> จากรุ่นเดียวกัน
+    เวอร์ชันถูกตรึงไว้ รุ่นใหม่จึงไม่มีวันเปลี่ยนบิลด์ที่คุณไม่ได้แตะ
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>เรื่องเดียวกันในรูปแบบงานของ GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">เมื่อกลายเป็นสีแดง</p>
+  <h2>อะไรทำให้ขั้นหนึ่งล้มเหลว และเพราะอะไร</h2>
+  <p>
+    ทุกการจบมีรหัสออกของตัวเอง ขั้นจึงล้มเหลวได้เอง และล็อกบอกว่าเป็นรหัสไหน รหัสที่ไปป์ไลน์พบ:
+  </p>
+  <ul>
+    <li><code>3</code> - สูตรไม่ถูกต้อง ไม่มีอะไรถูกเขียน และทุกปัญหามีชื่อบอก</li>
+    <li><code>4</code> - รูปแบบทำสิ่งที่ขอไม่ได้ เช่น ขนาดต่ำกว่าขนาดเล็กสุดของมัน</li>
+    <li><code>6</code> - พื้นที่ดิสก์ไม่พอ</li>
+    <li><code>7</code> - <code>tfg verify</code> พบไฟล์ที่ไม่ตรงกับแมนิเฟสต์ของมัน</li>
+    <li><code>8</code> - การรันจบแล้ว แต่ไม่ได้สร้างครบทุกอย่าง</li>
+  </ul>
+  <p>
+    การรันที่ล้มเหลวไม่พิมพ์อะไรออกทางเอาต์พุตมาตรฐาน
+    ตัวแยกวิเคราะห์ล็อกจึงไม่มีวันเข้าใจผิดว่าข้อผิดพลาดเป็นข้อมูล
+    ตารางทั้งหมดอยู่ใน<a href="/th/docs/#ci">หน้าเอกสาร</a>
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>สคริปต์ PowerShell ต้องการอีกหนึ่งบรรทัด</h2>
+  <p>
+    PowerShell ไม่นำรหัสออกของโปรแกรมออกมานอกไฟล์ <code>.ps1</code> รันสคริปต์ด้วย <code>-File</code>
+    แล้วสคริปต์จะตอบ <code>0</code> แม้เครื่องมือข้างในปฏิเสธงาน
+    ทำให้บิลด์ที่ควรเป็นสีแดงกลายเป็นสีเขียว บรรทัดสุดท้ายคือวิธีแก้ทั้งหมด:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    นี่คือวิธีที่ PowerShell ทำงาน ไม่ใช่เรื่องของเครื่องมือนี้ <code>cmd</code> <code>bash</code> และ
+    <code>zsh</code> ไม่ต้องการอะไรเพิ่ม
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">หลายงาน</p>
+  <h2>แบ่งปันฟิกซ์เจอร์ระหว่างงาน</h2>
+  <p>
+    โดยปกติไม่จำเป็นต้องอัปโหลด เพราะสูตรเดียวกันเขียนไบต์เดียวกัน แต่ละงานจึงรัน <code>tfg
+    generate</code> ของตัวเองได้ ซึ่งเร็วกว่าการอัปโหลดแล้วดาวน์โหลด
+    เมื่องานหนึ่งต้องรับไฟล์จากอีกงานหนึ่ง ให้รัน <code>tfg verify</code> กับแมนิเฟสต์หลังการถ่ายโอน
+    แล้วมันจะบอกว่าสิ่งที่มาถึงตรงกับที่เขียนไว้หรือไม่
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">ถัดไป</p>
+  <h2>จากตรงนี้ไปไหนต่อ</h2>
+  <ul>
+    <li>
+      <a href="/th/corrupt-test-files/">ไฟล์ทดสอบที่เสียหาย</a>
+      เพิ่มไฟล์ที่ตั้งใจทำให้เสียลงในสูตรเดียวกัน
+    </li>
+    <li>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a> แสดงว่าการรันในไปป์ไลน์ตรวจอะไรได้อีก
+    </li>
+    <li>
+      <a href="/th/docs/">เอกสาร</a> มีทุกคำสั่ง ทุกคีย์ของสูตร และทุกรหัสออก
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>
