@@ -82,18 +82,18 @@ body {
 
 .skip {
   position: absolute;
-  left: -9999px;
+  inset-inline-start: -9999px;
   top: 0;
   background: var(--accent);
   color: var(--on-bright);
   padding: 10px 16px;
-  border-radius: 0 0 var(--radius) 0;
+  border-end-end-radius: var(--radius);
   font-weight: 600;
   z-index: 100;
 }
 
 .skip:focus {
-  left: 0;
+  inset-inline-start: 0;
 }
 
 /* ------------------------------------------------------------------ topbar */
@@ -134,7 +134,7 @@ body {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-right: auto;
+  margin-inline-end: auto;
 }
 
 .mainnav a {
@@ -155,23 +155,82 @@ body {
   background: var(--surface-2);
 }
 
-.langswitch {
-  display: flex;
-  gap: 6px;
+.langmenu {
+  position: relative;
 }
 
-.langswitch a {
+.langmenu > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
   font-size: 14px;
-  color: var(--muted);
-  text-decoration: none;
+  color: var(--text-dim);
   border: 1px solid var(--border);
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
+  user-select: none;
 }
 
-.langswitch a:hover {
+.langmenu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.langmenu > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-inline-end: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.langmenu[open] > summary::after {
+  margin-top: 3px;
+  transform: rotate(225deg);
+}
+
+.langmenu > summary:hover,
+.langmenu[open] > summary {
   color: var(--text);
   border-color: var(--accent-dim);
+}
+
+.langlist {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  width: min(520px, calc(100vw - 40px));
+  max-height: 70vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.langlist a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.langlist a:hover {
+  color: var(--text);
+  background: var(--surface-2);
 }
 
 /* ------------------------------------------------------------- typography */
@@ -456,14 +515,14 @@ ul.plain li {
 
 .ticks li {
   position: relative;
-  padding-left: 26px;
+  padding-inline-start: 26px;
   margin-bottom: 10px;
 }
 
 .ticks li::before {
   content: "";
   position: absolute;
-  left: 4px;
+  inset-inline-start: 4px;
   top: 0.62em;
   width: 8px;
   height: 8px;
@@ -489,7 +548,7 @@ table.data {
 
 table.data th,
 table.data td {
-  text-align: left;
+  text-align: start;
   padding: 10px 14px;
   border-bottom: 1px solid var(--border-soft);
   vertical-align: top;
@@ -516,7 +575,7 @@ table.data tbody tr:hover td {
 }
 
 table.data .num {
-  text-align: right;
+  text-align: end;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -610,7 +669,8 @@ pre code {
 }
 
 .qa-body {
-  padding: 0 20px 18px 46px;
+  padding: 0 20px 18px;
+  padding-inline-start: 46px;
 }
 
 .qa-body p:last-child {
@@ -620,15 +680,16 @@ pre code {
 /* ------------------------------------------------------------------ callout */
 
 .note {
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   background: var(--surface);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-start-end-radius: var(--radius);
+  border-end-end-radius: var(--radius);
   padding: 16px 20px;
   margin: 24px 0;
 }
 
 .note.warn {
-  border-left-color: var(--warning);
+  border-inline-start-color: var(--warning);
 }
 
 .note p:last-child {
@@ -652,14 +713,14 @@ pre code {
 .steps > li {
   counter-increment: step;
   position: relative;
-  padding-left: 46px;
+  padding-inline-start: 46px;
   margin-bottom: 30px;
 }
 
 .steps > li::before {
   content: counter(step);
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   width: 30px;
   height: 30px;
@@ -746,7 +807,7 @@ pre code {
   .mainnav {
     order: 3;
     width: 100%;
-    margin-right: 0;
+    margin-inline-end: 0;
   }
 
   .footer-inner {
@@ -755,6 +816,81 @@ pre code {
   }
 
   .qa-body {
-    padding-left: 20px;
+    padding-inline-start: 20px;
   }
+
+  .langlist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------- languages */
+
+/* The site loads no font in any language it is served in, so what a page is
+ * drawn in is whatever the visitor's system carries.
+ * The stacks below only put the right one first. A language tag on the page
+ * already tells a browser which regional form of a Han character to draw, but
+ * an unlucky default can still pick a face with no glyphs for the script, and
+ * naming the system faces is cheaper than finding out from a bug report.
+ * Every name is a face the operating system ships - nothing here is fetched. */
+
+:root:lang(zh-Hans) {
+  --sans: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+}
+
+:root:lang(zh-Hant) {
+  --sans: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans CJK TC", "Noto Sans TC", sans-serif;
+}
+
+:root:lang(ja) {
+  --sans: system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+}
+
+:root:lang(ko) {
+  --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic",
+    "Noto Sans CJK KR", "Noto Sans KR", sans-serif;
+}
+
+:root:lang(hi) {
+  --sans: system-ui, -apple-system, "Kohinoor Devanagari", "Nirmala UI",
+    "Noto Sans Devanagari", sans-serif;
+}
+
+:root:lang(th) {
+  --sans: system-ui, -apple-system, "Thonburi", "Leelawadee UI",
+    "Noto Sans Thai", sans-serif;
+}
+
+:root:lang(ar) {
+  --sans: system-ui, -apple-system, "Segoe UI", "Geeza Pro", Tahoma,
+    "Noto Sans Arabic", sans-serif;
+}
+
+/* Thai and Devanagari carry marks above and below the line, and the body
+ * line height that suits Latin text crowds them. */
+:root:lang(th) body,
+:root:lang(hi) body {
+  line-height: 1.85;
+}
+
+/* Tracking is a Latin habit. Arabic letters join, so any space between them
+ * breaks a word apart, and in Devanagari and Thai it pulls the marks away
+ * from the letters they belong to. The headings and the small capitals above
+ * are tracked, so it is switched off for the whole page. */
+:root:lang(ar) *,
+:root:lang(hi) *,
+:root:lang(th) * {
+  letter-spacing: normal;
+}
+
+/* Code is always left to right, in a page that reads right to left as well.
+ * Isolated, so the dashes and brackets of a flag stay where they were typed
+ * instead of being reordered by the sentence around them. */
+pre,
+code {
+  direction: ltr;
+  unicode-bidi: isolate;
 }

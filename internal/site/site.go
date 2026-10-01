@@ -217,8 +217,17 @@ type Page struct {
 
 // Language is one whole version of the site.
 //
-// Dir is the path prefix. It is empty for the language served at the root,
-// which is the one search engines are pointed at by x-default.
+// Code is the BCP 47 tag, and it is three things at once: the lang of every
+// page, the hreflang other pages name it by, and the directory under
+// web/content that holds its text. Locale is the same language the way Open
+// Graph spells it, language and region with an underscore - sharing a link in
+// German is og:locale de_DE, and a bare "de" is a value the specification does
+// not define. Dir is the path prefix, which is a different thing again: lower
+// case, so zh-Hans is served under /zh-hans/.
+//
+// Dir is empty for the language served at the root, which is the one search
+// engines are pointed at by x-default. RTL says the language is written right
+// to left, which puts dir="rtl" on every page of it.
 //
 // Endings, Terms, Presets, Commands and Outcomes are the places where a word
 // has to exist for every value the program can produce, and a missing one is
@@ -228,8 +237,10 @@ type Page struct {
 // tfg --help prints, and Outcomes by the reaction a manifest declares.
 type Language struct {
 	Code     string                `json:"code"`
+	Locale   string                `json:"locale"`
 	Name     string                `json:"name"`
 	Dir      string                `json:"dir"`
+	RTL      bool                  `json:"rtl,omitempty"`
 	Words    map[string]string     `json:"words"`
 	Endings  map[string]string     `json:"endings"`
 	Terms    map[string]string     `json:"terms"`
@@ -280,9 +291,10 @@ type NavItem struct {
 
 // Switch is the link to this page in another language.
 type Switch struct {
-	Name string
-	URL  string
-	Code string
+	Name   string
+	URL    string
+	Code   string
+	Locale string
 }
 
 // Origin is the address the site is served from, without a trailing slash.

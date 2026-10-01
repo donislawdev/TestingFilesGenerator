@@ -1,5 +1,6 @@
 {
   "code": "en",
+  "locale": "en_US",
   "name": "English",
   "dir": "",
   "pages": [
@@ -56,6 +57,7 @@
   "words": {
     "skip": "Skip to content",
     "navLabel": "Main",
+    "langLabel": "Language",
     "breadcrumbHome": "Home",
     "imageAlt": "Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one",
     "schemaDescription": "A free and open source generator of test files for QA. It produces real files of {{ .Facts.FormatCount }} formats at any exact size and writes a manifest saying how the system under test should react to each one.",

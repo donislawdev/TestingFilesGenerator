@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pl">
 <title>Jak stworzyć plik o określonym rozmiarze</title>
 <meta name="description" content="fsutil, dd, truncate i mkfile - polecenia zmierzone na trzech systemach, i dlaczego tak zrobiony plik nie jest PDF-em ani PNG-iem, gdy test tego potrzebuje.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
@@ -11,7 +12,7 @@
 <link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
-<meta property="og:locale" content="pl">
+<meta property="og:locale" content="pl_PL">
 <meta property="og:title" content="Jak stworzyć plik o określonym rozmiarze">
 <meta property="og:description" content="fsutil, dd, truncate i mkfile - polecenia zmierzone na trzech systemach, i dlaczego tak zrobiony plik nie jest PDF-em ani PNG-iem, gdy test tego potrzebuje.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
@@ -19,7 +20,7 @@
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
-<meta property="og:locale:alternate" content="en">
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Jak stworzyć plik o określonym rozmiarze">
 <meta name="twitter:description" content="fsutil, dd, truncate i mkfile - polecenia zmierzone na trzech systemach, i dlaczego tak zrobiony plik nie jest PDF-em ani PNG-iem, gdy test tego potrzebuje.">
@@ -68,9 +69,15 @@
       <a href="/pl/plik-o-zadanym-rozmiarze/" aria-current="page">Rozmiar pliku</a>
       <a href="/pl/faq/">FAQ</a>
     </nav>
-    <div class="langswitch">
-      <a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a>
-    </div>
+    <details class="langmenu">
+      <summary aria-label="Język: Polski">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Polski</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+      </ul>
+    </details>
   </div>
 </header>
 

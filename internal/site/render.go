@@ -51,6 +51,9 @@ func (s Site) Render() (map[string][]byte, error) {
 	if len(s.Languages) == 0 {
 		return nil, fmt.Errorf("a site with no languages has no pages to render")
 	}
+	if err := checkLanguages(s.Languages); err != nil {
+		return nil, err
+	}
 	out := map[string][]byte{}
 
 	// Every language is filled in with the facts before anything is rendered,
@@ -183,7 +186,7 @@ func (s Site) viewFor(lang Language, page Page) (view, error) {
 		}
 		v.Alternates = append(v.Alternates, Alternate{Lang: other.Code, URL: s.Origin() + pageURL(other, mate)})
 		if other.Code != lang.Code {
-			v.Switches = append(v.Switches, Switch{Name: other.Name, URL: pageURL(other, mate), Code: other.Code})
+			v.Switches = append(v.Switches, Switch{Name: other.Name, URL: pageURL(other, mate), Code: other.Code, Locale: other.Locale})
 		}
 	}
 	if root, ok := s.rootLanguage(); ok {

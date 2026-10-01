@@ -1,5 +1,6 @@
 {
   "code": "pl",
+  "locale": "pl_PL",
   "name": "Polski",
   "dir": "pl",
   "pages": [
@@ -56,6 +57,7 @@
   "words": {
     "skip": "Przejdź do treści",
     "navLabel": "Główna",
+    "langLabel": "Język",
     "breadcrumbHome": "Start",
     "imageAlt": "Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować",
     "schemaDescription": "Darmowy generator plików testowych dla QA o otwartym kodzie. Tworzy prawdziwe pliki w {{ .Facts.FormatCount }} formatach o dokładnie zadanym rozmiarze i zapisuje manifest mówiący, jak testowany system ma na każdy z nich zareagować.",

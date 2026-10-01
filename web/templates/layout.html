@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ .Lang.Code }}">
+<html lang="{{ .Lang.Code }}"{{ if .Lang.RTL }} dir="rtl"{{ end }}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="{{ .Lang.Code }}">
 <title>{{ .Page.Title }}</title>
 <meta name="description" content="{{ .Page.Description }}">
 <link rel="canonical" href="{{ .Canonical }}">
@@ -11,7 +12,7 @@
 {{- end }}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
-<meta property="og:locale" content="{{ .Lang.Code }}">
+<meta property="og:locale" content="{{ .Lang.Locale }}">
 <meta property="og:title" content="{{ .Page.Title }}">
 <meta property="og:description" content="{{ .Page.Description }}">
 <meta property="og:url" content="{{ .Canonical }}">
@@ -20,7 +21,7 @@
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="{{ .Word "imageAlt" }}">
 {{- range .Switches }}
-<meta property="og:locale:alternate" content="{{ .Code }}">
+<meta property="og:locale:alternate" content="{{ .Locale }}">
 {{- end }}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ .Page.Title }}">
@@ -54,11 +55,19 @@
       <a href="{{ .URL }}"{{ if .Current }} aria-current="page"{{ else if .Section }} aria-current="true"{{ end }}>{{ .Label }}</a>
       {{- end }}
     </nav>
-    <div class="langswitch">
-      {{- range .Switches }}
-      <a href="{{ .URL }}" hreflang="{{ .Code }}" lang="{{ .Code }}" rel="alternate">{{ .Name }}</a>
-      {{- end }}
-    </div>
+    {{- if .Switches }}
+    <details class="langmenu">
+      <summary aria-label="{{ .Word "langLabel" }}: {{ .Lang.Name }}">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>{{ .Lang.Name }}</span>
+      </summary>
+      <ul class="langlist">
+        {{- range .Switches }}
+        <li><a href="{{ .URL }}" hreflang="{{ .Code }}" lang="{{ .Code }}" rel="alternate">{{ .Name }}</a></li>
+        {{- end }}
+      </ul>
+    </details>
+    {{- end }}
   </div>
 </header>
 

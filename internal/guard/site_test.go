@@ -486,17 +486,34 @@ func TestEveryPageExistsInEveryLanguage(t *testing.T) {
 	}
 }
 
-// TestThePolishTextStaysOnThePolishPages holds the boundary the owner set when
-// the site was allowed into this repository on 2026-08-26.
+// TestTranslatedTextStaysOnTheTranslatedPages holds the boundary the owner set
+// when the site was allowed into this repository on 2026-08-26.
 //
 // D9 says text in the repository is English, and the criterion is the place
-// rather than the reader. The site extends that rule to a second language and
-// the extension is only as good as its border - so the border is machine
-// checked here rather than remembered. Anything outside a pl directory that
-// carries a character above ASCII is either a translation that leaked or an
-// English page somebody typed a curly quote into, and both are defects.
-func TestThePolishTextStaysOnThePolishPages(t *testing.T) {
+// rather than the reader. The site extends that rule to the languages it is
+// translated into and the extension is only as good as its border - so the
+// border is machine checked here rather than remembered. A character above
+// ASCII may stand in the text of a language that is not the root one, and in
+// the pages rendered from it. Anywhere else it is either a translation that
+// leaked or an English page somebody typed a curly quote into, and both are
+// defects.
+//
+// This was a check on Polish alone until 2026-10-01, when the site was
+// translated into a further nineteen languages at the owner's request. The
+// border moved with them: it is read from the language files, so a twenty
+// second language needs no edit here, and a language that is not listed has no
+// directory the border would let its text into.
+func TestTranslatedTextStaysOnTheTranslatedPages(t *testing.T) {
 	root := webRoot(t)
+	// Relative to the web directory, with a trailing slash so that content/de
+	// does not let content/deutsch in.
+	var homes []string
+	for _, l := range languagesOnDisk(t) {
+		if l.Dir == "" {
+			continue
+		}
+		homes = append(homes, "content/"+l.Code+"/", "public/"+l.Dir+"/")
+	}
 	text := map[string]bool{".html": true, ".json": true, ".css": true, ".xml": true, ".txt": true}
 	err := filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !text[strings.ToLower(filepath.Ext(p))] {
@@ -507,15 +524,15 @@ func TestThePolishTextStaysOnThePolishPages(t *testing.T) {
 			return relErr
 		}
 		slashed := filepath.ToSlash(rel)
-		polish := strings.Contains(slashed, "/pl/") || strings.HasPrefix(slashed, "pl/")
+		translated := slices.ContainsFunc(homes, func(home string) bool { return strings.HasPrefix(slashed, home) })
 		b, readErr := os.ReadFile(p)
 		if readErr != nil {
 			return readErr
 		}
 		for n, line := range strings.Split(string(b), "\n") {
 			for col, r := range line {
-				if r > 127 && !polish {
-					t.Errorf("web/%s:%d:%d holds %q - only the Polish pages may carry it", slashed, n+1, col+1, r)
+				if r > 127 && !translated {
+					t.Errorf("web/%s:%d:%d holds %q - only the pages of a translation may carry it", slashed, n+1, col+1, r)
 					return nil
 				}
 			}
@@ -685,5 +702,127 @@ func TestTheSitemapNeedsNoSchemaButItsOwn(t *testing.T) {
 	}
 	if locations != pages {
 		t.Errorf("the site has %d pages and the sitemap names %d of them, so a crawler reading it is told about the wrong set", pages, locations)
+	}
+}
+
+// TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre holds what a
+// search engine needs to serve the right language to the right reader.
+//
+// The site is generated, so each page is consistent with the language file it
+// came from. What nothing else asks is whether those files, taken together,
+// say one coherent thing to a crawler. Every page has to name its own language
+// and carry the full set of alternates, its own included, plus x-default - and
+// the page an alternate points at has to point back. A pair that does not
+// reciprocate is dropped by Google, and the page it was meant to connect goes
+// on competing with its own translation. The same page may not reuse the title
+// or the description of a sibling in its language either: two pages with one
+// title are one result to a search engine, and a snippet it writes itself.
+func TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre(t *testing.T) {
+	s := siteUnderTest(t)
+	rendered, err := s.Render()
+	if err != nil {
+		t.Fatalf("rendering the site: %v", err)
+	}
+	var root site.Language
+	byDir := map[string]site.Language{}
+	for _, l := range s.Languages {
+		if l.Dir == "" {
+			root = l
+			continue
+		}
+		byDir[l.Dir] = l
+	}
+	languageOf := func(file string) site.Language {
+		first, _, _ := strings.Cut(file, "/")
+		if l, ok := byDir[first]; ok {
+			return l
+		}
+		return root
+	}
+	fileOf := func(address string) string {
+		path := strings.Trim(strings.TrimPrefix(address, siteOrigin), "/")
+		if path == "" {
+			return "index.html"
+		}
+		return path + "/index.html"
+	}
+
+	htmlTag := regexp.MustCompile(`<html lang="([^"]+)"( dir="rtl")?>`)
+	alternate := regexp.MustCompile(`<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">`)
+	canonical := regexp.MustCompile(`<link rel="canonical" href="([^"]+)">`)
+	locale := regexp.MustCompile(`<meta property="og:locale" content="([^"]+)">`)
+	title := regexp.MustCompile(`<title>([^<]*)</title>`)
+	description := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)
+
+	pages := map[string]map[string]string{}
+	canonicals := map[string]string{}
+	seenTitle, seenDescription := map[string]string{}, map[string]string{}
+	for file, body := range rendered {
+		if filepath.Base(file) != "index.html" {
+			continue
+		}
+		text := string(body)
+		lang := languageOf(file)
+		tag := htmlTag.FindStringSubmatch(text)
+		if tag == nil || tag[1] != lang.Code || (tag[2] != "") != lang.RTL {
+			t.Errorf("%s should open as lang=%q with dir=rtl %v and says %q", file, lang.Code, lang.RTL, tag)
+		}
+		if m := locale.FindStringSubmatch(text); m == nil || m[1] != lang.Locale {
+			t.Errorf("%s should carry og:locale %q and says %q", file, lang.Locale, m)
+		}
+		if m := canonical.FindStringSubmatch(text); m == nil {
+			t.Errorf("%s has no canonical address", file)
+		} else {
+			canonicals[file] = m[1]
+		}
+		found := map[string]string{}
+		for _, m := range alternate.FindAllStringSubmatch(text, -1) {
+			found[m[1]] = m[2]
+		}
+		pages[file] = found
+
+		for _, l := range s.Languages {
+			if _, ok := found[l.Code]; !ok {
+				t.Errorf("%s does not name its %s translation, so a search engine is not told it exists", file, l.Code)
+			}
+		}
+		if _, ok := found["x-default"]; !ok || len(found) != len(s.Languages)+1 {
+			t.Errorf("%s names %d alternates, and the languages are %d plus x-default", file, len(found), len(s.Languages))
+		}
+		for _, field := range []struct {
+			name    string
+			pattern *regexp.Regexp
+			seen    map[string]string
+		}{{"title", title, seenTitle}, {"description", description, seenDescription}} {
+			m := field.pattern.FindStringSubmatch(text)
+			if m == nil {
+				t.Errorf("%s has no %s", file, field.name)
+				continue
+			}
+			key := lang.Code + "\x00" + m[1]
+			if other, dup := field.seen[key]; dup {
+				t.Errorf("%s and %s have one %s in %s: %q", file, other, field.name, lang.Code, m[1])
+			}
+			field.seen[key] = file
+		}
+	}
+	for file, found := range pages {
+		lang := languageOf(file)
+		if found[lang.Code] != canonicals[file] {
+			t.Errorf("%s names %q as its own %s address and its canonical is %q", file, found[lang.Code], lang.Code, canonicals[file])
+		}
+		for code, address := range found {
+			if code == "x-default" {
+				continue
+			}
+			other, ok := pages[fileOf(address)]
+			if !ok {
+				t.Errorf("%s names %s as its %s translation and nothing is published there", file, address, code)
+				continue
+			}
+			if back := other[lang.Code]; back != canonicals[file] {
+				t.Errorf("%s names %s as its %s translation, and that page points back to %q instead of %q", file, address, code, back, canonicals[file])
+			}
+		}
 	}
 }

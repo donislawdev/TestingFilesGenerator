@@ -16,10 +16,10 @@ import (
 // The three files every first page shows - one byte under a 1 MB limit, the
 // limit, one byte over - are what size-boundaries actually writes.
 //
-// They stand in four places a stranger reads before anything else: the social
-// card, the README, and the site's first page in both languages. All four
-// carry them as literals, and the card says outright that everything on it is
-// real. Nothing asked the program. An outside review of #148 named it, and
+// They stand in the places a stranger reads before anything else: the social
+// card, the README, and the site's first page in every language. All of them
+// carry the files as literals, and the card says outright that everything on it
+// is real. Nothing asked the program. An outside review of #148 named it, and
 // asking showed it was already half untrue: the card before that one printed
 // "tfg generate --preset size-boundaries --limit 1mb", which the program
 // refuses, because the default spread would need a file of 0 B.
@@ -52,48 +52,64 @@ func TestTheLimitExampleIsWhatThePresetWrites(t *testing.T) {
 	}
 
 	root := repoRoot(t)
-	places := []struct {
+	type place struct {
 		file     string
 		spaced   bool
 		outcomes map[string]string
 		command  bool
-	}{
+	}
+	places := []place{
 		{"web/templates/social.html", true, map[string]string{"accept": "accept", "reject": "reject"}, false},
 		{"README.md", false, map[string]string{"accept": "**accept**", "reject": "**reject**"}, true},
 		{"web/content/en/index.html", false, map[string]string{"accept": "accept", "reject": "reject"}, true},
 		{"web/content/pl/index.html", false, map[string]string{"accept": "przyjąć", "reject": "odrzucić"}, true},
 	}
-	for _, place := range places {
-		body, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(place.file)))
+	// Every other translation of the first page is held to the same answer. The
+	// words are asked for rather than guessed: a language whose first page shows
+	// the three files in a form nobody listed here is a page this guard cannot
+	// read, and silence about it would be the defect the guard exists for.
+	for _, l := range languagesOnDisk(t) {
+		if l.Code == "en" || l.Code == "pl" {
+			continue
+		}
+		words, ok := translatedLimitWords[l.Code]
+		if !ok {
+			t.Errorf("the first page in %s is not held to the limit example - add the words it uses for accept and reject to translatedLimitWords", l.Code)
+			continue
+		}
+		places = append(places, place{"web/content/" + l.Code + "/index.html", false, map[string]string{"accept": words[0], "reject": words[1]}, true})
+	}
+	for _, at := range places {
+		body, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(at.file)))
 		if err != nil {
-			t.Fatalf("reading %s: %v", place.file, err)
+			t.Fatalf("reading %s: %v", at.file, err)
 		}
 		text := string(body)
-		if place.command && !strings.Contains(text, command) {
+		if at.command && !strings.Contains(text, command) {
 			t.Errorf("%s no longer prints %q, so the files it shows come from a command this guard does not run",
-				place.file, command)
+				at.file, command)
 		}
 		for _, f := range manifest.Files {
 			line := lineNaming(text, f.Name)
 			if line == "" {
-				t.Errorf("%s does not show %s, and the command writes it", place.file, f.Name)
+				t.Errorf("%s does not show %s, and the command writes it", at.file, f.Name)
 				continue
 			}
 			size := strconv.FormatInt(f.Bytes, 10)
-			if place.spaced {
+			if at.spaced {
 				size = spacedBytes(f.Bytes) + " B"
 			}
 			if !strings.Contains(line, size) {
-				t.Errorf("%s shows %s without its %s:\n%s", place.file, f.Name, size, line)
+				t.Errorf("%s shows %s without its %s:\n%s", at.file, f.Name, size, line)
 			}
-			word, ok := place.outcomes[f.Expected.Outcome]
+			word, ok := at.outcomes[f.Expected.Outcome]
 			if !ok {
-				t.Errorf("the manifest declares %q for %s, and %s has no word for it", f.Expected.Outcome, f.Name, place.file)
+				t.Errorf("the manifest declares %q for %s, and %s has no word for it", f.Expected.Outcome, f.Name, at.file)
 				continue
 			}
 			if !strings.Contains(line, word) {
 				t.Errorf("%s shows %s without the outcome the manifest declares (%s):\n%s",
-					place.file, f.Name, word, line)
+					at.file, f.Name, word, line)
 			}
 		}
 	}
@@ -128,3 +144,13 @@ func spacedBytes(n int64) string {
 	}
 	return b.String()
 }
+
+// translatedLimitWords are the two words each translated first page uses for
+// what the manifest declares - accept first, reject second - in the form that
+// stands on the line naming a file.
+//
+// A word is not unique to a language, and a translation inflects it. Polish
+// writes the infinitive in the table and so the list says przyjąć rather than
+// przyjmie, and each entry is exactly the form the page shows. The key is the
+// language tag, the same as the directory under web/content.
+var translatedLimitWords = map[string][2]string{}
