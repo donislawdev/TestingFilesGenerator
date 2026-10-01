@@ -84,12 +84,6 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "활용 사례",
-      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/use-cases\/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
       "name": "손상 파일",
       "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/corrupt-test-files\/"
     }
@@ -111,9 +105,11 @@
       <a href="/ko/formats/">형식</a>
       <a href="/ko/presets/">프리셋</a>
       <a href="/ko/docs/">문서</a>
-      <a href="/ko/use-cases/" aria-current="true">활용 사례</a>
+      <a href="/ko/use-cases/">활용 사례</a>
       <a href="/ko/create-file-exact-size/">정확한 크기</a>
       <a href="/ko/faq/">FAQ</a>
+      <a href="/ko/corrupt-test-files/" aria-current="page">손상 파일</a>
+      <a href="/ko/test-files-in-ci/">CI의 테스트 파일</a>
     </nav>
     <details class="langmenu">
       <summary aria-label="언어: 한국어">
@@ -148,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<p class="eyebrow"><a href="/ko/use-cases/">활용 사례</a></p>
+
 <h1>테스트용 손상 파일을 만드는 방법</h1>
 <p class="lead">
   멀쩡한 파일만 본 검증기는 제대로 테스트된 것이 아닙니다. 일부러 망가뜨렸고, <strong>요청한 크기 그대로</strong> 나오며, 시스템이 그 파일을 어떻게 다뤄야 하는지
@@ -351,6 +347,8 @@ for entry in manifest["files"]:
         <li><a href="/ko/use-cases/">활용 사례</a></li>
         <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
         <li><a href="/ko/faq/">FAQ</a></li>
+        <li><a href="/ko/corrupt-test-files/">손상 파일</a></li>
+        <li><a href="/ko/test-files-in-ci/">CI의 테스트 파일</a></li>
       </ul>
     </div>
   </div>

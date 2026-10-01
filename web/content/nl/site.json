@@ -58,16 +58,14 @@
       "slug": "beschadigde-testbestanden",
       "nav": "Beschadigde bestanden",
       "title": "Beschadigde testbestanden - kapotte bestanden op exacte grootte",
-      "description": "Een bestand dat met opzet kapot is, op exacte grootte, met een manifest dat zegt dat je systeem het moet weigeren. Voor het testen van uploadvalidatie en parsers.",
-      "parent": "use-cases"
+      "description": "Een bestand dat met opzet kapot is, op exacte grootte, met een manifest dat zegt dat je systeem het moet weigeren. Voor het testen van uploadvalidatie en parsers."
     },
     {
       "key": "ci",
       "slug": "testbestanden-in-ci",
       "nav": "Testbestanden in CI",
       "title": "Testbestanden in CI - GitHub Actions, GitLab CI en PowerShell",
-      "description": "Genereer testbestanden in de pipeline in plaats van binaire bestanden te committen: GitHub Actions-workflow, GitLab-job, afsluitcodes en de PowerShell-valkuil.",
-      "parent": "use-cases"
+      "description": "Genereer testbestanden in de pipeline in plaats van binaire bestanden te committen: GitHub Actions-workflow, GitLab-job, afsluitcodes en de PowerShell-valkuil."
     }
   ],
   "words": {

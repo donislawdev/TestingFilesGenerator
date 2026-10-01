@@ -58,16 +58,14 @@
       "slug": "bozuk-test-dosyalari",
       "nav": "Bozuk dosyalar",
       "title": "Bozuk test dosyaları - tam boyutta bozuk dosyalar",
-      "description": "Kasıtlı bozulmuş, tam boyutta bir dosya ve sisteminizin onu reddetmesi gerektiğini söyleyen bir bildirim. Yükleme doğrulaması ve ayrıştırıcıları sınamak için.",
-      "parent": "use-cases"
+      "description": "Kasıtlı bozulmuş, tam boyutta bir dosya ve sisteminizin onu reddetmesi gerektiğini söyleyen bir bildirim. Yükleme doğrulaması ve ayrıştırıcıları sınamak için."
     },
     {
       "key": "ci",
       "slug": "ci-icinde-test-dosyalari",
       "nav": "CI'da test dosyaları",
       "title": "CI'da test dosyaları - GitHub Actions, GitLab CI ve PowerShell",
-      "description": "İkili dosya commit etmek yerine test dosyalarını hat içinde üretin: GitHub Actions iş akışı, GitLab işi, çıkış kodları ve PowerShell tuzağı.",
-      "parent": "use-cases"
+      "description": "İkili dosya commit etmek yerine test dosyalarını hat içinde üretin: GitHub Actions iş akışı, GitLab işi, çıkış kodları ve PowerShell tuzağı."
     }
   ],
   "words": {

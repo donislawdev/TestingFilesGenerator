@@ -84,12 +84,6 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "حالات الاستخدام",
-      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/use-cases\/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
       "name": "ملفات تالفة",
       "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/corrupt-test-files\/"
     }
@@ -111,9 +105,11 @@
       <a href="/ar/formats/">الصيغ</a>
       <a href="/ar/presets/">الإعدادات المسبقة</a>
       <a href="/ar/docs/">التوثيق</a>
-      <a href="/ar/use-cases/" aria-current="true">حالات الاستخدام</a>
+      <a href="/ar/use-cases/">حالات الاستخدام</a>
       <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
       <a href="/ar/faq/">الأسئلة الشائعة</a>
+      <a href="/ar/corrupt-test-files/" aria-current="page">ملفات تالفة</a>
+      <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a>
     </nav>
     <details class="langmenu">
       <summary aria-label="اللغة: العربية">
@@ -148,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<p class="eyebrow"><a href="/ar/use-cases/">حالات الاستخدام</a></p>
+
 <h1>كيف تصنع ملفًا تالفًا للاختبار</h1>
 <p class="lead">
   المدقق الذي لم يُعرض عليه إلا ملفات سليمة لم يُختبر حقًّا. إليك طريقة الحصول على ملف أُتلف عمدًا،
@@ -359,6 +355,8 @@ for entry in manifest["files"]:
         <li><a href="/ar/use-cases/">حالات الاستخدام</a></li>
         <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
         <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
+        <li><a href="/ar/corrupt-test-files/">ملفات تالفة</a></li>
+        <li><a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a></li>
       </ul>
     </div>
   </div>

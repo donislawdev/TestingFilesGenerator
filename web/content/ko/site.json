@@ -58,16 +58,14 @@
       "slug": "corrupt-test-files",
       "nav": "손상 파일",
       "title": "손상된 테스트 파일 - 크기가 정확한 망가진 파일",
-      "description": "일부러 망가뜨린, 크기가 정확한 파일. 시스템이 거부해야 함을 알리는 매니페스트가 딸려 옵니다. 업로드 검증과 파서 테스트용.",
-      "parent": "use-cases"
+      "description": "일부러 망가뜨린, 크기가 정확한 파일. 시스템이 거부해야 함을 알리는 매니페스트가 딸려 옵니다. 업로드 검증과 파서 테스트용."
     },
     {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CI의 테스트 파일",
       "title": "CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell",
-      "description": "바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정.",
-      "parent": "use-cases"
+      "description": "바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정."
     }
   ],
   "words": {

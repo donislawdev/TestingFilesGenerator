@@ -58,16 +58,14 @@
       "slug": "corrupt-test-files",
       "nav": "损坏文件",
       "title": "损坏的测试文件 - 大小精确的损坏文件",
-      "description": "一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。",
-      "parent": "use-cases"
+      "description": "一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。"
     },
     {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CI 中的测试文件",
       "title": "CI 中的测试文件 - GitHub Actions、GitLab CI 和 PowerShell",
-      "description": "在流水线中生成测试文件，而不是提交二进制文件：GitHub Actions 工作流、GitLab 作业、让构建失败的退出码，以及 PowerShell 的陷阱。",
-      "parent": "use-cases"
+      "description": "在流水线中生成测试文件，而不是提交二进制文件：GitHub Actions 工作流、GitLab 作业、让构建失败的退出码，以及 PowerShell 的陷阱。"
     }
   ],
   "words": {

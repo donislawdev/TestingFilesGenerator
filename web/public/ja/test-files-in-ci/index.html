@@ -84,12 +84,6 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "利用例",
-      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/use-cases\/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
       "name": "CIでのテストファイル",
       "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/test-files-in-ci\/"
     }
@@ -111,9 +105,11 @@
       <a href="/ja/formats/">形式</a>
       <a href="/ja/presets/">プリセット</a>
       <a href="/ja/docs/">ドキュメント</a>
-      <a href="/ja/use-cases/" aria-current="true">利用例</a>
+      <a href="/ja/use-cases/">利用例</a>
       <a href="/ja/create-file-exact-size/">正確なサイズ</a>
       <a href="/ja/faq/">FAQ</a>
+      <a href="/ja/corrupt-test-files/">破損ファイル</a>
+      <a href="/ja/test-files-in-ci/" aria-current="page">CIでのテストファイル</a>
     </nav>
     <details class="langmenu">
       <summary aria-label="言語: 日本語">
@@ -148,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<p class="eyebrow"><a href="/ja/use-cases/">利用例</a></p>
+
 <h1>CIパイプラインでテストファイルを生成する方法</h1>
 <p class="lead">
   リポジトリ内のバイナリのフィクスチャは履歴に永遠に残り、diffでレビューできず、ファイルが大きくなると成り立たなくなります。代わりに、パイプラインの中でレシピからファイルを生成してください。レシピはテキストで、バイトは毎回同じになり、最後のステップで何も動いていないことを証明できます。
@@ -347,6 +343,8 @@ exit $LASTEXITCODE</code></pre>
         <li><a href="/ja/use-cases/">利用例</a></li>
         <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
         <li><a href="/ja/faq/">FAQ</a></li>
+        <li><a href="/ja/corrupt-test-files/">破損ファイル</a></li>
+        <li><a href="/ja/test-files-in-ci/">CIでのテストファイル</a></li>
       </ul>
     </div>
   </div>
