@@ -1,0 +1,250 @@
+<h1>문서</h1>
+<p class="lead">
+  도구가 하는 모든 일을 사람들이 실제로 가져오는 질문 형태로 정리했습니다. <a href="{{ .Facts.Repo }}">저장소의 README</a>가 전체 레퍼런스이며,
+  내려받은 빌드와 항상 일치합니다.
+</p>
+
+<section class="section" id="commands">
+  <h2>어떤 명령이 있나요?</h2>
+  <p>각 명령은 한 가지 일만 합니다.</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>정확한 크기의 파일 하나는 어떻게 만드나요?</h2>
+  <p>
+    형식, 크기, 저장 위치를 지정합니다. 크기는 1024 단위로 세므로 <code>2mb</code>는 2097152바이트입니다. 바이트 수를 그대로 써도 되므로
+    <code>--size 10485761</code>은 정확히 그만큼을 요청합니다.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code>에서 유용한 플래그:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>플래그</th><th>동작</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>파일의 형식. 예: <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>각 파일의 정확한 크기. <code>10mb</code>와 같은 값 또는 바이트 수</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>범위에서 파일마다 뽑는 크기. 예: <code>1kb-8kb</code>. 추첨은 시드에서 나옵니다</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>한도 주변의 파일 세 개: 1바이트 아래, 한도 값, 1바이트 위</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>만들 파일 수. 기본값은 <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>이름 템플릿. 예: <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>쓸 디렉터리</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>실행의 시드. 같은 시드는 같은 바이트를 만듭니다</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>형식 설정, 여러 번 지정할 수 있음</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>파일을 일부러 망가뜨립니다. 여러 번 지정할 수 있으며 순서대로 적용됩니다. 목록은 <code>tfg damage</code>로 봅니다</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code>, <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>세어서 보여 주기만 하고 아무것도 쓰지 않음</td></tr>
+        <tr><td><code>--json</code></td><td>매니페스트를 표준 출력에 씀</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>일부러 망가진 파일은 어떻게 만드나요?</h2>
+  <p>
+    이 도구가 쓰는 다른 모든 파일은 구조상 올바르며, 이는 업로드 검증기가 던지는 세 가지 질문 중 두 가지에 답합니다. <code>--damage</code>는 세 번째, 곧
+    파일이 아예 열리는지에 답합니다. 파일은 정상적으로 만들어진 뒤 망가지므로 요청한 크기는 그대로입니다.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    설정은 콜론 뒤에 씁니다. 플래그는 반복할 수 있으며, 쓴 순서가 적용 순서입니다. <code>tfg damage</code>는 이 빌드가 할 수 있는 것과 각각이 받는 값을
+    나열합니다.
+  </p>
+  <p>레시피에서는 키가 이름 또는 설정의 목록입니다.</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    손상된 파일은 매니페스트에서 <code>expected: reject</code>를 받고, 옆에 손상 내용이 기록됩니다. 두 가지는 아무것도 쓰기 전에 거부됩니다. 각각
+    매니페스트가 잘못 설명하는 파일을 디스크에 남기게 되기 때문입니다.
+  </p>
+  <ul>
+    <li>손상에 필요한 크기보다 작은 파일. 바뀌지 않은 채 나오기 때문입니다</li>
+    <li>
+      손상과 함께 쓴 <code>expected: accept</code>. 어떤 파일도 이를 충족할 수 없기 때문입니다. 테스트 대상 시스템이 파일을 복구해야 한다면
+      <code>sanitize</code>를, 바로 그것이 묻고 싶은 질문이라면 <code>unspecified</code>를 쓰세요
+    </li>
+  </ul>
+  <p>
+    세 번째는 미리 알 수 없습니다. 손상이 실행되었는데 한 바이트도 바뀌지 않았다면 그 파일은 쓰이지 않고 버려집니다. 실행은 계속되고, 어떤 파일이었는지 알려 주며, 일부만 완료된
+    종료 코드로 끝납니다.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>레시피는 어떻게 생겼나요?</h2>
+  <p>
+    레시피는 실행 전체를 기술하는 YAML 파일입니다. 테스트 옆에 커밋하면 픽스처는 더 이상 저장소의 바이너리가 아닙니다. 몇백 자짜리 파일만 있으면 누구나 바이트 단위로 똑같이
+    다시 만들 수 있습니다.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    각 타깃에는 <code>size</code>, <code>size-range</code>, <code>boundary</code>, <code>contains</code> 중
+    정확히 하나가 필요합니다. 둘은 오류이고 하나도 없는 것도 오류입니다. 올바르지 않은 레시피는 <strong>파일을 하나도 쓰지 않으며</strong>, 첫 번째 문제만이
+    아니라 모든 문제를 한꺼번에 보고하고 각각 해당 설정의 이름을 알려 줍니다.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>시스템이 파일을 어떻게 처리해야 하는지는 어떻게 선언하나요?</h2>
+  <p>결과만 있으면 충분할 때는 짧은 형식을, 이유가 중요할 때는 긴 형식을 씁니다.</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    결과는 <code>accept</code>, <code>reject</code>, <code>sanitize</code>, <code>unspecified</code>입니다.
+    이유는 닫힌 목록이라 보고서가 이유별로 묶을 수 있습니다. <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code>, <code>size_zero</code>.
+  </p>
+  <p>
+    이유가 가리키는 것은 판정이 아니라 <strong>문제가 되는 규칙</strong>입니다. 그래서 같은 이유가 어느 결과 아래에도 올 수 있습니다. 한도보다 1바이트 작은 파일은
+    <code>accept</code>이지만, 관련된 규칙은 여전히 <code>size_limit</code>입니다.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>매니페스트에는 무엇이 들어 있나요?</h2>
+  <p>
+    중단된 실행을 포함해 모든 실행이 끝날 때 파일 옆에 쓰입니다. 파일마다 항목이 하나씩 있습니다.
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    실행이 레시피에서 왔다면 <code>recipe_hash</code>가, 프리셋에서 왔다면 <code>preset</code>과 <code>overrides</code>가
+    추가되므로, 매니페스트는 항상 그것을 만든 출처까지 추적할 수 있습니다.
+  </p>
+  <p>
+    각 항목에는 파일을 만든 레시피 타깃의 id인 <code>target_id</code>도 들어 있고, <code>summary.by_target</code>은 각 타깃이 만든 파일
+    수를 셉니다. 따라서 타깃이 여러 개인 레시피도 파일 이름을 읽지 않고 타깃별로 확인할 수 있습니다.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>프리셋이란 무엇인가요?</h2>
+  <p>
+    흔한 테스트 질문에 답하는 기성 파일 세트로, 세트를 직접 설계할 필요가 없습니다. 프리셋은 내부적으로 평범한 레시피이며, <code>eject</code>가 레시피를 출력하므로
+    거기서부터 편집할 수 있습니다. 각 프리셋에는 보통 무엇을 찾아내는지, 세트에 무엇이 들어 있는지, 어떤 설정을 받는지 설명하는
+    <a href="/ko/presets/">전용 페이지</a>가 있습니다.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code>는 세트를 만들기 전에 비용이 얼마나 드는지 알려 주고, 숫자가 여러분의 한도가 아니라 우리 쪽의 임시값일 때는 분명히 말해 줍니다.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>종료 코드는 무엇을 뜻하나요?</h2>
+  <p>
+    끝나는 방식마다 고유한 코드가 있고, 기계가 읽을 수 있는 출력은 표준 출력으로 나가며, 실패한 실행은 거기에 아무것도 출력하지 않습니다. 이 표는 고정된 약속이며, 코드의 의미를
+    바꾸려면 메이저 버전을 올려야 합니다.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+C로 멈춘 실행도 매니페스트는 남기고, 쓰다 만 파일은 절대 남기지 않으므로, 취소된 작업을 다음 작업이 정리할 수 있습니다.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>데스크톱 창이 있나요?</h2>
+  <p>
+    네. 같은 엔진 위에 창을 얹은 것으로, 스크립트로 하지 않는 테스트를 위한 것입니다. 축소판이 아닙니다. 테스트가 두 인터페이스를 기능별로 비교하며, 한쪽만 할 수 있는 것은
+    조용히 벌어지는 대신 선언하고 이유를 밝혀야 합니다.
+  </p>
+  <p>
+    화면은 단일 배치, 프리셋, 여러 배치 동시 실행, 정보입니다. 무엇이든 쓰기 전에 실행 비용을 보여 주고, 실행 중에는 진행 상황을 알려 주며, 쓰다 만 파일을 남기지 않고
+    도중에 취소할 수 있습니다. 아직 레시피 파일은 열지 못합니다. 지금은 레시피가 명령줄의 몫이고, 창은 양식에서 배치를 구성합니다.
+  </p>
+</section>

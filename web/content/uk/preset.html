@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Пресет <code>{{ .ID }}</code> однією командою збирає цілий набір справжніх тестових файлів для цього
+  питання та поруч <code>manifest.json</code> з очікуваною реакцією вашої системи на кожен файл. Усе
+  нижче прочитано з програми зі значеннями за замовчуванням цієї версії.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Що він зазвичай знаходить?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Що входить у набір?</h2>
+  <p>Зі значеннями за замовчуванням, як повідомляє <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Файлів</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Цілей у його рецепті</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Загальний розмір</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Формати</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>І чого маніфест цього набору очікує від вашої системи:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Очікується</th><th>Значення</th><th class="num">Файлів</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Що можна змінити?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Налаштування</th><th>Приймає</th><th>За замовчуванням</th><th>Що робить</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Це значення за замовчуванням - наша тимчасова підстановка, а не значення вашої системи. Передайте своє.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Цей пресет не має налаштувань. Набір щоразу однаковий.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Як його запустити?</h2>
+  <p>Подивіться, скільки коштував би набір, зберіть його або візьміть його рецепт для правки:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Або будуйте на ньому у власному рецепті поряд із тестами:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

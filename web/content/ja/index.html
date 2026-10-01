@@ -1,0 +1,178 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>正確なサイズの本物のテストファイルを生成</h1>
+  <p class="lead">
+    PDF、PNG、DOCX、ZIPなど、<strong>全{{ .Facts.FormatCount }}種類の形式</strong>に対応し、どれも対応するソフトウェアで開ける本物のファイルで、サイズは<strong>要求したとおりちょうど</strong>です。各実行では、アプリが各ファイルをどう扱うべきかも書き出します。コマンドラインとデスクトップウィンドウの両方に対応し、無料のオープンソースで、すべてあなたのマシン上で動きます。
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="テストファイルのバッチを書き出す準備ができたTesting Files Generatorのデスクトップウィンドウ">
+    <figcaption>ファイルのバッチを書き出す準備ができたデスクトップウィンドウ。コマンドラインの裏でも同じエンジンが動いています。</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">種類の本物の形式、どれも対応するソフトウェアで開けます</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1バイト</span>
+      <p class="fact-label">要求したすべてのサイズの正確さ。黙って丸められることはありません</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">外部への接続。アカウント、テレメトリ、更新確認はありません</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">課題</p>
+  <h2>テストファイルを1つ作るのは簡単です。適切な1000個を作るのが面倒な部分です</h2>
+  <p>あなたは、人からファイルを受け取るソフトウェアをテストしています。遅かれ早かれ、次のものが必要になります。</p>
+  <ul class="ticks">
+    <li>アップロード制限が本物かどうかを確かめるための、<strong>ちょうど</strong>10MBのPDF</li>
+    <li>1つずれのバグを見つけるための、その制限の両側にある3つのファイル</li>
+    <li>フォルダーが大きいとき夜間ジョブがどうなるかを見るための、1万個のログファイル</li>
+    <li>拡張子だけ合わせた空の殻ではなく、実際に200個のドキュメントが入ったZIP</li>
+    <li>リポジトリに4GBのファイルを置かずに用意する4GBのファイル</li>
+    <li>ノートPCとビルドサーバーで<strong>同じ</strong>フィクスチャをバイト単位で</li>
+  </ul>
+  <p>
+    これが置き換える対象です。QAエンジニア、テスト自動化、そしてコードの先にアップロードフォーム、取り込み処理、パーサー、ストレージの割り当てがあるすべての人のために作られています。
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">他とどう違うか</p>
+  <h2>他の生成ツールはバイトで終わります。これは、あなたのテストが本当に問うことに答えます</h2>
+  <p>
+    ファイルが入ったフォルダーだけでは、各ファイルが何を証明すべきかを自分で決めることになります。ここでは実行のたびに、ファイルの横に<code>manifest.json</code>を書き出します。生成物の単純な一覧で、各項目に<strong>宣言された期待値</strong>が付きます。
+  </p>
+  <p>アップロードのエンドポイントが1MBまでを許可するとします。その線上にある3つのファイルを要求します。</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>ファイル</th><th class="num">バイト</th><th>システムの対応</th><th>理由</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>受け入れる</strong></td><td>制限の内側にあるため</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>受け入れる</strong></td><td>制限値ちょうどは許可されるため</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>拒否する</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>3つのファイル、3つの異なる答えを、機械可読な形で示します。アサーションを手書きする代わりに、テストがマニフェストを読みます。</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">答えが自分たちのポリシー次第の場合、マニフェストはそう述べます</p>
+    <p>
+      期待値をでっち上げず、<code>unspecified</code>と記録します。推測する生成ツールは誤検出を生み、狼少年のようなテストスイートは最終的に無効にされます。
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">プリセット</p>
+  <h2>疑問を選べば、セット一式が手に入ります</h2>
+  <p>
+    プリセットは、1つのテストの疑問を軸に設計したテストファイルのセットです。どのファイルが何を証明するのかを自分で考える必要はありません。それぞれに、普通は何を見つけるか、セットの内容、受け付ける設定をまとめたページがあります。
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/ja/presets/">すべてのプリセットと、レシピとの関係</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">クイックスタート</p>
+  <h2>動作を確かめる3つのコマンド</h2>
+  <ol class="steps">
+    <li>
+      <h3>ファイルを1つ作る</h3>
+      <p>PNGを1つ、ちょうど2メガバイトで:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>たくさんのファイルを作る</h3>
+      <p>
+        1KBから8KBの間で、シードから決めたサイズのログファイルを1万個。明日も同じセットになります。<strong>実行ごとに専用のディレクトリを使ってください</strong>。マニフェストは実行が書いた内容の唯一の記録なので、ツールはその上に2つ目を書くことを拒否します。
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>検証してから削除する</h3>
+      <p><code>verify</code>は何も動いていないことを伝えます。<code>cleanup</code>は書き込まれたものだけを正確に削除します。</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    サイズはファイルマネージャーと同じく1024単位で数えるため、<code>2mb</code>は2097152バイトです。バイト数をそのまま指定することもできます。<a href="/ja/docs/">ドキュメント</a>で、レシピ、マニフェスト、終了コードを説明しています。
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">得られるもの</p>
+  <h2>無人で動くテストスイートのために作られています</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">正確なサイズ、1バイト単位で</p>
+      <p class="muted">10485761バイトを要求すれば、ちょうどその大きさになります。形式が到達できないサイズは理由付きのエラーになり、サイズの違うファイルが作られることはありません。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }}種類の本物の形式</p>
+      <p class="muted">拡張子を付けただけのゼロ埋めではありません。生成したPNGは画像ビューアーで開け、DOCXはWordで開け、ZIPは展開できます。どれも出荷前に独立したリーダーで検証されます。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">テストオラクルとしてのマニフェスト</p>
+      <p class="muted">パス、サイズ、SHA-256、形式、シード、ツールのバージョン、そしてシステムがそのファイルをどう扱うべきか。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">再現可能</p>
+      <p class="muted">レシピとシードが同じなら、どのマシンでもバイトまで同じです。大きなバイナリのフィクスチャの代わりに、小さなYAMLレシピをコミットしてください。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">2つのインターフェース、1つのエンジン</p>
+      <p class="muted">CI向けに作られたコマンドラインと、探索的テスト向けのデスクトップウィンドウ。どちらも一方の機能削減版ではなく、テストが機能ごとに両者を比較しています。</p>
+    </li>
+    <li class="card">
+      <p class="card-title">完全オフライン</p>
+      <p class="muted">アカウント、クラウド、テレメトリ、更新確認はありません。コマンドラインのバイナリには、ネットワークスタックがそもそもコンパイルされていません。</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">ダウンロード</p>
+  <h2>お使いのOS向けのビルドを選んでください</h2>
+  <p>
+    アーカイブを展開して実行します。<code>tfg</code>がコマンドライン、<code>tfg-gui</code>がデスクトップウィンドウです。インストーラーはなく、マシンに追加するものもありません。
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">署名済みのものと、そうでないもの</p>
+    <p>
+      WindowsとmacOS向けのダウンロードは署名されているため、未確認の開発元という警告なしで起動します。Linux向けは、デスクトップLinuxに署名できる仕組みがないため署名されていません。すべてのアーカイブはリリースページの<code>verify-SHA256SUMS.txt</code>に載っているので、ダウンロードしたものを確認できます。
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

@@ -1,0 +1,272 @@
+<h1>Документація</h1>
+<p class="lead">
+  Усе, що робить інструмент, розкладено за питаннями, з якими люди справді приходять.
+  <a href="{{ .Facts.Repo }}">README у репозиторії</a> - повний довідник, і він завжди відповідає
+  завантаженій вами збірці.
+</p>
+
+<section class="section" id="commands">
+  <h2>Які є команди?</h2>
+  <p>Кожна робить одну справу:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Як створити один файл точного розміру?</h2>
+  <p>
+    Укажіть формат, розмір і місце призначення. Розміри рахуються по 1024, тому <code>2mb</code> - це
+    2097152 байти. Підійде й просте число байтів, тож <code>--size 10485761</code> запитує рівно
+    стільки.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Корисні прапорці команди <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Прапорець</th><th>Що робить</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>формат файлів, наприклад <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>точний розмір кожного файлу, наприклад <code>10mb</code> або просте число байтів</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>розмір, що вибирається для кожного файлу з діапазону, наприклад <code>1kb-8kb</code>. Вибір іде від seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>три файли навколо ліміту: на байт менше, сам ліміт, на байт більше</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>скільки файлів створити. За замовчуванням <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>шаблон імені, наприклад <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>каталог, у який записувати</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed запуску. Той самий seed дає ті самі байти</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>налаштування формату, можна повторювати</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>навмисно зіпсувати файли, можна повторювати, застосовується по порядку. Список виводить <code>tfg damage</code></td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> або <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>порахувати й показати, нічого не записуючи</td></tr>
+        <tr><td><code>--json</code></td><td>записати маніфест у стандартний вивід</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Як зробити навмисно зламаний файл?</h2>
+  <p>
+    Будь-який інший файл, що його записує цей інструмент, коректний за побудовою, і це відповідає на два
+    з трьох питань, які ставить перевірка завантаження. <code>--damage</code> відповідає на третє -
+    чи відкривається файл узагалі. Файл створюється як зазвичай, а потім псується, тому в нього
+    лишається запитаний розмір.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Налаштування вказуються після двокрапки. Прапорець можна повторювати, і порядок запису - це порядок
+    застосування. <code>tfg damage</code> перелічує, що вміє ця збірка та що приймає кожен вид
+    пошкодження.
+  </p>
+  <p>У рецепті ключ - це список імен або налаштувань:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Пошкоджений файл отримує в маніфесті <code>expected: reject</code> із записаним поруч пошкодженням.
+    Дві речі відхиляються до запису чого-небудь, бо кожна залишила б на диску файл, неправильно
+    описаний маніфестом:
+  </p>
+  <ul>
+    <li>файл менший, ніж потрібно пошкодженню, бо він вийшов би без змін</li>
+    <li>
+      <code>expected: accept</code> поруч із пошкодженням, бо цьому не міг би відповідати жоден файл.
+      Пишіть <code>sanitize</code>, якщо тестована система має полагодити файл, або
+      <code>unspecified</code>, якщо саме це питання ви й ставите
+    </li>
+  </ul>
+  <p>
+    Третє наперед дізнатися не можна. Якщо пошкодження виконується й не змінює жодного байта, такий файл
+    відкидається, а не записується - запуск триває, повідомляє, що це був за файл, і завершується
+    кодом часткового завершення.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Як виглядає рецепт?</h2>
+  <p>
+    Рецепт - це файл YAML, що описує цілий запуск. Закомітьте його поряд із тестами, і фікстури
+    перестануть бути бінарними файлами у вашому репозиторії - будь-хто зможе відтворити їх байт у
+    байт із файлу в кілька сотень символів.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Кожній цілі потрібен рівно один із ключів <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> або <code>contains</code>. Два - це помилка, і жодного - теж. Недійсний
+    рецепт записує <strong>жодного файлу</strong> і повідомляє про всі проблеми одразу, а не лише
+    про першу, щоразу називаючи налаштування, якого вона стосується.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Як оголосити, що моя система має робити з файлом?</h2>
+  <p>Коротка форма, коли досить результату, і довга, коли важлива причина:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Результати - <code>accept</code>, <code>reject</code>, <code>sanitize</code> і
+    <code>unspecified</code>. Причини утворюють закритий список, щоб звіт міг за ними групувати:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> і <code>size_zero</code>.
+  </p>
+  <p>
+    Причина називає <strong>чинне правило</strong>, а не вердикт. Тому та сама причина може стояти під
+    будь-яким результатом - файл на байт менший за ліміт отримує <code>accept</code>, а правило, про
+    яке йдеться, усе одно <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Що в маніфесті?</h2>
+  <p>
+    Він записується поряд із файлами наприкінці кожного запуску, зокрема й перерваного. Один запис на
+    файл:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> додається, якщо запуск був за рецептом, а <code>preset</code> з
+    <code>overrides</code> - якщо за пресетом, тож маніфест завжди можна простежити до того, що його
+    створило.
+  </p>
+  <p>
+    Кожен запис також містить <code>target_id</code> - id цілі рецепта, що створила файл, а
+    <code>summary.by_target</code> рахує файли кожної цілі. Рецепт із кількома цілями можна тому
+    перевірити ціль за ціллю, не читаючи імена файлів.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Що таке пресет?</h2>
+  <p>
+    Готовий набір файлів, що відповідає на поширене тестове питання, щоб вам не доводилося проєктувати
+    набір самостійно. Пресети - звичайні рецепти всередині, а <code>eject</code> виводить рецепт,
+    щоб ви могли його відредагувати. Кожен пресет має <a href="/uk/presets/">окрему сторінку</a> про
+    те, що він зазвичай знаходить, що входить у набір і які налаштування приймає.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> повідомляє, скільки коштував би набір, перш ніж ви його зберете, і прямо каже,
+    коли число - наша тимчасова підстановка, а не ваш ліміт.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Що означають коди завершення?</h2>
+  <p>
+    Кожен кінець має власний код, машиночитний вивід іде в стандартний вивід, а невдалий запуск нічого
+    туди не друкує. Таблиця - заморожений контракт: зміна значення коду вимагає підвищення мажорної
+    версії.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Запуск, зупинений за допомогою Ctrl+C, усе одно залишає маніфест і ніколи не залишає наполовину
+    записаного файлу, тож скасоване завдання може бути прибране наступним.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Чи є десктопне вікно?</h2>
+  <p>
+    Так, той самий рушій із вікном згори, для тестування, яке не автоматизується. Це не урізана версія:
+    тест порівнює два інтерфейси можливість за можливістю, і все, що вміє лише один із них, має бути
+    оголошене й обґрунтоване, а не тихо розходитися.
+  </p>
+  <p>
+    Екрани: одна партія, пресети, кілька партій одночасно та про програму. Вікно показує, скільки
+    коштував би запуск, перш ніж щось записати, відображає перебіг роботи й може бути скасоване на
+    півдорозі без наполовину записаного файлу. Файл рецепта воно поки не відкриває - рецепти поки
+    справа командного рядка, а вікно збирає свої партії у формі.
+  </p>
+</section>

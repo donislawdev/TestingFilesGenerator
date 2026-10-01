@@ -1,0 +1,101 @@
+<h1>어떤 일에 쓰나요</h1>
+<p class="lead">
+  사람들에게서 파일을 받는 거의 모든 프로젝트에 나오는 다섯 가지 작업과, 각각을 처리하는 명령입니다. 아래의 모든 예제는 쓰인 그대로 실행됩니다.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">업로드 한도</p>
+  <h2>파일 크기 한도가 말한 위치에서 적용되는지 테스트하기</h2>
+  <p>
+    한도는 하나가 아니라 세 개의 테스트 케이스입니다. 바로 아래, 정확히 그 값, 바로 위입니다. 이를 손으로 만들려면 바이트 수를 계산하고 하나 어긋나지 않았기를 바라야 합니다.
+    대신 세트를 요청하세요.
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    1048575, 1048576, 1048577바이트의 실제 PDF 세 개와, 처음 두 개는 수락하고 세 번째는 <code>size_limit</code>으로 거부해야 한다고 알려
+    주는 매니페스트를 얻습니다. 어서션 세 개를 직접 쓰는 대신 테스트가 기대값을 읽으며, 한도가 바뀌면 숫자 하나를 바꾸고 다시 실행하면 됩니다.
+  </p>
+  <p>
+    경계 세트 하나를 인라인으로 만들고 싶다면 프리셋 없이도 같은 일을 할 수 있습니다.
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">지속적 통합</p>
+  <h2>픽스처를 잃지 않으면서 저장소 밖에 두기</h2>
+  <p>
+    큰 바이너리 픽스처는 저장소 복제를 느리게 하고 리뷰를 불편하게 하며, 하나가 교체되어도 무엇이 바뀌었는지 아무도 알 수 없습니다. 레시피는 똑같은 파일을 다시 만드는 몇백 자의
+    YAML입니다. <strong>어느 컴퓨터에서나 바이트 단위로 같습니다</strong>. 모든 파일이 실행의 시드에서 파생되기 때문입니다.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    끝나는 방식마다 고유한 종료 코드가 있으므로 파이프라인은 잘못된 레시피, 디스크 가득 참, 검증 불일치를 구별할 수 있습니다. 실패한 실행은 표준 출력에 아무것도 출력하지 않아
+    로그 파서가 오류를 데이터로 읽지 않습니다.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">규모</p>
+  <h2>폴더가 클 때 무슨 일이 일어나는지 알아내기</h2>
+  <p>
+    가져오기 루틴, 야간 작업, 디렉터리 목록은 파일이 10개일 때와 1만 개일 때 다르게 동작합니다. 범위에서 뽑은 크기는 똑같은 파일 1만 개가 아니라 실제 트래픽처럼 보이는
+    세트를 만들며, 추첨은 시드에서 나오므로 세트는 내일도 같습니다.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    합계가 기가바이트 단위일 때는 특히, 무언가를 쓰기 전에 실행 비용을 확인하세요.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    디스크 여유 공간보다 큰 실행은 첫 바이트를 쓰기 전에 거부되며, 디스크를 가득 채운 채 중간에 실패하는 일이 없습니다.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">아카이브</p>
+  <h2>실제로 파일이 들어 있는 아카이브로 압축 해제 기능 테스트하기</h2>
+  <p>
+    확장자만 맞는 빈 아카이브는 이를 열어 내용을 순회하는 코드에 대해 아무것도 증명하지 못합니다. 내용을 선언하면 아카이브가 실제로 그것을 담습니다.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    중첩 깊이, 항목 수, 내부 내용의 크기는 모두 가져오기 루틴이 나름의 의견을 가진 것들이며, 이것이 그 의견이 무엇인지 알아내는 방법입니다.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">파서와 뷰어</p>
+  <h2>내 코드가 실제 소프트웨어처럼 형식을 읽는지 확인하기</h2>
+  <p>
+    여기 있는 모든 형식은 출시 전에 독립적인 리더로 검증됩니다. PNG는 열어서 픽셀을 비교하고, DOCX는 별도의 라이브러리로 다시 읽고, 아카이브는 풀어 봅니다. 즉 여러분의
+    파서가 거부하는 파일은 생성기가 아니라 여러분의 파서에 대한 발견입니다.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/ko/formats/">형식 페이지</a>에 각 형식이 받는 설정과 각각이 될 수 있는 가장 작은 파일이 나와 있습니다.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>누구를 위한 것인가</h2>
+  <p>
+    QA 엔지니어, 테스트 자동화, 그리고 코드 뒤에 업로드 양식, 가져오기 루틴, 파서, 저장 용량 할당이 있는 모든 분을 위한 것입니다. 네트워크가 전혀 없는 컴퓨터에서
+    동작하므로, 브라우저 기반 생성기를 쓸 수 없는 폐쇄된 기업 환경에서 특히 중요합니다.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

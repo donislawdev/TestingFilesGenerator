@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>지정한 크기의 파일 만드는 법 - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate, mkfile을 각 시스템에서 직접 측정했으며, 테스트에 PDF나 PNG가 필요할 때 이렇게 만든 파일로 부족한 이유도 설명합니다.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="지정한 크기의 파일 만드는 법 - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate, mkfile을 각 시스템에서 직접 측정했으며, 테스트에 PDF나 PNG가 필요할 때 이렇게 만든 파일로 부족한 이유도 설명합니다.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="지정한 크기의 파일 만드는 법 - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate, mkfile을 각 시스템에서 직접 측정했으며, 테스트에 PDF나 PNG가 필요할 때 이렇게 만든 파일로 부족한 이유도 설명합니다.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "정확한 크기",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/create-file-exact-size\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/">문서</a>
+      <a href="/ko/use-cases/">활용 사례</a>
+      <a href="/ko/create-file-exact-size/" aria-current="page">정확한 크기</a>
+      <a href="/ko/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/create-file-exact-size/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>정확한 크기의 파일을 만드는 방법</h1>
+<p class="lead">
+  모든 시스템에 이를 위한 명령이 있으며, 세 가지 모두 아래에 있습니다. 정확한 바이트 수의 파일을 만들어 주며, 많은 테스트에서는 그것만으로 충분합니다. <strong>이
+  페이지의 모든 명령은 게시하기 전에 해당 시스템에서 실행해 보았습니다</strong>.
+</p>
+
+<div class="note">
+  <p class="note-title">짧은 답</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. 크기는 바이트 단위이며, 파일 관리자가 세는 방식의 10MB는
+    10485760입니다.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, 그리고 추가 도구가 필요 없는 PowerShell 방식</h2>
+  <p>
+    <code>fsutil</code>은 Windows에 포함되어 있습니다. 크기를 <strong>바이트 단위로</strong> 받으므로 먼저 숫자를 계산하세요. 10MB는
+    10485760, 100MB는 104857600, 1GB는 1073741824입니다.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11에서 측정했습니다. 관리자 권한이 아닌 일반 프롬프트에서도 동작하며, 파일은 정확히 10485760바이트가 됩니다.
+  </p>
+  <p>PowerShell은 다른 프로그램을 호출하지 않고도 같은 일을 할 수 있으며 단위를 이해합니다.</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell의 <code>10MB</code>는 탐색기가 쓰는 것과 같은 1024 기준 계산으로 10485760바이트를 뜻하므로, 위의 두 명령은 같은 크기를 만듭니다.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate, fallocate, 그리고 사람들이 걸려 넘어지는 차이</h2>
+  <p><code>dd</code>는 누구나 아는 명령입니다. 바이트를 실제로 씁니다.</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code>는 즉시 끝나는데, 그것이 함정입니다. Alpine Linux에서 측정해 보면 파일은 10485760바이트로 보고되지만 차지하는 블록은
+    <strong>0개</strong>로, <strong>희소 파일</strong>입니다. 읽는 쪽은 0으로 채워진 10메가바이트를 받지만, 디스크는 공간을 내준 적이
+    없습니다.
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    업로드 한도를 테스트하기에는 괜찮지만 디스크 할당량을 테스트할 때는 오해를 부릅니다. 공간이 실제여야 할 때는 <code>fallocate</code>를 쓰세요.
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>그리고 압축 프로그램이 다시 줄일 수 없도록 내용이 압축 불가능해야 할 때는:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>희소 파일이 아닌 mkfile, 그리고 이미 아시는 두 가지</h2>
+  <p>
+    macOS에는 <code>mkfile</code>이 포함되어 있습니다. macOS 26.6.2에서 측정하니 10485760바이트에 20480블록이었으므로, 공간은 약속이 아니라
+    실제로 할당됩니다.
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code>와 <code>truncate</code>도 있으며 Linux와 같게 동작합니다.</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">이 방법이 통하지 않는 곳</p>
+  <h2>크기가 맞는 파일이 종류까지 맞는 파일은 아닙니다</h2>
+  <p>
+    위의 방법은 모두 0으로 된 덩어리를 줍니다. 테스트 대상이 크기만 본다면, 예를 들어 업로드 한도, 할당량, 전송이라면 충분합니다. 하지만 무엇이든 그 파일을
+    <strong>여는</strong> 순간 충분하지 않게 됩니다.
+  </p>
+  <p>
+    직접 측정했으며, 여러분도 해 볼 만합니다. <code>fsutil</code>로 2MB 파일을 만들고 <code>photo.png</code>라고 이름 붙인 다음 이미지
+    라이브러리에 넘겨 보세요. Pillow는 <code>cannot identify image file</code>이라고 답합니다. 그것은 PNG가 아닙니다. 처음부터
+    아니었고, 이름만 그렇게 말했을 뿐입니다.
+  </p>
+  <p>
+    이는 들리는 것보다 중요합니다. <strong>테스트가 그다음에 어느 쪽으로 실패하는지</strong>가 걸려 있기 때문입니다. 업로드 엔드포인트가 파일을 거부하고, 테스트가
+    초록색이 되며, 크기 한도가 동작한다고 결론짓게 됩니다. 하지만 크기 때문에 거부한 것이 아닙니다. 바이트가 이미지가 아니어서 거부한 것이며, 테스트하려던 규칙에는 닿지도
+    않았습니다.
+  </p>
+  <ul class="ticks">
+    <li>파서가 크기 규칙을 살펴보기도 전에 거부한다</li>
+    <li>썸네일 단계가 실패하고 읽게 되는 오류가 썸네일에 관한 것이다</li>
+    <li>백신이나 콘텐츠 검사가 세 번째 이유로 거부한다</li>
+    <li>뷰어가 아무것도 보여 주지 않고, 그것이 버그인지 아무도 알 수 없다</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">다른 방법</p>
+  <h2>그 형식의 실제 파일, 요청한 크기 그대로</h2>
+  <p>
+    이것이 Testing Files Generator가 하는 일입니다. 파일은 해당 형식의 진짜 파일로, 해당 소프트웨어에서 열리며, 요청한 바이트 수와 정확히 같습니다.
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    형식이 도달할 수 없는 크기를 요청하면 하한과 그 이유를 알려 주는 오류가 나오며, 크기가 틀린 파일은 나오지 않습니다. <a href="/ko/formats/">형식
+    페이지</a>에 각 형식과 만들 수 있는 가장 작은 파일이 나와 있습니다.
+  </p>
+  <p>그리고 한도는 하나가 아니라 세 개의 테스트 케이스이므로, 도구가 세 개 모두 만듭니다.</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    10485759, 10485760, 10485761바이트의 파일과, 시스템이 어느 것을 받고 어느 것을 거부해야 하는지 알려 주는 매니페스트를 얻습니다.
+    <a href="/ko/use-cases/">활용 사례 페이지</a>에서 이것과 이 도구가 대상으로 하는 네 가지 다른 작업을 다룹니다.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">소스 코드 보기</a>
+</div>
+<p class="cta-note">무료 오픈 소스, GPL-3.0. 가입이 필요 없습니다. Windows와 macOS 다운로드는 서명되어 있어 경고 없이 실행됩니다.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>그러면 무엇을 써야 할까요?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">시스템 명령을 쓰세요</p>
+      <p class="muted">
+        아무것도 파일을 열지 않을 때입니다. 크기를 먼저 확인하는 엔드포인트의 크기 한도 테스트, 전송, 할당량, 디스크 가득 참 상황이 그렇습니다. 한 줄이면 되고 이미 설치되어
+        있습니다.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">실제 생성기를 쓰세요</p>
+      <p class="muted">
+        무엇이든 파일을 파싱하거나 렌더링하거나 가져오거나 풀 때, 그리고 내일 다른 컴퓨터에서 같은 픽스처가 바이트 단위로 다시 필요할 때입니다.
+      </p>
+    </li>
+  </ul>
+  <p>
+    둘 다 이 페이지에 있는 이유는 둘 다 때로는 맞기 때문입니다. 피해야 할 실수는 두 번째가 필요한 곳에서 첫 번째를 쓰고 초록색 테스트를 증거로 읽는 것입니다.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

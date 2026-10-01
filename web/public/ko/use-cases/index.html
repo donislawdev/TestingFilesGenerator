@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>활용 사례 - 업로드 한도, CI 픽스처, 대량 테스트</title>
+<meta name="description" content="업로드 크기 한도 테스트, CI용 재현 가능한 픽스처 구성, 파일 1만 개 생성, 실제 내용으로 아카이브 채우기.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/use-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/use-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/use-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/use-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/use-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="활용 사례 - 업로드 한도, CI 픽스처, 대량 테스트">
+<meta property="og:description" content="업로드 크기 한도 테스트, CI용 재현 가능한 픽스처 구성, 파일 1만 개 생성, 실제 내용으로 아카이브 채우기.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/use-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="활용 사례 - 업로드 한도, CI 픽스처, 대량 테스트">
+<meta name="twitter:description" content="업로드 크기 한도 테스트, CI용 재현 가능한 픽스처 구성, 파일 1만 개 생성, 실제 내용으로 아카이브 채우기.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "활용 사례",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/use-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/">문서</a>
+      <a href="/ko/use-cases/" aria-current="page">활용 사례</a>
+      <a href="/ko/create-file-exact-size/">정확한 크기</a>
+      <a href="/ko/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/use-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/use-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/use-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/use-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/use-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>어떤 일에 쓰나요</h1>
+<p class="lead">
+  사람들에게서 파일을 받는 거의 모든 프로젝트에 나오는 다섯 가지 작업과, 각각을 처리하는 명령입니다. 아래의 모든 예제는 쓰인 그대로 실행됩니다.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">업로드 한도</p>
+  <h2>파일 크기 한도가 말한 위치에서 적용되는지 테스트하기</h2>
+  <p>
+    한도는 하나가 아니라 세 개의 테스트 케이스입니다. 바로 아래, 정확히 그 값, 바로 위입니다. 이를 손으로 만들려면 바이트 수를 계산하고 하나 어긋나지 않았기를 바라야 합니다.
+    대신 세트를 요청하세요.
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    1048575, 1048576, 1048577바이트의 실제 PDF 세 개와, 처음 두 개는 수락하고 세 번째는 <code>size_limit</code>으로 거부해야 한다고 알려
+    주는 매니페스트를 얻습니다. 어서션 세 개를 직접 쓰는 대신 테스트가 기대값을 읽으며, 한도가 바뀌면 숫자 하나를 바꾸고 다시 실행하면 됩니다.
+  </p>
+  <p>
+    경계 세트 하나를 인라인으로 만들고 싶다면 프리셋 없이도 같은 일을 할 수 있습니다.
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">지속적 통합</p>
+  <h2>픽스처를 잃지 않으면서 저장소 밖에 두기</h2>
+  <p>
+    큰 바이너리 픽스처는 저장소 복제를 느리게 하고 리뷰를 불편하게 하며, 하나가 교체되어도 무엇이 바뀌었는지 아무도 알 수 없습니다. 레시피는 똑같은 파일을 다시 만드는 몇백 자의
+    YAML입니다. <strong>어느 컴퓨터에서나 바이트 단위로 같습니다</strong>. 모든 파일이 실행의 시드에서 파생되기 때문입니다.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    끝나는 방식마다 고유한 종료 코드가 있으므로 파이프라인은 잘못된 레시피, 디스크 가득 참, 검증 불일치를 구별할 수 있습니다. 실패한 실행은 표준 출력에 아무것도 출력하지 않아
+    로그 파서가 오류를 데이터로 읽지 않습니다.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">규모</p>
+  <h2>폴더가 클 때 무슨 일이 일어나는지 알아내기</h2>
+  <p>
+    가져오기 루틴, 야간 작업, 디렉터리 목록은 파일이 10개일 때와 1만 개일 때 다르게 동작합니다. 범위에서 뽑은 크기는 똑같은 파일 1만 개가 아니라 실제 트래픽처럼 보이는
+    세트를 만들며, 추첨은 시드에서 나오므로 세트는 내일도 같습니다.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    합계가 기가바이트 단위일 때는 특히, 무언가를 쓰기 전에 실행 비용을 확인하세요.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    디스크 여유 공간보다 큰 실행은 첫 바이트를 쓰기 전에 거부되며, 디스크를 가득 채운 채 중간에 실패하는 일이 없습니다.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">아카이브</p>
+  <h2>실제로 파일이 들어 있는 아카이브로 압축 해제 기능 테스트하기</h2>
+  <p>
+    확장자만 맞는 빈 아카이브는 이를 열어 내용을 순회하는 코드에 대해 아무것도 증명하지 못합니다. 내용을 선언하면 아카이브가 실제로 그것을 담습니다.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    중첩 깊이, 항목 수, 내부 내용의 크기는 모두 가져오기 루틴이 나름의 의견을 가진 것들이며, 이것이 그 의견이 무엇인지 알아내는 방법입니다.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">파서와 뷰어</p>
+  <h2>내 코드가 실제 소프트웨어처럼 형식을 읽는지 확인하기</h2>
+  <p>
+    여기 있는 모든 형식은 출시 전에 독립적인 리더로 검증됩니다. PNG는 열어서 픽셀을 비교하고, DOCX는 별도의 라이브러리로 다시 읽고, 아카이브는 풀어 봅니다. 즉 여러분의
+    파서가 거부하는 파일은 생성기가 아니라 여러분의 파서에 대한 발견입니다.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/ko/formats/">형식 페이지</a>에 각 형식이 받는 설정과 각각이 될 수 있는 가장 작은 파일이 나와 있습니다.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>누구를 위한 것인가</h2>
+  <p>
+    QA 엔지니어, 테스트 자동화, 그리고 코드 뒤에 업로드 양식, 가져오기 루틴, 파서, 저장 용량 할당이 있는 모든 분을 위한 것입니다. 네트워크가 전혀 없는 컴퓨터에서
+    동작하므로, 브라우저 기반 생성기를 쓸 수 없는 폐쇄된 기업 환경에서 특히 중요합니다.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">소스 코드 보기</a>
+</div>
+<p class="cta-note">무료 오픈 소스, GPL-3.0. 가입이 필요 없습니다. Windows와 macOS 다운로드는 서명되어 있어 경고 없이 실행됩니다.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

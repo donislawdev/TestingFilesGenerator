@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Пресет <code>{{ .ID }}</code> одной командой собирает целый набор настоящих тестовых файлов для
+  этого вопроса и рядом <code>manifest.json</code> с ожидаемой реакцией вашей системы на каждый
+  файл. Всё ниже прочитано из программы со значениями по умолчанию этой версии.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Что он обычно находит?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Что входит в набор?</h2>
+  <p>Со значениями по умолчанию, как сообщает <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Файлов</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Целей в его рецепте</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Общий размер</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Форматы</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>И чего манифест этого набора ожидает от вашей системы:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Ожидается</th><th>Значение</th><th class="num">Файлов</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Что можно изменить?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Настройка</th><th>Принимает</th><th>По умолчанию</th><th>Что делает</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Это значение по умолчанию - наша временная подстановка, а не значение вашей системы. Передайте своё.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>У этого пресета нет настроек. Набор каждый раз одинаков.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Как его запустить?</h2>
+  <p>Посмотрите, чего стоил бы набор, соберите его или возьмите его рецепт для правки:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Или стройте на нём в собственном рецепте рядом с тестами:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

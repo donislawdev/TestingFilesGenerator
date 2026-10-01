@@ -1,0 +1,90 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  <code>{{ .ID }}</code> 프리셋은 이 질문에 대한 실제 테스트 파일 세트 전체를 명령 하나로 만들고, 그 옆에 시스템이 각 파일에 어떻게 반응해야 하는지 알려 주는
+  <code>manifest.json</code>을 둡니다. 아래의 모든 내용은 이 버전의 기본값으로 프로그램에서 읽어 온 것입니다.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>보통 무엇을 찾아내나요?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>세트에는 무엇이 들어 있나요?</h2>
+  <p>기본값에서 <code>tfg preset show {{ .ID }}</code>가 보고하는 대로입니다.</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">파일 수</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">레시피의 타깃 수</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">총 크기</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">형식</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>그리고 그 세트의 매니페스트가 시스템에 기대하는 것:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>기대값</th><th>의미</th><th class="num">파일 수</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>무엇을 바꿀 수 있나요?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>설정</th><th>값</th><th>기본값</th><th>동작</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>이 기본값은 우리 쪽의 임시값이며 여러분 시스템의 값이 아닙니다. 직접 값을 지정하세요.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>이 프리셋에는 설정이 없습니다. 세트는 매번 같습니다.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>어떻게 실행하나요?</h2>
+  <p>세트의 비용을 확인하고, 만들거나, 편집할 레시피를 꺼냅니다.</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>또는 테스트 옆에 둔 직접 만든 레시피에서 이를 바탕으로 이어 갑니다.</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

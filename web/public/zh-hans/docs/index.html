@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hans">
+<title>文档 - 命令、配方、清单、退出码</title>
+<meta name="description" content="如何通过命令行或 YAML 配方生成测试文件，清单包含什么，以及在 CI 中运行时每个退出码的含义。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="文档 - 命令、配方、清单、退出码">
+<meta property="og:description" content="如何通过命令行或 YAML 配方生成测试文件，清单包含什么，以及在 CI 中运行时每个退出码的含义。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="文档 - 命令、配方、清单、退出码">
+<meta name="twitter:description" content="如何通过命令行或 YAML 配方生成测试文件，清单包含什么，以及在 CI 中运行时每个退出码的含义。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首页",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hans/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "文档",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/docs\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hans/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主导航">
+      <a href="/zh-hans/">首页</a>
+      <a href="/zh-hans/formats/">格式</a>
+      <a href="/zh-hans/presets/">预设</a>
+      <a href="/zh-hans/docs/" aria-current="page">文档</a>
+      <a href="/zh-hans/use-cases/">使用场景</a>
+      <a href="/zh-hans/create-file-exact-size/">精确大小</a>
+      <a href="/zh-hans/faq/">常见问题</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="语言: 简体中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>简体中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>文档</h1>
+<p class="lead">
+  工具的全部功能，按人们实际会问的问题来组织。<a href="https://github.com/donislawdev/TestingFilesGenerator">仓库中的 README</a> 是完整参考，并且始终与你下载的版本一致。
+</p>
+
+<section class="section" id="commands">
+  <h2>有哪些命令？</h2>
+  <p>每个命令只做一件事：</p>
+  <pre><code>tfg generate    根据配方或参数生成文件
+tfg validate    检查配方，不写入任何内容
+tfg verify      对照清单检查目录
+tfg cleanup     删除清单中列出的文件
+tfg recipe fmt  以规范形式打印配方
+tfg preset      根据具名测试问题构建一组文件
+tfg formats     列出此版本支持的格式
+tfg damage      列出此版本可以故意破坏文件的方式
+tfg tool        处理现有文件的小工具
+tfg version     打印工具版本
+tfg license     打印许可证及其对生成文件的含义</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>如何生成一个大小精确的文件？</h2>
+  <p>
+    指定格式、大小和输出位置。大小按 1024 进制计算，所以 <code>2mb</code> 是 2097152 字节。直接写字节数也可以，所以 <code>--size
+    10485761</code> 请求的就是恰好这么多。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code> 常用的参数：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>参数</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>文件格式，例如 <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>每个文件的精确大小，例如 <code>10mb</code> 或直接写字节数</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>从范围内为每个文件抽取一个大小，例如 <code>1kb-8kb</code>。抽取结果来自种子</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>围绕一个限制的三个文件：小一字节、恰好等于限制、大一字节</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>生成多少个文件。默认 <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>文件名模板，例如 <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>写入的目录</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>本次运行的种子。相同的种子得到相同的字节</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>一项格式设置，可重复使用</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>故意破坏文件，可重复使用，并按顺序应用。运行 <code>tfg damage</code> 查看列表</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>、<code>reject</code>、<code>sanitize</code> 或 <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>只统计并显示，完全不写入</td></tr>
+        <tr><td><code>--json</code></td><td>将清单写到标准输出</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>如何做一个故意损坏的文件？</h2>
+  <p>
+    本工具写出的其他所有文件在构造上都是正确的，这回答了上传校验器会问的三个问题中的两个。<code>--damage</code>
+    回答第三个，也就是文件到底能不能打开。文件先正常生成，再被破坏，因此仍然保持你请求的大小。
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    设置写在冒号后面。该参数可以重复，写入的顺序就是应用的顺序。<code>tfg damage</code> 会列出此版本能做什么，以及每种破坏接受哪些设置。
+  </p>
+  <p>在配方中，这个键是一个列表，内容是名称或设置：</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    受损文件在清单中会得到 <code>expected: reject</code>，并在旁边记录所做的破坏。有两种情况会在写入任何内容之前被拒绝，因为各自都会在磁盘上留下清单描述有误的文件：
+  </p>
+  <ul>
+    <li>文件小于破坏所需的大小，因为它会原样输出</li>
+    <li>
+      在破坏旁边写 <code>expected: accept</code>，因为没有任何文件能满足它。如果被测系统应该修复该文件，请写
+      <code>sanitize</code>；如果你问的正是这个问题，请写 <code>unspecified</code>
+    </li>
+  </ul>
+  <p>
+    第三种无法提前得知。如果某个破坏运行后没有改动任何字节，该文件会被丢弃而不是写出，运行会继续，指出是哪个文件，并以部分完成的退出码结束。
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>配方是什么样子？</h2>
+  <p>
+    配方是一个描述整次运行的 YAML 文件。把它与测试放在一起提交，fixture 就不再是仓库里的二进制文件，任何人都可以用一个只有几百个字符的文件逐字节重建它们。
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    每个 target 必须恰好有 <code>size</code>、<code>size-range</code>、<code>boundary</code> 或
+    <code>contains</code>
+    中的一个。两个是错误，一个都没有也是错误。无效的配方<strong>不会写入任何文件</strong>，并且会一次报告所有问题，而不是只报第一个，每个问题都会指明所涉及的设置。
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>如何声明我的系统应如何处理某个文件？</h2>
+  <p>只需结果时用短写法，原因重要时用长写法：</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    结果有 <code>accept</code>、<code>reject</code>、<code>sanitize</code> 和
+    <code>unspecified</code>。原因是封闭列表，便于报告按原因分组：<code>content_malformed</code>、<code>count_limit</code>、<code>dimensions_limit</code>、<code>duplicate</code>、<code>encoding_invalid</code>、<code>extension_rule</code>、<code>filename_invalid</code>、<code>filename_too_long</code>、<code>filename_traversal</code>、<code>malware_signature</code>、<code>mime_mismatch</code>、<code>nesting_depth</code>、<code>none</code>、<code>size_limit</code>
+    和 <code>size_zero</code>。
+  </p>
+  <p>
+    原因指明的是<strong>起作用的规则</strong>，而不是裁决。所以同一个原因可以出现在两种结果之下：比限制小一字节的文件是 <code>accept</code>，而它所涉及的规则仍然是
+    <code>size_limit</code>。
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>清单里有什么？</h2>
+  <p>
+    每次运行结束时，包括被中断的运行，它都会写在文件旁边。每个文件一项：
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    运行来自配方时会加上 <code>recipe_hash</code>，来自预设时会加上 <code>preset</code> 和
+    <code>overrides</code>，因此清单总能追溯到产生它的来源。
+  </p>
+  <p>
+    每一项还带有 <code>target_id</code>，即配方中生成该文件的 target 的 id，<code>summary.by_target</code> 则统计每个 target
+    生成的文件数。因此有多个 target 的配方可以逐个 target 检查，无需阅读文件名。
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>什么是预设？</h2>
+  <p>
+    预设是回答常见测试问题的现成文件集，你不必自己设计。预设底层就是普通配方，<code>eject</code>
+    会把配方打印出来，供你从那里开始编辑。每个预设都有<a href="/zh-hans/presets/">自己的页面</a>，说明它通常能发现什么、集合里有什么，以及它接受的每项设置。
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/empty-and-minimal/">空文件与最小文件</a></p>
+    <p class="muted">一个合法且达到格式允许的最小大小的文件能通过吗？</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/filename-handling/">文件名处理</a></p>
+    <p class="muted">我的系统能否正确保存、显示并返回它没料到的文件名？</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/size-boundaries/">大小边界</a></p>
+    <p class="muted">大小限制是否恰好在声明的位置生效？</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/tabular-import/">表格导入</a></p>
+    <p class="muted">我的表格导入能应付真实工具导出的内容吗？</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/text-encoding/">文本编码</a></p>
+    <p class="muted">我的读取器知道文件是什么编码，还是在猜？</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/zh-hans/presets/upload-validation/">上传校验</a></p>
+    <p class="muted">我的上传表单是否接受该接受的，并拒绝其余的？</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> 会在你构建之前告诉你这个集合的开销，并且在某个数字只是我们的占位值而不是你的限制时直接说明。
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>退出码是什么意思？</h2>
+  <p>
+    每种结束方式都有自己的代码，机器可读的输出写到标准输出，失败的运行不会在那里打印任何内容。这张表是冻结的约定，改变某个代码的含义需要提升主版本号。
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">代码</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>一切正常。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>工具内部出现意外错误。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>命令或参数有误。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>配方无效。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>该格式无法完成所请求的操作。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>读取或写入失败。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>磁盘空间不足。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify 发现了不一致。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>运行已结束，但并非所有文件都已生成。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>被 Ctrl&#43;C 中断。</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>被信号终止，CI 超时就是这个样子。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    被 Ctrl+C 停止的运行仍会留下清单，也绝不会留下写了一半的文件，所以被取消的任务仍可由下一次运行清理。
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>有桌面窗口吗？</h2>
+  <p>
+    有，它就是在同一个引擎上加了一个窗口，用于不走脚本的测试。它不是缩水版：有测试逐项对比这两种界面，只有其中一方能做的事必须被声明并说明理由，而不是悄悄地渐行渐远。
+  </p>
+  <p>
+    界面有单批生成、预设、同时多批和关于。它会在写入任何内容之前显示一次运行的开销，运行时报告进度，并且可以在中途取消而不会留下写了一半的文件。它目前还不能打开配方文件，配方暂时只属于命令行，窗口通过表单来构建批次。
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">项目</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的源代码</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">报告问题</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本项目</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">页面</p>
+      <ul class="plain">
+        <li><a href="/zh-hans/">首页</a></li>
+        <li><a href="/zh-hans/formats/">格式</a></li>
+        <li><a href="/zh-hans/presets/">预设</a></li>
+        <li><a href="/zh-hans/docs/">文档</a></li>
+        <li><a href="/zh-hans/use-cases/">使用场景</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
+        <li><a href="/zh-hans/faq/">常见问题</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。</p>
+    <p class="muted">本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

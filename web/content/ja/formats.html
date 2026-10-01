@@ -1,0 +1,64 @@
+<h1>{{ .Facts.FormatCount }}種類のファイル形式、どれも正確なサイズで生成</h1>
+<p class="lead">
+  どれも<strong>その形式の本物のファイル</strong>です。対応するソフトウェアで開け、要求したバイト数とぴったり一致します。拡張子を貼り付けただけのゼロ埋めはひとつもありません。
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>各列の意味</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">最小ファイル</p>
+      <p class="muted">
+        その形式でこのツールが受け付ける最小のバイト数で、ファイル内に書き込むラベルを含みます。それより小さく要求すると、下限とその理由を示すエラーが返り、サイズの違うファイルが作られることはありません。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">完全性</p>
+      <p class="muted">
+        ファイルがどれだけ完全かを示します。<code>full</code>は、形式を本当に解析するリーダーが受け入れるという意味で、拡張子が合っているだけではありません。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">検証に使うもの</p>
+      <p class="muted">
+        形式を出荷する前に、生成されたすべてのファイルを開く独立したリーダーです。自分たちのコードが自分たちの宿題を採点するのではなく、別の実装を使います。
+      </p>
+    </li>
+  </ul>
+  <p>
+    どの形式もバイト単位で再現できます。同じレシピとシードなら、どのマシンでも同じファイルが生成されるため、フィクスチャ自体の代わりにレシピをコミットしても安全です。
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>形式ごとに受け付ける設定</h2>
+  <p>
+    ほとんどの形式には固有の設定があります。画像のサイズ、JPEGの品質、PDFのページ数、スプレッドシートの行数と列数、アーカイブに入れるエントリ数など。コマンドラインでは<code>--set
+    key=value</code>、レシピでは<code>properties:</code>の下で設定します。
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    設定が受け付ける範囲外の値は、設定名、許可される範囲、代わりに使うものを示すメッセージとともに拒否されます。未知の設定もエラーで、黙って既定値になることはありません。黙って受け入れられた打ち間違いは、設定の誤ったファイルを生み、通るはずのないテストがなぜ通るのかと悩む1時間を生みます。
+  </p>
+  <p>
+    <code>tfg formats &lt;id&gt;</code>を実行すると、お使いのビルドで1つの形式が受け付ける内容を正確に確認できます。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>アーカイブには本物のファイルが入ります</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }}と{{ end }}<code>{{ $c.ID }}</code>{{ end }}は、空の殻のままではなく、エントリで満たせます。生成されたアーカイブは、含むと言っているドキュメントを実際に含むため、テスト中にそれを展開するものは、中に本物のファイルを見つけます。
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

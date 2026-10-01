@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hans">
+<title>常见问题 - 关于生成测试文件</title>
+<meta name="description" content="与 dd 和 fsutil 有何不同，文件能否放心提交，每次运行是否逐字节一致，以及大小无法达到时会怎样。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="常见问题 - 关于生成测试文件">
+<meta property="og:description" content="与 dd 和 fsutil 有何不同，文件能否放心提交，每次运行是否逐字节一致，以及大小无法达到时会怎样。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="常见问题 - 关于生成测试文件">
+<meta name="twitter:description" content="与 dd 和 fsutil 有何不同，文件能否放心提交，每次运行是否逐字节一致，以及大小无法达到时会怎样。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首页",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hans/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "常见问题",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hans/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主导航">
+      <a href="/zh-hans/">首页</a>
+      <a href="/zh-hans/formats/">格式</a>
+      <a href="/zh-hans/presets/">预设</a>
+      <a href="/zh-hans/docs/">文档</a>
+      <a href="/zh-hans/use-cases/">使用场景</a>
+      <a href="/zh-hans/create-file-exact-size/">精确大小</a>
+      <a href="/zh-hans/faq/" aria-current="page">常见问题</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="语言: 简体中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>简体中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>常见问题</h1>
+<p class="lead">
+  许可证、隐私、可复现性，以及人们在把生成器放进构建流水线之前会确认的事项。如果这里没有你的问题，<a href="https://github.com/donislawdev/TestingFilesGenerator/issues">问题跟踪器</a>是开放的。
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>这与 dd、fsutil 或 truncate 有何不同？</h2></summary>
+    <div class="qa-body">
+      <p>它们给你的是大小正确但内容空空如也的文件。用这种方式做出的名为 photo.png 的 2 MB 文件并不是 PNG，所以任何真正解析它的程序都会因为错误的原因拒绝它，而你的测试也会因为错误的原因通过。本工具生成的是大小恰好 2 MB 的真实 PNG，可以在图片查看器中打开，并附带一份说明，告诉你的系统该如何处理它。</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>它免费吗，我能在工作中使用吗？</h2></summary>
+    <div class="qa-body">
+      <p>两者都可以。它以 GPL-3.0 发布，不收取任何费用。没有账号，没有许可证密钥，也没有付费版本。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>我能在闭源产品中使用生成的文件吗？</h2></summary>
+    <div class="qa-body">
+      <p>可以。许可证涵盖的是工具的代码，而不是工具生成的内容。生成的文件、配方和清单属于输出而非衍生作品，所以你可以提交它们并随产品分发，不负任何义务。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>生成的文件包含真实的个人数据吗？</h2></summary>
+    <div class="qa-body">
+      <p>不包含。里面的一切都由种子合成。不读取任何数据集，不联系任何服务，也不嵌入任何第三方内容。请把生成的电子邮件地址视为不可用，而不是未被使用，因为任何随机字符串都有可能碰巧与真实地址相同。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>在另一台机器上能得到完全相同的文件吗？</h2></summary>
+    <div class="qa-body">
+      <p>能，只要配方和种子相同，就能逐字节一致。项目在每次改动时都会测试这一点，要打破它必须提升主版本号。这正是你可以提交一个小配方，而不是大型二进制 fixture 的原因。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>它需要联网吗？</h2></summary>
+    <div class="qa-body">
+      <p>从不需要。没有遥测，没有更新检查，也没有云客户端，命令行二进制文件里甚至没有编译进网络栈。它可以在没有网络的机器上运行，也能在封闭的企业环境中使用。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>如果我请求格式无法达到的大小会怎样？</h2></summary>
+    <div class="qa-body">
+      <p>你会收到一个错误，说明格式、可能的最小大小、该下限的原因以及应改用什么，并且不会写入任何文件。工具从不会悄悄取整。每个下限都列在格式页面上。</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>我能生成故意损坏的文件吗？</h2></summary>
+    <div class="qa-body">
+      <p>暂时不能。损坏和畸形文件是计划中的功能。目前工具写出的每个文件都是该格式的合法文件。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>接下来会支持哪些格式？</h2></summary>
+    <div class="qa-body">
+      <p>7z、mp3 和 mp4。目前有 26 种格式可以端到端使用。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>我可以在哪些系统上运行？</h2></summary>
+    <div class="qa-body">
+      <p>命令行可在 Windows 和 Linux 上运行，支持 Intel 和 ARM，也支持 Apple 芯片的 Mac。桌面窗口提供 Windows（Intel）、Linux（Intel）和 Apple 芯片 Mac 版本。不支持 Intel Mac，也不会为其构建。</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>我需要安装什么吗？</h2></summary>
+    <div class="qa-body">
+      <p>不需要。下载适合你系统的压缩包，解压后运行二进制文件即可。没有安装程序，没有需要添加的运行时，也没有需要解决的依赖。如果你装有 Go，一条 go install 命令同样可用。</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>为什么在 Windows 上处理数千个文件更慢？</h2></summary>
+    <div class="qa-body">
+      <p>因为 Windows 对查看的每个路径收取更多开销，而遍历数千个文件的命令要查看数千个路径。在一台有 3000 个 1 kB 文件的机器上实测，verify 在 Windows 上约需 0.9 秒，在容器中的 Linux 上约需 0.2 秒。输出路径更短会让 Windows 的数字变小，因为文件上方的每一级文件夹都属于被查看的内容。</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "这与 dd、fsutil 或 truncate 有何不同？",
+      "acceptedAnswer": { "@type": "Answer", "text": "它们给你的是大小正确但内容空空如也的文件。用这种方式做出的名为 photo.png 的 2 MB 文件并不是 PNG，所以任何真正解析它的程序都会因为错误的原因拒绝它，而你的测试也会因为错误的原因通过。本工具生成的是大小恰好 2 MB 的真实 PNG，可以在图片查看器中打开，并附带一份说明，告诉你的系统该如何处理它。" }
+    },
+    {
+      "@type": "Question",
+      "name": "它免费吗，我能在工作中使用吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "两者都可以。它以 GPL-3.0 发布，不收取任何费用。没有账号，没有许可证密钥，也没有付费版本。" }
+    },
+    {
+      "@type": "Question",
+      "name": "我能在闭源产品中使用生成的文件吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "可以。许可证涵盖的是工具的代码，而不是工具生成的内容。生成的文件、配方和清单属于输出而非衍生作品，所以你可以提交它们并随产品分发，不负任何义务。" }
+    },
+    {
+      "@type": "Question",
+      "name": "生成的文件包含真实的个人数据吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "不包含。里面的一切都由种子合成。不读取任何数据集，不联系任何服务，也不嵌入任何第三方内容。请把生成的电子邮件地址视为不可用，而不是未被使用，因为任何随机字符串都有可能碰巧与真实地址相同。" }
+    },
+    {
+      "@type": "Question",
+      "name": "在另一台机器上能得到完全相同的文件吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "能，只要配方和种子相同，就能逐字节一致。项目在每次改动时都会测试这一点，要打破它必须提升主版本号。这正是你可以提交一个小配方，而不是大型二进制 fixture 的原因。" }
+    },
+    {
+      "@type": "Question",
+      "name": "它需要联网吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "从不需要。没有遥测，没有更新检查，也没有云客户端，命令行二进制文件里甚至没有编译进网络栈。它可以在没有网络的机器上运行，也能在封闭的企业环境中使用。" }
+    },
+    {
+      "@type": "Question",
+      "name": "如果我请求格式无法达到的大小会怎样？",
+      "acceptedAnswer": { "@type": "Answer", "text": "你会收到一个错误，说明格式、可能的最小大小、该下限的原因以及应改用什么，并且不会写入任何文件。工具从不会悄悄取整。每个下限都列在格式页面上。" }
+    },
+    {
+      "@type": "Question",
+      "name": "我能生成故意损坏的文件吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "暂时不能。损坏和畸形文件是计划中的功能。目前工具写出的每个文件都是该格式的合法文件。" }
+    },
+    {
+      "@type": "Question",
+      "name": "接下来会支持哪些格式？",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z、mp3 和 mp4。目前有 26 种格式可以端到端使用。" }
+    },
+    {
+      "@type": "Question",
+      "name": "我可以在哪些系统上运行？",
+      "acceptedAnswer": { "@type": "Answer", "text": "命令行可在 Windows 和 Linux 上运行，支持 Intel 和 ARM，也支持 Apple 芯片的 Mac。桌面窗口提供 Windows（Intel）、Linux（Intel）和 Apple 芯片 Mac 版本。不支持 Intel Mac，也不会为其构建。" }
+    },
+    {
+      "@type": "Question",
+      "name": "我需要安装什么吗？",
+      "acceptedAnswer": { "@type": "Answer", "text": "不需要。下载适合你系统的压缩包，解压后运行二进制文件即可。没有安装程序，没有需要添加的运行时，也没有需要解决的依赖。如果你装有 Go，一条 go install 命令同样可用。" }
+    },
+    {
+      "@type": "Question",
+      "name": "为什么在 Windows 上处理数千个文件更慢？",
+      "acceptedAnswer": { "@type": "Answer", "text": "因为 Windows 对查看的每个路径收取更多开销，而遍历数千个文件的命令要查看数千个路径。在一台有 3000 个 1 kB 文件的机器上实测，verify 在 Windows 上约需 0.9 秒，在容器中的 Linux 上约需 0.2 秒。输出路径更短会让 Windows 的数字变小，因为文件上方的每一级文件夹都属于被查看的内容。" }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>还在犹豫？</h2>
+  <p>
+    <a href="/zh-hans/use-cases/">使用场景页面</a>展示了它为之而生的任务，<a href="/zh-hans/formats/">格式页面</a>列出了每种格式及其能生成的最小文件。<a href="https://github.com/donislawdev/TestingFilesGenerator">仓库中的
+    README</a> 是完整参考。
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">查看源代码</a>
+</div>
+<p class="cta-note">免费开源，GPL-3.0。无需注册。Windows 和 macOS 的下载包已签名，启动时没有警告。</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">项目</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的源代码</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">报告问题</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本项目</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">页面</p>
+      <ul class="plain">
+        <li><a href="/zh-hans/">首页</a></li>
+        <li><a href="/zh-hans/formats/">格式</a></li>
+        <li><a href="/zh-hans/presets/">预设</a></li>
+        <li><a href="/zh-hans/docs/">文档</a></li>
+        <li><a href="/zh-hans/use-cases/">使用场景</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
+        <li><a href="/zh-hans/faq/">常见问题</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。</p>
+    <p class="muted">本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

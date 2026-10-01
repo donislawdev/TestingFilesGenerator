@@ -1,0 +1,96 @@
+<h1>人們用它來做什麼</h1>
+<p class="lead">
+  幾乎每個接收使用者檔案的專案都會遇到的五項任務，以及完成每一項的指令。下面的每個範例都能照原樣執行。
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">上傳限制</p>
+  <h2>測試檔案大小限制是否在宣稱的位置生效</h2>
+  <p>
+    一個限制對應三個測試案例，而不是一個：剛好低於、恰好等於和剛好高於。手工做這些意味著計算位元組數，並祈禱自己沒有算錯一位。不如直接要求整組檔案：
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    你會得到三個真實的 PDF，大小分別是 1048575、1048576 與 1048577 位元組，以及一份清單，說明前兩個應被接受，第三個應因 <code>size_limit</code>
+    被拒絕。你的測試讀取預期，而不是由你手寫三個斷言，限制改變時，你只需改一個數字再重新執行。
+  </p>
+  <p>
+    如果你只想要一組內嵌的邊界檔案，不用預設集也可以做到：
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">持續整合</p>
+  <h2>讓 fixture 留在儲存庫之外又不遺失</h2>
+  <p>
+    大型二進位 fixture 會拖慢儲存庫複製，也讓審查變得彆扭，而且替換其中一個時沒有人能看出改了什麼。配方只是幾百個字元的
+    YAML，就能重建出完全相同的檔案，<strong>在任何電腦上逐位元組一致</strong>，因為每個檔案都由執行的種子衍生。
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    每種結束方式都有自己的結束碼，所以流程可以區分配方錯誤、磁碟已滿和驗證不一致。失敗的執行不會在標準輸出上列印任何內容，這樣記錄剖析器就不會把錯誤當成資料。
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">規模</p>
+  <h2>弄清資料夾很大時會發生什麼</h2>
+  <p>
+    匯入程式、夜間工作與目錄列表在一萬個檔案時的表現與十個檔案時不同。從範圍中抽取的大小讓檔案組看起來像真實流量，而不是一萬個完全相同的檔案，並且抽取來自種子，所以明天檔案組依然相同。
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    在執行寫入任何內容之前先查看它的開銷，當總量以 GB 計時這一點很重要：
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    比磁碟可用空間更大的執行會在寫入第一個位元組之前就被拒絕，而不是把磁碟寫滿再半途失敗。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">壓縮檔</p>
+  <h2>用真正裝有檔案的壓縮檔測試解壓縮程式</h2>
+  <p>
+    只有正確副檔名的空壓縮檔，無法證明任何關於開啟它並走訪內容的程式碼的事情。宣告內容，壓縮檔就真的包含它們：
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    巢狀深度、項目數量和內部內容的大小，匯入程式都有自己的看法，而這正是你弄清這些看法的辦法。
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">剖析器與檢視器</p>
+  <h2>檢查你自己的程式碼讀取格式的方式是否與真實軟體一致</h2>
+  <p>
+    這裡的每種格式在發布前都用獨立讀取器驗證過：PNG 被開啟並比對像素，DOCX 由另外的函式庫讀回，壓縮檔被解壓縮。這意味著你的剖析器拒絕的檔案，是關於你的剖析器的發現，而不是關於產生器的。
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/zh-hant/formats/">格式頁面</a>列出了每種格式接受的設定，以及每種格式能達到的最小檔案。
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>適合誰</h2>
+  <p>
+    QA 工程師、測試自動化，以及程式碼背後有上傳表單、匯入程式、剖析器或儲存配額的所有人。它可以在完全沒有網路的電腦上執行，這在以瀏覽器為基礎的產生器行不通的封閉企業環境中尤為重要。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

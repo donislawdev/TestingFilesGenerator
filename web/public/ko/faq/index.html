@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>FAQ - 테스트 파일 생성에 관한 질문</title>
+<meta name="description" content="dd, fsutil과의 차이, 파일을 커밋해도 안전한지, 실행이 바이트 단위로 재현되는지, 크기에 도달할 수 없을 때 어떻게 되는지.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="FAQ - 테스트 파일 생성에 관한 질문">
+<meta property="og:description" content="dd, fsutil과의 차이, 파일을 커밋해도 안전한지, 실행이 바이트 단위로 재현되는지, 크기에 도달할 수 없을 때 어떻게 되는지.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - 테스트 파일 생성에 관한 질문">
+<meta name="twitter:description" content="dd, fsutil과의 차이, 파일을 커밋해도 안전한지, 실행이 바이트 단위로 재현되는지, 크기에 도달할 수 없을 때 어떻게 되는지.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/">문서</a>
+      <a href="/ko/use-cases/">활용 사례</a>
+      <a href="/ko/create-file-exact-size/">정확한 크기</a>
+      <a href="/ko/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>자주 묻는 질문</h1>
+<p class="lead">
+  라이선스, 개인정보, 재현성, 그리고 사람들이 생성기를 빌드 파이프라인에 넣기 전에 확인하는 것들. 질문이 여기에 없다면 <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">이슈
+  트래커</a>가 열려 있습니다.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>dd, fsutil, truncate와는 무엇이 다른가요?</h2></summary>
+    <div class="qa-body">
+      <p>그 명령들은 크기만 맞고 내용이 텅 빈 파일을 줍니다. 그렇게 만든 2MB짜리 photo.png는 PNG가 아니므로, 실제로 파싱하는 것은 모두 엉뚱한 이유로 거부하고, 여러분의 테스트도 엉뚱한 이유로 통과합니다. 이 도구는 정확히 2MB인 실제 PNG를 만듭니다. 이미지 뷰어에서 열리며, 시스템이 이를 어떻게 다루어야 하는지에 대한 선언도 함께 제공됩니다.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>무료인가요? 업무에서 써도 되나요?</h2></summary>
+    <div class="qa-body">
+      <p>둘 다 가능합니다. GPL-3.0으로 배포되며 비용이 들지 않습니다. 계정도, 라이선스 키도, 유료 요금제도 없습니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>생성한 파일을 클로즈드 소스 제품에 써도 되나요?</h2></summary>
+    <div class="qa-body">
+      <p>네. 라이선스는 도구의 코드에 적용되며 도구가 만든 것에는 적용되지 않습니다. 생성된 파일, 레시피, 매니페스트는 파생 저작물이 아니라 출력물이므로, 어떤 의무도 없이 커밋하고 배포할 수 있습니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>생성된 파일에 실제 개인 정보가 들어 있나요?</h2></summary>
+    <div class="qa-body">
+      <p>아니요. 내부의 모든 내용은 시드에서 합성됩니다. 어떤 데이터 세트도 읽지 않고, 어떤 서비스에도 접속하지 않으며, 제3자 콘텐츠도 포함하지 않습니다. 생성된 이메일 주소는 아직 쓰이지 않은 주소가 아니라 쓸 수 없는 주소로 여기세요. 임의의 문자열이 우연히 실제 주소와 같을 수 있기 때문입니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>다른 컴퓨터에서도 완전히 같은 파일이 나오나요?</h2></summary>
+    <div class="qa-body">
+      <p>네. 같은 레시피와 같은 시드라면 바이트 단위로 같습니다. 프로젝트는 변경할 때마다 이를 테스트하며, 이를 깨려면 메이저 버전을 올려야 합니다. 그래서 큰 바이너리 픽스처 대신 작은 레시피를 커밋할 수 있습니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>인터넷 연결이 필요한가요?</h2></summary>
+    <div class="qa-body">
+      <p>전혀 필요 없습니다. 텔레메트리도, 업데이트 확인도, 클라우드 클라이언트도 없으며, 명령줄 바이너리에는 네트워크 스택이 아예 컴파일되어 있지 않습니다. 네트워크가 없는 컴퓨터와 폐쇄된 기업 환경에서도 동작합니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>형식이 도달할 수 없는 크기를 요청하면 어떻게 되나요?</h2></summary>
+    <div class="qa-body">
+      <p>형식, 가능한 가장 작은 크기, 그 하한의 이유, 대신 해야 할 일을 알려 주는 오류가 나오고 파일은 쓰이지 않습니다. 도구는 크기를 조용히 반올림하지 않습니다. 모든 하한은 형식 페이지에 나와 있습니다.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>일부러 망가진 파일도 만들 수 있나요?</h2></summary>
+    <div class="qa-body">
+      <p>아직은 안 됩니다. 손상된 파일과 형식이 잘못된 파일은 계획 중인 기능입니다. 지금은 도구가 쓰는 모든 파일이 해당 형식의 유효한 파일입니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>다음에는 어떤 형식이 추가되나요?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3, mp4입니다. 현재 26가지 형식이 처음부터 끝까지 동작합니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>어떤 시스템에서 실행할 수 있나요?</h2></summary>
+    <div class="qa-body">
+      <p>명령줄은 Windows와 Linux의 Intel과 ARM, 그리고 Apple Silicon Mac에서 실행됩니다. 데스크톱 창은 Intel의 Windows, Intel의 Linux, Apple Silicon Mac용으로 제공됩니다. Intel Mac은 지원하지 않으며 빌드도 하지 않습니다.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>설치해야 하는 것이 있나요?</h2></summary>
+    <div class="qa-body">
+      <p>없습니다. 시스템에 맞는 압축 파일을 내려받아 풀고 바이너리를 실행하면 됩니다. 설치 프로그램도, 추가할 런타임도, 해결할 의존성도 없습니다. Go가 있다면 go install 명령 하나로도 됩니다.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>수천 개의 파일을 처리하는 실행이 Windows에서 더 느린 이유는 무엇인가요?</h2></summary>
+    <div class="qa-body">
+      <p>Windows는 살펴보는 경로 하나하나에 더 많은 비용을 치르게 하고, 수천 개의 파일을 훑는 명령은 수천 개의 경로를 살펴보기 때문입니다. 1kB 파일 3000개가 있는 한 컴퓨터에서 측정하니 verify는 Windows에서 약 0.9초, 컨테이너 안의 Linux에서 약 0.2초가 걸렸습니다. 출력 경로를 짧게 하면 Windows 수치가 줄어듭니다. 파일 위의 모든 폴더도 살펴보는 대상에 포함되기 때문입니다.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "dd, fsutil, truncate와는 무엇이 다른가요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "그 명령들은 크기만 맞고 내용이 텅 빈 파일을 줍니다. 그렇게 만든 2MB짜리 photo.png는 PNG가 아니므로, 실제로 파싱하는 것은 모두 엉뚱한 이유로 거부하고, 여러분의 테스트도 엉뚱한 이유로 통과합니다. 이 도구는 정확히 2MB인 실제 PNG를 만듭니다. 이미지 뷰어에서 열리며, 시스템이 이를 어떻게 다루어야 하는지에 대한 선언도 함께 제공됩니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "무료인가요? 업무에서 써도 되나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "둘 다 가능합니다. GPL-3.0으로 배포되며 비용이 들지 않습니다. 계정도, 라이선스 키도, 유료 요금제도 없습니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "생성한 파일을 클로즈드 소스 제품에 써도 되나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "네. 라이선스는 도구의 코드에 적용되며 도구가 만든 것에는 적용되지 않습니다. 생성된 파일, 레시피, 매니페스트는 파생 저작물이 아니라 출력물이므로, 어떤 의무도 없이 커밋하고 배포할 수 있습니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "생성된 파일에 실제 개인 정보가 들어 있나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "아니요. 내부의 모든 내용은 시드에서 합성됩니다. 어떤 데이터 세트도 읽지 않고, 어떤 서비스에도 접속하지 않으며, 제3자 콘텐츠도 포함하지 않습니다. 생성된 이메일 주소는 아직 쓰이지 않은 주소가 아니라 쓸 수 없는 주소로 여기세요. 임의의 문자열이 우연히 실제 주소와 같을 수 있기 때문입니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "다른 컴퓨터에서도 완전히 같은 파일이 나오나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "네. 같은 레시피와 같은 시드라면 바이트 단위로 같습니다. 프로젝트는 변경할 때마다 이를 테스트하며, 이를 깨려면 메이저 버전을 올려야 합니다. 그래서 큰 바이너리 픽스처 대신 작은 레시피를 커밋할 수 있습니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "인터넷 연결이 필요한가요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "전혀 필요 없습니다. 텔레메트리도, 업데이트 확인도, 클라우드 클라이언트도 없으며, 명령줄 바이너리에는 네트워크 스택이 아예 컴파일되어 있지 않습니다. 네트워크가 없는 컴퓨터와 폐쇄된 기업 환경에서도 동작합니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "형식이 도달할 수 없는 크기를 요청하면 어떻게 되나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "형식, 가능한 가장 작은 크기, 그 하한의 이유, 대신 해야 할 일을 알려 주는 오류가 나오고 파일은 쓰이지 않습니다. 도구는 크기를 조용히 반올림하지 않습니다. 모든 하한은 형식 페이지에 나와 있습니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "일부러 망가진 파일도 만들 수 있나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "아직은 안 됩니다. 손상된 파일과 형식이 잘못된 파일은 계획 중인 기능입니다. 지금은 도구가 쓰는 모든 파일이 해당 형식의 유효한 파일입니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "다음에는 어떤 형식이 추가되나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3, mp4입니다. 현재 26가지 형식이 처음부터 끝까지 동작합니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "어떤 시스템에서 실행할 수 있나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "명령줄은 Windows와 Linux의 Intel과 ARM, 그리고 Apple Silicon Mac에서 실행됩니다. 데스크톱 창은 Intel의 Windows, Intel의 Linux, Apple Silicon Mac용으로 제공됩니다. Intel Mac은 지원하지 않으며 빌드도 하지 않습니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "설치해야 하는 것이 있나요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "없습니다. 시스템에 맞는 압축 파일을 내려받아 풀고 바이너리를 실행하면 됩니다. 설치 프로그램도, 추가할 런타임도, 해결할 의존성도 없습니다. Go가 있다면 go install 명령 하나로도 됩니다." }
+    },
+    {
+      "@type": "Question",
+      "name": "수천 개의 파일을 처리하는 실행이 Windows에서 더 느린 이유는 무엇인가요?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Windows는 살펴보는 경로 하나하나에 더 많은 비용을 치르게 하고, 수천 개의 파일을 훑는 명령은 수천 개의 경로를 살펴보기 때문입니다. 1kB 파일 3000개가 있는 한 컴퓨터에서 측정하니 verify는 Windows에서 약 0.9초, 컨테이너 안의 Linux에서 약 0.2초가 걸렸습니다. 출력 경로를 짧게 하면 Windows 수치가 줄어듭니다. 파일 위의 모든 폴더도 살펴보는 대상에 포함되기 때문입니다." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>아직 고민 중이신가요?</h2>
+  <p>
+    <a href="/ko/use-cases/">활용 사례 페이지</a>는 이 도구가 대상으로 하는 작업을, <a href="/ko/formats/">형식 페이지</a>는 각 형식과
+    만들 수 있는 가장 작은 파일을 보여 줍니다. <a href="https://github.com/donislawdev/TestingFilesGenerator">저장소의 README</a>가 전체 레퍼런스입니다.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">소스 코드 보기</a>
+</div>
+<p class="cta-note">무료 오픈 소스, GPL-3.0. 가입이 필요 없습니다. Windows와 macOS 다운로드는 서명되어 있어 경고 없이 실행됩니다.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

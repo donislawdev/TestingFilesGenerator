@@ -1,0 +1,65 @@
+<h1>{{ .Facts.FormatCount }} 種檔案格式，每一種都以精確大小產生</h1>
+<p class="lead">
+  它們每一個都是<strong>該格式的真實檔案</strong>。它能在對應軟體中開啟，位元組數恰好等於你的要求。沒有一個是黏上副檔名的填充零。
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>各欄的意義</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">最小檔案</p>
+      <p class="muted">
+        本工具對該格式接受的最少位元組數，包括它寫在檔案裡的標籤。要求更小的值，你會得到說明下限及其原因的錯誤，絕不會得到大小錯誤的檔案。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">完整度</p>
+      <p class="muted">
+        檔案有多完整。<code>full</code> 表示真正剖析該格式的讀取器會接受它，而不只是副檔名相符。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">驗證方式</p>
+      <p class="muted">
+        在格式發布之前開啟每個產生檔案的獨立讀取器，它是另一套獨立實作，而不是我們自己的程式碼給自己批改作業。
+      </p>
+    </li>
+  </ul>
+  <p>
+    每種格式也都能精確到位元組地重複：相同的配方與種子在任何電腦上都產生相同的檔案，這正是提交配方來取代 fixture 本身是安全的原因。
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>每種格式接受的設定</h2>
+  <p>
+    大多數格式有自己的設定，例如圖片尺寸、JPEG 品質、PDF 頁數、試算表的列數與欄數、壓縮檔裡放多少項目。在命令列用 <code>--set key=value</code> 設定，或在配方的
+    <code>properties:</code> 下設定。
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    超出設定所接受範圍的值會被拒絕，並附上指明該設定、允許範圍以及應改用什麼的訊息。未知的設定同樣是錯誤，絕不會靜默使用預設值，因為悄悄被接受的拼字錯誤會產生設定有誤的檔案，讓你花一小時納悶為什麼該失敗的測試卻通過了。
+  </p>
+  <p>
+    執行 <code>tfg formats &lt;id&gt;</code> 即可查看某個格式在你目前版本中接受哪些設定。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>壓縮檔裡裝的是真實檔案</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} 與 {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    可以填入項目，而不是只留一個空殼。產生的壓縮檔確實包含它宣稱包含的文件，所以測試期間解壓縮它的任何程式都會在裡面找到真實檔案。
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

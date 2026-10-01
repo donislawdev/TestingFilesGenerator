@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hans">
+<title>如何创建指定大小的文件 - Windows、Linux、macOS</title>
+<meta name="description" content="fsutil、dd、truncate 和 mkfile，每个都在对应系统上实测，以及当测试需要 PDF 或 PNG 时，这样生成的文件为何不行。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="如何创建指定大小的文件 - Windows、Linux、macOS">
+<meta property="og:description" content="fsutil、dd、truncate 和 mkfile，每个都在对应系统上实测，以及当测试需要 PDF 或 PNG 时，这样生成的文件为何不行。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="如何创建指定大小的文件 - Windows、Linux、macOS">
+<meta name="twitter:description" content="fsutil、dd、truncate 和 mkfile，每个都在对应系统上实测，以及当测试需要 PDF 或 PNG 时，这样生成的文件为何不行。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首页",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hans/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "精确大小",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/create-file-exact-size\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hans/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主导航">
+      <a href="/zh-hans/">首页</a>
+      <a href="/zh-hans/formats/">格式</a>
+      <a href="/zh-hans/presets/">预设</a>
+      <a href="/zh-hans/docs/">文档</a>
+      <a href="/zh-hans/use-cases/">使用场景</a>
+      <a href="/zh-hans/create-file-exact-size/" aria-current="page">精确大小</a>
+      <a href="/zh-hans/faq/">常见问题</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="语言: 简体中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>简体中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/create-file-exact-size/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/create-file-exact-size/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>如何创建大小精确的文件</h1>
+<p class="lead">
+  每个系统都有对应的命令，下面列出了全部三个。它们能给你一个字节数恰好正确的文件，对许多测试来说这就够了。<strong>本页的每条命令在发布前都在对应系统上运行过</strong>。
+</p>
+
+<div class="note">
+  <p class="note-title">简短回答</p>
+  <p>
+    Windows：<code>fsutil file createnew name 10485760</code>。Linux：<code>dd if=/dev/zero of=name bs=1M
+    count=10</code>。macOS：<code>mkfile 10m name</code>。大小以字节计，按文件管理器的算法，10 MB 就是 10485760 字节。
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil，以及无需额外工具的 PowerShell 写法</h2>
+  <p>
+    <code>fsutil</code> 随 Windows 提供。它接受<strong>以字节为单位</strong>的大小，所以先算出数字：10 MB 是 10485760，100 MB 是
+    104857600，1 GB 是 1073741824。
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    在 Windows 11 上实测：它可以在普通命令提示符下运行，不需要管理员权限，生成的文件恰好是 10485760 字节。
+  </p>
+  <p>PowerShell 不需要调用其他程序也能做到同样的事，并且认识单位：</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell 中的 <code>10MB</code> 表示 10485760 字节，与资源管理器使用的 1024 进制算法相同，所以上面两条命令得到的大小一样。
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd、truncate 和 fallocate，以及容易坑人的差别</h2>
+  <p><code>dd</code> 是人人皆知的那个。它真的会写入这些字节：</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> 是瞬间完成的，而这正是陷阱所在。在 Alpine Linux 上实测，该文件报告 10485760
+    字节，却占用<strong>零个块</strong>，它是一个<strong>稀疏文件</strong>。任何读取它的程序会得到十兆字节的零，但磁盘从未真正让出空间：
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    用它测试上传限制没问题，但用来测试磁盘配额就会误导人。当空间必须真实占用时，应该使用 <code>fallocate</code>：
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>而当内容必须不可压缩，让归档程序无法再把它压小时：</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile（不是稀疏文件），以及你已经熟悉的另外两个</h2>
+  <p>
+    macOS 自带 <code>mkfile</code>。在 macOS 26.6.2 上实测：10485760 字节和 20480 个块，所以空间是真正分配的，而不只是承诺：
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> 和 <code>truncate</code> 也都有，行为与 Linux 上相同：</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">这种办法在哪里失效</p>
+  <h2>大小正确的文件不等于类型正确的文件</h2>
+  <p>
+    以上所有方法给你的都是一块零。如果被测对象只看大小，比如上传限制、配额或传输，这就够了。一旦有任何东西<strong>打开</strong>这个文件，就不够了。
+  </p>
+  <p>
+    实测过，而且值得你自己试一试：用 <code>fsutil</code> 做一个 2 MB 的文件，把它命名为 <code>photo.png</code>，再交给图像库处理。Pillow 会回答
+    <code>cannot identify image file</code>。它不是 PNG，从来就不是，只是名字这么说。
+  </p>
+  <p>
+    这比听起来更重要，因为<strong>测试随后会以哪种方式失败</strong>。你的上传接口拒绝了这个文件，测试变绿，于是你断定大小限制有效。其实它并不是因为大小而拒绝的，而是因为这些字节不是图片，你本想测试的规则根本没有被触及。
+  </p>
+  <ul class="ticks">
+    <li>解析器在检查任何大小规则之前就拒绝了它</li>
+    <li>缩略图步骤失败，你读到的错误是关于缩略图的</li>
+    <li>杀毒软件或内容检查出于第三个原因拒绝了它</li>
+    <li>查看器什么也不显示，没人说得清这是不是那个 bug</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">另一种办法</p>
+  <h2>该格式的真实文件，大小恰好是你要求的</h2>
+  <p>
+    这就是 Testing Files Generator 所做的事。文件是该格式的真实文件，能在对应软件中打开，字节数恰好等于你的要求，精确到字节：
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    请求格式无法达到的大小，你会得到一个说明下限及其原因的错误，绝不会得到大小错误的文件。<a href="/zh-hans/formats/">格式页面</a>列出了每种格式及其能生成的最小文件。
+  </p>
+  <p>而一个限制对应的是三个测试用例，而不是一个，所以工具会把三个都构建出来：</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    这会给你 10485759、10485760 和 10485761
+    字节的文件，以及一份清单，说明你的系统应该接受哪些、拒绝哪些。<a href="/zh-hans/use-cases/">使用场景页面</a>会讲解这一点，以及它为之而生的另外四项任务。
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">查看源代码</a>
+</div>
+<p class="cta-note">免费开源，GPL-3.0。无需注册。Windows 和 macOS 的下载包已签名，启动时没有警告。</p>
+</section>
+
+<section class="section" id="which">
+  <h2>那么该用哪个？</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">使用系统命令</p>
+      <p class="muted">
+        当没有任何东西会打开这个文件时。例如在先检查大小的接口上测试大小限制、传输、配额、磁盘写满的情况。只要一行，而且已经装好了。
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">使用真正的生成器</p>
+      <p class="muted">
+        当有任何东西要解析、渲染、导入或解压这个文件时，以及当你明天要在另一台机器上拿到逐字节相同的 fixture 时。
+      </p>
+    </li>
+  </ul>
+  <p>
+    两种办法都在本页，因为它们各自在一部分情况下是对的。要避免的错误，是在需要后者的地方用了前者，还把变绿的测试当成证明。
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">项目</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的源代码</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">报告问题</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本项目</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">页面</p>
+      <ul class="plain">
+        <li><a href="/zh-hans/">首页</a></li>
+        <li><a href="/zh-hans/formats/">格式</a></li>
+        <li><a href="/zh-hans/presets/">预设</a></li>
+        <li><a href="/zh-hans/docs/">文档</a></li>
+        <li><a href="/zh-hans/use-cases/">使用场景</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
+        <li><a href="/zh-hans/faq/">常见问题</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。</p>
+    <p class="muted">本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="uk">
+<title>Перевірка ліміту розміру завантаження - файли на самій межі</title>
+<meta name="description" content="Файли на байт менші, рівно за лімітом і на байт більші за ліміт вашої системи, плюс ширші кроки в обидва боки, з позначкою, чи треба приймати кожен.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/uk/presets/size-boundaries/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/size-boundaries/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/size-boundaries/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/size-boundaries/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/size-boundaries/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/size-boundaries/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/size-boundaries/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/size-boundaries/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/size-boundaries/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/size-boundaries/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/size-boundaries/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/size-boundaries/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/size-boundaries/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/size-boundaries/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/size-boundaries/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/size-boundaries/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/size-boundaries/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/size-boundaries/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/size-boundaries/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="uk_UA">
+<meta property="og:title" content="Перевірка ліміту розміру завантаження - файли на самій межі">
+<meta property="og:description" content="Файли на байт менші, рівно за лімітом і на байт більші за ліміт вашої системи, плюс ширші кроки в обидва боки, з позначкою, чи треба приймати кожен.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/uk/presets/size-boundaries/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Перевірка ліміту розміру завантаження - файли на самій межі">
+<meta name="twitter:description" content="Файли на байт менші, рівно за лімітом і на байт більші за ліміт вашої системи, плюс ширші кроки в обидва боки, з позначкою, чи треба приймати кожен.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Головна",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/uk/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Пресети",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/uk\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Межі розміру",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/uk\/presets\/size-boundaries\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти до вмісту</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/uk/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основне">
+      <a href="/uk/">Головна</a>
+      <a href="/uk/formats/">Формати</a>
+      <a href="/uk/presets/" aria-current="true">Пресети</a>
+      <a href="/uk/docs/">Документація</a>
+      <a href="/uk/use-cases/">Сценарії</a>
+      <a href="/uk/create-file-exact-size/">Точний розмір</a>
+      <a href="/uk/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Мова: Українська">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Українська</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/size-boundaries/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/predvolby/size-boundaries/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/size-boundaries/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/size-boundaries/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/size-boundaries/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/preset/size-boundaries/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/size-boundaries/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/size-boundaries/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/size-boundaries/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/size-boundaries/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/size-boundaries/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/size-boundaries/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/size-boundaries/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/size-boundaries/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/hazir-ayarlar/size-boundaries/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/preset/size-boundaries/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/size-boundaries/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/size-boundaries/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/uk/presets/">Пресети</a></p>
+<h1>Межі розміру</h1>
+<p class="lead">Чи застосовується ліміт розміру саме там, де його оголошено?</p>
+<p>
+  Пресет <code>size-boundaries</code> однією командою збирає цілий набір справжніх тестових файлів для цього
+  питання та поруч <code>manifest.json</code> з очікуваною реакцією вашої системи на кожен файл. Усе
+  нижче прочитано з програми зі значеннями за замовчуванням цієї версії.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Що він зазвичай знаходить?</h2>
+  <ul class="ticks">
+    <li>помилки на одиницю на межі ліміту</li>
+    <li>МБ, сплутані з МіБ, тобто 4,8 відсотка, чого досить, щоб пропустити файл, який не мав би пройти</li>
+    <li>ліміт, що застосовується в браузері, а не на сервері</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Що входить у набір?</h2>
+  <p>Зі значеннями за замовчуванням, як повідомляє <code>tfg preset show size-boundaries</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Файлів</th><td>7</td></tr>
+        <tr><th scope="row">Цілей у його рецепті</th><td>7</td></tr>
+        <tr><th scope="row">Загальний розмір</th><td>73 400 320 B</td></tr>
+        <tr><th scope="row">Формати</th><td>pdf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>І чого маніфест цього набору очікує від вашої системи:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Очікується</th><th>Значення</th><th class="num">Файлів</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Ваша система має прийняти файл.</td><td class="num">4</td></tr>
+        <tr><td><code>reject</code></td><td>Ваша система має відхилити файл.</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Що можна змінити?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Налаштування</th><th>Приймає</th><th>За замовчуванням</th><th>Що робить</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>розмір, наприклад 2mb</td>
+          <td><code>10mb</code></td>
+          <td>Ліміт розміру, який оголошує ваша система. Усе інше відмірюється від нього. <strong>Це значення за замовчуванням - наша тимчасова підстановка, а не значення вашої системи. Передайте своє.</strong></td>
+        </tr>
+        <tr>
+          <td><code>--spread</code></td>
+          <td>розміри через кому</td>
+          <td><code>1B,1kb,1mb</code></td>
+          <td>Як далеко відходити від ліміту в обидва боки, списком розмірів.</td>
+        </tr>
+        <tr>
+          <td><code>--format</code></td>
+          <td>id формату зі сторінки форматів</td>
+          <td><code>pdf</code></td>
+          <td>Формат кожного файлу набору. Це прапорець самого інструмента, а пресет лише задає йому значення за замовчуванням.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Як його запустити?</h2>
+  <p>Подивіться, скільки коштував би набір, зберіть його або візьміть його рецепт для правки:</p>
+  <pre><code>tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./size-boundaries
+tfg preset eject size-boundaries &gt; size-boundaries.yaml</code></pre>
+  <p>Або будуйте на ньому у власному рецепті поряд із тестами:</p>
+  <pre><code>version: 1
+extends: preset:size-boundaries
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Тестові файли для QA точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проєкт</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Вихідний код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Завантаження</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Повідомити про проблему</a></li>
+        <li><a href="https://donislawdev.com/support/">Підтримати проєкт</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Сторінки</p>
+      <ul class="plain">
+        <li><a href="/uk/">Головна</a></li>
+        <li><a href="/uk/formats/">Формати</a></li>
+        <li><a href="/uk/presets/">Пресети</a></li>
+        <li><a href="/uk/docs/">Документація</a></li>
+        <li><a href="/uk/use-cases/">Сценарії</a></li>
+        <li><a href="/uk/create-file-exact-size/">Точний розмір</a></li>
+        <li><a href="/uk/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Поширюється за ліцензією GNU General Public License версії 3. Файли, які ви створюєте, належать вам - ліцензія охоплює інструмент, а не його результат.</p>
+    <p class="muted">Цей сайт не завантажує шрифти, скрипти чи трекери звідки б то не було. Він не встановлює куки.</p>
+  </div>
+</footer>
+</body>
+</html>

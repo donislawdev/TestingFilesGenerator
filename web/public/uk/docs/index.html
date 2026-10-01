@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="uk">
+<title>Документація - команди, рецепти, маніфест, коди завершення</title>
+<meta name="description" content="Як створювати тестові файли з командного рядка чи рецепта YAML, що містить маніфест і що означає кожен код завершення під час запуску в CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="uk_UA">
+<meta property="og:title" content="Документація - команди, рецепти, маніфест, коди завершення">
+<meta property="og:description" content="Як створювати тестові файли з командного рядка чи рецепта YAML, що містить маніфест і що означає кожен код завершення під час запуску в CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Документація - команди, рецепти, маніфест, коди завершення">
+<meta name="twitter:description" content="Як створювати тестові файли з командного рядка чи рецепта YAML, що містить маніфест і що означає кожен код завершення під час запуску в CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - справжні тестові файли точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Головна",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/uk/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Документація",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/uk\/docs\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти до вмісту</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/uk/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основне">
+      <a href="/uk/">Головна</a>
+      <a href="/uk/formats/">Формати</a>
+      <a href="/uk/presets/">Пресети</a>
+      <a href="/uk/docs/" aria-current="page">Документація</a>
+      <a href="/uk/use-cases/">Сценарії</a>
+      <a href="/uk/create-file-exact-size/">Точний розмір</a>
+      <a href="/uk/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Мова: Українська">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Українська</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Документація</h1>
+<p class="lead">
+  Усе, що робить інструмент, розкладено за питаннями, з якими люди справді приходять.
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README у репозиторії</a> - повний довідник, і він завжди відповідає
+  завантаженій вами збірці.
+</p>
+
+<section class="section" id="commands">
+  <h2>Які є команди?</h2>
+  <p>Кожна робить одну справу:</p>
+  <pre><code>tfg generate    створити файли за рецептом або за прапорцями
+tfg validate    перевірити рецепт, нічого не записуючи
+tfg verify      звірити каталог із маніфестом
+tfg cleanup     видалити файли, перелічені в маніфесті
+tfg recipe fmt  вивести рецепт у усталеному вигляді
+tfg preset      зібрати набір файлів за іменованим тестовим питанням
+tfg formats     перелічити формати цієї збірки
+tfg damage      перелічити способи, якими ця збірка може навмисно зіпсувати файл
+tfg tool        невеликі інструменти для вже наявних файлів
+tfg version     вивести версію інструмента
+tfg license     вивести ліцензію та що вона означає для створених файлів</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Як створити один файл точного розміру?</h2>
+  <p>
+    Укажіть формат, розмір і місце призначення. Розміри рахуються по 1024, тому <code>2mb</code> - це
+    2097152 байти. Підійде й просте число байтів, тож <code>--size 10485761</code> запитує рівно
+    стільки.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Корисні прапорці команди <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Прапорець</th><th>Що робить</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>формат файлів, наприклад <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>точний розмір кожного файлу, наприклад <code>10mb</code> або просте число байтів</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>розмір, що вибирається для кожного файлу з діапазону, наприклад <code>1kb-8kb</code>. Вибір іде від seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>три файли навколо ліміту: на байт менше, сам ліміт, на байт більше</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>скільки файлів створити. За замовчуванням <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>шаблон імені, наприклад <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>каталог, у який записувати</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed запуску. Той самий seed дає ті самі байти</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>налаштування формату, можна повторювати</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>навмисно зіпсувати файли, можна повторювати, застосовується по порядку. Список виводить <code>tfg damage</code></td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> або <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>порахувати й показати, нічого не записуючи</td></tr>
+        <tr><td><code>--json</code></td><td>записати маніфест у стандартний вивід</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Як зробити навмисно зламаний файл?</h2>
+  <p>
+    Будь-який інший файл, що його записує цей інструмент, коректний за побудовою, і це відповідає на два
+    з трьох питань, які ставить перевірка завантаження. <code>--damage</code> відповідає на третє -
+    чи відкривається файл узагалі. Файл створюється як зазвичай, а потім псується, тому в нього
+    лишається запитаний розмір.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Налаштування вказуються після двокрапки. Прапорець можна повторювати, і порядок запису - це порядок
+    застосування. <code>tfg damage</code> перелічує, що вміє ця збірка та що приймає кожен вид
+    пошкодження.
+  </p>
+  <p>У рецепті ключ - це список імен або налаштувань:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Пошкоджений файл отримує в маніфесті <code>expected: reject</code> із записаним поруч пошкодженням.
+    Дві речі відхиляються до запису чого-небудь, бо кожна залишила б на диску файл, неправильно
+    описаний маніфестом:
+  </p>
+  <ul>
+    <li>файл менший, ніж потрібно пошкодженню, бо він вийшов би без змін</li>
+    <li>
+      <code>expected: accept</code> поруч із пошкодженням, бо цьому не міг би відповідати жоден файл.
+      Пишіть <code>sanitize</code>, якщо тестована система має полагодити файл, або
+      <code>unspecified</code>, якщо саме це питання ви й ставите
+    </li>
+  </ul>
+  <p>
+    Третє наперед дізнатися не можна. Якщо пошкодження виконується й не змінює жодного байта, такий файл
+    відкидається, а не записується - запуск триває, повідомляє, що це був за файл, і завершується
+    кодом часткового завершення.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Як виглядає рецепт?</h2>
+  <p>
+    Рецепт - це файл YAML, що описує цілий запуск. Закомітьте його поряд із тестами, і фікстури
+    перестануть бути бінарними файлами у вашому репозиторії - будь-хто зможе відтворити їх байт у
+    байт із файлу в кілька сотень символів.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Кожній цілі потрібен рівно один із ключів <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> або <code>contains</code>. Два - це помилка, і жодного - теж. Недійсний
+    рецепт записує <strong>жодного файлу</strong> і повідомляє про всі проблеми одразу, а не лише
+    про першу, щоразу називаючи налаштування, якого вона стосується.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Як оголосити, що моя система має робити з файлом?</h2>
+  <p>Коротка форма, коли досить результату, і довга, коли важлива причина:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Результати - <code>accept</code>, <code>reject</code>, <code>sanitize</code> і
+    <code>unspecified</code>. Причини утворюють закритий список, щоб звіт міг за ними групувати:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> і <code>size_zero</code>.
+  </p>
+  <p>
+    Причина називає <strong>чинне правило</strong>, а не вердикт. Тому та сама причина може стояти під
+    будь-яким результатом - файл на байт менший за ліміт отримує <code>accept</code>, а правило, про
+    яке йдеться, усе одно <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Що в маніфесті?</h2>
+  <p>
+    Він записується поряд із файлами наприкінці кожного запуску, зокрема й перерваного. Один запис на
+    файл:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> додається, якщо запуск був за рецептом, а <code>preset</code> з
+    <code>overrides</code> - якщо за пресетом, тож маніфест завжди можна простежити до того, що його
+    створило.
+  </p>
+  <p>
+    Кожен запис також містить <code>target_id</code> - id цілі рецепта, що створила файл, а
+    <code>summary.by_target</code> рахує файли кожної цілі. Рецепт із кількома цілями можна тому
+    перевірити ціль за ціллю, не читаючи імена файлів.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Що таке пресет?</h2>
+  <p>
+    Готовий набір файлів, що відповідає на поширене тестове питання, щоб вам не доводилося проєктувати
+    набір самостійно. Пресети - звичайні рецепти всередині, а <code>eject</code> виводить рецепт,
+    щоб ви могли його відредагувати. Кожен пресет має <a href="/uk/presets/">окрему сторінку</a> про
+    те, що він зазвичай знаходить, що входить у набір і які налаштування приймає.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/empty-and-minimal/">Порожні та мінімальні</a></p>
+    <p class="muted">Чи пройде коректний файл, настільки малий, наскільки дозволяє формат?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/filename-handling/">Обробка імен файлів</a></p>
+    <p class="muted">Чи збереже, покаже та поверне моя система ім&#39;я файлу, якого не очікувала?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/size-boundaries/">Межі розміру</a></p>
+    <p class="muted">Чи застосовується ліміт розміру саме там, де його оголошено?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/tabular-import/">Імпорт таблиць</a></p>
+    <p class="muted">Чи переживе мій імпорт таблиць те, що експортують справжні інструменти?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/text-encoding/">Кодування тексту</a></p>
+    <p class="muted">Чи знає мій читач, у якому кодуванні файл, чи вгадує?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/uk/presets/upload-validation/">Перевірка завантаження</a></p>
+    <p class="muted">Чи приймає моя форма завантаження те, що має, і відхиляє решту?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> повідомляє, скільки коштував би набір, перш ніж ви його зберете, і прямо каже,
+    коли число - наша тимчасова підстановка, а не ваш ліміт.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Що означають коди завершення?</h2>
+  <p>
+    Кожен кінець має власний код, машиночитний вивід іде в стандартний вивід, а невдалий запуск нічого
+    туди не друкує. Таблиця - заморожений контракт: зміна значення коду вимагає підвищення мажорної
+    версії.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Код</th>
+      <th>Значення</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Усе спрацювало.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Непередбачена помилка всередині інструмента.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Неправильна команда або прапорець.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Рецепт недійсний.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Формат не може зробити те, що просили.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Не вдалося прочитати або записати.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Недостатньо місця на диску.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify виявив розбіжність.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Запуск завершено, але створено не все.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Перервано за допомогою Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Зупинено сигналом, так виглядає тайм-аут у CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Запуск, зупинений за допомогою Ctrl+C, усе одно залишає маніфест і ніколи не залишає наполовину
+    записаного файлу, тож скасоване завдання може бути прибране наступним.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Чи є десктопне вікно?</h2>
+  <p>
+    Так, той самий рушій із вікном згори, для тестування, яке не автоматизується. Це не урізана версія:
+    тест порівнює два інтерфейси можливість за можливістю, і все, що вміє лише один із них, має бути
+    оголошене й обґрунтоване, а не тихо розходитися.
+  </p>
+  <p>
+    Екрани: одна партія, пресети, кілька партій одночасно та про програму. Вікно показує, скільки
+    коштував би запуск, перш ніж щось записати, відображає перебіг роботи й може бути скасоване на
+    півдорозі без наполовину записаного файлу. Файл рецепта воно поки не відкриває - рецепти поки
+    справа командного рядка, а вікно збирає свої партії у формі.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Тестові файли для QA точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проєкт</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Вихідний код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Завантаження</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Повідомити про проблему</a></li>
+        <li><a href="https://donislawdev.com/support/">Підтримати проєкт</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Сторінки</p>
+      <ul class="plain">
+        <li><a href="/uk/">Головна</a></li>
+        <li><a href="/uk/formats/">Формати</a></li>
+        <li><a href="/uk/presets/">Пресети</a></li>
+        <li><a href="/uk/docs/">Документація</a></li>
+        <li><a href="/uk/use-cases/">Сценарії</a></li>
+        <li><a href="/uk/create-file-exact-size/">Точний розмір</a></li>
+        <li><a href="/uk/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Поширюється за ліцензією GNU General Public License версії 3. Файли, які ви створюєте, належать вам - ліцензія охоплює інструмент, а не його результат.</p>
+    <p class="muted">Цей сайт не завантажує шрифти, скрипти чи трекери звідки б то не було. Він не встановлює куки.</p>
+  </div>
+</footer>
+</body>
+</html>

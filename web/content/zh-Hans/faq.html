@@ -1,0 +1,16 @@
+<h1>常见问题</h1>
+<p class="lead">
+  许可证、隐私、可复现性，以及人们在把生成器放进构建流水线之前会确认的事项。如果这里没有你的问题，<a href="{{ .Facts.Issues }}">问题跟踪器</a>是开放的。
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>还在犹豫？</h2>
+  <p>
+    <a href="/zh-hans/use-cases/">使用场景页面</a>展示了它为之而生的任务，<a href="/zh-hans/formats/">格式页面</a>列出了每种格式及其能生成的最小文件。<a href="{{ .Facts.Repo }}">仓库中的
+    README</a> 是完整参考。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

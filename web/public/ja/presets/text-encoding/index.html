@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ja">
+<title>文字コードのテスト用ファイル - UTF-8、UTF-16、BOM、CRLF</title>
+<meta name="description" content="同じテキストをUTF-8、UTF-16LE、UTF-16BEで、バイトオーダーマークあり・なしと、CR LFとLFの改行で用意し、リーダーのデコードを確認します。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ja/presets/text-encoding/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/text-encoding/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/text-encoding/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/text-encoding/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/text-encoding/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/text-encoding/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/text-encoding/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/text-encoding/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/text-encoding/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/text-encoding/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/text-encoding/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/text-encoding/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/text-encoding/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/text-encoding/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/text-encoding/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/text-encoding/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/text-encoding/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="文字コードのテスト用ファイル - UTF-8、UTF-16、BOM、CRLF">
+<meta property="og:description" content="同じテキストをUTF-8、UTF-16LE、UTF-16BEで、バイトオーダーマークあり・なしと、CR LFとLFの改行で用意し、リーダーのデコードを確認します。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ja/presets/text-encoding/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="文字コードのテスト用ファイル - UTF-8、UTF-16、BOM、CRLF">
+<meta name="twitter:description" content="同じテキストをUTF-8、UTF-16LE、UTF-16BEで、バイトオーダーマークあり・なしと、CR LFとLFの改行で用意し、リーダーのデコードを確認します。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ja/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "プリセット",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "文字コード",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/presets\/text-encoding\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ja/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="メインメニュー">
+      <a href="/ja/">ホーム</a>
+      <a href="/ja/formats/">形式</a>
+      <a href="/ja/presets/" aria-current="true">プリセット</a>
+      <a href="/ja/docs/">ドキュメント</a>
+      <a href="/ja/use-cases/">利用例</a>
+      <a href="/ja/create-file-exact-size/">正確なサイズ</a>
+      <a href="/ja/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="言語: 日本語">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>日本語</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/text-encoding/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/predvolby/text-encoding/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/text-encoding/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/text-encoding/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/text-encoding/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/preset/text-encoding/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/text-encoding/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ko/presets/text-encoding/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/text-encoding/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/text-encoding/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/text-encoding/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/text-encoding/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/text-encoding/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/hazir-ayarlar/text-encoding/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/text-encoding/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/text-encoding/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/text-encoding/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/text-encoding/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/ja/presets/">プリセット</a></p>
+<h1>文字コード</h1>
+<p class="lead">読み取り側はファイルの文字コードを知っているのでしょうか。それとも推測でしょうか。</p>
+<p>
+  <code>text-encoding</code>プリセットは、この疑問に対する本物のテストファイル一式を1つのコマンドで作り、その隣に、システムが各ファイルにどう反応すべきかを示す<code>manifest.json</code>を置きます。以下はすべて、このバージョンの既定値でプログラムから読み取ったものです。
+</p>
+
+
+<section class="section" id="catches">
+  <h2>普通は何を見つけますか。</h2>
+  <ul class="ticks">
+    <li>UTF-8だと決めつけて、UTF-16のファイルを3文字に1文字だけ、または四角の列として表示するリーダー</li>
+    <li>バイトオーダーマークが内容として読まれ、取り込みの最初のフィールドが余分な3文字で始まる問題</li>
+    <li>先頭バイトから文字コードを推測し、長いファイルでは違う推測をするインポーター</li>
+    <li>各行の後に空行が入って行分割されるCRLFのファイル、または最後のフィールドに残るキャリッジリターン</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>セットには何が入っていますか。</h2>
+  <p>既定値で、<code>tfg preset show text-encoding</code>が報告するとおりです。</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">ファイル数</th><td>20</td></tr>
+        <tr><th scope="row">レシピ内のターゲット数</th><td>20</td></tr>
+        <tr><th scope="row">合計サイズ</th><td>81 920 B</td></tr>
+        <tr><th scope="row">形式</th><td>csv, log, md, txt, xml</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>そして、そのセットのマニフェストがシステムに期待していること:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>期待</th><th>意味</th><th class="num">ファイル数</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>システムはこのファイルを受け入れるべきです。</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>システムのルール次第です。あなたが決め、実際に起きることが意図どおりかを確認してください。</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>何を変更できますか。</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>設定</th><th>値</th><th>既定値</th><th>動作</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sample</code></td>
+          <td>2mbのようなサイズ</td>
+          <td><code>4kb</code></td>
+          <td>セット内の各ファイルの大きさです。UTF-16は1文字に2バイトを使うため、奇数は拒否されます。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>どう実行しますか。</h2>
+  <p>セットのコストを確認し、作成し、または編集用にそのレシピを取り出します。</p>
+  <pre><code>tfg preset show text-encoding
+tfg generate --preset text-encoding --out ./text-encoding
+tfg preset eject text-encoding &gt; text-encoding.yaml</code></pre>
+  <p>または、テストの隣に置いた自分のレシピで、これを土台にします。</p>
+  <pre><code>version: 1
+extends: preset:text-encoding</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">プロジェクト</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHubのソースコード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">問題を報告</a></li>
+        <li><a href="https://donislawdev.com/support/">プロジェクトを支援</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">ページ</p>
+      <ul class="plain">
+        <li><a href="/ja/">ホーム</a></li>
+        <li><a href="/ja/formats/">形式</a></li>
+        <li><a href="/ja/presets/">プリセット</a></li>
+        <li><a href="/ja/docs/">ドキュメント</a></li>
+        <li><a href="/ja/use-cases/">利用例</a></li>
+        <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
+        <li><a href="/ja/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU一般公衆利用許諾契約書バージョン3の下で公開されています。生成したファイルはあなたのものです。ライセンスの対象はツールであり、その出力ではありません。</p>
+    <p class="muted">このサイトは、どこからもフォント、スクリプト、トラッカーを読み込みません。Cookieも設定しません。</p>
+  </div>
+</footer>
+</body>
+</html>

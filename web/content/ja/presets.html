@@ -1,0 +1,26 @@
+<h1>テストファイルのプリセット、テストの疑問ごとに1セット</h1>
+<p class="lead">
+  プリセットは、1つの疑問を軸に設計したテストファイルのセット一式で、システムが各ファイルにどう反応すべきかを示すマニフェストが付きます。疑問を選べば、ツールがセットを作ります。各プリセットには、普通は何を見つけるか、セットの内容、受け付ける設定をまとめた専用ページがあります。
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>プリセットとレシピは何が違いますか。</h2>
+  <p>
+    中身は同じです。プリセットは、いくつかの設定からツールが書くレシピです。<code>tfg preset
+    eject</code>はそのレシピを出力するので、テストの隣に保管して編集できます。また、自分のレシピは<code>extends:
+    preset:</code>にIDを続けた1行で、プリセットを土台にできます。
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>既定値は信頼できますか。</h2>
+  <p>
+    ファイルについては信頼できます。アップロードフォームの制限のように、システムだけが知っている数値については、既定値はこちらの仮の値で、ツールは使うたびにそう伝えます。各プリセットのページはそれらの設定に印を付け、<code>tfg
+    preset show</code>は何かを書き込む前に伝えます。
+  </p>
+</section>

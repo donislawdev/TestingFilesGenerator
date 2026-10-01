@@ -1,0 +1,96 @@
+<h1>人们用它来做什么</h1>
+<p class="lead">
+  几乎每个接收用户文件的项目都会遇到的五项任务，以及完成每一项的命令。下面的每个示例都能按原样运行。
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">上传限制</p>
+  <h2>测试文件大小限制是否在声称的位置生效</h2>
+  <p>
+    一个限制对应三个测试用例，而不是一个：刚好低于、恰好等于和刚好高于。手工做这些意味着计算字节数，并祈祷自己没有算错一位。不如直接请求整套文件：
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    你会得到三个真实的 PDF，大小分别是 1048575、1048576 和 1048577 字节，以及一份清单，说明前两个应被接受，第三个应因 <code>size_limit</code>
+    被拒绝。你的测试读取预期，而不是由你手写三个断言，限制改变时，你只需改一个数字再重新运行。
+  </p>
+  <p>
+    如果你只想要一组内联的边界文件，不用预设也可以做到：
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">持续集成</p>
+  <h2>让 fixture 留在仓库之外又不丢失</h2>
+  <p>
+    大型二进制 fixture 会拖慢仓库克隆，也让评审变得别扭，而且替换其中一个时没有人能看出改了什么。配方只是几百个字符的
+    YAML，就能重建出完全相同的文件，<strong>在任何机器上逐字节一致</strong>，因为每个文件都由运行的种子派生。
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    每种结束方式都有自己的退出码，所以流水线可以区分配方错误、磁盘已满和校验不一致。失败的运行不会在标准输出上打印任何内容，这样日志解析器就不会把错误当成数据。
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">规模</p>
+  <h2>弄清文件夹很大时会发生什么</h2>
+  <p>
+    导入程序、夜间任务和目录列表在一万个文件时的表现与十个文件时不同。从范围中抽取的大小让文件集看起来像真实流量，而不是一万个完全相同的文件，并且抽取来自种子，所以明天文件集依然相同。
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    在运行写入任何内容之前先查看它的开销，当总量以 GB 计时这一点很重要：
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    比磁盘可用空间更大的运行会在写入第一个字节之前就被拒绝，而不是把磁盘写满再半途失败。
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">压缩包</p>
+  <h2>用真正装有文件的压缩包测试解压程序</h2>
+  <p>
+    只有正确扩展名的空压缩包，无法证明任何关于打开它并遍历内容的代码的事情。声明内容，压缩包就真的包含它们：
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    嵌套深度、条目数量和内部内容的大小，导入程序都有自己的看法，而这正是你弄清这些看法的办法。
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">解析器与查看器</p>
+  <h2>检查你自己的代码读取格式的方式是否与真实软件一致</h2>
+  <p>
+    这里的每种格式在发布前都用独立读取器验证过：PNG 被打开并比对像素，DOCX 由另外的库读回，压缩包被解压。这意味着你的解析器拒绝的文件，是关于你的解析器的发现，而不是关于生成器的。
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/zh-hans/formats/">格式页面</a>列出了每种格式接受的设置，以及每种格式能达到的最小文件。
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>适合谁</h2>
+  <p>
+    QA 工程师、测试自动化，以及代码背后有上传表单、导入程序、解析器或存储配额的所有人。它可以在完全没有网络的机器上运行，这在基于浏览器的生成器行不通的封闭企业环境中尤为重要。
+  </p>
+  {{ template "downloadCta" . }}
+</section>

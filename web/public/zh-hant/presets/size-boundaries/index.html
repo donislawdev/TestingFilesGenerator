@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hant">
+<title>測試上傳大小限制 - 恰好落在邊界上的檔案</title>
+<meta name="description" content="比系統宣告的大小限制小一位元組、恰好等於以及大一位元組的檔案，另加兩側更寬的間距，每個都標明是否應被接受。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/size-boundaries/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/size-boundaries/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/size-boundaries/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/size-boundaries/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/size-boundaries/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/size-boundaries/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/size-boundaries/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/size-boundaries/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/size-boundaries/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/size-boundaries/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/size-boundaries/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/size-boundaries/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/size-boundaries/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/size-boundaries/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/size-boundaries/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/size-boundaries/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/size-boundaries/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/size-boundaries/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/size-boundaries/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="測試上傳大小限制 - 恰好落在邊界上的檔案">
+<meta property="og:description" content="比系統宣告的大小限制小一位元組、恰好等於以及大一位元組的檔案，另加兩側更寬的間距，每個都標明是否應被接受。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/size-boundaries/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="測試上傳大小限制 - 恰好落在邊界上的檔案">
+<meta name="twitter:description" content="比系統宣告的大小限制小一位元組、恰好等於以及大一位元組的檔案，另加兩側更寬的間距，每個都標明是否應被接受。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hant/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "預設集",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "大小邊界",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/presets\/size-boundaries\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到內容</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hant/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主選單">
+      <a href="/zh-hant/">首頁</a>
+      <a href="/zh-hant/formats/">格式</a>
+      <a href="/zh-hant/presets/" aria-current="true">預設集</a>
+      <a href="/zh-hant/docs/">文件</a>
+      <a href="/zh-hant/use-cases/">使用情境</a>
+      <a href="/zh-hant/create-file-exact-size/">精確大小</a>
+      <a href="/zh-hant/faq/">常見問題</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="語言: 繁體中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>繁體中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/size-boundaries/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/predvolby/size-boundaries/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/size-boundaries/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/size-boundaries/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/size-boundaries/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/preset/size-boundaries/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/size-boundaries/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/size-boundaries/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/size-boundaries/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/size-boundaries/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/size-boundaries/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/size-boundaries/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/size-boundaries/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/size-boundaries/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/hazir-ayarlar/size-boundaries/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/size-boundaries/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/size-boundaries/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/size-boundaries/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/zh-hant/presets/">預設集</a></p>
+<h1>大小邊界</h1>
+<p class="lead">大小限制是否恰好在宣告的位置生效？</p>
+<p>
+  <code>size-boundaries</code> 預設集用一個指令為這個問題建立出整組真實測試檔案，並在旁邊放一個
+  <code>manifest.json</code>，說明你的系統應如何回應每個檔案。以下所有內容都依此版本的預設值從程式中讀取。
+</p>
+
+
+<section class="section" id="catches">
+  <h2>它通常能發現什麼？</h2>
+  <ul class="ticks">
+    <li>限制處的差一錯誤</li>
+    <li>把 MB 與 MiB 搞混，相差 4.8%，足以放過本不該通過的檔案</li>
+    <li>限制只在瀏覽器中生效，而不在伺服器上</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>組合裡有什麼？</h2>
+  <p>使用預設值時，如 <code>tfg preset show size-boundaries</code> 所回報的：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">檔案數</th><td>7</td></tr>
+        <tr><th scope="row">其配方中的 target 數</th><td>7</td></tr>
+        <tr><th scope="row">總大小</th><td>73 400 320 B</td></tr>
+        <tr><th scope="row">格式</th><td>pdf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>以及該組合的清單對你的系統有何預期：</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>預期</th><th>意義</th><th class="num">檔案數</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>你的系統應該接受這個檔案。</td><td class="num">4</td></tr>
+        <tr><td><code>reject</code></td><td>你的系統應該拒絕這個檔案。</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>你可以變更什麼？</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>設定</th><th>接受</th><th>預設值</th><th>作用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>形如 2mb 的大小</td>
+          <td><code>10mb</code></td>
+          <td>你的系統宣告的大小限制。其他一切都以它為基準測量。 <strong>這個預設值是我們的預留值，不是你的系統的值。請傳入你自己的值。</strong></td>
+        </tr>
+        <tr>
+          <td><code>--spread</code></td>
+          <td>以逗號分隔的大小</td>
+          <td><code>1B,1kb,1mb</code></td>
+          <td>在限制兩側各延伸多遠，以大小清單表示。</td>
+        </tr>
+        <tr>
+          <td><code>--format</code></td>
+          <td>格式頁面中的格式 id</td>
+          <td><code>pdf</code></td>
+          <td>組合中每個檔案的格式。它是工具本身的參數，預設集只是給它一個預設值。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>如何執行？</h2>
+  <p>查看組合的開銷、建置它，或取出它的配方來編輯：</p>
+  <pre><code>tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./size-boundaries
+tfg preset eject size-boundaries &gt; size-boundaries.yaml</code></pre>
+  <p>也可以在你自己的配方中以它為基礎，放在測試旁邊：</p>
+  <pre><code>version: 1
+extends: preset:size-boundaries
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">專案</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的原始碼</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">回報問題</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本專案</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">頁面</p>
+      <ul class="plain">
+        <li><a href="/zh-hant/">首頁</a></li>
+        <li><a href="/zh-hant/formats/">格式</a></li>
+        <li><a href="/zh-hant/presets/">預設集</a></li>
+        <li><a href="/zh-hant/docs/">文件</a></li>
+        <li><a href="/zh-hant/use-cases/">使用情境</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
+        <li><a href="/zh-hant/faq/">常見問題</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。依 GNU 通用公共授權條款第 3 版發布。你產生的檔案歸你所有，授權涵蓋的是工具本身，而不是它的輸出。</p>
+    <p class="muted">本站不會從任何地方載入字型、指令碼或追蹤器，也不會設定 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<h1>파일 형식 {{ .Facts.FormatCount }}가지, 모두 정확한 크기로 생성됩니다</h1>
+<p class="lead">
+  이들은 모두 <strong>해당 형식의 실제 파일</strong>입니다. 해당 소프트웨어에서 열리며 요청한 바이트 수와 정확히 같습니다. 확장자만 붙인 채운 0은 하나도 없습니다.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>각 열의 의미</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">가장 작은 파일</p>
+      <p class="muted">
+        파일 안에 쓰는 레이블을 포함해, 이 도구가 해당 형식에 대해 받아들이는 최소 바이트 수입니다. 더 작게 요청하면 하한과 그 이유를 알려 주는 오류가 나오며, 크기가 틀린 파일은
+        나오지 않습니다.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">완전성</p>
+      <p class="muted">
+        파일이 얼마나 완전한지입니다. <code>full</code>은 형식을 실제로 파싱하는 리더가 받아들인다는 뜻이며, 단순히 확장자가 맞다는 뜻이 아닙니다.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">검증 도구</p>
+      <p class="muted">
+        형식을 출시하기 전에 생성된 모든 파일을 여는 독립적인 리더입니다. 별도의 구현이며, 우리 코드가 스스로 숙제를 채점하는 것이 아닙니다.
+      </p>
+    </li>
+  </ul>
+  <p>
+    모든 형식은 바이트 단위로 반복되기도 합니다. 같은 레시피와 같은 시드는 어느 컴퓨터에서나 같은 파일을 만들며, 그래서 픽스처 자체 대신 레시피를 커밋해도 안전합니다.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>각 형식이 받는 설정</h2>
+  <p>
+    대부분의 형식에는 고유한 설정이 있습니다. 이미지 크기, JPEG 품질, PDF 쪽수, 스프레드시트의 행과 열, 아카이브에 들어가는 항목 수 등입니다. 명령줄에서는
+    <code>--set key=value</code>로, 레시피에서는 <code>properties:</code> 아래에서 설정합니다.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    설정이 받는 범위를 벗어난 값은 설정, 허용 범위, 대신 쓸 값을 알려 주는 메시지와 함께 거부됩니다. 알 수 없는 설정도 오류이며 조용히 기본값이 되는 일은 없습니다. 조용히
+    받아들여진 오타는 잘못된 설정의 파일과, 통과하면 안 되는 테스트가 왜 통과하는지 고민하는 한 시간을 낳습니다.
+  </p>
+  <p>
+    가지고 있는 빌드에서 한 형식이 정확히 무엇을 받는지 보려면 <code>tfg formats &lt;id&gt;</code>를 실행하세요.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>아카이브에는 실제 파일이 들어 있습니다</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }}와 {{ end }}<code>{{ $c.ID }}</code>{{ end }}는 빈
+    껍데기로 두지 않고 항목으로 채울 수 있습니다. 생성된 아카이브는 담았다고 하는 문서를 실제로 담고 있으므로, 테스트 중에 이를 푸는 것은 무엇이든 안에서 실제 파일을
+    찾습니다.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+
