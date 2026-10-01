@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="de">
+<title>FAQ - Fragen zum Erzeugen von Testdateien</title>
+<meta name="description" content="Worin sich das Tool von dd und fsutil unterscheidet, ob man die Dateien einchecken kann, ob Läufe reproduzierbar sind und was bei unerreichbaren Größen passiert.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="FAQ - Fragen zum Erzeugen von Testdateien">
+<meta property="og:description" content="Worin sich das Tool von dd und fsutil unterscheidet, ob man die Dateien einchecken kann, ob Läufe reproduzierbar sind und was bei unerreichbaren Größen passiert.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - Fragen zum Erzeugen von Testdateien">
+<meta name="twitter:description" content="Worin sich das Tool von dd und fsutil unterscheidet, ob man die Dateien einchecken kann, ob Läufe reproduzierbar sind und was bei unerreichbaren Größen passiert.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/de/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/de\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/de/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hauptnavigation">
+      <a href="/de/">Start</a>
+      <a href="/de/formate/">Formate</a>
+      <a href="/de/presets/">Presets</a>
+      <a href="/de/dokumentation/">Dokumentation</a>
+      <a href="/de/anwendungsfaelle/">Anwendungsfälle</a>
+      <a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a>
+      <a href="/de/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Sprache: Deutsch">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Deutsch</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Häufig gestellte Fragen</h1>
+<p class="lead">
+  Lizenz, Datenschutz, Reproduzierbarkeit und das, was Leute prüfen, bevor sie einen Generator in eine
+  Build-Pipeline einbauen. Wenn deine Frage hier fehlt, ist der
+  <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Issue-Tracker</a> offen.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Worin unterscheidet sich das von dd, fsutil oder truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Diese Befehle liefern dir eine Datei in der richtigen Größe, gefüllt mit nichts. Eine 2 MB große Datei namens photo.png, die so entstanden ist, ist kein PNG. Alles, was sie wirklich parst, weist sie aus dem falschen Grund ab, und dein Test besteht dann ebenfalls aus dem falschen Grund. Dieses Tool erzeugt ein echtes PNG von genau 2 MB, das sich in einem Bildbetrachter öffnet und mit einer Aussage darüber geliefert wird, wie dein System damit umgehen soll.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Ist es kostenlos, und darf ich es bei der Arbeit einsetzen?</h2></summary>
+    <div class="qa-body">
+      <p>Ja, beides. Es steht unter der GPL-3.0 und kostet nichts. Es gibt kein Konto, keinen Lizenzschlüssel und keine kostenpflichtige Stufe.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Darf ich die erzeugten Dateien in einem Closed-Source-Produkt verwenden?</h2></summary>
+    <div class="qa-body">
+      <p>Ja. Die Lizenz gilt für den Code des Tools, nicht für das, was das Tool erzeugt. Erzeugte Dateien, Rezepte und Manifeste sind Ausgabe und keine abgeleiteten Werke, du kannst sie also einchecken und ohne jede Verpflichtung weitergeben.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Enthalten die erzeugten Dateien echte personenbezogene Daten?</h2></summary>
+    <div class="qa-body">
+      <p>Nein. Alles darin wird aus einem Seed synthetisch erzeugt. Es wird kein Datensatz gelesen, kein Dienst kontaktiert und kein Inhalt Dritter eingebettet. Behandle eine erzeugte E-Mail-Adresse als unbrauchbar statt als unbenutzt, denn jede Zufallszeichenfolge kann zufällig mit einer echten übereinstimmen.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Bekomme ich auf einem anderen Rechner genau dieselben Dateien?</h2></summary>
+    <div class="qa-body">
+      <p>Ja, Byte für Byte, bei gleichem Rezept und gleichem Seed. Das Projekt testet das bei jeder Änderung, und es zu brechen erfordert einen Major-Versionssprung. Genau deshalb kannst du ein kleines Rezept einchecken statt großer binärer Fixtures.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Braucht es eine Internetverbindung?</h2></summary>
+    <div class="qa-body">
+      <p>Nie. Es gibt keine Telemetrie, keine Update-Prüfung und keinen Cloud-Client, und die Kommandozeilen-Binärdatei hat gar keinen Netzwerkstack einkompiliert. Sie läuft auf einem Rechner ohne Netz und in einer abgeschotteten Unternehmensumgebung.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Was passiert, wenn ich eine Größe verlange, die ein Format nicht erreichen kann?</h2></summary>
+    <div class="qa-body">
+      <p>Du bekommst einen Fehler, der das Format nennt, die kleinstmögliche Größe, den Grund für diese Untergrenze und was du stattdessen tun kannst, und es wird keine Datei geschrieben. Das Tool rundet eine Größe nie stillschweigend. Jede Untergrenze steht auf der Formate-Seite.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Kann ich eine absichtlich kaputte Datei erzeugen?</h2></summary>
+    <div class="qa-body">
+      <p>Noch nicht. Beschädigte und fehlerhafte Dateien sind eine geplante Funktion. Heute ist jede Datei, die das Tool schreibt, eine gültige Datei ihres Formats.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Welche Formate kommen als Nächstes?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 und mp4. 26 Formate funktionieren heute durchgängig.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Auf welchen Systemen läuft es?</h2></summary>
+    <div class="qa-body">
+      <p>Die Kommandozeile läuft unter Windows und Linux auf Intel und ARM sowie auf Macs mit Apple Silicon. Das Desktop-Fenster gibt es für Windows auf Intel, Linux auf Intel und Macs mit Apple Silicon. Intel-Macs werden nicht unterstützt, und für sie wird nichts gebaut.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Muss ich etwas installieren?</h2></summary>
+    <div class="qa-body">
+      <p>Nein. Lade das Archiv für dein System herunter, entpacke es und starte die Binärdatei. Es gibt keinen Installer, keine Laufzeitumgebung zum Nachrüsten und keine Abhängigkeit, die aufgelöst werden müsste. Wenn du Go hast, funktioniert auch ein einziger go-install-Befehl.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Warum ist ein Lauf über Tausende Dateien unter Windows langsamer?</h2></summary>
+    <div class="qa-body">
+      <p>Weil Windows für jeden Pfad, den es ansieht, mehr verlangt, und ein Befehl über Tausende Dateien sieht sich Tausende Pfade an. Gemessen auf einem Rechner mit 3000 Dateien zu je 1 kB braucht verify unter Windows etwa 0,9 Sekunden und unter Linux in einem Container etwa 0,2 Sekunden. Ein kürzerer Ausgabepfad verkleinert den Windows-Wert, denn jeder Ordner über den Dateien gehört zu dem, was angesehen wird.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Worin unterscheidet sich das von dd, fsutil oder truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Diese Befehle liefern dir eine Datei in der richtigen Größe, gefüllt mit nichts. Eine 2 MB große Datei namens photo.png, die so entstanden ist, ist kein PNG. Alles, was sie wirklich parst, weist sie aus dem falschen Grund ab, und dein Test besteht dann ebenfalls aus dem falschen Grund. Dieses Tool erzeugt ein echtes PNG von genau 2 MB, das sich in einem Bildbetrachter öffnet und mit einer Aussage darüber geliefert wird, wie dein System damit umgehen soll." }
+    },
+    {
+      "@type": "Question",
+      "name": "Ist es kostenlos, und darf ich es bei der Arbeit einsetzen?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, beides. Es steht unter der GPL-3.0 und kostet nichts. Es gibt kein Konto, keinen Lizenzschlüssel und keine kostenpflichtige Stufe." }
+    },
+    {
+      "@type": "Question",
+      "name": "Darf ich die erzeugten Dateien in einem Closed-Source-Produkt verwenden?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. Die Lizenz gilt für den Code des Tools, nicht für das, was das Tool erzeugt. Erzeugte Dateien, Rezepte und Manifeste sind Ausgabe und keine abgeleiteten Werke, du kannst sie also einchecken und ohne jede Verpflichtung weitergeben." }
+    },
+    {
+      "@type": "Question",
+      "name": "Enthalten die erzeugten Dateien echte personenbezogene Daten?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nein. Alles darin wird aus einem Seed synthetisch erzeugt. Es wird kein Datensatz gelesen, kein Dienst kontaktiert und kein Inhalt Dritter eingebettet. Behandle eine erzeugte E-Mail-Adresse als unbrauchbar statt als unbenutzt, denn jede Zufallszeichenfolge kann zufällig mit einer echten übereinstimmen." }
+    },
+    {
+      "@type": "Question",
+      "name": "Bekomme ich auf einem anderen Rechner genau dieselben Dateien?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja, Byte für Byte, bei gleichem Rezept und gleichem Seed. Das Projekt testet das bei jeder Änderung, und es zu brechen erfordert einen Major-Versionssprung. Genau deshalb kannst du ein kleines Rezept einchecken statt großer binärer Fixtures." }
+    },
+    {
+      "@type": "Question",
+      "name": "Braucht es eine Internetverbindung?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nie. Es gibt keine Telemetrie, keine Update-Prüfung und keinen Cloud-Client, und die Kommandozeilen-Binärdatei hat gar keinen Netzwerkstack einkompiliert. Sie läuft auf einem Rechner ohne Netz und in einer abgeschotteten Unternehmensumgebung." }
+    },
+    {
+      "@type": "Question",
+      "name": "Was passiert, wenn ich eine Größe verlange, die ein Format nicht erreichen kann?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Du bekommst einen Fehler, der das Format nennt, die kleinstmögliche Größe, den Grund für diese Untergrenze und was du stattdessen tun kannst, und es wird keine Datei geschrieben. Das Tool rundet eine Größe nie stillschweigend. Jede Untergrenze steht auf der Formate-Seite." }
+    },
+    {
+      "@type": "Question",
+      "name": "Kann ich eine absichtlich kaputte Datei erzeugen?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Noch nicht. Beschädigte und fehlerhafte Dateien sind eine geplante Funktion. Heute ist jede Datei, die das Tool schreibt, eine gültige Datei ihres Formats." }
+    },
+    {
+      "@type": "Question",
+      "name": "Welche Formate kommen als Nächstes?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 und mp4. 26 Formate funktionieren heute durchgängig." }
+    },
+    {
+      "@type": "Question",
+      "name": "Auf welchen Systemen läuft es?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Die Kommandozeile läuft unter Windows und Linux auf Intel und ARM sowie auf Macs mit Apple Silicon. Das Desktop-Fenster gibt es für Windows auf Intel, Linux auf Intel und Macs mit Apple Silicon. Intel-Macs werden nicht unterstützt, und für sie wird nichts gebaut." }
+    },
+    {
+      "@type": "Question",
+      "name": "Muss ich etwas installieren?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Nein. Lade das Archiv für dein System herunter, entpacke es und starte die Binärdatei. Es gibt keinen Installer, keine Laufzeitumgebung zum Nachrüsten und keine Abhängigkeit, die aufgelöst werden müsste. Wenn du Go hast, funktioniert auch ein einziger go-install-Befehl." }
+    },
+    {
+      "@type": "Question",
+      "name": "Warum ist ein Lauf über Tausende Dateien unter Windows langsamer?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Weil Windows für jeden Pfad, den es ansieht, mehr verlangt, und ein Befehl über Tausende Dateien sieht sich Tausende Pfade an. Gemessen auf einem Rechner mit 3000 Dateien zu je 1 kB braucht verify unter Windows etwa 0,9 Sekunden und unter Linux in einem Container etwa 0,2 Sekunden. Ein kürzerer Ausgabepfad verkleinert den Windows-Wert, denn jeder Ordner über den Dateien gehört zu dem, was angesehen wird." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Noch unentschlossen?</h2>
+  <p>
+    Die <a href="/de/anwendungsfaelle/">Anwendungsfälle-Seite</a> zeigt die Aufgaben, für die es gebaut
+    ist, und die <a href="/de/formate/">Formate-Seite</a> listet jedes Format mit der kleinsten
+    Datei auf, die es erzeugen kann. Die <a href="https://github.com/donislawdev/TestingFilesGenerator">README im Repository</a> ist
+    die vollständige Referenz.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Herunterladen</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode ansehen</a>
+</div>
+<p class="cta-note">Kostenlos und Open Source, GPL-3.0. Keine Anmeldung nötig. Die Downloads für Windows und macOS sind signiert und starten ohne Warnung.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testdateien für die QA in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode auf GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Problem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Projekt unterstützen</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Seiten</p>
+      <ul class="plain">
+        <li><a href="/de/">Start</a></li>
+        <li><a href="/de/formate/">Formate</a></li>
+        <li><a href="/de/presets/">Presets</a></li>
+        <li><a href="/de/dokumentation/">Dokumentation</a></li>
+        <li><a href="/de/anwendungsfaelle/">Anwendungsfälle</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a></li>
+        <li><a href="/de/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Veröffentlicht unter der GNU General Public License, Version 3. Die Dateien, die du erzeugst, gehören dir - die Lizenz gilt für das Tool, nicht für seine Ausgabe.</p>
+    <p class="muted">Diese Website lädt von nirgendwo Schriften, Skripte oder Tracker. Sie setzt keine Cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="de">
+<title>Testdatei-Presets - fertige Sets für typische QA-Fragen</title>
+<meta name="description" content="Fertige Sets aus Testdateien, jedes beantwortet eine Testfrage: Upload-Limits, Dateinamen, Zeichenkodierungen, Tabellenimporte, leere Dateien und Upload-Validierung.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/de/presets/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Testdatei-Presets - fertige Sets für typische QA-Fragen">
+<meta property="og:description" content="Fertige Sets aus Testdateien, jedes beantwortet eine Testfrage: Upload-Limits, Dateinamen, Zeichenkodierungen, Tabellenimporte, leere Dateien und Upload-Validierung.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/de/presets/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Testdatei-Presets - fertige Sets für typische QA-Fragen">
+<meta name="twitter:description" content="Fertige Sets aus Testdateien, jedes beantwortet eine Testfrage: Upload-Limits, Dateinamen, Zeichenkodierungen, Tabellenimporte, leere Dateien und Upload-Validierung.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/de/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/de\/presets\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/de/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hauptnavigation">
+      <a href="/de/">Start</a>
+      <a href="/de/formate/">Formate</a>
+      <a href="/de/presets/" aria-current="page">Presets</a>
+      <a href="/de/dokumentation/">Dokumentation</a>
+      <a href="/de/anwendungsfaelle/">Anwendungsfälle</a>
+      <a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a>
+      <a href="/de/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Sprache: Deutsch">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Deutsch</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/pl/presety/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Testdatei-Presets, ein Set für jede Testfrage</h1>
+<p class="lead">
+  Ein Preset ist ein ganzes Set aus Testdateien, das um eine Frage herum entworfen wurde, mit einem
+  Manifest, das beschreibt, wie dein System auf jede Datei reagieren soll. Du wählst die Frage, das
+  Tool baut das Set. Jedes Preset hat eine eigene Seite mit dem, was es meist findet, was im Set
+  steckt und welche Einstellungen es kennt.
+</p>
+
+<ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/empty-and-minimal/">Leer und minimal</a></p>
+    <p class="muted">Kommt eine gültige Datei durch, die so klein ist, wie das Format es erlaubt?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/filename-handling/">Umgang mit Dateinamen</a></p>
+    <p class="muted">Speichert, zeigt und liefert mein System einen Dateinamen korrekt, mit dem es nicht gerechnet hat?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/size-boundaries/">Größengrenzen</a></p>
+    <p class="muted">Wird ein Größenlimit genau dort durchgesetzt, wo es angegeben ist?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/tabular-import/">Tabellenimport</a></p>
+    <p class="muted">Übersteht mein Tabellenimport das, was echte Tools exportieren?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/text-encoding/">Textkodierung</a></p>
+    <p class="muted">Weiß mein Leser, in welcher Kodierung eine Datei vorliegt, oder rät er?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/presets/upload-validation/">Upload-Validierung</a></p>
+    <p class="muted">Nimmt mein Upload-Formular an, was es soll, und weist den Rest ab?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+
+<section class="section" id="recipes">
+  <h2>Worin unterscheidet sich ein Preset von einem Rezept?</h2>
+  <p>
+    Darunter gar nicht. Ein Preset ist ein Rezept, das das Tool aus ein paar Einstellungen für dich
+    schreibt. <code>tfg preset eject</code> gibt dieses Rezept aus, damit du es neben deinen Tests
+    aufbewahren und bearbeiten kannst, und ein eigenes Rezept kann mit einer Zeile auf einem Preset
+    aufbauen, <code>extends: preset:</code> gefolgt von seiner ID.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Kann ich den Standardwerten trauen?</h2>
+  <p>
+    Bei den Dateien ja. Bei einer Zahl, die nur dein System kennt, etwa dem Limit eines
+    Upload-Formulars, ist ein Standardwert ein Platzhalter von uns, und das Tool sagt es jedes Mal,
+    wenn es einen verwendet. Die Seite jedes Presets markiert diese Einstellungen, und <code>tfg
+    preset show</code> sagt es, bevor etwas geschrieben wird.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testdateien für die QA in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode auf GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Problem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Projekt unterstützen</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Seiten</p>
+      <ul class="plain">
+        <li><a href="/de/">Start</a></li>
+        <li><a href="/de/formate/">Formate</a></li>
+        <li><a href="/de/presets/">Presets</a></li>
+        <li><a href="/de/dokumentation/">Dokumentation</a></li>
+        <li><a href="/de/anwendungsfaelle/">Anwendungsfälle</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a></li>
+        <li><a href="/de/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Veröffentlicht unter der GNU General Public License, Version 3. Die Dateien, die du erzeugst, gehören dir - die Lizenz gilt für das Tool, nicht für seine Ausgabe.</p>
+    <p class="muted">Diese Website lädt von nirgendwo Schriften, Skripte oder Tracker. Sie setzt keine Cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<h1>Testdatei-Presets, ein Set für jede Testfrage</h1>
+<p class="lead">
+  Ein Preset ist ein ganzes Set aus Testdateien, das um eine Frage herum entworfen wurde, mit einem
+  Manifest, das beschreibt, wie dein System auf jede Datei reagieren soll. Du wählst die Frage, das
+  Tool baut das Set. Jedes Preset hat eine eigene Seite mit dem, was es meist findet, was im Set
+  steckt und welche Einstellungen es kennt.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Worin unterscheidet sich ein Preset von einem Rezept?</h2>
+  <p>
+    Darunter gar nicht. Ein Preset ist ein Rezept, das das Tool aus ein paar Einstellungen für dich
+    schreibt. <code>tfg preset eject</code> gibt dieses Rezept aus, damit du es neben deinen Tests
+    aufbewahren und bearbeiten kannst, und ein eigenes Rezept kann mit einer Zeile auf einem Preset
+    aufbauen, <code>extends: preset:</code> gefolgt von seiner ID.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Kann ich den Standardwerten trauen?</h2>
+  <p>
+    Bei den Dateien ja. Bei einer Zahl, die nur dein System kennt, etwa dem Limit eines
+    Upload-Formulars, ist ein Standardwert ein Platzhalter von uns, und das Tool sagt es jedes Mal,
+    wenn es einen verwendet. Die Seite jedes Presets markiert diese Einstellungen, und <code>tfg
+    preset show</code> sagt es, bevor etwas geschrieben wird.
+  </p>
+</section>

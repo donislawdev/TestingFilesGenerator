@@ -153,4 +153,6 @@ func spacedBytes(n int64) string {
 // writes the infinitive in the table and so the list says przyjąć rather than
 // przyjmie, and each entry is exactly the form the page shows. The key is the
 // language tag, the same as the directory under web/content.
-var translatedLimitWords = map[string][2]string{}
+var translatedLimitWords = map[string][2]string{
+	"de": {"akzeptieren", "ablehnen"},
+}

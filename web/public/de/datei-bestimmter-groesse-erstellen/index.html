@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="de">
+<title>Datei mit bestimmter Größe erstellen - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate und mkfile, jeweils auf dem passenden System gemessen - und warum eine so erzeugte Datei kein PDF und kein PNG ist, wenn ein Test eines braucht.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Datei mit bestimmter Größe erstellen - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate und mkfile, jeweils auf dem passenden System gemessen - und warum eine so erzeugte Datei kein PDF und kein PNG ist, wenn ein Test eines braucht.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Datei mit bestimmter Größe erstellen - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate und mkfile, jeweils auf dem passenden System gemessen - und warum eine so erzeugte Datei kein PDF und kein PNG ist, wenn ein Test eines braucht.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte Testdateien in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/de/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dateigröße",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/de\/datei-bestimmter-groesse-erstellen\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/de/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hauptnavigation">
+      <a href="/de/">Start</a>
+      <a href="/de/formate/">Formate</a>
+      <a href="/de/presets/">Presets</a>
+      <a href="/de/dokumentation/">Dokumentation</a>
+      <a href="/de/anwendungsfaelle/">Anwendungsfälle</a>
+      <a href="/de/datei-bestimmter-groesse-erstellen/" aria-current="page">Dateigröße</a>
+      <a href="/de/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Sprache: Deutsch">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Deutsch</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>So erstellst du eine Datei in exakter Größe</h1>
+<p class="lead">
+  Jedes System hat dafür einen Befehl, alle drei stehen unten. Sie liefern dir eine Datei mit genau
+  der richtigen Byte-Zahl - und für viele Tests ist das alles, was du brauchst. <strong>Jeder Befehl
+  auf dieser Seite wurde vor der Veröffentlichung ausgeführt</strong>, auf dem System, zu dem er
+  gehört.
+</p>
+
+<div class="note">
+  <p class="note-title">Die kurze Antwort</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Größen werden in Bytes angegeben,
+    und 10 MB, so gezählt wie dein Dateimanager zählt, sind 10485760 davon.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil und eine PowerShell-Variante, die nichts Zusätzliches braucht</h2>
+  <p>
+    <code>fsutil</code> gehört zu Windows. Es nimmt die Größe <strong>in Bytes</strong>, rechne die Zahl
+    also vorher aus - 10 MB sind 10485760, 100 MB sind 104857600, 1 GB ist 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Gemessen unter Windows 11: Es funktioniert in einer normalen Eingabeaufforderung und braucht keine
+    erhöhten Rechte, und die Datei hat genau 10485760 Bytes.
+  </p>
+  <p>PowerShell kann dasselbe, ohne ein anderes Programm aufzurufen, und versteht Einheiten:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> bedeutet in PowerShell 10485760 Bytes, dieselbe Zählung auf 1024er-Basis, die der
+    Explorer verwendet, die beiden Befehle oben erzeugen also dieselbe Größe.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate und fallocate und der Unterschied, der Leute erwischt</h2>
+  <p><code>dd</code> kennt jeder. Es schreibt die Bytes wirklich:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> ist sofort fertig, und genau das ist der Haken. Gemessen unter Alpine Linux
+    meldet die Datei 10485760 Bytes und belegt <strong>null Blöcke</strong> - sie ist eine
+    <strong>Sparse-Datei</strong>. Wer sie liest, bekommt zehn Megabyte Nullen, aber der Datenträger
+    hat den Platz nie hergegeben:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Das ist für den Test eines Upload-Limits in Ordnung und für den Test einer Datenträgerquote
+    irreführend. <code>fallocate</code> ist das Mittel der Wahl, wenn der Platz wirklich belegt sein
+    muss:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Und wenn der Inhalt inkompressibel sein muss, damit ein Archivierer ihn nicht wieder zusammendrücken kann:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, das nicht sparse ist, und die beiden, die du schon kennst</h2>
+  <p>
+    macOS liefert <code>mkfile</code> mit. Gemessen unter macOS 26.6.2: 10485760 Bytes und 20480 Blöcke,
+    der Platz ist also wirklich belegt statt nur versprochen:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> und <code>truncate</code> gibt es ebenfalls, und sie verhalten sich wie unter Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Wo das nicht mehr reicht</p>
+  <h2>Eine Datei in der richtigen Größe ist keine Datei der richtigen Art</h2>
+  <p>
+    Alles oben Genannte liefert dir einen Block aus Nullen. Das reicht, wenn das Getestete nur auf die
+    Größe schaut - ein Upload-Limit, eine Quote, eine Übertragung. Es reicht nicht mehr, sobald
+    irgendetwas die Datei <strong>öffnet</strong>.
+  </p>
+  <p>
+    Gemessen, und es lohnt sich, das selbst zu probieren: Erzeuge mit <code>fsutil</code> eine
+    2-MB-Datei, nenne sie <code>photo.png</code> und gib sie einer Bildbibliothek. Pillow antwortet
+    <code>cannot identify image file</code>. Es ist kein PNG. Es war nie eines - nur der Name
+    behauptete es.
+  </p>
+  <p>
+    Das ist wichtiger, als es klingt, wegen <strong>der Richtung, in der der Test dann
+    fehlschlägt</strong>. Dein Upload-Endpunkt weist die Datei ab, dein Test wird grün, und du
+    schließt, dass das Größenlimit funktioniert. Er hat sie nicht wegen der Größe abgewiesen. Er hat
+    sie abgewiesen, weil die Bytes kein Bild waren, und die Regel, die du testen wolltest, wurde nie
+    erreicht.
+  </p>
+  <ul class="ticks">
+    <li>ein Parser weist sie ab, bevor eine Größenregel angesehen wird</li>
+    <li>ein Vorschauschritt schlägt fehl, und der Fehler, den du liest, betrifft die Vorschau</li>
+    <li>ein Virenscanner oder eine Inhaltsprüfung lehnt sie aus einem dritten Grund ab</li>
+    <li>ein Viewer zeigt nichts an, und niemand kann sagen, ob das der Fehler ist</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Der andere Weg</p>
+  <h2>Eine echte Datei dieses Formats, in genau der Größe, die du verlangt hast</h2>
+  <p>
+    Das ist es, was Testing Files Generator tut. Die Datei ist eine echte ihres Formats - sie öffnet
+    sich in der Software, zu der sie gehört - und hat die exakte Byte-Zahl, die du verlangt hast,
+    auf das Byte genau:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Verlange eine Größe, die ein Format nicht erreichen kann, und du bekommst einen Fehler, der die
+    Untergrenze und ihren Grund nennt, nie eine Datei in der falschen Größe. Die
+    <a href="/de/formate/">Formate-Seite</a> listet jedes Format mit der kleinsten Datei auf, die es
+    erzeugen kann.
+  </p>
+  <p>Und ein Limit sind drei Testfälle statt einem, deshalb baut das Tool alle drei:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Das ergibt 10485759, 10485760 und 10485761 Bytes und ein Manifest, das sagt, welche davon dein
+    System akzeptieren und welche es ablehnen soll. Die
+    <a href="/de/anwendungsfaelle/">Anwendungsfälle-Seite</a> geht das und vier weitere Aufgaben
+    durch, für die es gebaut ist.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Herunterladen</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode ansehen</a>
+</div>
+<p class="cta-note">Kostenlos und Open Source, GPL-3.0. Keine Anmeldung nötig. Die Downloads für Windows und macOS sind signiert und starten ohne Warnung.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>Was solltest du also verwenden?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Den Systembefehl verwenden</p>
+      <p class="muted">
+        Wenn nichts die Datei öffnet. Ein Größenlimit an einem Endpunkt testen, der zuerst die Größe prüft,
+        eine Übertragung, eine Quote, ein voller Datenträger. Es ist eine Zeile, und es ist schon
+        installiert.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Einen echten Generator verwenden</p>
+      <p class="muted">
+        Wenn irgendetwas die Datei parst, rendert, importiert oder entpackt - und wenn du morgen auf einem
+        anderen Rechner dieselben Fixtures brauchst, Byte für Byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Beides steht auf dieser Seite, weil beides manchmal richtig ist. Der Fehler, den es zu vermeiden
+    gilt, ist, das Erste zu verwenden, wo das Zweite nötig ist, und den grünen Test als Beweis zu
+    lesen.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testdateien für die QA in jeder exakten Größe, mit einem Manifest, das beschreibt, wie dein System auf jede einzelne reagieren soll.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Quellcode auf GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Problem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Projekt unterstützen</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Seiten</p>
+      <ul class="plain">
+        <li><a href="/de/">Start</a></li>
+        <li><a href="/de/formate/">Formate</a></li>
+        <li><a href="/de/presets/">Presets</a></li>
+        <li><a href="/de/dokumentation/">Dokumentation</a></li>
+        <li><a href="/de/anwendungsfaelle/">Anwendungsfälle</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a></li>
+        <li><a href="/de/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Veröffentlicht unter der GNU General Public License, Version 3. Die Dateien, die du erzeugst, gehören dir - die Lizenz gilt für das Tool, nicht für seine Ausgabe.</p>
+    <p class="muted">Diese Website lädt von nirgendwo Schriften, Skripte oder Tracker. Sie setzt keine Cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

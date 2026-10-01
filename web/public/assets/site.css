@@ -110,7 +110,7 @@ body {
 .topbar-inner {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   min-height: 62px;
   flex-wrap: wrap;
 }
@@ -132,15 +132,16 @@ body {
 
 .mainnav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex-wrap: wrap;
-  margin-inline-end: auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .mainnav a {
   color: var(--text-dim);
   text-decoration: none;
-  padding: 6px 10px;
+  padding: 6px 7px;
   border-radius: 8px;
   font-size: 15px;
 }
@@ -157,6 +158,7 @@ body {
 
 .langmenu {
   position: relative;
+  margin-inline-start: auto;
 }
 
 .langmenu > summary {
@@ -798,6 +800,12 @@ pre code {
     padding-top: 40px;
   }
 
+  /* Sticky is a luxury of a header one row high. With the longer labels of
+   * some languages it takes a third of a phone, so it scrolls away here. */
+  .topbar {
+    position: static;
+  }
+
   .topbar-inner {
     gap: 12px;
     padding-top: 10px;
@@ -806,8 +814,8 @@ pre code {
 
   .mainnav {
     order: 3;
+    flex-basis: 100%;
     width: 100%;
-    margin-inline-end: 0;
   }
 
   .footer-inner {
