@@ -31,9 +31,9 @@ import (
 // nothing else is: a language name anywhere else in English text is a leak.
 //
 // This was a check on Polish alone until 2026-10-01, when the site was
-// translated into a further nineteen languages at the owner's request. The
+// translated into a further twenty languages at the owner's request. The
 // border moved with them: it is read from the language files, so a twenty
-// second language needs no edit here, and a language that is not listed has no
+// third language needs no edit here, and a language that is not listed has no
 // directory the border would let its text into.
 func TestTranslatedTextStaysOnTheTranslatedPages(t *testing.T) {
 	root := webRoot(t)

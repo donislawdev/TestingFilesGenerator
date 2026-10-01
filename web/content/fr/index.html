@@ -37,7 +37,7 @@
 <section class="section" id="problem">
   <p class="eyebrow">Le problème</p>
   <h2>Fabriquer un fichier de test est facile. Fabriquer les mille bons est la partie fastidieuse</h2>
-  <p>Vous testez un logiciel qui reçoit des fichiers de la part de personnes. Tôt ou tard, il vous faut :</p>
+  <p>Vous testez un logiciel qui reçoit des fichiers de la part de personnes. Tôt ou tard, il vous faut&nbsp;:</p>
   <ul class="ticks">
     <li>un PDF de <strong>exactement</strong> 10 Mo, pour savoir si la limite d'envoi est réelle</li>
     <li>les trois fichiers de part et d'autre de cette limite, pour attraper les erreurs d'un</li>
@@ -61,7 +61,7 @@
     écrit ici un <code>manifest.json</code> à côté des fichiers - une simple liste de tout ce qui a
     été produit et, pour chaque entrée, une <strong>attente déclarée</strong>.
   </p>
-  <p>Admettons que votre point d'envoi accepte 1 Mo. Demandez les trois fichiers situés sur cette ligne :</p>
+  <p>Admettons que votre point d'envoi accepte 1 Mo. Demandez les trois fichiers situés sur cette ligne&nbsp;:</p>
   <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
 
   <div class="tablewrap">
@@ -77,7 +77,7 @@
     </table>
   </div>
 
-  <p>Trois fichiers, trois réponses différentes, sous forme lisible par machine. Votre test lit le manifeste au lieu que vous écriviez les assertions à la main :</p>
+  <p>Trois fichiers, trois réponses différentes, sous forme lisible par machine. Votre test lit le manifeste au lieu que vous écriviez les assertions à la main&nbsp;:</p>
   <pre><code>import json, os
 
 directory = "edges"
@@ -118,7 +118,7 @@ for entry in manifest["files"]:
   <ol class="steps">
     <li>
       <h3>Créer un fichier</h3>
-      <p>Un PNG, exactement deux mégaoctets :</p>
+      <p>Un PNG, exactement deux mégaoctets&nbsp;:</p>
       <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
     </li>
     <li>
@@ -127,13 +127,13 @@ for entry in manifest["files"]:
         Dix mille fichiers journaux, chacun entre un et huit kilooctets, avec des tailles tirées de la
         graine pour que demain donne le même jeu. <strong>Donnez à chaque exécution son propre
         répertoire</strong> - le manifeste est la seule trace de ce qu'une exécution a écrit, donc
-        l'outil refuse d'en écrire un second par-dessus :
+        l'outil refuse d'en écrire un second par-dessus&nbsp;:
       </p>
       <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
     </li>
     <li>
       <h3>Les vérifier, puis les supprimer</h3>
-      <p><code>verify</code> vous dit que rien n'a bougé. <code>cleanup</code> supprime exactement ce qui a été écrit et rien d'autre :</p>
+      <p><code>verify</code> vous dit que rien n'a bougé. <code>cleanup</code> supprime exactement ce qui a été écrit et rien d'autre&nbsp;:</p>
       <pre><code>tfg verify ./logs/manifest.json
 tfg cleanup ./logs/manifest.json --yes</code></pre>
     </li>

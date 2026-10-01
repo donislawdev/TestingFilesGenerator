@@ -23,7 +23,7 @@
       "slug": "prereglages",
       "nav": "Préréglages",
       "title": "Préréglages de fichiers de test - jeux prêts à l'emploi pour la QA",
-      "description": "Jeux de fichiers de test prêts à l'emploi, un par question : limites d'envoi, noms de fichiers, encodages, import de tableaux, fichiers vides, validation d'envoi."
+      "description": "Jeux de fichiers de test prêts à l'emploi, un par question : limites d'envoi, noms de fichiers, encodages, import de tableaux, fichiers vides, validation d'envoi."
     },
     {
       "key": "docs",
@@ -108,7 +108,7 @@
   },
   "presets": {
     "empty-and-minimal": {
-      "question": "Un fichier valide et aussi petit que le format le permet passe-t-il ?",
+      "question": "Un fichier valide et aussi petit que le format le permet passe-t-il ?",
       "title": "Vide et minimal",
       "pageTitle": "Fichiers de test valides minimaux et vides, dans chaque format",
       "description": "Le plus petit fichier valide que cet outil écrit dans chacun de ses {{ .Facts.FormatCount }} formats, plus un fichier vide quand le format l'autorise, chacun avec la réaction attendue.",
@@ -123,10 +123,10 @@
       }
     },
     "filename-handling": {
-      "question": "Mon système va-t-il stocker, afficher et restituer un nom de fichier auquel il ne s'attendait pas ?",
+      "question": "Mon système va-t-il stocker, afficher et restituer un nom de fichier auquel il ne s'attendait pas ?",
       "title": "Gestion des noms de fichiers",
       "pageTitle": "Noms de fichiers problématiques pour tester - Unicode et longueur",
-      "description": "Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d'écriture, caractères invisibles, syntaxe shell et SQL.",
+      "description": "Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d'écriture, caractères invisibles, syntaxe shell et SQL.",
       "catches": [
         "un nom qui ressemble à un autre à l'écran, dans un journal ou dans une liste",
         "un nom coupé, rogné ou réécrit entre l'envoi et le stockage",
@@ -135,7 +135,7 @@
       "details": {}
     },
     "size-boundaries": {
-      "question": "Une limite de taille est-elle appliquée exactement là où elle est déclarée ?",
+      "question": "Une limite de taille est-elle appliquée exactement là où elle est déclarée ?",
       "title": "Limites de taille",
       "pageTitle": "Tester une limite de taille d'envoi - fichiers à la limite exacte",
       "description": "Des fichiers un octet sous, pile sur et un octet au-dessus de la limite de taille de votre système, plus des paliers plus larges, chacun marqué accepté ou refusé.",
@@ -150,7 +150,7 @@
       }
     },
     "tabular-import": {
-      "question": "Mon import de tableaux résiste-t-il à ce qu'exportent les vrais outils ?",
+      "question": "Mon import de tableaux résiste-t-il à ce qu'exportent les vrais outils ?",
       "title": "Import de tableaux",
       "pageTitle": "Fichiers de test d'import CSV et Excel - séparateurs, en-têtes",
       "description": "CSV avec d'autres séparateurs, fins de ligne CR LF, sans en-tête, autres guillemets, tableau très large, classeur Excel et JSON en plusieurs dispositions.",
@@ -167,7 +167,7 @@
       }
     },
     "text-encoding": {
-      "question": "Mon lecteur sait-il dans quel encodage est un fichier, ou devine-t-il ?",
+      "question": "Mon lecteur sait-il dans quel encodage est un fichier, ou devine-t-il ?",
       "title": "Encodage du texte",
       "pageTitle": "Fichiers de test d'encodage de texte - UTF-8, UTF-16, BOM, CRLF",
       "description": "Le même texte en UTF-8, UTF-16LE et UTF-16BE, avec et sans BOM, et des fins de ligne CR LF et LF, pour tester le décodage d'un lecteur.",
@@ -182,10 +182,10 @@
       }
     },
     "upload-validation": {
-      "question": "Mon formulaire d'envoi accepte-t-il ce qu'il doit et refuse-t-il le reste ?",
+      "question": "Mon formulaire d'envoi accepte-t-il ce qu'il doit et refuse-t-il le reste ?",
       "title": "Validation d'envoi",
       "pageTitle": "Fichiers de test de validation d'envoi - type, taille et nom",
-      "description": "Fichiers pour tester un formulaire d'envoi : types autorisés et refusés, contenu qui ne correspond pas à l'extension, limite de taille, noms hostiles, envoi en masse.",
+      "description": "Fichiers pour tester un formulaire d'envoi : types autorisés et refusés, contenu qui ne correspond pas à l'extension, limite de taille, noms hostiles, envoi en masse.",
       "catches": [
         "une limite appliquée dans le navigateur et pas sur le serveur",
         "un SVG ou un HTML pris pour une image ou pour du texte brut, un moyen de faire passer un script à travers un formulaire",
@@ -250,54 +250,54 @@
   },
   "faq": [
     {
-      "q": "En quoi est-ce différent de dd, fsutil ou truncate ?",
+      "q": "En quoi est-ce différent de dd, fsutil ou truncate ?",
       "a": "Ces commandes donnent un fichier de la bonne taille rempli de rien. Un fichier de 2 Mo nommé photo.png fabriqué ainsi n'est pas un PNG, donc tout ce qui l'analyse vraiment le refuse pour la mauvaise raison, et votre test réussit alors lui aussi pour la mauvaise raison. Cet outil produit un vrai PNG d'exactement 2 Mo, qui s'ouvre dans une visionneuse d'images, accompagné d'une déclaration sur la façon dont votre système doit le traiter.",
       "code": "tfg generate --format png --size 2mb --out ./fixtures"
     },
     {
-      "q": "Est-ce gratuit, et puis-je l'utiliser au travail ?",
+      "q": "Est-ce gratuit, et puis-je l'utiliser au travail ?",
       "a": "Oui aux deux. Il est publié sous GPL-3.0 et ne coûte rien. Il n'y a ni compte, ni clé de licence, ni offre payante."
     },
     {
-      "q": "Puis-je utiliser les fichiers générés dans un produit propriétaire ?",
+      "q": "Puis-je utiliser les fichiers générés dans un produit propriétaire ?",
       "a": "Oui. La licence couvre le code de l'outil, pas ce qu'il produit. Les fichiers, recettes et manifestes générés sont une sortie et non des œuvres dérivées, vous pouvez donc les commiter et les livrer sans aucune obligation."
     },
     {
-      "q": "Les fichiers générés contiennent-ils de vraies données personnelles ?",
+      "q": "Les fichiers générés contiennent-ils de vraies données personnelles ?",
       "a": "Non. Tout ce qu'ils contiennent est synthétisé à partir d'une graine. Aucun jeu de données n'est lu, aucun service n'est contacté et aucun contenu tiers n'est intégré. Considérez une adresse e-mail générée comme inutilisable plutôt que comme inutilisée, car n'importe quelle chaîne aléatoire peut coïncider par hasard avec une vraie."
     },
     {
-      "q": "Obtiendrai-je exactement les mêmes fichiers sur une autre machine ?",
+      "q": "Obtiendrai-je exactement les mêmes fichiers sur une autre machine ?",
       "a": "Oui, à l'octet près, avec la même recette et la même graine. Le projet le teste à chaque modification, et le casser exige un changement de version majeure. C'est ce qui vous permet de commiter une petite recette plutôt que de gros fixtures binaires."
     },
     {
-      "q": "Faut-il une connexion internet ?",
+      "q": "Faut-il une connexion internet ?",
       "a": "Jamais. Il n'y a ni télémétrie, ni vérification de mises à jour, ni client cloud, et le binaire en ligne de commande n'a aucune pile réseau compilée dedans. Il fonctionne sur une machine sans réseau et dans un environnement d'entreprise fermé."
     },
     {
-      "q": "Que se passe-t-il si je demande une taille qu'un format ne peut pas atteindre ?",
+      "q": "Que se passe-t-il si je demande une taille qu'un format ne peut pas atteindre ?",
       "a": "Vous obtenez une erreur qui nomme le format, la taille minimale possible, la raison de ce plancher et ce qu'il faut faire à la place, et aucun fichier n'est écrit. L'outil n'arrondit jamais une taille en silence. Chaque plancher est listé sur la page des formats.",
       "code": "tfg formats png"
     },
     {
-      "q": "Puis-je générer un fichier volontairement cassé ?",
+      "q": "Puis-je générer un fichier volontairement cassé ?",
       "a": "Pas encore. Les fichiers abîmés et mal formés sont une fonctionnalité prévue. Aujourd'hui, chaque fichier écrit par l'outil est un fichier valide de son format."
     },
     {
-      "q": "Quels formats arrivent ensuite ?",
+      "q": "Quels formats arrivent ensuite ?",
       "a": "7z, mp3 et mp4. {{ .Facts.FormatCount }} formats fonctionnent de bout en bout aujourd'hui."
     },
     {
-      "q": "Sur quels systèmes puis-je l'exécuter ?",
+      "q": "Sur quels systèmes puis-je l'exécuter ?",
       "a": "La ligne de commande fonctionne sous Windows et Linux, sur Intel comme sur ARM, et sur les Mac Apple silicon. La fenêtre de bureau est fournie pour Windows sur Intel, Linux sur Intel et les Mac Apple silicon. Les Mac Intel ne sont pas pris en charge et rien n'est construit pour eux."
     },
     {
-      "q": "Dois-je installer quelque chose ?",
+      "q": "Dois-je installer quelque chose ?",
       "a": "Non. Téléchargez l'archive de votre système, décompressez-la et lancez le binaire. Il n'y a pas d'installateur, pas d'environnement d'exécution à ajouter et pas de dépendance à résoudre. Si vous avez Go, une seule commande go install fonctionne aussi.",
       "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
     },
     {
-      "q": "Pourquoi une exécution sur des milliers de fichiers est-elle plus lente sous Windows ?",
+      "q": "Pourquoi une exécution sur des milliers de fichiers est-elle plus lente sous Windows ?",
       "a": "Parce que Windows facture plus cher chaque chemin qu'il examine, et une commande qui parcourt des milliers de fichiers examine des milliers de chemins. Mesuré sur une machine avec 3000 fichiers de 1 ko, verify prend environ 0,9 seconde sous Windows et environ 0,2 seconde sous Linux dans un conteneur. Un chemin de sortie plus court réduit le chiffre de Windows, car chaque dossier au-dessus des fichiers fait partie de ce qui est examiné."
     }
   ]

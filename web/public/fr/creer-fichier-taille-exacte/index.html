@@ -153,9 +153,9 @@
 <div class="note">
   <p class="note-title">La réponse courte</p>
   <p>
-    Windows : <code>fsutil file createnew name 10485760</code>. Linux : <code>dd if=/dev/zero of=name
-    bs=1M count=10</code>. macOS : <code>mkfile 10m name</code>. Les tailles sont en octets, et 10
-    Mo comptés comme les compte votre gestionnaire de fichiers font 10485760 octets.
+    Windows&nbsp;: <code>fsutil file createnew name 10485760</code>. Linux&nbsp;: <code>dd if=/dev/zero
+    of=name bs=1M count=10</code>. macOS&nbsp;: <code>mkfile 10m name</code>. Les tailles sont en
+    octets, et 10 Mo comptés comme les compte votre gestionnaire de fichiers font 10485760 octets.
   </p>
 </div>
 
@@ -168,10 +168,10 @@
   </p>
   <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
   <p>
-    Mesuré sous Windows 11 : cela fonctionne depuis une invite ordinaire sans exiger de droits élevés,
-    et le fichier fait exactement 10485760 octets.
+    Mesuré sous Windows 11&nbsp;: cela fonctionne depuis une invite ordinaire sans exiger de droits
+    élevés, et le fichier fait exactement 10485760 octets.
   </p>
-  <p>PowerShell sait faire la même chose sans appeler un autre programme, et il comprend les unités :</p>
+  <p>PowerShell sait faire la même chose sans appeler un autre programme, et il comprend les unités&nbsp;:</p>
   <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
 $file.SetLength(10MB)
 $file.Close()</code></pre>
@@ -184,21 +184,21 @@ $file.Close()</code></pre>
 <section class="section" id="linux">
   <p class="eyebrow">Linux</p>
   <h2>dd, truncate et fallocate, et la différence qui piège les gens</h2>
-  <p><code>dd</code> est celle que tout le monde connaît. Elle écrit vraiment les octets :</p>
+  <p><code>dd</code> est celle que tout le monde connaît. Elle écrit vraiment les octets&nbsp;:</p>
   <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
   <p>
     <code>truncate</code> est instantané, et c'est là le piège. Mesuré sous Alpine Linux, le fichier
     annonce 10485760 octets et occupe <strong>zéro bloc</strong> - c'est un <strong>fichier
     creux</strong>. Tout ce qui le lit obtient dix mégaoctets de zéros, mais le disque n'a jamais
-    cédé la place :
+    cédé la place&nbsp;:
   </p>
   <pre><code>truncate -s 10M test10mb.bin</code></pre>
   <p>
     C'est correct pour tester une limite d'envoi et trompeur pour tester un quota de disque.
-    <code>fallocate</code> est celui à choisir quand l'espace doit être réel :
+    <code>fallocate</code> est celui à choisir quand l'espace doit être réel&nbsp;:
   </p>
   <pre><code>fallocate -l 10M test10mb.bin</code></pre>
-  <p>Et quand le contenu doit être incompressible, pour qu'un archiveur ne puisse pas le réduire à nouveau :</p>
+  <p>Et quand le contenu doit être incompressible, pour qu'un archiveur ne puisse pas le réduire à nouveau&nbsp;:</p>
   <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
 </section>
 
@@ -206,11 +206,11 @@ $file.Close()</code></pre>
   <p class="eyebrow">macOS</p>
   <h2>mkfile, qui n'est pas creux, et les deux que vous connaissez déjà</h2>
   <p>
-    macOS fournit <code>mkfile</code>. Mesuré sous macOS 26.6.2 : 10485760 octets et 20480 blocs, donc
-    l'espace est réellement alloué plutôt que promis :
+    macOS fournit <code>mkfile</code>. Mesuré sous macOS 26.6.2&nbsp;: 10485760 octets et 20480 blocs,
+    donc l'espace est réellement alloué plutôt que promis&nbsp;:
   </p>
   <pre><code>mkfile 10m test10mb.bin</code></pre>
-  <p><code>dd</code> et <code>truncate</code> sont là aussi et se comportent comme sous Linux :</p>
+  <p><code>dd</code> et <code>truncate</code> sont là aussi et se comportent comme sous Linux&nbsp;:</p>
   <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
 truncate -s 10M test10mb.bin</code></pre>
 </section>
@@ -224,7 +224,7 @@ truncate -s 10M test10mb.bin</code></pre>
     <strong>ouvre</strong> le fichier.
   </p>
   <p>
-    Mesuré, et cela vaut la peine de le faire vous-même : créez un fichier de 2 Mo avec
+    Mesuré, et cela vaut la peine de le faire vous-même&nbsp;: créez un fichier de 2 Mo avec
     <code>fsutil</code>, appelez-le <code>photo.png</code> et donnez-le à une bibliothèque d'images.
     Pillow répond <code>cannot identify image file</code>. Ce n'est pas un PNG. Cela n'en a jamais
     été un - seul le nom le prétendait.
@@ -249,7 +249,7 @@ truncate -s 10M test10mb.bin</code></pre>
   <p>
     C'est ce que fait Testing Files Generator. Le fichier est un vrai fichier de son format - il s'ouvre
     dans le logiciel qui lui correspond - et il fait le nombre d'octets exact que vous avez demandé,
-    à l'octet près :
+    à l'octet près&nbsp;:
   </p>
   <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
   <p>
@@ -257,7 +257,7 @@ truncate -s 10M test10mb.bin</code></pre>
     plancher et sa raison, jamais un fichier de mauvaise taille. La <a href="/fr/formats/">page des
     formats</a> liste chaque format avec le plus petit fichier qu'il peut produire.
   </p>
-  <p>Et une limite, ce sont trois cas de test et non un, donc l'outil construit les trois :</p>
+  <p>Et une limite, ce sont trois cas de test et non un, donc l'outil construit les trois&nbsp;:</p>
   <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
   <p>
     Cela donne 10485759, 10485760 et 10485761 octets, et un manifeste qui dit lesquels votre système
@@ -272,7 +272,7 @@ truncate -s 10M test10mb.bin</code></pre>
 </section>
 
 <section class="section" id="which">
-  <h2>Alors lequel utiliser ?</h2>
+  <h2>Alors lequel utiliser&nbsp;?</h2>
   <ul class="cards">
     <li class="card">
       <p class="card-title">Utiliser la commande du système</p>

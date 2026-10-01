@@ -6,20 +6,20 @@
 </p>
 
 <section class="section" id="commands">
-  <h2>Quelles commandes existe-t-il ?</h2>
-  <p>Chacune fait une seule chose :</p>
+  <h2>Quelles commandes existe-t-il&nbsp;?</h2>
+  <p>Chacune fait une seule chose&nbsp;:</p>
   {{ template "commandList" . }}
 </section>
 
 <section class="section" id="one-file">
-  <h2>Comment générer un seul fichier de taille exacte ?</h2>
+  <h2>Comment générer un seul fichier de taille exacte&nbsp;?</h2>
   <p>
     Nommez le format, la taille et la destination. Les tailles se comptent par 1024, donc
     <code>2mb</code> font 2097152 octets. Un nombre d'octets brut fonctionne aussi, donc
     <code>--size 10485761</code> demande exactement ce nombre.
   </p>
   <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
-  <p>Les options utiles de <code>generate</code> :</p>
+  <p>Les options utiles de <code>generate</code>&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <thead><tr><th>Option</th><th>Ce qu'elle fait</th></tr></thead>
@@ -27,7 +27,7 @@
         <tr><td><code>--format &lt;id&gt;</code></td><td>format des fichiers, par exemple <code>txt</code></td></tr>
         <tr><td><code>--size &lt;size&gt;</code></td><td>taille exacte de chaque fichier, comme <code>10mb</code> ou un nombre d'octets brut</td></tr>
         <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>une taille tirée par fichier dans une plage, comme <code>1kb-8kb</code>. Le tirage vient de la graine</td></tr>
-        <tr><td><code>--boundary &lt;size&gt;</code></td><td>trois fichiers autour d'une limite : un octet en dessous, la limite, un octet au-dessus</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>trois fichiers autour d'une limite&nbsp;: un octet en dessous, la limite, un octet au-dessus</td></tr>
         <tr><td><code>--count &lt;n&gt;</code></td><td>combien de fichiers produire. Par défaut <code>1</code></td></tr>
         <tr><td><code>--name &lt;template&gt;</code></td><td>modèle de nom, par exemple <code>invoice_{index:04}.txt</code></td></tr>
         <tr><td><code>--out &lt;dir&gt;</code></td><td>répertoire où écrire</td></tr>
@@ -43,7 +43,7 @@
 </section>
 
 <section class="section" id="damage">
-  <h2>Comment fabriquer un fichier volontairement cassé ?</h2>
+  <h2>Comment fabriquer un fichier volontairement cassé&nbsp;?</h2>
   <p>
     Tout autre fichier écrit par cet outil est correct par construction, ce qui répond à deux des trois
     questions que pose un validateur d'envoi. <code>--damage</code> répond à la troisième - le
@@ -57,7 +57,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     écrivez est l'ordre dans lequel ils sont appliqués. <code>tfg damage</code> liste ce que cette
     version sait faire et ce que chacun accepte.
   </p>
-  <p>Dans une recette, la clé est une liste, de noms ou de réglages :</p>
+  <p>Dans une recette, la clé est une liste, de noms ou de réglages&nbsp;:</p>
   <pre><code>targets:
   - id: broken
     format: png
@@ -70,7 +70,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
   <p>
     Un fichier abîmé reçoit <code>expected: reject</code> dans le manifeste, avec l'altération notée à
     côté. Deux choses sont refusées avant que rien ne soit écrit, car chacune mettrait sinon sur le
-    disque un fichier que le manifeste décrit à tort :
+    disque un fichier que le manifeste décrit à tort&nbsp;:
   </p>
   <ul>
     <li>un fichier plus petit que ce dont l'altération a besoin, car il ressortirait inchangé</li>
@@ -88,7 +88,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
 </section>
 
 <section class="section" id="recipes">
-  <h2>À quoi ressemble une recette ?</h2>
+  <h2>À quoi ressemble une recette&nbsp;?</h2>
   <p>
     Une recette est un fichier YAML qui décrit toute une exécution. Commitez-la à côté de vos tests et
     les fixtures cessent d'être des binaires dans votre dépôt - n'importe qui peut les reconstruire,
@@ -133,7 +133,7 @@ output:
   <pre><code>tfg validate fixtures.yaml
 tfg generate fixtures.yaml</code></pre>
   <p>
-    Chaque cible exige exactement une de ces clés : <code>size</code>, <code>size-range</code>,
+    Chaque cible exige exactement une de ces clés&nbsp;: <code>size</code>, <code>size-range</code>,
     <code>boundary</code> ou <code>contains</code>. Deux est une erreur, et aucune aussi. Une
     recette invalide n'écrit <strong>aucun fichier</strong> et signale tous les problèmes d'un coup
     plutôt que le premier seulement, chacun nommant le réglage concerné.
@@ -141,8 +141,8 @@ tfg generate fixtures.yaml</code></pre>
 </section>
 
 <section class="section" id="expectations">
-  <h2>Comment déclarer ce que mon système doit faire d'un fichier ?</h2>
-  <p>Forme courte quand le résultat suffit, forme longue quand la raison compte :</p>
+  <h2>Comment déclarer ce que mon système doit faire d'un fichier&nbsp;?</h2>
+  <p>Forme courte quand le résultat suffit, forme longue quand la raison compte&nbsp;:</p>
   <pre><code>expected: accept</code></pre>
   <pre><code>expected:
   outcome: reject
@@ -150,7 +150,7 @@ tfg generate fixtures.yaml</code></pre>
   <p>
     Les résultats sont <code>accept</code>, <code>reject</code>, <code>sanitize</code> et
     <code>unspecified</code>. Les raisons forment une liste fermée pour qu'un rapport puisse les
-    regrouper : <code>content_malformed</code>, <code>count_limit</code>,
+    regrouper&nbsp;: <code>content_malformed</code>, <code>count_limit</code>,
     <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
     <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
     <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
@@ -165,10 +165,10 @@ tfg generate fixtures.yaml</code></pre>
 </section>
 
 <section class="section" id="manifest">
-  <h2>Que contient le manifeste ?</h2>
+  <h2>Que contient le manifeste&nbsp;?</h2>
   <p>
     Il est écrit à côté des fichiers à la fin de chaque exécution, y compris d'une exécution
-    interrompue. Une entrée par fichier :
+    interrompue. Une entrée par fichier&nbsp;:
   </p>
   <pre><code>{
   "manifest_version": "1.0",
@@ -218,7 +218,7 @@ tfg generate fixtures.yaml</code></pre>
 </section>
 
 <section class="section" id="presets">
-  <h2>Qu'est-ce qu'un préréglage ?</h2>
+  <h2>Qu'est-ce qu'un préréglage&nbsp;?</h2>
   <p>
     Un jeu de fichiers prêt à l'emploi qui répond à une question de test courante, pour que vous n'ayez
     pas à concevoir le jeu vous-même. Les préréglages sont des recettes ordinaires en dessous, et
@@ -238,7 +238,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 </section>
 
 <section class="section" id="ci">
-  <h2>Que signifient les codes de sortie ?</h2>
+  <h2>Que signifient les codes de sortie&nbsp;?</h2>
   <p>
     Chaque fin a son propre code, la sortie lisible par machine va sur la sortie standard, et une
     exécution échouée n'y écrit rien. Le tableau est un contrat figé - changer le sens d'un code
@@ -260,11 +260,12 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 </section>
 
 <section class="section" id="window">
-  <h2>Y a-t-il une fenêtre de bureau ?</h2>
+  <h2>Y a-t-il une fenêtre de bureau&nbsp;?</h2>
   <p>
     Oui, le même moteur avec une fenêtre, pour les tests qui ne sont pas scriptés. Ce n'est pas une
-    version amputée : un test compare les deux interfaces fonctionnalité par fonctionnalité, et tout
-    ce que seule l'une peut faire doit être déclaré et justifié au lieu de diverger discrètement.
+    version amputée&nbsp;: un test compare les deux interfaces fonctionnalité par fonctionnalité, et
+    tout ce que seule l'une peut faire doit être déclaré et justifié au lieu de diverger
+    discrètement.
   </p>
   <p>
     Les écrans sont un lot, les préréglages, plusieurs lots à la fois et À propos. Elle montre ce que

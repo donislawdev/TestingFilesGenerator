@@ -151,7 +151,7 @@
 
 <p class="eyebrow"><a href="/fr/prereglages/">Préréglages</a></p>
 <h1>Vide et minimal</h1>
-<p class="lead">Un fichier valide et aussi petit que le format le permet passe-t-il ?</p>
+<p class="lead">Un fichier valide et aussi petit que le format le permet passe-t-il ?</p>
 <p>
   Le préréglage <code>empty-and-minimal</code> construit en une commande tout un jeu de vrais fichiers de test
   pour cette question, avec un <code>manifest.json</code> à côté qui dit comment votre système doit
@@ -161,7 +161,7 @@
 
 
 <section class="section" id="catches">
-  <h2>Que trouve-t-il d'habitude ?</h2>
+  <h2>Que trouve-t-il d'habitude&nbsp;?</h2>
   <ul class="ticks">
     <li>un fichier valide refusé parce que trop petit, quand le contrôle compte les octets au lieu de les lire</li>
     <li>un fichier vide qui fait tomber le lecteur au lieu d&#39;être signalé</li>
@@ -172,8 +172,8 @@
 
 
 <section class="section" id="set">
-  <h2>Que contient le jeu ?</h2>
-  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show empty-and-minimal</code> :</p>
+  <h2>Que contient le jeu&nbsp;?</h2>
+  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show empty-and-minimal</code>&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <tbody>
@@ -184,7 +184,7 @@
       </tbody>
     </table>
   </div>
-  <p>Et ce que le manifeste de ce jeu attend de votre système :</p>
+  <p>Et ce que le manifeste de ce jeu attend de votre système&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -199,7 +199,7 @@
 </section>
 
 <section class="section" id="settings">
-  <h2>Que pouvez-vous modifier ?</h2>
+  <h2>Que pouvez-vous modifier&nbsp;?</h2>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -218,12 +218,12 @@
 </section>
 
 <section class="section" id="run">
-  <h2>Comment le lancer ?</h2>
-  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier :</p>
+  <h2>Comment le lancer&nbsp;?</h2>
+  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier&nbsp;:</p>
   <pre><code>tfg preset show empty-and-minimal
 tfg generate --preset empty-and-minimal --out ./empty-and-minimal
 tfg preset eject empty-and-minimal &gt; empty-and-minimal.yaml</code></pre>
-  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests :</p>
+  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests&nbsp;:</p>
   <pre><code>version: 1
 extends: preset:empty-and-minimal</code></pre>
 </section>

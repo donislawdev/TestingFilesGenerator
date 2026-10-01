@@ -16,6 +16,20 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **The website in twenty-two languages.** Beside English and Polish it now
+  reads in Simplified and Traditional Chinese, Japanese, German, French,
+  Spanish, Brazilian Portuguese, Italian, Indonesian, Russian, Turkish, Czech,
+  Vietnamese, Hindi, Korean, Arabic, Romanian, Dutch, Ukrainian and Thai.
+  Every page exists in every language, with the same facts: the numbers come
+  from the program, the same as before. A menu in the header lists the
+  languages by the names they call themselves. Arabic reads from right to
+  left, and commands and code stay left to right in it. Each page tells a
+  search engine which language it is in and where its translations are, so
+  somebody searching in their own language is sent to the page in it. The
+  pages of Latin-script languages have addresses in the language
+  (`/de/dokumentation/`), the others keep the English words under the
+  language prefix (`/ja/docs/`). The window and the command line are not
+  part of this.
 - **A Tools tab, and `tfg tool`.** Small things to do with files you already
   have, in the window and on the command line with the same settings. The
   first works out the checksum of a file - md5, sha1, sha256, sha512 or crc32,

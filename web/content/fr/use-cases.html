@@ -9,9 +9,9 @@
   <p class="eyebrow">Limites d'envoi</p>
   <h2>Tester si une limite de taille de fichier est appliquée là où elle le dit</h2>
   <p>
-    Une limite, ce sont trois cas de test, pas un : juste en dessous, pile dessus et juste au-dessus.
-    Les obtenir à la main revient à calculer des nombres d'octets en espérant ne pas s'être trompé
-    d'un. Demandez plutôt le jeu :
+    Une limite, ce sont trois cas de test, pas un&nbsp;: juste en dessous, pile dessus et juste
+    au-dessus. Les obtenir à la main revient à calculer des nombres d'octets en espérant ne pas
+    s'être trompé d'un. Demandez plutôt le jeu&nbsp;:
   </p>
   <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
   <p>
@@ -21,7 +21,7 @@
     change, vous changez un nombre et relancez.
   </p>
   <p>
-    La même chose fonctionne sans préréglage quand vous voulez un seul jeu de limites en ligne :
+    La même chose fonctionne sans préréglage quand vous voulez un seul jeu de limites en ligne&nbsp;:
   </p>
   <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
 </section>
@@ -63,7 +63,7 @@
   <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
   <p>
     Vérifiez ce que coûterait une exécution avant qu'elle n'écrive quoi que ce soit, ce qui compte quand
-    le total se mesure en gigaoctets :
+    le total se mesure en gigaoctets&nbsp;:
   </p>
   <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
   <p>
@@ -77,7 +77,7 @@
   <h2>Tester un décompresseur avec une archive qui contient vraiment des fichiers</h2>
   <p>
     Une archive vide avec la bonne extension ne prouve rien sur le code qui l'ouvre et parcourt ce
-    qu'elle contient. Déclarez le contenu et l'archive le contient vraiment :
+    qu'elle contient. Déclarez le contenu et l'archive le contient vraiment&nbsp;:
   </p>
   <pre><code>targets:
   - id: bundle

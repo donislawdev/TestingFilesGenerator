@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="content-language" content="fr">
 <title>Noms de fichiers problématiques pour tester - Unicode et longueur</title>
-<meta name="description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
+<meta name="description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
 <link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/filename-handling/">
@@ -34,7 +34,7 @@
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="Noms de fichiers problématiques pour tester - Unicode et longueur">
-<meta property="og:description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
+<meta property="og:description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
@@ -63,7 +63,7 @@
 <meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Noms de fichiers problématiques pour tester - Unicode et longueur">
-<meta name="twitter:description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
+<meta name="twitter:description" content="Fichiers aux noms qui font échouer envois et stockage : autres écritures, emoji, inversion du sens d&#39;écriture, caractères invisibles, syntaxe shell et SQL.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta name="twitter:image:alt" content="Testing Files Generator - de vrais fichiers de test à la taille exacte, avec un manifeste qui dit comment votre système doit réagir à chacun">
 <meta name="theme-color" content="#131417">
@@ -151,7 +151,7 @@
 
 <p class="eyebrow"><a href="/fr/prereglages/">Préréglages</a></p>
 <h1>Gestion des noms de fichiers</h1>
-<p class="lead">Mon système va-t-il stocker, afficher et restituer un nom de fichier auquel il ne s&#39;attendait pas ?</p>
+<p class="lead">Mon système va-t-il stocker, afficher et restituer un nom de fichier auquel il ne s&#39;attendait pas ?</p>
 <p>
   Le préréglage <code>filename-handling</code> construit en une commande tout un jeu de vrais fichiers de test
   pour cette question, avec un <code>manifest.json</code> à côté qui dit comment votre système doit
@@ -161,7 +161,7 @@
 
 
 <section class="section" id="catches">
-  <h2>Que trouve-t-il d'habitude ?</h2>
+  <h2>Que trouve-t-il d'habitude&nbsp;?</h2>
   <ul class="ticks">
     <li>un nom qui ressemble à un autre à l&#39;écran, dans un journal ou dans une liste</li>
     <li>un nom coupé, rogné ou réécrit entre l&#39;envoi et le stockage</li>
@@ -171,8 +171,8 @@
 
 
 <section class="section" id="set">
-  <h2>Que contient le jeu ?</h2>
-  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show filename-handling</code> :</p>
+  <h2>Que contient le jeu&nbsp;?</h2>
+  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show filename-handling</code>&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <tbody>
@@ -183,7 +183,7 @@
       </tbody>
     </table>
   </div>
-  <p>Et ce que le manifeste de ce jeu attend de votre système :</p>
+  <p>Et ce que le manifeste de ce jeu attend de votre système&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -198,7 +198,7 @@
 </section>
 
 <section class="section" id="settings">
-  <h2>Que pouvez-vous modifier ?</h2>
+  <h2>Que pouvez-vous modifier&nbsp;?</h2>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -217,12 +217,12 @@
 </section>
 
 <section class="section" id="run">
-  <h2>Comment le lancer ?</h2>
-  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier :</p>
+  <h2>Comment le lancer&nbsp;?</h2>
+  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier&nbsp;:</p>
   <pre><code>tfg preset show filename-handling
 tfg generate --preset filename-handling --out ./filename-handling
 tfg preset eject filename-handling &gt; filename-handling.yaml</code></pre>
-  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests :</p>
+  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests&nbsp;:</p>
   <pre><code>version: 1
 extends: preset:filename-handling</code></pre>
 </section>

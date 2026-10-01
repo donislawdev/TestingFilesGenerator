@@ -151,7 +151,7 @@
 
 <p class="eyebrow"><a href="/fr/prereglages/">Préréglages</a></p>
 <h1>Limites de taille</h1>
-<p class="lead">Une limite de taille est-elle appliquée exactement là où elle est déclarée ?</p>
+<p class="lead">Une limite de taille est-elle appliquée exactement là où elle est déclarée ?</p>
 <p>
   Le préréglage <code>size-boundaries</code> construit en une commande tout un jeu de vrais fichiers de test
   pour cette question, avec un <code>manifest.json</code> à côté qui dit comment votre système doit
@@ -161,7 +161,7 @@
 
 
 <section class="section" id="catches">
-  <h2>Que trouve-t-il d'habitude ?</h2>
+  <h2>Que trouve-t-il d'habitude&nbsp;?</h2>
   <ul class="ticks">
     <li>des erreurs d&#39;un à la limite</li>
     <li>Mo confondu avec Mio, soit 4,8 pour cent, assez pour laisser passer un fichier qui ne devrait pas passer</li>
@@ -171,8 +171,8 @@
 
 
 <section class="section" id="set">
-  <h2>Que contient le jeu ?</h2>
-  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show size-boundaries</code> :</p>
+  <h2>Que contient le jeu&nbsp;?</h2>
+  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show size-boundaries</code>&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <tbody>
@@ -183,7 +183,7 @@
       </tbody>
     </table>
   </div>
-  <p>Et ce que le manifeste de ce jeu attend de votre système :</p>
+  <p>Et ce que le manifeste de ce jeu attend de votre système&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -198,7 +198,7 @@
 </section>
 
 <section class="section" id="settings">
-  <h2>Que pouvez-vous modifier ?</h2>
+  <h2>Que pouvez-vous modifier&nbsp;?</h2>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -229,12 +229,12 @@
 </section>
 
 <section class="section" id="run">
-  <h2>Comment le lancer ?</h2>
-  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier :</p>
+  <h2>Comment le lancer&nbsp;?</h2>
+  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier&nbsp;:</p>
   <pre><code>tfg preset show size-boundaries
 tfg generate --preset size-boundaries --limit 10mb --out ./size-boundaries
 tfg preset eject size-boundaries &gt; size-boundaries.yaml</code></pre>
-  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests :</p>
+  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests&nbsp;:</p>
   <pre><code>version: 1
 extends: preset:size-boundaries
 with:

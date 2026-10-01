@@ -34,15 +34,7 @@ var (
 // and two with one tag give a page two alternates that disagree.
 func checkLanguages(langs []Language) error {
 	roots := 0
-	seen := map[string]string{}
-	claim := func(kind, value, code string) error {
-		key := kind + " " + value
-		if other, taken := seen[key]; taken {
-			return fmt.Errorf("the %s %q is used by both %s and %s", kind, value, other, code)
-		}
-		seen[key] = code
-		return nil
-	}
+	claims := claimed{}
 	for _, l := range langs {
 		if err := checkLanguage(l); err != nil {
 			return err
@@ -50,18 +42,32 @@ func checkLanguages(langs []Language) error {
 		if l.Dir == "" {
 			roots++
 		}
-		// In a fixed order, so the same mistake always reads the same.
-		for _, c := range [][2]string{{"code", l.Code}, {"locale", l.Locale}, {"directory", l.Dir}} {
-			if c[0] == "directory" && c[1] == "" {
-				continue
-			}
-			if err := claim(c[0], c[1], l.Code); err != nil {
-				return err
-			}
+		if err := claims.add(l); err != nil {
+			return err
 		}
 	}
 	if roots != 1 {
 		return fmt.Errorf("%d languages are served at the root and exactly one has to be, because x-default points at it", roots)
+	}
+	return nil
+}
+
+// claimed remembers which language holds each value that has to be unique.
+type claimed map[string]string
+
+// add records the values of one language, or says which earlier language
+// already holds one of them.
+func (c claimed) add(l Language) error {
+	// In a fixed order, so the same mistake always reads the same.
+	for _, v := range [][2]string{{"code", l.Code}, {"locale", l.Locale}, {"directory", l.Dir}} {
+		if v[0] == "directory" && v[1] == "" {
+			continue
+		}
+		key := v[0] + " " + v[1]
+		if other, taken := c[key]; taken {
+			return fmt.Errorf("the %s %q is used by both %s and %s", v[0], v[1], other, l.Code)
+		}
+		c[key] = l.Code
 	}
 	return nil
 }

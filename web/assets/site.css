@@ -857,6 +857,16 @@ pre code {
     "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
 }
 
+/* Japanese has no spaces to break a line at, so a browser that can read the
+ * phrases breaks between them rather than in the middle of one, and the strict
+ * rules keep small kana and the long vowel mark off the start of a line. A
+ * browser that does not know the first property ignores it and breaks as it
+ * always did. */
+:root:lang(ja) {
+  word-break: auto-phrase;
+  line-break: strict;
+}
+
 :root:lang(ko) {
   --sans: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic",
     "Noto Sans CJK KR", "Noto Sans KR", sans-serif;

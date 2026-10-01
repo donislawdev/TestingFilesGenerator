@@ -11,7 +11,7 @@
 
 {{ if .Catches }}
 <section class="section" id="catches">
-  <h2>Que trouve-t-il d'habitude ?</h2>
+  <h2>Que trouve-t-il d'habitude&nbsp;?</h2>
   <ul class="ticks">
   {{- range .Catches }}
     <li>{{ . }}</li>
@@ -21,8 +21,8 @@
 {{ end }}
 
 <section class="section" id="set">
-  <h2>Que contient le jeu ?</h2>
-  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show {{ .ID }}</code> :</p>
+  <h2>Que contient le jeu&nbsp;?</h2>
+  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show {{ .ID }}</code>&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <tbody>
@@ -33,7 +33,7 @@
       </tbody>
     </table>
   </div>
-  <p>Et ce que le manifeste de ce jeu attend de votre système :</p>
+  <p>Et ce que le manifeste de ce jeu attend de votre système&nbsp;:</p>
   <div class="tablewrap">
     <table class="data">
       <thead>
@@ -49,7 +49,7 @@
 </section>
 
 <section class="section" id="settings">
-  <h2>Que pouvez-vous modifier ?</h2>
+  <h2>Que pouvez-vous modifier&nbsp;?</h2>
   {{- if .Settings }}
   <div class="tablewrap">
     <table class="data">
@@ -74,12 +74,12 @@
 </section>
 
 <section class="section" id="run">
-  <h2>Comment le lancer ?</h2>
-  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier :</p>
+  <h2>Comment le lancer&nbsp;?</h2>
+  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier&nbsp;:</p>
   <pre><code>tfg preset show {{ .ID }}
 tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
 tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
-  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests :</p>
+  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests&nbsp;:</p>
   <pre><code>version: 1
 extends: preset:{{ .ID }}
 {{- with .Placeholders }}
