@@ -52,6 +52,22 @@
       "nav": "SSS",
       "title": "SSS - test dosyası üretimi hakkında sorular",
       "description": "dd ve fsutil'den farkı, dosyaların commit edilip edilemeyeceği, çalıştırmaların bayt bayt tekrar edip etmediği ve bir boyuta ulaşılamadığında ne olduğu."
+    },
+    {
+      "key": "damage",
+      "slug": "bozuk-test-dosyalari",
+      "nav": "Bozuk dosyalar",
+      "title": "Bozuk test dosyaları - tam boyutta bozuk dosyalar",
+      "description": "Kasıtlı bozulmuş, tam boyutta bir dosya ve sisteminizin onu reddetmesi gerektiğini söyleyen bir bildirim. Yükleme doğrulaması ve ayrıştırıcıları sınamak için.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "ci-icinde-test-dosyalari",
+      "nav": "CI'da test dosyaları",
+      "title": "CI'da test dosyaları - GitHub Actions, GitLab CI ve PowerShell",
+      "description": "İkili dosya commit etmek yerine test dosyalarını hat içinde üretin: GitHub Actions iş akışı, GitLab işi, çıkış kodları ve PowerShell tuzağı.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Takip ettiğiniz adres bu sitedeki hiçbir sayfayla eşleşmiyor.",
     "notFoundBack": "Ana sayfaya git",
     "read.format": "Setteki her dosyanın biçimi. Aracın kendi bayrağıdır ve hazır ayar yalnızca ona bir varsayılan verir.",
-    "readTakes.format": "biçimler sayfasındaki bir biçim kimliği"
+    "readTakes.format": "biçimler sayfasındaki bir biçim kimliği",
+    "colDamage": "Hasar",
+    "colEffect": "Baytlara ne yapar",
+    "colSettings": "Ayarlar",
+    "noSettings": "yok"
   },
   "endings": {
     "0": "Her şey çalıştı.",
@@ -222,6 +242,9 @@
     "sanitize": "Sisteminiz dosyayı kabul edip temizlemeli, örneğin yeniden adlandırarak.",
     "unspecified": "Sisteminizin kurallarına bağlı. Siz karar verirsiniz, sonra olanın amaçladığınız şey olduğunu doğrularsınız."
   },
+  "damages": {
+    "zero-head": "Dosyanın ilk baytlarını uzunluğuna dokunmadan sıfırlarla ezer. Okuyucuların çoğu önce oraya bakar, bu yüzden hemen her şey bu hasarı fark eder."
+  },
   "terms": {
     "oracleNone": "uygulanamaz",
     "int": "herhangi bir tam sayı",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Kasıtlı olarak bozuk bir dosya üretebilir miyim?",
-      "a": "Henüz değil. Hasarlı ve hatalı biçimli dosyalar planlanan bir özelliktir. Bugün aracın yazdığı her dosya biçiminin geçerli bir dosyasıdır."
+      "a": "Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Sırada hangi biçimler var?",

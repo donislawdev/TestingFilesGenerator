@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ro">
+<title>Fișiere de test corupte - fișiere stricate de mărime exactă</title>
+<meta name="description" content="Un fișier stricat intenționat, de mărime exactă, cu un manifest care spune că sistemul tău trebuie să îl respingă. Pentru validarea încărcărilor și parsere.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/corrupt-test-files/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:title" content="Fișiere de test corupte - fișiere stricate de mărime exactă">
+<meta property="og:description" content="Un fișier stricat intenționat, de mărime exactă, cu un manifest care spune că sistemul tău trebuie să îl respingă. Pentru validarea încărcărilor și parsere.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fișiere de test corupte - fișiere stricate de mărime exactă">
+<meta name="twitter:description" content="Un fișier stricat intenționat, de mărime exactă, cu un manifest care spune că sistemul tău trebuie să îl respingă. Pentru validarea încărcărilor și parsere.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Acasă",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ro/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Cazuri de utilizare",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/cazuri-de-utilizare\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Fișiere corupte",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ro\/fisiere-de-test-corupte\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ro/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/ro/">Acasă</a>
+      <a href="/ro/formate/">Formate</a>
+      <a href="/ro/presetari/">Presetări</a>
+      <a href="/ro/documentatie/">Documentație</a>
+      <a href="/ro/cazuri-de-utilizare/" aria-current="true">Cazuri de utilizare</a>
+      <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
+      <a href="/ro/intrebari-frecvente/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Limba: Română">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Română</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/corrupt-test-files/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/corrupt-test-files/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/beschaedigte-testdateien/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-corruptos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-corrompus/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/corrupt-test-files/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-rusak/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-corrotti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/corrupt-test-files/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/corrupt-test-files/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/uszkodzone-pliki-testowe/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-corrompidos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ru/corrupt-test-files/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/corrupt-test-files/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/corrupt-test-files/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/corrupt-test-files/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></p>
+<h1>Cum faci un fișier corupt pentru teste</h1>
+<p class="lead">
+  Un validator căruia i s-au arătat doar fișiere sănătoase nu a fost cu adevărat testat. Iată cum
+  obții un fișier stricat intenționat, care iese cu <strong>exact mărimea pe care o ceri</strong> și
+  vine cu un manifest care spune ce trebuie să facă sistemul tău cu el.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> scrie un PNG de
+    exact 2097152 de octeți ai cărui primi octeți sunt zerouri, iar manifestul de lângă el notează
+    că sistemul tău trebuie să îl respingă.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Calea obișnuită</p>
+  <h2>De ce un fișier corupt de mână face un test prost</h2>
+  <p>
+    Căile obișnuite sunt un editor hexazecimal, un script care schimbă câțiva octeți la întâmplare sau
+    un fișier scurtat cu <code>head</code> ori <code>truncate</code>. Merg o dată, apoi te costă:
+  </p>
+  <ul>
+    <li>
+      <strong>Este altfel de fiecare dată.</strong> Un octet ales la întâmplare cade în alt loc la fiecare
+      rulare, deci o eroare de marți poate să nu se mai întoarcă miercuri.
+    </li>
+    <li>
+      <strong>Schimbă mărimea.</strong> Un fișier tăiat este mai mic decât limita sub care trebuia să
+      stea, deci verificarea mărimii răspunde înaintea celei a conținutului, iar testul trece din
+      motivul greșit.
+    </li>
+    <li>
+      <strong>Adesea trece neobservat.</strong> Textul simplu se citește în continuare cu un octet
+      schimbat la mijloc, iar un cititor de imagini îngăduitor îl desenează pur și simplu, așa că
+      fișierul care trebuia să fie stricat este acceptat.
+    </li>
+    <li>
+      <strong>Nu spune nimic despre ce trebuie să se întâmple.</strong> Fișierul este doar octeți, iar
+      cine citește testul mai târziu trebuie să ghicească dacă s-a urmărit acceptarea sau
+      respingerea.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Ce primești</p>
+  <h2>Un fișier deteriorat are în continuare mărimea cerută</h2>
+  <p>
+    Fișierul este generat normal și stricat după aceea, pe drumul spre disc. Păstrează mărimea cerută,
+    iar aceeași comandă scrie din nou aceiași octeți.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Setările se scriu după două puncte. Opțiunea poate fi repetată, iar deteriorările se aplică în
+    ordinea în care le scrii. Funcționează cu fiecare dintre cele 26 formate.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Ce poate face</p>
+  <h2>Ce deteriorări există?</h2>
+  <p>
+    Aceasta este lista pe care o afișează programul, citită din el când se construiește pagina.
+    <code>tfg damage</code> o afișează pe aceeași, iar <code>tfg damage &lt;id&gt;</code> spune ce
+    primește una dintre ele.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Deteriorare</th>
+      <th>Ce face cu octeții</th>
+      <th class="num">Cel mai mic fișier</th>
+      <th>Setări</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>zero-head</code></td>
+      <td>Suprascrie cu zerouri primii octeți ai fișierului, fără să îi schimbe lungimea. Majoritatea cititorilor se uită întâi acolo, deci aproape orice observă această deteriorare.</td>
+      <td class="num">8</td>
+      <td><code>bytes</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    <code>zero-head</code> scrie zerouri peste începutul fișierului. Majoritatea cititorilor se uită
+    întâi acolo, la semnătura și antetul care spun ce este fișierul, așa că aproape orice cititor
+    observă. Textul simplu și jurnalele nu au semnătură și sunt respinse și ele, pentru că un șir de
+    octeți nuli nu este text. Sub patru octeți, unele formate ies cu o deteriorare de care nu se
+    plânge niciun cititor, de aceea setarea începe de la patru.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Ce spune manifestul</p>
+  <h2>Un manifest care spune ce trebuie să se întâmple</h2>
+  <p>
+    Fiecare fișier deteriorat primește o intrare care spune că sistemul tău trebuie să îl respingă, cu
+    deteriorarea notată alături:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Două cereri sunt refuzate înainte să se scrie ceva, pentru că fiecare ar lăsa pe disc un fișier pe
+    care manifestul îl descrie greșit:
+  </p>
+  <ul>
+    <li>un fișier mai mic decât are nevoie deteriorarea, care ar ieși neschimbat</li>
+    <li>
+      <code>expected: accept</code> lângă o deteriorare, pentru că nimic nu ar putea îndeplini asta. Scrie
+      <code>sanitize</code> dacă sistemul tău trebuie să repare fișierul sau
+      <code>unspecified</code> dacă tocmai asta este întrebarea pe care o pui
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Într-o rețetă</p>
+  <h2>Fișiere sănătoase și stricate într-o singură rulare</h2>
+  <p>
+    Pune-le pe amândouă într-o rețetă, iar manifestul poartă așteptarea fiecărui fișier, deci testul nu
+    are nevoie de o listă cu care este care:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Într-un test</p>
+  <h2>Transformarea într-un test</h2>
+  <p>
+    Testul citește manifestul și verifică dacă ce s-a întâmplat este ce s-a declarat. Nu are nevoie de o
+    listă de nume de fișiere:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    O respingere bună este una curată. Un mesaj care spune ce a fost greșit este răspunsul pe care îl
+    vrei. O eroare de server, o blocare sau un fișier salvat pe jumătate este defectul pe care acest
+    test există ca să îl găsească.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Mai departe</p>
+  <h2>Unde să mergi de aici</h2>
+  <ul>
+    <li>
+      <a href="/ro/presetari/upload-validation/">Presetarea upload-validation</a> pune unui formular
+      celelalte două întrebări, cea despre mărime și cea despre tip.
+    </li>
+    <li>
+      <a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a> rulează într-un pipeline o rețetă ca
+      aceasta.
+    </li>
+    <li>
+      <a href="/ro/documentatie/#damage">Documentația</a> cuprinde fiecare opțiune a lui <code>tfg
+      generate</code>.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proiect</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Cod sursă pe GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descărcări</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Raportează o problemă</a></li>
+        <li><a href="https://donislawdev.com/support/">Susține proiectul</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagini</p>
+      <ul class="plain">
+        <li><a href="/ro/">Acasă</a></li>
+        <li><a href="/ro/formate/">Formate</a></li>
+        <li><a href="/ro/presetari/">Presetări</a></li>
+        <li><a href="/ro/documentatie/">Documentație</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/">Cazuri de utilizare</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
+        <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.</p>
+    <p class="muted">Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.</p>
+  </div>
+</footer>
+</body>
+</html>

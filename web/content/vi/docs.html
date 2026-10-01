@@ -81,6 +81,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     Thứ ba không thể biết trước. Nếu một kiểu hỏng chạy mà không đổi byte nào, tệp đó bị bỏ thay vì được
     ghi - lần chạy tiếp tục, nói đó là tệp nào và kết thúc bằng mã thoát một phần.
   </p>
+  <p>
+    Từng bước, với một bài kiểm thử đọc manifest: <a href="/vi/tep-kiem-thu-bi-hong/">cách tạo tệp bị
+    hỏng để kiểm thử</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -247,6 +251,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Lần chạy bị dừng bằng Ctrl+C vẫn để lại manifest và không bao giờ để lại tệp ghi dở, nên tác vụ bị
     hủy vẫn có thể được dọn bởi tác vụ sau.
+  </p>
+  <p>
+    Workflow có sẵn cho GitHub Actions và GitLab CI: <a href="/vi/tep-kiem-thu-trong-ci/">cách tạo tệp
+    kiểm thử trong pipeline CI</a>.
   </p>
 </section>
 

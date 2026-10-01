@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - questions sur la génération de fichiers de test",
       "description": "Différence avec dd et fsutil, fichiers commitables ou non, exécutions identiques à l'octet près, et ce qui arrive quand une taille est inatteignable."
+    },
+    {
+      "key": "damage",
+      "slug": "fichiers-de-test-corrompus",
+      "nav": "Fichiers corrompus",
+      "title": "Fichiers de test corrompus - fichiers cassés à taille exacte",
+      "description": "Un fichier cassé volontairement, à la taille exacte, avec un manifeste disant que votre système doit le rejeter. Pour tester la validation d'envoi et les parseurs.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "fichiers-de-test-en-ci",
+      "nav": "Fichiers de test en CI",
+      "title": "Fichiers de test en CI - GitHub Actions, GitLab CI et PowerShell",
+      "description": "Générez des fichiers de test dans le pipeline plutôt que de commiter des binaires : workflow GitHub Actions, job GitLab, codes de sortie et piège PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "L'adresse que vous avez suivie ne correspond à aucune page de ce site.",
     "notFoundBack": "Aller à l'accueil",
     "read.format": "Le format de chaque fichier du jeu. C'est une option de l'outil lui-même, et le préréglage ne fait que lui donner une valeur par défaut.",
-    "readTakes.format": "un identifiant de format de la page des formats"
+    "readTakes.format": "un identifiant de format de la page des formats",
+    "colDamage": "Dommage",
+    "colEffect": "Ce qu'il fait aux octets",
+    "colSettings": "Réglages",
+    "noSettings": "aucun"
   },
   "endings": {
     "0": "Tout a fonctionné.",
@@ -222,6 +242,9 @@
     "sanitize": "Votre système doit accepter le fichier et le nettoyer, par exemple en le renommant.",
     "unspecified": "Cela dépend des règles de votre système. Vous décidez, puis vous vérifiez que ce qui se passe est ce que vous aviez voulu."
   },
+  "damages": {
+    "zero-head": "Écrase les premiers octets du fichier avec des zéros, sans toucher à sa longueur. La plupart des lecteurs regardent d'abord là, donc presque tout remarque ce dommage."
+  },
   "terms": {
     "oracleNone": "sans objet",
     "int": "tout nombre entier",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Puis-je générer un fichier volontairement cassé ?",
-      "a": "Pas encore. Les fichiers abîmés et mal formés sont une fonctionnalité prévue. Aujourd'hui, chaque fichier écrit par l'outil est un fichier valide de son format."
+      "a": "Oui. Ajoutez --damage zero-head et le fichier sort à la taille exacte demandée, avec ses premiers octets écrasés par des zéros, si bien qu'un lecteur le refuse, et le manifeste dit que votre système doit le rejeter. La page sur les fichiers de test corrompus donne le détail.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Quels formats arrivent ensuite ?",

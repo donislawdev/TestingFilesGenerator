@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Tôi có thể tạo một tệp cố ý bị hỏng không?</h2></summary>
     <div class="qa-body">
-      <p>Chưa. Tệp bị hỏng và sai định dạng là tính năng được lên kế hoạch. Hôm nay mọi tệp công cụ ghi đều là tệp hợp lệ của định dạng đó.</p>
+      <p>Có. Thêm --damage zero-head và tệp ra đúng kích thước bạn yêu cầu, với các byte đầu bị ghi đè bằng số không, nên trình đọc từ chối nó, và manifest nói hệ thống của bạn phải từ chối nó. Chi tiết nằm ở trang về tệp kiểm thử bị hỏng.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Tôi có thể tạo một tệp cố ý bị hỏng không?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Chưa. Tệp bị hỏng và sai định dạng là tính năng được lên kế hoạch. Hôm nay mọi tệp công cụ ghi đều là tệp hợp lệ của định dạng đó." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Có. Thêm --damage zero-head và tệp ra đúng kích thước bạn yêu cầu, với các byte đầu bị ghi đè bằng số không, nên trình đọc từ chối nó, và manifest nói hệ thống của bạn phải từ chối nó. Chi tiết nằm ở trang về tệp kiểm thử bị hỏng." }
     },
     {
       "@type": "Question",

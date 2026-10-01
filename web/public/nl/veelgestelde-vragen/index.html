@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Kan ik een bewust kapot bestand genereren?</h2></summary>
     <div class="qa-body">
-      <p>Nog niet. Beschadigde en misvormde bestanden zijn een geplande functie. Nu is elk bestand dat de tool schrijft een geldig bestand van zijn formaat.</p>
+      <p>Ja. Voeg --damage zero-head toe en het bestand komt uit op precies de gevraagde grootte, met de eerste bytes overschreven door nullen, zodat een lezer het weigert, en het manifest zegt dat je systeem het moet weigeren. De details staan op de pagina over beschadigde testbestanden.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Kan ik een bewust kapot bestand genereren?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Nog niet. Beschadigde en misvormde bestanden zijn een geplande functie. Nu is elk bestand dat de tool schrijft een geldig bestand van zijn formaat." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. Voeg --damage zero-head toe en het bestand komt uit op precies de gevraagde grootte, met de eerste bytes overschreven door nullen, zodat een lezer het weigert, en het manifest zegt dat je systeem het moet weigeren. De details staan op de pagina over beschadigde testbestanden." }
     },
     {
       "@type": "Question",

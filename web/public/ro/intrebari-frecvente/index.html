@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Pot genera un fișier stricat în mod deliberat?</h2></summary>
     <div class="qa-body">
-      <p>Încă nu. Fișierele deteriorate și malformate sunt o funcție planificată. Azi fiecare fișier scris de instrument este un fișier valid al formatului său.</p>
+      <p>Da. Adaugă --damage zero-head și fișierul iese cu exact mărimea cerută, cu primii octeți suprascriși cu zerouri, așa că un cititor îl respinge, iar manifestul spune că sistemul tău trebuie să îl respingă. Detaliile sunt pe pagina despre fișierele de test corupte.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Pot genera un fișier stricat în mod deliberat?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Încă nu. Fișierele deteriorate și malformate sunt o funcție planificată. Azi fiecare fișier scris de instrument este un fișier valid al formatului său." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Da. Adaugă --damage zero-head și fișierul iese cu exact mărimea cerută, cu primii octeți suprascriși cu zerouri, așa că un cititor îl respinge, iar manifestul spune că sistemul tău trebuie să îl respingă. Detaliile sunt pe pagina despre fișierele de test corupte." }
     },
     {
       "@type": "Question",

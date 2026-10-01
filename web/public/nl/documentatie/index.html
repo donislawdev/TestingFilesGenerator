@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     dat bestand weggegooid in plaats van geschreven - de run gaat door, zegt om welk bestand het
     ging en eindigt met de gedeeltelijke afsluitcode.
   </p>
+  <p>
+    Stap voor stap, met een test die het manifest leest: <a href="/nl/beschadigde-testbestanden/">hoe
+    maak je een beschadigd bestand om mee te testen</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -496,6 +500,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Een run die met Ctrl+C is gestopt laat nog steeds een manifest achter en nooit een half geschreven
     bestand, zodat een afgebroken taak door de volgende nog kan worden opgeruimd.
+  </p>
+  <p>
+    Kant-en-klare workflows voor GitHub Actions en GitLab CI: <a href="/nl/testbestanden-in-ci/">hoe
+    genereer je testbestanden in een CI-pipeline</a>.
   </p>
 </section>
 

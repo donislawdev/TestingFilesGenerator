@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - otázky ke generování testovacích souborů",
       "description": "Čím se liší od dd a fsutil, zda lze soubory commitovat, zda se běhy opakují bajt po bajtu a co se stane, když nelze velikosti dosáhnout."
+    },
+    {
+      "key": "damage",
+      "slug": "poskozene-testovaci-soubory",
+      "nav": "Poškozené soubory",
+      "title": "Poškozené testovací soubory - rozbité soubory přesné velikosti",
+      "description": "Soubor záměrně rozbitý, přesné velikosti, s manifestem, který říká, že ho má váš systém odmítnout. Pro testování validace nahrávání a parserů.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "testovaci-soubory-v-ci",
+      "nav": "Testovací soubory v CI",
+      "title": "Testovací soubory v CI - GitHub Actions, GitLab CI a PowerShell",
+      "description": "Generujte testovací soubory v pipeline místo commitování binárek: workflow pro GitHub Actions, job v GitLabu, návratové kódy a past PowerShellu.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Adresa, kterou jste následovali, neodpovídá žádné stránce tohoto webu.",
     "notFoundBack": "Přejít na úvodní stránku",
     "read.format": "Formát každého souboru v sadě. Je to přepínač samotného nástroje a předvolba mu jen dává výchozí hodnotu.",
-    "readTakes.format": "id formátu ze stránky formátů"
+    "readTakes.format": "id formátu ze stránky formátů",
+    "colDamage": "Poškození",
+    "colEffect": "Co dělá s bajty",
+    "colSettings": "Nastavení",
+    "noSettings": "žádné"
   },
   "endings": {
     "0": "Vše fungovalo.",
@@ -222,6 +242,9 @@
     "sanitize": "Váš systém má soubor přijmout a vyčistit, například přejmenováním.",
     "unspecified": "Záleží na pravidlech vašeho systému. Rozhodnete vy, a pak ověříte, že to, co se stane, je to, co jste chtěli."
   },
+  "damages": {
+    "zero-head": "Přepíše prvních několik bajtů souboru nulami a jeho délku nechá být. Většina čteček se dívá nejdřív tam, takže si tohoto poškození všimne téměř cokoli."
+  },
   "terms": {
     "oracleNone": "nelze použít",
     "int": "libovolné celé číslo",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Mohu vygenerovat soubor, který je záměrně rozbitý?",
-      "a": "Zatím ne. Poškozené a vadné soubory jsou plánovaná funkce. Dnes je každý soubor, který nástroj zapíše, platným souborem svého formátu."
+      "a": "Ano. Přidejte --damage zero-head a soubor vyjde v přesně požadované velikosti, s prvními bajty přepsanými nulami, takže ho čtečka odmítne, a manifest říká, že ho má váš systém odmítnout. Podrobnosti jsou na stránce o poškozených testovacích souborech.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Které formáty přijdou dál?",

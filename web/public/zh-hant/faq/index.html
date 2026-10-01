@@ -195,7 +195,8 @@
   <details class="qa">
     <summary><h2>我能產生刻意損壞的檔案嗎？</h2></summary>
     <div class="qa-body">
-      <p>目前還不能。損毀與格式錯誤的檔案是規劃中的功能。目前工具寫出的每個檔案都是該格式的合法檔案。</p>
+      <p>可以。加上 --damage zero-head，檔案就會以恰好所要求的大小輸出，開頭幾個位元組被零覆蓋，讀取器會拒絕它，清單也會說明你的系統應該拒絕它。詳情見關於損毀測試檔案的頁面。</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -267,7 +268,7 @@
     {
       "@type": "Question",
       "name": "我能產生刻意損壞的檔案嗎？",
-      "acceptedAnswer": { "@type": "Answer", "text": "目前還不能。損毀與格式錯誤的檔案是規劃中的功能。目前工具寫出的每個檔案都是該格式的合法檔案。" }
+      "acceptedAnswer": { "@type": "Answer", "text": "可以。加上 --damage zero-head，檔案就會以恰好所要求的大小輸出，開頭幾個位元組被零覆蓋，讀取器會拒絕它，清單也會說明你的系統應該拒絕它。詳情見關於損毀測試檔案的頁面。" }
     },
     {
       "@type": "Question",

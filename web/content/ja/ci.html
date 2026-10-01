@@ -1,0 +1,171 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>CIパイプラインでテストファイルを生成する方法</h1>
+<p class="lead">
+  リポジトリ内のバイナリのフィクスチャは履歴に永遠に残り、diffでレビューできず、ファイルが大きくなると成り立たなくなります。代わりに、パイプラインの中でレシピからファイルを生成してください。レシピはテキストで、バイトは毎回同じになり、最後のステップで何も動いていないことを証明できます。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    <code>tfg</code>をインストールし、テストの前に<code>tfg generate fixtures.yaml --out
+    ./fixtures</code>を、テストの後に<code>tfg verify
+    ./fixtures/manifest.json</code>を実行します。どちらのステップも自らビルドを失敗させ、理由を示す終了コードを返します。
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">コミットしない理由</p>
+  <h2>フィクスチャをリポジトリに置くべきでない理由</h2>
+  <ul>
+    <li>
+      <strong>履歴に残ります。</strong>バイナリをあとで削除しても、すべてのバージョンが残っているのでクローンは小さくなりません。
+    </li>
+    <li>
+      <strong>diffでは何が変わったかが分かりません。</strong>レビューする人にはPDFが違うことしか見えません。レシピなら変更は1行です。
+    </li>
+    <li>
+      <strong>大きなファイルは収まりません。</strong>GitHubは100 MBを超えるファイルを含むプッシュを拒否するので、500
+      MBのアップロード上限のテストにはコミットできるものがありません。
+    </li>
+  </ul>
+  <p>
+    コミットするのはレシピです。同じレシピと同じシードは、どのマシンでも同じバイトを書き出すので、パイプラインで生成したファイルは、ノートPCで使っていたファイルと同じものです。
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">レシピ</p>
+  <h2>テストの隣に置くレシピ</h2>
+  <p>
+    このレシピは、受け入れられるべき請求書を25件と、上限を超えて拒否されるべき画像を2枚書き出し、マニフェストが両方の期待を記録します。
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code>は何も書き込まずにレシピを検査し、すべての問題を一度に挙げます。
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>ツールをインストールしてフィクスチャを作るワークフロー</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    チェックサムの行は、アーカイブを同じリリースの<code>verify-SHA256SUMS.txt</code>と照合します。バージョンは固定されているので、新しいリリースが、手を付けていないビルドを変えることはありません。
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>同じことをGitLabのジョブで</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">赤くなったとき</p>
+  <h2>ステップを失敗させるものとその理由</h2>
+  <p>
+    終わり方ごとに専用の終了コードがあるので、ステップは自ら失敗し、ログがどれかを示します。パイプラインが出会うのは次のものです。
+  </p>
+  <ul>
+    <li><code>3</code> - レシピが正しくありません。何も書き込まれず、すべての問題が示されます</li>
+    <li><code>4</code> - 形式が求められたことをできません。たとえば最小サイズを下回るサイズです</li>
+    <li><code>6</code> - ディスクの空き容量が足りません</li>
+    <li><code>7</code> - <code>tfg verify</code>がマニフェストと一致しないファイルを見つけました</li>
+    <li><code>8</code> - 実行は終わりましたが、すべてが作られたわけではありません</li>
+  </ul>
+  <p>
+    失敗した実行は標準出力に何も出力しないので、ログパーサーがエラーをデータと取り違えることはありません。表の全体は<a href="/ja/docs/#ci">ドキュメントのページ</a>にあります。
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShellのスクリプトにはもう1行必要です</h2>
+  <p>
+    PowerShellは、プログラムの終了コードを<code>.ps1</code>ファイルの外に持ち出しません。<code>-File</code>で実行すると、中のツールが作業を拒否した場合でもスクリプトは<code>0</code>を返し、赤になるはずのビルドが緑になります。最後の1行が修正のすべてです。
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    これはPowerShellの挙動であり、このツールの話ではありません。<code>cmd</code>、<code>bash</code>、<code>zsh</code>には余分な手当ては要りません。
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">複数のジョブ</p>
+  <h2>ジョブ間でフィクスチャを共有する</h2>
+  <p>
+    たいていアップロードは不要です。同じレシピは同じバイトを書き出すので、各ジョブが自分で<code>tfg
+    generate</code>を実行でき、アップロードしてダウンロードするより速くなります。あるジョブが別のジョブからファイルを受け取る必要があるときは、転送の後にマニフェストに対して<code>tfg
+    verify</code>を実行すると、届いたものが書き出されたものと同じかどうかが分かります。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">次へ</p>
+  <h2>ここからどこへ</h2>
+  <ul>
+    <li>
+      <a href="/ja/corrupt-test-files/">破損したテストファイル</a>は、同じレシピに意図的に壊したファイルを加えます。
+    </li>
+    <li>
+      <a href="/ja/use-cases/">ユースケース</a>は、パイプラインでの実行がほかに何を確かめられるかを示します。
+    </li>
+    <li>
+      <a href="/ja/docs/">ドキュメント</a>には、すべてのコマンド、レシピのキー、終了コードが載っています。
+    </li>
+  </ul>
+</section>

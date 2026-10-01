@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     byte pun, file itu dibuang alih-alih ditulis - run berlanjut, menyebut file mana itu, dan
     berakhir dengan kode keluar parsial.
   </p>
+  <p>
+    Langkah demi langkah, dengan tes yang membaca manifes: <a href="/id/file-uji-rusak/">cara membuat
+    file rusak untuk pengujian</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -494,6 +498,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Run yang dihentikan dengan Ctrl+C tetap meninggalkan manifes dan tidak pernah meninggalkan file yang
     tertulis setengah, sehingga job yang dibatalkan masih dapat dibersihkan oleh yang berikutnya.
+  </p>
+  <p>
+    Workflow siap pakai untuk GitHub Actions dan GitLab CI: <a href="/id/file-uji-di-ci/">cara membuat
+    file uji di pipeline CI</a>.
   </p>
 </section>
 

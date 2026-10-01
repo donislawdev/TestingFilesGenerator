@@ -70,6 +70,7 @@ func (l Language) expand(f Facts) (Language, error) {
 	out.Terms = everyValue(l.Terms)
 	out.Commands = everyValue(l.Commands)
 	out.Outcomes = everyValue(l.Outcomes)
+	out.Damages = everyValue(l.Damages)
 	if l.Presets != nil {
 		out.Presets = make(map[string]PresetText, len(l.Presets))
 		for id, text := range l.Presets {
@@ -171,6 +172,35 @@ func (v view) CommandList() ([]Command, error) {
 			Pad:     strings.Repeat(" ", widest-len(name)+2),
 			Summary: summary,
 		})
+	}
+	return out, nil
+}
+
+// DamageRow is one row of the table of damages.
+type DamageRow struct {
+	ID       string
+	Effect   string
+	Smallest int64
+	Settings []string
+	// None is the word for a damage that takes no settings, so a blank cell
+	// is never what says so.
+	None string
+}
+
+// DamageList is every damage the program has, with what each does in the
+// language being rendered.
+func (v view) DamageList() ([]DamageRow, error) {
+	none, err := v.Word("noSettings")
+	if err != nil {
+		return nil, err
+	}
+	out := make([]DamageRow, 0, len(v.Facts.Damages))
+	for _, d := range v.Facts.Damages {
+		effect, ok := v.Lang.Damages[d.ID]
+		if !ok {
+			return nil, fmt.Errorf("the damage %q has no sentence written in %s", d.ID, v.Lang.Code)
+		}
+		out = append(out, DamageRow{ID: d.ID, Effect: effect, Smallest: d.Smallest, Settings: d.Settings, None: none})
 	}
 	return out, nil
 }

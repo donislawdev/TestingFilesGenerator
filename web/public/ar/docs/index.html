@@ -234,6 +234,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     أما الثالث فلا يمكن معرفته مسبقًا. إذا نُفّذ إتلاف ولم يحرّك أي بايت، يُسقَط ذلك الملف بدل كتابته،
     ويستمر التشغيل ويذكر أي ملف كان، وينتهي برمز الخروج الجزئي.
   </p>
+  <p>
+    خطوة بخطوة، مع اختبار يقرأ البيان: <a href="/ar/corrupt-test-files/">كيف تصنع ملفًا تالفًا
+    للاختبار</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -483,6 +487,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     التشغيل الموقوف بـ Ctrl+C يترك بيانًا ولا يترك أبدًا ملفًا مكتوبًا نصفه، لذا يمكن للمهمة التالية أن
     تنظّف مهمة أُلغيت.
+  </p>
+  <p>
+    مسارات عمل جاهزة لـ GitHub Actions وGitLab CI: <a href="/ar/test-files-in-ci/">كيف تولّد ملفات
+    الاختبار في خط CI</a>.
   </p>
 </section>
 

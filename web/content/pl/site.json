@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - pytania o generowanie plików testowych",
       "description": "Czym to się różni od dd i fsutil, czy pliki można commitować, czy przebieg powtarza się co do bajta i co się dzieje, gdy rozmiar jest nieosiągalny."
+    },
+    {
+      "key": "damage",
+      "slug": "uszkodzone-pliki-testowe",
+      "nav": "Uszkodzone pliki",
+      "title": "Uszkodzone pliki testowe - zepsute pliki o dokładnym rozmiarze",
+      "description": "Zrób plik zepsuty celowo, o dokładnie takim rozmiarze, jaki podasz, z manifestem mówiącym, że system powinien go odrzucić. Do testów walidacji uploadu i parserów.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "pliki-testowe-w-ci",
+      "nav": "Pliki testowe w CI",
+      "title": "Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell",
+      "description": "Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Adres, którym tu trafiłeś, nie pasuje do żadnej strony w tym serwisie.",
     "notFoundBack": "Wróć na stronę główną",
     "read.format": "Format każdego pliku w zestawie. To flaga samego narzędzia, a preset daje jej tylko wartość domyślną.",
-    "readTakes.format": "identyfikator formatu ze strony formatów"
+    "readTakes.format": "identyfikator formatu ze strony formatów",
+    "colDamage": "Uszkodzenie",
+    "colEffect": "Co robi z bajtami",
+    "colSettings": "Ustawienia",
+    "noSettings": "brak"
   },
   "endings": {
     "0": "Wszystko się udało.",
@@ -281,7 +301,8 @@
     },
     {
       "q": "Czy mogę wygenerować plik celowo uszkodzony?",
-      "a": "Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu."
+      "a": "Tak. Dodaj --damage zero-head, a plik wyjdzie dokładnie o podanym rozmiarze, z pierwszymi bajtami nadpisanymi zerami, więc czytnik go odrzuci, a manifest powie, że system powinien go odrzucić. Szczegóły są na stronie o uszkodzonych plikach testowych.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Jakie formaty są następne w kolejce?",
@@ -300,5 +321,8 @@
       "q": "Dlaczego przebieg po tysiącach plików jest wolniejszy na Windows?",
       "a": "Bo Windows liczy sobie więcej za każdą ścieżkę, na którą patrzy, a polecenie chodzące po tysiącach plików patrzy na tysiące ścieżek. Zmierzone na jednej maszynie przy 3000 plików po 1 kB: verify trwa około 0,9 sekundy na Windows i około 0,2 sekundy na Linuksie w kontenerze. Krótsza ścieżka katalogu wyjściowego zmniejsza wynik na Windows, bo każdy katalog nad plikami też jest częścią tego, na co system patrzy."
     }
-  ]
+  ],
+  "damages": {
+    "zero-head": "Nadpisuje pierwsze bajty pliku zerami, nie zmieniając jego długości. Większość czytników zagląda tam najpierw, więc to uszkodzenie zauważy prawie wszystko."
+  }
 }

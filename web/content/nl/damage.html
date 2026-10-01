@@ -1,0 +1,178 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Hoe maak je een beschadigd bestand om mee te testen</h1>
+<p class="lead">
+  Een validator aan wie alleen gezonde bestanden zijn getoond, is niet echt getest. Zo krijg je een
+  bestand dat met opzet kapot is, <strong>precies de grootte heeft die je vraagt</strong> en een
+  manifest meebrengt dat zegt wat je systeem ermee moet doen.
+</p>
+
+<div class="note">
+  <p class="note-title">Het korte antwoord</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> schrijft een PNG
+    van precies 2097152 bytes waarvan de eerste bytes nullen zijn, en het manifest ernaast legt vast
+    dat je systeem het moet weigeren.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">De gebruikelijke weg</p>
+  <h2>Waarom een met de hand beschadigd bestand een slechte test is</h2>
+  <p>
+    Gebruikelijk zijn een hexeditor, een script dat een paar willekeurige bytes omgooit, of een bestand
+    dat met <code>head</code> of <code>truncate</code> wordt ingekort. Het werkt één keer, en daarna
+    kost het je:
+  </p>
+  <ul>
+    <li>
+      <strong>Het is elke keer anders.</strong> Een willekeurige byte komt bij elke run ergens anders
+      terecht, dus een fout van dinsdag komt woensdag misschien niet terug.
+    </li>
+    <li>
+      <strong>Het verandert de grootte.</strong> Een ingekort bestand is kleiner dan de limiet waaronder
+      het hoorde te blijven, dus de groottecontrole antwoordt vóór de inhoudscontrole en de test
+      slaagt om de verkeerde reden.
+    </li>
+    <li>
+      <strong>Het valt vaak niet op.</strong> Platte tekst blijft leesbaar met een gewijzigde byte in het
+      midden, en een toegeeflijke afbeeldingslezer tekent het gewoon, waardoor het bestand dat kapot
+      moest zijn wordt geaccepteerd.
+    </li>
+    <li>
+      <strong>Het zegt niets over wat er moet gebeuren.</strong> Het bestand is alleen bytes, en wie de
+      test later leest, moet raden of acceptatie of weigering de bedoeling was.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Wat je krijgt</p>
+  <h2>Een beschadigd bestand heeft nog steeds de grootte die je vroeg</h2>
+  <p>
+    Het bestand wordt normaal gegenereerd en daarna kapotgemaakt, op weg naar de schijf. Het houdt de
+    grootte die je vroeg, en hetzelfde commando schrijft opnieuw dezelfde bytes.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Instellingen komen achter een dubbele punt. De optie mag herhaald worden, en de beschadigingen
+    worden toegepast in de volgorde waarin je ze schrijft. Het werkt met elk van de
+    {{ .Facts.FormatCount }} formaten.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Wat het kan</p>
+  <h2>Welke beschadigingen zijn er?</h2>
+  <p>
+    Dit is de lijst die het programma afdrukt, uit het programma gelezen op het moment dat deze pagina
+    wordt gebouwd. <code>tfg damage</code> drukt dezelfde af, en <code>tfg damage &lt;id&gt;</code>
+    zegt wat één ervan aanneemt.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> schrijft nullen over het begin van het bestand. De meeste lezers kijken daar
+    eerst, naar de handtekening en de kop die zeggen wat het bestand is, dus bijna elke lezer merkt
+    het. Platte tekst en logbestanden hebben geen handtekening en worden ook geweigerd, omdat een
+    reeks nulbytes geen tekst is. Onder vier bytes komen sommige formaten uit met schade waar geen
+    lezer over klaagt, en daarom begint de instelling bij vier.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Wat het manifest zegt</p>
+  <h2>Een manifest dat zegt wat er moet gebeuren</h2>
+  <p>
+    Elk beschadigd bestand krijgt een regel die zegt dat je systeem het moet weigeren, met de
+    beschadiging ernaast vastgelegd:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Twee verzoeken worden geweigerd voordat er iets wordt geschreven, omdat elk een bestand op schijf
+    zou laten staan dat het manifest verkeerd beschrijft:
+  </p>
+  <ul>
+    <li>een bestand dat kleiner is dan de beschadiging nodig heeft en ongewijzigd zou uitkomen</li>
+    <li>
+      <code>expected: accept</code> naast een beschadiging, omdat niets daaraan kan voldoen. Schrijf
+      <code>sanitize</code> als je systeem het bestand moet repareren, of <code>unspecified</code>
+      als dat juist de vraag is die je stelt
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">In een recept</p>
+  <h2>Gezonde en kapotte bestanden in één run</h2>
+  <p>
+    Zet beide in één recept, en het manifest draagt de verwachting van elk bestand, zodat de test geen
+    lijst nodig heeft van welk bestand welk is:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">In een test</p>
+  <h2>Er een test van maken</h2>
+  <p>
+    De test leest het manifest en controleert dat wat er gebeurde is wat er werd opgegeven. Hij heeft
+    geen lijst met bestandsnamen nodig:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Een goede weigering is een schone weigering. Een melding die zegt wat er mis was, is het antwoord
+    dat je wilt. Een serverfout, een vastloper of een half opgeslagen bestand is het gebrek dat deze
+    test moet vinden.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Verder</p>
+  <h2>Waar je vandaar heen kunt</h2>
+  <ul>
+    <li>
+      <a href="/nl/presets/upload-validation/">De preset upload-validation</a> stelt een formulier de
+      andere twee vragen, die over de grootte en die over het type.
+    </li>
+    <li>
+      <a href="/nl/testbestanden-in-ci/">Testbestanden in CI</a> draait een recept als dit in een
+      pipeline.
+    </li>
+    <li>
+      <a href="/nl/documentatie/#damage">De documentatie</a> bevat elke optie van <code>tfg
+      generate</code>.
+    </li>
+  </ul>
+</section>

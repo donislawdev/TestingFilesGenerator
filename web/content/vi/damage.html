@@ -1,0 +1,172 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cách tạo tệp bị hỏng để kiểm thử</h1>
+<p class="lead">
+  Một trình kiểm tra chỉ từng được cho xem tệp lành thì chưa thực sự được kiểm thử. Đây là cách có
+  được một tệp cố ý làm hỏng, ra đúng <strong>kích thước bạn yêu cầu</strong> và mang theo manifest
+  nói hệ thống của bạn phải làm gì với nó.
+</p>
+
+<div class="note">
+  <p class="note-title">Câu trả lời ngắn</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> ghi một tệp PNG
+    đúng 2097152 byte với các byte đầu là số không, và manifest bên cạnh ghi rằng hệ thống của bạn
+    phải từ chối nó.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Cách thường dùng</p>
+  <h2>Vì sao tệp làm hỏng bằng tay là một bài kiểm thử tồi</h2>
+  <p>
+    Cách thường dùng là trình soạn thảo hex, một script đảo vài byte ngẫu nhiên, hoặc cắt ngắn tệp bằng
+    <code>head</code> hay <code>truncate</code>. Dùng được một lần, rồi nó làm bạn tốn công:
+  </p>
+  <ul>
+    <li>
+      <strong>Mỗi lần một khác.</strong> Byte ngẫu nhiên rơi vào chỗ mới ở mỗi lần chạy, nên lỗi hôm thứ
+      Ba có thể không quay lại vào thứ Tư.
+    </li>
+    <li>
+      <strong>Nó đổi kích thước.</strong> Tệp bị cắt ngắn nhỏ hơn giới hạn mà nó phải nằm dưới, nên bước
+      kiểm tra kích thước trả lời trước bước kiểm tra nội dung và bài kiểm thử đạt vì lý do sai.
+    </li>
+    <li>
+      <strong>Nó thường không ai nhận ra.</strong> Văn bản thuần vẫn đọc được khi đổi một byte ở giữa, và
+      một trình đọc ảnh dễ tính chỉ việc vẽ nó ra, nên tệp lẽ ra phải hỏng lại được chấp nhận.
+    </li>
+    <li>
+      <strong>Nó không nói gì về điều phải xảy ra.</strong> Tệp chỉ là các byte, và ai đọc bài kiểm thử
+      sau đó phải đoán xem ý định là chấp nhận hay từ chối.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Bạn nhận được gì</p>
+  <h2>Tệp bị hỏng vẫn có kích thước bạn đã yêu cầu</h2>
+  <p>
+    Tệp được tạo bình thường rồi mới bị làm hỏng, trên đường ghi xuống đĩa. Nó giữ kích thước bạn yêu
+    cầu, và cùng một lệnh ghi lại đúng các byte đó.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Cài đặt viết sau dấu hai chấm. Tùy chọn có thể lặp lại, và các hỏng hóc được áp dụng theo thứ tự bạn
+    viết. Nó dùng được với từng định dạng trong {{ .Facts.FormatCount }} định dạng.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Nó làm được gì</p>
+  <h2>Có những kiểu hỏng nào?</h2>
+  <p>
+    Đây là danh sách chương trình in ra, được đọc từ chính nó khi trang này được dựng. <code>tfg
+    damage</code> in ra cùng danh sách đó, và <code>tfg damage &lt;id&gt;</code> cho biết một kiểu
+    nhận những gì.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> ghi số không đè lên phần đầu tệp. Hầu hết trình đọc nhìn vào đó trước, vào
+    chữ ký và phần đầu cho biết tệp là gì, nên gần như trình đọc nào cũng nhận ra. Văn bản thuần và
+    nhật ký không có chữ ký và cũng bị từ chối, vì một chuỗi byte không không phải là văn bản. Dưới
+    bốn byte, một số định dạng ra với hỏng hóc mà không trình đọc nào phàn nàn, đó là lý do cài đặt
+    bắt đầu từ bốn.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Manifest nói gì</p>
+  <h2>Một manifest nói điều phải xảy ra</h2>
+  <p>
+    Mỗi tệp bị hỏng nhận một mục nói rằng hệ thống của bạn phải từ chối nó, với hỏng hóc được ghi bên
+    cạnh:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Hai yêu cầu bị từ chối trước khi có gì được ghi, vì mỗi yêu cầu sẽ để lại trên đĩa một tệp mà
+    manifest mô tả sai:
+  </p>
+  <ul>
+    <li>một tệp nhỏ hơn mức hỏng hóc cần, sẽ ra mà không bị đổi</li>
+    <li>
+      <code>expected: accept</code> cạnh một hỏng hóc, vì không gì có thể đáp ứng được. Viết
+      <code>sanitize</code> nếu hệ thống của bạn phải sửa tệp, hoặc <code>unspecified</code> nếu đó
+      chính là câu hỏi bạn đang đặt ra
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Trong một công thức</p>
+  <h2>Tệp lành và tệp hỏng trong một lần chạy</h2>
+  <p>
+    Đặt cả hai vào một công thức, và manifest mang kỳ vọng của từng tệp, nên bài kiểm thử không cần danh
+    sách tệp nào là tệp nào:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Trong một bài kiểm thử</p>
+  <h2>Biến nó thành một bài kiểm thử</h2>
+  <p>
+    Bài kiểm thử đọc manifest và kiểm tra điều đã xảy ra có đúng như điều đã khai báo. Nó không cần danh
+    sách tên tệp:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Một lần từ chối tốt là một lần từ chối gọn. Một thông báo nói điều gì sai là câu trả lời bạn muốn.
+    Lỗi máy chủ, treo máy hoặc một tệp lưu dở là khiếm khuyết mà bài kiểm thử này sinh ra để tìm.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Tiếp theo</p>
+  <h2>Đi đâu từ đây</h2>
+  <ul>
+    <li>
+      <a href="/vi/preset/upload-validation/">Preset upload-validation</a> hỏi một biểu mẫu hai câu hỏi
+      còn lại, về kích thước và về loại tệp.
+    </li>
+    <li>
+      <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a> chạy một công thức như thế này trong
+      pipeline.
+    </li>
+    <li>
+      <a href="/vi/tai-lieu/#damage">Tài liệu</a> có mọi tùy chọn của <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

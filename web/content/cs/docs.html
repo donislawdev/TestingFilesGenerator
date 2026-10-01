@@ -83,6 +83,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     Třetí se předem zjistit nedá. Pokud se poškození provede a nepohne žádným bajtem, soubor se zahodí
     místo zapsání - běh pokračuje, řekne, o který soubor šlo, a skončí s částečným návratovým kódem.
   </p>
+  <p>
+    Krok za krokem, s testem, který čte manifest: <a href="/cs/poskozene-testovaci-soubory/">jak
+    vytvořit poškozený soubor pro testy</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -249,6 +253,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Běh zastavený pomocí Ctrl+C po sobě stále zanechá manifest a nikdy nenechá napůl zapsaný soubor,
     takže zrušenou úlohu může následující stále uklidit.
+  </p>
+  <p>
+    Hotová workflow pro GitHub Actions a GitLab CI: <a href="/cs/testovaci-soubory-v-ci/">jak generovat
+    testovací soubory v CI pipeline</a>.
   </p>
 </section>
 

@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Czy mogę wygenerować plik celowo uszkodzony?</h2></summary>
     <div class="qa-body">
-      <p>Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu.</p>
+      <p>Tak. Dodaj --damage zero-head, a plik wyjdzie dokładnie o podanym rozmiarze, z pierwszymi bajtami nadpisanymi zerami, więc czytnik go odrzuci, a manifest powie, że system powinien go odrzucić. Szczegóły są na stronie o uszkodzonych plikach testowych.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Czy mogę wygenerować plik celowo uszkodzony?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Jeszcze nie. Pliki uszkodzone i niepoprawne są zaplanowaną funkcją. Dziś każdy plik, który narzędzie zapisuje, jest poprawnym plikiem swojego formatu." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Tak. Dodaj --damage zero-head, a plik wyjdzie dokładnie o podanym rozmiarze, z pierwszymi bajtami nadpisanymi zerami, więc czytnik go odrzuci, a manifest powie, że system powinien go odrzucić. Szczegóły są na stronie o uszkodzonych plikach testowych." }
     },
     {
       "@type": "Question",

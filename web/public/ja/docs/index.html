@@ -227,6 +227,9 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
   <p>
     3つ目は事前には分かりません。破壊が実行されても1バイトも変わらなかった場合、そのファイルは書き込まれずに破棄されます。実行は続き、どのファイルだったかを伝え、一部のみ完了した終了コードで終わります。
   </p>
+  <p>
+    手順を追って、マニフェストを読むテストつきで説明します。<a href="/ja/corrupt-test-files/">テスト用の破損ファイルを作る方法</a>。
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -456,6 +459,9 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   run: tfg verify ./fixtures/manifest.json</code></pre>
   <p>
     Ctrl+Cで止めた実行でも、マニフェストは残り、書きかけのファイルは決して残りません。そのため、キャンセルされたジョブも次のジョブが片付けられます。
+  </p>
+  <p>
+    GitHub ActionsとGitLab CI向けのすぐ使えるワークフロー。<a href="/ja/test-files-in-ci/">CIパイプラインでテストファイルを生成する方法</a>。
   </p>
 </section>
 

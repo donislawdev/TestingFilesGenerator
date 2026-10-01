@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - Fragen zum Erzeugen von Testdateien",
       "description": "Worin sich das Tool von dd und fsutil unterscheidet, ob man die Dateien einchecken kann, ob Läufe reproduzierbar sind und was bei unerreichbaren Größen passiert."
+    },
+    {
+      "key": "damage",
+      "slug": "beschaedigte-testdateien",
+      "nav": "Beschädigte Dateien",
+      "title": "Beschädigte Testdateien - kaputte Dateien in exakter Größe",
+      "description": "Eine absichtlich kaputte Datei in exakt der verlangten Größe, mit einem Manifest, das sagt, dass Ihr System sie ablehnen soll. Für Upload-Validierung und Parser.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "testdateien-in-ci",
+      "nav": "Testdateien in CI",
+      "title": "Testdateien in CI - GitHub Actions, GitLab CI und PowerShell",
+      "description": "Testdateien in der Pipeline erzeugen statt einzuchecken: GitHub-Actions-Workflow, GitLab-Job, Exit-Codes, die den Build scheitern lassen, und die PowerShell-Falle.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Die Adresse, der du gefolgt bist, passt zu keiner Seite dieser Website.",
     "notFoundBack": "Zur Startseite",
     "read.format": "Das Format jeder Datei im Set. Es ist ein Flag des Tools selbst, das Preset gibt ihm nur einen Standardwert.",
-    "readTakes.format": "eine Format-ID von der Formate-Seite"
+    "readTakes.format": "eine Format-ID von der Formate-Seite",
+    "colDamage": "Beschädigung",
+    "colEffect": "Was sie mit den Bytes macht",
+    "colSettings": "Einstellungen",
+    "noSettings": "keine"
   },
   "endings": {
     "0": "Alles hat funktioniert.",
@@ -222,6 +242,9 @@
     "sanitize": "Dein System soll die Datei annehmen und bereinigen, zum Beispiel durch Umbenennen.",
     "unspecified": "Das hängt von den Regeln deines Systems ab. Du entscheidest, dann prüfst du, ob das Ergebnis dem entspricht, was du gemeint hast."
   },
+  "damages": {
+    "zero-head": "Überschreibt die ersten Bytes der Datei mit Nullen und lässt ihre Länge unverändert. Die meisten Leser schauen zuerst dorthin, deshalb bemerkt fast alles diese Beschädigung."
+  },
   "terms": {
     "oracleNone": "nicht zutreffend",
     "int": "jede ganze Zahl",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Kann ich eine absichtlich kaputte Datei erzeugen?",
-      "a": "Noch nicht. Beschädigte und fehlerhafte Dateien sind eine geplante Funktion. Heute ist jede Datei, die das Tool schreibt, eine gültige Datei ihres Formats."
+      "a": "Ja. Fügen Sie --damage zero-head hinzu, und die Datei kommt in genau der verlangten Größe heraus, mit Nullen über den ersten Bytes, sodass ein Leser sie abweist, und das Manifest sagt, dass Ihr System sie ablehnen soll. Die Einzelheiten stehen auf der Seite über beschädigte Testdateien.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Welche Formate kommen als Nächstes?",

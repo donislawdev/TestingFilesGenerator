@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     é descartado em vez de escrito - a execução continua, diz qual arquivo foi e termina com o
     código de saída parcial.
   </p>
+  <p>
+    Passo a passo, com um teste que lê o manifesto: <a href="/pt-br/arquivos-de-teste-corrompidos/">como
+    criar um arquivo corrompido para testes</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -493,6 +497,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Uma execução parada com Ctrl+C ainda deixa um manifesto e nunca deixa um arquivo pela metade, então
     um job cancelado ainda pode ser limpo pelo seguinte.
+  </p>
+  <p>
+    Workflows prontos para GitHub Actions e GitLab CI: <a href="/pt-br/arquivos-de-teste-no-ci/">como
+    gerar arquivos de teste em um pipeline de CI</a>.
   </p>
 </section>
 

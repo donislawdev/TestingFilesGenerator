@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>¿Puedo generar un archivo deliberadamente roto?</h2></summary>
     <div class="qa-body">
-      <p>Todavía no. Los archivos dañados y mal formados son una función prevista. Hoy todos los archivos que escribe la herramienta son válidos en su formato.</p>
+      <p>Sí. Añade --damage zero-head y el archivo sale con exactamente el tamaño pedido, con sus primeros bytes sobrescritos por ceros, de modo que un lector lo rechaza, y el manifiesto dice que tu sistema debe rechazarlo. La página sobre archivos de prueba corruptos tiene los detalles.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "¿Puedo generar un archivo deliberadamente roto?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Todavía no. Los archivos dañados y mal formados son una función prevista. Hoy todos los archivos que escribe la herramienta son válidos en su formato." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Sí. Añade --damage zero-head y el archivo sale con exactamente el tamaño pedido, con sus primeros bytes sobrescritos por ceros, de modo que un lector lo rechaza, y el manifiesto dice que tu sistema debe rechazarlo. La página sobre archivos de prueba corruptos tiene los detalles." }
     },
     {
       "@type": "Question",

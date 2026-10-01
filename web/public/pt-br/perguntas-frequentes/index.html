@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Posso gerar um arquivo deliberadamente quebrado?</h2></summary>
     <div class="qa-body">
-      <p>Ainda não. Arquivos danificados e malformados são um recurso planejado. Hoje todo arquivo que a ferramenta escreve é um arquivo válido do seu formato.</p>
+      <p>Sim. Adicione --damage zero-head e o arquivo sai com exatamente o tamanho pedido, com os primeiros bytes sobrescritos por zeros, de modo que um leitor o recusa, e o manifesto diz que o seu sistema deve rejeitá-lo. A página sobre arquivos de teste corrompidos traz os detalhes.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Posso gerar um arquivo deliberadamente quebrado?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Ainda não. Arquivos danificados e malformados são um recurso planejado. Hoje todo arquivo que a ferramenta escreve é um arquivo válido do seu formato." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Sim. Adicione --damage zero-head e o arquivo sai com exatamente o tamanho pedido, com os primeiros bytes sobrescritos por zeros, de modo que um leitor o recusa, e o manifesto diz que o seu sistema deve rejeitá-lo. A página sobre arquivos de teste corrompidos traz os detalhes." }
     },
     {
       "@type": "Question",

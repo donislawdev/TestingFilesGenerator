@@ -1,0 +1,183 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>كيف تولّد ملفات الاختبار في خط CI</h1>
+<p class="lead">
+  الملف الثنائي الثابت في المستودع يبقى في سجله إلى الأبد، ولا يمكن مراجعته في diff، ويصبح مستحيلًا
+  حين يكبر الملف. ولِّد الملفات بدلًا من ذلك داخل الخط من وصفة. الوصفة نص، والبايتات تخرج متطابقة في
+  كل مرة، وخطوة أخيرة تثبت أن شيئًا لم يتحرك.
+</p>
+
+<div class="note">
+  <p class="note-title">الجواب المختصر</p>
+  <p>
+    ثبّت <code>tfg</code>، وشغّل <code>tfg generate fixtures.yaml --out ./fixtures</code> قبل
+    الاختبارات، و<code>tfg verify ./fixtures/manifest.json</code> بعدها. كلتا الخطوتين تُفشلان
+    البناء من تلقاء نفسيهما، برمز خروج يقول السبب.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">لماذا لا نودعها</p>
+  <h2>لماذا لا ينبغي أن يعيش الملف الثابت في المستودع</h2>
+  <ul>
+    <li>
+      <strong>يبقى في السجل.</strong> حذف ملف ثنائي لاحقًا لا يصغّر النسخة المستنسخة، لأن كل إصدار منه ما
+      زال هناك.
+    </li>
+    <li>
+      <strong>الـ diff لا يُظهر ما تغيّر.</strong> يرى المراجع أن ملف PDF مختلف ولا شيء غير ذلك. أما
+      الوصفة فتتغيّر بسطر واحد.
+    </li>
+    <li>
+      <strong>الملفات الكبيرة لا تتسع.</strong> يرفض GitHub دفعة تحتوي ملفًا أكبر من 100 ميغابايت، فلا يجد
+      اختبار حد رفع 500 ميغابايت ما يودعه.
+    </li>
+  </ul>
+  <p>
+    الذي يُودَع هو الوصفة. الوصفة نفسها مع البذرة نفسها تكتب البايتات نفسها على أي جهاز، فالملف المولَّد
+    في الخط هو الملف الذي كان عندك على حاسوبك المحمول.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">الوصفة</p>
+  <h2>وصفة تعيش بجانب الاختبارات</h2>
+  <p>
+    تكتب هذه خمسًا وعشرين فاتورة ينبغي قبولها وصورتين فوق الحد ينبغي رفضهما، ويسجّل البيان التوقعين
+    معًا:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> يفحصها دون أن يكتب شيئًا، ويسمّي كل المشكلات دفعة واحدة.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>سير عمل يثبّت الأداة ويبني الملفات الثابتة</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    سطر المجموع الاختباري يقارن الأرشيف بالملف <code>verify-SHA256SUMS.txt</code> من الإصدار نفسه.
+    الإصدار مثبَّت، فلا يغيّر إصدار جديد أبدًا بناءً لم تلمسه.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>الشيء نفسه كمهمة في GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">حين يصبح أحمر</p>
+  <h2>ما الذي يُفشل خطوة، ولماذا</h2>
+  <p>
+    لكل نهاية رمز خروج خاص بها، فتفشل الخطوة من تلقاء نفسها ويقول السجل أيّها كان. هذه هي التي يصادفها
+    الخط:
+  </p>
+  <ul>
+    <li><code>3</code> - الوصفة غير صالحة. لم يُكتب شيء، ويُسمّى كل خلل</li>
+    <li><code>4</code> - الصيغة لا تستطيع ما طُلب منها، مثل حجم أقل من أصغر حجم لها</li>
+    <li><code>6</code> - لا توجد مساحة كافية على القرص</li>
+    <li><code>7</code> - وجد <code>tfg verify</code> ملفًا لا يطابق بيانه</li>
+    <li><code>8</code> - انتهى التشغيل لكن لم يُنتَج كل شيء</li>
+  </ul>
+  <p>
+    التشغيل الفاشل لا يطبع شيئًا على الخرج القياسي، فلا يحسب محلل السجلات خطأً بيانات أبدًا. الجدول
+    الكامل في <a href="/ar/docs/#ci">صفحة التوثيق</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>سكربت PowerShell يحتاج سطرًا إضافيًا</h2>
+  <p>
+    لا ينقل PowerShell رمز خروج برنامج إلى خارج ملف <code>.ps1</code>. شغّل واحدًا بـ <code>-File</code>
+    فيجيب السكربت <code>0</code> حتى حين رفضت الأداة داخله العمل، فيتحول بناء كان ينبغي أن يكون أحمر
+    إلى أخضر. السطر الأخير هو الإصلاح كله:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    هكذا يتصرف PowerShell، وليس في الأمر شيء يخص هذه الأداة. أما <code>cmd</code> و<code>bash</code>
+    و<code>zsh</code> فلا تحتاج إلى شيء إضافي.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">عدة مهام</p>
+  <h2>مشاركة الملفات الثابتة بين المهام</h2>
+  <p>
+    لا حاجة عادةً إلى رفعها. لأن الوصفة نفسها تكتب البايتات نفسها، تستطيع كل مهمة تشغيل <code>tfg
+    generate</code> الخاص بها، وهذا أسرع من الرفع ثم التنزيل. وحين تحتاج مهمة إلى استلام ملفات من
+    أخرى، شغّل <code>tfg verify</code> على البيان بعد النقل، فيخبرك هل ما وصل هو ما كُتب.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">التالي</p>
+  <h2>إلى أين من هنا</h2>
+  <ul>
+    <li>
+      <a href="/ar/corrupt-test-files/">ملفات اختبار تالفة</a> تضيف إلى الوصفة نفسها ملفات أُتلفت عمدًا.
+    </li>
+    <li>
+      <a href="/ar/use-cases/">حالات الاستخدام</a> تُظهر ما الذي يمكن أن يفحصه تشغيل في خط البناء أيضًا.
+    </li>
+    <li>
+      <a href="/ar/docs/">التوثيق</a> يضم كل أمر وكل مفتاح وصفة وكل رمز خروج.
+    </li>
+  </ul>
+</section>

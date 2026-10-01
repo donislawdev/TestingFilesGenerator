@@ -110,6 +110,19 @@ type Command struct {
 	Summary string
 }
 
+// Damage is one way this build can break a file on purpose, as the page about
+// corrupt files lists it.
+//
+// The identifier, the smallest file and the names of the settings come from
+// the registry. What the damage does is a sentence, and a sentence belongs to a
+// language, so it is looked up in the language file by the identifier - the
+// same split as a command and its summary.
+type Damage struct {
+	ID       string
+	Smallest int64
+	Settings []string
+}
+
 // Download says which architectures a system actually gets.
 //
 // Both lists are here because they differ, and a page that flattened them into
@@ -133,6 +146,11 @@ type Facts struct {
 	ExitCodes []int
 	Presets   []PresetFacts
 	Downloads []Download
+
+	// Damages is every way the program can break a file, in the order it
+	// lists them. It exists so the page about corrupt files cannot go on
+	// describing one when the program has two.
+	Damages []Damage
 
 	// Commands is what tfg --help prints, in the order it prints it, read out
 	// of that help rather than out of a list beside it. Taking it from the
@@ -205,12 +223,15 @@ type Page struct {
 	Description string `json:"description"`
 	Nav         string `json:"nav"`
 
-	// The three below are never written in site.json. They are set on the
-	// pages made from a list rather than by hand - one per preset - and say
-	// which page they sit under, which content file holds their text, and
-	// which item of the list they are about. A page with a parent is left out
-	// of the header, and the parent is marked there while it is open.
-	Parent   string `json:"-"`
+	// Parent is the key of the page this one sits under. A page with a parent
+	// is left out of the header, and the parent is marked there while it is
+	// open. The pages made from a list - one per preset - get one set in
+	// code, and a page written by hand may name its own in site.json.
+	Parent string `json:"parent,omitempty"`
+
+	// The two below are never written in site.json. They are set on the
+	// pages made from a list, and say which content file holds their text and
+	// which item of the list they are about.
 	Template string `json:"-"`
 	Item     string `json:"-"`
 }
@@ -229,12 +250,13 @@ type Page struct {
 // engines are pointed at by x-default. RTL says the language is written right
 // to left, which puts dir="rtl" on every page of it.
 //
-// Endings, Terms, Presets, Commands and Outcomes are the places where a word
-// has to exist for every value the program can produce, and a missing one is
-// an error rather than a gap left in English. Endings is keyed by the exit code
-// written out in decimal, Terms by the kind, unit or shape exactly as the
-// registry spells it, Presets by the identifier, Commands by the name
-// tfg --help prints, and Outcomes by the reaction a manifest declares.
+// Endings, Terms, Presets, Commands, Outcomes and Damages are the places where
+// a word has to exist for every value the program can produce, and a missing
+// one is an error rather than a gap left in English. Endings is keyed by the
+// exit code written out in decimal, Terms by the kind, unit or shape exactly
+// as the registry spells it, Presets by the identifier, Commands by the name
+// tfg --help prints, Outcomes by the reaction a manifest declares and Damages
+// by the identifier of the damage.
 type Language struct {
 	Code     string                `json:"code"`
 	Locale   string                `json:"locale"`
@@ -247,6 +269,7 @@ type Language struct {
 	Presets  map[string]PresetText `json:"presets"`
 	Commands map[string]string     `json:"commands"`
 	Outcomes map[string]string     `json:"outcomes"`
+	Damages  map[string]string     `json:"damages"`
 	Pages    []Page                `json:"pages"`
 	Faq      []QA                  `json:"faq"`
 }

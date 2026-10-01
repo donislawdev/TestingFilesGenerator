@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/site"
 )
 
@@ -201,4 +202,48 @@ func TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre(t *testing.T) 
 			}
 		}
 	}
+}
+
+// TestEveryLanguageDescribesEveryDamage holds the page about corrupt files to
+// what the program can break a file with.
+//
+// The table of damages is made from the registry, so a damage added there is a
+// row on every page - and a row needs a sentence in every language, or the page
+// would show a blank where the explanation goes. Read the other way as well: a
+// sentence about a damage the program no longer has is a description of
+// something that cannot be asked for. In English the sentence is the one the
+// program prints under the name, word for word, because those are one sentence
+// in two places and nothing else compares them.
+func TestEveryLanguageDescribesEveryDamage(t *testing.T) {
+	facts := factsFromTheProgram(t)
+	if len(facts.Damages) == 0 {
+		t.Fatal("the program lists no damage, so this guard would pass against any language file")
+	}
+	for _, lang := range languagesOnDisk(t) {
+		for _, d := range facts.Damages {
+			said, ok := lang.Damages[d.ID]
+			if !ok {
+				t.Errorf("the damage %q has no sentence in %s, so its row would be blank", d.ID, lang.Code)
+				continue
+			}
+			if lang.Code == "en" && said != damageDetail(t, d.ID) {
+				t.Errorf("tfg damage describes %q as %q and the English page says %q", d.ID, damageDetail(t, d.ID), said)
+			}
+		}
+		for id := range lang.Damages {
+			if !slices.ContainsFunc(facts.Damages, func(d site.Damage) bool { return d.ID == id }) {
+				t.Errorf("%s describes a damage %q that the program does not have", lang.Code, id)
+			}
+		}
+	}
+}
+
+// damageDetail is the sentence the program prints under one damage.
+func damageDetail(t *testing.T, id string) string {
+	t.Helper()
+	d, err := damage.Get(id)
+	if err != nil {
+		t.Fatalf("the program has no damage %q: %v", id, err)
+	}
+	return d.Detail
 }

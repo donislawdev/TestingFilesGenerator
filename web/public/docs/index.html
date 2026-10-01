@@ -238,6 +238,9 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     dropped rather than written - the run carries on, says which file it was, and ends with the
     partial exit code.
   </p>
+  <p>
+    Step by step, with a test that reads the manifest: <a href="/corrupt-test-files/">how to make a corrupt file for testing</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -492,6 +495,9 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     A run stopped with Ctrl+C still leaves a manifest and never leaves a half written file behind, so
     a cancelled job can still be cleaned up by the next one.
+  </p>
+  <p>
+    Ready workflows for GitHub Actions and GitLab CI: <a href="/test-files-in-ci/">how to generate test files in a CI pipeline</a>.
   </p>
 </section>
 

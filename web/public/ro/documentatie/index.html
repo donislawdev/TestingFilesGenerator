@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     respectiv este abandonat în loc să fie scris - rularea continuă, spune care a fost fișierul și
     se termină cu codul de ieșire parțial.
   </p>
+  <p>
+    Pas cu pas, cu un test care citește manifestul: <a href="/ro/fisiere-de-test-corupte/">cum faci un
+    fișier corupt pentru teste</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -494,6 +498,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     O rulare oprită cu Ctrl+C lasă totuși un manifest și nu lasă niciodată un fișier scris pe jumătate,
     așa că un job anulat poate fi curățat de următorul.
+  </p>
+  <p>
+    Workflow-uri gata făcute pentru GitHub Actions și GitLab CI:
+    <a href="/ro/fisiere-de-test-in-ci/">cum generezi fișiere de test într-un pipeline CI</a>.
   </p>
 </section>
 

@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     wird diese Datei verworfen statt geschrieben - der Lauf macht weiter, sagt, um welche Datei es
     ging, und endet mit dem Exit-Code für teilweise erfolgreiche Läufe.
   </p>
+  <p>
+    Schritt für Schritt, mit einem Test, der das Manifest liest:
+    <a href="/de/beschaedigte-testdateien/">So erzeugen Sie eine beschädigte Datei zum Testen</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -496,6 +500,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Ein mit Strg+C gestoppter Lauf hinterlässt trotzdem ein Manifest und nie eine halb geschriebene
     Datei, sodass ein abgebrochener Job vom nächsten noch aufgeräumt werden kann.
+  </p>
+  <p>
+    Fertige Workflows für GitHub Actions und GitLab CI: <a href="/de/testdateien-in-ci/">So erzeugen Sie
+    Testdateien in einer CI-Pipeline</a>.
   </p>
 </section>
 

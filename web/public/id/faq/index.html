@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Bisakah saya membuat file yang sengaja dirusak?</h2></summary>
     <div class="qa-body">
-      <p>Belum. File yang rusak dan cacat adalah fitur yang direncanakan. Saat ini setiap file yang ditulis alat ini adalah file valid dalam formatnya.</p>
+      <p>Ya. Tambahkan --damage zero-head dan file keluar dengan ukuran tepat seperti yang diminta, dengan byte pertamanya ditimpa nol, sehingga pembaca menolaknya, dan manifes menyatakan sistem Anda harus menolaknya. Rinciannya ada di halaman tentang file uji yang rusak.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Bisakah saya membuat file yang sengaja dirusak?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Belum. File yang rusak dan cacat adalah fitur yang direncanakan. Saat ini setiap file yang ditulis alat ini adalah file valid dalam formatnya." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Ya. Tambahkan --damage zero-head dan file keluar dengan ukuran tepat seperti yang diminta, dengan byte pertamanya ditimpa nol, sehingga pembaca menolaknya, dan manifes menyatakan sistem Anda harus menolaknya. Rinciannya ada di halaman tentang file uji yang rusak." }
     },
     {
       "@type": "Question",

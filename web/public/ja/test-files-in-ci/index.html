@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ja">
+<title>CIでのテストファイル - GitHub Actions、GitLab CI、PowerShell</title>
+<meta name="description" content="バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="CIでのテストファイル - GitHub Actions、GitLab CI、PowerShell">
+<meta property="og:description" content="バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CIでのテストファイル - GitHub Actions、GitLab CI、PowerShell">
+<meta name="twitter:description" content="バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 正確なサイズの本物のテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ja/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "利用例",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "CIでのテストファイル",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/test-files-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ja/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="メインメニュー">
+      <a href="/ja/">ホーム</a>
+      <a href="/ja/formats/">形式</a>
+      <a href="/ja/presets/">プリセット</a>
+      <a href="/ja/docs/">ドキュメント</a>
+      <a href="/ja/use-cases/" aria-current="true">利用例</a>
+      <a href="/ja/create-file-exact-size/">正確なサイズ</a>
+      <a href="/ja/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="言語: 日本語">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>日本語</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ja/use-cases/">利用例</a></p>
+<h1>CIパイプラインでテストファイルを生成する方法</h1>
+<p class="lead">
+  リポジトリ内のバイナリのフィクスチャは履歴に永遠に残り、diffでレビューできず、ファイルが大きくなると成り立たなくなります。代わりに、パイプラインの中でレシピからファイルを生成してください。レシピはテキストで、バイトは毎回同じになり、最後のステップで何も動いていないことを証明できます。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    <code>tfg</code>をインストールし、テストの前に<code>tfg generate fixtures.yaml --out
+    ./fixtures</code>を、テストの後に<code>tfg verify
+    ./fixtures/manifest.json</code>を実行します。どちらのステップも自らビルドを失敗させ、理由を示す終了コードを返します。
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">コミットしない理由</p>
+  <h2>フィクスチャをリポジトリに置くべきでない理由</h2>
+  <ul>
+    <li>
+      <strong>履歴に残ります。</strong>バイナリをあとで削除しても、すべてのバージョンが残っているのでクローンは小さくなりません。
+    </li>
+    <li>
+      <strong>diffでは何が変わったかが分かりません。</strong>レビューする人にはPDFが違うことしか見えません。レシピなら変更は1行です。
+    </li>
+    <li>
+      <strong>大きなファイルは収まりません。</strong>GitHubは100 MBを超えるファイルを含むプッシュを拒否するので、500
+      MBのアップロード上限のテストにはコミットできるものがありません。
+    </li>
+  </ul>
+  <p>
+    コミットするのはレシピです。同じレシピと同じシードは、どのマシンでも同じバイトを書き出すので、パイプラインで生成したファイルは、ノートPCで使っていたファイルと同じものです。
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">レシピ</p>
+  <h2>テストの隣に置くレシピ</h2>
+  <p>
+    このレシピは、受け入れられるべき請求書を25件と、上限を超えて拒否されるべき画像を2枚書き出し、マニフェストが両方の期待を記録します。
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code>は何も書き込まずにレシピを検査し、すべての問題を一度に挙げます。
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>ツールをインストールしてフィクスチャを作るワークフロー</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    チェックサムの行は、アーカイブを同じリリースの<code>verify-SHA256SUMS.txt</code>と照合します。バージョンは固定されているので、新しいリリースが、手を付けていないビルドを変えることはありません。
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>同じことをGitLabのジョブで</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">赤くなったとき</p>
+  <h2>ステップを失敗させるものとその理由</h2>
+  <p>
+    終わり方ごとに専用の終了コードがあるので、ステップは自ら失敗し、ログがどれかを示します。パイプラインが出会うのは次のものです。
+  </p>
+  <ul>
+    <li><code>3</code> - レシピが正しくありません。何も書き込まれず、すべての問題が示されます</li>
+    <li><code>4</code> - 形式が求められたことをできません。たとえば最小サイズを下回るサイズです</li>
+    <li><code>6</code> - ディスクの空き容量が足りません</li>
+    <li><code>7</code> - <code>tfg verify</code>がマニフェストと一致しないファイルを見つけました</li>
+    <li><code>8</code> - 実行は終わりましたが、すべてが作られたわけではありません</li>
+  </ul>
+  <p>
+    失敗した実行は標準出力に何も出力しないので、ログパーサーがエラーをデータと取り違えることはありません。表の全体は<a href="/ja/docs/#ci">ドキュメントのページ</a>にあります。
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShellのスクリプトにはもう1行必要です</h2>
+  <p>
+    PowerShellは、プログラムの終了コードを<code>.ps1</code>ファイルの外に持ち出しません。<code>-File</code>で実行すると、中のツールが作業を拒否した場合でもスクリプトは<code>0</code>を返し、赤になるはずのビルドが緑になります。最後の1行が修正のすべてです。
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    これはPowerShellの挙動であり、このツールの話ではありません。<code>cmd</code>、<code>bash</code>、<code>zsh</code>には余分な手当ては要りません。
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">複数のジョブ</p>
+  <h2>ジョブ間でフィクスチャを共有する</h2>
+  <p>
+    たいていアップロードは不要です。同じレシピは同じバイトを書き出すので、各ジョブが自分で<code>tfg
+    generate</code>を実行でき、アップロードしてダウンロードするより速くなります。あるジョブが別のジョブからファイルを受け取る必要があるときは、転送の後にマニフェストに対して<code>tfg
+    verify</code>を実行すると、届いたものが書き出されたものと同じかどうかが分かります。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">次へ</p>
+  <h2>ここからどこへ</h2>
+  <ul>
+    <li>
+      <a href="/ja/corrupt-test-files/">破損したテストファイル</a>は、同じレシピに意図的に壊したファイルを加えます。
+    </li>
+    <li>
+      <a href="/ja/use-cases/">ユースケース</a>は、パイプラインでの実行がほかに何を確かめられるかを示します。
+    </li>
+    <li>
+      <a href="/ja/docs/">ドキュメント</a>には、すべてのコマンド、レシピのキー、終了コードが載っています。
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">プロジェクト</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHubのソースコード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ダウンロード</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">問題を報告</a></li>
+        <li><a href="https://donislawdev.com/support/">プロジェクトを支援</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">ページ</p>
+      <ul class="plain">
+        <li><a href="/ja/">ホーム</a></li>
+        <li><a href="/ja/formats/">形式</a></li>
+        <li><a href="/ja/presets/">プリセット</a></li>
+        <li><a href="/ja/docs/">ドキュメント</a></li>
+        <li><a href="/ja/use-cases/">利用例</a></li>
+        <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
+        <li><a href="/ja/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU一般公衆利用許諾契約書バージョン3の下で公開されています。生成したファイルはあなたのものです。ライセンスの対象はツールであり、その出力ではありません。</p>
+    <p class="muted">このサイトは、どこからもフォント、スクリプト、トラッカーを読み込みません。Cookieも設定しません。</p>
+  </div>
+</footer>
+</body>
+</html>

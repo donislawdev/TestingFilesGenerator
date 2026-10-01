@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - domande sulla generazione di file di test",
       "description": "In cosa differisce da dd e fsutil, se i file si possono committare, se le esecuzioni si ripetono byte per byte e cosa succede quando una dimensione è irraggiungibile."
+    },
+    {
+      "key": "damage",
+      "slug": "file-di-test-corrotti",
+      "nav": "File corrotti",
+      "title": "File di test corrotti - file rotti di dimensione esatta",
+      "description": "Un file rotto di proposito, della dimensione esatta, con un manifest che dice che il tuo sistema deve rifiutarlo. Per testare validazione degli upload e parser.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "file-di-test-in-ci",
+      "nav": "File di test in CI",
+      "title": "File di test in CI - GitHub Actions, GitLab CI e PowerShell",
+      "description": "Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "L'indirizzo che hai seguito non corrisponde a nessuna pagina di questo sito.",
     "notFoundBack": "Vai alla home",
     "read.format": "Il formato di ogni file del set. È un'opzione dello strumento stesso, e il preset le dà solo un valore predefinito.",
-    "readTakes.format": "un id di formato dalla pagina dei formati"
+    "readTakes.format": "un id di formato dalla pagina dei formati",
+    "colDamage": "Danno",
+    "colEffect": "Cosa fa ai byte",
+    "colSettings": "Impostazioni",
+    "noSettings": "nessuna"
   },
   "endings": {
     "0": "Tutto ha funzionato.",
@@ -222,6 +242,9 @@
     "sanitize": "Il tuo sistema deve accettare il file e ripulirlo, per esempio rinominandolo.",
     "unspecified": "Dipende dalle regole del tuo sistema. Decidi tu, poi controlli che ciò che accade sia ciò che intendevi."
   },
+  "damages": {
+    "zero-head": "Sovrascrive con zeri i primi byte del file, lasciandone intatta la lunghezza. La maggior parte dei lettori guarda prima lì, quindi quasi tutto si accorge di questo danno."
+  },
   "terms": {
     "oracleNone": "non applicabile",
     "int": "qualsiasi numero intero",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Posso generare un file deliberatamente rotto?",
-      "a": "Non ancora. I file danneggiati e malformati sono una funzione prevista. Oggi ogni file che lo strumento scrive è un file valido del suo formato."
+      "a": "Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Quali formati arrivano dopo?",

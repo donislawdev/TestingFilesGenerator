@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pl">
+<title>Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell</title>
+<meta name="description" content="Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:title" content="Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell">
+<meta property="og:description" content="Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell">
+<meta name="twitter:description" content="Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Start",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Zastosowania",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pl\/zastosowania\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Pliki testowe w CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pl\/pliki-testowe-w-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Przejdź do treści</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Główna">
+      <a href="/pl/">Start</a>
+      <a href="/pl/formaty/">Formaty</a>
+      <a href="/pl/presety/">Presety</a>
+      <a href="/pl/dokumentacja/">Dokumentacja</a>
+      <a href="/pl/zastosowania/" aria-current="true">Zastosowania</a>
+      <a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a>
+      <a href="/pl/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Język: Polski">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Polski</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/test-files-in-ci/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/pl/zastosowania/">Zastosowania</a></p>
+<h1>Jak generować pliki testowe w potoku CI</h1>
+<p class="lead">
+  Binarny plik testowy w repozytorium zostaje w jego historii na zawsze, nie da się go ocenić w
+  różnicach i przestaje być możliwy, gdy plik jest duży. Zamiast tego generuj pliki w potoku z
+  przepisu. Przepis jest tekstem, bajty wychodzą za każdym razem takie same, a ostatni krok dowodzi,
+  że nic się nie ruszyło.
+</p>
+
+<div class="note">
+  <p class="note-title">Krótka odpowiedź</p>
+  <p>
+    Zainstaluj <code>tfg</code>, uruchom <code>tfg generate fixtures.yaml --out ./fixtures</code> przed
+    testami, a <code>tfg verify ./fixtures/manifest.json</code> po nich. Oba kroki same przerywają
+    build, z kodem wyjścia mówiącym dlaczego.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Dlaczego nie commitować</p>
+  <h2>Dlaczego pliku testowego nie powinno być w repozytorium</h2>
+  <ul>
+    <li>
+      <strong>Zostaje w historii.</strong> Usunięcie pliku binarnego później nie zmniejsza klonu, bo każda
+      jego wersja nadal tam jest.
+    </li>
+    <li>
+      <strong>Różnice nie pokażą, co się zmieniło.</strong> Recenzent widzi, że PDF jest inny, i nic
+      więcej. Przepis zmienia się o jedną linię.
+    </li>
+    <li>
+      <strong>Duże pliki się nie mieszczą.</strong> GitHub odrzuca push z plikiem większym niż 100 MB,
+      więc test limitu uploadu 500 MB nie ma czego commitować.
+    </li>
+  </ul>
+  <p>
+    Commitować trzeba przepis. Ten sam przepis i ziarno zapisują te same bajty na każdej maszynie, więc
+    plik wygenerowany w potoku jest tym plikiem, który miałeś na laptopie.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Przepis</p>
+  <h2>Przepis, który leży obok testów</h2>
+  <p>
+    Ten zapisuje dwadzieścia pięć faktur, które powinny zostać przyjęte, i dwa obrazy ponad limitem,
+    które powinny zostać odrzucone, a manifest zapisuje oba oczekiwania:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> sprawdza go, nic nie zapisując, i od razu wymienia każdy
+    problem.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Workflow, który instaluje narzędzie i buduje pliki testowe</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Wiersz z sumą kontrolną porównuje archiwum z <code>verify-SHA256SUMS.txt</code> z tego samego
+    wydania. Wersja jest przypięta, więc nowe wydanie nigdy nie zmieni buildu, którego nie ruszałeś.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>To samo jako zadanie GitLaba</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Gdy robi się czerwono</p>
+  <h2>Co przerywa krok i dlaczego</h2>
+  <p>
+    Każde zakończenie ma własny kod wyjścia, więc krok sam się przerywa, a log mówi, który to był. Te,
+    które spotyka potok:
+  </p>
+  <ul>
+    <li><code>3</code> - przepis jest niepoprawny. Nic nie zapisano, a każdy problem jest nazwany</li>
+    <li><code>4</code> - format nie potrafi tego, o co poproszono, na przykład rozmiaru poniżej swojego najmniejszego</li>
+    <li><code>6</code> - brakuje miejsca na dysku</li>
+    <li><code>7</code> - <code>tfg verify</code> znalazł plik, który nie zgadza się z manifestem</li>
+    <li><code>8</code> - przebieg się skończył, ale nie wszystko powstało</li>
+  </ul>
+  <p>
+    Nieudany przebieg nie wypisuje niczego na standardowe wyjście, więc parser logów nigdy nie weźmie
+    błędu za dane. Cała tabela jest na <a href="/pl/dokumentacja/#ci">stronie dokumentacji</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Skrypt PowerShella potrzebuje jeszcze jednej linii</h2>
+  <p>
+    PowerShell nie wynosi kodu wyjścia programu poza plik <code>.ps1</code>. Uruchom go z
+    <code>-File</code>, a skrypt odpowie <code>0</code>, nawet gdy narzędzie w środku odmówiło
+    pracy, więc build, który powinien być czerwony, robi się zielony. Ostatnia linia to cała
+    poprawka:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Tak zachowuje się PowerShell, a nie to narzędzie. <code>cmd</code>, <code>bash</code> i
+    <code>zsh</code> nie potrzebują niczego więcej.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Kilka zadań</p>
+  <h2>Przekazywanie plików testowych między zadaniami</h2>
+  <p>
+    Zwykle nie trzeba ich wysyłać. Skoro ten sam przepis zapisuje te same bajty, każde zadanie może
+    uruchomić własne <code>tfg generate</code>, co jest szybsze niż wysyłanie i pobieranie. Gdy
+    zadanie musi dostać pliki z innego, uruchom <code>tfg verify</code> na manifeście po przesłaniu,
+    a powie, czy to, co dotarło, jest tym, co zapisano.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dalej</p>
+  <h2>Dokąd pójść stąd</h2>
+  <ul>
+    <li>
+      <a href="/pl/uszkodzone-pliki-testowe/">Uszkodzone pliki testowe</a> dokładają do tego samego
+      przepisu pliki zepsute celowo.
+    </li>
+    <li>
+      <a href="/pl/zastosowania/">Zastosowania</a> pokazują, co jeszcze może sprawdzić przebieg w potoku.
+    </li>
+    <li>
+      <a href="/pl/dokumentacja/">Dokumentacja</a> ma każde polecenie, klucz przepisu i kod wyjścia.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kod na GitHubie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Pobieranie</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Zgłoś problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Wesprzyj projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Strony</p>
+      <ul class="plain">
+        <li><a href="/pl/">Start</a></li>
+        <li><a href="/pl/formaty/">Formaty</a></li>
+        <li><a href="/pl/presety/">Presety</a></li>
+        <li><a href="/pl/dokumentacja/">Dokumentacja</a></li>
+        <li><a href="/pl/zastosowania/">Zastosowania</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a></li>
+        <li><a href="/pl/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Wydane na licencji GNU General Public License w wersji 3. Wygenerowane pliki należą do Ciebie - licencja obejmuje narzędzie, nie to, co ono tworzy.</p>
+    <p class="muted">Ta strona nie ładuje żadnych fontów, skryptów ani liczników z zewnątrz. Nie ustawia ciasteczek.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -85,6 +85,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     file viene scartato invece di essere scritto - l'esecuzione prosegue, dice di quale file si
     trattava e termina con il codice di uscita parziale.
   </p>
+  <p>
+    Passo dopo passo, con un test che legge il manifest: <a href="/it/file-di-test-corrotti/">come
+    creare un file corrotto per i test</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -253,6 +257,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Un'esecuzione fermata con Ctrl+C lascia comunque un manifest e non lascia mai un file scritto a
     metà, così un job annullato può ancora essere ripulito dal successivo.
+  </p>
+  <p>
+    Workflow pronti per GitHub Actions e GitLab CI: <a href="/it/file-di-test-in-ci/">come generare file
+    di test in una pipeline CI</a>.
   </p>
 </section>
 

@@ -30,6 +30,10 @@ because it turns other people's test suites red.
   (`/de/dokumentation/`), the others keep the English words under the
   language prefix (`/ja/docs/`). The window and the command line are not
   part of this.
+- **Two guides on the website.** How to make a corrupt file for testing, with
+  the damages listed from the program itself, and how to generate test files in
+  a CI pipeline, with a GitHub Actions workflow, a GitLab job and the
+  PowerShell catch. Both are in every language of the site.
 - **A Tools tab, and `tfg tool`.** Small things to do with files you already
   have, in the window and on the command line with the same settings. The
   first works out the checksum of a file - md5, sha1, sha256, sha512 or crc32,
@@ -90,6 +94,9 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The FAQ on the website said a deliberately broken file was not possible
+  yet.** `tfg damage` has been in the tool since 0.3.0, and the answer still
+  called it a planned feature. It now says how to make one, in every language.
 - **The window no longer offers to write into a folder it cannot or should
   not write into.** Started from Finder on macOS it offered `/tfg-out`,
   which is read-only, so the first run ended in a refusal from the system.

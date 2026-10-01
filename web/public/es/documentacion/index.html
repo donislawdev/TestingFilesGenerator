@@ -239,6 +239,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     se descarta en lugar de escribirse - la ejecución continúa, dice de qué archivo se trató y
     termina con el código de salida parcial.
   </p>
+  <p>
+    Paso a paso, con una prueba que lee el manifiesto: <a href="/es/archivos-de-prueba-corruptos/">cómo
+    crear un archivo corrupto para pruebas</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -493,6 +497,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Una ejecución detenida con Ctrl+C sigue dejando un manifiesto y nunca deja un archivo a medio
     escribir, así que un trabajo cancelado aún puede limpiarlo el siguiente.
+  </p>
+  <p>
+    Workflows listos para GitHub Actions y GitLab CI: <a href="/es/archivos-de-prueba-en-ci/">cómo
+    generar archivos de prueba en un pipeline de CI</a>.
   </p>
 </section>
 

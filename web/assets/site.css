@@ -614,6 +614,14 @@ pre code {
   white-space: pre;
 }
 
+/* The short answer of a page is a sentence with a whole command in it, and a
+ * command can be longer than a phone is wide. A span that cannot break pushes
+ * the page sideways, so inside a note it may break where it has to. */
+.note code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* --------------------------------------------------------------------- faq */
 
 .faq {

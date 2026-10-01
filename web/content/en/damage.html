@@ -1,0 +1,172 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>How to make a corrupt file for testing</h1>
+<p class="lead">
+  A validator that has only ever been shown healthy files has not really been tested. Here is how to
+  get a file that is broken on purpose, comes out at <strong>exactly the size you ask for</strong>,
+  and carries a manifest saying what your system should do with it.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> writes a PNG of
+    exactly 2097152 bytes whose first bytes are zeros, and the manifest beside it records that your
+    system should reject it.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">The usual way</p>
+  <h2>Why a file corrupted by hand makes a poor test</h2>
+  <p>
+    The usual ways are a hex editor, a script that flips a few random bytes, or cutting a file short
+    with <code>head</code> or <code>truncate</code>. They work once, and then they cost you:
+  </p>
+  <ul>
+    <li>
+      <strong>It is different every time.</strong> A random byte lands somewhere new on each run, so a
+      failure on Tuesday may not come back on Wednesday.
+    </li>
+    <li>
+      <strong>It changes the size.</strong> A file cut short is smaller than the limit it was meant to
+      sit under, so the size check answers before the content check and the test passes for the wrong
+      reason.
+    </li>
+    <li>
+      <strong>It often goes unnoticed.</strong> Plain text still reads with a byte changed in the
+      middle, and a forgiving image reader just draws it, so the file you meant to be broken is
+      accepted.
+    </li>
+    <li>
+      <strong>It says nothing about what should happen.</strong> The file is only bytes, and whoever
+      reads the test next has to guess whether acceptance or rejection was intended.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">What you get</p>
+  <h2>A damaged file is still the size you asked for</h2>
+  <p>
+    The file is generated normally and broken afterwards, on its way to the disk. It keeps the size
+    you asked for, and the same command writes the same bytes again.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Settings go after a colon. The flag can be repeated, and the damages are applied in the order you
+    write them. It works with every one of the {{ .Facts.FormatCount }} formats.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">What it can do</p>
+  <h2>Which damages are there?</h2>
+  <p>
+    This is the list the program prints, read from it when this page is built. <code>tfg damage</code>
+    prints the same, and <code>tfg damage &lt;id&gt;</code> says what one of them takes.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> writes zeros over the start of the file. Most readers look there first, at
+    the signature and the header that say what the file is, so almost any reader notices. Plain text
+    and logs have no signature and are turned away as well, because a run of zero bytes is not text.
+    Below four bytes some formats come out with damage that no reader complains about, which is why
+    the setting starts at four.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">What the manifest says</p>
+  <h2>A manifest that says what should happen</h2>
+  <p>
+    Every damaged file gets an entry saying your system should reject it, with the damage recorded
+    beside it:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Two requests are refused before anything is written, because each would leave a file on disk that
+    the manifest describes wrongly:
+  </p>
+  <ul>
+    <li>a file smaller than the damage needs, which would come out unchanged</li>
+    <li>
+      <code>expected: accept</code> beside a damage, because nothing could meet it. Write
+      <code>sanitize</code> if your system is meant to repair the file, or <code>unspecified</code> if
+      that is the question you are asking
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">In a recipe</p>
+  <h2>Healthy and broken files in one run</h2>
+  <p>
+    Put both in one recipe, and the manifest carries the expectation of every file, so the test does
+    not need a list of which is which:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">In a test</p>
+  <h2>Turning it into a test</h2>
+  <p>
+    The test reads the manifest and checks that what happened is what was declared. It needs no list
+    of file names:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    A good refusal is a clean one. A message that says what was wrong is the answer you want. A server
+    error, a hang or a half stored file is the defect this test exists to find.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Next</p>
+  <h2>Where to go from here</h2>
+  <ul>
+    <li>
+      <a href="/presets/upload-validation/">The upload-validation preset</a> asks the other two
+      questions of a form, the size and the type.
+    </li>
+    <li>
+      <a href="/test-files-in-ci/">Test files in CI</a> runs a recipe like this one in a pipeline.
+    </li>
+    <li>
+      <a href="/docs/#damage">The documentation</a> has every flag of <code>tfg generate</code>.
+    </li>
+  </ul>
+</section>

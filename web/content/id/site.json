@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - Pertanyaan tentang Membuat File Uji",
       "description": "Apa bedanya dengan dd dan fsutil, apakah file aman di-commit, apakah hasil run sama byte demi byte, dan apa yang terjadi bila ukuran tak tercapai."
+    },
+    {
+      "key": "damage",
+      "slug": "file-uji-rusak",
+      "nav": "File rusak",
+      "title": "File uji yang rusak - file rusak dengan ukuran tepat",
+      "description": "File yang sengaja dirusak, berukuran tepat, dengan manifes yang menyatakan sistem Anda harus menolaknya. Untuk menguji validasi unggahan dan parser.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "file-uji-di-ci",
+      "nav": "File uji di CI",
+      "title": "File uji di CI - GitHub Actions, GitLab CI, dan PowerShell",
+      "description": "Buat file uji di pipeline alih-alih meng-commit biner: workflow GitHub Actions, job GitLab, kode keluar, dan jebakan PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Alamat yang Anda ikuti tidak cocok dengan halaman mana pun di situs ini.",
     "notFoundBack": "Ke beranda",
     "read.format": "Format setiap file dalam set. Ini adalah opsi alat itu sendiri, dan preset hanya memberinya nilai bawaan.",
-    "readTakes.format": "id format dari halaman format"
+    "readTakes.format": "id format dari halaman format",
+    "colDamage": "Kerusakan",
+    "colEffect": "Yang dilakukannya pada byte",
+    "colSettings": "Pengaturan",
+    "noSettings": "tidak ada"
   },
   "endings": {
     "0": "Semuanya berjalan.",
@@ -222,6 +242,9 @@
     "sanitize": "Sistem Anda harus menerima file ini dan membersihkannya, misalnya dengan mengganti namanya.",
     "unspecified": "Tergantung pada aturan sistem Anda. Anda yang memutuskan, lalu memeriksa apakah yang terjadi sesuai maksud Anda."
   },
+  "damages": {
+    "zero-head": "Menimpa byte pertama file dengan nol tanpa mengubah panjangnya. Sebagian besar pembaca melihat ke sana lebih dulu, jadi hampir semua hal menyadari kerusakan ini."
+  },
   "terms": {
     "oracleNone": "tidak berlaku",
     "int": "bilangan bulat apa pun",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Bisakah saya membuat file yang sengaja dirusak?",
-      "a": "Belum. File yang rusak dan cacat adalah fitur yang direncanakan. Saat ini setiap file yang ditulis alat ini adalah file valid dalam formatnya."
+      "a": "Ya. Tambahkan --damage zero-head dan file keluar dengan ukuran tepat seperti yang diminta, dengan byte pertamanya ditimpa nol, sehingga pembaca menolaknya, dan manifes menyatakan sistem Anda harus menolaknya. Rinciannya ada di halaman tentang file uji yang rusak.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Format apa yang akan hadir berikutnya?",

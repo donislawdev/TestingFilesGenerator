@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Kann ich eine absichtlich kaputte Datei erzeugen?</h2></summary>
     <div class="qa-body">
-      <p>Noch nicht. Beschädigte und fehlerhafte Dateien sind eine geplante Funktion. Heute ist jede Datei, die das Tool schreibt, eine gültige Datei ihres Formats.</p>
+      <p>Ja. Fügen Sie --damage zero-head hinzu, und die Datei kommt in genau der verlangten Größe heraus, mit Nullen über den ersten Bytes, sodass ein Leser sie abweist, und das Manifest sagt, dass Ihr System sie ablehnen soll. Die Einzelheiten stehen auf der Seite über beschädigte Testdateien.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Kann ich eine absichtlich kaputte Datei erzeugen?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Noch nicht. Beschädigte und fehlerhafte Dateien sind eine geplante Funktion. Heute ist jede Datei, die das Tool schreibt, eine gültige Datei ihres Formats." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Ja. Fügen Sie --damage zero-head hinzu, und die Datei kommt in genau der verlangten Größe heraus, mit Nullen über den ersten Bytes, sodass ein Leser sie abweist, und das Manifest sagt, dass Ihr System sie ablehnen soll. Die Einzelheiten stehen auf der Seite über beschädigte Testdateien." }
     },
     {
       "@type": "Question",

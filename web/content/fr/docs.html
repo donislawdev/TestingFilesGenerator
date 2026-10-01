@@ -85,6 +85,11 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     octet, ce fichier est abandonné plutôt qu'écrit - l'exécution continue, dit de quel fichier il
     s'agissait et se termine avec le code de sortie partiel.
   </p>
+  <p>
+    Pas à pas, avec un test qui lit le manifeste&nbsp;:
+    <a href="/fr/fichiers-de-test-corrompus/">comment fabriquer un fichier corrompu pour les
+    tests</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -256,6 +261,11 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Une exécution arrêtée avec Ctrl+C laisse quand même un manifeste et ne laisse jamais de fichier à
     moitié écrit, si bien qu'une tâche annulée peut encore être nettoyée par la suivante.
+  </p>
+  <p>
+    Des workflows prêts pour GitHub Actions et GitLab CI&nbsp;:
+    <a href="/fr/fichiers-de-test-en-ci/">comment générer des fichiers de test dans un pipeline
+    CI</a>.
   </p>
 </section>
 

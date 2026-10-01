@@ -1,0 +1,176 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Come creare un file corrotto per i test</h1>
+<p class="lead">
+  Un validatore a cui sono stati mostrati solo file sani non è stato davvero testato. Ecco come
+  ottenere un file rotto di proposito, che esce con <strong>esattamente la dimensione
+  richiesta</strong> e porta un manifest che dice cosa il tuo sistema deve farne.
+</p>
+
+<div class="note">
+  <p class="note-title">La risposta breve</p>
+  <p>
+    <code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code> scrive un PNG di
+    esattamente 2097152 byte i cui primi byte sono zeri, e il manifest accanto registra che il tuo
+    sistema deve rifiutarlo.
+  </p>
+</div>
+
+<section class="section" id="by-hand">
+  <p class="eyebrow">Il modo solito</p>
+  <h2>Perché un file corrotto a mano è un cattivo test</h2>
+  <p>
+    I modi soliti sono un editor esadecimale, uno script che cambia qualche byte a caso o un file
+    accorciato con <code>head</code> o <code>truncate</code>. Funzionano una volta, poi costano:
+  </p>
+  <ul>
+    <li>
+      <strong>È diverso ogni volta.</strong> Un byte casuale cade in un punto nuovo a ogni esecuzione,
+      quindi un errore del martedì può non ripresentarsi il mercoledì.
+    </li>
+    <li>
+      <strong>Cambia la dimensione.</strong> Un file tagliato è più piccolo del limite sotto cui doveva
+      stare, quindi il controllo della dimensione risponde prima di quello del contenuto e il test
+      passa per il motivo sbagliato.
+    </li>
+    <li>
+      <strong>Spesso passa inosservato.</strong> Il testo semplice si legge ancora con un byte cambiato
+      nel mezzo, e un lettore di immagini indulgente lo disegna e basta, così il file che doveva
+      essere rotto viene accettato.
+    </li>
+    <li>
+      <strong>Non dice nulla su cosa deve succedere.</strong> Il file è solo byte, e chi legge il test
+      dopo deve indovinare se si voleva l'accettazione o il rifiuto.
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="what">
+  <p class="eyebrow">Cosa ottieni</p>
+  <h2>Un file danneggiato ha ancora la dimensione richiesta</h2>
+  <p>
+    Il file viene generato normalmente e rotto dopo, mentre va verso il disco. Mantiene la dimensione
+    richiesta, e lo stesso comando riscrive gli stessi byte.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+  <p>
+    Le impostazioni vanno dopo i due punti. L'opzione si può ripetere, e i danni vengono applicati
+    nell'ordine in cui li scrivi. Funziona con ognuno dei {{ .Facts.FormatCount }} formati.
+  </p>
+</section>
+
+<section class="section" id="damages">
+  <p class="eyebrow">Cosa sa fare</p>
+  <h2>Quali danni ci sono?</h2>
+  <p>
+    Questa è la lista che il programma stampa, letta da lui quando si costruisce questa pagina.
+    <code>tfg damage</code> stampa la stessa, e <code>tfg damage &lt;id&gt;</code> dice cosa accetta
+    ciascuno.
+  </p>
+  {{ template "damagesTable" . }}
+  <p>
+    <code>zero-head</code> scrive zeri sull'inizio del file. La maggior parte dei lettori guarda prima
+    lì, la firma e l'intestazione che dicono cos'è il file, quindi quasi ogni lettore se ne accorge.
+    Il testo semplice e i log non hanno firma e vengono rifiutati lo stesso, perché una serie di
+    byte nulli non è testo. Sotto i quattro byte alcuni formati escono con un danno di cui nessun
+    lettore si lamenta, ed è per questo che l'impostazione parte da quattro.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <p class="eyebrow">Cosa dice il manifest</p>
+  <h2>Un manifest che dice cosa deve succedere</h2>
+  <p>
+    Ogni file danneggiato riceve una voce che dice che il tuo sistema deve rifiutarlo, con il danno
+    registrato accanto:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "reject",
+  "reason": "content_malformed",
+  "confidence": "certain"
+},
+"damage": [
+  {
+    "type": "zero-head",
+    "settings": {
+      "bytes": "8"
+    }
+  }
+]</code></pre>
+  <p>
+    Due richieste vengono rifiutate prima che venga scritto qualcosa, perché ciascuna lascerebbe su
+    disco un file che il manifest descrive male:
+  </p>
+  <ul>
+    <li>un file più piccolo di quanto serve al danno, che uscirebbe intatto</li>
+    <li>
+      <code>expected: accept</code> accanto a un danno, perché nulla potrebbe soddisfarlo. Scrivi
+      <code>sanitize</code> se il tuo sistema deve riparare il file, oppure <code>unspecified</code>
+      se è proprio questa la domanda che poni
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">In una ricetta</p>
+  <h2>File sani e rotti in una sola esecuzione</h2>
+  <p>
+    Metti entrambi in una ricetta, e il manifest porta l'aspettativa di ogni file, così il test non ha
+    bisogno di un elenco di quale sia quale:
+  </p>
+  <pre><code>version: 1
+targets:
+  - id: healthy
+    format: pdf
+    size: 1mb
+    expected: accept
+  - id: broken
+    format: pdf
+    size: 1mb
+    damage:
+      - zero-head</code></pre>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">In un test</p>
+  <h2>Trasformarlo in un test</h2>
+  <p>
+    Il test legge il manifest e controlla che ciò che è successo sia ciò che era stato dichiarato. Non
+    ha bisogno di un elenco di nomi di file:
+  </p>
+  <pre><code>import json, os
+
+directory = "healthy-and-broken"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    if entry["expected"]["outcome"] == "reject":
+        assert not response.ok
+    else:
+        assert response.ok</code></pre>
+  <p>
+    Un buon rifiuto è un rifiuto pulito. Un messaggio che dice cosa non andava è la risposta che vuoi.
+    Un errore del server, un blocco o un file salvato a metà è il difetto che questo test esiste per
+    trovare.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Avanti</p>
+  <h2>Dove andare da qui</h2>
+  <ul>
+    <li>
+      <a href="/it/preset/upload-validation/">Il preset upload-validation</a> pone a un modulo le altre
+      due domande, quella sulla dimensione e quella sul tipo.
+    </li>
+    <li>
+      <a href="/it/file-di-test-in-ci/">File di test in CI</a> esegue in una pipeline una ricetta come
+      questa.
+    </li>
+    <li>
+      <a href="/it/documentazione/#damage">La documentazione</a> riporta ogni opzione di <code>tfg
+      generate</code>.
+    </li>
+  </ul>
+</section>

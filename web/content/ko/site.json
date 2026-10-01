@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - 테스트 파일 생성에 관한 질문",
       "description": "dd, fsutil과의 차이, 파일을 커밋해도 안전한지, 실행이 바이트 단위로 재현되는지, 크기에 도달할 수 없을 때 어떻게 되는지."
+    },
+    {
+      "key": "damage",
+      "slug": "corrupt-test-files",
+      "nav": "손상 파일",
+      "title": "손상된 테스트 파일 - 크기가 정확한 망가진 파일",
+      "description": "일부러 망가뜨린, 크기가 정확한 파일. 시스템이 거부해야 함을 알리는 매니페스트가 딸려 옵니다. 업로드 검증과 파서 테스트용.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "test-files-in-ci",
+      "nav": "CI의 테스트 파일",
+      "title": "CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell",
+      "description": "바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "따라오신 주소는 이 사이트의 어떤 페이지와도 일치하지 않습니다.",
     "notFoundBack": "홈으로 이동",
     "read.format": "세트에 포함된 모든 파일의 형식입니다. 도구 자체의 플래그이며, 프리셋은 기본값만 지정합니다.",
-    "readTakes.format": "형식 페이지의 형식 id"
+    "readTakes.format": "형식 페이지의 형식 id",
+    "colDamage": "손상",
+    "colEffect": "바이트에 하는 일",
+    "colSettings": "설정",
+    "noSettings": "없음"
   },
   "endings": {
     "0": "모두 정상적으로 동작했습니다.",
@@ -222,6 +242,9 @@
     "sanitize": "시스템은 이 파일을 받아서 이름을 바꾸는 등의 방법으로 정리해야 합니다.",
     "unspecified": "시스템의 규칙에 따라 다릅니다. 직접 결정한 뒤 실제 일어나는 일이 의도한 것인지 확인하세요."
   },
+  "damages": {
+    "zero-head": "파일의 첫 바이트들을 길이는 그대로 둔 채 0으로 덮어씁니다. 대부분의 리더가 가장 먼저 그곳을 보므로 거의 모든 것이 이 손상을 알아챕니다."
+  },
   "terms": {
     "oracleNone": "해당 없음",
     "int": "임의의 정수",
@@ -281,7 +304,8 @@
     },
     {
       "q": "일부러 망가진 파일도 만들 수 있나요?",
-      "a": "아직은 안 됩니다. 손상된 파일과 형식이 잘못된 파일은 계획 중인 기능입니다. 지금은 도구가 쓰는 모든 파일이 해당 형식의 유효한 파일입니다."
+      "a": "네. --damage zero-head를 추가하면 파일은 요청한 크기 그대로, 첫 바이트가 0으로 덮어쓰인 채 나오므로 리더가 그것을 거부하고, 매니페스트에는 시스템이 그것을 거부해야 한다고 적힙니다. 자세한 내용은 손상된 테스트 파일 페이지에 있습니다.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "다음에는 어떤 형식이 추가되나요?",

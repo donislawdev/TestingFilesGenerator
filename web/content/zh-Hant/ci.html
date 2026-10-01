@@ -1,0 +1,170 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>如何在 CI 流程中產生測試檔案</h1>
+<p class="lead">
+  儲存庫裡的二進位 fixture 會永遠留在歷史中，無法在 diff
+  裡審查，檔案一大就根本行不通。請改為在流程內部用配方產生這些檔案。配方是文字，每次產生的位元組都相同，最後一步還能證明什麼都沒有變動。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    安裝 <code>tfg</code>，在測試之前執行 <code>tfg generate fixtures.yaml --out ./fixtures</code>，在測試之後執行
+    <code>tfg verify ./fixtures/manifest.json</code>。這兩步都會自行讓建置失敗，並給出說明原因的結束碼。
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">為什麼不提交</p>
+  <h2>為什麼 fixture 不該放在儲存庫裡</h2>
+  <ul>
+    <li>
+      <strong>它會留在歷史中。</strong>之後再刪除二進位檔案也不會讓複本變小，因為它的每個版本都還在。
+    </li>
+    <li>
+      <strong>diff 看不出改了什麼。</strong>審查者只看到一個 PDF 不同了，僅此而已。配方的變化只有一行。
+    </li>
+    <li>
+      <strong>大檔案放不下。</strong>GitHub 會拒絕包含超過 100 MB 檔案的推送，所以一個 500 MB 上傳限制的測試沒有什麼可提交的。
+    </li>
+  </ul>
+  <p>
+    該提交的是配方。相同的配方和種子在每台機器上寫出相同的位元組，所以在流程裡產生的檔案，就是你在筆電上用過的那個檔案。
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">配方</p>
+  <h2>放在測試旁邊的配方</h2>
+  <p>
+    這個配方寫出二十五張應被接受的發票和兩張超過限制、應被拒絕的圖片，清單會記錄這兩種預期：
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> 會檢查它而不寫入任何內容，並一次列出所有問題。
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>安裝工具並建置 fixture 的工作流程</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    檢查碼那一行把壓縮檔與同一發行版中的 <code>verify-SHA256SUMS.txt</code> 比對。版本是固定的，所以新發行版絕不會改變你沒動過的建置。
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>同樣的事，寫成 GitLab 作業</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">變紅的時候</p>
+  <h2>什麼會讓一個步驟失敗，為什麼</h2>
+  <p>
+    每種結局都有自己的結束碼，所以步驟會自行失敗，日誌會說明是哪一種。流程會遇到的有：
+  </p>
+  <ul>
+    <li><code>3</code> - 配方無效。沒有寫入任何內容，每個問題都會被指出</li>
+    <li><code>4</code> - 格式做不到所要求的事，例如小於它最小值的大小</li>
+    <li><code>6</code> - 磁碟空間不足</li>
+    <li><code>7</code> - <code>tfg verify</code> 發現一個與其清單不符的檔案</li>
+    <li><code>8</code> - 執行已結束，但並非所有內容都已產生</li>
+  </ul>
+  <p>
+    失敗的執行不會向標準輸出印出任何內容，所以日誌剖析器永遠不會把錯誤當成資料。完整的表格在<a href="/zh-hant/docs/#ci">文件頁面</a>上。
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>PowerShell 指令碼還需要多寫一行</h2>
+  <p>
+    PowerShell 不會把程式的結束碼帶出 <code>.ps1</code> 檔案。用 <code>-File</code> 執行一個指令碼，即使裡面的工具拒絕了工作，指令碼也會回傳
+    <code>0</code>，於是本該變紅的建置變成了綠色。最後一行就是全部的修正：
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    這是 PowerShell 的行為，與本工具無關。<code>cmd</code>、<code>bash</code> 和 <code>zsh</code> 不需要額外處理。
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">多個作業</p>
+  <h2>在作業之間共用 fixture</h2>
+  <p>
+    通常不需要上傳它們。因為相同的配方寫出相同的位元組，每個作業都可以執行自己的 <code>tfg
+    generate</code>，這比上傳再下載更快。當一個作業必須接收另一個作業的檔案時，在傳輸之後對清單執行 <code>tfg verify</code>，它會告訴你收到的是否就是寫出的。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/corrupt-test-files/">損毀的測試檔案</a>把刻意弄壞的檔案加入同一個配方。
+    </li>
+    <li>
+      <a href="/zh-hant/use-cases/">使用情境</a>展示流程中的執行還能檢查什麼。
+    </li>
+    <li>
+      <a href="/zh-hant/docs/">文件</a>包含每個指令、每個配方鍵和每個結束碼。
+    </li>
+  </ul>
+</section>

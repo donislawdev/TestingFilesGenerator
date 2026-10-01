@@ -195,7 +195,8 @@
   <details class="qa">
     <summary><h2>我能生成故意损坏的文件吗？</h2></summary>
     <div class="qa-body">
-      <p>暂时不能。损坏和畸形文件是计划中的功能。目前工具写出的每个文件都是该格式的合法文件。</p>
+      <p>可以。加上 --damage zero-head，文件就会以恰好所要求的大小输出，开头几个字节被零覆盖，读取器会拒绝它，清单也会说明你的系统应该拒绝它。详情见关于损坏测试文件的页面。</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -267,7 +268,7 @@
     {
       "@type": "Question",
       "name": "我能生成故意损坏的文件吗？",
-      "acceptedAnswer": { "@type": "Answer", "text": "暂时不能。损坏和畸形文件是计划中的功能。目前工具写出的每个文件都是该格式的合法文件。" }
+      "acceptedAnswer": { "@type": "Answer", "text": "可以。加上 --damage zero-head，文件就会以恰好所要求的大小输出，开头几个字节被零覆盖，读取器会拒绝它，清单也会说明你的系统应该拒绝它。详情见关于损坏测试文件的页面。" }
     },
     {
       "@type": "Question",

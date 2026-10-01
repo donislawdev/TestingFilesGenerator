@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ar">
+<title>ملفات الاختبار في CI - GitHub Actions وGitLab CI وPowerShell</title>
+<meta name="description" content="ولّد ملفات الاختبار في الخط بدل إيداع الملفات الثنائية: سير عمل GitHub Actions، ومهمة GitLab، ورموز الخروج، وفخ PowerShell.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/test-files-in-ci/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:title" content="ملفات الاختبار في CI - GitHub Actions وGitLab CI وPowerShell">
+<meta property="og:description" content="ولّد ملفات الاختبار في الخط بدل إيداع الملفات الثنائية: سير عمل GitHub Actions، ومهمة GitLab، ورموز الخروج، وفخ PowerShell.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ملفات الاختبار في CI - GitHub Actions وGitLab CI وPowerShell">
+<meta name="twitter:description" content="ولّد ملفات الاختبار في الخط بدل إيداع الملفات الثنائية: سير عمل GitHub Actions، ومهمة GitLab، ورموز الخروج، وفخ PowerShell.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "الرئيسية",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ar/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "حالات الاستخدام",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "ملفات الاختبار في CI",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/test-files-in-ci\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ar/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="القائمة الرئيسية">
+      <a href="/ar/">الرئيسية</a>
+      <a href="/ar/formats/">الصيغ</a>
+      <a href="/ar/presets/">الإعدادات المسبقة</a>
+      <a href="/ar/docs/">التوثيق</a>
+      <a href="/ar/use-cases/" aria-current="true">حالات الاستخدام</a>
+      <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
+      <a href="/ar/faq/">الأسئلة الشائعة</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="اللغة: العربية">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>العربية</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/test-files-in-ci/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testdateien-in-ci/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/archivos-de-prueba-en-ci/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/fichiers-de-test-en-ci/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/test-files-in-ci/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/file-uji-di-ci/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/file-di-test-in-ci/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/test-files-in-ci/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/test-files-in-ci/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testbestanden-in-ci/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/pliki-testowe-w-ci/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/fisiere-de-test-in-ci/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/test-files-in-ci/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/test-files-in-ci/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/test-files-in-ci/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ar/use-cases/">حالات الاستخدام</a></p>
+<h1>كيف تولّد ملفات الاختبار في خط CI</h1>
+<p class="lead">
+  الملف الثنائي الثابت في المستودع يبقى في سجله إلى الأبد، ولا يمكن مراجعته في diff، ويصبح مستحيلًا
+  حين يكبر الملف. ولِّد الملفات بدلًا من ذلك داخل الخط من وصفة. الوصفة نص، والبايتات تخرج متطابقة في
+  كل مرة، وخطوة أخيرة تثبت أن شيئًا لم يتحرك.
+</p>
+
+<div class="note">
+  <p class="note-title">الجواب المختصر</p>
+  <p>
+    ثبّت <code>tfg</code>، وشغّل <code>tfg generate fixtures.yaml --out ./fixtures</code> قبل
+    الاختبارات، و<code>tfg verify ./fixtures/manifest.json</code> بعدها. كلتا الخطوتين تُفشلان
+    البناء من تلقاء نفسيهما، برمز خروج يقول السبب.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">لماذا لا نودعها</p>
+  <h2>لماذا لا ينبغي أن يعيش الملف الثابت في المستودع</h2>
+  <ul>
+    <li>
+      <strong>يبقى في السجل.</strong> حذف ملف ثنائي لاحقًا لا يصغّر النسخة المستنسخة، لأن كل إصدار منه ما
+      زال هناك.
+    </li>
+    <li>
+      <strong>الـ diff لا يُظهر ما تغيّر.</strong> يرى المراجع أن ملف PDF مختلف ولا شيء غير ذلك. أما
+      الوصفة فتتغيّر بسطر واحد.
+    </li>
+    <li>
+      <strong>الملفات الكبيرة لا تتسع.</strong> يرفض GitHub دفعة تحتوي ملفًا أكبر من 100 ميغابايت، فلا يجد
+      اختبار حد رفع 500 ميغابايت ما يودعه.
+    </li>
+  </ul>
+  <p>
+    الذي يُودَع هو الوصفة. الوصفة نفسها مع البذرة نفسها تكتب البايتات نفسها على أي جهاز، فالملف المولَّد
+    في الخط هو الملف الذي كان عندك على حاسوبك المحمول.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">الوصفة</p>
+  <h2>وصفة تعيش بجانب الاختبارات</h2>
+  <p>
+    تكتب هذه خمسًا وعشرين فاتورة ينبغي قبولها وصورتين فوق الحد ينبغي رفضهما، ويسجّل البيان التوقعين
+    معًا:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> يفحصها دون أن يكتب شيئًا، ويسمّي كل المشكلات دفعة واحدة.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>سير عمل يثبّت الأداة ويبني الملفات الثابتة</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "0.4.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    سطر المجموع الاختباري يقارن الأرشيف بالملف <code>verify-SHA256SUMS.txt</code> من الإصدار نفسه.
+    الإصدار مثبَّت، فلا يغيّر إصدار جديد أبدًا بناءً لم تلمسه.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>الشيء نفسه كمهمة في GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "0.4.0"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">حين يصبح أحمر</p>
+  <h2>ما الذي يُفشل خطوة، ولماذا</h2>
+  <p>
+    لكل نهاية رمز خروج خاص بها، فتفشل الخطوة من تلقاء نفسها ويقول السجل أيّها كان. هذه هي التي يصادفها
+    الخط:
+  </p>
+  <ul>
+    <li><code>3</code> - الوصفة غير صالحة. لم يُكتب شيء، ويُسمّى كل خلل</li>
+    <li><code>4</code> - الصيغة لا تستطيع ما طُلب منها، مثل حجم أقل من أصغر حجم لها</li>
+    <li><code>6</code> - لا توجد مساحة كافية على القرص</li>
+    <li><code>7</code> - وجد <code>tfg verify</code> ملفًا لا يطابق بيانه</li>
+    <li><code>8</code> - انتهى التشغيل لكن لم يُنتَج كل شيء</li>
+  </ul>
+  <p>
+    التشغيل الفاشل لا يطبع شيئًا على الخرج القياسي، فلا يحسب محلل السجلات خطأً بيانات أبدًا. الجدول
+    الكامل في <a href="/ar/docs/#ci">صفحة التوثيق</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>سكربت PowerShell يحتاج سطرًا إضافيًا</h2>
+  <p>
+    لا ينقل PowerShell رمز خروج برنامج إلى خارج ملف <code>.ps1</code>. شغّل واحدًا بـ <code>-File</code>
+    فيجيب السكربت <code>0</code> حتى حين رفضت الأداة داخله العمل، فيتحول بناء كان ينبغي أن يكون أحمر
+    إلى أخضر. السطر الأخير هو الإصلاح كله:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    هكذا يتصرف PowerShell، وليس في الأمر شيء يخص هذه الأداة. أما <code>cmd</code> و<code>bash</code>
+    و<code>zsh</code> فلا تحتاج إلى شيء إضافي.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">عدة مهام</p>
+  <h2>مشاركة الملفات الثابتة بين المهام</h2>
+  <p>
+    لا حاجة عادةً إلى رفعها. لأن الوصفة نفسها تكتب البايتات نفسها، تستطيع كل مهمة تشغيل <code>tfg
+    generate</code> الخاص بها، وهذا أسرع من الرفع ثم التنزيل. وحين تحتاج مهمة إلى استلام ملفات من
+    أخرى، شغّل <code>tfg verify</code> على البيان بعد النقل، فيخبرك هل ما وصل هو ما كُتب.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">التالي</p>
+  <h2>إلى أين من هنا</h2>
+  <ul>
+    <li>
+      <a href="/ar/corrupt-test-files/">ملفات اختبار تالفة</a> تضيف إلى الوصفة نفسها ملفات أُتلفت عمدًا.
+    </li>
+    <li>
+      <a href="/ar/use-cases/">حالات الاستخدام</a> تُظهر ما الذي يمكن أن يفحصه تشغيل في خط البناء أيضًا.
+    </li>
+    <li>
+      <a href="/ar/docs/">التوثيق</a> يضم كل أمر وكل مفتاح وصفة وكل رمز خروج.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ملفات اختبار لضمان الجودة بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">المشروع</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">الشيفرة المصدرية على GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">التنزيلات</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">الإبلاغ عن مشكلة</a></li>
+        <li><a href="https://donislawdev.com/support/">ادعم المشروع</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">الصفحات</p>
+      <ul class="plain">
+        <li><a href="/ar/">الرئيسية</a></li>
+        <li><a href="/ar/formats/">الصيغ</a></li>
+        <li><a href="/ar/presets/">الإعدادات المسبقة</a></li>
+        <li><a href="/ar/docs/">التوثيق</a></li>
+        <li><a href="/ar/use-cases/">حالات الاستخدام</a></li>
+        <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
+        <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. مُصدَر بموجب رخصة جنو العمومية العامة، الإصدار 3. الملفات التي تولّدها ملكك، فالرخصة تشمل الأداة لا مخرجاتها.</p>
+    <p class="muted">لا يحمّل هذا الموقع خطوطًا ولا سكربتات ولا متتبعات من أي مكان. ولا يضبط ملفات تعريف الارتباط.</p>
+  </div>
+</footer>
+</body>
+</html>

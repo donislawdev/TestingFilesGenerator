@@ -1,0 +1,187 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Jak generovat testovací soubory v CI pipeline</h1>
+<p class="lead">
+  Binární fixture v repozitáři zůstává navždy v jeho historii, nedá se posoudit v diffu a při velkém
+  souboru přestává být možný. Generujte soubory raději v pipeline z receptu. Recept je text, bajty
+  vycházejí pokaždé stejné a poslední krok dokáže, že se nic nepohnulo.
+</p>
+
+<div class="note">
+  <p class="note-title">Stručná odpověď</p>
+  <p>
+    Nainstalujte <code>tfg</code>, před testy spusťte <code>tfg generate fixtures.yaml --out
+    ./fixtures</code> a po nich <code>tfg verify ./fixtures/manifest.json</code>. Oba kroky shodí
+    build samy, s návratovým kódem, který říká proč.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Proč je necommitovat</p>
+  <h2>Proč fixture nepatří do repozitáře</h2>
+  <ul>
+    <li>
+      <strong>Zůstává v historii.</strong> Pozdější smazání binárního souboru klon nezmenší, protože každá
+      jeho verze je tam pořád.
+    </li>
+    <li>
+      <strong>Diff neukáže, co se změnilo.</strong> Recenzent vidí, že PDF je jiné, a nic víc. Recept se
+      změní o jeden řádek.
+    </li>
+    <li>
+      <strong>Velké soubory se nevejdou.</strong> GitHub odmítne push, který obsahuje soubor větší než 100
+      MB, takže test limitu nahrávání 500 MB nemá co commitovat.
+    </li>
+  </ul>
+  <p>
+    Commitovat je třeba recept. Stejný recept a stejný seed zapíší na každém počítači stejné bajty,
+    takže soubor vygenerovaný v pipeline je soubor, který jste měli na notebooku.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Recept</p>
+  <h2>Recept, který leží vedle testů</h2>
+  <p>
+    Tento zapíše pětadvacet faktur, které se mají přijmout, a dva obrázky nad limitem, které se mají
+    odmítnout, a manifest zaznamená obě očekávání:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> ho zkontroluje, aniž cokoli zapíše, a pojmenuje všechny
+    problémy najednou.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Workflow, které nainstaluje nástroj a postaví fixtures</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Řádek s kontrolním součtem porovná archiv se souborem <code>verify-SHA256SUMS.txt</code> ze stejného
+    vydání. Verze je pevně daná, takže nové vydání nikdy nezmění build, na který jste nesáhli.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Totéž jako job v GitLabu</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Když se to zbarví načerveno</p>
+  <h2>Co shodí krok, a proč</h2>
+  <p>
+    Každý konec má vlastní návratový kód, takže krok selže sám a log řekne který. Ty, které pipeline
+    potká:
+  </p>
+  <ul>
+    <li><code>3</code> - recept není platný. Nic se nezapsalo a každý problém je pojmenován</li>
+    <li><code>4</code> - formát neumí, co se chtělo, například velikost pod svým minimem</li>
+    <li><code>6</code> - na disku není dost místa</li>
+    <li><code>7</code> - <code>tfg verify</code> našel soubor, který nesedí s manifestem</li>
+    <li><code>8</code> - běh skončil, ale ne všechno se vytvořilo</li>
+  </ul>
+  <p>
+    Neúspěšný běh nevypíše nic na standardní výstup, takže parser logů nikdy nevezme chybu za data. Celá
+    tabulka je na <a href="/cs/dokumentace/#ci">stránce dokumentace</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Skript PowerShellu potřebuje ještě jeden řádek</h2>
+  <p>
+    PowerShell nevynese návratový kód programu ze souboru <code>.ps1</code>. Spusťte ho s
+    <code>-File</code> a skript odpoví <code>0</code>, i když nástroj uvnitř práci odmítl, takže
+    build, který měl být červený, zezelená. Poslední řádek je celá oprava:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Tak se PowerShell chová, nejde o vlastnost tohoto nástroje. <code>cmd</code>, <code>bash</code> a
+    <code>zsh</code> nepotřebují nic navíc.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Více jobů</p>
+  <h2>Sdílení fixtures mezi joby</h2>
+  <p>
+    Nahrávat je obvykle není třeba. Protože stejný recept zapisuje stejné bajty, může každý job spustit
+    vlastní <code>tfg generate</code>, což je rychlejší než nahrání a stažení. Když má job přijmout
+    soubory od jiného, spusťte po přenosu <code>tfg verify</code> nad manifestem a řekne vám, zda
+    to, co dorazilo, je to, co bylo zapsáno.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dál</p>
+  <h2>Kam jít odtud</h2>
+  <ul>
+    <li>
+      <a href="/cs/poskozene-testovaci-soubory/">Poškozené testovací soubory</a> přidají do téhož receptu
+      soubory záměrně rozbité.
+    </li>
+    <li>
+      <a href="/cs/pripady-pouziti/">Případy použití</a> ukazují, co dalšího může zkontrolovat běh v
+      pipeline.
+    </li>
+    <li>
+      <a href="/cs/dokumentace/">Dokumentace</a> obsahuje každý příkaz, klíč receptu a návratový kód.
+    </li>
+  </ul>
+</section>

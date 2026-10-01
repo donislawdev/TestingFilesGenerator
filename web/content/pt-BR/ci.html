@@ -1,0 +1,191 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Como gerar arquivos de teste em um pipeline de CI</h1>
+<p class="lead">
+  Uma fixture binária em um repositório fica para sempre no histórico, não pode ser revisada em um
+  diff e deixa de ser viável quando o arquivo é grande. Gere os arquivos dentro do pipeline a partir
+  de uma receita. A receita é texto, os bytes saem iguais a cada vez e um último passo prova que
+  nada mudou.
+</p>
+
+<div class="note">
+  <p class="note-title">A resposta curta</p>
+  <p>
+    Instale o <code>tfg</code>, rode <code>tfg generate fixtures.yaml --out ./fixtures</code> antes dos
+    testes e <code>tfg verify ./fixtures/manifest.json</code> depois. Os dois passos fazem o build
+    falhar sozinhos, com um código de saída que diz o motivo.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Por que não commitar</p>
+  <h2>Por que uma fixture não deve morar no repositório</h2>
+  <ul>
+    <li>
+      <strong>Ela fica no histórico.</strong> Apagar um binário depois não deixa um clone menor, porque
+      todas as versões dele continuam lá.
+    </li>
+    <li>
+      <strong>Um diff não mostra o que mudou.</strong> O revisor vê que um PDF é diferente e nada mais.
+      Uma receita muda em uma linha.
+    </li>
+    <li>
+      <strong>Arquivos grandes não cabem.</strong> O GitHub recusa um push que contenha um arquivo acima
+      de 100 MB, então um teste de limite de upload de 500 MB não tem o que commitar.
+    </li>
+  </ul>
+  <p>
+    O que se commita é a receita. A mesma receita e a mesma semente gravam os mesmos bytes em qualquer
+    máquina, então o arquivo gerado no pipeline é o arquivo que você tinha no notebook.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">A receita</p>
+  <h2>Uma receita que mora junto dos testes</h2>
+  <p>
+    Esta grava vinte e cinco faturas que devem ser aceitas e duas imagens acima de um limite que devem
+    ser recusadas, e o manifesto registra as duas expectativas:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> verifica a receita sem gravar nada e nomeia todos os
+    problemas de uma vez.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Um workflow que instala a ferramenta e constrói as fixtures</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    A linha da soma de verificação compara o arquivo com <code>verify-SHA256SUMS.txt</code> da mesma
+    versão. A versão está fixada, então uma versão nova nunca altera um build que você não mexeu.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>A mesma coisa como job do GitLab</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Quando fica vermelho</p>
+  <h2>O que faz um passo falhar, e por quê</h2>
+  <p>
+    Cada final tem o seu próprio código de saída, então o passo falha sozinho e o log diz qual foi. Os
+    que um pipeline encontra:
+  </p>
+  <ul>
+    <li><code>3</code> - a receita não é válida. Nada foi gravado, e cada problema é nomeado</li>
+    <li><code>4</code> - o formato não consegue fazer o que foi pedido, por exemplo um tamanho abaixo do seu mínimo</li>
+    <li><code>6</code> - não há espaço em disco suficiente</li>
+    <li><code>7</code> - <code>tfg verify</code> achou um arquivo que não bate com o manifesto</li>
+    <li><code>8</code> - a execução terminou, mas nem tudo foi produzido</li>
+  </ul>
+  <p>
+    Uma execução que falhou não imprime nada na saída padrão, então um analisador de logs nunca toma um
+    erro por dado. A tabela completa está na <a href="/pt-br/documentacao/#ci">página de
+    documentação</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Um script PowerShell precisa de mais uma linha</h2>
+  <p>
+    O PowerShell não leva o código de saída de um programa para fora de um arquivo <code>.ps1</code>.
+    Rode um com <code>-File</code> e o script responde <code>0</code> mesmo quando a ferramenta lá
+    dentro recusou o trabalho, então um build que deveria ficar vermelho fica verde. A última linha
+    é a correção inteira:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    É assim que o PowerShell se comporta, não algo desta ferramenta. <code>cmd</code>, <code>bash</code>
+    e <code>zsh</code> não precisam de mais nada.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Vários jobs</p>
+  <h2>Compartilhando as fixtures entre jobs</h2>
+  <p>
+    Em geral não é preciso enviá-las. Como a mesma receita grava os mesmos bytes, cada job pode rodar o
+    seu próprio <code>tfg generate</code>, que é mais rápido que um upload e um download. Quando um
+    job precisa receber arquivos de outro, rode <code>tfg verify</code> no manifesto depois da
+    transferência, e ele diz se o que chegou é o que foi gravado.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">A seguir</p>
+  <h2>Para onde ir daqui</h2>
+  <ul>
+    <li>
+      <a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos de teste corrompidos</a> acrescenta à mesma
+      receita arquivos quebrados de propósito.
+    </li>
+    <li>
+      <a href="/pt-br/casos-de-uso/">Os casos de uso</a> mostram o que mais uma execução em um pipeline
+      pode conferir.
+    </li>
+    <li>
+      <a href="/pt-br/documentacao/">A documentação</a> traz cada comando, cada chave de receita e cada
+      código de saída.
+    </li>
+  </ul>
+</section>

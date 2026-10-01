@@ -85,6 +85,10 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     відкидається, а не записується - запуск триває, повідомляє, що це був за файл, і завершується
     кодом часткового завершення.
   </p>
+  <p>
+    Крок за кроком, з тестом, який читає маніфест: <a href="/uk/corrupt-test-files/">як зробити
+    пошкоджений файл для тестів</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -253,6 +257,10 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Запуск, зупинений за допомогою Ctrl+C, усе одно залишає маніфест і ніколи не залишає наполовину
     записаного файлу, тож скасоване завдання може бути прибране наступним.
+  </p>
+  <p>
+    Готові workflow для GitHub Actions і GitLab CI: <a href="/uk/test-files-in-ci/">як генерувати
+    тестові файли в конвеєрі CI</a>.
   </p>
 </section>
 

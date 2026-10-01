@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - întrebări despre generarea fișierelor de test",
       "description": "Prin ce diferă de dd și fsutil, dacă fișierele pot fi comise, dacă rulările se repetă octet cu octet și ce se întâmplă când o dimensiune nu poate fi atinsă."
+    },
+    {
+      "key": "damage",
+      "slug": "fisiere-de-test-corupte",
+      "nav": "Fișiere corupte",
+      "title": "Fișiere de test corupte - fișiere stricate de mărime exactă",
+      "description": "Un fișier stricat intenționat, de mărime exactă, cu un manifest care spune că sistemul tău trebuie să îl respingă. Pentru validarea încărcărilor și parsere.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "fisiere-de-test-in-ci",
+      "nav": "Fișiere de test în CI",
+      "title": "Fișiere de test în CI - GitHub Actions, GitLab CI și PowerShell",
+      "description": "Generează fișiere de test în pipeline în loc să comiți binare: workflow GitHub Actions, job GitLab, coduri de ieșire și capcana PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Adresa pe care ai urmat-o nu corespunde niciunei pagini de pe acest site.",
     "notFoundBack": "Mergi la pagina principală",
     "read.format": "Formatul fiecărui fișier din set. Este o opțiune a instrumentului însuși, iar presetarea îi dă doar o valoare implicită.",
-    "readTakes.format": "un id de format din pagina de formate"
+    "readTakes.format": "un id de format din pagina de formate",
+    "colDamage": "Deteriorare",
+    "colEffect": "Ce face cu octeții",
+    "colSettings": "Setări",
+    "noSettings": "niciuna"
   },
   "endings": {
     "0": "Totul a mers.",
@@ -222,6 +242,9 @@
     "sanitize": "Sistemul tău trebuie să accepte fișierul și să îl curețe, de exemplu redenumindu-l.",
     "unspecified": "Depinde de regulile sistemului tău. Tu decizi, apoi verifici că ce se întâmplă este ce ai vrut."
   },
+  "damages": {
+    "zero-head": "Suprascrie cu zerouri primii octeți ai fișierului, fără să îi schimbe lungimea. Majoritatea cititorilor se uită întâi acolo, deci aproape orice observă această deteriorare."
+  },
   "terms": {
     "oracleNone": "nu se aplică",
     "int": "orice număr întreg",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Pot genera un fișier stricat în mod deliberat?",
-      "a": "Încă nu. Fișierele deteriorate și malformate sunt o funcție planificată. Azi fiecare fișier scris de instrument este un fișier valid al formatului său."
+      "a": "Da. Adaugă --damage zero-head și fișierul iese cu exact mărimea cerută, cu primii octeți suprascriși cu zerouri, așa că un cititor îl respinge, iar manifestul spune că sistemul tău trebuie să îl respingă. Detaliile sunt pe pagina despre fișierele de test corupte.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Ce formate urmează?",

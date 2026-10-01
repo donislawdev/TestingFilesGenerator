@@ -52,6 +52,22 @@
       "nav": "常见问题",
       "title": "常见问题 - 关于生成测试文件",
       "description": "与 dd 和 fsutil 有何不同，文件能否放心提交，每次运行是否逐字节一致，以及大小无法达到时会怎样。"
+    },
+    {
+      "key": "damage",
+      "slug": "corrupt-test-files",
+      "nav": "损坏文件",
+      "title": "损坏的测试文件 - 大小精确的损坏文件",
+      "description": "一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "test-files-in-ci",
+      "nav": "CI 中的测试文件",
+      "title": "CI 中的测试文件 - GitHub Actions、GitLab CI 和 PowerShell",
+      "description": "在流水线中生成测试文件，而不是提交二进制文件：GitHub Actions 工作流、GitLab 作业、让构建失败的退出码，以及 PowerShell 的陷阱。",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "你访问的地址与本站任何页面都不匹配。",
     "notFoundBack": "返回首页",
     "read.format": "集合中每个文件的格式。它是工具本身的参数，预设只是给它一个默认值。",
-    "readTakes.format": "格式页面中的格式 id"
+    "readTakes.format": "格式页面中的格式 id",
+    "colDamage": "损坏方式",
+    "colEffect": "对字节做了什么",
+    "colSettings": "设置",
+    "noSettings": "无"
   },
   "endings": {
     "0": "一切正常。",
@@ -222,6 +242,9 @@
     "sanitize": "你的系统应该接受这个文件并加以清理，例如重命名。",
     "unspecified": "取决于你的系统规则。由你决定，然后检查实际发生的是否符合你的本意。"
   },
+  "damages": {
+    "zero-head": "用零覆盖文件开头的若干字节，长度保持不变。大多数读取器最先看的就是那里，所以几乎任何东西都会发现这种损坏。"
+  },
   "terms": {
     "oracleNone": "不适用",
     "int": "任意整数",
@@ -281,7 +304,8 @@
     },
     {
       "q": "我能生成故意损坏的文件吗？",
-      "a": "暂时不能。损坏和畸形文件是计划中的功能。目前工具写出的每个文件都是该格式的合法文件。"
+      "a": "可以。加上 --damage zero-head，文件就会以恰好所要求的大小输出，开头几个字节被零覆盖，读取器会拒绝它，清单也会说明你的系统应该拒绝它。详情见关于损坏测试文件的页面。",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "接下来会支持哪些格式？",

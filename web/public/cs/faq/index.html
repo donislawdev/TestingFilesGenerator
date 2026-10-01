@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Mohu vygenerovat soubor, který je záměrně rozbitý?</h2></summary>
     <div class="qa-body">
-      <p>Zatím ne. Poškozené a vadné soubory jsou plánovaná funkce. Dnes je každý soubor, který nástroj zapíše, platným souborem svého formátu.</p>
+      <p>Ano. Přidejte --damage zero-head a soubor vyjde v přesně požadované velikosti, s prvními bajty přepsanými nulami, takže ho čtečka odmítne, a manifest říká, že ho má váš systém odmítnout. Podrobnosti jsou na stránce o poškozených testovacích souborech.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Mohu vygenerovat soubor, který je záměrně rozbitý?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Zatím ne. Poškozené a vadné soubory jsou plánovaná funkce. Dnes je každý soubor, který nástroj zapíše, platným souborem svého formátu." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Ano. Přidejte --damage zero-head a soubor vyjde v přesně požadované velikosti, s prvními bajty přepsanými nulami, takže ho čtečka odmítne, a manifest říká, že ho má váš systém odmítnout. Podrobnosti jsou na stránce o poškozených testovacích souborech." }
     },
     {
       "@type": "Question",

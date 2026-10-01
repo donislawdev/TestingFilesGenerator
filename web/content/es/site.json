@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "Preguntas frecuentes - generar archivos de prueba",
       "description": "En qué se diferencia de dd y fsutil, si los archivos se pueden subir al repositorio, si las ejecuciones se repiten byte a byte y qué pasa con un tamaño inalcanzable."
+    },
+    {
+      "key": "damage",
+      "slug": "archivos-de-prueba-corruptos",
+      "nav": "Archivos corruptos",
+      "title": "Archivos de prueba corruptos - archivos rotos de tamaño exacto",
+      "description": "Un archivo roto a propósito, con el tamaño exacto que pides y un manifiesto que dice que tu sistema debe rechazarlo. Para probar validación de subidas y parsers.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "archivos-de-prueba-en-ci",
+      "nav": "Archivos de prueba en CI",
+      "title": "Archivos de prueba en CI - GitHub Actions, GitLab CI y PowerShell",
+      "description": "Genera archivos de prueba en el pipeline en vez de subir binarios: workflow de GitHub Actions, job de GitLab, códigos de salida y la trampa de PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "La dirección que has seguido no coincide con ninguna página de este sitio.",
     "notFoundBack": "Ir al inicio",
     "read.format": "El formato de cada archivo del conjunto. Es una opción de la propia herramienta, y el preset solo le da un valor por defecto.",
-    "readTakes.format": "un id de formato de la página de formatos"
+    "readTakes.format": "un id de formato de la página de formatos",
+    "colDamage": "Daño",
+    "colEffect": "Qué hace con los bytes",
+    "colSettings": "Ajustes",
+    "noSettings": "ninguno"
   },
   "endings": {
     "0": "Todo ha funcionado.",
@@ -222,6 +242,9 @@
     "sanitize": "Tu sistema debe aceptar el archivo y limpiarlo, por ejemplo cambiándole el nombre.",
     "unspecified": "Depende de las reglas de tu sistema. Tú decides y después compruebas que lo que ocurre es lo que querías."
   },
+  "damages": {
+    "zero-head": "Sobrescribe los primeros bytes del archivo con ceros sin tocar su longitud. La mayoría de los lectores miran ahí primero, así que casi todo nota este daño."
+  },
   "terms": {
     "oracleNone": "no aplicable",
     "int": "cualquier número entero",
@@ -281,7 +304,8 @@
     },
     {
       "q": "¿Puedo generar un archivo deliberadamente roto?",
-      "a": "Todavía no. Los archivos dañados y mal formados son una función prevista. Hoy todos los archivos que escribe la herramienta son válidos en su formato."
+      "a": "Sí. Añade --damage zero-head y el archivo sale con exactamente el tamaño pedido, con sus primeros bytes sobrescritos por ceros, de modo que un lector lo rechaza, y el manifiesto dice que tu sistema debe rechazarlo. La página sobre archivos de prueba corruptos tiene los detalles.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "¿Qué formatos vienen después?",

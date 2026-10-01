@@ -1,0 +1,192 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Hoe genereer je testbestanden in een CI-pipeline</h1>
+<p class="lead">
+  Een binaire fixture in een repository blijft voorgoed in de geschiedenis, kan niet in een diff
+  worden beoordeeld en wordt onmogelijk zodra het bestand groot is. Genereer de bestanden in plaats
+  daarvan in de pipeline uit een recept. Het recept is tekst, de bytes komen elke keer hetzelfde uit
+  en een laatste stap bewijst dat er niets is veranderd.
+</p>
+
+<div class="note">
+  <p class="note-title">Het korte antwoord</p>
+  <p>
+    Installeer <code>tfg</code>, voer vóór de tests <code>tfg generate fixtures.yaml --out
+    ./fixtures</code> uit en erna <code>tfg verify ./fixtures/manifest.json</code>. Beide stappen
+    laten de build vanzelf mislukken, met een afsluitcode die zegt waarom.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Waarom niet committen</p>
+  <h2>Waarom een fixture niet in de repository hoort</h2>
+  <ul>
+    <li>
+      <strong>Het blijft in de geschiedenis.</strong> Een binair bestand later verwijderen maakt een kloon
+      niet kleiner, want elke versie ervan staat er nog.
+    </li>
+    <li>
+      <strong>Een diff laat niet zien wat er veranderde.</strong> De reviewer ziet dat een PDF anders is
+      en verder niets. Een recept verandert met één regel.
+    </li>
+    <li>
+      <strong>Grote bestanden passen niet.</strong> GitHub weigert een push met een bestand van meer dan
+      100 MB, dus voor een test van een uploadlimiet van 500 MB valt er niets te committen.
+    </li>
+  </ul>
+  <p>
+    Het recept is wat je commit. Hetzelfde recept en dezelfde seed schrijven op elke machine dezelfde
+    bytes, dus het bestand dat in de pipeline wordt gegenereerd is het bestand dat je op je laptop
+    had.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Het recept</p>
+  <h2>Een recept dat naast de tests staat</h2>
+  <p>
+    Dit schrijft vijfentwintig facturen die geaccepteerd moeten worden en twee afbeeldingen boven een
+    limiet die geweigerd moeten worden, en het manifest legt beide verwachtingen vast:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> controleert het zonder iets te schrijven en noemt alle
+    problemen tegelijk.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Een workflow die de tool installeert en de fixtures bouwt</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    De regel met de controlesom vergelijkt het archief met <code>verify-SHA256SUMS.txt</code> uit
+    dezelfde release. De versie is vastgezet, dus een nieuwe release verandert nooit een build die
+    je niet hebt aangeraakt.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>Hetzelfde als GitLab-job</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Wanneer het rood wordt</p>
+  <h2>Wat een stap laat mislukken, en waarom</h2>
+  <p>
+    Elk einde heeft zijn eigen afsluitcode, dus de stap mislukt vanzelf en het log zegt welke. De codes
+    die een pipeline tegenkomt:
+  </p>
+  <ul>
+    <li><code>3</code> - het recept is niet geldig. Er is niets geschreven en elk probleem wordt genoemd</li>
+    <li><code>4</code> - het formaat kan niet wat er gevraagd werd, bijvoorbeeld een grootte onder zijn minimum</li>
+    <li><code>6</code> - er is niet genoeg schijfruimte</li>
+    <li><code>7</code> - <code>tfg verify</code> vond een bestand dat niet bij zijn manifest past</li>
+    <li><code>8</code> - de run is klaar, maar niet alles is gemaakt</li>
+  </ul>
+  <p>
+    Een mislukte run drukt niets af op de standaarduitvoer, zodat een logparser een fout nooit voor data
+    aanziet. De hele tabel staat op <a href="/nl/documentatie/#ci">de documentatiepagina</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Een PowerShell-script heeft nog één regel nodig</h2>
+  <p>
+    PowerShell neemt de afsluitcode van een programma niet mee uit een <code>.ps1</code>-bestand. Start
+    er een met <code>-File</code> en het script antwoordt <code>0</code>, ook als de tool erin het
+    werk weigerde, waardoor een build die rood hoort te zijn groen wordt. De laatste regel is de
+    hele oplossing:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Zo gedraagt PowerShell zich, het ligt niet aan deze tool. <code>cmd</code>, <code>bash</code> en
+    <code>zsh</code> hebben niets extra nodig.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Meerdere jobs</p>
+  <h2>De fixtures delen tussen jobs</h2>
+  <p>
+    Uploaden is meestal niet nodig. Omdat hetzelfde recept dezelfde bytes schrijft, kan elke job zijn
+    eigen <code>tfg generate</code> uitvoeren, wat sneller is dan uploaden en downloaden. Moet een
+    job bestanden van een andere ontvangen, voer dan na de overdracht <code>tfg verify</code> uit op
+    het manifest, en het zegt of wat aankwam is wat werd geschreven.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Verder</p>
+  <h2>Waar je vandaar heen kunt</h2>
+  <ul>
+    <li>
+      <a href="/nl/beschadigde-testbestanden/">Beschadigde testbestanden</a> voegt met opzet kapotte
+      bestanden toe aan hetzelfde recept.
+    </li>
+    <li>
+      <a href="/nl/toepassingen/">De toepassingen</a> laten zien wat een run in een pipeline nog meer kan
+      controleren.
+    </li>
+    <li>
+      <a href="/nl/documentatie/">De documentatie</a> bevat elk commando, elke receptsleutel en elke
+      afsluitcode.
+    </li>
+  </ul>
+</section>

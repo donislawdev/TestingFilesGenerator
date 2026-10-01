@@ -1,0 +1,188 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Jak generować pliki testowe w potoku CI</h1>
+<p class="lead">
+  Binarny plik testowy w repozytorium zostaje w jego historii na zawsze, nie da się go ocenić w
+  różnicach i przestaje być możliwy, gdy plik jest duży. Zamiast tego generuj pliki w potoku z
+  przepisu. Przepis jest tekstem, bajty wychodzą za każdym razem takie same, a ostatni krok dowodzi,
+  że nic się nie ruszyło.
+</p>
+
+<div class="note">
+  <p class="note-title">Krótka odpowiedź</p>
+  <p>
+    Zainstaluj <code>tfg</code>, uruchom <code>tfg generate fixtures.yaml --out ./fixtures</code> przed
+    testami, a <code>tfg verify ./fixtures/manifest.json</code> po nich. Oba kroki same przerywają
+    build, z kodem wyjścia mówiącym dlaczego.
+  </p>
+</div>
+
+<section class="section" id="why">
+  <p class="eyebrow">Dlaczego nie commitować</p>
+  <h2>Dlaczego pliku testowego nie powinno być w repozytorium</h2>
+  <ul>
+    <li>
+      <strong>Zostaje w historii.</strong> Usunięcie pliku binarnego później nie zmniejsza klonu, bo każda
+      jego wersja nadal tam jest.
+    </li>
+    <li>
+      <strong>Różnice nie pokażą, co się zmieniło.</strong> Recenzent widzi, że PDF jest inny, i nic
+      więcej. Przepis zmienia się o jedną linię.
+    </li>
+    <li>
+      <strong>Duże pliki się nie mieszczą.</strong> GitHub odrzuca push z plikiem większym niż 100 MB,
+      więc test limitu uploadu 500 MB nie ma czego commitować.
+    </li>
+  </ul>
+  <p>
+    Commitować trzeba przepis. Ten sam przepis i ziarno zapisują te same bajty na każdej maszynie, więc
+    plik wygenerowany w potoku jest tym plikiem, który miałeś na laptopie.
+  </p>
+</section>
+
+<section class="section" id="recipe">
+  <p class="eyebrow">Przepis</p>
+  <h2>Przepis, który leży obok testów</h2>
+  <p>
+    Ten zapisuje dwadzieścia pięć faktur, które powinny zostać przyjęte, i dwa obrazy ponad limitem,
+    które powinny zostać odrzucone, a manifest zapisuje oba oczekiwania:
+  </p>
+  <pre><code>version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit</code></pre>
+  <p>
+    <code>tfg validate fixtures.yaml</code> sprawdza go, nic nie zapisując, i od razu wymienia każdy
+    problem.
+  </p>
+</section>
+
+<section class="section" id="github">
+  <p class="eyebrow">GitHub Actions</p>
+  <h2>Workflow, który instaluje narzędzie i buduje pliki testowe</h2>
+  <pre><code>jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TFG_VERSION: "{{ .Facts.Version }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install tfg
+        run: |
+          base={{ .Facts.Releases }}/download/v$TFG_VERSION
+          curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/verify-SHA256SUMS.txt"
+          sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+          tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+          sudo mv tfg /usr/local/bin/
+
+      - name: build the fixtures
+        run: tfg generate fixtures.yaml --out ./fixtures
+
+      - name: run the tests
+        run: pytest tests/
+
+      - name: nothing moved
+        run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Wiersz z sumą kontrolną porównuje archiwum z <code>verify-SHA256SUMS.txt</code> z tego samego
+    wydania. Wersja jest przypięta, więc nowe wydanie nigdy nie zmieni buildu, którego nie ruszałeś.
+  </p>
+</section>
+
+<section class="section" id="gitlab">
+  <p class="eyebrow">GitLab CI</p>
+  <h2>To samo jako zadanie GitLaba</h2>
+  <pre><code>fixtures:
+  image: ubuntu:24.04
+  variables:
+    TFG_VERSION: "{{ .Facts.Version }}"
+  script:
+    - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
+    - base={{ .Facts.Releases }}/download/v$TFG_VERSION
+    - curl -fsSLO "$base/tfg_${TFG_VERSION}_linux_amd64.tar.gz"
+    - curl -fsSLO "$base/verify-SHA256SUMS.txt"
+    - sha256sum --check --ignore-missing verify-SHA256SUMS.txt
+    - tar -xzf "tfg_${TFG_VERSION}_linux_amd64.tar.gz" ./tfg
+    - ./tfg generate fixtures.yaml --out ./fixtures
+    - pytest tests/
+    - ./tfg verify ./fixtures/manifest.json</code></pre>
+</section>
+
+<section class="section" id="red">
+  <p class="eyebrow">Gdy robi się czerwono</p>
+  <h2>Co przerywa krok i dlaczego</h2>
+  <p>
+    Każde zakończenie ma własny kod wyjścia, więc krok sam się przerywa, a log mówi, który to był. Te,
+    które spotyka potok:
+  </p>
+  <ul>
+    <li><code>3</code> - przepis jest niepoprawny. Nic nie zapisano, a każdy problem jest nazwany</li>
+    <li><code>4</code> - format nie potrafi tego, o co poproszono, na przykład rozmiaru poniżej swojego najmniejszego</li>
+    <li><code>6</code> - brakuje miejsca na dysku</li>
+    <li><code>7</code> - <code>tfg verify</code> znalazł plik, który nie zgadza się z manifestem</li>
+    <li><code>8</code> - przebieg się skończył, ale nie wszystko powstało</li>
+  </ul>
+  <p>
+    Nieudany przebieg nie wypisuje niczego na standardowe wyjście, więc parser logów nigdy nie weźmie
+    błędu za dane. Cała tabela jest na <a href="/pl/dokumentacja/#ci">stronie dokumentacji</a>.
+  </p>
+</section>
+
+<section class="section" id="powershell">
+  <p class="eyebrow">PowerShell</p>
+  <h2>Skrypt PowerShella potrzebuje jeszcze jednej linii</h2>
+  <p>
+    PowerShell nie wynosi kodu wyjścia programu poza plik <code>.ps1</code>. Uruchom go z
+    <code>-File</code>, a skrypt odpowie <code>0</code>, nawet gdy narzędzie w środku odmówiło
+    pracy, więc build, który powinien być czerwony, robi się zielony. Ostatnia linia to cała
+    poprawka:
+  </p>
+  <pre><code>tfg generate fixtures.yaml --out ./fixtures
+exit $LASTEXITCODE</code></pre>
+  <p>
+    Tak zachowuje się PowerShell, a nie to narzędzie. <code>cmd</code>, <code>bash</code> i
+    <code>zsh</code> nie potrzebują niczego więcej.
+  </p>
+</section>
+
+<section class="section" id="jobs">
+  <p class="eyebrow">Kilka zadań</p>
+  <h2>Przekazywanie plików testowych między zadaniami</h2>
+  <p>
+    Zwykle nie trzeba ich wysyłać. Skoro ten sam przepis zapisuje te same bajty, każde zadanie może
+    uruchomić własne <code>tfg generate</code>, co jest szybsze niż wysyłanie i pobieranie. Gdy
+    zadanie musi dostać pliki z innego, uruchom <code>tfg verify</code> na manifeście po przesłaniu,
+    a powie, czy to, co dotarło, jest tym, co zapisano.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dalej</p>
+  <h2>Dokąd pójść stąd</h2>
+  <ul>
+    <li>
+      <a href="/pl/uszkodzone-pliki-testowe/">Uszkodzone pliki testowe</a> dokładają do tego samego
+      przepisu pliki zepsute celowo.
+    </li>
+    <li>
+      <a href="/pl/zastosowania/">Zastosowania</a> pokazują, co jeszcze może sprawdzić przebieg w potoku.
+    </li>
+    <li>
+      <a href="/pl/dokumentacja/">Dokumentacja</a> ma każde polecenie, klucz przepisu i kod wyjścia.
+    </li>
+  </ul>
+</section>

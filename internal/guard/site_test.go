@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/site"
@@ -121,6 +122,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		Version:   version.Version,
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
+		Damages:   damagesTheProgramHas(),
 		Presets:   presetFactsFromTheProgram(t),
 		Commands:  commandsTheToolPrints(t),
 		Downloads: declaredDownloads(),
@@ -139,6 +141,17 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		Support:  "https://donislawdev.com/support/",
 		Origin:   siteOrigin,
 	}
+}
+
+// damagesTheProgramHas is every damage in the order tfg damage lists it, with
+// the smallest file it takes at its defaults - the number that command prints,
+// from the same call.
+func damagesTheProgramHas() []site.Damage {
+	out := make([]site.Damage, 0, len(damage.All()))
+	for _, d := range damage.All() {
+		out = append(out, site.Damage{ID: d.ID, Smallest: d.Floor(d.Defaults()), Settings: d.ParameterNames()})
+	}
+	return out
 }
 
 // languagesOnDisk reads every language description under web/content.

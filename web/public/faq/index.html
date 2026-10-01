@@ -196,7 +196,8 @@
   <details class="qa">
     <summary><h2>Can I generate a file that is deliberately broken?</h2></summary>
     <div class="qa-body">
-      <p>Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format.</p>
+      <p>Yes. Add --damage zero-head and the file comes out at exactly the size you asked for with its first bytes overwritten by zeros, so a reader turns it away, and the manifest says your system should reject it. The page about corrupt test files has the details.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -268,7 +269,7 @@
     {
       "@type": "Question",
       "name": "Can I generate a file that is deliberately broken?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Add --damage zero-head and the file comes out at exactly the size you asked for with its first bytes overwritten by zeros, so a reader turns it away, and the manifest says your system should reject it. The page about corrupt test files has the details." }
     },
     {
       "@type": "Question",

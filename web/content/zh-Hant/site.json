@@ -52,6 +52,22 @@
       "nav": "常見問題",
       "title": "常見問題 - 關於產生測試檔案",
       "description": "與 dd、fsutil 有何不同、檔案能否放心提交、每次執行是否逐位元組相同，以及大小無法達成時會怎樣。"
+    },
+    {
+      "key": "damage",
+      "slug": "corrupt-test-files",
+      "nav": "損毀檔案",
+      "title": "損毀的測試檔案 - 大小精確的損毀檔案",
+      "description": "一個刻意弄壞、大小精確的檔案，附帶說明你的系統應拒絕它的清單。用於測試上傳驗證和剖析器。",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "test-files-in-ci",
+      "nav": "CI 中的測試檔案",
+      "title": "CI 中的測試檔案 - GitHub Actions、GitLab CI 和 PowerShell",
+      "description": "在流程中產生測試檔案，而不是提交二進位檔案：GitHub Actions 工作流程、GitLab 作業、讓建置失敗的結束碼，以及 PowerShell 的陷阱。",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "你造訪的網址與本站任何頁面都不相符。",
     "notFoundBack": "回到首頁",
     "read.format": "組合中每個檔案的格式。它是工具本身的參數，預設集只是給它一個預設值。",
-    "readTakes.format": "格式頁面中的格式 id"
+    "readTakes.format": "格式頁面中的格式 id",
+    "colDamage": "損毀方式",
+    "colEffect": "對位元組做了什麼",
+    "colSettings": "設定",
+    "noSettings": "無"
   },
   "endings": {
     "0": "一切正常。",
@@ -222,6 +242,9 @@
     "sanitize": "你的系統應該接受這個檔案並加以清理，例如重新命名。",
     "unspecified": "取決於你的系統規則。由你決定，然後檢查實際發生的是否符合你的本意。"
   },
+  "damages": {
+    "zero-head": "用零覆蓋檔案開頭的若干位元組，長度保持不變。大多數讀取器最先看的就是那裡，所以幾乎任何東西都會發現這種損毀。"
+  },
   "terms": {
     "oracleNone": "不適用",
     "int": "任意整數",
@@ -281,7 +304,8 @@
     },
     {
       "q": "我能產生刻意損壞的檔案嗎？",
-      "a": "目前還不能。損毀與格式錯誤的檔案是規劃中的功能。目前工具寫出的每個檔案都是該格式的合法檔案。"
+      "a": "可以。加上 --damage zero-head，檔案就會以恰好所要求的大小輸出，開頭幾個位元組被零覆蓋，讀取器會拒絕它，清單也會說明你的系統應該拒絕它。詳情見關於損毀測試檔案的頁面。",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "接下來會支援哪些格式？",

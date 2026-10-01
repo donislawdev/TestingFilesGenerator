@@ -227,6 +227,9 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
   <p>
     第三种无法提前得知。如果某个破坏运行后没有改动任何字节，该文件会被丢弃而不是写出，运行会继续，指出是哪个文件，并以部分完成的退出码结束。
   </p>
+  <p>
+    一步一步来，附带一个读取清单的测试：<a href="/zh-hans/corrupt-test-files/">如何制作用于测试的损坏文件</a>。
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -464,6 +467,9 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   run: tfg verify ./fixtures/manifest.json</code></pre>
   <p>
     被 Ctrl+C 停止的运行仍会留下清单，也绝不会留下写了一半的文件，所以被取消的任务仍可由下一次运行清理。
+  </p>
+  <p>
+    适用于 GitHub Actions 和 GitLab CI 的现成工作流：<a href="/zh-hans/test-files-in-ci/">如何在 CI 流水线中生成测试文件</a>。
   </p>
 </section>
 

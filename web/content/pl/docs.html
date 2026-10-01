@@ -85,6 +85,9 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     jednego bajtu, taki plik zostaje odrzucony zamiast zapisany - przebieg idzie dalej, mówi,
     którego pliku to dotyczyło, i kończy się kodem częściowego wyniku.
   </p>
+  <p>
+    Krok po kroku, z testem czytającym manifest: <a href="/pl/uszkodzone-pliki-testowe/">jak zrobić uszkodzony plik do testów</a>.
+  </p>
 </section>
 
 <section class="section" id="recipes">
@@ -254,6 +257,9 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
   <p>
     Przebieg zatrzymany przez Ctrl+C i tak zostawia manifest i nigdy nie zostawia pliku zapisanego
     w połowie, więc anulowane zadanie da się posprzątać następnym.
+  </p>
+  <p>
+    Gotowe workflow dla GitHub Actions i GitLab CI: <a href="/pl/pliki-testowe-w-ci/">jak generować pliki testowe w potoku CI</a>.
   </p>
 </section>
 

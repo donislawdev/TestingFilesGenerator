@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - Questions About Generating Test Files",
       "description": "How this differs from dd and fsutil, whether the files are safe to commit, whether runs repeat byte for byte, and what happens when a size cannot be reached."
+    },
+    {
+      "key": "damage",
+      "slug": "corrupt-test-files",
+      "nav": "Corrupt test files",
+      "title": "Corrupt Test Files - Damaged Files of an Exact Size",
+      "description": "Make a file that is broken on purpose, at the exact size you ask for, with a manifest saying your system should reject it. For testing upload validation and parsers.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "test-files-in-ci",
+      "nav": "Test files in CI",
+      "title": "Test Files in CI - GitHub Actions, GitLab CI and PowerShell",
+      "description": "Generate test files in the pipeline instead of committing binaries: a GitHub Actions workflow, a GitLab job, exit codes that fail the build and the PowerShell catch.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "The address you followed does not match any page on this site.",
     "notFoundBack": "Go to the home page",
     "read.format": "The format of every file in the set. It is a flag of the tool itself, and the preset only gives it a default.",
-    "readTakes.format": "a format id from the formats page"
+    "readTakes.format": "a format id from the formats page",
+    "colDamage": "Damage",
+    "colEffect": "What it does to the bytes",
+    "colSettings": "Settings",
+    "noSettings": "none"
   },
   "endings": {
     "0": "Everything worked.",
@@ -281,7 +301,8 @@
     },
     {
       "q": "Can I generate a file that is deliberately broken?",
-      "a": "Not yet. Damaged and malformed files are a planned feature. Today every file the tool writes is a valid one of its format."
+      "a": "Yes. Add --damage zero-head and the file comes out at exactly the size you asked for with its first bytes overwritten by zeros, so a reader turns it away, and the manifest says your system should reject it. The page about corrupt test files has the details.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Which formats are coming next?",
@@ -300,5 +321,8 @@
       "q": "Why is a run over thousands of files slower on Windows?",
       "a": "Because Windows charges more for every path it looks at, and a command that goes over thousands of files looks at thousands of paths. Measured on one machine with 3000 files of 1 kB, verify takes about 0.9 seconds on Windows and about 0.2 seconds on Linux in a container. A shorter output path makes the Windows figure smaller, because every folder above the files is part of what gets looked at."
     }
-  ]
+  ],
+  "damages": {
+    "zero-head": "Overwrites the first bytes of the file with zeros, leaving its length alone. Most readers look there first, so this is the damage almost anything notices."
+  }
 }

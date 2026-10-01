@@ -196,7 +196,8 @@
   <details class="qa">
     <summary><h2>Kasıtlı olarak bozuk bir dosya üretebilir miyim?</h2></summary>
     <div class="qa-body">
-      <p>Henüz değil. Hasarlı ve hatalı biçimli dosyalar planlanan bir özelliktir. Bugün aracın yazdığı her dosya biçiminin geçerli bir dosyasıdır.</p>
+      <p>Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -268,7 +269,7 @@
     {
       "@type": "Question",
       "name": "Kasıtlı olarak bozuk bir dosya üretebilir miyim?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Henüz değil. Hasarlı ve hatalı biçimli dosyalar planlanan bir özelliktir. Bugün aracın yazdığı her dosya biçiminin geçerli bir dosyasıdır." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Evet. --damage zero-head ekleyin, dosya tam istediğiniz boyutta ve ilk baytları sıfırlarla ezilmiş olarak çıkar. Böylece bir okuyucu onu reddeder ve bildirim sisteminizin onu reddetmesi gerektiğini söyler. Ayrıntılar bozuk test dosyaları sayfasındadır." }
     },
     {
       "@type": "Question",

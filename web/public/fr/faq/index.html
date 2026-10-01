@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Puis-je générer un fichier volontairement cassé ?</h2></summary>
     <div class="qa-body">
-      <p>Pas encore. Les fichiers abîmés et mal formés sont une fonctionnalité prévue. Aujourd&#39;hui, chaque fichier écrit par l&#39;outil est un fichier valide de son format.</p>
+      <p>Oui. Ajoutez --damage zero-head et le fichier sort à la taille exacte demandée, avec ses premiers octets écrasés par des zéros, si bien qu&#39;un lecteur le refuse, et le manifeste dit que votre système doit le rejeter. La page sur les fichiers de test corrompus donne le détail.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Puis-je générer un fichier volontairement cassé ?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Pas encore. Les fichiers abîmés et mal formés sont une fonctionnalité prévue. Aujourd\u0027hui, chaque fichier écrit par l\u0027outil est un fichier valide de son format." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Oui. Ajoutez --damage zero-head et le fichier sort à la taille exacte demandée, avec ses premiers octets écrasés par des zéros, si bien qu\u0027un lecteur le refuse, et le manifeste dit que votre système doit le rejeter. La page sur les fichiers de test corrompus donne le détail." }
     },
     {
       "@type": "Question",

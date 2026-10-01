@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - câu hỏi về việc tạo tệp kiểm thử",
       "description": "Khác gì dd và fsutil, tệp có commit an toàn không, các lần chạy có giống từng byte không và chuyện gì xảy ra khi không đạt được kích thước."
+    },
+    {
+      "key": "damage",
+      "slug": "tep-kiem-thu-bi-hong",
+      "nav": "Tệp bị hỏng",
+      "title": "Tệp kiểm thử bị hỏng - tệp hỏng đúng kích thước",
+      "description": "Một tệp cố ý làm hỏng, đúng kích thước, với manifest nói hệ thống của bạn phải từ chối nó. Để kiểm thử xác thực tải lên và trình phân tích cú pháp.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "tep-kiem-thu-trong-ci",
+      "nav": "Tệp kiểm thử trong CI",
+      "title": "Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell",
+      "description": "Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Địa chỉ bạn vừa theo không khớp với trang nào trên trang web này.",
     "notFoundBack": "Về trang chủ",
     "read.format": "Định dạng của mọi tệp trong bộ. Đây là một cờ của chính công cụ, và preset chỉ cho nó một giá trị mặc định.",
-    "readTakes.format": "id định dạng từ trang định dạng"
+    "readTakes.format": "id định dạng từ trang định dạng",
+    "colDamage": "Hỏng hóc",
+    "colEffect": "Nó làm gì với các byte",
+    "colSettings": "Cài đặt",
+    "noSettings": "không có"
   },
   "endings": {
     "0": "Mọi thứ đều chạy tốt.",
@@ -222,6 +242,9 @@
     "sanitize": "Hệ thống của bạn nên nhận tệp và làm sạch nó, ví dụ bằng cách đổi tên.",
     "unspecified": "Tùy vào quy tắc của hệ thống bạn. Bạn quyết định, rồi kiểm tra điều xảy ra có đúng ý bạn không."
   },
+  "damages": {
+    "zero-head": "Ghi đè các byte đầu của tệp bằng số không, giữ nguyên độ dài. Hầu hết trình đọc nhìn vào đó trước, nên gần như mọi thứ đều nhận ra hỏng hóc này."
+  },
   "terms": {
     "oracleNone": "không áp dụng",
     "int": "số nguyên bất kỳ",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Tôi có thể tạo một tệp cố ý bị hỏng không?",
-      "a": "Chưa. Tệp bị hỏng và sai định dạng là tính năng được lên kế hoạch. Hôm nay mọi tệp công cụ ghi đều là tệp hợp lệ của định dạng đó."
+      "a": "Có. Thêm --damage zero-head và tệp ra đúng kích thước bạn yêu cầu, với các byte đầu bị ghi đè bằng số không, nên trình đọc từ chối nó, và manifest nói hệ thống của bạn phải từ chối nó. Chi tiết nằm ở trang về tệp kiểm thử bị hỏng.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Những định dạng nào sắp có?",

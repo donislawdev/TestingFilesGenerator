@@ -52,6 +52,22 @@
       "nav": "FAQ",
       "title": "FAQ - vragen over het genereren van testbestanden",
       "description": "Hoe dit verschilt van dd en fsutil, of je de bestanden kunt committen, of runs byte voor byte herhaalbaar zijn en wat er gebeurt als een grootte onhaalbaar is."
+    },
+    {
+      "key": "damage",
+      "slug": "beschadigde-testbestanden",
+      "nav": "Beschadigde bestanden",
+      "title": "Beschadigde testbestanden - kapotte bestanden op exacte grootte",
+      "description": "Een bestand dat met opzet kapot is, op exacte grootte, met een manifest dat zegt dat je systeem het moet weigeren. Voor het testen van uploadvalidatie en parsers.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "ci",
+      "slug": "testbestanden-in-ci",
+      "nav": "Testbestanden in CI",
+      "title": "Testbestanden in CI - GitHub Actions, GitLab CI en PowerShell",
+      "description": "Genereer testbestanden in de pipeline in plaats van binaire bestanden te committen: GitHub Actions-workflow, GitLab-job, afsluitcodes en de PowerShell-valkuil.",
+      "parent": "use-cases"
     }
   ],
   "words": {
@@ -91,7 +107,11 @@
     "notFoundLead": "Het adres dat je volgde komt met geen enkele pagina op deze site overeen.",
     "notFoundBack": "Naar de startpagina",
     "read.format": "Het formaat van elk bestand in de set. Het is een optie van de tool zelf, en de preset geeft er alleen een standaardwaarde aan.",
-    "readTakes.format": "een formaat-id van de pagina met formaten"
+    "readTakes.format": "een formaat-id van de pagina met formaten",
+    "colDamage": "Beschadiging",
+    "colEffect": "Wat het met de bytes doet",
+    "colSettings": "Instellingen",
+    "noSettings": "geen"
   },
   "endings": {
     "0": "Alles werkte.",
@@ -222,6 +242,9 @@
     "sanitize": "Je systeem moet het bestand aannemen en opschonen, bijvoorbeeld door het te hernoemen.",
     "unspecified": "Het hangt af van de regels van je systeem. Jij beslist, en controleert daarna of wat er gebeurt is wat je bedoelde."
   },
+  "damages": {
+    "zero-head": "Overschrijft de eerste bytes van het bestand met nullen en laat de lengte ongemoeid. De meeste lezers kijken daar eerst, dus bijna alles merkt deze beschadiging."
+  },
   "terms": {
     "oracleNone": "niet van toepassing",
     "int": "elk geheel getal",
@@ -281,7 +304,8 @@
     },
     {
       "q": "Kan ik een bewust kapot bestand genereren?",
-      "a": "Nog niet. Beschadigde en misvormde bestanden zijn een geplande functie. Nu is elk bestand dat de tool schrijft een geldig bestand van zijn formaat."
+      "a": "Ja. Voeg --damage zero-head toe en het bestand komt uit op precies de gevraagde grootte, met de eerste bytes overschreven door nullen, zodat een lezer het weigert, en het manifest zegt dat je systeem het moet weigeren. De details staan op de pagina over beschadigde testbestanden.",
+      "code": "tfg generate --format png --size 2mb --damage zero-head --out ./out"
     },
     {
       "q": "Welke formaten komen er nog?",

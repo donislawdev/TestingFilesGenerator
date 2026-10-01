@@ -197,7 +197,8 @@
   <details class="qa">
     <summary><h2>Posso generare un file deliberatamente rotto?</h2></summary>
     <div class="qa-body">
-      <p>Non ancora. I file danneggiati e malformati sono una funzione prevista. Oggi ogni file che lo strumento scrive è un file valido del suo formato.</p>
+      <p>Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti.</p>
+      <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out</code></pre>
     </div>
   </details>
   <details class="qa">
@@ -269,7 +270,7 @@
     {
       "@type": "Question",
       "name": "Posso generare un file deliberatamente rotto?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Non ancora. I file danneggiati e malformati sono una funzione prevista. Oggi ogni file che lo strumento scrive è un file valido del suo formato." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Sì. Aggiungi --damage zero-head e il file esce con esattamente la dimensione richiesta, con i primi byte sovrascritti da zeri, così un lettore lo rifiuta, e il manifest dice che il tuo sistema deve rifiutarlo. I dettagli sono nella pagina sui file di test corrotti." }
     },
     {
       "@type": "Question",
