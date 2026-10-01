@@ -58,16 +58,14 @@
       "slug": "fichiers-de-test-corrompus",
       "nav": "Fichiers corrompus",
       "title": "Fichiers de test corrompus - fichiers cassés à taille exacte",
-      "description": "Un fichier cassé volontairement, à la taille exacte, avec un manifeste disant que votre système doit le rejeter. Pour tester la validation d'envoi et les parseurs.",
-      "parent": "use-cases"
+      "description": "Un fichier cassé volontairement, à la taille exacte, avec un manifeste disant que votre système doit le rejeter. Pour tester la validation d'envoi et les parseurs."
     },
     {
       "key": "ci",
       "slug": "fichiers-de-test-en-ci",
       "nav": "Fichiers de test en CI",
       "title": "Fichiers de test en CI - GitHub Actions, GitLab CI et PowerShell",
-      "description": "Générez des fichiers de test dans le pipeline plutôt que de commiter des binaires : workflow GitHub Actions, job GitLab, codes de sortie et piège PowerShell.",
-      "parent": "use-cases"
+      "description": "Générez des fichiers de test dans le pipeline plutôt que de commiter des binaires : workflow GitHub Actions, job GitLab, codes de sortie et piège PowerShell."
     }
   ],
   "words": {

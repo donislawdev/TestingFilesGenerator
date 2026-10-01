@@ -58,16 +58,14 @@
       "slug": "arquivos-de-teste-corrompidos",
       "nav": "Arquivos corrompidos",
       "title": "Arquivos de teste corrompidos - arquivos quebrados, tamanho exato",
-      "description": "Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers.",
-      "parent": "use-cases"
+      "description": "Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers."
     },
     {
       "key": "ci",
       "slug": "arquivos-de-teste-no-ci",
       "nav": "Arquivos de teste no CI",
       "title": "Arquivos de teste no CI - GitHub Actions, GitLab CI e PowerShell",
-      "description": "Gere arquivos de teste no pipeline em vez de commitar binários: workflow do GitHub Actions, job do GitLab, códigos de saída e a pegadinha do PowerShell.",
-      "parent": "use-cases"
+      "description": "Gere arquivos de teste no pipeline em vez de commitar binários: workflow do GitHub Actions, job do GitLab, códigos de saída e a pegadinha do PowerShell."
     }
   ],
   "words": {

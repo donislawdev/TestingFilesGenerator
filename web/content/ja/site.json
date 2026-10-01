@@ -58,16 +58,14 @@
       "slug": "corrupt-test-files",
       "nav": "破損ファイル",
       "title": "破損したテストファイル - サイズが正確な壊れたファイル",
-      "description": "意図的に壊した、サイズが正確なファイル。システムが拒否すべきことを示すマニフェスト付き。アップロード検証やパーサーのテスト用。",
-      "parent": "use-cases"
+      "description": "意図的に壊した、サイズが正確なファイル。システムが拒否すべきことを示すマニフェスト付き。アップロード検証やパーサーのテスト用。"
     },
     {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CIでのテストファイル",
       "title": "CIでのテストファイル - GitHub Actions、GitLab CI、PowerShell",
-      "description": "バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。",
-      "parent": "use-cases"
+      "description": "バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。"
     }
   ],
   "words": {

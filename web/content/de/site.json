@@ -58,16 +58,14 @@
       "slug": "beschaedigte-testdateien",
       "nav": "Beschädigte Dateien",
       "title": "Beschädigte Testdateien - kaputte Dateien in exakter Größe",
-      "description": "Eine absichtlich kaputte Datei in exakt der verlangten Größe, mit einem Manifest, das sagt, dass Ihr System sie ablehnen soll. Für Upload-Validierung und Parser.",
-      "parent": "use-cases"
+      "description": "Eine absichtlich kaputte Datei in exakt der verlangten Größe, mit einem Manifest, das sagt, dass Ihr System sie ablehnen soll. Für Upload-Validierung und Parser."
     },
     {
       "key": "ci",
       "slug": "testdateien-in-ci",
       "nav": "Testdateien in CI",
       "title": "Testdateien in CI - GitHub Actions, GitLab CI und PowerShell",
-      "description": "Testdateien in der Pipeline erzeugen statt einzuchecken: GitHub-Actions-Workflow, GitLab-Job, Exit-Codes, die den Build scheitern lassen, und die PowerShell-Falle.",
-      "parent": "use-cases"
+      "description": "Testdateien in der Pipeline erzeugen statt einzuchecken: GitHub-Actions-Workflow, GitLab-Job, Exit-Codes, die den Build scheitern lassen, und die PowerShell-Falle."
     }
   ],
   "words": {

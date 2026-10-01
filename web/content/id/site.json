@@ -58,16 +58,14 @@
       "slug": "file-uji-rusak",
       "nav": "File rusak",
       "title": "File uji yang rusak - file rusak dengan ukuran tepat",
-      "description": "File yang sengaja dirusak, berukuran tepat, dengan manifes yang menyatakan sistem Anda harus menolaknya. Untuk menguji validasi unggahan dan parser.",
-      "parent": "use-cases"
+      "description": "File yang sengaja dirusak, berukuran tepat, dengan manifes yang menyatakan sistem Anda harus menolaknya. Untuk menguji validasi unggahan dan parser."
     },
     {
       "key": "ci",
       "slug": "file-uji-di-ci",
       "nav": "File uji di CI",
       "title": "File uji di CI - GitHub Actions, GitLab CI, dan PowerShell",
-      "description": "Buat file uji di pipeline alih-alih meng-commit biner: workflow GitHub Actions, job GitLab, kode keluar, dan jebakan PowerShell.",
-      "parent": "use-cases"
+      "description": "Buat file uji di pipeline alih-alih meng-commit biner: workflow GitHub Actions, job GitLab, kode keluar, dan jebakan PowerShell."
     }
   ],
   "words": {

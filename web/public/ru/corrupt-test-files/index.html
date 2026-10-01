@@ -84,12 +84,6 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Сценарии",
-      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/use-cases\/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
       "name": "Повреждённые файлы",
       "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/corrupt-test-files\/"
     }
@@ -111,9 +105,11 @@
       <a href="/ru/formats/">Форматы</a>
       <a href="/ru/presets/">Пресеты</a>
       <a href="/ru/docs/">Документация</a>
-      <a href="/ru/use-cases/" aria-current="true">Сценарии</a>
+      <a href="/ru/use-cases/">Сценарии</a>
       <a href="/ru/create-file-exact-size/">Точный размер</a>
       <a href="/ru/faq/">FAQ</a>
+      <a href="/ru/corrupt-test-files/" aria-current="page">Повреждённые файлы</a>
+      <a href="/ru/test-files-in-ci/">Тестовые файлы в CI</a>
     </nav>
     <details class="langmenu">
       <summary aria-label="Язык: Русский">
@@ -148,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<p class="eyebrow"><a href="/ru/use-cases/">Сценарии</a></p>
+
 <h1>Как сделать повреждённый файл для тестов</h1>
 <p class="lead">
   Валидатор, которому показывали только здоровые файлы, на самом деле не проверен. Вот как получить
@@ -371,6 +367,8 @@ for entry in manifest["files"]:
         <li><a href="/ru/use-cases/">Сценарии</a></li>
         <li><a href="/ru/create-file-exact-size/">Точный размер</a></li>
         <li><a href="/ru/faq/">FAQ</a></li>
+        <li><a href="/ru/corrupt-test-files/">Повреждённые файлы</a></li>
+        <li><a href="/ru/test-files-in-ci/">Тестовые файлы в CI</a></li>
       </ul>
     </div>
   </div>

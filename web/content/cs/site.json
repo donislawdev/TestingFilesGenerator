@@ -58,16 +58,14 @@
       "slug": "poskozene-testovaci-soubory",
       "nav": "Poškozené soubory",
       "title": "Poškozené testovací soubory - rozbité soubory přesné velikosti",
-      "description": "Soubor záměrně rozbitý, přesné velikosti, s manifestem, který říká, že ho má váš systém odmítnout. Pro testování validace nahrávání a parserů.",
-      "parent": "use-cases"
+      "description": "Soubor záměrně rozbitý, přesné velikosti, s manifestem, který říká, že ho má váš systém odmítnout. Pro testování validace nahrávání a parserů."
     },
     {
       "key": "ci",
       "slug": "testovaci-soubory-v-ci",
       "nav": "Testovací soubory v CI",
       "title": "Testovací soubory v CI - GitHub Actions, GitLab CI a PowerShell",
-      "description": "Generujte testovací soubory v pipeline místo commitování binárek: workflow pro GitHub Actions, job v GitLabu, návratové kódy a past PowerShellu.",
-      "parent": "use-cases"
+      "description": "Generujte testovací soubory v pipeline místo commitování binárek: workflow pro GitHub Actions, job v GitLabu, návratové kódy a past PowerShellu."
     }
   ],
   "words": {

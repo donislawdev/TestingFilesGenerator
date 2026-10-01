@@ -58,16 +58,14 @@
       "slug": "uszkodzone-pliki-testowe",
       "nav": "Uszkodzone pliki",
       "title": "Uszkodzone pliki testowe - zepsute pliki o dokładnym rozmiarze",
-      "description": "Zrób plik zepsuty celowo, o dokładnie takim rozmiarze, jaki podasz, z manifestem mówiącym, że system powinien go odrzucić. Do testów walidacji uploadu i parserów.",
-      "parent": "use-cases"
+      "description": "Zrób plik zepsuty celowo, o dokładnie takim rozmiarze, jaki podasz, z manifestem mówiącym, że system powinien go odrzucić. Do testów walidacji uploadu i parserów."
     },
     {
       "key": "ci",
       "slug": "pliki-testowe-w-ci",
       "nav": "Pliki testowe w CI",
       "title": "Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell",
-      "description": "Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella.",
-      "parent": "use-cases"
+      "description": "Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella."
     }
   ],
   "words": {

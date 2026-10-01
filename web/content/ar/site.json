@@ -59,16 +59,14 @@
       "slug": "corrupt-test-files",
       "nav": "ملفات تالفة",
       "title": "ملفات اختبار تالفة - ملفات معطوبة بحجم دقيق",
-      "description": "ملف أُتلف عمدًا بحجم دقيق، مع بيان يقول إن نظامك ينبغي أن يرفضه. لاختبار التحقق من الرفع والمحللات.",
-      "parent": "use-cases"
+      "description": "ملف أُتلف عمدًا بحجم دقيق، مع بيان يقول إن نظامك ينبغي أن يرفضه. لاختبار التحقق من الرفع والمحللات."
     },
     {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "ملفات الاختبار في CI",
       "title": "ملفات الاختبار في CI - GitHub Actions وGitLab CI وPowerShell",
-      "description": "ولّد ملفات الاختبار في الخط بدل إيداع الملفات الثنائية: سير عمل GitHub Actions، ومهمة GitLab، ورموز الخروج، وفخ PowerShell.",
-      "parent": "use-cases"
+      "description": "ولّد ملفات الاختبار في الخط بدل إيداع الملفات الثنائية: سير عمل GitHub Actions، ومهمة GitLab، ورموز الخروج، وفخ PowerShell."
     }
   ],
   "words": {

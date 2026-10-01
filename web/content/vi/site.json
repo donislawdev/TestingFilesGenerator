@@ -58,16 +58,14 @@
       "slug": "tep-kiem-thu-bi-hong",
       "nav": "Tệp bị hỏng",
       "title": "Tệp kiểm thử bị hỏng - tệp hỏng đúng kích thước",
-      "description": "Một tệp cố ý làm hỏng, đúng kích thước, với manifest nói hệ thống của bạn phải từ chối nó. Để kiểm thử xác thực tải lên và trình phân tích cú pháp.",
-      "parent": "use-cases"
+      "description": "Một tệp cố ý làm hỏng, đúng kích thước, với manifest nói hệ thống của bạn phải từ chối nó. Để kiểm thử xác thực tải lên và trình phân tích cú pháp."
     },
     {
       "key": "ci",
       "slug": "tep-kiem-thu-trong-ci",
       "nav": "Tệp kiểm thử trong CI",
       "title": "Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell",
-      "description": "Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell.",
-      "parent": "use-cases"
+      "description": "Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell."
     }
   ],
   "words": {

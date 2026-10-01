@@ -58,16 +58,14 @@
       "slug": "archivos-de-prueba-corruptos",
       "nav": "Archivos corruptos",
       "title": "Archivos de prueba corruptos - archivos rotos de tamaño exacto",
-      "description": "Un archivo roto a propósito, con el tamaño exacto que pides y un manifiesto que dice que tu sistema debe rechazarlo. Para probar validación de subidas y parsers.",
-      "parent": "use-cases"
+      "description": "Un archivo roto a propósito, con el tamaño exacto que pides y un manifiesto que dice que tu sistema debe rechazarlo. Para probar validación de subidas y parsers."
     },
     {
       "key": "ci",
       "slug": "archivos-de-prueba-en-ci",
       "nav": "Archivos de prueba en CI",
       "title": "Archivos de prueba en CI - GitHub Actions, GitLab CI y PowerShell",
-      "description": "Genera archivos de prueba en el pipeline en vez de subir binarios: workflow de GitHub Actions, job de GitLab, códigos de salida y la trampa de PowerShell.",
-      "parent": "use-cases"
+      "description": "Genera archivos de prueba en el pipeline en vez de subir binarios: workflow de GitHub Actions, job de GitLab, códigos de salida y la trampa de PowerShell."
     }
   ],
   "words": {

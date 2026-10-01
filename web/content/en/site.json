@@ -58,16 +58,14 @@
       "slug": "corrupt-test-files",
       "nav": "Corrupt test files",
       "title": "Corrupt Test Files - Damaged Files of an Exact Size",
-      "description": "Make a file that is broken on purpose, at the exact size you ask for, with a manifest saying your system should reject it. For testing upload validation and parsers.",
-      "parent": "use-cases"
+      "description": "Make a file that is broken on purpose, at the exact size you ask for, with a manifest saying your system should reject it. For testing upload validation and parsers."
     },
     {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "Test files in CI",
       "title": "Test Files in CI - GitHub Actions, GitLab CI and PowerShell",
-      "description": "Generate test files in the pipeline instead of committing binaries: a GitHub Actions workflow, a GitLab job, exit codes that fail the build and the PowerShell catch.",
-      "parent": "use-cases"
+      "description": "Generate test files in the pipeline instead of committing binaries: a GitHub Actions workflow, a GitLab job, exit codes that fail the build and the PowerShell catch."
     }
   ],
   "words": {

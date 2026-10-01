@@ -84,12 +84,6 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "利用例",
-      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/use-cases\/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
       "name": "破損ファイル",
       "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ja\/corrupt-test-files\/"
     }
@@ -111,9 +105,11 @@
       <a href="/ja/formats/">形式</a>
       <a href="/ja/presets/">プリセット</a>
       <a href="/ja/docs/">ドキュメント</a>
-      <a href="/ja/use-cases/" aria-current="true">利用例</a>
+      <a href="/ja/use-cases/">利用例</a>
       <a href="/ja/create-file-exact-size/">正確なサイズ</a>
       <a href="/ja/faq/">FAQ</a>
+      <a href="/ja/corrupt-test-files/" aria-current="page">破損ファイル</a>
+      <a href="/ja/test-files-in-ci/">CIでのテストファイル</a>
     </nav>
     <details class="langmenu">
       <summary aria-label="言語: 日本語">
@@ -148,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<p class="eyebrow"><a href="/ja/use-cases/">利用例</a></p>
+
 <h1>テスト用の破損ファイルを作る方法</h1>
 <p class="lead">
   健全なファイルしか見せたことのない検証は、本当にはテストされていません。ここでは、意図的に壊してあり、<strong>求めたとおりのサイズ</strong>で出てきて、システムがそれをどう扱うべきかを示すマニフェストを伴うファイルの作り方を説明します。
@@ -344,6 +340,8 @@ for entry in manifest["files"]:
         <li><a href="/ja/use-cases/">利用例</a></li>
         <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
         <li><a href="/ja/faq/">FAQ</a></li>
+        <li><a href="/ja/corrupt-test-files/">破損ファイル</a></li>
+        <li><a href="/ja/test-files-in-ci/">CIでのテストファイル</a></li>
       </ul>
     </div>
   </div>

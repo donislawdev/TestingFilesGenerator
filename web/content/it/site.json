@@ -58,16 +58,14 @@
       "slug": "file-di-test-corrotti",
       "nav": "File corrotti",
       "title": "File di test corrotti - file rotti di dimensione esatta",
-      "description": "Un file rotto di proposito, della dimensione esatta, con un manifest che dice che il tuo sistema deve rifiutarlo. Per testare validazione degli upload e parser.",
-      "parent": "use-cases"
+      "description": "Un file rotto di proposito, della dimensione esatta, con un manifest che dice che il tuo sistema deve rifiutarlo. Per testare validazione degli upload e parser."
     },
     {
       "key": "ci",
       "slug": "file-di-test-in-ci",
       "nav": "File di test in CI",
       "title": "File di test in CI - GitHub Actions, GitLab CI e PowerShell",
-      "description": "Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell.",
-      "parent": "use-cases"
+      "description": "Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell."
     }
   ],
   "words": {
