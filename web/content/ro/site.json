@@ -1,0 +1,304 @@
+{
+  "code": "ro",
+  "locale": "ro_RO",
+  "name": "Română",
+  "dir": "ro",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Acasă",
+      "title": "Generator de fișiere de test - dimensiune exactă, {{ .Facts.FormatCount }} formate reale",
+      "description": "Generator gratuit și open source de fișiere de test pentru QA. PDF, DOCX, PNG și ZIP reale, la dimensiunea exactă, cu un manifest despre reacția așteptată."
+    },
+    {
+      "key": "formats",
+      "slug": "formate",
+      "nav": "Formate",
+      "title": "{{ .Facts.FormatCount }} formate de fișiere - PDF, DOCX, PNG, ZIP și altele",
+      "description": "Toate formatele generate, cel mai mic fișier posibil pentru fiecare și setările acceptate. Toate cele {{ .Facts.FormatCount }} se deschid în programul căruia îi aparțin."
+    },
+    {
+      "key": "presets",
+      "slug": "presetari",
+      "nav": "Presetări",
+      "title": "Presetări de fișiere de test - seturi gata făcute pentru QA",
+      "description": "Seturi gata făcute de fișiere de test, fiecare răspunde unei întrebări: limite de încărcare, nume de fișiere, codări, import de tabele, fișiere goale și validare."
+    },
+    {
+      "key": "docs",
+      "slug": "documentatie",
+      "nav": "Documentație",
+      "title": "Documentație - comenzi, rețete, manifest, coduri de ieșire",
+      "description": "Cum generezi fișiere de test din linia de comandă sau dintr-o rețetă YAML, ce conține manifestul și ce înseamnă fiecare cod de ieșire în CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "cazuri-de-utilizare",
+      "nav": "Cazuri de utilizare",
+      "title": "Cazuri de utilizare - limite de încărcare, fixture-uri, teste",
+      "description": "Testarea unei limite de dimensiune la încărcare, fixture-uri reproductibile pentru CI, zece mii de fișiere generate și arhive umplute cu conținut real."
+    },
+    {
+      "key": "exact-size",
+      "slug": "creare-fisier-de-dimensiune-exacta",
+      "nav": "Dimensiune exactă",
+      "title": "Cum creezi un fișier de dimensiune exactă - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate și mkfile, fiecare măsurat pe sistemul lui, și de ce un fișier făcut așa nu e un PDF sau un PNG când un test are nevoie de unul."
+    },
+    {
+      "key": "faq",
+      "slug": "intrebari-frecvente",
+      "nav": "FAQ",
+      "title": "FAQ - întrebări despre generarea fișierelor de test",
+      "description": "Prin ce diferă de dd și fsutil, dacă fișierele pot fi comise, dacă rulările se repetă octet cu octet și ce se întâmplă când o dimensiune nu poate fi atinsă."
+    }
+  ],
+  "words": {
+    "skip": "Sari la conținut",
+    "navLabel": "Principal",
+    "langLabel": "Limba",
+    "breadcrumbHome": "Acasă",
+    "imageAlt": "Testing Files Generator - fișiere de test reale la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare",
+    "schemaDescription": "Un generator gratuit și open source de fișiere de test pentru QA. Produce fișiere reale în {{ .Facts.FormatCount }} formate, la dimensiunea exactă, și scrie un manifest care spune cum trebuie să reacționeze sistemul testat la fiecare.",
+    "ctaDownload": "Descarcă",
+    "ctaSource": "Vezi codul sursă",
+    "ctaNote": "Gratuit și open source, GPL-3.0. Fără cont. Descărcările pentru Windows și macOS sunt semnate și pornesc fără avertisment.",
+    "colFormat": "Format",
+    "colName": "Nume",
+    "colExtension": "Extensie",
+    "colSmallest": "Cel mai mic fișier",
+    "colFidelity": "Fidelitate",
+    "colChecked": "Verificat cu",
+    "colSetting": "Setare",
+    "colAccepts": "Acceptă",
+    "colSystem": "Sistem",
+    "colCli": "Linie de comandă",
+    "colWindow": "Fereastră desktop",
+    "noBinary": "încă fără binar",
+    "colCode": "Cod",
+    "colMeaning": "Semnificație",
+    "footerBlurb": "Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.",
+    "footerProject": "Proiect",
+    "footerSource": "Cod sursă pe GitHub",
+    "footerReleases": "Descărcări",
+    "footerIssues": "Raportează o problemă",
+    "footerSupport": "Susține proiectul",
+    "footerPages": "Pagini",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Publicat sub Licența Publică Generală GNU, versiunea 3. Fișierele pe care le generezi sunt ale tale - licența acoperă instrumentul, nu rezultatul lui.",
+    "footerPrivacy": "Acest site nu încarcă fonturi, scripturi sau trackere de nicăieri. Nu setează cookie-uri.",
+    "notFoundTitle": "Pagina aceasta nu există",
+    "notFoundLead": "Adresa pe care ai urmat-o nu corespunde niciunei pagini de pe acest site.",
+    "notFoundBack": "Mergi la pagina principală",
+    "read.format": "Formatul fiecărui fișier din set. Este o opțiune a instrumentului însuși, iar presetarea îi dă doar o valoare implicită.",
+    "readTakes.format": "un id de format din pagina de formate"
+  },
+  "endings": {
+    "0": "Totul a mers.",
+    "1": "O eroare neașteptată în interiorul instrumentului.",
+    "2": "Comandă sau opțiune greșită.",
+    "3": "Rețeta nu este validă.",
+    "4": "Formatul nu poate face ce s-a cerut.",
+    "5": "O citire sau o scriere a eșuat.",
+    "6": "Nu este destul spațiu pe disc.",
+    "7": "verify a găsit o nepotrivire.",
+    "8": "Rularea s-a terminat, dar nu s-a produs totul.",
+    "130": "Întreruptă cu Ctrl+C.",
+    "143": "Oprită de un semnal, așa arată o depășire de timp în CI."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Trece un fișier valid, cât de mic permite formatul?",
+      "title": "Gol și minimal",
+      "pageTitle": "Cele mai mici fișiere de test valide și goale, în fiecare format",
+      "description": "Cel mai mic fișier valid scris în fiecare dintre cele {{ .Facts.FormatCount }} formate, plus un fișier gol acolo unde formatul permite, fiecare cu reacția așteptată.",
+      "catches": [
+        "un fișier valid respins pentru că e prea mic, când verificarea numără octeți în loc să îi citească",
+        "un fișier gol care prăbușește cititorul în loc să fie raportat",
+        "o imagine lată de un pixel care împarte la zero pe drumul spre miniatură",
+        "un depozit care citește zero octeți ca pe o încărcare eșuată și tot reîncearcă"
+      ],
+      "details": {
+        "formats": "Din ce formate este alcătuit setul. Lasă all pentru toate formatele acestei versiuni sau numește-le pe cele pe care le acceptă sistemul tău."
+      }
+    },
+    "filename-handling": {
+      "question": "Va stoca, va afișa și va returna sistemul meu un nume de fișier la care nu se aștepta?",
+      "title": "Gestionarea numelor de fișiere",
+      "pageTitle": "Nume de fișiere problematice pentru teste - Unicode și lungime",
+      "description": "Fișiere cu nume care strică încărcarea și stocarea: alte alfabete și emoji, inversarea direcției, caractere invizibile, sintaxă shell și SQL, limite de lungime.",
+      "catches": [
+        "un nume care arată ca altul pe ecran, într-un jurnal sau într-o listă",
+        "un nume tăiat, scurtat sau rescris între încărcare și stocare",
+        "o limită de lungime numărată în caractere acolo unde depozitul numără octeți"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Este o limită de dimensiune aplicată exact acolo unde este declarată?",
+      "title": "Limite de dimensiune",
+      "pageTitle": "Testarea unei limite de încărcare - fișiere exact la limită",
+      "description": "Fișiere cu un octet sub, exact la și cu un octet peste limita declarată de sistemul tău, plus trepte mai largi de ambele părți, fiecare marcat dacă trebuie acceptat.",
+      "catches": [
+        "erori de unu în plus sau în minus la limită",
+        "MB confundat cu MiB, adică 4,8 la sută, suficient cât să treacă un fișier care n-ar trebui să treacă",
+        "o limită aplicată în browser și nu pe server"
+      ],
+      "details": {
+        "limit": "Limita de dimensiune declarată de sistemul tău. Tot restul se măsoară pornind de la ea.",
+        "spread": "Cât de departe să se meargă de ambele părți ale limitei, ca listă de dimensiuni."
+      }
+    },
+    "tabular-import": {
+      "question": "Supraviețuiește importul meu de tabele la ce exportă instrumentele reale?",
+      "title": "Import de tabele",
+      "pageTitle": "Fișiere de test pentru import CSV și Excel - delimitatori",
+      "description": "CSV cu alți delimitatori, sfârșituri de linie CR LF, fără antet și cu alte ghilimele, un tabel foarte lat, un registru Excel și JSON în mai multe forme.",
+      "catches": [
+        "un fișier cu punct și virgulă citit ca o singură coloană, pentru că delimitatorul a fost presupus în loc să fie căutat",
+        "un fișier CRLF împărțit în rânduri cu un rând gol după fiecare",
+        "un tabel fără antet al cărui prim rând de date este înghițit drept nume de coloane",
+        "un import care păstrează coloanele pe care le poate arăta și aruncă restul fără o vorbă",
+        "un cititor care ia înregistrările JSON câte o linie și se oprește la primul document indentat"
+      ],
+      "details": {
+        "rows": "Câte rânduri are foaia de calcul. Se scrie exact la dimensiunea pe care o ocupă atâtea rânduri, așa că bugetul de mai sus se mută odată cu această valoare.",
+        "columns": "Câte coloane are fiecare rând al foii de calcul. Rânduri înmulțit cu coloane are un plafon, iar cererea peste el este refuzată înainte de a se scrie ceva."
+      }
+    },
+    "text-encoding": {
+      "question": "Știe cititorul meu în ce codare este un fișier sau doar ghicește?",
+      "title": "Codarea textului",
+      "pageTitle": "Fișiere de test pentru codarea textului - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Același text în UTF-8, UTF-16LE și UTF-16BE, cu și fără marcă de ordine a octeților, și sfârșituri de linie CR LF și LF, pentru a testa cum decodează un cititor textul.",
+      "catches": [
+        "un cititor care presupune UTF-8 și arată un fișier UTF-16 cu un caracter din trei sau ca rânduri de pătrățele",
+        "o marcă de ordine a octeților citită ca și conținut, astfel încât primul câmp al unui import începe cu trei caractere străine",
+        "un importator care ghicește codarea din primii octeți și ghicește altfel pentru un fișier mai lung",
+        "un fișier CRLF împărțit în rânduri cu un rând gol după fiecare sau un retur de car rămas în ultimul câmp"
+      ],
+      "details": {
+        "sample": "Cât de mare este fiecare fișier din set. UTF-16 stochează doi octeți pentru fiecare caracter, așa că un număr impar este refuzat."
+      }
+    },
+    "upload-validation": {
+      "question": "Acceptă formularul meu de încărcare ce trebuie și respinge restul?",
+      "title": "Validarea încărcării",
+      "pageTitle": "Fișiere de test pentru validarea încărcării - tip și nume",
+      "description": "Fișiere pentru testarea unui formular de încărcare: tipuri permise și interzise, conținut ce nu se potrivește cu extensia, limită de dimensiune, nume ostile.",
+      "catches": [
+        "o limită aplicată în browser și nu pe server",
+        "un SVG sau un HTML luat drept imagine sau text simplu, o cale de a strecura un script printr-un formular",
+        "un fișier verificat după extensie și niciodată deschis, așa că un PDF numit .jpg trece",
+        "un formular care citește tot corpul în memorie înainte să vadă cât de mare e",
+        "o încărcare numită PHOTO.JPG respinsă acolo unde photo.jpg e acceptată, sau invers",
+        "un nume cu spații, paranteze sau caractere în afara ASCII scris pe disc neschimbat"
+      ],
+      "details": {
+        "limit": "Limita de dimensiune declarată de formularul tău de încărcare. Acest set face câte un pas de fiecare parte - pentru un fișier la orice distanță rulează presetarea size-boundaries.",
+        "allow": "Ce tipuri trebuie să accepte formularul tău. Fiecare devine un fișier real de acel tip și ele formează controlul pozitiv al întregului set.",
+        "deny": "Ce extensii trebuie să respingă formularul tău. O extensie pentru care această versiune nu are format primește totuși un fișier cu acel nume, conținând text simplu.",
+        "far-over": "Cât de mult peste limită ajunge singurul fișier mare. Oprește-l unde scrierea de mai multe ori limita nu merită discul.",
+        "bulk": "Câte fișiere conține încărcarea în masă. Zero scoate acel grup complet din set."
+      }
+    }
+  },
+  "commands": {
+    "generate": "produce fișiere, dintr-o rețetă sau din opțiuni",
+    "validate": "verifică o rețetă fără a scrie nimic",
+    "verify": "verifică un director față de un manifest",
+    "cleanup": "șterge fișierele pe care le listează un manifest",
+    "recipe fmt": "afișează o rețetă în forma ei normalizată",
+    "preset": "construiește un set de fișiere dintr-o întrebare de test cu nume",
+    "formats": "listează formatele acceptate de această versiune",
+    "damage": "listează modurile în care această versiune poate strica un fișier intenționat",
+    "tool": "mici unelte pentru fișiere pe care le ai deja",
+    "version": "afișează versiunea instrumentului",
+    "license": "afișează licența și ce înseamnă ea pentru fișierele generate"
+  },
+  "outcomes": {
+    "accept": "Sistemul tău trebuie să accepte fișierul.",
+    "reject": "Sistemul tău trebuie să respingă fișierul.",
+    "sanitize": "Sistemul tău trebuie să accepte fișierul și să îl curețe, de exemplu redenumindu-l.",
+    "unspecified": "Depinde de regulile sistemului tău. Tu decizi, apoi verifici că ce se întâmplă este ce ai vrut."
+  },
+  "terms": {
+    "oracleNone": "nu se aplică",
+    "int": "orice număr întreg",
+    "choice": "unul dintr-un set fix",
+    "bool": "adevărat sau fals",
+    "size": "o dimensiune precum 2mb",
+    "text": "text",
+    "pixels": "pixeli",
+    "paragraphs": "paragrafe",
+    "rows": "rânduri",
+    "columns": "coloane",
+    "slides": "diapozitive",
+    "hertz": "herți",
+    "megapixels": "megapixeli",
+    "million cells": "milioane de celule",
+    "entries per second": "intrări pe secundă",
+    "files": "fișiere",
+    "sizes separated by commas": "dimensiuni separate prin virgule",
+    "format ids separated by commas": "id-uri de format separate prin virgule",
+    "format ids separated by commas, or all": "id-uri de format separate prin virgule, sau all",
+    "extensions separated by commas": "extensii separate prin virgule",
+    "the id of a format, as tfg formats lists them": "id-ul unui format, așa cum îl listează tfg formats",
+    "the password, in plain text": "parola, în text simplu",
+    "any text": "orice text",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "o dată precum 2024-02-29 sau 2024-02-29T13:45:00+02:00, sau none"
+  },
+  "faq": [
+    {
+      "q": "Prin ce diferă de dd, fsutil sau truncate?",
+      "a": "Acelea îți dau un fișier de dimensiunea potrivită, plin de nimic. Un fișier de 2 MB numit photo.png făcut așa nu este un PNG, deci tot ce îl analizează cu adevărat îl respinge din motivul greșit, iar testul tău trece apoi tot din motivul greșit. Acesta produce un PNG real de exact 2 MB care se deschide într-un vizualizator de imagini și vine cu o declarație despre cum trebuie să îl trateze sistemul tău.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Este gratuit și îl pot folosi la serviciu?",
+      "a": "Da la amândouă. Este publicat sub GPL-3.0 și nu costă nimic. Nu există cont, cheie de licență sau nivel plătit."
+    },
+    {
+      "q": "Pot folosi fișierele generate într-un produs cu cod închis?",
+      "a": "Da. Licența acoperă codul instrumentului, nu ce produce el. Fișierele, rețetele și manifestele generate sunt rezultat și nu lucrări derivate, deci le poți comite și distribui fără nicio obligație."
+    },
+    {
+      "q": "Conțin fișierele generate date personale reale?",
+      "a": "Nu. Tot ce se află în ele este sintetizat dintr-un seed. Nu se citește niciun set de date, nu se contactează niciun serviciu și nu se încorporează conținut de la terți. Tratează o adresă de e-mail generată ca inutilizabilă, nu ca neutilizată, pentru că orice șir aleatoriu poate coincide din întâmplare cu una reală."
+    },
+    {
+      "q": "Voi obține exact aceleași fișiere pe altă mașină?",
+      "a": "Da, octet cu octet, cu aceeași rețetă și același seed. Proiectul testează asta la fiecare modificare, iar încălcarea ei cere o versiune majoră. Asta îți permite să comiți o rețetă mică în loc de fixture-uri binare mari."
+    },
+    {
+      "q": "Are nevoie de conexiune la internet?",
+      "a": "Niciodată. Nu există telemetrie, verificare de actualizări sau client cloud, iar binarul liniei de comandă nu are compilat în el niciun stack de rețea. Funcționează pe o mașină fără rețea și într-un mediu corporativ închis."
+    },
+    {
+      "q": "Ce se întâmplă dacă cer o dimensiune pe care un format nu o poate atinge?",
+      "a": "Primești o eroare care numește formatul, cea mai mică dimensiune posibilă, motivul acelui prag și ce să faci în loc, și nu se scrie niciun fișier. Instrumentul nu rotunjește niciodată o dimensiune pe tăcute. Fiecare prag este listat în pagina de formate.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Pot genera un fișier stricat în mod deliberat?",
+      "a": "Încă nu. Fișierele deteriorate și malformate sunt o funcție planificată. Azi fiecare fișier scris de instrument este un fișier valid al formatului său."
+    },
+    {
+      "q": "Ce formate urmează?",
+      "a": "7z, mp3 și mp4. Azi funcționează de la un capăt la altul {{ .Facts.FormatCount }} formate."
+    },
+    {
+      "q": "Pe ce sisteme îl pot rula?",
+      "a": "Linia de comandă rulează pe Windows și Linux, atât pe Intel, cât și pe ARM, și pe Mac-uri cu Apple Silicon. Fereastra desktop este livrată pentru Windows pe Intel, Linux pe Intel și Mac-uri cu Apple Silicon. Mac-urile Intel nu sunt acceptate și nu se construiește nimic pentru ele."
+    },
+    {
+      "q": "Trebuie să instalez ceva?",
+      "a": "Nu. Descarcă arhiva pentru sistemul tău, dezarhiveaz-o și rulează binarul. Nu există instalator, mediu de execuție de adăugat sau dependență de rezolvat. Dacă ai Go, funcționează și o singură comandă go install.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "De ce o rulare peste mii de fișiere este mai lentă pe Windows?",
+      "a": "Pentru că Windows cere mai mult pentru fiecare cale pe care o examinează, iar o comandă care parcurge mii de fișiere examinează mii de căi. Măsurat pe o mașină cu 3000 de fișiere de 1 kB, verify durează aproximativ 0,9 secunde pe Windows și aproximativ 0,2 secunde pe Linux într-un container. O cale de ieșire mai scurtă micșorează cifra de pe Windows, pentru că fiecare folder de deasupra fișierelor face parte din ce se examinează."
+    }
+  ]
+}

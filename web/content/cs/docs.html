@@ -1,0 +1,268 @@
+<h1>Dokumentace</h1>
+<p class="lead">
+  Vše, co nástroj dělá, uspořádané podle otázek, se kterými lidé skutečně přicházejí.
+  <a href="{{ .Facts.Repo }}">README v repozitáři</a> je úplná reference a vždy odpovídá verzi,
+  kterou jste stáhli.
+</p>
+
+<section class="section" id="commands">
+  <h2>Jaké příkazy existují?</h2>
+  <p>Každý dělá jednu věc:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Jak vygeneruji jeden soubor přesné velikosti?</h2>
+  <p>
+    Uveďte formát, velikost a kam soubor půjde. Velikosti se počítají po 1024, takže <code>2mb</code> je
+    2097152 bajtů. Funguje i prostý počet bajtů, takže <code>--size 10485761</code> žádá přesně
+    tolik.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Užitečné přepínače příkazu <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Přepínač</th><th>Co dělá</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formát souborů, například <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>přesná velikost každého souboru, například <code>10mb</code> nebo prostý počet bajtů</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>velikost losovaná pro každý soubor z rozsahu, například <code>1kb-8kb</code>. Losování vychází ze seedu</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>tři soubory kolem limitu: o bajt pod, limit, o bajt nad</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>kolik souborů vytvořit. Výchozí <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>šablona názvu, například <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>adresář, do kterého se zapisuje</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed běhu. Stejný seed dává stejné bajty</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>nastavení formátu, lze opakovat</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>záměrně soubory poškodit, lze opakovat a uplatňuje se v pořadí. Seznam získáte příkazem <code>tfg damage</code></td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> nebo <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>spočítat a ukázat, nic nezapisovat</td></tr>
+        <tr><td><code>--json</code></td><td>zapsat manifest na standardní výstup</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Jak vytvořím soubor, který je záměrně rozbitý?</h2>
+  <p>
+    Každý jiný soubor, který tento nástroj zapíše, je správný z konstrukce, což odpovídá na dvě ze tří
+    otázek, které klade validátor nahrávání. <code>--damage</code> odpovídá na třetí - zda se soubor
+    vůbec otevře. Soubor se vytvoří normálně a pak se rozbije, takže má stále velikost, o kterou
+    jste požádali.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Nastavení se zadávají za dvojtečku. Přepínač se opakuje a pořadí, v jakém je napíšete, je pořadí, v
+    jakém se uplatní. <code>tfg damage</code> vypíše, co tato verze umí a co která varianta přijímá.
+  </p>
+  <p>V receptu je klíč seznam, a to názvů nebo nastavení:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Poškozený soubor dostane v manifestu <code>expected: reject</code> a vedle toho zaznamenané
+    poškození. Dvě věci jsou odmítnuty dříve, než se cokoli zapíše, protože každá by jinak dala na
+    disk soubor, který manifest popisuje špatně:
+  </p>
+  <ul>
+    <li>soubor menší, než poškození potřebuje, protože by vyšel beze změny</li>
+    <li>
+      <code>expected: accept</code> vedle poškození, protože nic by to nemohlo splnit. Napište
+      <code>sanitize</code>, pokud má testovaný systém soubor opravit, nebo
+      <code>unspecified</code>, pokud je to právě ta otázka, kterou kladete
+    </li>
+  </ul>
+  <p>
+    Třetí se předem zjistit nedá. Pokud se poškození provede a nepohne žádným bajtem, soubor se zahodí
+    místo zapsání - běh pokračuje, řekne, o který soubor šlo, a skončí s částečným návratovým kódem.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Jak vypadá recept?</h2>
+  <p>
+    Recept je soubor YAML popisující celý běh. Commitujte ho vedle testů a fixtures přestanou být
+    binárkami ve vašem repozitáři - kdokoli je může bajt po bajtu znovu sestavit ze souboru o
+    několika stovkách znaků.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Každý target potřebuje přesně jeden z klíčů <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> nebo <code>contains</code>. Dva jsou chyba a žádný také. Neplatný recept
+    nezapíše <strong>žádné soubory</strong> a nahlásí všechny problémy najednou, ne jen první, každý
+    s názvem nastavení, kterého se týká.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Jak deklaruji, co má můj systém se souborem udělat?</h2>
+  <p>Krátká forma, když stačí výsledek, dlouhá forma, když záleží na důvodu:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Výsledky jsou <code>accept</code>, <code>reject</code>, <code>sanitize</code> a
+    <code>unspecified</code>. Důvody tvoří uzavřený seznam, aby podle nich mohl report seskupovat:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> a <code>size_zero</code>.
+  </p>
+  <p>
+    Důvod pojmenovává <strong>pravidlo, o které jde</strong>, ne verdikt. Proto může stejný důvod stát
+    pod oběma výsledky - soubor o bajt pod limitem je <code>accept</code> a pravidlo, o které jde,
+    je stále <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Co obsahuje manifest?</h2>
+  <p>
+    Zapisuje se vedle souborů na konci každého běhu, včetně přerušeného. Jedna položka na soubor:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> se přidá, když běh pochází z receptu, a <code>preset</code> s
+    <code>overrides</code>, když pochází z předvolby, takže manifest lze vždy dohledat k tomu, co ho
+    vytvořilo.
+  </p>
+  <p>
+    Každá položka nese také <code>target_id</code>, id targetu v receptu, který soubor vytvořil, a
+    <code>summary.by_target</code> počítá soubory, ke kterým každý target dospěl. Recept s více
+    targety lze tak kontrolovat target po targetu, aniž by se četly názvy souborů.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Co je předvolba?</h2>
+  <p>
+    Hotová sada souborů, která odpovídá na běžnou testovací otázku, abyste sadu nemuseli navrhovat sami.
+    Předvolby jsou pod povrchem obyčejné recepty a <code>eject</code> recept vypíše, takže ho můžete
+    odtud upravit. Každá předvolba má <a href="/cs/predvolby/">vlastní stránku</a> s tím, co obvykle
+    najde, co je v sadě a jaké nastavení přijímá.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> vám řekne, kolik by sada stála, než ji sestavíte, a otevřeně řekne, když je číslo
+    naším zástupným údajem, a ne vaším limitem.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Co znamenají návratové kódy?</h2>
+  <p>
+    Každý konec má svůj kód, strojově čitelný výstup jde na standardní výstup a neúspěšný běh tam
+    nevypíše nic. Tabulka je zmrazená smlouva - změna významu kódu vyžaduje novou hlavní verzi.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Běh zastavený pomocí Ctrl+C po sobě stále zanechá manifest a nikdy nenechá napůl zapsaný soubor,
+    takže zrušenou úlohu může následující stále uklidit.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Existuje desktopové okno?</h2>
+  <p>
+    Ano, stejný motor s oknem navrch, pro testování, které se neskriptuje. Není to osekaná verze: test
+    porovnává obě rozhraní schopnost po schopnosti a cokoli, co umí jen jedno z nich, musí být
+    deklarováno a zdůvodněno, ne tiše se rozcházet.
+  </p>
+  <p>
+    Obrazovky jsou jedna dávka, předvolby, více dávek najednou a O aplikaci. Ukáže, kolik by běh stál,
+    než cokoli zapíše, hlásí průběh a lze ho zrušit uprostřed, aniž by zanechal napůl zapsaný
+    soubor. Soubor receptu zatím neotevře - recepty jsou zatím záležitostí příkazového řádku a okno
+    sestavuje své dávky ve formuláři.
+  </p>
+</section>

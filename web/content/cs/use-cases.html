@@ -1,0 +1,114 @@
+<h1>K čemu to lidé používají</h1>
+<p class="lead">
+  Pět úloh, které se objevují téměř v každém projektu přijímajícím soubory od lidí, a příkaz, který
+  každou provede. Každý příklad níže běží tak, jak je napsán.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limity nahrávání</p>
+  <h2>Test, zda je limit velikosti souboru vynucován tam, kde se tvrdí</h2>
+  <p>
+    Limit jsou tři testovací případy, ne jeden: těsně pod, přesně na něm a těsně nad. Získat je ručně
+    znamená počítat počty bajtů a doufat, že jste se nespletli o jedna. Požádejte raději o sadu:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Dostanete tři skutečná PDF o 1048575, 1048576 a 1048577 bajtech a manifest, který říká, že první dvě
+    mají být přijata a třetí odmítnuto pro <code>size_limit</code>. Váš test čte očekávání místo
+    toho, abyste ručně psali tři aserce - a když se limit změní, změníte jedno číslo a spustíte
+    znovu.
+  </p>
+  <p>
+    Totéž funguje bez předvolby, když chcete jedinou sadu hranic přímo v příkazu:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Průběžná integrace</p>
+  <h2>Držet fixtures mimo repozitář, aniž byste o ně přišli</h2>
+  <p>
+    Velké binární fixtures zpomalují klonování repozitáře a znepříjemňují revizi a nikdo nepozná, co se
+    změnilo, když se jeden vymění. Recept je pár set znaků YAML, které znovu sestaví totožné soubory
+    - <strong>bajt po bajtu, na jakémkoli počítači</strong> - protože každý soubor je odvozen ze
+    seedu běhu.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Každý konec má svůj vlastní návratový kód, takže pipeline rozliší špatný recept od plného disku a od
+    nesrovnalosti při ověření. Neúspěšný běh nevypíše na standardní výstup nic, takže parser logu
+    nečte chybu jako data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Rozsah</p>
+  <h2>Zjistit, co se stane, když je složka velká</h2>
+  <p>
+    Importní rutiny, noční úlohy a výpisy adresářů se chovají při deseti tisících souborů jinak než při
+    deseti. Velikosti losované z rozsahu dělají ze sady něco, co vypadá jako skutečný provoz, a ne
+    deset tisíc stejných souborů, a losování vychází ze seedu, takže sada je zítra stejná.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Zkontrolujte, kolik by běh stál, než cokoli zapíše, což záleží, když se součet měří v gigabajtech:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Běh větší než volné místo na disku je odmítnut dřív, než se zapíše první bajt, místo aby zaplnil
+    disk a selhal v půlce.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archivy</p>
+  <h2>Test rozbalovače s archivem, který skutečně obsahuje soubory</h2>
+  <p>
+    Prázdný archiv se správnou příponou nic nedokazuje o kódu, který ho otevírá a prochází, co je
+    uvnitř. Deklarujte obsah a archiv ho skutečně obsahuje:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Hloubka vnoření, počet položek a velikost toho, co je uvnitř, jsou věci, o kterých má importní
+    rutina názor, a takto zjistíte, jaké ty názory jsou.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsery a prohlížeče</p>
+  <h2>Ověření, že váš vlastní kód čte formát tak, jak to dělá skutečný software</h2>
+  <p>
+    Každý formát zde je před vydáním ověřen nezávislou čtečkou - PNG se otevře a porovnají se jeho
+    pixely, DOCX čtou zpět samostatné knihovny, archiv se rozbalí. To znamená, že soubor, který váš
+    parser odmítne, je zjištění o vašem parseru, ne o generátoru.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/cs/formaty/">Stránka formátů</a> uvádí nastavení, která každý formát přijímá, a nejmenší
+    soubor, jakým každý může být.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Pro koho to je</h2>
+  <p>
+    QA inženýry, automatizaci testů a každého, za jehož kódem stojí formulář pro nahrávání, importní
+    rutina, parser nebo kvóta úložiště. Běží na počítači bez jakékoli sítě, na čem záleží v
+    uzavřeném firemním prostředí, kde generátor v prohlížeči není možnost.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

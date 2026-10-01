@@ -1,0 +1,273 @@
+<h1>Documentație</h1>
+<p class="lead">
+  Tot ce face instrumentul, aranjat ca întrebările cu care vin oamenii de fapt.
+  <a href="{{ .Facts.Repo }}">README-ul din repository</a> este referința completă și se potrivește
+  mereu cu versiunea pe care ai descărcat-o.
+</p>
+
+<section class="section" id="commands">
+  <h2>Ce comenzi există?</h2>
+  <p>Fiecare face un singur lucru:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Cum generez un singur fișier de dimensiune exactă?</h2>
+  <p>
+    Spune formatul, dimensiunea și unde merge. Dimensiunile se numără din 1024 în 1024, deci
+    <code>2mb</code> sunt 2097152 octeți. Merge și un simplu număr de octeți, deci <code>--size
+    10485761</code> cere exact atât.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Opțiunile utile ale comenzii <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Opțiune</th><th>Ce face</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formatul fișierelor, de exemplu <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>dimensiunea exactă a fiecărui fișier, precum <code>10mb</code> sau un simplu număr de octeți</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>o dimensiune extrasă pentru fiecare fișier dintr-un interval, precum <code>1kb-8kb</code>. Extragerea vine din seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>trei fișiere în jurul unei limite: un octet sub, limita, un octet peste</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>câte fișiere să producă. Implicit <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>șablon de nume, de exemplu <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>directorul în care se scrie</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed-ul rulării. Același seed dă aceiași octeți</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>o setare de format, repetabilă</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>strică fișierele intenționat, repetabil și aplicat în ordine. Rulează <code>tfg damage</code> pentru listă</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> sau <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>numără și arată, nu scrie absolut nimic</td></tr>
+        <tr><td><code>--json</code></td><td>scrie manifestul la ieșirea standard</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Cum fac un fișier stricat intenționat?</h2>
+  <p>
+    Orice alt fișier scris de acest instrument este corect prin construcție, ceea ce răspunde la două
+    din cele trei întrebări pe care le pune un validator de încărcare. <code>--damage</code>
+    răspunde la a treia - se deschide oare fișierul. Fișierul este produs normal și apoi stricat,
+    deci are în continuare dimensiunea cerută.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Setările se pun după două puncte. Opțiunea se repetă, iar ordinea în care le scrii este ordinea în
+    care se aplică. <code>tfg damage</code> listează ce poate face această versiune și ce acceptă
+    fiecare.
+  </p>
+  <p>Într-o rețetă cheia este o listă, de nume sau de setări:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Un fișier deteriorat primește <code>expected: reject</code> în manifest, cu deteriorarea consemnată
+    alături. Două lucruri sunt refuzate înainte de a se scrie ceva, pentru că fiecare ar pune pe
+    disc un fișier pe care manifestul îl descrie greșit:
+  </p>
+  <ul>
+    <li>un fișier mai mic decât are nevoie deteriorarea, pentru că ar ieși neschimbat</li>
+    <li>
+      <code>expected: accept</code> alături de o deteriorare, pentru că nimic nu l-ar putea îndeplini.
+      Scrie <code>sanitize</code> dacă sistemul testat trebuie să repare fișierul sau
+      <code>unspecified</code> dacă exact asta e întrebarea pe care o pui
+    </li>
+  </ul>
+  <p>
+    O a treia nu se poate ști dinainte. Dacă o deteriorare rulează și nu mută niciun octet, fișierul
+    respectiv este abandonat în loc să fie scris - rularea continuă, spune care a fost fișierul și
+    se termină cu codul de ieșire parțial.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Cum arată o rețetă?</h2>
+  <p>
+    O rețetă este un fișier YAML care descrie o rulare întreagă. Comite-o lângă testele tale și
+    fixture-urile nu mai sunt binare în repository - oricine le poate reconstrui, octet cu octet,
+    dintr-un fișier de câteva sute de caractere.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Fiecare target are nevoie de exact una dintre cheile <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> sau <code>contains</code>. Două este o eroare și la fel niciuna. O rețetă
+    invalidă nu scrie <strong>niciun fișier</strong> și raportează toate problemele deodată, nu doar
+    prima, fiecare numind setarea la care se referă.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Cum declar ce trebuie să facă sistemul meu cu un fișier?</h2>
+  <p>Formă scurtă când rezultatul e de ajuns, formă lungă când contează motivul:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Rezultatele sunt <code>accept</code>, <code>reject</code>, <code>sanitize</code> și
+    <code>unspecified</code>. Motivele sunt o listă închisă ca un raport să poată grupa după ele:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> și <code>size_zero</code>.
+  </p>
+  <p>
+    Un motiv numește <strong>regula în joc</strong>, nu verdictul. De aceea același motiv poate sta sub
+    oricare dintre rezultate - un fișier cu un octet sub o limită este <code>accept</code>, iar
+    regula la care se referă rămâne <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Ce conține manifestul?</h2>
+  <p>
+    Se scrie lângă fișiere la sfârșitul fiecărei rulări, inclusiv a uneia întrerupte. O intrare pentru
+    fiecare fișier:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Se adaugă un <code>recipe_hash</code> când rularea a venit dintr-o rețetă și <code>preset</code> cu
+    <code>overrides</code> când a venit dintr-o presetare, astfel încât un manifest poate fi mereu
+    urmărit până la ce l-a produs.
+  </p>
+  <p>
+    Fiecare intrare poartă și <code>target_id</code>, id-ul targetului din rețeta care a produs
+    fișierul, iar <code>summary.by_target</code> numără fișierele la care a ajuns fiecare target. O
+    rețetă cu mai multe targeturi poate fi verificată astfel target cu target, fără a citi nume de
+    fișiere.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Ce este o presetare?</h2>
+  <p>
+    Un set de fișiere gata făcut care răspunde unei întrebări de test obișnuite, ca să nu trebuiască să
+    proiectezi tu setul. Presetările sunt rețete obișnuite pe dedesubt, iar <code>eject</code>
+    afișează rețeta ca s-o poți edita de acolo. Fiecare presetare are <a href="/ro/presetari/">o
+    pagină proprie</a> cu ce găsește de obicei, ce este în set și fiecare setare pe care o acceptă.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> îți spune cât ar costa setul înainte să-l construiești și spune pe față când un
+    număr este o valoare provizorie de-a noastră, nu o limită de-a ta.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Ce înseamnă codurile de ieșire?</h2>
+  <p>
+    Fiecare final are propriul cod, ieșirea citibilă de mașină merge la ieșirea standard, iar o rulare
+    eșuată nu tipărește nimic acolo. Tabelul este un contract înghețat - schimbarea sensului unui
+    cod cere o versiune majoră.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    O rulare oprită cu Ctrl+C lasă totuși un manifest și nu lasă niciodată un fișier scris pe jumătate,
+    așa că un job anulat poate fi curățat de următorul.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Există o fereastră desktop?</h2>
+  <p>
+    Da, același motor cu o fereastră deasupra, pentru testarea care nu e automatizată. Nu e o versiune
+    redusă: un test compară cele două interfețe capacitate cu capacitate, iar tot ce poate face doar
+    una dintre ele trebuie declarat și justificat, nu lăsat să divergă pe tăcute.
+  </p>
+  <p>
+    Ecranele sunt un lot, presetări, mai multe loturi deodată și Despre. Arată cât ar costa o rulare
+    înainte să scrie ceva, raportează progresul cât rulează și poate fi anulată pe la jumătate fără
+    să lase un fișier scris pe jumătate. Nu deschide încă un fișier de rețetă - rețetele sunt
+    deocamdată treaba liniei de comandă, iar fereastra își construiește loturile în formular.
+  </p>
+</section>

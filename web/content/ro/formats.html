@@ -1,0 +1,80 @@
+<h1>{{ .Facts.FormatCount }} formate de fișiere, fiecare generat la o dimensiune exactă</h1>
+<p class="lead">
+  Fiecare este un <strong>fișier real al acelui format</strong>. Se deschide în programul căruia îi
+  aparține și are exact numărul de octeți pe care l-ai cerut. Niciunul nu e umplutură de zerouri cu
+  o extensie lipită.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Ce înseamnă coloanele</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Cel mai mic fișier</p>
+      <p class="muted">
+        Cel mai mic număr de octeți pe care instrumentul îl acceptă pentru acel format, inclusiv eticheta pe
+        care o scrie în fișier. Cere mai puțin și primești o eroare care numește pragul și motivul
+        lui, niciodată un fișier de dimensiune greșită.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Fidelitate</p>
+      <p class="muted">
+        Cât de complet este fișierul. <code>full</code> înseamnă că un cititor care analizează cu adevărat
+        formatul îl acceptă, nu doar că extensia se potrivește.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Verificat cu</p>
+      <p class="muted">
+        Cititorul independent care deschide fiecare fișier generat înainte ca formatul să fie livrat - o
+        implementare separată, nu propriul nostru cod care își corectează singur temele.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Fiecare format se și repetă la octet: aceeași rețetă și același seed produc fișiere identice pe
+    orice mașină, ceea ce face sigur să comiți o rețetă în locul fixture-urilor înseși.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Setările pe care le acceptă fiecare format</h2>
+  <p>
+    Majoritatea formatelor au setări proprii - dimensiunile imaginii, calitatea JPEG, numărul de pagini
+    PDF, rândurile și coloanele dintr-o foaie de calcul, câte intrări intră într-o arhivă.
+    Setează-le cu <code>--set key=value</code> în linia de comandă sau sub <code>properties:</code>
+    într-o rețetă.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    O valoare în afara a ce acceptă o setare este refuzată cu un mesaj care numește setarea, intervalul
+    permis și ce să folosești în loc. O setare necunoscută este și ea o eroare, niciodată o valoare
+    implicită tăcută - o greșeală de scriere acceptată pe tăcute dă un fișier cu setările greșite și
+    o oră de întrebări de ce trece testul când n-ar trebui.
+  </p>
+  <p>
+    Rulează <code>tfg formats &lt;id&gt;</code> ca să vezi exact ce acceptă un format în versiunea pe
+    care o ai.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Arhivele conțin fișiere reale</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} și {{ end }}<code>{{ $c.ID }}</code>{{ end }} pot
+    fi umplute cu intrări, nu lăsate ca o carcasă goală. O arhivă generată conține cu adevărat
+    documentele pe care spune că le conține, așa că tot ce o dezarhivează în timpul unui test
+    găsește înăuntru fișiere reale.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

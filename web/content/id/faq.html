@@ -1,0 +1,20 @@
+<h1>Pertanyaan yang sering diajukan</h1>
+<p class="lead">
+  Lisensi, privasi, reproduksibilitas, dan hal-hal yang diperiksa orang sebelum memasukkan generator
+  ke pipeline build. Bila pertanyaan Anda tidak ada di sini, <a href="{{ .Facts.Issues }}">pelacak
+  isu</a> terbuka.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Masih menimbang?</h2>
+  <p>
+    <a href="/id/kasus-penggunaan/">Halaman kasus penggunaan</a> menunjukkan pekerjaan yang untuknya
+    alat ini dibuat, dan <a href="/id/format/">halaman format</a> mencantumkan setiap format beserta
+    file terkecil yang dapat dibuatnya. <a href="{{ .Facts.Repo }}">README di repositori</a> adalah
+    referensi lengkap.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

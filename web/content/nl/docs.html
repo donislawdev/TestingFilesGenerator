@@ -1,0 +1,277 @@
+<h1>Documentatie</h1>
+<p class="lead">
+  Alles wat de tool doet, geordend als de vragen waarmee mensen echt komen. De
+  <a href="{{ .Facts.Repo }}">README in de repository</a> is de volledige referentie en komt altijd
+  overeen met de build die je hebt gedownload.
+</p>
+
+<section class="section" id="commands">
+  <h2>Welke opdrachten zijn er?</h2>
+  <p>Elke doet precies één ding:</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Hoe genereer ik één bestand van een exacte grootte?</h2>
+  <p>
+    Noem het formaat, de grootte en waar het naartoe moet. Groottes tellen in 1024-tallen, dus
+    <code>2mb</code> is 2097152 bytes. Een gewoon aantal bytes werkt ook, dus <code>--size
+    10485761</code> vraagt precies zoveel.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>De nuttige opties van <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Optie</th><th>Wat het doet</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formaat van de bestanden, bijvoorbeeld <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>exacte grootte van elk bestand, zoals <code>10mb</code> of een gewoon aantal bytes</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>een grootte die per bestand uit een bereik wordt getrokken, zoals <code>1kb-8kb</code>. De trekking komt uit de seed</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>drie bestanden rond een limiet: één byte eronder, de limiet, één byte erboven</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>hoeveel bestanden te maken. Standaard <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>naamsjabloon, bijvoorbeeld <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>map om naartoe te schrijven</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed van de run. Dezelfde seed geeft dezelfde bytes</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>een formaatinstelling, herhaalbaar</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>de bestanden met opzet beschadigen, herhaalbaar en in volgorde toegepast. Draai <code>tfg damage</code> voor de lijst</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> of <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>tellen en tonen, helemaal niets schrijven</td></tr>
+        <tr><td><code>--json</code></td><td>het manifest naar de standaarduitvoer schrijven</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Hoe maak ik een bestand dat met opzet kapot is?</h2>
+  <p>
+    Elk ander bestand dat deze tool schrijft is correct per constructie, wat twee van de drie vragen
+    beantwoordt die een uploadvalidator stelt. <code>--damage</code> beantwoordt de derde - gaat het
+    bestand überhaupt open. Het bestand wordt normaal gemaakt en daarna beschadigd, dus het heeft
+    nog steeds de grootte die je vroeg.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Instellingen komen na een dubbele punt. De optie herhaalt zich, en de volgorde waarin je ze schrijft
+    is de volgorde waarin ze worden toegepast. <code>tfg damage</code> toont wat deze build kan en
+    wat elke variant accepteert.
+  </p>
+  <p>In een recept is de sleutel een lijst, van namen of van instellingen:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Een beschadigd bestand krijgt <code>expected: reject</code> in het manifest, met de beschadiging
+    ernaast vastgelegd. Twee dingen worden geweigerd voordat er iets wordt geschreven, omdat elk
+    anders een bestand op schijf zou zetten dat het manifest verkeerd beschrijft:
+  </p>
+  <ul>
+    <li>een bestand dat kleiner is dan de beschadiging nodig heeft, omdat het ongewijzigd zou uitkomen</li>
+    <li>
+      <code>expected: accept</code> naast een beschadiging, omdat niets daaraan kan voldoen. Schrijf
+      <code>sanitize</code> als het geteste systeem het bestand moet repareren, of
+      <code>unspecified</code> als dat de vraag is die je stelt
+    </li>
+  </ul>
+  <p>
+    Een derde is vooraf niet te weten. Als een beschadiging draait en geen enkele byte verschuift, wordt
+    dat bestand weggegooid in plaats van geschreven - de run gaat door, zegt om welk bestand het
+    ging en eindigt met de gedeeltelijke afsluitcode.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Hoe ziet een recept eruit?</h2>
+  <p>
+    Een recept is een YAML-bestand dat een hele run beschrijft. Commit het naast je tests en de fixtures
+    zijn geen binaries meer in je repository - iedereen kan ze byte voor byte opnieuw opbouwen uit
+    een bestand van een paar honderd tekens.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Elk target heeft precies één van deze sleutels nodig: <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> of <code>contains</code>. Twee is een fout en geen ook. Een ongeldig
+    recept schrijft <strong>helemaal geen bestanden</strong> en meldt alle problemen tegelijk in
+    plaats van alleen het eerste, elk met de instelling waar het over gaat.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Hoe leg ik vast wat mijn systeem met een bestand moet doen?</h2>
+  <p>Korte vorm als de uitkomst genoeg is, lange vorm als de reden ertoe doet:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    De uitkomsten zijn <code>accept</code>, <code>reject</code>, <code>sanitize</code> en
+    <code>unspecified</code>. De redenen zijn een gesloten lijst zodat een rapport erop kan
+    groeperen: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> en
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Een reden noemt <strong>de regel die in het spel is</strong>, niet het oordeel. Daarom kan dezelfde
+    reden onder beide uitkomsten staan - een bestand één byte onder een limiet is
+    <code>accept</code>, en de regel waar het om gaat is nog steeds <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Wat staat er in het manifest?</h2>
+  <p>
+    Het wordt aan het einde van elke run naast de bestanden geschreven, ook bij een onderbroken run. Eén
+    item per bestand:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Er komt een <code>recipe_hash</code> bij als de run uit een recept kwam, en <code>preset</code> met
+    <code>overrides</code> als hij uit een preset kwam, zodat een manifest altijd te herleiden is
+    tot wat het maakte.
+  </p>
+  <p>
+    Elk item draagt ook <code>target_id</code>, de id van het target in het recept dat het bestand
+    maakte, en <code>summary.by_target</code> telt de bestanden waar elk target op uitkwam. Een
+    recept met meerdere targets kan zo target voor target worden gecontroleerd zonder bestandsnamen
+    te lezen.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Wat is een preset?</h2>
+  <p>
+    Een kant-en-klare set bestanden die een veelvoorkomende testvraag beantwoordt, zodat je de set niet
+    zelf hoeft te ontwerpen. Presets zijn gewone recepten onder de motorkap, en <code>eject</code>
+    drukt het recept af zodat je het vanaf daar kunt bewerken. Elke preset heeft
+    <a href="/nl/presets/">een eigen pagina</a> met wat hij meestal vindt, wat er in de set zit en
+    welke instellingen hij kent.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> zegt je wat de set zou kosten voordat je hem bouwt, en zegt zonder omwegen wanneer
+    een getal een tijdelijke waarde van ons is in plaats van een limiet van jou.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Wat betekenen de afsluitcodes?</h2>
+  <p>
+    Elk einde heeft zijn eigen code, machineleesbare uitvoer gaat naar de standaarduitvoer, en een
+    mislukte run drukt daar niets af. De tabel is een bevroren contract - de betekenis van een code
+    wijzigen vereist een major-versie.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Een run die met Ctrl+C is gestopt laat nog steeds een manifest achter en nooit een half geschreven
+    bestand, zodat een afgebroken taak door de volgende nog kan worden opgeruimd.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Is er een bureaubladvenster?</h2>
+  <p>
+    Ja, dezelfde engine met een venster erop, voor het testen dat niet geautomatiseerd is. Het is geen
+    uitgeklede versie: een test vergelijkt de twee interfaces mogelijkheid voor mogelijkheid, en
+    alles wat maar één van beide kan moet worden verklaard en gerechtvaardigd in plaats van
+    ongemerkt uit elkaar te drijven.
+  </p>
+  <p>
+    De schermen zijn één batch, presets, meerdere batches tegelijk en info. Het toont wat een run zou
+    kosten voordat er iets wordt geschreven, meldt de voortgang terwijl het draait en kan halverwege
+    worden afgebroken zonder een half geschreven bestand achter te laten. Het opent nog geen
+    receptbestand - recepten zijn voorlopig iets van de opdrachtregel, en het venster bouwt zijn
+    batches in het formulier.
+  </p>
+</section>

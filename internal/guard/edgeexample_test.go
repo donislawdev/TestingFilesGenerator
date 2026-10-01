@@ -159,4 +159,10 @@ var translatedLimitWords = map[string][2]string{
 	"fr":    {"accepter", "refuser"},
 	"it":    {"accettare", "rifiutare"},
 	"pt-BR": {"aceitar", "rejeitar"},
+	"nl":    {"accepteren", "weigeren"},
+	"ro":    {"accepte", "respingă"},
+	"cs":    {"přijmout", "odmítnout"},
+	"id":    {"menerima", "menolak"},
+	"tr":    {"kabul etmeli", "reddetmeli"},
+	"vi":    {"chấp nhận", "từ chối"},
 }

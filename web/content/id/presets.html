@@ -1,0 +1,32 @@
+<h1>Preset file uji, satu set untuk setiap pertanyaan pengujian</h1>
+<p class="lead">
+  Preset adalah satu set lengkap file uji yang dirancang di sekitar satu pertanyaan, dengan manifes
+  yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file. Anda memilih pertanyaan,
+  alat membuat setnya. Setiap preset punya halamannya sendiri berisi apa yang biasanya ditemukan,
+  isi set, dan setiap pengaturan yang diterimanya.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Apa bedanya preset dengan resep?</h2>
+  <p>
+    Pada dasarnya tidak ada. Preset adalah resep yang ditulis alat untuk Anda dari beberapa pengaturan.
+    <code>tfg preset eject</code> mencetak resep itu agar dapat Anda simpan di samping pengujian dan
+    sunting, dan resep Anda sendiri dapat dibangun di atas preset dengan satu baris, <code>extends:
+    preset:</code> diikuti id-nya.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Bisakah saya memercayai nilai bawaan?</h2>
+  <p>
+    Untuk file, ya. Untuk angka yang hanya diketahui sistem Anda, seperti batas formulir unggah, nilai
+    bawaan adalah nilai sementara dari kami, dan alat menyatakannya setiap kali memakainya. Halaman
+    setiap preset menandai pengaturan itu, dan <code>tfg preset show</code> menyatakannya sebelum
+    apa pun ditulis.
+  </p>
+</section>

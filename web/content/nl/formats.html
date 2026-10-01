@@ -1,0 +1,81 @@
+<h1>{{ .Facts.FormatCount }} bestandsformaten, elk gegenereerd in een exacte grootte</h1>
+<p class="lead">
+  Elk daarvan is een <strong>echt bestand van dat formaat</strong>. Het opent in het programma waartoe
+  het behoort en is precies het aantal bytes dat je vroeg. Geen enkele is opgevulde nullen met een
+  extensie eraan geplakt.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Wat de kolommen betekenen</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Kleinste bestand</p>
+      <p class="muted">
+        Het minste aantal bytes dat deze tool voor dat formaat accepteert, inclusief het label dat hij in
+        het bestand schrijft. Vraag je minder, dan krijg je een fout die de ondergrens en de reden
+        noemt, nooit een bestand van de verkeerde grootte.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Volledigheid</p>
+      <p class="muted">
+        Hoe volledig het bestand is. <code>full</code> betekent dat een lezer die het formaat echt parset
+        het accepteert, niet alleen dat de extensie klopt.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Gecontroleerd met</p>
+      <p class="muted">
+        De onafhankelijke lezer die elk gegenereerd bestand opent voordat het formaat wordt uitgebracht -
+        een aparte implementatie, niet onze eigen code die haar eigen huiswerk nakijkt.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Elk formaat herhaalt zich ook tot op de byte: hetzelfde recept en dezelfde seed geven op elke
+    machine identieke bestanden, en daardoor is het veilig een recept te committen in plaats van de
+    fixtures zelf.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Instellingen die elk formaat accepteert</h2>
+  <p>
+    De meeste formaten hebben eigen instellingen - afbeeldingsafmetingen, JPEG-kwaliteit, aantal
+    PDF-pagina's, rijen en kolommen in een spreadsheet, hoeveel items er in een archief zitten. Stel
+    ze in met <code>--set key=value</code> op de opdrachtregel, of onder <code>properties:</code> in
+    een recept.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Een waarde buiten wat een instelling accepteert wordt geweigerd met een melding die de instelling,
+    het toegestane bereik en het alternatief noemt. Een onbekende instelling is ook een fout, nooit
+    een stille standaardwaarde - een stilzwijgend geaccepteerde typefout geeft een bestand met de
+    verkeerde instellingen en een uur zoeken waarom de test slaagt terwijl dat niet zou moeten.
+  </p>
+  <p>
+    Draai <code>tfg formats &lt;id&gt;</code> om precies te zien wat één formaat accepteert in de build
+    die je hebt.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Archieven bevatten echte bestanden</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} en {{ end }}<code>{{ $c.ID }}</code>{{ end }}
+    kunnen met items worden gevuld in plaats van als lege huls te blijven. Een gegenereerd archief
+    bevat echt de documenten die het zegt te bevatten, dus alles wat het tijdens een test uitpakt
+    vindt er echte bestanden in.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

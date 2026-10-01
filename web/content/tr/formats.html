@@ -1,0 +1,79 @@
+<h1>{{ .Facts.FormatCount }} dosya biçimi, her biri tam boyutta üretilir</h1>
+<p class="lead">
+  Bunların her biri <strong>o biçimde gerçek bir dosyadır</strong>. Ait olduğu programda açılır ve tam
+  istediğiniz bayt sayısındadır. Hiçbiri yapıştırılmış uzantılı dolgu sıfırları değildir.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Sütunların anlamı</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">En küçük dosya</p>
+      <p class="muted">
+        Bu aracın o biçim için kabul edeceği en az bayt sayısı, dosyanın içine yazdığı etiket dahil. Daha
+        azını isterseniz alt sınırı ve nedenini adlandıran bir hata alırsınız, asla yanlış boyutta
+        bir dosya değil.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Bütünlük</p>
+      <p class="muted">
+        Dosyanın ne kadar tam olduğu. <code>full</code>, biçimi gerçekten ayrıştıran bir okuyucunun onu
+        kabul ettiği anlamına gelir, yalnızca uzantının uyduğu anlamına değil.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Doğrulayan</p>
+      <p class="muted">
+        Biçim yayımlanmadan önce üretilen her dosyayı açan bağımsız okuyucu - ayrı bir uygulama, kendi
+        ödevini kendi notlayan bizim kodumuz değil.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Her biçim ayrıca bayta kadar tekrarlanır: aynı tarif ve aynı seed her makinede özdeş dosyalar üretir
+    ve bir tarifi fixture'ların kendisi yerine commit etmeyi güvenli kılan budur.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Her biçimin kabul ettiği ayarlar</h2>
+  <p>
+    Çoğu biçimin kendi ayarları vardır - görüntü boyutları, JPEG kalitesi, PDF sayfa sayısı, bir
+    elektronik tablodaki satır ve sütunlar, bir arşivin içine kaç girdi gireceği. Bunları komut
+    satırında <code>--set key=value</code> ile veya bir tarifte <code>properties:</code> altında
+    ayarlayın.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Bir ayarın kabul ettiğinin dışındaki değer, ayarı, izin verilen aralığı ve onun yerine ne
+    kullanılacağını söyleyen bir iletiyle reddedilir. Bilinmeyen bir ayar da hatadır, asla sessiz
+    bir varsayılan değil - sessizce kabul edilen bir yazım hatası yanlış ayarlı bir dosya ve testin
+    geçmemesi gerekirken neden geçtiğini merak ederek geçen bir saat verir.
+  </p>
+  <p>
+    Elinizdeki sürümde bir biçimin tam olarak ne kabul ettiğini görmek için <code>tfg formats
+    &lt;id&gt;</code> çalıştırın.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Arşivler gerçek dosyalar içerir</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} ve {{ end }}<code>{{ $c.ID }}</code>{{ end }} boş
+    bir kabuk olarak bırakılmak yerine girdilerle doldurulabilir. Üretilmiş bir arşiv, içerdiğini
+    söylediği belgeleri gerçekten içerir, bu yüzden bir test sırasında onu açan her şey içinde
+    gerçek dosyalar bulur.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

@@ -1,0 +1,304 @@
+{
+  "code": "cs",
+  "locale": "cs_CZ",
+  "name": "Čeština",
+  "dir": "cs",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Úvod",
+      "title": "Generátor testovacích souborů - přesná velikost, {{ .Facts.FormatCount }} formátů",
+      "description": "Bezplatný open source generátor testovacích souborů pro QA. Skutečné PDF, DOCX, PNG a ZIP v přesné velikosti a manifest s očekávanou reakcí vašeho systému."
+    },
+    {
+      "key": "formats",
+      "slug": "formaty",
+      "nav": "Formáty",
+      "title": "{{ .Facts.FormatCount }} podporovaných formátů souborů - PDF, DOCX, PNG, ZIP a další",
+      "description": "Všechny formáty, které generátor vytváří, nejmenší možný soubor každého z nich a jejich nastavení. Všech {{ .Facts.FormatCount }} se otevře ve svém programu."
+    },
+    {
+      "key": "presets",
+      "slug": "predvolby",
+      "nav": "Předvolby",
+      "title": "Předvolby testovacích souborů - hotové sady pro QA",
+      "description": "Hotové sady testovacích souborů, každá odpovídá na jednu otázku: limity nahrávání, názvy souborů, kódování, import tabulek, prázdné soubory a validace."
+    },
+    {
+      "key": "docs",
+      "slug": "dokumentace",
+      "nav": "Dokumentace",
+      "title": "Dokumentace - příkazy, recepty, manifest, návratové kódy",
+      "description": "Jak generovat testovací soubory z příkazového řádku nebo z receptu YAML, co obsahuje manifest a co znamená každý návratový kód při běhu v CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "pripady-pouziti",
+      "nav": "Případy použití",
+      "title": "Případy použití - limity nahrávání, fixtures pro CI, testy",
+      "description": "Test limitu velikosti nahrávání, opakovatelné fixtures pro CI, vygenerování deseti tisíc souborů a archivy naplněné skutečným obsahem."
+    },
+    {
+      "key": "exact-size",
+      "slug": "vytvoreni-souboru-presne-velikosti",
+      "nav": "Přesná velikost",
+      "title": "Vytvoření souboru přesné velikosti - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate a mkfile, každý změřený na svém systému, a proč takto vytvořený soubor není PDF ani PNG, když to test potřebuje."
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "FAQ",
+      "title": "FAQ - otázky ke generování testovacích souborů",
+      "description": "Čím se liší od dd a fsutil, zda lze soubory commitovat, zda se běhy opakují bajt po bajtu a co se stane, když nelze velikosti dosáhnout."
+    }
+  ],
+  "words": {
+    "skip": "Přejít na obsah",
+    "navLabel": "Hlavní",
+    "langLabel": "Jazyk",
+    "breadcrumbHome": "Úvod",
+    "imageAlt": "Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat",
+    "schemaDescription": "Bezplatný open source generátor testovacích souborů pro QA. Vytváří skutečné soubory v {{ .Facts.FormatCount }} formátech v přesné velikosti a zapisuje manifest, který říká, jak má testovaný systém na každý z nich reagovat.",
+    "ctaDownload": "Stáhnout",
+    "ctaSource": "Zobrazit zdrojový kód",
+    "ctaNote": "Zdarma a open source, GPL-3.0. Žádná registrace. Stažené soubory pro Windows a macOS jsou podepsané a spustí se bez varování.",
+    "colFormat": "Formát",
+    "colName": "Název",
+    "colExtension": "Přípona",
+    "colSmallest": "Nejmenší soubor",
+    "colFidelity": "Úplnost",
+    "colChecked": "Ověřeno pomocí",
+    "colSetting": "Nastavení",
+    "colAccepts": "Přijímá",
+    "colSystem": "Systém",
+    "colCli": "Příkazový řádek",
+    "colWindow": "Desktopové okno",
+    "noBinary": "zatím bez binárky",
+    "colCode": "Kód",
+    "colMeaning": "Význam",
+    "footerBlurb": "Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.",
+    "footerProject": "Projekt",
+    "footerSource": "Zdrojový kód na GitHubu",
+    "footerReleases": "Stažení",
+    "footerIssues": "Nahlásit problém",
+    "footerSupport": "Podpořit projekt",
+    "footerPages": "Stránky",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.",
+    "footerPrivacy": "Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.",
+    "notFoundTitle": "Tato stránka tu není",
+    "notFoundLead": "Adresa, kterou jste následovali, neodpovídá žádné stránce tohoto webu.",
+    "notFoundBack": "Přejít na úvodní stránku",
+    "read.format": "Formát každého souboru v sadě. Je to přepínač samotného nástroje a předvolba mu jen dává výchozí hodnotu.",
+    "readTakes.format": "id formátu ze stránky formátů"
+  },
+  "endings": {
+    "0": "Vše fungovalo.",
+    "1": "Neočekávaná chyba uvnitř nástroje.",
+    "2": "Špatný příkaz nebo přepínač.",
+    "3": "Recept není platný.",
+    "4": "Formát neumí to, co bylo požadováno.",
+    "5": "Čtení nebo zápis selhal.",
+    "6": "Nedostatek místa na disku.",
+    "7": "verify našel nesrovnalost.",
+    "8": "Běh skončil, ale nebylo vytvořeno všechno.",
+    "130": "Přerušeno pomocí Ctrl+C.",
+    "143": "Zastaveno signálem, tak vypadá vypršení času v CI."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Projde platný soubor tak malý, jak formát dovolí?",
+      "title": "Prázdné a minimální",
+      "pageTitle": "Nejmenší platné a prázdné testovací soubory v každém formátu",
+      "description": "Nejmenší platný soubor, který nástroj zapíše v každém ze svých {{ .Facts.FormatCount }} formátů, a prázdný soubor tam, kde to formát dovolí, vždy s očekávanou reakcí.",
+      "catches": [
+        "platný soubor odmítnutý jako příliš malý, protože kontrola počítá bajty místo toho, aby je četla",
+        "prázdný soubor, který shodí čtečku, místo aby byl nahlášen",
+        "obrázek široký jeden pixel, který cestou k náhledu dělí nulou",
+        "úložiště, které čte nula bajtů jako selhané nahrání a stále to opakuje"
+      ],
+      "details": {
+        "formats": "Z jakých formátů se sada skládá. Ponechte all pro všechny formáty této verze, nebo uveďte ty, které váš systém přijímá."
+      }
+    },
+    "filename-handling": {
+      "question": "Uloží, zobrazí a vrátí můj systém název souboru, který nečekal?",
+      "title": "Zacházení s názvy souborů",
+      "pageTitle": "Problematické názvy souborů pro testování - Unicode a délka",
+      "description": "Soubory s názvy, které rozbíjejí nahrávání a úložiště: jiná písma a emoji, přepsání směru textu, neviditelné znaky, syntaxe shellu a SQL, limity délky.",
+      "catches": [
+        "název, který na obrazovce, v logu nebo v seznamu vypadá jako jiný",
+        "název oříznutý, zkrácený nebo přepsaný mezi nahráním a uložením",
+        "limit délky počítaný ve znacích tam, kde úložiště počítá bajty"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Je limit velikosti vynucován přesně tam, kde je deklarován?",
+      "title": "Hranice velikosti",
+      "pageTitle": "Test limitu velikosti nahrávání - soubory přesně na hranici",
+      "description": "Soubory o bajt pod, přesně na a o bajt nad limitem, který váš systém deklaruje, a širší kroky na obě strany, každý označený, zda má být přijat.",
+      "catches": [
+        "chyby o jedna na hranici limitu",
+        "MB zaměněné za MiB, což je 4,8 procenta a stačí to k propuštění souboru, který projít neměl",
+        "limit vynucovaný v prohlížeči a ne na serveru"
+      ],
+      "details": {
+        "limit": "Limit velikosti, který váš systém deklaruje. Vše ostatní se měří od něj.",
+        "spread": "Jak daleko na obě strany od limitu zajít, jako seznam velikostí."
+      }
+    },
+    "tabular-import": {
+      "question": "Přežije můj import tabulek to, co exportují skutečné nástroje?",
+      "title": "Import tabulek",
+      "pageTitle": "Testovací soubory pro import CSV a Excelu - oddělovače",
+      "description": "CSV s jinými oddělovači, konci řádků CR LF, bez hlavičky a s jinými uvozovkami, velmi široká tabulka, sešit Excelu a JSON v několika rozloženích.",
+      "catches": [
+        "soubor se středníky přečtený jako jediný sloupec, protože oddělovač se předpokládal, místo aby se hledal",
+        "soubor CRLF rozdělený na řádky s prázdným řádkem za každým",
+        "tabulka bez hlavičky, jejíž první datový řádek se spolkne jako názvy sloupců",
+        "import, který ponechá sloupce, které umí zobrazit, a zbytek beze slova zahodí",
+        "čtečka, která bere záznamy JSON po jednom řádku a zastaví se u prvního odsazeného dokumentu"
+      ],
+      "details": {
+        "rows": "Kolik řádků tabulka obsahuje. Zapisuje se přesně v takové velikosti, jakou tolik řádků zabere, takže rozpočet výše se s touto hodnotou posouvá.",
+        "columns": "Kolik sloupců má každý řádek tabulky. Řádky krát sloupce mají strop a požadavek nad ním je odmítnut dříve, než se cokoli zapíše."
+      }
+    },
+    "text-encoding": {
+      "question": "Ví moje čtečka, v jakém kódování soubor je, nebo hádá?",
+      "title": "Kódování textu",
+      "pageTitle": "Testovací soubory kódování textu - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Stejný text v UTF-8, UTF-16LE a UTF-16BE, s označením pořadí bajtů i bez něj, a konce řádků CR LF a LF, k ověření, jak čtečka dekóduje text.",
+      "catches": [
+        "čtečka, která předpokládá UTF-8 a zobrazí soubor UTF-16 jako každý třetí znak nebo jako řady čtverečků",
+        "označení pořadí bajtů přečtené jako obsah, takže první pole importu začíná třemi cizími znaky",
+        "importér, který hádá kódování z prvních bajtů a u delšího souboru hádá jinak",
+        "soubor CRLF rozdělený na řádky s prázdným řádkem za každým, nebo návrat vozíku zůstávající v posledním poli"
+      ],
+      "details": {
+        "sample": "Jak velký je každý soubor sady. UTF-16 ukládá dva bajty na znak, takže lichý počet je odmítnut."
+      }
+    },
+    "upload-validation": {
+      "question": "Přijme můj formulář pro nahrávání to, co má, a zbytek odmítne?",
+      "title": "Validace nahrávání",
+      "pageTitle": "Testovací soubory validace nahrávání - typ, velikost a název",
+      "description": "Soubory k testu formuláře pro nahrávání: povolené a zakázané typy, obsah neodpovídající příponě, limit velikosti, nepřátelské názvy a hromadné nahrání.",
+      "catches": [
+        "limit vynucovaný v prohlížeči a ne na serveru",
+        "SVG nebo HTML považované za obrázek či prostý text, což je způsob, jak protlačit skript formulářem",
+        "soubor kontrolovaný podle přípony a nikdy neotevřený, takže PDF s názvem .jpg projde",
+        "formulář, který načte celé tělo do paměti, než se podívá, jak je velké",
+        "nahrání s názvem PHOTO.JPG odmítnuté tam, kde se photo.jpg přijme, nebo naopak",
+        "název s mezerami, závorkami nebo znaky mimo ASCII zapsaný na disk beze změny"
+      ],
+      "details": {
+        "limit": "Limit velikosti, který váš formulář pro nahrávání deklaruje. Tato sada udělá jeden krok na každou stranu - pro soubor v každé vzdálenosti spusťte předvolbu size-boundaries.",
+        "allow": "Které typy má váš formulář přijímat. Každý se stane skutečným souborem toho typu a tvoří pozitivní kontrolu celé sady.",
+        "deny": "Které přípony má váš formulář odmítat. Přípona, pro kterou tato verze nemá formát, přesto dostane soubor s tímto názvem, obsahující prostý text.",
+        "far-over": "Jak daleko za limit sahá jediný velký soubor. Vypněte, kde zapsání několikanásobku limitu nestojí za místo na disku.",
+        "bulk": "Kolik souborů obsahuje hromadné nahrání. Nula tuto skupinu ze sady úplně vynechá."
+      }
+    }
+  },
+  "commands": {
+    "generate": "vytvořit soubory z receptu nebo z přepínačů",
+    "validate": "zkontrolovat recept a nic nezapisovat",
+    "verify": "zkontrolovat adresář proti manifestu",
+    "cleanup": "odstranit soubory, které manifest uvádí",
+    "recipe fmt": "vypsat recept v ustáleném tvaru",
+    "preset": "sestavit sadu souborů z pojmenované testovací otázky",
+    "formats": "vypsat formáty, které tato verze podporuje",
+    "damage": "vypsat způsoby, jak tato verze umí soubor schválně poškodit",
+    "tool": "drobné pomůcky pro soubory, které už máte",
+    "version": "vypsat verzi nástroje",
+    "license": "vypsat licenci a co znamená pro generované soubory"
+  },
+  "outcomes": {
+    "accept": "Váš systém má soubor přijmout.",
+    "reject": "Váš systém má soubor odmítnout.",
+    "sanitize": "Váš systém má soubor přijmout a vyčistit, například přejmenováním.",
+    "unspecified": "Záleží na pravidlech vašeho systému. Rozhodnete vy, a pak ověříte, že to, co se stane, je to, co jste chtěli."
+  },
+  "terms": {
+    "oracleNone": "nelze použít",
+    "int": "libovolné celé číslo",
+    "choice": "jedna z pevné množiny",
+    "bool": "pravda nebo nepravda",
+    "size": "velikost, například 2mb",
+    "text": "text",
+    "pixels": "pixelů",
+    "paragraphs": "odstavců",
+    "rows": "řádků",
+    "columns": "sloupců",
+    "slides": "snímků",
+    "hertz": "hertzů",
+    "megapixels": "megapixelů",
+    "million cells": "milionů buněk",
+    "entries per second": "položek za sekundu",
+    "files": "souborů",
+    "sizes separated by commas": "velikosti oddělené čárkami",
+    "format ids separated by commas": "id formátů oddělená čárkami",
+    "format ids separated by commas, or all": "id formátů oddělená čárkami, nebo all",
+    "extensions separated by commas": "přípony oddělené čárkami",
+    "the id of a format, as tfg formats lists them": "id formátu tak, jak je vypisuje tfg formats",
+    "the password, in plain text": "heslo ve formě prostého textu",
+    "any text": "libovolný text",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "datum, například 2024-02-29 nebo 2024-02-29T13:45:00+02:00, nebo none"
+  },
+  "faq": [
+    {
+      "q": "Čím se to liší od dd, fsutil nebo truncate?",
+      "a": "Ty vám dají soubor správné velikosti plný ničeho. Soubor o 2 MB pojmenovaný photo.png vytvořený takto není PNG, takže ho cokoli, co ho skutečně zpracovává, odmítne z nesprávného důvodu a váš test pak projde také z nesprávného důvodu. Tohle vytvoří skutečné PNG o přesně 2 MB, které se otevře v prohlížeči obrázků, a přichází s prohlášením, jak s ním má váš systém naložit.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Je to zdarma a mohu to používat v práci?",
+      "a": "Ano k obojímu. Je vydáno pod GPL-3.0 a nestojí nic. Není tu účet, licenční klíč ani placená úroveň."
+    },
+    {
+      "q": "Mohu generované soubory použít v produktu s uzavřeným zdrojovým kódem?",
+      "a": "Ano. Licence se vztahuje na kód nástroje, ne na to, co nástroj vytváří. Generované soubory, recepty a manifesty jsou výstup, nikoli odvozená díla, takže je můžete commitovat a dodávat bez jakékoli povinnosti."
+    },
+    {
+      "q": "Obsahují generované soubory skutečné osobní údaje?",
+      "a": "Ne. Vše uvnitř je syntetizováno ze seedu. Nečte se žádný datový soubor, nekontaktuje se žádná služba a nevkládá se obsah třetích stran. Vygenerovanou e-mailovou adresu považujte za nepoužitelnou, ne za nepoužitou, protože libovolný náhodný řetězec se může shodou okolností shodovat se skutečným."
+    },
+    {
+      "q": "Dostanu na jiném počítači přesně stejné soubory?",
+      "a": "Ano, bajt po bajtu, při stejném receptu a stejném seedu. Projekt to testuje při každé změně a porušit to vyžaduje novou hlavní verzi. Díky tomu můžete commitovat malý recept místo velkých binárních fixtures."
+    },
+    {
+      "q": "Potřebuje připojení k internetu?",
+      "a": "Nikdy. Není tu telemetrie, kontrola aktualizací ani cloudový klient a do binárky příkazového řádku není zkompilován žádný síťový zásobník. Funguje na počítači bez sítě i v uzavřeném firemním prostředí."
+    },
+    {
+      "q": "Co se stane, když požádám o velikost, které formát nedosáhne?",
+      "a": "Dostanete chybu, která pojmenuje formát, nejmenší možnou velikost, důvod tohoto minima a co dělat místo toho, a nezapíše se žádný soubor. Nástroj nikdy velikost mlčky nezaokrouhlí. Každé minimum je uvedeno na stránce formátů.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Mohu vygenerovat soubor, který je záměrně rozbitý?",
+      "a": "Zatím ne. Poškozené a vadné soubory jsou plánovaná funkce. Dnes je každý soubor, který nástroj zapíše, platným souborem svého formátu."
+    },
+    {
+      "q": "Které formáty přijdou dál?",
+      "a": "7z, mp3 a mp4. Dnes funguje od začátku do konce {{ .Facts.FormatCount }} formátů."
+    },
+    {
+      "q": "Na kterých systémech to mohu spustit?",
+      "a": "Příkazový řádek běží na Windows a Linuxu na Intelu i ARM a na Macích s Apple Silicon. Desktopové okno se dodává pro Windows na Intelu, Linux na Intelu a Macy s Apple Silicon. Intel Macy nejsou podporovány a nic se pro ně nesestavuje."
+    },
+    {
+      "q": "Musím něco instalovat?",
+      "a": "Ne. Stáhněte archiv pro svůj systém, rozbalte ho a spusťte binárku. Není tu instalátor, běhové prostředí k doplnění ani závislost k vyřešení. Pokud máte Go, funguje i jediný příkaz go install.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Proč je běh nad tisíci soubory na Windows pomalejší?",
+      "a": "Protože Windows si účtuje víc za každou cestu, na kterou se podívá, a příkaz, který prochází tisíce souborů, se dívá na tisíce cest. Změřeno na jednom počítači s 3000 soubory po 1 kB: verify trvá na Windows asi 0,9 sekundy a na Linuxu v kontejneru asi 0,2 sekundy. Kratší výstupní cesta číslo na Windows zmenší, protože každá složka nad soubory je součástí toho, na co se dívá."
+    }
+  ]
+}

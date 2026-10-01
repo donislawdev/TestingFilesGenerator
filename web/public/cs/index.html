@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Generátor testovacích souborů - přesná velikost, 26 formátů</title>
+<meta name="description" content="Bezplatný open source generátor testovacích souborů pro QA. Skutečné PDF, DOCX, PNG a ZIP v přesné velikosti a manifest s očekávanou reakcí vašeho systému.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Generátor testovacích souborů - přesná velikost, 26 formátů">
+<meta property="og:description" content="Bezplatný open source generátor testovacích souborů pro QA. Skutečné PDF, DOCX, PNG a ZIP v přesné velikosti a manifest s očekávanou reakcí vašeho systému.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Generátor testovacích souborů - přesná velikost, 26 formátů">
+<meta name="twitter:description" content="Bezplatný open source generátor testovacích souborů pro QA. Skutečné PDF, DOCX, PNG a ZIP v přesné velikosti a manifest s očekávanou reakcí vašeho systému.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Testing Files Generator",
+  "alternateName": "tfg",
+  "description": "Bezplatný open source generátor testovacích souborů pro QA. Vytváří skutečné soubory v 26 formátech v přesné velikosti a zapisuje manifest, který říká, jak má testovaný systém na každý z nich reagovat.",
+  "url": "https:\/\/testingfilesgenerator.donislawdev.com/",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Software Testing",
+  "operatingSystem": "Windows, macOS, Linux",
+  "softwareVersion": "0.4.0",
+  "downloadUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "installUrl": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator\/releases",
+  "softwareHelp": "https:\/\/github.com\/donislawdev\/TestingFilesGenerator",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "DonislawDev",
+    "url": "https://donislawdev.com/"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/" aria-current="page">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<section class="hero">
+  <div class="hero-text">
+  <h1>Generujte skutečné testovací soubory v přesné velikosti</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>celkem 26 formátů</strong> a každý je skutečný
+    soubor, který se otevře v programu, kam patří, v <strong>přesně té velikosti, o kterou jste
+    požádali</strong>. Každý běh také zapisuje, co má vaše aplikace s každým souborem udělat.
+    Příkazový řádek a desktopové okno, zdarma a open source, celé na vašem počítači.
+  </p>
+
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stáhnout</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Zobrazit zdrojový kód</a>
+</div>
+<p class="cta-note">Zdarma a open source, GPL-3.0. Žádná registrace. Stažené soubory pro Windows a macOS jsou podepsané a spustí se bez varování.</p>
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Desktopové okno Testing Files Generator připravené zapsat dávku testovacích souborů">
+    <figcaption>Desktopové okno připravené zapsat dávku souborů. Za příkazovým řádkem běží stejný motor.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">26</span>
+      <p class="fact-label">skutečných formátů, každý se otevře v programu, kam patří</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 bajt</span>
+      <p class="fact-label">přesnost každé požadované velikosti, nikdy mlčky nezaokrouhlená</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">spojení kamkoli - žádný účet, žádná telemetrie, žádná kontrola aktualizací</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Problém</p>
+  <h2>Vytvořit jeden testovací soubor je snadné. Vytvořit těch správných tisíc je ta únavná část</h2>
+  <p>Testujete software, který přijímá soubory od lidí. Dříve nebo později budete potřebovat:</p>
+  <ul class="ticks">
+    <li>PDF o <strong>přesně</strong> 10 MB, abyste zjistili, zda je limit nahrávání skutečný</li>
+    <li>tři soubory po obou stranách tohoto limitu, abyste zachytili chyby o jedna</li>
+    <li>10 000 souborů logu, abyste viděli, co udělá noční úloha, když je složka velká</li>
+    <li>ZIP, který skutečně obsahuje 200 dokumentů, ne prázdnou skořápku se správnou příponou</li>
+    <li>soubor o 4 GB, aniž byste ve svém repozitáři drželi soubor o 4 GB</li>
+    <li><strong>stejné</strong> fixtures na notebooku i na build serveru, bajt po bajtu</li>
+  </ul>
+  <p>
+    To je to, co toto nahrazuje. Je určeno pro QA inženýry, automatizaci testů a každého, za jehož kódem
+    stojí formulář pro nahrávání, importní rutina, parser nebo kvóta úložiště.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Čím se liší</p>
+  <h2>Jiné generátory končí u bajtů. Tento odpovídá na to, na co se váš test skutečně ptá</h2>
+  <p>
+    Složka souborů vás stále nechává rozhodovat, co má který dokazovat. Každý běh tady zapíše vedle
+    souborů <code>manifest.json</code> - prostý seznam všeho vytvořeného a u každé položky
+    <strong>deklarované očekávání</strong>.
+  </p>
+  <p>Řekněme, že váš endpoint pro nahrávání povoluje 1 MB. Požádejte o tři soubory, které leží na té hranici:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Soubor</th><th class="num">Bajty</th><th>Váš systém má</th><th>Protože</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>přijmout</strong></td><td>je uvnitř limitu</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>přijmout</strong></td><td>samotný limit je povolen</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>odmítnout</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Tři soubory, tři různé odpovědi, ve strojově čitelné podobě. Váš test čte manifest místo toho, abyste vy ručně psali aserce:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Kde odpověď závisí na vaší vlastní politice, manifest to říká</p>
+    <p>
+      Zapíše <code>unspecified</code>, místo aby vymýšlel očekávání. Generátor, který hádá, vytváří
+      falešná selhání a sada testů, která křičí vlk, bude vypnuta.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Předvolby</p>
+  <h2>Vyberte otázku, získejte celou sadu</h2>
+  <p>
+    Předvolba je sada testovacích souborů navržená kolem jedné testovací otázky, abyste nemuseli
+    vymýšlet, které soubory co dokazují. Každá má stránku, která říká, co obvykle najde, co je v
+    sadě a jaké nastavení přijímá.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/empty-and-minimal/">Prázdné a minimální</a></p>
+    <p class="muted">Projde platný soubor tak malý, jak formát dovolí?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/filename-handling/">Zacházení s názvy souborů</a></p>
+    <p class="muted">Uloží, zobrazí a vrátí můj systém název souboru, který nečekal?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/size-boundaries/">Hranice velikosti</a></p>
+    <p class="muted">Je limit velikosti vynucován přesně tam, kde je deklarován?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/tabular-import/">Import tabulek</a></p>
+    <p class="muted">Přežije můj import tabulek to, co exportují skutečné nástroje?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/text-encoding/">Kódování textu</a></p>
+    <p class="muted">Ví moje čtečka, v jakém kódování soubor je, nebo hádá?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/upload-validation/">Validace nahrávání</a></p>
+    <p class="muted">Přijme můj formulář pro nahrávání to, co má, a zbytek odmítne?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <p><a href="/cs/predvolby/">Všechny předvolby a jak souvisejí s recepty</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Rychlý start</p>
+  <h2>Tři příkazy, abyste to viděli fungovat</h2>
+  <ol class="steps">
+    <li>
+      <h3>Vytvořte soubor</h3>
+      <p>Jedno PNG, přesně dva megabajty:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Vytvořte hodně souborů</h3>
+      <p>
+        Deset tisíc souborů logu, každý mezi jedním a osmi kilobajty, s velikostmi losovanými ze seedu, aby
+        zítra vyšla stejná sada. <strong>Dejte každému běhu vlastní adresář</strong> - manifest je
+        jediný záznam o tom, co běh zapsal, takže nástroj odmítne zapsat druhý přes něj:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Ověřte je a pak je odstraňte</h3>
+      <p><code>verify</code> vám řekne, že se nic nepohnulo. <code>cleanup</code> odstraní přesně to, co bylo zapsáno, a nic jiného:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Velikosti se počítají po 1024, jak to dělá váš správce souborů, takže <code>2mb</code> znamená
+    2097152 bajtů. Funguje i prostý počet bajtů. <a href="/cs/dokumentace/">Dokumentace</a> pokrývá
+    recepty, manifest a návratové kódy.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Co získáte</p>
+  <h2>Vytvořeno pro sadu testů, která běží bez dozoru</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Přesná velikost, na bajt</p>
+      <p class="muted">Požádejte o 10485761 bajtů a dostanete přesně tolik. Velikost, které formát nedosáhne, je chyba s důvodem, nikdy soubor špatné velikosti.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">26 skutečných formátů</p>
+      <p class="muted">Ne vycpávkové nuly s příponou. Vygenerované PNG se otevře v prohlížeči obrázků, DOCX ve Wordu, ZIP se rozbalí. Každý formát je před vydáním ověřen nezávislými čtečkami.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Manifest, který je testovací orákulum</p>
+      <p class="muted">Cesta, velikost, SHA-256, formát, seed, verze nástroje - a co má váš systém se souborem udělat.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Opakovatelné</p>
+      <p class="muted">Stejný recept a stejný seed, stejné bajty, na jakémkoli počítači. Commitujte malý recept YAML místo velkých binárních fixtures.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dvě rozhraní, jeden motor</p>
+      <p class="muted">Příkazový řádek vytvořený pro CI a desktopové okno pro průzkumné testování. Ani jedno není osekanou verzí druhého a test je porovnává schopnost po schopnosti.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Zcela offline</p>
+      <p class="muted">Žádný účet, žádný cloud, žádná telemetrie, žádná kontrola aktualizací. V binárce příkazového řádku není zkompilován vůbec žádný síťový zásobník.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Stažení</p>
+  <h2>Vyberte verzi pro svůj systém</h2>
+  <p>
+    Rozbalte archiv a spusťte ho. <code>tfg</code> je příkazový řádek a <code>tfg-gui</code> je
+    desktopové okno. Není tu instalátor a nic, co by se do vašeho počítače přidávalo.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Systém</th>
+      <th>Příkazový řádek</th>
+      <th>Desktopové okno</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td><code>arm64</code></td>
+      <td><code>arm64</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <div class="note">
+    <p class="note-title">Co je podepsáno a co ne</p>
+    <p>
+      Soubory ke stažení pro Windows a macOS jsou podepsané, takže se spustí bez varování o neznámém
+      vývojáři. Ty pro Linux ne, protože desktopový Linux nemá ekvivalent, kterým by je šlo
+      podepsat. Každý archiv je uveden v <code>verify-SHA256SUMS.txt</code> na stránce vydání, takže
+      můžete ověřit, co jste stáhli.
+    </p>
+  </div>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stáhnout</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Zobrazit zdrojový kód</a>
+</div>
+<p class="cta-note">Zdarma a open source, GPL-3.0. Žádná registrace. Stažené soubory pro Windows a macOS jsou podepsané a spustí se bez varování.</p>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

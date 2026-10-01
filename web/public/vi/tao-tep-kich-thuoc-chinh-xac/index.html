@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>Cách tạo tệp có kích thước chính xác - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate và mkfile, mỗi lệnh được đo trên hệ thống của nó, và vì sao tệp tạo kiểu đó không phải PDF hay PNG khi bài kiểm thử cần.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Cách tạo tệp có kích thước chính xác - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate và mkfile, mỗi lệnh được đo trên hệ thống của nó, và vì sao tệp tạo kiểu đó không phải PDF hay PNG khi bài kiểm thử cần.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cách tạo tệp có kích thước chính xác - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate và mkfile, mỗi lệnh được đo trên hệ thống của nó, và vì sao tệp tạo kiểu đó không phải PDF hay PNG khi bài kiểm thử cần.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kích thước chính xác",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/tao-tep-kich-thuoc-chinh-xac\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/">Preset</a>
+      <a href="/vi/tai-lieu/">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/" aria-current="page">Kích thước chính xác</a>
+      <a href="/vi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Cách tạo tệp có kích thước chính xác</h1>
+<p class="lead">
+  Hệ thống nào cũng có một lệnh cho việc này, và cả ba nằm bên dưới. Chúng cho bạn một tệp có đúng số
+  byte cần thiết - và với nhiều bài kiểm thử, thế là đủ. <strong>Mọi lệnh trên trang này đã được
+  chạy trước khi đăng</strong>, trên hệ thống mà nó thuộc về.
+</p>
+
+<div class="note">
+  <p class="note-title">Câu trả lời ngắn</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Kích thước tính bằng byte, và 10 MB
+    đếm theo cách trình quản lý tệp của bạn đếm là 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, và một bản PowerShell không cần thêm gì</h2>
+  <p>
+    <code>fsutil</code> có sẵn trong Windows. Nó nhận kích thước <strong>bằng byte</strong>, nên hãy
+    tính số trước - 10 MB là 10485760, 100 MB là 104857600, 1 GB là 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Đo trên Windows 11: nó chạy từ một dấu nhắc thường mà không cần quyền nâng cao, và tệp ra đúng
+    10485760 byte.
+  </p>
+  <p>PowerShell làm được điều tương tự mà không gọi chương trình khác, và hiểu đơn vị:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> trong PowerShell nghĩa là 10485760 byte, cùng cách đếm cơ số 1024 mà Explorer
+    dùng, nên hai lệnh ở trên cho cùng một kích thước.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate và fallocate, và sự khác biệt làm người ta vấp</h2>
+  <p><code>dd</code> là lệnh ai cũng biết. Nó thật sự ghi các byte:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> chạy tức thì, và đó là cái bẫy. Đo trên Alpine Linux, tệp báo 10485760 byte và
+    chiếm <strong>không khối nào</strong> - nó là một <strong>tệp thưa</strong>. Bất cứ thứ gì đọc
+    nó nhận mười megabyte số không, nhưng đĩa chưa bao giờ nhường chỗ:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Điều đó ổn để kiểm thử giới hạn tải lên và gây hiểu lầm khi kiểm thử hạn ngạch đĩa.
+    <code>fallocate</code> là lệnh nên dùng khi dung lượng phải là thật:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Và khi nội dung phải không nén được, để trình nén không thể ép nó nhỏ lại:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, không phải tệp thưa, và hai lệnh bạn đã biết</h2>
+  <p>
+    macOS có sẵn <code>mkfile</code>. Đo trên macOS 26.6.2: 10485760 byte và 20480 khối, nên dung lượng
+    thật sự được cấp phát chứ không chỉ hứa hẹn:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> và <code>truncate</code> cũng có và hoạt động như trên Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Khi điều này ngừng hiệu quả</p>
+  <h2>Tệp đúng kích thước không phải tệp đúng loại</h2>
+  <p>
+    Mọi thứ ở trên cho bạn một khối số không. Điều đó đủ khi thứ được kiểm thử chỉ nhìn kích thước -
+    giới hạn tải lên, hạn ngạch, một lần truyền. Nó thôi đủ ngay khi có thứ gì <strong>mở</strong>
+    tệp.
+  </p>
+  <p>
+    Đã đo, và đáng để tự làm: tạo tệp 2 MB bằng <code>fsutil</code>, đặt tên <code>photo.png</code> rồi
+    đưa cho một thư viện ảnh. Pillow trả lời <code>cannot identify image file</code>. Nó không phải
+    PNG. Nó chưa bao giờ là - chỉ cái tên nói vậy.
+  </p>
+  <p>
+    Điều đó quan trọng hơn vẻ ngoài, vì <strong>bài kiểm thử sau đó hỏng theo hướng nào</strong>.
+    Endpoint tải lên từ chối tệp, bài kiểm thử của bạn xanh và bạn kết luận giới hạn kích thước hoạt
+    động. Nó không từ chối vì kích thước. Nó từ chối vì các byte không phải ảnh, và quy tắc bạn định
+    kiểm thử chưa bao giờ được chạm tới.
+  </p>
+  <ul class="ticks">
+    <li>bộ phân tích từ chối nó trước khi xét bất kỳ quy tắc kích thước nào</li>
+    <li>bước tạo ảnh thu nhỏ hỏng và lỗi bạn đọc là về ảnh thu nhỏ</li>
+    <li>phần mềm diệt virus hoặc bước kiểm tra nội dung từ chối nó vì lý do thứ ba</li>
+    <li>trình xem không hiện gì, và không ai biết đó có phải lỗi hay không</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">Con đường còn lại</p>
+  <h2>Một tệp thật của định dạng đó, đúng kích thước bạn đã yêu cầu</h2>
+  <p>
+    Đây là việc Testing Files Generator làm. Tệp là tệp thật của định dạng - mở được bằng phần mềm của
+    nó - và có đúng số byte bạn đã yêu cầu, chính xác đến từng byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Yêu cầu kích thước mà định dạng không thể đạt và bạn nhận một lỗi nêu mức sàn cùng lý do, không bao
+    giờ là tệp sai kích thước. <a href="/vi/dinh-dang/">Trang định dạng</a> liệt kê mỗi định dạng
+    cùng tệp nhỏ nhất nó có thể tạo.
+  </p>
+  <p>Và một giới hạn là ba trường hợp kiểm thử chứ không phải một, nên công cụ dựng cả ba:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Điều đó cho bạn 10485759, 10485760 và 10485761 byte, cùng manifest nói tệp nào hệ thống của bạn nên
+    chấp nhận và tệp nào nên từ chối. <a href="/vi/truong-hop-su-dung/">Trang trường hợp sử dụng</a>
+    đi qua việc đó và bốn việc khác mà nó được làm ra để giải quyết.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Xem mã nguồn</a>
+</div>
+<p class="cta-note">Miễn phí, mã nguồn mở, GPL-3.0. Không cần đăng ký. Bản tải cho Windows và macOS đã được ký nên khởi động không cảnh báo.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>Vậy nên dùng cái nào?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Dùng lệnh của hệ thống</p>
+      <p class="muted">
+        Khi không có gì mở tệp. Kiểm thử giới hạn kích thước trên endpoint kiểm tra kích thước trước, một
+        lần truyền, một hạn ngạch, tình trạng đầy đĩa. Chỉ một dòng và đã được cài sẵn.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Dùng một trình tạo thật</p>
+      <p class="muted">
+        Khi có thứ gì phân tích, kết xuất, nhập hoặc giải nén tệp - và khi ngày mai bạn cần cùng các fixture
+        đó, trên máy khác, từng byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Cả hai đều có trên trang này vì cả hai đúng trong một phần thời gian. Sai lầm cần tránh là dùng cái
+    đầu ở nơi cần cái sau và coi bài kiểm thử xanh là bằng chứng.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

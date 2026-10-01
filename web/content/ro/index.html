@@ -1,0 +1,197 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Generează fișiere de test reale la dimensiunea exactă</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} formate în total</strong>, și fiecare este un
+    fișier real care se deschide în programul căruia îi aparține, la <strong>exact dimensiunea pe
+    care ai cerut-o</strong>. Fiecare rulare notează și ce trebuie să facă aplicația ta cu fiecare
+    fișier. Linie de comandă și fereastră desktop, gratuit și open source, funcționând în întregime
+    pe mașina ta.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Fereastra desktop Testing Files Generator, pregătită să scrie un lot de fișiere de test">
+    <figcaption>Fereastra desktop, pregătită să scrie un lot de fișiere. Același motor rulează în spatele liniei de comandă.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">formate reale, fiecare se deschide în programul căruia îi aparține</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 octet</span>
+      <p class="fact-label">precizia fiecărei dimensiuni cerute, niciodată rotunjită pe tăcute</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">conexiuni către orice loc - fără cont, fără telemetrie, fără verificare de actualizări</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Problema</p>
+  <h2>Să faci un fișier de test e ușor. Să faci cele o mie potrivite e partea plictisitoare</h2>
+  <p>Testezi software care primește fișiere de la oameni. Mai devreme sau mai târziu ai nevoie de:</p>
+  <ul class="ticks">
+    <li>un PDF de <strong>exact</strong> 10 MB, ca să afli dacă limita de încărcare e reală</li>
+    <li>cele trei fișiere de o parte și de alta a acelei limite, ca să prinzi erorile de unu</li>
+    <li>10.000 de fișiere de jurnal, ca să vezi ce face jobul de noapte când folderul e mare</li>
+    <li>un ZIP care chiar conține 200 de documente, nu o carcasă goală cu extensia potrivită</li>
+    <li>un fișier de 4 GB, fără să ții un fișier de 4 GB în repository</li>
+    <li><strong>aceleași</strong> fixture-uri pe laptopul tău și pe serverul de build, octet cu octet</li>
+  </ul>
+  <p>
+    Asta înlocuiește acesta. Este construit pentru ingineri QA, automatizarea testelor și oricine are în
+    spatele codului un formular de încărcare, o rutină de import, un parser sau o cotă de stocare.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Ce îl face diferit</p>
+  <h2>Alte generatoare se opresc la octeți. Acesta răspunde la ce întreabă de fapt testul tău</h2>
+  <p>
+    Un folder de fișiere te lasă tot pe tine să hotărăști ce trebuie să demonstreze fiecare. Fiecare
+    rulare scrie aici un <code>manifest.json</code> lângă fișiere - o listă simplă a tot ce s-a
+    produs și, pentru fiecare intrare, o <strong>așteptare declarată</strong>.
+  </p>
+  <p>Să zicem că endpointul tău de încărcare permite 1 MB. Cere cele trei fișiere de pe acea linie:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Fișier</th><th class="num">Octeți</th><th>Sistemul tău trebuie să</th><th>Pentru că</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>accepte</strong></td><td>e în interiorul limitei</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>accepte</strong></td><td>limita însăși este permisă</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>respingă</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Trei fișiere, trei răspunsuri diferite, în formă citibilă de mașină. Testul tău citește manifestul în loc să scrii tu asertările de mână:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Acolo unde răspunsul depinde de propria ta politică, manifestul spune asta</p>
+    <p>
+      Înregistrează <code>unspecified</code> în loc să inventeze o așteptare. Un generator care ghicește
+      produce eșecuri false, iar o suită care dă alarme false ajunge oprită.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presetări</p>
+  <h2>Alege întrebarea, primești setul întreg</h2>
+  <p>
+    O presetare este un set de fișiere de test conceput în jurul unei întrebări de test, ca să nu fie
+    nevoie să afli tu ce fișiere dovedesc ce. Fiecare are o pagină care spune ce găsește de obicei,
+    ce este în set și fiecare setare pe care o acceptă.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/ro/presetari/">Toate presetările și cum se leagă de rețete</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Pornire rapidă</p>
+  <h2>Trei comenzi ca să-l vezi funcționând</h2>
+  <ol class="steps">
+    <li>
+      <h3>Fă un fișier</h3>
+      <p>Un PNG, exact doi megaocteți:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Fă multe fișiere</h3>
+      <p>
+        Zece mii de fișiere de jurnal, fiecare între unu și opt kiloocteți, cu dimensiunile extrase din seed
+        ca mâine să dea același set. <strong>Dă fiecărei rulări propriul director</strong> -
+        manifestul este singura evidență a ce a scris o rulare, așa că instrumentul refuză să scrie
+        un al doilea peste el:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Verifică-le, apoi șterge-le</h3>
+      <p><code>verify</code> îți spune că nimic nu s-a mișcat. <code>cleanup</code> șterge exact ce s-a scris și nimic altceva:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Dimensiunile se numără din 1024 în 1024, cum o face managerul tău de fișiere, deci <code>2mb</code>
+    înseamnă 2097152 octeți. Merge și un simplu număr de octeți.
+    <a href="/ro/documentatie/">Documentația</a> acoperă rețetele, manifestul și codurile de ieșire.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Ce primești</p>
+  <h2>Construit pentru o suită care rulează nesupravegheată</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Dimensiune exactă, la octet</p>
+      <p class="muted">Cere 10485761 de octeți și primești exact atât. O dimensiune pe care un format nu o poate atinge este o eroare cu un motiv, niciodată un fișier de dimensiune greșită.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} formate reale</p>
+      <p class="muted">Nu zerouri de umplutură cu o extensie. Un PNG generat se deschide într-un vizualizator de imagini, un DOCX se deschide în Word, un ZIP se extrage. Fiecare este verificat cu cititori independenți înainte de livrare.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Un manifest care este un oracol de test</p>
+      <p class="muted">Cale, dimensiune, SHA-256, format, seed, versiunea instrumentului - și ce trebuie să facă sistemul tău cu fișierul.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproductibil</p>
+      <p class="muted">Aceeași rețetă și același seed, aceiași octeți, pe orice mașină. Comite o rețetă YAML mică în loc de fixture-uri binare mari.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Două interfețe, un singur motor</p>
+      <p class="muted">O linie de comandă făcută pentru CI și o fereastră desktop pentru testarea exploratorie. Niciuna nu e o versiune redusă a celeilalte, iar un test le compară capacitate cu capacitate.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Complet offline</p>
+      <p class="muted">Fără cont, fără cloud, fără telemetrie, fără verificare de actualizări. Binarul liniei de comandă nu are compilat în el niciun stack de rețea.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Descărcare</p>
+  <h2>Alege versiunea pentru sistemul tău</h2>
+  <p>
+    Dezarhivează arhiva și rulează-o. <code>tfg</code> este linia de comandă și <code>tfg-gui</code>
+    este fereastra desktop. Nu există instalator și nimic de adăugat pe mașina ta.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Ce este semnat și ce nu</p>
+    <p>
+      Descărcările pentru Windows și macOS sunt semnate, așa că pornesc fără avertisment despre un
+      dezvoltator necunoscut. Cele pentru Linux nu sunt, pentru că Linux pe desktop nu are un
+      echivalent cu care să le semnezi. Fiecare arhivă este listată în
+      <code>verify-SHA256SUMS.txt</code> pe pagina de versiuni, ca să poți verifica ce ai descărcat.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

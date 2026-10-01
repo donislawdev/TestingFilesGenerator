@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Dokumentace - příkazy, recepty, manifest, návratové kódy</title>
+<meta name="description" content="Jak generovat testovací soubory z příkazového řádku nebo z receptu YAML, co obsahuje manifest a co znamená každý návratový kód při běhu v CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Dokumentace - příkazy, recepty, manifest, návratové kódy">
+<meta property="og:description" content="Jak generovat testovací soubory z příkazového řádku nebo z receptu YAML, co obsahuje manifest a co znamená každý návratový kód při běhu v CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dokumentace - příkazy, recepty, manifest, návratové kódy">
+<meta name="twitter:description" content="Jak generovat testovací soubory z příkazového řádku nebo z receptu YAML, co obsahuje manifest a co znamená každý návratový kód při běhu v CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokumentace",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/dokumentace\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/" aria-current="page">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Dokumentace</h1>
+<p class="lead">
+  Vše, co nástroj dělá, uspořádané podle otázek, se kterými lidé skutečně přicházejí.
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README v repozitáři</a> je úplná reference a vždy odpovídá verzi,
+  kterou jste stáhli.
+</p>
+
+<section class="section" id="commands">
+  <h2>Jaké příkazy existují?</h2>
+  <p>Každý dělá jednu věc:</p>
+  <pre><code>tfg generate    vytvořit soubory z receptu nebo z přepínačů
+tfg validate    zkontrolovat recept a nic nezapisovat
+tfg verify      zkontrolovat adresář proti manifestu
+tfg cleanup     odstranit soubory, které manifest uvádí
+tfg recipe fmt  vypsat recept v ustáleném tvaru
+tfg preset      sestavit sadu souborů z pojmenované testovací otázky
+tfg formats     vypsat formáty, které tato verze podporuje
+tfg damage      vypsat způsoby, jak tato verze umí soubor schválně poškodit
+tfg tool        drobné pomůcky pro soubory, které už máte
+tfg version     vypsat verzi nástroje
+tfg license     vypsat licenci a co znamená pro generované soubory</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Jak vygeneruji jeden soubor přesné velikosti?</h2>
+  <p>
+    Uveďte formát, velikost a kam soubor půjde. Velikosti se počítají po 1024, takže <code>2mb</code> je
+    2097152 bajtů. Funguje i prostý počet bajtů, takže <code>--size 10485761</code> žádá přesně
+    tolik.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Užitečné přepínače příkazu <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Přepínač</th><th>Co dělá</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>formát souborů, například <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>přesná velikost každého souboru, například <code>10mb</code> nebo prostý počet bajtů</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>velikost losovaná pro každý soubor z rozsahu, například <code>1kb-8kb</code>. Losování vychází ze seedu</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>tři soubory kolem limitu: o bajt pod, limit, o bajt nad</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>kolik souborů vytvořit. Výchozí <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>šablona názvu, například <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>adresář, do kterého se zapisuje</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>seed běhu. Stejný seed dává stejné bajty</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>nastavení formátu, lze opakovat</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>záměrně soubory poškodit, lze opakovat a uplatňuje se v pořadí. Seznam získáte příkazem <code>tfg damage</code></td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> nebo <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>spočítat a ukázat, nic nezapisovat</td></tr>
+        <tr><td><code>--json</code></td><td>zapsat manifest na standardní výstup</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Jak vytvořím soubor, který je záměrně rozbitý?</h2>
+  <p>
+    Každý jiný soubor, který tento nástroj zapíše, je správný z konstrukce, což odpovídá na dvě ze tří
+    otázek, které klade validátor nahrávání. <code>--damage</code> odpovídá na třetí - zda se soubor
+    vůbec otevře. Soubor se vytvoří normálně a pak se rozbije, takže má stále velikost, o kterou
+    jste požádali.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Nastavení se zadávají za dvojtečku. Přepínač se opakuje a pořadí, v jakém je napíšete, je pořadí, v
+    jakém se uplatní. <code>tfg damage</code> vypíše, co tato verze umí a co která varianta přijímá.
+  </p>
+  <p>V receptu je klíč seznam, a to názvů nebo nastavení:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Poškozený soubor dostane v manifestu <code>expected: reject</code> a vedle toho zaznamenané
+    poškození. Dvě věci jsou odmítnuty dříve, než se cokoli zapíše, protože každá by jinak dala na
+    disk soubor, který manifest popisuje špatně:
+  </p>
+  <ul>
+    <li>soubor menší, než poškození potřebuje, protože by vyšel beze změny</li>
+    <li>
+      <code>expected: accept</code> vedle poškození, protože nic by to nemohlo splnit. Napište
+      <code>sanitize</code>, pokud má testovaný systém soubor opravit, nebo
+      <code>unspecified</code>, pokud je to právě ta otázka, kterou kladete
+    </li>
+  </ul>
+  <p>
+    Třetí se předem zjistit nedá. Pokud se poškození provede a nepohne žádným bajtem, soubor se zahodí
+    místo zapsání - běh pokračuje, řekne, o který soubor šlo, a skončí s částečným návratovým kódem.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Jak vypadá recept?</h2>
+  <p>
+    Recept je soubor YAML popisující celý běh. Commitujte ho vedle testů a fixtures přestanou být
+    binárkami ve vašem repozitáři - kdokoli je může bajt po bajtu znovu sestavit ze souboru o
+    několika stovkách znaků.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Každý target potřebuje přesně jeden z klíčů <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> nebo <code>contains</code>. Dva jsou chyba a žádný také. Neplatný recept
+    nezapíše <strong>žádné soubory</strong> a nahlásí všechny problémy najednou, ne jen první, každý
+    s názvem nastavení, kterého se týká.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Jak deklaruji, co má můj systém se souborem udělat?</h2>
+  <p>Krátká forma, když stačí výsledek, dlouhá forma, když záleží na důvodu:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Výsledky jsou <code>accept</code>, <code>reject</code>, <code>sanitize</code> a
+    <code>unspecified</code>. Důvody tvoří uzavřený seznam, aby podle nich mohl report seskupovat:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>,
+    <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>,
+    <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>,
+    <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>,
+    <code>none</code>, <code>size_limit</code> a <code>size_zero</code>.
+  </p>
+  <p>
+    Důvod pojmenovává <strong>pravidlo, o které jde</strong>, ne verdikt. Proto může stejný důvod stát
+    pod oběma výsledky - soubor o bajt pod limitem je <code>accept</code> a pravidlo, o které jde,
+    je stále <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Co obsahuje manifest?</h2>
+  <p>
+    Zapisuje se vedle souborů na konci každého běhu, včetně přerušeného. Jedna položka na soubor:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    <code>recipe_hash</code> se přidá, když běh pochází z receptu, a <code>preset</code> s
+    <code>overrides</code>, když pochází z předvolby, takže manifest lze vždy dohledat k tomu, co ho
+    vytvořilo.
+  </p>
+  <p>
+    Každá položka nese také <code>target_id</code>, id targetu v receptu, který soubor vytvořil, a
+    <code>summary.by_target</code> počítá soubory, ke kterým každý target dospěl. Recept s více
+    targety lze tak kontrolovat target po targetu, aniž by se četly názvy souborů.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Co je předvolba?</h2>
+  <p>
+    Hotová sada souborů, která odpovídá na běžnou testovací otázku, abyste sadu nemuseli navrhovat sami.
+    Předvolby jsou pod povrchem obyčejné recepty a <code>eject</code> recept vypíše, takže ho můžete
+    odtud upravit. Každá předvolba má <a href="/cs/predvolby/">vlastní stránku</a> s tím, co obvykle
+    najde, co je v sadě a jaké nastavení přijímá.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/empty-and-minimal/">Prázdné a minimální</a></p>
+    <p class="muted">Projde platný soubor tak malý, jak formát dovolí?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/filename-handling/">Zacházení s názvy souborů</a></p>
+    <p class="muted">Uloží, zobrazí a vrátí můj systém název souboru, který nečekal?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/size-boundaries/">Hranice velikosti</a></p>
+    <p class="muted">Je limit velikosti vynucován přesně tam, kde je deklarován?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/tabular-import/">Import tabulek</a></p>
+    <p class="muted">Přežije můj import tabulek to, co exportují skutečné nástroje?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/text-encoding/">Kódování textu</a></p>
+    <p class="muted">Ví moje čtečka, v jakém kódování soubor je, nebo hádá?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/cs/predvolby/upload-validation/">Validace nahrávání</a></p>
+    <p class="muted">Přijme můj formulář pro nahrávání to, co má, a zbytek odmítne?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> vám řekne, kolik by sada stála, než ji sestavíte, a otevřeně řekne, když je číslo
+    naším zástupným údajem, a ne vaším limitem.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Co znamenají návratové kódy?</h2>
+  <p>
+    Každý konec má svůj kód, strojově čitelný výstup jde na standardní výstup a neúspěšný běh tam
+    nevypíše nic. Tabulka je zmrazená smlouva - změna významu kódu vyžaduje novou hlavní verzi.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Kód</th>
+      <th>Význam</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Vše fungovalo.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Neočekávaná chyba uvnitř nástroje.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Špatný příkaz nebo přepínač.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Recept není platný.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Formát neumí to, co bylo požadováno.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Čtení nebo zápis selhal.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Nedostatek místa na disku.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify našel nesrovnalost.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Běh skončil, ale nebylo vytvořeno všechno.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Přerušeno pomocí Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Zastaveno signálem, tak vypadá vypršení času v CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Běh zastavený pomocí Ctrl+C po sobě stále zanechá manifest a nikdy nenechá napůl zapsaný soubor,
+    takže zrušenou úlohu může následující stále uklidit.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Existuje desktopové okno?</h2>
+  <p>
+    Ano, stejný motor s oknem navrch, pro testování, které se neskriptuje. Není to osekaná verze: test
+    porovnává obě rozhraní schopnost po schopnosti a cokoli, co umí jen jedno z nich, musí být
+    deklarováno a zdůvodněno, ne tiše se rozcházet.
+  </p>
+  <p>
+    Obrazovky jsou jedna dávka, předvolby, více dávek najednou a O aplikaci. Ukáže, kolik by běh stál,
+    než cokoli zapíše, hlásí průběh a lze ho zrušit uprostřed, aniž by zanechal napůl zapsaný
+    soubor. Soubor receptu zatím neotevře - recepty jsou zatím záležitostí příkazového řádku a okno
+    sestavuje své dávky ve formuláři.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

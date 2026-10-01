@@ -1,0 +1,304 @@
+{
+  "code": "id",
+  "locale": "id_ID",
+  "name": "Bahasa Indonesia",
+  "dir": "id",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Beranda",
+      "title": "Generator File Uji untuk QA - Ukuran Tepat, {{ .Facts.FormatCount }} Format Asli",
+      "description": "Generator file uji gratis dan open source untuk QA. File PDF, DOCX, PNG, dan ZIP asli berukuran tepat, plus manifes tentang reaksi yang diharapkan dari sistem Anda."
+    },
+    {
+      "key": "formats",
+      "slug": "format",
+      "nav": "Format",
+      "title": "{{ .Facts.FormatCount }} Format File yang Didukung - PDF, DOCX, PNG, ZIP, dan Lainnya",
+      "description": "Semua format file yang dihasilkan, file terkecil yang mungkin untuk tiap format, dan pengaturan yang diterimanya. Semua {{ .Facts.FormatCount }} terbuka di aplikasi aslinya."
+    },
+    {
+      "key": "presets",
+      "slug": "preset",
+      "nav": "Preset",
+      "title": "Preset File Uji - Set Siap Pakai untuk QA",
+      "description": "Set file uji siap pakai, masing-masing menjawab satu pertanyaan pengujian: batas unggahan, nama file, enkoding, impor tabel, file kosong, dan validasi."
+    },
+    {
+      "key": "docs",
+      "slug": "dokumentasi",
+      "nav": "Dokumentasi",
+      "title": "Dokumentasi - Perintah, Resep, Manifes, Kode Keluar",
+      "description": "Cara membuat file uji dari baris perintah atau resep YAML, isi manifes, dan arti setiap kode keluar saat alat ini berjalan di CI."
+    },
+    {
+      "key": "use-cases",
+      "slug": "kasus-penggunaan",
+      "nav": "Kasus Penggunaan",
+      "title": "Kasus Penggunaan - Batas Unggahan, Fixture CI, Pengujian Massal",
+      "description": "Menguji batas ukuran unggahan, membuat fixture yang dapat direproduksi untuk CI, membuat sepuluh ribu file, dan mengisi arsip dengan isi sungguhan."
+    },
+    {
+      "key": "exact-size",
+      "slug": "membuat-file-ukuran-tepat",
+      "nav": "Ukuran Tepat",
+      "title": "Cara Membuat File dengan Ukuran Tertentu - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate, dan mkfile, masing-masing diukur di sistemnya, dan mengapa file yang dibuat begitu bukan PDF atau PNG saat pengujian membutuhkannya."
+    },
+    {
+      "key": "faq",
+      "slug": "faq",
+      "nav": "FAQ",
+      "title": "FAQ - Pertanyaan tentang Membuat File Uji",
+      "description": "Apa bedanya dengan dd dan fsutil, apakah file aman di-commit, apakah hasil run sama byte demi byte, dan apa yang terjadi bila ukuran tak tercapai."
+    }
+  ],
+  "words": {
+    "skip": "Lompat ke konten",
+    "navLabel": "Utama",
+    "langLabel": "Bahasa",
+    "breadcrumbHome": "Beranda",
+    "imageAlt": "Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file",
+    "schemaDescription": "Generator file uji untuk QA yang gratis dan open source. Alat ini membuat file asli dalam {{ .Facts.FormatCount }} format dengan ukuran tepat dan menulis manifes yang menyatakan bagaimana sistem yang diuji harus bereaksi terhadap tiap file.",
+    "ctaDownload": "Unduh",
+    "ctaSource": "Lihat kode sumber",
+    "ctaNote": "Gratis dan open source, GPL-3.0. Tanpa pendaftaran. Unduhan Windows dan macOS sudah ditandatangani dan berjalan tanpa peringatan.",
+    "colFormat": "Format",
+    "colName": "Nama",
+    "colExtension": "Ekstensi",
+    "colSmallest": "File terkecil",
+    "colFidelity": "Kelengkapan",
+    "colChecked": "Diperiksa dengan",
+    "colSetting": "Pengaturan",
+    "colAccepts": "Menerima",
+    "colSystem": "Sistem",
+    "colCli": "Baris perintah",
+    "colWindow": "Jendela desktop",
+    "noBinary": "belum ada biner",
+    "colCode": "Kode",
+    "colMeaning": "Arti",
+    "footerBlurb": "File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.",
+    "footerProject": "Proyek",
+    "footerSource": "Kode sumber di GitHub",
+    "footerReleases": "Unduhan",
+    "footerIssues": "Laporkan masalah",
+    "footerSupport": "Dukung proyek ini",
+    "footerPages": "Halaman",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Dirilis di bawah Lisensi Publik Umum GNU versi 3. File yang Anda buat adalah milik Anda - lisensi mencakup alatnya, bukan keluarannya.",
+    "footerPrivacy": "Situs ini tidak memuat font, skrip, atau pelacak dari mana pun. Situs ini tidak memasang cookie.",
+    "notFoundTitle": "Halaman itu tidak ada di sini",
+    "notFoundLead": "Alamat yang Anda ikuti tidak cocok dengan halaman mana pun di situs ini.",
+    "notFoundBack": "Ke beranda",
+    "read.format": "Format setiap file dalam set. Ini adalah opsi alat itu sendiri, dan preset hanya memberinya nilai bawaan.",
+    "readTakes.format": "id format dari halaman format"
+  },
+  "endings": {
+    "0": "Semuanya berjalan.",
+    "1": "Kesalahan tak terduga di dalam alat.",
+    "2": "Perintah atau opsi salah.",
+    "3": "Resep tidak valid.",
+    "4": "Format tidak dapat melakukan yang diminta.",
+    "5": "Pembacaan atau penulisan gagal.",
+    "6": "Ruang disk tidak cukup.",
+    "7": "verify menemukan ketidakcocokan.",
+    "8": "Run selesai tetapi tidak semuanya dihasilkan.",
+    "130": "Dihentikan dengan Ctrl+C.",
+    "143": "Dihentikan oleh sinyal, seperti tampilan batas waktu CI."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Apakah file valid yang sekecil yang diizinkan format dapat lolos?",
+      "title": "Kosong dan minimal",
+      "pageTitle": "File Uji Valid Terkecil dan Kosong di Setiap Format",
+      "description": "File valid terkecil yang ditulis alat ini di setiap dari {{ .Facts.FormatCount }} formatnya, plus file kosong bila format mengizinkan, masing-masing dengan reaksi yang diharapkan.",
+      "catches": [
+        "file valid yang ditolak karena terlalu kecil, ketika pemeriksaan menghitung byte alih-alih membacanya",
+        "file kosong yang membuat pembaca crash alih-alih dilaporkan",
+        "gambar selebar satu piksel yang membagi dengan nol dalam perjalanan ke thumbnail",
+        "penyimpanan yang membaca nol byte sebagai unggahan gagal dan terus mencoba ulang"
+      ],
+      "details": {
+        "formats": "Dari format apa set dibuat. Biarkan all untuk setiap format build ini, atau sebutkan format yang diterima sistem Anda."
+      }
+    },
+    "filename-handling": {
+      "question": "Apakah sistem saya akan menyimpan, menampilkan, dan mengembalikan nama file yang tidak diduganya?",
+      "title": "Penanganan nama file",
+      "pageTitle": "Nama File Bermasalah untuk Pengujian - Unicode dan Panjang",
+      "description": "File dengan nama yang merusak unggahan dan penyimpanan: aksara lain dan emoji, pembalikan arah tulisan, karakter tak terlihat, sintaks shell dan SQL, batas panjang.",
+      "catches": [
+        "nama yang tampak seperti nama lain di layar, di log, atau dalam daftar",
+        "nama yang dipotong, dipangkas, atau ditulis ulang antara unggahan dan penyimpanan",
+        "batas panjang yang dihitung dalam karakter padahal penyimpanan menghitung byte"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Apakah batas ukuran ditegakkan tepat di tempat batas itu dinyatakan?",
+      "title": "Batas ukuran",
+      "pageTitle": "Menguji Batas Ukuran Unggahan - File di Batas Tepat",
+      "description": "File satu byte di bawah, tepat di, dan satu byte di atas batas ukuran sistem Anda, plus langkah lebih lebar di kedua sisi, masing-masing ditandai apakah harus diterima.",
+      "catches": [
+        "kesalahan selisih satu di batas",
+        "MB tertukar dengan MiB, yaitu 4,8 persen dan cukup untuk meloloskan file yang seharusnya tidak lolos",
+        "batas yang ditegakkan di browser dan tidak di server"
+      ],
+      "details": {
+        "limit": "Batas ukuran yang dinyatakan sistem Anda. Semua yang lain diukur dari sini.",
+        "spread": "Seberapa jauh menjangkau di kedua sisi batas, sebagai daftar ukuran."
+      }
+    },
+    "tabular-import": {
+      "question": "Apakah impor tabel saya tahan terhadap apa yang diekspor alat sungguhan?",
+      "title": "Impor tabel",
+      "pageTitle": "File Uji Impor CSV dan Excel - Pemisah, Header",
+      "description": "CSV dengan pemisah lain, akhir baris CR LF, tanpa header, dan kutipan lain, tabel yang sangat lebar, buku kerja Excel, dan JSON dalam beberapa tata letak.",
+      "catches": [
+        "file titik koma yang terbaca sebagai satu kolom, karena pemisah diasumsikan alih-alih dicari",
+        "file CRLF yang terpecah menjadi baris dengan baris kosong setelah masing-masing",
+        "tabel tanpa header yang baris data pertamanya termakan sebagai nama kolom",
+        "impor yang mempertahankan kolom yang bisa ditampilkan dan membuang sisanya tanpa kata",
+        "pembaca yang mengambil record JSON satu baris sekaligus dan berhenti di dokumen berindentasi pertama"
+      ],
+      "details": {
+        "rows": "Berapa banyak baris yang dimuat spreadsheet. File ditulis tepat pada ukuran sebanyak itu baris, sehingga anggaran di atas bergeser mengikuti nilai ini.",
+        "columns": "Berapa banyak kolom di setiap baris spreadsheet. Baris kali kolom memiliki batas atas, dan meminta melebihinya ditolak sebelum apa pun ditulis."
+      }
+    },
+    "text-encoding": {
+      "question": "Apakah pembaca saya tahu enkoding suatu file, atau hanya menebak?",
+      "title": "Enkoding teks",
+      "pageTitle": "File Uji Enkoding Teks - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Teks yang sama dalam UTF-8, UTF-16LE, dan UTF-16BE, dengan dan tanpa byte order mark, serta akhir baris CR LF dan LF, untuk menguji cara pembaca mendekode teks.",
+      "catches": [
+        "pembaca yang mengasumsikan UTF-8 dan menampilkan file UTF-16 sebagai satu karakter dari tiga, atau sebagai deretan kotak",
+        "byte order mark terbaca sebagai isi, sehingga kolom pertama impor dimulai dengan tiga karakter asing",
+        "importer yang menebak enkoding dari byte pembuka dan menebak berbeda untuk file yang lebih panjang",
+        "file CRLF yang terpecah menjadi baris dengan baris kosong setelah masing-masing, atau carriage return yang tertinggal di kolom terakhir"
+      ],
+      "details": {
+        "sample": "Seberapa besar setiap file dalam set. UTF-16 menyimpan dua byte untuk setiap karakter, sehingga angka ganjil ditolak."
+      }
+    },
+    "upload-validation": {
+      "question": "Apakah formulir unggah saya menerima yang seharusnya dan menolak sisanya?",
+      "title": "Validasi unggahan",
+      "pageTitle": "File Uji Validasi Unggahan - Tipe, Ukuran, dan Nama",
+      "description": "File untuk menguji formulir unggah: tipe yang diizinkan dan ditolak, isi yang tidak cocok dengan ekstensi, batas ukuran, nama berbahaya, dan unggahan massal.",
+      "catches": [
+        "batas yang ditegakkan di browser dan tidak di server",
+        "file SVG atau HTML yang dikira gambar atau teks biasa, yang merupakan cara meloloskan skrip lewat formulir",
+        "file yang diperiksa dari ekstensinya dan tak pernah dibuka, sehingga PDF bernama .jpg lolos",
+        "formulir yang membaca seluruh isi ke memori sebelum melihat seberapa besar isinya",
+        "unggahan bernama PHOTO.JPG yang ditolak sementara photo.jpg diterima, atau sebaliknya",
+        "nama dengan spasi, tanda kurung, atau karakter di luar ASCII yang ditulis ke disk tanpa perubahan"
+      ],
+      "details": {
+        "limit": "Batas ukuran yang dinyatakan formulir unggah Anda. Set ini mengambil satu langkah di tiap sisinya - untuk file di setiap jarak, jalankan preset size-boundaries.",
+        "allow": "Tipe apa yang seharusnya diterima formulir Anda. Masing-masing menjadi file asli bertipe itu, dan menjadi kontrol positif bagi seluruh set.",
+        "deny": "Ekstensi apa yang seharusnya ditolak formulir Anda. Ekstensi yang tidak punya format di build ini tetap mendapat file bernama itu, berisi teks biasa.",
+        "far-over": "Seberapa jauh di atas batas file besar tunggal itu. Matikan bila menulis beberapa kali batas tidak sepadan dengan disknya.",
+        "bulk": "Berapa banyak file dalam unggahan massal. Nol membuang kelompok itu dari set sepenuhnya."
+      }
+    }
+  },
+  "commands": {
+    "generate": "menghasilkan file, dari resep atau dari opsi",
+    "validate": "memeriksa resep tanpa menulis apa pun",
+    "verify": "memeriksa direktori terhadap manifes",
+    "cleanup": "menghapus file yang tercantum dalam manifes",
+    "recipe fmt": "mencetak resep dalam bentuk bakunya",
+    "preset": "membuat set file dari pertanyaan pengujian bernama",
+    "formats": "mendaftar format yang didukung build ini",
+    "damage": "mendaftar cara build ini dapat merusak file dengan sengaja",
+    "tool": "alat kecil untuk file yang sudah Anda miliki",
+    "version": "mencetak versi alat",
+    "license": "mencetak lisensi dan artinya bagi file yang dihasilkan"
+  },
+  "outcomes": {
+    "accept": "Sistem Anda harus menerima file ini.",
+    "reject": "Sistem Anda harus menolak file ini.",
+    "sanitize": "Sistem Anda harus menerima file ini dan membersihkannya, misalnya dengan mengganti namanya.",
+    "unspecified": "Tergantung pada aturan sistem Anda. Anda yang memutuskan, lalu memeriksa apakah yang terjadi sesuai maksud Anda."
+  },
+  "terms": {
+    "oracleNone": "tidak berlaku",
+    "int": "bilangan bulat apa pun",
+    "choice": "salah satu dari himpunan tetap",
+    "bool": "benar atau salah",
+    "size": "ukuran seperti 2mb",
+    "text": "teks",
+    "pixels": "piksel",
+    "paragraphs": "paragraf",
+    "rows": "baris",
+    "columns": "kolom",
+    "slides": "slide",
+    "hertz": "hertz",
+    "megapixels": "megapiksel",
+    "million cells": "juta sel",
+    "entries per second": "entri per detik",
+    "files": "file",
+    "sizes separated by commas": "ukuran dipisahkan koma",
+    "format ids separated by commas": "id format dipisahkan koma",
+    "format ids separated by commas, or all": "id format dipisahkan koma, atau all",
+    "extensions separated by commas": "ekstensi dipisahkan koma",
+    "the id of a format, as tfg formats lists them": "id sebuah format, seperti yang didaftar tfg formats",
+    "the password, in plain text": "kata sandi, dalam teks biasa",
+    "any text": "teks apa pun",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "tanggal seperti 2024-02-29 atau 2024-02-29T13:45:00+02:00, atau none"
+  },
+  "faq": [
+    {
+      "q": "Apa bedanya dengan dd, fsutil, atau truncate?",
+      "a": "Perintah itu memberi Anda file berukuran benar yang berisi kekosongan. File 2 MB bernama photo.png yang dibuat begitu bukanlah PNG, sehingga apa pun yang benar-benar mem-parsing-nya akan menolaknya karena alasan yang salah, dan pengujian Anda pun lolos karena alasan yang salah juga. Alat ini menghasilkan PNG asli berukuran tepat 2 MB yang terbuka di penampil gambar, dan disertai pernyataan tentang bagaimana sistem Anda harus memperlakukannya.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Apakah gratis, dan bisakah saya pakai di tempat kerja?",
+      "a": "Ya untuk keduanya. Dirilis di bawah GPL-3.0 dan tidak berbayar. Tidak ada akun, kunci lisensi, atau tingkat berbayar."
+    },
+    {
+      "q": "Bisakah saya memakai file yang dihasilkan dalam produk closed source?",
+      "a": "Bisa. Lisensi mencakup kode alatnya, bukan apa yang dihasilkan alat itu. File, resep, dan manifes yang dihasilkan adalah keluaran, bukan karya turunan, sehingga Anda dapat meng-commit dan mendistribusikannya tanpa kewajiban apa pun."
+    },
+    {
+      "q": "Apakah file yang dihasilkan berisi data pribadi sungguhan?",
+      "a": "Tidak. Semua isinya disintesis dari sebuah seed. Tidak ada dataset yang dibaca, tidak ada layanan yang dihubungi, dan tidak ada konten pihak ketiga yang disematkan. Perlakukan alamat e-mail yang dihasilkan sebagai tidak dapat dipakai, bukan sekadar belum dipakai, karena string acak apa pun bisa kebetulan sama dengan alamat sungguhan."
+    },
+    {
+      "q": "Apakah saya akan mendapat file yang persis sama di mesin lain?",
+      "a": "Ya, byte demi byte, dengan resep dan seed yang sama. Proyek ini mengujinya pada setiap perubahan, dan melanggarnya memerlukan kenaikan versi mayor. Itulah yang memungkinkan Anda meng-commit resep kecil alih-alih fixture biner besar."
+    },
+    {
+      "q": "Apakah memerlukan koneksi internet?",
+      "a": "Tidak pernah. Tidak ada telemetri, pemeriksaan pembaruan, atau klien cloud, dan biner baris perintah sama sekali tidak memiliki stack jaringan yang dikompilasi di dalamnya. Alat ini berjalan di mesin tanpa jaringan dan di lingkungan korporat yang tertutup."
+    },
+    {
+      "q": "Apa yang terjadi bila saya meminta ukuran yang tidak dapat dicapai suatu format?",
+      "a": "Anda mendapat galat yang menyebut format, ukuran terkecilnya, alasan batas bawah itu, dan apa yang harus dilakukan sebagai gantinya, dan tidak ada file yang ditulis. Alat ini tidak pernah membulatkan ukuran secara diam-diam. Setiap batas bawah tercantum di halaman format.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Bisakah saya membuat file yang sengaja dirusak?",
+      "a": "Belum. File yang rusak dan cacat adalah fitur yang direncanakan. Saat ini setiap file yang ditulis alat ini adalah file valid dalam formatnya."
+    },
+    {
+      "q": "Format apa yang akan hadir berikutnya?",
+      "a": "7z, mp3, dan mp4. Saat ini {{ .Facts.FormatCount }} format bekerja dari ujung ke ujung."
+    },
+    {
+      "q": "Di sistem apa saya bisa menjalankannya?",
+      "a": "Baris perintah berjalan di Windows dan Linux pada Intel maupun ARM, dan di Mac Apple Silicon. Jendela desktop disediakan untuk Windows di Intel, Linux di Intel, dan Mac Apple Silicon. Mac Intel tidak didukung dan tidak ada build untuknya."
+    },
+    {
+      "q": "Apakah saya harus menginstal sesuatu?",
+      "a": "Tidak. Unduh arsip untuk sistem Anda, ekstrak, dan jalankan binernya. Tidak ada installer, tidak ada runtime yang harus ditambahkan, dan tidak ada dependensi yang harus diselesaikan. Bila Anda punya Go, satu perintah go install juga bisa.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Mengapa run atas ribuan file lebih lambat di Windows?",
+      "a": "Karena Windows membebankan lebih banyak untuk setiap path yang diperiksanya, dan perintah yang menelusuri ribuan file memeriksa ribuan path. Diukur di satu mesin dengan 3000 file berukuran 1 kB, verify memakan sekitar 0,9 detik di Windows dan sekitar 0,2 detik di Linux dalam container. Path keluaran yang lebih pendek memperkecil angka Windows, karena setiap folder di atas file ikut diperiksa."
+    }
+  ]
+}

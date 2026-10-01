@@ -1,0 +1,116 @@
+<h1>İnsanlar bunu ne için kullanıyor</h1>
+<p class="lead">
+  İnsanlardan dosya kabul eden hemen her projede çıkan beş iş ve her birini yapan komut. Aşağıdaki her
+  örnek yazıldığı gibi çalışır.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Yükleme sınırları</p>
+  <h2>Bir dosya boyutu sınırının söylediği yerde uygulanıp uygulanmadığını test etmek</h2>
+  <p>
+    Bir sınır bir değil üç test durumudur: hemen altı, tam üstü ve hemen üzeri. Bunları elle yapmak bayt
+    sayıları hesaplamak ve bir kayma yapmadığınızı ummak demektir. Bunun yerine seti isteyin:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    1048575, 1048576 ve 1048577 baytlık üç gerçek PDF ve ilk ikisinin kabul edilmesi, üçüncünün
+    <code>size_limit</code> nedeniyle reddedilmesi gerektiğini söyleyen bir manifest alırsınız.
+    Testiniz üç assertion'ı elle yazmanız yerine beklentiyi okur - sınır değiştiğinde bir sayıyı
+    değiştirip yeniden çalıştırırsınız.
+  </p>
+  <p>
+    Satır içi tek bir sınır seti istediğinizde aynısı hazır ayar olmadan da çalışır:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Sürekli entegrasyon</p>
+  <h2>Fixture'ları kaybetmeden depodan uzak tutmak</h2>
+  <p>
+    Büyük ikili fixture'lar bir depoyu klonlamada yavaş, incelemede zahmetli yapar ve biri
+    değiştirildiğinde neyin değiştiğini kimse söyleyemez. Tarif, özdeş dosyaları yeniden kuran
+    birkaç yüz karakterlik YAML'dir - <strong>bayt bayt, her makinede</strong> - çünkü her dosya
+    çalıştırmanın seed'inden türetilir.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Her sonun kendi çıkış kodu vardır, bu yüzden bir hat kötü bir tarifi dolu bir diskten ve bir
+    doğrulama uyuşmazlığından ayırt edebilir. Başarısız bir çalıştırma standart çıktıya hiçbir şey
+    yazdırmaz, bu da bir günlük ayrıştırıcısının hatayı veri sanmasını önler.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Ölçek</p>
+  <h2>Klasör büyükken ne olduğunu öğrenmek</h2>
+  <p>
+    İçe aktarma rutinleri, gece işleri ve dizin listeleri on bin dosyada ona göre farklı davranır. Bir
+    aralıktan çekilen boyutlar seti on bin özdeş dosya yerine gerçek trafiğe benzetir ve çekiliş
+    seed'den gelir, yani set yarın da aynıdır.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Toplam gigabayt cinsinden ölçülüyorsa önem kazanan şeyi, bir çalıştırmanın bir şey yazmadan önce
+    neye mal olacağını denetleyin:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Diskteki boş alandan büyük bir çalıştırma, diski doldurup yarıda başarısız olmak yerine ilk bayt
+    yazılmadan önce reddedilir.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arşivler</p>
+  <h2>Bir açıcıyı gerçekten dosya içeren bir arşivle test etmek</h2>
+  <p>
+    Doğru uzantılı boş bir arşiv, onu açıp içindekini dolaşan kod hakkında hiçbir şey kanıtlamaz.
+    İçeriği bildirin, arşiv onu gerçekten içersin:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    İç içe geçme derinliği, girdi sayıları ve içindekilerin boyutu, bir içe aktarma rutininin görüş
+    sahibi olduğu şeylerdir ve bu görüşlerin ne olduğunu böyle öğrenirsiniz.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Ayrıştırıcılar ve görüntüleyiciler</p>
+  <h2>Kendi kodunuzun bir biçimi gerçek yazılım gibi okuduğunu denetlemek</h2>
+  <p>
+    Buradaki her biçim yayımlanmadan önce bağımsız bir okuyucuyla doğrulanır - bir PNG açılır ve
+    pikselleri karşılaştırılır, bir DOCX ayrı kitaplıklarca geri okunur, bir arşiv çıkarılır. Bu,
+    ayrıştırıcınızın reddettiği bir dosyanın üretici hakkında değil ayrıştırıcınız hakkında bir
+    bulgu olduğu anlamına gelir.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/tr/bicimler/">Biçimler sayfası</a> her birinin kabul ettiği ayarları ve her birinin
+    olabileceği en küçük dosyayı listeler.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Kimler için</h2>
+  <p>
+    QA mühendisleri, test otomasyonu ve kodunun arkasında bir yükleme formu, içe aktarma rutini,
+    ayrıştırıcı veya depolama kotası olan herkes. Hiç ağı olmayan bir makinede çalışır, bu da
+    tarayıcı tabanlı bir üreticinin seçenek olmadığı kapalı bir kurumsal ortamda önem taşır.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

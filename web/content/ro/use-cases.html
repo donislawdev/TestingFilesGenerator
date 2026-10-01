@@ -1,0 +1,118 @@
+<h1>Pentru ce îl folosesc oamenii</h1>
+<p class="lead">
+  Cinci sarcini care apar în aproape orice proiect care primește fișiere de la oameni și comanda care
+  face fiecare. Fiecare exemplu de mai jos rulează așa cum e scris.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limite de încărcare</p>
+  <h2>Testarea dacă o limită de dimensiune a fișierelor este aplicată acolo unde spune că este</h2>
+  <p>
+    O limită înseamnă trei cazuri de test, nu unul: puțin sub, exact pe ea și puțin peste. Să le faci de
+    mână înseamnă să calculezi numere de octeți și să speri că n-ai greșit cu unu. Cere în schimb
+    setul:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Primești trei PDF-uri reale de 1048575, 1048576 și 1048577 de octeți și un manifest care spune că
+    primele două trebuie acceptate, iar al treilea respins pentru <code>size_limit</code>. Testul
+    tău citește așteptarea în loc să scrii tu trei asertări de mână - iar când limita se schimbă,
+    schimbi un număr și rulezi din nou.
+  </p>
+  <p>
+    La fel merge fără presetare când vrei un singur set de limite inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integrare continuă</p>
+  <h2>Ținerea fixture-urilor în afara repository-ului fără a le pierde</h2>
+  <p>
+    Fixture-urile binare mari fac un repository lent la clonare și incomod la revizuire, și nimeni nu
+    poate spune ce s-a schimbat când una e înlocuită. O rețetă este câteva sute de caractere de YAML
+    care reconstruiesc fișierele identice - <strong>octet cu octet, pe orice mașină</strong> -
+    pentru că fiecare fișier derivă din seed-ul rulării.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Fiecare final are propriul cod de ieșire, așa că un pipeline poate deosebi o rețetă proastă de un
+    disc plin și de o nepotrivire la verificare. O rulare eșuată nu tipărește nimic la ieșirea
+    standard, ceea ce împiedică un parser de jurnale să citească o eroare drept date.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Scară</p>
+  <h2>Aflarea a ce se întâmplă când folderul e mare</h2>
+  <p>
+    Rutinele de import, joburile de noapte și listările de directoare se comportă altfel la zece mii de
+    fișiere decât la zece. Dimensiunile extrase dintr-un interval fac setul să semene cu trafic
+    real, nu cu zece mii de fișiere identice, iar extragerea vine din seed, deci setul e același
+    mâine.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Verifică cât ar costa o rulare înainte să scrie ceva, ceea ce contează când totalul se măsoară în
+    gigaocteți:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    O rulare mai mare decât spațiul liber de pe disc este refuzată înainte de a se scrie primul octet,
+    în loc să umple discul și să eșueze pe la jumătate.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arhive</p>
+  <h2>Testarea unui dezarhivator cu o arhivă care conține cu adevărat fișiere</h2>
+  <p>
+    O arhivă goală cu extensia potrivită nu dovedește nimic despre codul care o deschide și parcurge ce
+    e înăuntru. Declară conținutul și arhiva îl conține cu adevărat:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Adâncimea de imbricare, numărul de intrări și dimensiunea a ce e înăuntru sunt toate lucruri despre
+    care o rutină de import are păreri, iar așa afli care sunt acele păreri.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsere și vizualizatoare</p>
+  <h2>Verificarea că propriul tău cod citește un format cum o face software-ul real</h2>
+  <p>
+    Fiecare format de aici este verificat cu un cititor independent înainte de livrare - un PNG este
+    deschis și pixelii lui comparați, un DOCX este recitit de biblioteci separate, o arhivă este
+    extrasă. Asta înseamnă că un fișier pe care parserul tău îl respinge este o constatare despre
+    parserul tău, nu despre generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/ro/formate/">Pagina de formate</a> listează setările pe care le acceptă fiecare format și
+    cel mai mic fișier posibil pentru fiecare.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Pentru cine este</h2>
+  <p>
+    Ingineri QA, automatizarea testelor și oricine are în spatele codului un formular de încărcare, o
+    rutină de import, un parser sau o cotă de stocare. Rulează pe o mașină fără nicio rețea, ceea ce
+    contează într-un mediu corporativ închis unde un generator din browser nu e o opțiune.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

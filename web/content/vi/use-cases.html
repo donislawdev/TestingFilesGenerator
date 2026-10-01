@@ -1,0 +1,114 @@
+<h1>Mọi người dùng nó để làm gì</h1>
+<p class="lead">
+  Năm việc xuất hiện trong gần như mọi dự án nhận tệp từ con người, và lệnh làm từng việc. Mỗi ví dụ
+  bên dưới chạy đúng như được viết.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Giới hạn tải lên</p>
+  <h2>Kiểm thử xem giới hạn kích thước tệp có được áp dụng đúng nơi nó nói không</h2>
+  <p>
+    Một giới hạn là ba trường hợp kiểm thử chứ không phải một: ngay dưới, đúng bằng và ngay trên. Làm
+    tay thì phải tính số byte và hy vọng không lệch một. Hãy yêu cầu cả bộ:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Bạn nhận ba PDF thật có 1048575, 1048576 và 1048577 byte, cùng manifest nói hai tệp đầu nên được
+    chấp nhận và tệp thứ ba bị từ chối vì <code>size_limit</code>. Bài kiểm thử của bạn đọc kỳ vọng
+    thay vì bạn viết tay ba câu khẳng định - và khi giới hạn đổi, bạn đổi một con số rồi chạy lại.
+  </p>
+  <p>
+    Điều tương tự dùng được không cần preset khi bạn muốn một bộ ranh giới đơn ngay trong lệnh:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Tích hợp liên tục</p>
+  <h2>Giữ fixture ngoài kho mã mà không mất chúng</h2>
+  <p>
+    Fixture nhị phân lớn làm kho mã clone chậm và khó review, và không ai biết cái gì đã đổi khi thay
+    một tệp. Công thức là vài trăm ký tự YAML dựng lại các tệp giống hệt - <strong>từng byte, trên
+    mọi máy</strong> - vì mọi tệp đều suy ra từ seed của lần chạy.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Mỗi kết cục có mã thoát riêng, nên pipeline phân biệt được công thức xấu, đĩa đầy và sai lệch khi
+    xác minh. Lần chạy thất bại không in gì ra đầu ra chuẩn, nhờ vậy trình phân tích nhật ký không
+    đọc lỗi thành dữ liệu.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Quy mô</p>
+  <h2>Tìm hiểu chuyện gì xảy ra khi thư mục lớn</h2>
+  <p>
+    Quy trình nhập, tác vụ ban đêm và danh sách thư mục hoạt động khác nhau ở mười nghìn tệp so với mười
+    tệp. Kích thước rút từ một khoảng làm bộ trông như lưu lượng thật thay vì mười nghìn tệp giống
+    hệt, và lần rút lấy từ seed, nên bộ ngày mai vẫn như cũ.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Kiểm tra một lần chạy sẽ tốn bao nhiêu trước khi nó ghi gì, điều quan trọng khi tổng được đo bằng
+    gigabyte:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Lần chạy lớn hơn dung lượng trống của đĩa bị từ chối trước khi byte đầu tiên được ghi, thay vì làm
+    đầy đĩa rồi hỏng giữa chừng.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Tệp nén</p>
+  <h2>Kiểm thử trình giải nén với tệp nén thật sự chứa tệp</h2>
+  <p>
+    Tệp nén rỗng có đuôi đúng chẳng chứng minh gì về mã mở nó và duyệt những gì bên trong. Hãy khai báo
+    nội dung và tệp nén thật sự chứa nó:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Độ sâu lồng nhau, số mục và kích thước phần bên trong đều là những thứ mà quy trình nhập có ý kiến
+    riêng, và đây là cách bạn biết ý kiến đó là gì.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Bộ phân tích và trình xem</p>
+  <h2>Kiểm tra mã của chính bạn đọc một định dạng như phần mềm thật</h2>
+  <p>
+    Mỗi định dạng ở đây được kiểm tra bằng trình đọc độc lập trước khi phát hành - PNG được mở và so
+    sánh pixel, DOCX được các thư viện riêng đọc lại, tệp nén được giải nén. Nghĩa là tệp mà bộ phân
+    tích của bạn từ chối là một phát hiện về bộ phân tích của bạn, không phải về trình tạo.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/vi/dinh-dang/">Trang định dạng</a> liệt kê các thiết lập mỗi định dạng nhận và tệp nhỏ
+    nhất mà mỗi định dạng có thể có.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Dành cho ai</h2>
+  <p>
+    Kỹ sư QA, tự động hóa kiểm thử và bất kỳ ai có mã đứng sau là biểu mẫu tải lên, quy trình nhập, bộ
+    phân tích cú pháp hoặc hạn ngạch lưu trữ. Nó chạy trên máy hoàn toàn không có mạng, điều quan
+    trọng trong môi trường doanh nghiệp đóng nơi trình tạo chạy trên trình duyệt không phải một lựa
+    chọn.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

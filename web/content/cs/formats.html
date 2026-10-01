@@ -1,0 +1,77 @@
+<h1>{{ .Facts.FormatCount }} formátů souborů, každý generovaný v přesné velikosti</h1>
+<p class="lead">
+  Každý z nich je <strong>skutečný soubor toho formátu</strong>. Otevře se v programu, kam patří, a má
+  přesně tolik bajtů, kolik jste požádali. Žádný není vycpávka z nul s přilepenou příponou.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Co znamenají sloupce</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Nejmenší soubor</p>
+      <p class="muted">
+        Nejméně bajtů, které tento nástroj pro daný formát přijme, včetně štítku, který zapisuje do souboru.
+        Požádejte o méně a dostanete chybu, která pojmenuje minimum a jeho důvod, nikdy soubor
+        špatné velikosti.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Úplnost</p>
+      <p class="muted">
+        Jak úplný soubor je. <code>full</code> znamená, že ho přijme čtečka, která formát skutečně
+        zpracovává, ne jen že přípona souhlasí.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Ověřeno pomocí</p>
+      <p class="muted">
+        Nezávislá čtečka, která otevře každý vygenerovaný soubor, než se formát vydá - samostatná
+        implementace, ne náš vlastní kód, který opravuje své vlastní úkoly.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Každý formát se také opakuje na bajt: stejný recept a stejný seed vytvoří na jakémkoli počítači
+    identické soubory, a to dělá z receptu bezpečnou věc k commitování místo samotných fixtures.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Nastavení, která každý formát přijímá</h2>
+  <p>
+    Většina formátů má vlastní nastavení - rozměry obrázku, kvalitu JPEG, počet stránek PDF, řádky a
+    sloupce v tabulce, kolik položek jde do archivu. Nastavte je pomocí <code>--set key=value</code>
+    v příkazovém řádku nebo pod <code>properties:</code> v receptu.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Hodnota mimo to, co nastavení přijímá, je odmítnuta zprávou, která pojmenuje nastavení, povolený
+    rozsah a co použít místo toho. Neznámé nastavení je také chyba, nikdy tichá výchozí hodnota -
+    tiše přijatý překlep dá soubor se špatným nastavením a hodinu přemýšlení, proč test prochází,
+    když neměl.
+  </p>
+  <p>
+    Spusťte <code>tfg formats &lt;id&gt;</code> a uvidíte přesně, co jeden formát v dané verzi přijímá.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Archivy obsahují skutečné soubory</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} a {{ end }}<code>{{ $c.ID }}</code>{{ end }} lze
+    naplnit položkami, místo aby zůstaly prázdnou skořápkou. Vygenerovaný archiv skutečně obsahuje
+    dokumenty, které tvrdí, že obsahuje, takže cokoli ho během testu rozbalí, uvnitř najde skutečné
+    soubory.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+

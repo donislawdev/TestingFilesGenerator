@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Případy použití - limity nahrávání, fixtures pro CI, testy</title>
+<meta name="description" content="Test limitu velikosti nahrávání, opakovatelné fixtures pro CI, vygenerování deseti tisíc souborů a archivy naplněné skutečným obsahem.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Případy použití - limity nahrávání, fixtures pro CI, testy">
+<meta property="og:description" content="Test limitu velikosti nahrávání, opakovatelné fixtures pro CI, vygenerování deseti tisíc souborů a archivy naplněné skutečným obsahem.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Případy použití - limity nahrávání, fixtures pro CI, testy">
+<meta name="twitter:description" content="Test limitu velikosti nahrávání, opakovatelné fixtures pro CI, vygenerování deseti tisíc souborů a archivy naplněné skutečným obsahem.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Případy použití",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/pripady-pouziti\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/" aria-current="page">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>K čemu to lidé používají</h1>
+<p class="lead">
+  Pět úloh, které se objevují téměř v každém projektu přijímajícím soubory od lidí, a příkaz, který
+  každou provede. Každý příklad níže běží tak, jak je napsán.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limity nahrávání</p>
+  <h2>Test, zda je limit velikosti souboru vynucován tam, kde se tvrdí</h2>
+  <p>
+    Limit jsou tři testovací případy, ne jeden: těsně pod, přesně na něm a těsně nad. Získat je ručně
+    znamená počítat počty bajtů a doufat, že jste se nespletli o jedna. Požádejte raději o sadu:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Dostanete tři skutečná PDF o 1048575, 1048576 a 1048577 bajtech a manifest, který říká, že první dvě
+    mají být přijata a třetí odmítnuto pro <code>size_limit</code>. Váš test čte očekávání místo
+    toho, abyste ručně psali tři aserce - a když se limit změní, změníte jedno číslo a spustíte
+    znovu.
+  </p>
+  <p>
+    Totéž funguje bez předvolby, když chcete jedinou sadu hranic přímo v příkazu:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Průběžná integrace</p>
+  <h2>Držet fixtures mimo repozitář, aniž byste o ně přišli</h2>
+  <p>
+    Velké binární fixtures zpomalují klonování repozitáře a znepříjemňují revizi a nikdo nepozná, co se
+    změnilo, když se jeden vymění. Recept je pár set znaků YAML, které znovu sestaví totožné soubory
+    - <strong>bajt po bajtu, na jakémkoli počítači</strong> - protože každý soubor je odvozen ze
+    seedu běhu.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Každý konec má svůj vlastní návratový kód, takže pipeline rozliší špatný recept od plného disku a od
+    nesrovnalosti při ověření. Neúspěšný běh nevypíše na standardní výstup nic, takže parser logu
+    nečte chybu jako data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Rozsah</p>
+  <h2>Zjistit, co se stane, když je složka velká</h2>
+  <p>
+    Importní rutiny, noční úlohy a výpisy adresářů se chovají při deseti tisících souborů jinak než při
+    deseti. Velikosti losované z rozsahu dělají ze sady něco, co vypadá jako skutečný provoz, a ne
+    deset tisíc stejných souborů, a losování vychází ze seedu, takže sada je zítra stejná.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Zkontrolujte, kolik by běh stál, než cokoli zapíše, což záleží, když se součet měří v gigabajtech:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Běh větší než volné místo na disku je odmítnut dřív, než se zapíše první bajt, místo aby zaplnil
+    disk a selhal v půlce.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archivy</p>
+  <h2>Test rozbalovače s archivem, který skutečně obsahuje soubory</h2>
+  <p>
+    Prázdný archiv se správnou příponou nic nedokazuje o kódu, který ho otevírá a prochází, co je
+    uvnitř. Deklarujte obsah a archiv ho skutečně obsahuje:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Hloubka vnoření, počet položek a velikost toho, co je uvnitř, jsou věci, o kterých má importní
+    rutina názor, a takto zjistíte, jaké ty názory jsou.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsery a prohlížeče</p>
+  <h2>Ověření, že váš vlastní kód čte formát tak, jak to dělá skutečný software</h2>
+  <p>
+    Každý formát zde je před vydáním ověřen nezávislou čtečkou - PNG se otevře a porovnají se jeho
+    pixely, DOCX čtou zpět samostatné knihovny, archiv se rozbalí. To znamená, že soubor, který váš
+    parser odmítne, je zjištění o vašem parseru, ne o generátoru.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/cs/formaty/">Stránka formátů</a> uvádí nastavení, která každý formát přijímá, a nejmenší
+    soubor, jakým každý může být.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Pro koho to je</h2>
+  <p>
+    QA inženýry, automatizaci testů a každého, za jehož kódem stojí formulář pro nahrávání, importní
+    rutina, parser nebo kvóta úložiště. Běží na počítači bez jakékoli sítě, na čem záleží v
+    uzavřeném firemním prostředí, kde generátor v prohlížeči není možnost.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stáhnout</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Zobrazit zdrojový kód</a>
+</div>
+<p class="cta-note">Zdarma a open source, GPL-3.0. Žádná registrace. Stažené soubory pro Windows a macOS jsou podepsané a spustí se bez varování.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

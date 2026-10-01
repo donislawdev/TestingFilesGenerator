@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>Dokümantasyon - komutlar, tarifler, manifest, çıkış kodları</title>
+<meta name="description" content="Komut satırından veya bir YAML tarifinden test dosyası nasıl üretilir, manifestin içeriği ve araç CI içinde çalışırken her çıkış kodunun anlamı.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Dokümantasyon - komutlar, tarifler, manifest, çıkış kodları">
+<meta property="og:description" content="Komut satırından veya bir YAML tarifinden test dosyası nasıl üretilir, manifestin içeriği ve araç CI içinde çalışırken her çıkış kodunun anlamı.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dokümantasyon - komutlar, tarifler, manifest, çıkış kodları">
+<meta name="twitter:description" content="Komut satırından veya bir YAML tarifinden test dosyası nasıl üretilir, manifestin içeriği ve araç CI içinde çalışırken her çıkış kodunun anlamı.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokümantasyon",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/dokumantasyon\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/" aria-current="page">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
+      <a href="/tr/sss/">SSS</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Dokümantasyon</h1>
+<p class="lead">
+  Aracın yaptığı her şey, insanların gerçekten geldiği sorular şeklinde düzenlendi.
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">Depodaki README</a> tam başvurudur ve her zaman indirdiğiniz sürümle
+  eşleşir.
+</p>
+
+<section class="section" id="commands">
+  <h2>Hangi komutlar var?</h2>
+  <p>Her biri tek bir iş yapar:</p>
+  <pre><code>tfg generate    tariften veya bayraklardan dosya üret
+tfg validate    bir tarifi denetle, hiçbir şey yazma
+tfg verify      bir dizini bir manifeste göre denetle
+tfg cleanup     bir manifestin listelediği dosyaları sil
+tfg recipe fmt  bir tarifi oturmuş biçiminde yazdır
+tfg preset      adlandırılmış bir test sorusundan dosya seti oluştur
+tfg formats     bu sürümün desteklediği biçimleri listele
+tfg damage      bu sürümün bir dosyayı kasıtlı bozma yollarını listele
+tfg tool        elinizdeki dosyalar için küçük araçlar
+tfg version     araç sürümünü yazdır
+tfg license     lisansı ve üretilen dosyalar için anlamını yazdır</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>Tam boyutta tek bir dosyayı nasıl üretirim?</h2>
+  <p>
+    Biçimi, boyutu ve nereye gideceğini söyleyin. Boyutlar 1024'lerle sayılır, yani <code>2mb</code>
+    2097152 bayttır. Düz bir bayt sayısı da olur, yani <code>--size 10485761</code> tam o kadarını
+    ister.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p><code>generate</code> için işe yarar bayraklar:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Bayrak</th><th>Ne yapar</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>dosyaların biçimi, örneğin <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>her dosyanın tam boyutu, <code>10mb</code> gibi veya düz bir bayt sayısı</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>bir aralıktan dosya başına çekilen boyut, <code>1kb-8kb</code> gibi. Çekiliş seed'den gelir</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>bir sınırın çevresinde üç dosya: bir bayt altı, sınırın kendisi, bir bayt üstü</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>kaç dosya üretileceği. Varsayılan <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>ad şablonu, örneğin <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>yazılacak dizin</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>çalıştırmanın seed'i. Aynı seed aynı baytları verir</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>bir biçim ayarı, tekrarlanabilir</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>dosyaları kasıtlı bozar, tekrarlanabilir ve sırayla uygulanır. Liste için <code>tfg damage</code> çalıştırın</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> veya <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>say ve göster, hiçbir şey yazma</td></tr>
+        <tr><td><code>--json</code></td><td>manifesti standart çıktıya yaz</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Kasıtlı bozuk bir dosyayı nasıl yaparım?</h2>
+  <p>
+    Bu aracın yazdığı diğer her dosya yapısı gereği doğrudur ve bu, bir yükleme doğrulayıcısının sorduğu
+    üç sorudan ikisini yanıtlar. <code>--damage</code> üçüncüsünü yanıtlar - dosya hiç açılıyor mu.
+    Dosya normal üretilir, sonra bozulur, böylece hâlâ istediğiniz boyuttadır.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Ayarlar iki noktadan sonra gelir. Bayrak tekrarlanır ve yazdığınız sıra uygulanma sırasıdır.
+    <code>tfg damage</code> bu sürümün neler yapabildiğini ve her birinin ne aldığını listeler.
+  </p>
+  <p>Bir tarifte anahtar, adlardan veya ayarlardan oluşan bir listedir:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Hasarlı bir dosya manifestte <code>expected: reject</code> alır, hasar yanında kaydedilir. İki şey
+    bir şey yazılmadan önce reddedilir, çünkü her biri aksi hâlde diske manifestin yanlış tarif
+    ettiği bir dosya koyardı:
+  </p>
+  <ul>
+    <li>hasarın gerektirdiğinden küçük bir dosya, çünkü değişmeden çıkardı</li>
+    <li>
+      bir hasarın yanında <code>expected: accept</code>, çünkü hiçbir şey bunu karşılayamaz. Test edilen
+      sistemin dosyayı onarması amaçlanıyorsa <code>sanitize</code>, sorduğunuz soru buysa
+      <code>unspecified</code> yazın
+    </li>
+  </ul>
+  <p>
+    Üçüncüsü önceden bilinemez. Bir hasar çalışıp hiçbir baytı oynatmazsa o dosya yazılmak yerine atılır
+    - çalıştırma sürer, hangi dosya olduğunu söyler ve kısmi çıkış koduyla biter.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>Bir tarif nasıl görünür?</h2>
+  <p>
+    Tarif, tüm bir çalıştırmayı anlatan bir YAML dosyasıdır. Testlerinizin yanına commit edin,
+    fixture'lar deponuzda ikili dosya olmaktan çıkar - herkes onları birkaç yüz karakterlik bir
+    dosyadan bayt bayt yeniden kurabilir.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Her target, <code>size</code>, <code>size-range</code>, <code>boundary</code> veya
+    <code>contains</code> anahtarlarından tam birine ihtiyaç duyar. İkisi hatadır, hiçbiri de öyle.
+    Geçersiz bir tarif <strong>hiç dosya yazmaz</strong> ve yalnızca ilkini değil tüm sorunları bir
+    seferde bildirir, her biri ilgili ayarı adlandırır.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Sistemimin bir dosyayla ne yapması gerektiğini nasıl bildiririm?</h2>
+  <p>Sonuç yeterliyse kısa biçim, neden önemliyse uzun biçim:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Sonuçlar <code>accept</code>, <code>reject</code>, <code>sanitize</code> ve
+    <code>unspecified</code>. Nedenler, bir rapor onlara göre gruplayabilsin diye kapalı bir
+    listedir: <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> ve
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Bir neden <strong>söz konusu kuralı</strong> adlandırır, hükmü değil. Bu yüzden aynı neden iki
+    sonucun altında da durabilir - sınırın bir bayt altındaki dosya <code>accept</code> olur ve söz
+    konusu kural yine <code>size_limit</code> kalır.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Manifestte ne var?</h2>
+  <p>
+    Her çalıştırmanın sonunda, kesilen çalıştırma dahil, dosyaların yanına yazılır. Dosya başına bir
+    girdi:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Çalıştırma bir tariften geldiyse bir <code>recipe_hash</code>, bir hazır ayardan geldiyse
+    <code>overrides</code> ile birlikte <code>preset</code> eklenir, böylece bir manifest her zaman
+    onu üreten şeye kadar izlenebilir.
+  </p>
+  <p>
+    Her girdi ayrıca dosyayı üreten tarifteki hedefin kimliği olan <code>target_id</code> taşır ve
+    <code>summary.by_target</code> her hedefin kaç dosyaya vardığını sayar. Birkaç hedefli bir tarif
+    böylece dosya adlarını okumadan hedef hedef denetlenebilir.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Hazır ayar nedir?</h2>
+  <p>
+    Yaygın bir test sorusunu yanıtlayan hazır bir dosya seti, böylece seti kendiniz tasarlamanız
+    gerekmez. Hazır ayarlar altta sıradan tariflerdir ve <code>eject</code> tarifi yazdırır, oradan
+    düzenleyebilirsiniz. Her hazır ayarın genelde ne bulduğunu, sette ne olduğunu ve kabul ettiği
+    her ayarı anlatan <a href="/tr/hazir-ayarlar/">kendi sayfası</a> vardır.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/empty-and-minimal/">Boş ve asgari</a></p>
+    <p class="muted">Biçimin izin verdiği kadar küçük, geçerli bir dosya geçer mi?</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/filename-handling/">Dosya adı işleme</a></p>
+    <p class="muted">Sistemim beklemediği bir dosya adını saklayıp gösterecek ve geri verecek mi?</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/size-boundaries/">Boyut sınırları</a></p>
+    <p class="muted">Bir boyut sınırı tam bildirildiği yerde uygulanıyor mu?</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/tabular-import/">Tablo içe aktarma</a></p>
+    <p class="muted">Tablo içe aktarmam gerçek araçların dışa aktardıklarına dayanıyor mu?</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/text-encoding/">Metin kodlaması</a></p>
+    <p class="muted">Okuyucum bir dosyanın hangi kodlamada olduğunu biliyor mu, yoksa tahmin mi ediyor?</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/tr/hazir-ayarlar/upload-validation/">Yükleme doğrulama</a></p>
+    <p class="muted">Yükleme formum alması gerekeni alıp geri kalanı reddediyor mu?</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code>, seti kurmadan önce neye mal olacağını söyler ve bir sayının sizin sınırınız değil
+    bizim geçici değerimiz olduğunu açıkça belirtir.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Çıkış kodları ne anlama gelir?</h2>
+  <p>
+    Her sonun kendi kodu vardır, makine tarafından okunabilir çıktı standart çıktıya gider ve başarısız
+    bir çalıştırma orada hiçbir şey yazdırmaz. Tablo dondurulmuş bir sözleşmedir - bir kodun
+    anlamını değiştirmek büyük sürüm artışı gerektirir.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Kod</th>
+      <th>Anlamı</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Her şey çalıştı.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>Araç içinde beklenmeyen bir hata.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Yanlış komut veya bayrak.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>Tarif geçerli değil.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>Biçim istenen şeyi yapamıyor.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>Bir okuma veya yazma başarısız oldu.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Yeterli disk alanı yok.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify bir uyuşmazlık buldu.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>Çalıştırma bitti ama her şey üretilmedi.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Ctrl&#43;C ile kesildi.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Bir sinyalle durduruldu, CI zaman aşımı böyle görünür.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Ctrl+C ile durdurulan bir çalıştırma yine bir manifest bırakır ve asla yarım yazılmış bir dosya
+    bırakmaz, böylece iptal edilen bir işi bir sonraki temizleyebilir.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Masaüstü penceresi var mı?</h2>
+  <p>
+    Evet, betiklenmeyen test için üzerine bir pencere konmuş aynı motor. Kırpılmış bir sürüm değildir:
+    bir test iki arayüzü yetenek yetenek karşılaştırır ve yalnızca birinin yapabildiği her şey
+    sessizce ayrışmak yerine bildirilip gerekçelendirilmelidir.
+  </p>
+  <p>
+    Ekranlar tek bir grup, hazır ayarlar, aynı anda birkaç grup ve hakkında. Bir çalıştırmanın neye mal
+    olacağını bir şey yazmadan önce gösterir, çalışırken ilerlemeyi bildirir ve yarım yazılmış dosya
+    bırakmadan yarıda iptal edilebilir. Henüz bir tarif dosyası açmaz - tarifler şimdilik komut
+    satırının işidir ve pencere gruplarını formda kurar.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

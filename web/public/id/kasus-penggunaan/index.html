@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="id">
+<title>Kasus Penggunaan - Batas Unggahan, Fixture CI, Pengujian Massal</title>
+<meta name="description" content="Menguji batas ukuran unggahan, membuat fixture yang dapat direproduksi untuk CI, membuat sepuluh ribu file, dan mengisi arsip dengan isi sungguhan.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="Kasus Penggunaan - Batas Unggahan, Fixture CI, Pengujian Massal">
+<meta property="og:description" content="Menguji batas ukuran unggahan, membuat fixture yang dapat direproduksi untuk CI, membuat sepuluh ribu file, dan mengisi arsip dengan isi sungguhan.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kasus Penggunaan - Batas Unggahan, Fixture CI, Pengujian Massal">
+<meta name="twitter:description" content="Menguji batas ukuran unggahan, membuat fixture yang dapat direproduksi untuk CI, membuat sepuluh ribu file, dan mengisi arsip dengan isi sungguhan.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/id/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kasus Penggunaan",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/kasus-penggunaan\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Lompat ke konten</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/id/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Utama">
+      <a href="/id/">Beranda</a>
+      <a href="/id/format/">Format</a>
+      <a href="/id/preset/">Preset</a>
+      <a href="/id/dokumentasi/">Dokumentasi</a>
+      <a href="/id/kasus-penggunaan/" aria-current="page">Kasus Penggunaan</a>
+      <a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a>
+      <a href="/id/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Bahasa: Bahasa Indonesia">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Bahasa Indonesia</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Untuk apa orang memakainya</h1>
+<p class="lead">
+  Lima pekerjaan yang muncul di hampir setiap proyek yang menerima file dari orang, dan perintah yang
+  melakukan masing-masing. Setiap contoh di bawah berjalan sebagaimana tertulis.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Batas unggahan</p>
+  <h2>Menguji apakah batas ukuran file ditegakkan di tempat yang dinyatakan</h2>
+  <p>
+    Sebuah batas adalah tiga kasus uji, bukan satu: tepat di bawah, tepat pada, dan tepat di atas.
+    Mendapatkannya secara manual berarti menghitung jumlah byte dan berharap tidak salah selisih
+    satu. Mintalah setnya:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Anda mendapat tiga PDF asli berukuran 1048575, 1048576, dan 1048577 byte, serta manifes yang
+    menyatakan dua yang pertama harus diterima dan yang ketiga ditolak karena
+    <code>size_limit</code>. Pengujian Anda membaca ekspektasi alih-alih Anda menulis tiga asersi
+    secara manual - dan bila batas berubah, Anda mengganti satu angka dan menjalankan ulang.
+  </p>
+  <p>
+    Hal yang sama berfungsi tanpa preset bila Anda menginginkan satu set batas inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integrasi berkelanjutan</p>
+  <h2>Menjaga fixture di luar repositori tanpa kehilangannya</h2>
+  <p>
+    Fixture biner besar membuat repositori lambat di-clone dan sulit di-review, dan tak seorang pun tahu
+    apa yang berubah saat satu diganti. Resep adalah beberapa ratus karakter YAML yang membangun
+    ulang file identik - <strong>byte demi byte, di mesin mana pun</strong> - karena setiap file
+    diturunkan dari seed run.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Setiap akhir punya kode keluarnya sendiri, sehingga pipeline dapat membedakan resep yang buruk dari
+    disk penuh dan dari ketidakcocokan verifikasi. Run yang gagal tidak mencetak apa pun di keluaran
+    standar, sehingga parser log tidak membaca galat sebagai data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Skala</p>
+  <h2>Mencari tahu apa yang terjadi saat folder besar</h2>
+  <p>
+    Rutinitas impor, job malam, dan daftar direktori berperilaku berbeda pada sepuluh ribu file
+    dibanding sepuluh. Ukuran yang diundi dari suatu rentang membuat set tampak seperti lalu lintas
+    nyata alih-alih sepuluh ribu file identik, dan undiannya berasal dari seed, sehingga set itu
+    sama besok.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Periksa berapa biaya sebuah run sebelum menulis apa pun, yang penting bila totalnya diukur dalam
+    gigabyte:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Run yang lebih besar dari ruang kosong di disk ditolak sebelum byte pertama ditulis, alih-alih
+    memenuhi disk dan gagal di tengah jalan.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arsip</p>
+  <h2>Menguji pengekstrak dengan arsip yang benar-benar berisi file</h2>
+  <p>
+    Arsip kosong dengan ekstensi yang tepat tidak membuktikan apa pun tentang kode yang membukanya dan
+    menelusuri isinya. Nyatakan isinya dan arsip benar-benar memuatnya:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Kedalaman bersarang, jumlah entri, dan ukuran isinya adalah hal-hal yang dipersoalkan rutinitas
+    impor, dan begitulah cara Anda mengetahui apa persoalan itu.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parser dan penampil</p>
+  <h2>Memeriksa bahwa kode Anda sendiri membaca format seperti perangkat lunak sungguhan</h2>
+  <p>
+    Setiap format di sini diperiksa dengan pembaca independen sebelum dirilis - PNG dibuka dan pikselnya
+    dibandingkan, DOCX dibaca kembali oleh pustaka terpisah, arsip diekstrak. Artinya file yang
+    ditolak parser Anda adalah temuan tentang parser Anda, bukan tentang generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/id/format/">Halaman format</a> mencantumkan pengaturan yang diterima tiap format dan file
+    terkecil yang dapat dibuat tiap format.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Untuk siapa ini</h2>
+  <p>
+    Insinyur QA, otomasi pengujian, dan siapa pun yang kodenya memiliki formulir unggah, rutinitas
+    impor, parser, atau kuota penyimpanan di baliknya. Berjalan di mesin tanpa jaringan sama sekali,
+    yang penting di lingkungan korporat tertutup di mana generator berbasis browser bukan pilihan.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduh</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Lihat kode sumber</a>
+</div>
+<p class="cta-note">Gratis dan open source, GPL-3.0. Tanpa pendaftaran. Unduhan Windows dan macOS sudah ditandatangani dan berjalan tanpa peringatan.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyek</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kode sumber di GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduhan</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Laporkan masalah</a></li>
+        <li><a href="https://donislawdev.com/support/">Dukung proyek ini</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Halaman</p>
+      <ul class="plain">
+        <li><a href="/id/">Beranda</a></li>
+        <li><a href="/id/format/">Format</a></li>
+        <li><a href="/id/preset/">Preset</a></li>
+        <li><a href="/id/dokumentasi/">Dokumentasi</a></li>
+        <li><a href="/id/kasus-penggunaan/">Kasus Penggunaan</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a></li>
+        <li><a href="/id/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Dirilis di bawah Lisensi Publik Umum GNU versi 3. File yang Anda buat adalah milik Anda - lisensi mencakup alatnya, bukan keluarannya.</p>
+    <p class="muted">Situs ini tidak memuat font, skrip, atau pelacak dari mana pun. Situs ini tidak memasang cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

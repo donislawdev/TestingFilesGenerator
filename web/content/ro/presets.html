@@ -1,0 +1,32 @@
+<h1>Presetări de fișiere de test, câte un set pentru fiecare întrebare de test</h1>
+<p class="lead">
+  O presetare este un set întreg de fișiere de test conceput în jurul unei întrebări, cu un manifest
+  care spune cum trebuie să reacționeze sistemul tău la fiecare fișier. Tu alegi întrebarea,
+  instrumentul construiește setul. Fiecare presetare are propria pagină cu ce găsește de obicei, ce
+  este în set și fiecare setare pe care o acceptă.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Prin ce diferă o presetare de o rețetă?</h2>
+  <p>
+    Pe dedesubt, prin nimic. O presetare este o rețetă pe care instrumentul o scrie pentru tine din
+    câteva setări. <code>tfg preset eject</code> afișează acea rețetă ca s-o poți păstra lângă
+    testele tale și s-o editezi, iar o rețetă proprie se poate sprijini pe o presetare cu o singură
+    linie, <code>extends: preset:</code> urmat de id-ul ei.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Pot avea încredere în valorile implicite?</h2>
+  <p>
+    Pentru fișiere, da. Pentru un număr pe care îl știe doar sistemul tău, precum limita unui formular
+    de încărcare, o valoare implicită este o valoare provizorie de-a noastră, iar instrumentul o
+    spune de fiecare dată când folosește una. Pagina fiecărei presetări marchează acele setări, iar
+    <code>tfg preset show</code> o spune înainte să se scrie ceva.
+  </p>
+</section>

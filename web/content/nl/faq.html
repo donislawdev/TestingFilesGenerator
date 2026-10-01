@@ -1,0 +1,20 @@
+<h1>Veelgestelde vragen</h1>
+<p class="lead">
+  Licentie, privacy, reproduceerbaarheid en de dingen die mensen nagaan voordat ze een generator in
+  een buildpipeline zetten. Staat je vraag er niet bij, dan staat de
+  <a href="{{ .Facts.Issues }}">issuetracker</a> open.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Nog aan het twijfelen?</h2>
+  <p>
+    De <a href="/nl/toepassingen/">pagina met toepassingen</a> toont de taken waarvoor het is gebouwd,
+    en de <a href="/nl/formaten/">pagina met formaten</a> toont elk formaat met het kleinste bestand
+    dat het kan maken. De <a href="{{ .Facts.Repo }}">README in de repository</a> is de volledige
+    referentie.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

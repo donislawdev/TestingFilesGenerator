@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>Tệp kiểm thử mã hóa văn bản - UTF-8, UTF-16, BOM, CRLF</title>
+<meta name="description" content="Cùng một văn bản ở UTF-8, UTF-16LE và UTF-16BE, có và không có dấu thứ tự byte, cùng kết thúc dòng CR LF và LF, để kiểm thử cách trình đọc giải mã.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/text-encoding/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/text-encoding/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/text-encoding/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/text-encoding/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/text-encoding/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/text-encoding/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/text-encoding/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/text-encoding/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/text-encoding/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/text-encoding/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/text-encoding/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/text-encoding/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Tệp kiểm thử mã hóa văn bản - UTF-8, UTF-16, BOM, CRLF">
+<meta property="og:description" content="Cùng một văn bản ở UTF-8, UTF-16LE và UTF-16BE, có và không có dấu thứ tự byte, cùng kết thúc dòng CR LF và LF, để kiểm thử cách trình đọc giải mã.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/preset/text-encoding/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tệp kiểm thử mã hóa văn bản - UTF-8, UTF-16, BOM, CRLF">
+<meta name="twitter:description" content="Cùng một văn bản ở UTF-8, UTF-16LE và UTF-16BE, có và không có dấu thứ tự byte, cùng kết thúc dòng CR LF và LF, để kiểm thử cách trình đọc giải mã.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Preset",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/preset\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Mã hóa văn bản",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/preset\/text-encoding\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/" aria-current="true">Preset</a>
+      <a href="/vi/tai-lieu/">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a>
+      <a href="/vi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/text-encoding/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/predvolby/text-encoding/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/text-encoding/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/text-encoding/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/text-encoding/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/preset/text-encoding/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/text-encoding/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/presets/text-encoding/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/text-encoding/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/text-encoding/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/text-encoding/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/hazir-ayarlar/text-encoding/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/vi/preset/">Preset</a></p>
+<h1>Mã hóa văn bản</h1>
+<p class="lead">Trình đọc của tôi có biết tệp ở mã hóa nào, hay chỉ đoán?</p>
+<p>
+  Preset <code>text-encoding</code> dựng bằng một lệnh cả một bộ tệp kiểm thử thật cho câu hỏi này, kèm
+  một <code>manifest.json</code> bên cạnh nêu cách hệ thống của bạn cần phản ứng với từng tệp. Mọi
+  thứ bên dưới được đọc từ chương trình, ở các giá trị mặc định của phiên bản này.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Nó thường tìm thấy gì?</h2>
+  <ul class="ticks">
+    <li>trình đọc giả định UTF-8 và hiện tệp UTF-16 thành cứ ba ký tự mới có một, hoặc thành hàng ô vuông</li>
+    <li>dấu thứ tự byte bị đọc như nội dung, nên trường đầu tiên của lần nhập bắt đầu bằng ba ký tự lạ</li>
+    <li>trình nhập đoán mã hóa từ các byte đầu và đoán khác đi với tệp dài hơn</li>
+    <li>tệp CRLF bị tách thành các dòng với một dòng trống sau mỗi dòng, hoặc ký tự xuống dòng còn sót trong trường cuối</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Trong bộ có gì?</h2>
+  <p>Ở các giá trị mặc định, như <code>tfg preset show text-encoding</code> báo cáo:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Tệp</th><td>20</td></tr>
+        <tr><th scope="row">Target trong công thức của nó</th><td>20</td></tr>
+        <tr><th scope="row">Tổng kích thước</th><td>81 920 B</td></tr>
+        <tr><th scope="row">Định dạng</th><td>csv, log, md, txt, xml</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Và điều manifest của bộ đó mong đợi từ hệ thống của bạn:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Mong đợi</th><th>Ý nghĩa</th><th class="num">Tệp</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Hệ thống của bạn nên nhận tệp.</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>Tùy vào quy tắc của hệ thống bạn. Bạn quyết định, rồi kiểm tra điều xảy ra có đúng ý bạn không.</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Bạn có thể đổi gì?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Thiết lập</th><th>Nhận</th><th>Mặc định</th><th>Tác dụng</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--sample</code></td>
+          <td>kích thước như 2mb</td>
+          <td><code>4kb</code></td>
+          <td>Mỗi tệp trong bộ lớn bao nhiêu. UTF-16 lưu hai byte cho mỗi ký tự, nên số lẻ bị từ chối.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Chạy nó thế nào?</h2>
+  <p>Xem bộ sẽ tốn bao nhiêu, dựng nó, hoặc lấy công thức của nó để chỉnh sửa:</p>
+  <pre><code>tfg preset show text-encoding
+tfg generate --preset text-encoding --out ./text-encoding
+tfg preset eject text-encoding &gt; text-encoding.yaml</code></pre>
+  <p>Hoặc xây trên nó trong công thức của riêng bạn, bên cạnh các bài kiểm thử:</p>
+  <pre><code>version: 1
+extends: preset:text-encoding</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

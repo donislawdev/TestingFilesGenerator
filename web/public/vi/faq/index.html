@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>FAQ - câu hỏi về việc tạo tệp kiểm thử</title>
+<meta name="description" content="Khác gì dd và fsutil, tệp có commit an toàn không, các lần chạy có giống từng byte không và chuyện gì xảy ra khi không đạt được kích thước.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="FAQ - câu hỏi về việc tạo tệp kiểm thử">
+<meta property="og:description" content="Khác gì dd và fsutil, tệp có commit an toàn không, các lần chạy có giống từng byte không và chuyện gì xảy ra khi không đạt được kích thước.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ - câu hỏi về việc tạo tệp kiểm thử">
+<meta name="twitter:description" content="Khác gì dd và fsutil, tệp có commit an toàn không, các lần chạy có giống từng byte không và chuyện gì xảy ra khi không đạt được kích thước.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "FAQ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/">Preset</a>
+      <a href="/vi/tai-lieu/">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a>
+      <a href="/vi/faq/" aria-current="page">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Câu hỏi thường gặp</h1>
+<p class="lead">
+  Giấy phép, quyền riêng tư, khả năng tái lập và những điều mọi người kiểm tra trước khi đưa một trình
+  tạo vào pipeline build. Nếu câu hỏi của bạn chưa có ở đây, <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">trình
+  theo dõi issue</a> luôn mở.
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>Điều này khác gì dd, fsutil hay truncate?</h2></summary>
+    <div class="qa-body">
+      <p>Chúng cho bạn một tệp đúng kích thước nhưng đầy sự trống rỗng. Tệp 2 MB tên photo.png tạo kiểu đó không phải PNG, nên bất cứ thứ gì thực sự phân tích nó sẽ từ chối vì lý do sai, và bài kiểm thử của bạn cũng qua vì lý do sai. Công cụ này tạo ra một PNG thật đúng 2 MB, mở được trong trình xem ảnh, và đi kèm lời khai về cách hệ thống của bạn cần xử lý nó.</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Nó có miễn phí không, và tôi dùng ở chỗ làm được không?</h2></summary>
+    <div class="qa-body">
+      <p>Có cho cả hai. Nó phát hành theo GPL-3.0 và không tốn gì. Không có tài khoản, khóa giấy phép hay gói trả phí.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tôi có dùng tệp được tạo trong sản phẩm mã nguồn đóng được không?</h2></summary>
+    <div class="qa-body">
+      <p>Được. Giấy phép áp dụng cho mã của công cụ, không áp dụng cho thứ công cụ tạo ra. Tệp, công thức và manifest được tạo là đầu ra chứ không phải tác phẩm phái sinh, nên bạn có thể commit và phân phối mà không có nghĩa vụ nào.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tệp được tạo có chứa dữ liệu cá nhân thật không?</h2></summary>
+    <div class="qa-body">
+      <p>Không. Mọi thứ bên trong đều được tổng hợp từ một seed. Không có tập dữ liệu nào được đọc, không dịch vụ nào được liên hệ và không nội dung bên thứ ba nào được nhúng. Hãy coi địa chỉ e-mail được tạo là không dùng được thay vì chưa dùng, vì chuỗi ngẫu nhiên nào cũng có thể ngẫu nhiên trùng với địa chỉ thật.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tôi có nhận đúng các tệp giống hệt trên máy khác không?</h2></summary>
+    <div class="qa-body">
+      <p>Có, từng byte, với cùng công thức và cùng seed. Dự án kiểm thử điều đó ở mỗi thay đổi, và phá vỡ nó đòi hỏi tăng phiên bản chính. Đó là điều cho phép bạn commit một công thức nhỏ thay vì các fixture nhị phân lớn.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Nó có cần kết nối internet không?</h2></summary>
+    <div class="qa-body">
+      <p>Không bao giờ. Không có telemetry, không kiểm tra cập nhật và không có máy khách đám mây, và bản nhị phân dòng lệnh hoàn toàn không biên dịch sẵn ngăn xếp mạng. Nó chạy trên máy không có mạng và trong môi trường doanh nghiệp đóng.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Chuyện gì xảy ra nếu tôi yêu cầu kích thước mà một định dạng không thể đạt tới?</h2></summary>
+    <div class="qa-body">
+      <p>Bạn nhận một lỗi nêu định dạng, kích thước nhỏ nhất có thể, lý do của mức sàn đó và việc nên làm thay thế, và không có tệp nào được ghi. Công cụ không bao giờ làm tròn kích thước một cách lặng lẽ. Mỗi mức sàn đều được liệt kê trên trang định dạng.</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tôi có thể tạo một tệp cố ý bị hỏng không?</h2></summary>
+    <div class="qa-body">
+      <p>Chưa. Tệp bị hỏng và sai định dạng là tính năng được lên kế hoạch. Hôm nay mọi tệp công cụ ghi đều là tệp hợp lệ của định dạng đó.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Những định dạng nào sắp có?</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 và mp4. Hôm nay có 26 định dạng hoạt động trọn vẹn từ đầu đến cuối.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tôi chạy nó trên những hệ thống nào?</h2></summary>
+    <div class="qa-body">
+      <p>Dòng lệnh chạy trên Windows và Linux cả Intel lẫn ARM, và trên Mac Apple Silicon. Cửa sổ desktop được cung cấp cho Windows trên Intel, Linux trên Intel và Mac Apple Silicon. Mac Intel không được hỗ trợ và không có gì được dựng cho chúng.</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Tôi có phải cài gì không?</h2></summary>
+    <div class="qa-body">
+      <p>Không. Tải kho lưu trữ cho hệ thống của bạn, giải nén và chạy bản nhị phân. Không có trình cài đặt, không có runtime cần thêm và không có phụ thuộc cần giải quyết. Nếu bạn có Go, một lệnh go install duy nhất cũng được.</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>Vì sao chạy trên hàng nghìn tệp chậm hơn trên Windows?</h2></summary>
+    <div class="qa-body">
+      <p>Vì Windows tính phí nhiều hơn cho mỗi đường dẫn nó xem, và một lệnh duyệt hàng nghìn tệp xem hàng nghìn đường dẫn. Đo trên một máy với 3000 tệp 1 kB, verify mất khoảng 0,9 giây trên Windows và khoảng 0,2 giây trên Linux trong container. Đường dẫn đầu ra ngắn hơn làm con số Windows nhỏ đi, vì mỗi thư mục phía trên các tệp đều nằm trong thứ được xem.</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Điều này khác gì dd, fsutil hay truncate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Chúng cho bạn một tệp đúng kích thước nhưng đầy sự trống rỗng. Tệp 2 MB tên photo.png tạo kiểu đó không phải PNG, nên bất cứ thứ gì thực sự phân tích nó sẽ từ chối vì lý do sai, và bài kiểm thử của bạn cũng qua vì lý do sai. Công cụ này tạo ra một PNG thật đúng 2 MB, mở được trong trình xem ảnh, và đi kèm lời khai về cách hệ thống của bạn cần xử lý nó." }
+    },
+    {
+      "@type": "Question",
+      "name": "Nó có miễn phí không, và tôi dùng ở chỗ làm được không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Có cho cả hai. Nó phát hành theo GPL-3.0 và không tốn gì. Không có tài khoản, khóa giấy phép hay gói trả phí." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tôi có dùng tệp được tạo trong sản phẩm mã nguồn đóng được không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Được. Giấy phép áp dụng cho mã của công cụ, không áp dụng cho thứ công cụ tạo ra. Tệp, công thức và manifest được tạo là đầu ra chứ không phải tác phẩm phái sinh, nên bạn có thể commit và phân phối mà không có nghĩa vụ nào." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tệp được tạo có chứa dữ liệu cá nhân thật không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Không. Mọi thứ bên trong đều được tổng hợp từ một seed. Không có tập dữ liệu nào được đọc, không dịch vụ nào được liên hệ và không nội dung bên thứ ba nào được nhúng. Hãy coi địa chỉ e-mail được tạo là không dùng được thay vì chưa dùng, vì chuỗi ngẫu nhiên nào cũng có thể ngẫu nhiên trùng với địa chỉ thật." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tôi có nhận đúng các tệp giống hệt trên máy khác không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Có, từng byte, với cùng công thức và cùng seed. Dự án kiểm thử điều đó ở mỗi thay đổi, và phá vỡ nó đòi hỏi tăng phiên bản chính. Đó là điều cho phép bạn commit một công thức nhỏ thay vì các fixture nhị phân lớn." }
+    },
+    {
+      "@type": "Question",
+      "name": "Nó có cần kết nối internet không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Không bao giờ. Không có telemetry, không kiểm tra cập nhật và không có máy khách đám mây, và bản nhị phân dòng lệnh hoàn toàn không biên dịch sẵn ngăn xếp mạng. Nó chạy trên máy không có mạng và trong môi trường doanh nghiệp đóng." }
+    },
+    {
+      "@type": "Question",
+      "name": "Chuyện gì xảy ra nếu tôi yêu cầu kích thước mà một định dạng không thể đạt tới?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Bạn nhận một lỗi nêu định dạng, kích thước nhỏ nhất có thể, lý do của mức sàn đó và việc nên làm thay thế, và không có tệp nào được ghi. Công cụ không bao giờ làm tròn kích thước một cách lặng lẽ. Mỗi mức sàn đều được liệt kê trên trang định dạng." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tôi có thể tạo một tệp cố ý bị hỏng không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Chưa. Tệp bị hỏng và sai định dạng là tính năng được lên kế hoạch. Hôm nay mọi tệp công cụ ghi đều là tệp hợp lệ của định dạng đó." }
+    },
+    {
+      "@type": "Question",
+      "name": "Những định dạng nào sắp có?",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 và mp4. Hôm nay có 26 định dạng hoạt động trọn vẹn từ đầu đến cuối." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tôi chạy nó trên những hệ thống nào?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Dòng lệnh chạy trên Windows và Linux cả Intel lẫn ARM, và trên Mac Apple Silicon. Cửa sổ desktop được cung cấp cho Windows trên Intel, Linux trên Intel và Mac Apple Silicon. Mac Intel không được hỗ trợ và không có gì được dựng cho chúng." }
+    },
+    {
+      "@type": "Question",
+      "name": "Tôi có phải cài gì không?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Không. Tải kho lưu trữ cho hệ thống của bạn, giải nén và chạy bản nhị phân. Không có trình cài đặt, không có runtime cần thêm và không có phụ thuộc cần giải quyết. Nếu bạn có Go, một lệnh go install duy nhất cũng được." }
+    },
+    {
+      "@type": "Question",
+      "name": "Vì sao chạy trên hàng nghìn tệp chậm hơn trên Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Vì Windows tính phí nhiều hơn cho mỗi đường dẫn nó xem, và một lệnh duyệt hàng nghìn tệp xem hàng nghìn đường dẫn. Đo trên một máy với 3000 tệp 1 kB, verify mất khoảng 0,9 giây trên Windows và khoảng 0,2 giây trên Linux trong container. Đường dẫn đầu ra ngắn hơn làm con số Windows nhỏ đi, vì mỗi thư mục phía trên các tệp đều nằm trong thứ được xem." }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>Vẫn đang cân nhắc?</h2>
+  <p>
+    <a href="/vi/truong-hop-su-dung/">Trang trường hợp sử dụng</a> cho thấy các việc nó được làm ra để
+    giải quyết, và <a href="/vi/dinh-dang/">trang định dạng</a> liệt kê mỗi định dạng cùng tệp nhỏ
+    nhất nó có thể tạo. <a href="https://github.com/donislawdev/TestingFilesGenerator">README trong kho mã</a> là tài liệu tham chiếu
+    đầy đủ.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Xem mã nguồn</a>
+</div>
+<p class="cta-note">Miễn phí, mã nguồn mở, GPL-3.0. Không cần đăng ký. Bản tải cho Windows và macOS đã được ký nên khởi động không cảnh báo.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

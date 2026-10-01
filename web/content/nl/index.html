@@ -1,0 +1,196 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Genereer echte testbestanden in elke exacte grootte</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} formaten in totaal</strong>, en elk is een
+    echt bestand dat opent in het programma waartoe het behoort, in <strong>precies de grootte die
+    je vroeg</strong>. Elke run schrijft ook op wat je applicatie met elk bestand moet doen.
+    Opdrachtregel en bureaubladvenster, gratis en open source, volledig op je eigen machine.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="Het bureaubladvenster van Testing Files Generator, klaargezet om een reeks testbestanden te schrijven">
+    <figcaption>Het bureaubladvenster, klaargezet om een reeks bestanden te schrijven. Dezelfde engine draait achter de opdrachtregel.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">echte formaten, elk opent in het programma waartoe het behoort</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 byte</span>
+      <p class="fact-label">de nauwkeurigheid van elke grootte die je vraagt, nooit stilzwijgend afgerond</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">verbindingen naar wat dan ook - geen account, geen telemetrie, geen updatecontrole</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Het probleem</p>
+  <h2>Eén testbestand maken is makkelijk. De juiste duizend maken is het vervelende deel</h2>
+  <p>Je test software die bestanden van mensen aanneemt. Vroeg of laat heb je nodig:</p>
+  <ul class="ticks">
+    <li>een PDF van <strong>precies</strong> 10 MB, om uit te zoeken of de uploadlimiet echt is</li>
+    <li>de drie bestanden aan weerszijden van die limiet, om off-by-one-fouten te vangen</li>
+    <li>10.000 logbestanden, om te zien wat de nachtelijke taak doet als de map groot is</li>
+    <li>een ZIP die echt 200 documenten bevat, geen lege huls met de juiste extensie</li>
+    <li>een bestand van 4 GB, zonder een bestand van 4 GB in je repository te bewaren</li>
+    <li><strong>dezelfde</strong> fixtures op je laptop en op de buildserver, byte voor byte</li>
+  </ul>
+  <p>
+    Dat is wat dit vervangt. Het is gebouwd voor QA-engineers, testautomatisering en iedereen wiens code
+    een uploadformulier, een importroutine, een parser of een opslagquotum achter zich heeft.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Wat het anders maakt</p>
+  <h2>Andere generatoren stoppen bij de bytes. Deze beantwoordt wat je test werkelijk vraagt</h2>
+  <p>
+    Een map met bestanden laat je nog steeds beslissen wat elk bestand moet bewijzen. Elke run schrijft
+    hier een <code>manifest.json</code> naast de bestanden - een eenvoudige lijst van alles wat is
+    gemaakt, en bij elk item een <strong>gedeclareerde verwachting</strong>.
+  </p>
+  <p>Stel dat je upload-endpoint 1 MB toestaat. Vraag de drie bestanden die op die lijn zitten:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Bestand</th><th class="num">Bytes</th><th>Je systeem moet</th><th>Omdat</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>accepteren</strong></td><td>het valt binnen de limiet</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>accepteren</strong></td><td>de limiet zelf is toegestaan</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>weigeren</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Drie bestanden, drie verschillende antwoorden, in machineleesbare vorm. Je test leest het manifest in plaats van dat jij de asserties met de hand schrijft:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Waar het antwoord van je eigen beleid afhangt, zegt het manifest dat</p>
+    <p>
+      Het legt <code>unspecified</code> vast in plaats van een verwachting te verzinnen. Een generator die
+      gokt levert valse fouten op, en een suite die loos alarm slaat wordt uitgezet.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presets</p>
+  <h2>Kies de vraag, krijg de hele set</h2>
+  <p>
+    Een preset is een set testbestanden ontworpen rond één testvraag, zodat je zelf niet hoeft uit te
+    zoeken welke bestanden wat bewijzen. Elke heeft een pagina die zegt wat hij meestal vindt, wat
+    er in de set zit en welke instellingen hij kent.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/nl/presets/">Alle presets, en hoe ze zich tot recepten verhouden</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Snel starten</p>
+  <h2>Drie opdrachten om het te zien werken</h2>
+  <ol class="steps">
+    <li>
+      <h3>Maak een bestand</h3>
+      <p>Eén PNG, precies twee megabyte:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Maak veel bestanden</h3>
+      <p>
+        Tienduizend logbestanden, elk tussen één en acht kilobyte, met groottes getrokken uit de seed zodat
+        morgen dezelfde set oplevert. <strong>Geef elke run een eigen map</strong> - het manifest is
+        het enige verslag van wat een run schreef, dus de tool weigert er een tweede overheen te
+        schrijven:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Controleer ze en verwijder ze dan</h3>
+      <p><code>verify</code> zegt je dat er niets verschoven is. <code>cleanup</code> verwijdert precies wat is geschreven en niets anders:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Groottes tellen in 1024-tallen, zoals je bestandsbeheer doet, dus <code>2mb</code> betekent 2097152
+    bytes. Een gewoon aantal bytes werkt ook. De <a href="/nl/documentatie/">documentatie</a>
+    behandelt recepten, het manifest en de afsluitcodes.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Wat je krijgt</p>
+  <h2>Gebouwd voor een suite die onbeheerd draait</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Exacte grootte, tot op de byte</p>
+      <p class="muted">Vraag 10485761 bytes en krijg precies dat. Een grootte die een formaat niet kan halen is een fout met een reden, nooit een bestand van de verkeerde grootte.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} echte formaten</p>
+      <p class="muted">Geen opgevulde nullen met een extensie. Een gegenereerde PNG opent in een afbeeldingsviewer, een DOCX opent in Word, een ZIP pakt uit. Elk wordt vóór levering gecontroleerd met onafhankelijke lezers.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Een manifest dat een testorakel is</p>
+      <p class="muted">Pad, grootte, SHA-256, formaat, seed, toolversie - en wat je systeem met het bestand moet doen.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproduceerbaar</p>
+      <p class="muted">Hetzelfde recept en dezelfde seed, dezelfde bytes, op elke machine. Commit een klein YAML-recept in plaats van grote binaire fixtures.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Twee interfaces, één engine</p>
+      <p class="muted">Een opdrachtregel gebouwd voor CI en een bureaubladvenster voor verkennend testen. Geen van beide is een uitgeklede versie van de ander, en een test vergelijkt ze mogelijkheid voor mogelijkheid.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Volledig offline</p>
+      <p class="muted">Geen account, geen cloud, geen telemetrie, geen updatecontrole. In de opdrachtregel-binary is helemaal geen netwerkstack gecompileerd.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Download</p>
+  <h2>Kies de build voor je systeem</h2>
+  <p>
+    Pak het archief uit en start het. <code>tfg</code> is de opdrachtregel en <code>tfg-gui</code> is
+    het bureaubladvenster. Er is geen installatieprogramma en niets om aan je machine toe te voegen.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Wat is ondertekend, en wat niet</p>
+    <p>
+      De downloads voor Windows en macOS zijn ondertekend, dus ze starten zonder waarschuwing over een
+      onbekende ontwikkelaar. Die voor Linux niet, omdat desktop-Linux niets vergelijkbaars heeft om
+      ze mee te ondertekenen. Elk archief staat in <code>verify-SHA256SUMS.txt</code> op de
+      releasepagina, zodat je kunt controleren wat je hebt gedownload.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

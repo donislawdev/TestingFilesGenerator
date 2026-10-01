@@ -1,0 +1,117 @@
+<h1>Untuk apa orang memakainya</h1>
+<p class="lead">
+  Lima pekerjaan yang muncul di hampir setiap proyek yang menerima file dari orang, dan perintah yang
+  melakukan masing-masing. Setiap contoh di bawah berjalan sebagaimana tertulis.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Batas unggahan</p>
+  <h2>Menguji apakah batas ukuran file ditegakkan di tempat yang dinyatakan</h2>
+  <p>
+    Sebuah batas adalah tiga kasus uji, bukan satu: tepat di bawah, tepat pada, dan tepat di atas.
+    Mendapatkannya secara manual berarti menghitung jumlah byte dan berharap tidak salah selisih
+    satu. Mintalah setnya:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Anda mendapat tiga PDF asli berukuran 1048575, 1048576, dan 1048577 byte, serta manifes yang
+    menyatakan dua yang pertama harus diterima dan yang ketiga ditolak karena
+    <code>size_limit</code>. Pengujian Anda membaca ekspektasi alih-alih Anda menulis tiga asersi
+    secara manual - dan bila batas berubah, Anda mengganti satu angka dan menjalankan ulang.
+  </p>
+  <p>
+    Hal yang sama berfungsi tanpa preset bila Anda menginginkan satu set batas inline:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integrasi berkelanjutan</p>
+  <h2>Menjaga fixture di luar repositori tanpa kehilangannya</h2>
+  <p>
+    Fixture biner besar membuat repositori lambat di-clone dan sulit di-review, dan tak seorang pun tahu
+    apa yang berubah saat satu diganti. Resep adalah beberapa ratus karakter YAML yang membangun
+    ulang file identik - <strong>byte demi byte, di mesin mana pun</strong> - karena setiap file
+    diturunkan dari seed run.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Setiap akhir punya kode keluarnya sendiri, sehingga pipeline dapat membedakan resep yang buruk dari
+    disk penuh dan dari ketidakcocokan verifikasi. Run yang gagal tidak mencetak apa pun di keluaran
+    standar, sehingga parser log tidak membaca galat sebagai data.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Skala</p>
+  <h2>Mencari tahu apa yang terjadi saat folder besar</h2>
+  <p>
+    Rutinitas impor, job malam, dan daftar direktori berperilaku berbeda pada sepuluh ribu file
+    dibanding sepuluh. Ukuran yang diundi dari suatu rentang membuat set tampak seperti lalu lintas
+    nyata alih-alih sepuluh ribu file identik, dan undiannya berasal dari seed, sehingga set itu
+    sama besok.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Periksa berapa biaya sebuah run sebelum menulis apa pun, yang penting bila totalnya diukur dalam
+    gigabyte:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Run yang lebih besar dari ruang kosong di disk ditolak sebelum byte pertama ditulis, alih-alih
+    memenuhi disk dan gagal di tengah jalan.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arsip</p>
+  <h2>Menguji pengekstrak dengan arsip yang benar-benar berisi file</h2>
+  <p>
+    Arsip kosong dengan ekstensi yang tepat tidak membuktikan apa pun tentang kode yang membukanya dan
+    menelusuri isinya. Nyatakan isinya dan arsip benar-benar memuatnya:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Kedalaman bersarang, jumlah entri, dan ukuran isinya adalah hal-hal yang dipersoalkan rutinitas
+    impor, dan begitulah cara Anda mengetahui apa persoalan itu.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parser dan penampil</p>
+  <h2>Memeriksa bahwa kode Anda sendiri membaca format seperti perangkat lunak sungguhan</h2>
+  <p>
+    Setiap format di sini diperiksa dengan pembaca independen sebelum dirilis - PNG dibuka dan pikselnya
+    dibandingkan, DOCX dibaca kembali oleh pustaka terpisah, arsip diekstrak. Artinya file yang
+    ditolak parser Anda adalah temuan tentang parser Anda, bukan tentang generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/id/format/">Halaman format</a> mencantumkan pengaturan yang diterima tiap format dan file
+    terkecil yang dapat dibuat tiap format.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Untuk siapa ini</h2>
+  <p>
+    Insinyur QA, otomasi pengujian, dan siapa pun yang kodenya memiliki formulir unggah, rutinitas
+    impor, parser, atau kuota penyimpanan di baliknya. Berjalan di mesin tanpa jaringan sama sekali,
+    yang penting di lingkungan korporat tertutup di mana generator berbasis browser bukan pilihan.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

@@ -1,0 +1,31 @@
+<h1>Předvolby testovacích souborů, jedna sada pro každou testovací otázku</h1>
+<p class="lead">
+  Předvolba je celá sada testovacích souborů navržená kolem jedné otázky, s manifestem, který říká,
+  jak má váš systém na každý soubor reagovat. Vy vyberete otázku, nástroj sestaví sadu. Každá
+  předvolba má vlastní stránku s tím, co obvykle najde, co je v sadě a jaké nastavení přijímá.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>Čím se předvolba liší od receptu?</h2>
+  <p>
+    Pod povrchem ničím. Předvolba je recept, který za vás nástroj napíše z několika nastavení. <code>tfg
+    preset eject</code> tento recept vypíše, abyste si ho mohli ponechat vedle testů a upravovat, a
+    váš vlastní recept může na předvolbě stavět jedním řádkem, <code>extends: preset:</code>
+    následovaným jejím id.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Mohu výchozím hodnotám věřit?</h2>
+  <p>
+    U souborů ano. U čísla, které zná jen váš systém, například limitu formuláře pro nahrávání, je
+    výchozí hodnota naším zástupným údajem a nástroj to řekne pokaždé, když nějaký použije. Stránka
+    každé předvolby tato nastavení označuje a <code>tfg preset show</code> to řekne dřív, než se
+    cokoli zapíše.
+  </p>
+</section>

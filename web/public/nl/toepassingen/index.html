@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="nl">
+<title>Toepassingen - uploadlimieten, CI-fixtures, massatests</title>
+<meta name="description" content="Een uploadlimiet testen, reproduceerbare fixtures voor CI bouwen, tienduizend bestanden genereren en archieven vullen met echte inhoud.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Toepassingen - uploadlimieten, CI-fixtures, massatests">
+<meta property="og:description" content="Een uploadlimiet testen, reproduceerbare fixtures voor CI bouwen, tienduizend bestanden genereren en archieven vullen met echte inhoud.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Toepassingen - uploadlimieten, CI-fixtures, massatests">
+<meta name="twitter:description" content="Een uploadlimiet testen, reproduceerbare fixtures voor CI bouwen, tienduizend bestanden genereren en archieven vullen met echte inhoud.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/nl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Toepassingen",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/nl\/toepassingen\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Direct naar de inhoud</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/nl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hoofdmenu">
+      <a href="/nl/">Home</a>
+      <a href="/nl/formaten/">Formaten</a>
+      <a href="/nl/presets/">Presets</a>
+      <a href="/nl/documentatie/">Documentatie</a>
+      <a href="/nl/toepassingen/" aria-current="page">Toepassingen</a>
+      <a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a>
+      <a href="/nl/veelgestelde-vragen/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Taal: Nederlands">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Nederlands</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/tr/kullanim-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Waar mensen het voor gebruiken</h1>
+<p class="lead">
+  Vijf taken die in bijna elk project voorkomen dat bestanden van mensen aanneemt, en de opdracht die
+  elk doet. Elk voorbeeld hieronder werkt zoals het is geschreven.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Uploadlimieten</p>
+  <h2>Testen of een limiet voor bestandsgrootte wordt afgedwongen waar hij zegt dat hij dat doet</h2>
+  <p>
+    Een limiet is drie testgevallen, niet één: net eronder, precies erop en net erboven. Die met de hand
+    maken betekent bytetellingen uitrekenen en hopen dat je er niet één naast zit. Vraag in plaats
+    daarvan de set:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Je krijgt drie echte PDF's van 1048575, 1048576 en 1048577 bytes, en een manifest dat zegt dat de
+    eerste twee geaccepteerd moeten worden en de derde geweigerd wegens <code>size_limit</code>. Je
+    test leest de verwachting in plaats van dat jij drie asserties met de hand schrijft - en als de
+    limiet verandert, wijzig je één getal en draai je opnieuw.
+  </p>
+  <p>
+    Hetzelfde werkt zonder preset als je één set grenzen inline wilt:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Continuous integration</p>
+  <h2>Fixtures uit de repository houden zonder ze kwijt te raken</h2>
+  <p>
+    Grote binaire fixtures maken een repository traag om te klonen en lastig te reviewen, en niemand kan
+    zien wat er veranderde toen er een werd vervangen. Een recept is een paar honderd tekens YAML
+    die de identieke bestanden opnieuw opbouwen - <strong>byte voor byte, op elke machine</strong> -
+    omdat elk bestand is afgeleid van de seed van de run.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Elk einde heeft zijn eigen afsluitcode, dus een pipeline kan een slecht recept onderscheiden van een
+    volle schijf en van een afwijking bij verificatie. Een mislukte run drukt niets af op de
+    standaarduitvoer, waardoor een logparser een fout niet als gegevens leest.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Schaal</p>
+  <h2>Uitzoeken wat er gebeurt als de map groot is</h2>
+  <p>
+    Importroutines, nachtelijke taken en maplijsten gedragen zich anders bij tienduizend bestanden dan
+    bij tien. Groottes getrokken uit een bereik laten de set op echt verkeer lijken in plaats van op
+    tienduizend identieke bestanden, en de trekking komt uit de seed, dus de set is morgen dezelfde.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Bekijk wat een run zou kosten voordat hij iets schrijft, wat telt als het totaal in gigabytes wordt
+    gemeten:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Een run die groter is dan de vrije ruimte op de schijf wordt geweigerd voordat de eerste byte is
+    geschreven, in plaats van de schijf te vullen en halverwege te falen.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archieven</p>
+  <h2>Een uitpakprogramma testen met een archief dat echt bestanden bevat</h2>
+  <p>
+    Een leeg archief met de juiste extensie bewijst niets over code die het opent en doorloopt wat erin
+    zit. Declareer de inhoud en het archief bevat die echt:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Nestdiepte, aantal items en de grootte van wat erin zit zijn allemaal dingen waar een importroutine
+    een mening over heeft, en zo kom je erachter wat die meningen zijn.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsers en viewers</p>
+  <h2>Controleren dat je eigen code een formaat leest zoals echte software dat doet</h2>
+  <p>
+    Elk formaat hier wordt vóór levering gecontroleerd met een onafhankelijke lezer - een PNG wordt
+    geopend en de pixels worden vergeleken, een DOCX wordt teruggelezen door aparte bibliotheken,
+    een archief wordt uitgepakt. Dat betekent dat een bestand dat je parser weigert een bevinding is
+    over je parser, niet over de generator.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    De <a href="/nl/formaten/">pagina met formaten</a> toont de instellingen die elk accepteert en het
+    kleinste bestand dat elk kan zijn.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Voor wie dit is</h2>
+  <p>
+    QA-engineers, testautomatisering en iedereen wiens code een uploadformulier, een importroutine, een
+    parser of een opslagquotum achter zich heeft. Het draait op een machine zonder enig netwerk, wat
+    telt in een afgesloten bedrijfsomgeving waar een generator in de browser geen optie is.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloaden</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Bekijk de broncode</a>
+</div>
+<p class="cta-note">Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Broncode op GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Een probleem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Steun het project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagina&#39;s</p>
+      <ul class="plain">
+        <li><a href="/nl/">Home</a></li>
+        <li><a href="/nl/formaten/">Formaten</a></li>
+        <li><a href="/nl/presets/">Presets</a></li>
+        <li><a href="/nl/documentatie/">Documentatie</a></li>
+        <li><a href="/nl/toepassingen/">Toepassingen</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a></li>
+        <li><a href="/nl/veelgestelde-vragen/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.</p>
+    <p class="muted">Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

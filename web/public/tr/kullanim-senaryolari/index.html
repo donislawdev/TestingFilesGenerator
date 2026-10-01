@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>Kullanım senaryoları - yükleme sınırları, CI fixture&#39;ları, testler</title>
+<meta name="description" content="Yükleme boyut sınırını test etmek, CI için tekrarlanabilir fixture&#39;lar kurmak, on bin dosya üretmek ve arşivleri gerçek içerikle doldurmak.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/pripady-pouziti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-penggunaan/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/toepassingen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-utilizare/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-su-dung/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Kullanım senaryoları - yükleme sınırları, CI fixture&#39;ları, testler">
+<meta property="og:description" content="Yükleme boyut sınırını test etmek, CI için tekrarlanabilir fixture&#39;lar kurmak, on bin dosya üretmek ve arşivleri gerçek içerikle doldurmak.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/kullanim-senaryolari/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kullanım senaryoları - yükleme sınırları, CI fixture&#39;ları, testler">
+<meta name="twitter:description" content="Yükleme boyut sınırını test etmek, CI için tekrarlanabilir fixture&#39;lar kurmak, on bin dosya üretmek ve arşivleri gerçek içerikle doldurmak.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kullanım senaryoları",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/kullanim-senaryolari\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/" aria-current="page">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
+      <a href="/tr/sss/">SSS</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/pripady-pouziti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-penggunaan/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/toepassingen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-uso/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-utilizare/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/vi/truong-hop-su-dung/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>İnsanlar bunu ne için kullanıyor</h1>
+<p class="lead">
+  İnsanlardan dosya kabul eden hemen her projede çıkan beş iş ve her birini yapan komut. Aşağıdaki her
+  örnek yazıldığı gibi çalışır.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Yükleme sınırları</p>
+  <h2>Bir dosya boyutu sınırının söylediği yerde uygulanıp uygulanmadığını test etmek</h2>
+  <p>
+    Bir sınır bir değil üç test durumudur: hemen altı, tam üstü ve hemen üzeri. Bunları elle yapmak bayt
+    sayıları hesaplamak ve bir kayma yapmadığınızı ummak demektir. Bunun yerine seti isteyin:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    1048575, 1048576 ve 1048577 baytlık üç gerçek PDF ve ilk ikisinin kabul edilmesi, üçüncünün
+    <code>size_limit</code> nedeniyle reddedilmesi gerektiğini söyleyen bir manifest alırsınız.
+    Testiniz üç assertion'ı elle yazmanız yerine beklentiyi okur - sınır değiştiğinde bir sayıyı
+    değiştirip yeniden çalıştırırsınız.
+  </p>
+  <p>
+    Satır içi tek bir sınır seti istediğinizde aynısı hazır ayar olmadan da çalışır:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Sürekli entegrasyon</p>
+  <h2>Fixture'ları kaybetmeden depodan uzak tutmak</h2>
+  <p>
+    Büyük ikili fixture'lar bir depoyu klonlamada yavaş, incelemede zahmetli yapar ve biri
+    değiştirildiğinde neyin değiştiğini kimse söyleyemez. Tarif, özdeş dosyaları yeniden kuran
+    birkaç yüz karakterlik YAML'dir - <strong>bayt bayt, her makinede</strong> - çünkü her dosya
+    çalıştırmanın seed'inden türetilir.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Her sonun kendi çıkış kodu vardır, bu yüzden bir hat kötü bir tarifi dolu bir diskten ve bir
+    doğrulama uyuşmazlığından ayırt edebilir. Başarısız bir çalıştırma standart çıktıya hiçbir şey
+    yazdırmaz, bu da bir günlük ayrıştırıcısının hatayı veri sanmasını önler.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Ölçek</p>
+  <h2>Klasör büyükken ne olduğunu öğrenmek</h2>
+  <p>
+    İçe aktarma rutinleri, gece işleri ve dizin listeleri on bin dosyada ona göre farklı davranır. Bir
+    aralıktan çekilen boyutlar seti on bin özdeş dosya yerine gerçek trafiğe benzetir ve çekiliş
+    seed'den gelir, yani set yarın da aynıdır.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Toplam gigabayt cinsinden ölçülüyorsa önem kazanan şeyi, bir çalıştırmanın bir şey yazmadan önce
+    neye mal olacağını denetleyin:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Diskteki boş alandan büyük bir çalıştırma, diski doldurup yarıda başarısız olmak yerine ilk bayt
+    yazılmadan önce reddedilir.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arşivler</p>
+  <h2>Bir açıcıyı gerçekten dosya içeren bir arşivle test etmek</h2>
+  <p>
+    Doğru uzantılı boş bir arşiv, onu açıp içindekini dolaşan kod hakkında hiçbir şey kanıtlamaz.
+    İçeriği bildirin, arşiv onu gerçekten içersin:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    İç içe geçme derinliği, girdi sayıları ve içindekilerin boyutu, bir içe aktarma rutininin görüş
+    sahibi olduğu şeylerdir ve bu görüşlerin ne olduğunu böyle öğrenirsiniz.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Ayrıştırıcılar ve görüntüleyiciler</p>
+  <h2>Kendi kodunuzun bir biçimi gerçek yazılım gibi okuduğunu denetlemek</h2>
+  <p>
+    Buradaki her biçim yayımlanmadan önce bağımsız bir okuyucuyla doğrulanır - bir PNG açılır ve
+    pikselleri karşılaştırılır, bir DOCX ayrı kitaplıklarca geri okunur, bir arşiv çıkarılır. Bu,
+    ayrıştırıcınızın reddettiği bir dosyanın üretici hakkında değil ayrıştırıcınız hakkında bir
+    bulgu olduğu anlamına gelir.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    <a href="/tr/bicimler/">Biçimler sayfası</a> her birinin kabul ettiği ayarları ve her birinin
+    olabileceği en küçük dosyayı listeler.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Kimler için</h2>
+  <p>
+    QA mühendisleri, test otomasyonu ve kodunun arkasında bir yükleme formu, içe aktarma rutini,
+    ayrıştırıcı veya depolama kotası olan herkes. Hiç ağı olmayan bir makinede çalışır, bu da
+    tarayıcı tabanlı bir üreticinin seçenek olmadığı kapalı bir kurumsal ortamda önem taşır.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndir</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Kaynak kodu görüntüle</a>
+</div>
+<p class="cta-note">Ücretsiz ve açık kaynak, GPL-3.0. Kayıt gerekmez. Windows ve macOS indirmeleri imzalıdır ve uyarı vermeden başlar.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

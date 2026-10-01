@@ -1,0 +1,304 @@
+{
+  "code": "nl",
+  "locale": "nl_NL",
+  "name": "Nederlands",
+  "dir": "nl",
+  "pages": [
+    {
+      "key": "index",
+      "slug": "",
+      "nav": "Home",
+      "title": "Testbestanden genereren - exacte grootte, {{ .Facts.FormatCount }} echte formaten",
+      "description": "Gratis open source generator van testbestanden voor QA. Echte PDF-, DOCX-, PNG- en ZIP-bestanden in exacte grootte, met een manifest over de verwachte reactie."
+    },
+    {
+      "key": "formats",
+      "slug": "formaten",
+      "nav": "Formaten",
+      "title": "{{ .Facts.FormatCount }} ondersteunde bestandsformaten - PDF, DOCX, PNG, ZIP en meer",
+      "description": "Alle bestandsformaten die deze generator maakt, het kleinst mogelijke bestand per formaat en hun instellingen. Alle {{ .Facts.FormatCount }} openen in hun eigen programma."
+    },
+    {
+      "key": "presets",
+      "slug": "presets",
+      "nav": "Presets",
+      "title": "Presets voor testbestanden - kant-en-klare sets voor QA",
+      "description": "Kant-en-klare sets testbestanden, elk beantwoordt een testvraag: uploadlimieten, bestandsnamen, tekencoderingen, tabelimport, lege bestanden en uploadvalidatie."
+    },
+    {
+      "key": "docs",
+      "slug": "documentatie",
+      "nav": "Documentatie",
+      "title": "Documentatie - opdrachten, recepten, manifest, afsluitcodes",
+      "description": "Hoe je testbestanden genereert vanaf de opdrachtregel of met een YAML-recept, wat het manifest bevat en wat elke afsluitcode betekent wanneer de tool in CI draait."
+    },
+    {
+      "key": "use-cases",
+      "slug": "toepassingen",
+      "nav": "Toepassingen",
+      "title": "Toepassingen - uploadlimieten, CI-fixtures, massatests",
+      "description": "Een uploadlimiet testen, reproduceerbare fixtures voor CI bouwen, tienduizend bestanden genereren en archieven vullen met echte inhoud."
+    },
+    {
+      "key": "exact-size",
+      "slug": "bestand-met-exacte-grootte-maken",
+      "nav": "Exacte grootte",
+      "title": "Een bestand van een exacte grootte maken - Windows, Linux, macOS",
+      "description": "fsutil, dd, truncate en mkfile, elk gemeten op het systeem waarvoor het bedoeld is, en waarom zo'n bestand geen PDF of PNG is wanneer een test dat nodig heeft."
+    },
+    {
+      "key": "faq",
+      "slug": "veelgestelde-vragen",
+      "nav": "FAQ",
+      "title": "FAQ - vragen over het genereren van testbestanden",
+      "description": "Hoe dit verschilt van dd en fsutil, of je de bestanden kunt committen, of runs byte voor byte herhaalbaar zijn en wat er gebeurt als een grootte onhaalbaar is."
+    }
+  ],
+  "words": {
+    "skip": "Direct naar de inhoud",
+    "navLabel": "Hoofdmenu",
+    "langLabel": "Taal",
+    "breadcrumbHome": "Home",
+    "imageAlt": "Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren",
+    "schemaDescription": "Een gratis open source generator van testbestanden voor QA. Hij maakt echte bestanden in {{ .Facts.FormatCount }} formaten in elke exacte grootte en schrijft een manifest dat zegt hoe het geteste systeem op elk bestand moet reageren.",
+    "ctaDownload": "Downloaden",
+    "ctaSource": "Bekijk de broncode",
+    "ctaNote": "Gratis en open source, GPL-3.0. Geen account nodig. De downloads voor Windows en macOS zijn ondertekend en starten zonder waarschuwing.",
+    "colFormat": "Formaat",
+    "colName": "Naam",
+    "colExtension": "Extensie",
+    "colSmallest": "Kleinste bestand",
+    "colFidelity": "Volledigheid",
+    "colChecked": "Gecontroleerd met",
+    "colSetting": "Instelling",
+    "colAccepts": "Accepteert",
+    "colSystem": "Systeem",
+    "colCli": "Opdrachtregel",
+    "colWindow": "Bureaubladvenster",
+    "noBinary": "nog geen binary",
+    "colCode": "Code",
+    "colMeaning": "Betekenis",
+    "footerBlurb": "Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.",
+    "footerProject": "Project",
+    "footerSource": "Broncode op GitHub",
+    "footerReleases": "Downloads",
+    "footerIssues": "Een probleem melden",
+    "footerSupport": "Steun het project",
+    "footerPages": "Pagina's",
+    "footerLicence": "Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.",
+    "footerPrivacy": "Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.",
+    "notFoundTitle": "Die pagina bestaat niet",
+    "notFoundLead": "Het adres dat je volgde komt met geen enkele pagina op deze site overeen.",
+    "notFoundBack": "Naar de startpagina",
+    "read.format": "Het formaat van elk bestand in de set. Het is een optie van de tool zelf, en de preset geeft er alleen een standaardwaarde aan.",
+    "readTakes.format": "een formaat-id van de pagina met formaten"
+  },
+  "endings": {
+    "0": "Alles werkte.",
+    "1": "Een onverwachte fout in de tool.",
+    "2": "Verkeerde opdracht of optie.",
+    "3": "Het recept is niet geldig.",
+    "4": "Het formaat kan niet wat er gevraagd werd.",
+    "5": "Een lees- of schrijfactie is mislukt.",
+    "6": "Niet genoeg schijfruimte.",
+    "7": "verify vond een afwijking.",
+    "8": "De run is klaar, maar niet alles is gemaakt.",
+    "130": "Onderbroken met Ctrl+C.",
+    "143": "Gestopt door een signaal, zo ziet een CI-timeout eruit."
+  },
+  "presets": {
+    "empty-and-minimal": {
+      "question": "Komt een geldig bestand dat zo klein is als het formaat toestaat door de controle?",
+      "title": "Leeg en minimaal",
+      "pageTitle": "Kleinste geldige en lege testbestanden in elk formaat",
+      "description": "Het kleinste geldige bestand dat deze tool schrijft in elk van zijn {{ .Facts.FormatCount }} formaten, plus een leeg bestand waar het formaat dat toestaat, elk met de verwachte reactie.",
+      "catches": [
+        "een geldig bestand dat als te klein wordt geweigerd, omdat de controle bytes telt in plaats van ze te lezen",
+        "een leeg bestand dat de lezer laat crashen in plaats van gemeld te worden",
+        "een afbeelding van één pixel breed die op weg naar het miniatuur door nul deelt",
+        "opslag die nul bytes als een mislukte upload leest en blijft opnieuw proberen"
+      ],
+      "details": {
+        "formats": "Uit welke formaten de set is opgebouwd. Laat het op all staan voor elk formaat van deze build, of noem de formaten die je systeem accepteert."
+      }
+    },
+    "filename-handling": {
+      "question": "Slaat mijn systeem een bestandsnaam op, toont en geeft het die terug, ook als het die niet verwachtte?",
+      "title": "Omgaan met bestandsnamen",
+      "pageTitle": "Lastige bestandsnamen om te testen - Unicode en lengte",
+      "description": "Testbestanden met namen die uploads en opslag laten haperen: andere schriften, emoji, omgekeerde schrijfrichting, onzichtbare tekens, shell- en SQL-syntaxis.",
+      "catches": [
+        "een naam die er op het scherm, in een log of in een lijst als een andere uitziet",
+        "een naam die tussen upload en opslag wordt afgekapt, ingekort of herschreven",
+        "een lengtelimiet die in tekens wordt geteld waar de opslag bytes telt"
+      ],
+      "details": {}
+    },
+    "size-boundaries": {
+      "question": "Wordt een groottelimiet precies afgedwongen waar hij is opgegeven?",
+      "title": "Groottegrenzen",
+      "pageTitle": "Een uploadlimiet testen - bestanden precies op de grens",
+      "description": "Bestanden één byte onder, precies op en één byte boven de limiet van je systeem, plus bredere stappen aan beide kanten, elk gemarkeerd of het geaccepteerd moet worden.",
+      "catches": [
+        "off-by-one-fouten bij de limiet",
+        "MB verward met MiB, wat 4,8 procent is en genoeg om een bestand door te laten dat niet door zou mogen",
+        "een limiet die in de browser wordt afgedwongen en niet op de server"
+      ],
+      "details": {
+        "limit": "De groottelimiet die je systeem opgeeft. Al het andere wordt hiervan afgemeten.",
+        "spread": "Hoe ver aan beide kanten van de limiet te gaan, als een lijst met groottes."
+      }
+    },
+    "tabular-import": {
+      "question": "Overleeft mijn tabelimport wat echte tools exporteren?",
+      "title": "Tabelimport",
+      "pageTitle": "Testbestanden voor CSV- en Excel-import - scheidingstekens",
+      "description": "CSV met andere scheidingstekens, CR LF-regeleinden, zonder koprij en met andere aanhalingstekens, een heel brede tabel, een Excel-werkmap en JSON in meerdere lay-outs.",
+      "catches": [
+        "een bestand met puntkomma's dat als één kolom wordt gelezen, omdat het scheidingsteken is aangenomen in plaats van gezocht",
+        "een CRLF-bestand dat in rijen wordt gesplitst met na elke rij een lege rij",
+        "een tabel zonder koprij waarvan de eerste gegevensrij als kolomnamen wordt opgegeten",
+        "een import die de kolommen houdt die hij kan tonen en de rest zonder een woord weggooit",
+        "een lezer die JSON-records regel voor regel leest en stopt bij het eerste ingesprongen document"
+      ],
+      "details": {
+        "rows": "Hoeveel rijen de spreadsheet bevat. Het bestand wordt precies zo groot geschreven als zoveel rijen verpakt worden, dus het budget hierboven verschuift met deze waarde.",
+        "columns": "Hoeveel kolommen elke rij van de spreadsheet heeft. Rijen maal kolommen heeft een plafond, en erboven vragen wordt geweigerd voordat er iets geschreven wordt."
+      }
+    },
+    "text-encoding": {
+      "question": "Weet mijn lezer in welke codering een bestand staat, of gokt hij?",
+      "title": "Tekencodering",
+      "pageTitle": "Testbestanden voor tekencodering - UTF-8, UTF-16, BOM, CRLF",
+      "description": "Dezelfde tekst in UTF-8, UTF-16LE en UTF-16BE, met en zonder byte order mark, en regeleinden in CR LF en LF, om te testen hoe een lezer tekst decodeert.",
+      "catches": [
+        "een lezer die UTF-8 aanneemt en een UTF-16-bestand toont als één teken op de drie, of als rijen vakjes",
+        "een byte order mark die als inhoud wordt gelezen, zodat het eerste veld van een import met drie vreemde tekens begint",
+        "een importeur die de codering uit de eerste bytes raadt en bij een langer bestand anders raadt",
+        "een CRLF-bestand dat in rijen wordt gesplitst met na elke rij een lege rij, of een regelterugloop die in het laatste veld blijft staan"
+      ],
+      "details": {
+        "sample": "Hoe groot elk bestand van de set is. UTF-16 slaat twee bytes per teken op, dus een oneven getal wordt geweigerd."
+      }
+    },
+    "upload-validation": {
+      "question": "Neemt mijn uploadformulier aan wat het moet en weigert het de rest?",
+      "title": "Uploadvalidatie",
+      "pageTitle": "Testbestanden voor uploadvalidatie - type, grootte en naam",
+      "description": "Bestanden om een uploadformulier te testen: toegestane en geweigerde typen, inhoud die niet bij de extensie past, groottelimiet, vijandige namen en een bulkupload.",
+      "catches": [
+        "een limiet die in de browser wordt afgedwongen en niet op de server",
+        "een SVG- of HTML-bestand dat voor een afbeelding of platte tekst wordt aangezien, een manier om een script langs een formulier te smokkelen",
+        "een bestand dat op extensie wordt gecontroleerd en nooit geopend, zodat een PDF met de naam .jpg erdoor komt",
+        "een formulier dat de hele body in het geheugen leest voordat het kijkt hoe groot hij is",
+        "een upload met de naam PHOTO.JPG die wordt geweigerd terwijl photo.jpg wordt aangenomen, of andersom",
+        "een naam met spaties, haakjes of tekens buiten ASCII die ongewijzigd naar schijf wordt geschreven"
+      ],
+      "details": {
+        "limit": "De groottelimiet die je uploadformulier opgeeft. Deze set zet één stap aan beide kanten - voor een bestand op elke afstand draai je de preset size-boundaries.",
+        "allow": "Welke typen je formulier moet accepteren. Elk wordt een echt bestand van dat type, en ze vormen de positieve controle van de hele set.",
+        "deny": "Welke extensies je formulier moet weigeren. Een extensie waarvoor deze build geen formaat heeft, krijgt toch een bestand met die naam, met platte tekst erin.",
+        "far-over": "Hoe ver boven de limiet het ene grote bestand komt. Zet het uit waar het schrijven van een veelvoud van de limiet de schijfruimte niet waard is.",
+        "bulk": "Hoeveel bestanden de bulkupload bevat. Nul laat die groep helemaal uit de set."
+      }
+    }
+  },
+  "commands": {
+    "generate": "bestanden maken, uit een recept of met opties",
+    "validate": "een recept controleren en niets schrijven",
+    "verify": "een map controleren tegen een manifest",
+    "cleanup": "de bestanden verwijderen die een manifest opsomt",
+    "recipe fmt": "een recept in zijn vaste vorm afdrukken",
+    "preset": "een set bestanden bouwen uit een benoemde testvraag",
+    "formats": "de formaten opsommen die deze build ondersteunt",
+    "damage": "de manieren opsommen waarop deze build een bestand met opzet kan beschadigen",
+    "tool": "kleine hulpmiddelen voor bestanden die je al hebt",
+    "version": "de versie van de tool tonen",
+    "license": "de licentie tonen en wat die betekent voor gegenereerde bestanden"
+  },
+  "outcomes": {
+    "accept": "Je systeem moet het bestand aannemen.",
+    "reject": "Je systeem moet het bestand weigeren.",
+    "sanitize": "Je systeem moet het bestand aannemen en opschonen, bijvoorbeeld door het te hernoemen.",
+    "unspecified": "Het hangt af van de regels van je systeem. Jij beslist, en controleert daarna of wat er gebeurt is wat je bedoelde."
+  },
+  "terms": {
+    "oracleNone": "niet van toepassing",
+    "int": "elk geheel getal",
+    "choice": "een uit een vaste verzameling",
+    "bool": "waar of onwaar",
+    "size": "een grootte zoals 2mb",
+    "text": "tekst",
+    "pixels": "pixels",
+    "paragraphs": "alinea's",
+    "rows": "rijen",
+    "columns": "kolommen",
+    "slides": "dia's",
+    "hertz": "hertz",
+    "megapixels": "megapixels",
+    "million cells": "miljoen cellen",
+    "entries per second": "items per seconde",
+    "files": "bestanden",
+    "sizes separated by commas": "groottes gescheiden door komma's",
+    "format ids separated by commas": "formaat-id's gescheiden door komma's",
+    "format ids separated by commas, or all": "formaat-id's gescheiden door komma's, of all",
+    "extensions separated by commas": "extensies gescheiden door komma's",
+    "the id of a format, as tfg formats lists them": "de id van een formaat, zoals tfg formats ze opsomt",
+    "the password, in plain text": "het wachtwoord, als platte tekst",
+    "any text": "willekeurige tekst",
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "een datum zoals 2024-02-29 of 2024-02-29T13:45:00+02:00, of none"
+  },
+  "faq": [
+    {
+      "q": "Waarin verschilt dit van dd, fsutil of truncate?",
+      "a": "Die geven je een bestand van de juiste grootte vol met niets. Een bestand van 2 MB met de naam photo.png dat zo is gemaakt is geen PNG, dus alles wat het echt parset weigert het om de verkeerde reden, en je test slaagt dan ook om de verkeerde reden. Dit maakt een echte PNG van precies 2 MB die opent in een afbeeldingsviewer, en komt met een verklaring over hoe je systeem ermee om moet gaan.",
+      "code": "tfg generate --format png --size 2mb --out ./fixtures"
+    },
+    {
+      "q": "Is het gratis, en mag ik het op het werk gebruiken?",
+      "a": "Ja op beide. Het is uitgebracht onder de GPL-3.0 en kost niets. Er is geen account, geen licentiesleutel en geen betaalde variant."
+    },
+    {
+      "q": "Mag ik de gegenereerde bestanden in een closed source product gebruiken?",
+      "a": "Ja. De licentie geldt voor de code van de tool, niet voor wat de tool produceert. Gegenereerde bestanden, recepten en manifesten zijn uitvoer en geen afgeleide werken, dus je kunt ze committen en verspreiden zonder enige verplichting."
+    },
+    {
+      "q": "Bevatten de gegenereerde bestanden echte persoonsgegevens?",
+      "a": "Nee. Alles erin wordt gesynthetiseerd uit een seed. Er wordt geen dataset gelezen, geen dienst benaderd en geen inhoud van derden ingebed. Behandel een gegenereerd e-mailadres als onbruikbaar in plaats van als ongebruikt, want elke willekeurige tekenreeks kan bij toeval samenvallen met een echte."
+    },
+    {
+      "q": "Krijg ik op een andere machine precies dezelfde bestanden?",
+      "a": "Ja, byte voor byte, bij hetzelfde recept en dezelfde seed. Het project test dat bij elke wijziging, en het breken ervan vereist een major-versie. Daardoor kun je een klein recept committen in plaats van grote binaire fixtures."
+    },
+    {
+      "q": "Heeft het een internetverbinding nodig?",
+      "a": "Nooit. Er is geen telemetrie, geen updatecontrole en geen cloudclient, en in de opdrachtregel-binary is helemaal geen netwerkstack gecompileerd. Het werkt op een machine zonder netwerk en binnen een afgesloten bedrijfsomgeving."
+    },
+    {
+      "q": "Wat gebeurt er als ik een grootte vraag die een formaat niet kan halen?",
+      "a": "Je krijgt een fout die het formaat noemt, de kleinst mogelijke grootte, de reden voor die ondergrens en wat je in plaats daarvan kunt doen, en er wordt geen bestand geschreven. De tool rondt een grootte nooit stilzwijgend af. Elke ondergrens staat op de pagina met formaten.",
+      "code": "tfg formats png"
+    },
+    {
+      "q": "Kan ik een bewust kapot bestand genereren?",
+      "a": "Nog niet. Beschadigde en misvormde bestanden zijn een geplande functie. Nu is elk bestand dat de tool schrijft een geldig bestand van zijn formaat."
+    },
+    {
+      "q": "Welke formaten komen er nog?",
+      "a": "7z, mp3 en mp4. Vandaag werken {{ .Facts.FormatCount }} formaten van begin tot eind."
+    },
+    {
+      "q": "Op welke systemen kan ik het draaien?",
+      "a": "De opdrachtregel draait op Windows en Linux, zowel op Intel als op ARM, en op Macs met Apple Silicon. Het bureaubladvenster wordt geleverd voor Windows op Intel, Linux op Intel en Macs met Apple Silicon. Intel-Macs worden niet ondersteund en daar wordt niets voor gebouwd."
+    },
+    {
+      "q": "Moet ik iets installeren?",
+      "a": "Nee. Download het archief voor je systeem, pak het uit en start de binary. Er is geen installatieprogramma, geen runtime om toe te voegen en geen afhankelijkheid om op te lossen. Als je Go hebt, werkt ook één enkele go install-opdracht.",
+      "code": "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest"
+    },
+    {
+      "q": "Waarom is een run over duizenden bestanden trager op Windows?",
+      "a": "Omdat Windows meer rekent voor elk pad dat het bekijkt, en een opdracht die over duizenden bestanden gaat bekijkt duizenden paden. Gemeten op één machine met 3000 bestanden van 1 kB doet verify er ongeveer 0,9 seconde over op Windows en ongeveer 0,2 seconde op Linux in een container. Een korter uitvoerpad maakt het cijfer voor Windows kleiner, omdat elke map boven de bestanden deel uitmaakt van wat wordt bekeken."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+<h1>Sık sorulan sorular</h1>
+<p class="lead">
+  Lisans, gizlilik, tekrarlanabilirlik ve insanların bir üreticiyi derleme hattına koymadan önce
+  denetlediği şeyler. Sorunuz burada yoksa <a href="{{ .Facts.Issues }}">sorun takipçisi</a> açık.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Hâlâ karar vermediniz mi?</h2>
+  <p>
+    <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları sayfası</a> aracın yapıldığı işleri
+    gösterir, <a href="/tr/bicimler/">biçimler sayfası</a> her biçimi üretebildiği en küçük dosyayla
+    listeler. <a href="{{ .Facts.Repo }}">Depodaki README</a> tam başvurudur.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

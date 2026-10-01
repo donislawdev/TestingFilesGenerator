@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>Test için sorunlu dosya adları - Unicode ve uzunluk</title>
+<meta name="description" content="Yüklemeleri ve depolamayı bozan adlara sahip dosyalar: başka yazılar ve emoji, yön geçersiz kılma, görünmez karakterler, kabuk ve SQL sözdizimi, uzunluk sınırları.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/filename-handling/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/filename-handling/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/filename-handling/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/filename-handling/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/filename-handling/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/filename-handling/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/filename-handling/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/filename-handling/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/filename-handling/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/filename-handling/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Test için sorunlu dosya adları - Unicode ve uzunluk">
+<meta property="og:description" content="Yüklemeleri ve depolamayı bozan adlara sahip dosyalar: başka yazılar ve emoji, yön geçersiz kılma, görünmez karakterler, kabuk ve SQL sözdizimi, uzunluk sınırları.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/filename-handling/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test için sorunlu dosya adları - Unicode ve uzunluk">
+<meta name="twitter:description" content="Yüklemeleri ve depolamayı bozan adlara sahip dosyalar: başka yazılar ve emoji, yön geçersiz kılma, görünmez karakterler, kabuk ve SQL sözdizimi, uzunluk sınırları.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Hazır ayarlar",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/hazir-ayarlar\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Dosya adı işleme",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/hazir-ayarlar\/filename-handling\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/" aria-current="true">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
+      <a href="/tr/sss/">SSS</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/filename-handling/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/predvolby/filename-handling/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/filename-handling/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/filename-handling/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/filename-handling/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/preset/filename-handling/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/filename-handling/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/nl/presets/filename-handling/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/filename-handling/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/filename-handling/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/filename-handling/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/vi/preset/filename-handling/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></p>
+<h1>Dosya adı işleme</h1>
+<p class="lead">Sistemim beklemediği bir dosya adını saklayıp gösterecek ve geri verecek mi?</p>
+<p>
+  <code>filename-handling</code> hazır ayarı, bu soru için tek komutla gerçek test dosyalarından oluşan bütün
+  bir set ve yanında sisteminizin her dosyaya nasıl tepki vermesi gerektiğini söyleyen bir
+  <code>manifest.json</code> kurar. Aşağıdaki her şey programdan, bu sürümün varsayılanlarıyla
+  okunur.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Genelde ne bulur?</h2>
+  <ul class="ticks">
+    <li>ekranda, bir günlükte veya bir listede başka bir ad gibi görünen bir ad</li>
+    <li>yükleme ile depolama arasında kesilen, kırpılan veya yeniden yazılan bir ad</li>
+    <li>depolama bayt sayarken karakterle sayılan bir uzunluk sınırı</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Sette ne var?</h2>
+  <p>Varsayılanlarda, <code>tfg preset show filename-handling</code> çıktısının bildirdiği gibi:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Dosya</th><td>50</td></tr>
+        <tr><th scope="row">Tarifindeki hedefler</th><td>50</td></tr>
+        <tr><th scope="row">Toplam boyut</th><td>51 200 B</td></tr>
+        <tr><th scope="row">Biçimler</th><td>txt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Ve o setin manifestinin sisteminizden beklediği:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Beklenen</th><th>Anlamı</th><th class="num">Dosya</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Sisteminiz dosyayı kabul etmeli.</td><td class="num">4</td></tr>
+        <tr><td><code>unspecified</code></td><td>Sisteminizin kurallarına bağlı. Siz karar verirsiniz, sonra olanın amaçladığınız şey olduğunu doğrularsınız.</td><td class="num">46</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Neyi değiştirebilirsiniz?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Ayar</th><th>Aldığı</th><th>Varsayılan</th><th>Ne yapar</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--format</code></td>
+          <td>biçimler sayfasındaki bir biçim kimliği</td>
+          <td><code>txt</code></td>
+          <td>Setteki her dosyanın biçimi. Aracın kendi bayrağıdır ve hazır ayar yalnızca ona bir varsayılan verir.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Nasıl çalıştırılır?</h2>
+  <p>Setin neye mal olacağına bakın, kurun veya düzenlemek için tarifini alın:</p>
+  <pre><code>tfg preset show filename-handling
+tfg generate --preset filename-handling --out ./filename-handling
+tfg preset eject filename-handling &gt; filename-handling.yaml</code></pre>
+  <p>Ya da testlerinizin yanında kendi tarifinizde onun üzerine kurun:</p>
+  <pre><code>version: 1
+extends: preset:filename-handling</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

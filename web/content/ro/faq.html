@@ -1,0 +1,20 @@
+<h1>Întrebări frecvente</h1>
+<p class="lead">
+  Licență, confidențialitate, reproductibilitate și lucrurile pe care oamenii le verifică înainte să
+  pună un generator într-un pipeline de build. Dacă întrebarea ta nu e aici,
+  <a href="{{ .Facts.Issues }}">sistemul de issue-uri</a> este deschis.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>Încă te decizi?</h2>
+  <p>
+    <a href="/ro/cazuri-de-utilizare/">Pagina de cazuri de utilizare</a> arată sarcinile pentru care a
+    fost făcut, iar <a href="/ro/formate/">pagina de formate</a> listează fiecare format cu cel mai
+    mic fișier pe care îl poate produce. <a href="{{ .Facts.Repo }}">README-ul din repository</a>
+    este referința completă.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
