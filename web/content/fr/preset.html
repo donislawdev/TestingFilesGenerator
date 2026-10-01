@@ -1,0 +1,92 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  Le préréglage <code>{{ .ID }}</code> construit en une commande tout un jeu de vrais fichiers de test
+  pour cette question, avec un <code>manifest.json</code> à côté qui dit comment votre système doit
+  réagir à chaque fichier. Tout ce qui suit est lu depuis le programme, aux valeurs par défaut de
+  cette version.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>Que trouve-t-il d'habitude ?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>Que contient le jeu ?</h2>
+  <p>Aux valeurs par défaut, comme le rapporte <code>tfg preset show {{ .ID }}</code> :</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Fichiers</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">Cibles dans sa recette</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">Taille totale</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">Formats</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Et ce que le manifeste de ce jeu attend de votre système :</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Attendu</th><th>Signification</th><th class="num">Fichiers</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Que pouvez-vous modifier ?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Réglage</th><th>Accepte</th><th>Par défaut</th><th>Ce qu'il fait</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>Cette valeur par défaut est notre substitut, pas la valeur de votre système. Passez la vôtre.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>Ce préréglage n'a aucun réglage. Le jeu est le même à chaque fois.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>Comment le lancer ?</h2>
+  <p>Voyez ce que coûterait le jeu, construisez-le ou prenez sa recette pour la modifier :</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>Ou bâtissez dessus dans une recette à vous, à côté de vos tests :</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

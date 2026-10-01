@@ -1,0 +1,199 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Gere arquivos de teste reais no tamanho exato</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} formatos no total</strong>, e cada um é um
+    arquivo real que abre no programa a que pertence, com <strong>exatamente o tamanho que você
+    pediu</strong>. Cada execução também registra o que sua aplicação deve fazer com cada arquivo.
+    Linha de comando e janela de desktop, gratuito e de código aberto, funcionando inteiramente na
+    sua máquina.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="A janela de desktop do Testing Files Generator, pronta para escrever um lote de arquivos de teste">
+    <figcaption>A janela de desktop, pronta para escrever um lote de arquivos. O mesmo motor roda por trás da linha de comando.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">formatos reais, cada um abre no programa a que pertence</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 byte</span>
+      <p class="fact-label">a precisão de cada tamanho que você pede, nunca arredondado em silêncio</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">conexões para lugar nenhum - sem conta, sem telemetria, sem verificação de atualizações</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">O problema</p>
+  <h2>Fazer um arquivo de teste é fácil. Fazer os mil certos é a parte tediosa</h2>
+  <p>Você está testando um software que aceita arquivos de pessoas. Mais cedo ou mais tarde, você precisa de:</p>
+  <ul class="ticks">
+    <li>um PDF de <strong>exatamente</strong> 10 MB, para descobrir se o limite de upload é real</li>
+    <li>os três arquivos dos dois lados desse limite, para pegar erros de um a mais ou a menos</li>
+    <li>10.000 arquivos de log, para ver o que o job noturno faz quando a pasta é grande</li>
+    <li>um ZIP que realmente contém 200 documentos, não uma casca com a extensão certa</li>
+    <li>um arquivo de 4 GB, sem guardar um arquivo de 4 GB no seu repositório</li>
+    <li>as <strong>mesmas</strong> fixtures no seu notebook e no servidor de build, byte a byte</li>
+  </ul>
+  <p>
+    É isso que isto substitui. Foi feito para engenheiros de QA, automação de testes e qualquer pessoa
+    cujo código tenha atrás um formulário de upload, uma rotina de importação, um parser ou uma cota
+    de armazenamento.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">O que o torna diferente</p>
+  <h2>Outros geradores param nos bytes. Este responde ao que o seu teste realmente pergunta</h2>
+  <p>
+    Uma pasta de arquivos ainda deixa você decidindo o que cada um deve provar. Cada execução aqui
+    escreve um <code>manifest.json</code> ao lado dos arquivos - uma lista simples de tudo que foi
+    produzido e, para cada entrada, uma <strong>expectativa declarada</strong>.
+  </p>
+  <p>Digamos que seu endpoint de upload permita 1 MB. Peça os três arquivos que ficam nessa linha:</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Arquivo</th><th class="num">Bytes</th><th>Seu sistema deve</th><th>Porque</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>aceitar</strong></td><td>está dentro do limite</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>aceitar</strong></td><td>o próprio limite é permitido</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>rejeitar</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Três arquivos, três respostas diferentes, em forma legível por máquina. Seu teste lê o manifesto em vez de você escrever as asserções à mão:</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Onde a resposta depende da sua própria política, o manifesto diz isso</p>
+    <p>
+      Ele registra <code>unspecified</code> em vez de inventar uma expectativa. Um gerador que adivinha
+      produz falhas falsas, e uma suíte que dá alarme falso acaba desligada.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Presets</p>
+  <h2>Escolha a pergunta, receba o conjunto inteiro</h2>
+  <p>
+    Um preset é um conjunto de arquivos de teste desenhado em torno de uma pergunta de teste, para que
+    você não precise descobrir quais arquivos provam o quê. Cada um tem uma página dizendo o que
+    costuma encontrar, o que há no conjunto e cada configuração que aceita.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/pt-br/presets/">Todos os presets, e como eles se relacionam com receitas</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Início rápido</p>
+  <h2>Três comandos para ver funcionando</h2>
+  <ol class="steps">
+    <li>
+      <h3>Faça um arquivo</h3>
+      <p>Um PNG, exatamente dois megabytes:</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Faça muitos arquivos</h3>
+      <p>
+        Dez mil arquivos de log, cada um entre um e oito kilobytes, com os tamanhos sorteados a partir do
+        seed para que amanhã dê o mesmo conjunto. <strong>Dê a cada execução o seu próprio
+        diretório</strong> - o manifesto é o único registro do que uma execução escreveu, então a
+        ferramenta se recusa a escrever um segundo por cima:
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Verifique e depois remova</h3>
+      <p><code>verify</code> diz que nada mudou. <code>cleanup</code> remove exatamente o que foi escrito e mais nada:</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Os tamanhos contam de 1024 em 1024, como o seu gerenciador de arquivos faz, então <code>2mb</code>
+    significa 2097152 bytes. Uma contagem simples de bytes também funciona. A
+    <a href="/pt-br/documentacao/">documentação</a> cobre receitas, o manifesto e os códigos de
+    saída.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">O que você recebe</p>
+  <h2>Feito para uma suíte que roda sem supervisão</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Tamanho exato, ao byte</p>
+      <p class="muted">Peça 10485761 bytes e receba exatamente isso. Um tamanho que um formato não alcança é um erro com um motivo, nunca um arquivo de tamanho errado.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} formatos reais</p>
+      <p class="muted">Não são zeros de preenchimento com uma extensão. Um PNG gerado abre em um visualizador de imagens, um DOCX abre no Word, um ZIP extrai. Cada um é verificado com leitores independentes antes de ser liberado.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Um manifesto que é um oráculo de teste</p>
+      <p class="muted">Caminho, tamanho, SHA-256, formato, seed, versão da ferramenta - e o que seu sistema deve fazer com o arquivo.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproduzível</p>
+      <p class="muted">Mesma receita e mesmo seed, mesmos bytes, em qualquer máquina. Versione uma pequena receita YAML em vez de fixtures binárias grandes.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Duas interfaces, um motor</p>
+      <p class="muted">Uma linha de comando feita para CI e uma janela de desktop para testes exploratórios. Nenhuma é uma versão reduzida da outra, e um teste compara as duas capacidade por capacidade.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Totalmente offline</p>
+      <p class="muted">Sem conta, sem nuvem, sem telemetria, sem verificação de atualizações. O binário da linha de comando não tem nenhuma pilha de rede compilada nele.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Download</p>
+  <h2>Escolha a versão para o seu sistema</h2>
+  <p>
+    Descompacte o arquivo e execute. <code>tfg</code> é a linha de comando e <code>tfg-gui</code> é a
+    janela de desktop. Não há instalador e nada para adicionar à sua máquina.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">O que é assinado e o que não é</p>
+    <p>
+      Os downloads de Windows e macOS são assinados, então iniciam sem aviso de desenvolvedor
+      desconhecido. Os de Linux não são, porque o Linux de desktop não tem equivalente para
+      assiná-los. Cada arquivo está listado em <code>verify-SHA256SUMS.txt</code> na página de
+      releases, para que você possa conferir o que baixou.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

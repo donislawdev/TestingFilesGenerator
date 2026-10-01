@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="it">
+<title>Nomi di file problematici da testare - Unicode e lunghezza</title>
+<meta name="description" content="File con nomi che mettono in crisi upload e storage: altri alfabeti, emoji, inversione di direzione, caratteri invisibili, sintassi di shell e SQL, lunghezza.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/filename-handling/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/filename-handling/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/filename-handling/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/filename-handling/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/filename-handling/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/filename-handling/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Nomi di file problematici da testare - Unicode e lunghezza">
+<meta property="og:description" content="File con nomi che mettono in crisi upload e storage: altri alfabeti, emoji, inversione di direzione, caratteri invisibili, sintassi di shell e SQL, lunghezza.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/it/preset/filename-handling/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Nomi di file problematici da testare - Unicode e lunghezza">
+<meta name="twitter:description" content="File con nomi che mettono in crisi upload e storage: altri alfabeti, emoji, inversione di direzione, caratteri invisibili, sintassi di shell e SQL, lunghezza.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/it/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Preset",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/it\/preset\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Gestione dei nomi di file",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/it\/preset\/filename-handling\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/it/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principale">
+      <a href="/it/">Home</a>
+      <a href="/it/formati/">Formati</a>
+      <a href="/it/preset/" aria-current="true">Preset</a>
+      <a href="/it/documentazione/">Documentazione</a>
+      <a href="/it/casi-d-uso/">Casi d&#39;uso</a>
+      <a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a>
+      <a href="/it/domande-frequenti/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Lingua: Italiano">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Italiano</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/filename-handling/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/presets/filename-handling/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/filename-handling/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/filename-handling/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/pl/presety/filename-handling/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/filename-handling/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/it/preset/">Preset</a></p>
+<h1>Gestione dei nomi di file</h1>
+<p class="lead">Il mio sistema salverà, mostrerà e restituirà un nome di file che non si aspettava?</p>
+<p>
+  Il preset <code>filename-handling</code> costruisce con un solo comando un intero set di file di test reali
+  per questa domanda, e un <code>manifest.json</code> accanto che dice come il tuo sistema deve
+  reagire a ogni file. Tutto ciò che segue è letto dal programma, ai valori predefiniti di questa
+  versione.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>Cosa trova di solito?</h2>
+  <ul class="ticks">
+    <li>un nome che sembra un altro sullo schermo, in un log o in un elenco</li>
+    <li>un nome tagliato, accorciato o riscritto tra l&#39;upload e il salvataggio</li>
+    <li>un limite di lunghezza contato in caratteri dove lo storage conta byte</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>Cosa c'è nel set?</h2>
+  <p>Ai valori predefiniti, come lo riporta <code>tfg preset show filename-handling</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">File</th><td>50</td></tr>
+        <tr><th scope="row">Target nella sua ricetta</th><td>50</td></tr>
+        <tr><th scope="row">Dimensione totale</th><td>51 200 B</td></tr>
+        <tr><th scope="row">Formati</th><td>txt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>E ciò che il manifest di quel set si aspetta dal tuo sistema:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Atteso</th><th>Significato</th><th class="num">File</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Il tuo sistema deve accettare il file.</td><td class="num">4</td></tr>
+        <tr><td><code>unspecified</code></td><td>Dipende dalle regole del tuo sistema. Decidi tu, poi controlli che ciò che accade sia ciò che intendevi.</td><td class="num">46</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>Cosa puoi cambiare?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Impostazione</th><th>Accetta</th><th>Predefinito</th><th>Cosa fa</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--format</code></td>
+          <td>un id di formato dalla pagina dei formati</td>
+          <td><code>txt</code></td>
+          <td>Il formato di ogni file del set. È un&#39;opzione dello strumento stesso, e il preset le dà solo un valore predefinito.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>Come si esegue?</h2>
+  <p>Guarda quanto costerebbe il set, costruiscilo o prendi la sua ricetta da modificare:</p>
+  <pre><code>tfg preset show filename-handling
+tfg generate --preset filename-handling --out ./filename-handling
+tfg preset eject filename-handling &gt; filename-handling.yaml</code></pre>
+  <p>Oppure costruiscici sopra in una ricetta tua, accanto ai tuoi test:</p>
+  <pre><code>version: 1
+extends: preset:filename-handling</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">File di test per la QA, della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Progetto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Codice su GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Download</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Segnala un problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Sostieni il progetto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagine</p>
+      <ul class="plain">
+        <li><a href="/it/">Home</a></li>
+        <li><a href="/it/formati/">Formati</a></li>
+        <li><a href="/it/preset/">Preset</a></li>
+        <li><a href="/it/documentazione/">Documentazione</a></li>
+        <li><a href="/it/casi-d-uso/">Casi d&#39;uso</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a></li>
+        <li><a href="/it/domande-frequenti/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Rilasciato sotto la GNU General Public License, versione 3. I file che generi sono tuoi - la licenza copre lo strumento, non il suo output.</p>
+    <p class="muted">Questo sito non carica font, script o tracker da nessuna parte. Non imposta cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

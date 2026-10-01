@@ -1,0 +1,148 @@
+<h1>Comment créer un fichier d'une taille exacte</h1>
+<p class="lead">
+  Chaque système a une commande pour cela, et les trois sont ci-dessous. Elles donnent un fichier du
+  nombre d'octets exact - et pour beaucoup de tests, c'est tout ce qu'il faut. <strong>Chaque
+  commande de cette page a été exécutée avant publication</strong>, sur le système auquel elle
+  appartient.
+</p>
+
+<div class="note">
+  <p class="note-title">La réponse courte</p>
+  <p>
+    Windows : <code>fsutil file createnew name 10485760</code>. Linux : <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS : <code>mkfile 10m name</code>. Les tailles sont en octets, et 10
+    Mo comptés comme les compte votre gestionnaire de fichiers font 10485760 octets.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, et une version PowerShell qui n'a besoin de rien de plus</h2>
+  <p>
+    <code>fsutil</code> est fourni avec Windows. Il prend la taille <strong>en octets</strong>, calculez
+    donc le nombre d'abord - 10 Mo font 10485760, 100 Mo font 104857600, 1 Go fait 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Mesuré sous Windows 11 : cela fonctionne depuis une invite ordinaire sans exiger de droits élevés,
+    et le fichier fait exactement 10485760 octets.
+  </p>
+  <p>PowerShell sait faire la même chose sans appeler un autre programme, et il comprend les unités :</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> en PowerShell signifie 10485760 octets, le même comptage par 1024 qu'utilise
+    l'Explorateur, donc les deux commandes ci-dessus produisent la même taille.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate et fallocate, et la différence qui piège les gens</h2>
+  <p><code>dd</code> est celle que tout le monde connaît. Elle écrit vraiment les octets :</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> est instantané, et c'est là le piège. Mesuré sous Alpine Linux, le fichier
+    annonce 10485760 octets et occupe <strong>zéro bloc</strong> - c'est un <strong>fichier
+    creux</strong>. Tout ce qui le lit obtient dix mégaoctets de zéros, mais le disque n'a jamais
+    cédé la place :
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    C'est correct pour tester une limite d'envoi et trompeur pour tester un quota de disque.
+    <code>fallocate</code> est celui à choisir quand l'espace doit être réel :
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Et quand le contenu doit être incompressible, pour qu'un archiveur ne puisse pas le réduire à nouveau :</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, qui n'est pas creux, et les deux que vous connaissez déjà</h2>
+  <p>
+    macOS fournit <code>mkfile</code>. Mesuré sous macOS 26.6.2 : 10485760 octets et 20480 blocs, donc
+    l'espace est réellement alloué plutôt que promis :
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> et <code>truncate</code> sont là aussi et se comportent comme sous Linux :</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Là où cela cesse de suffire</p>
+  <h2>Un fichier de la bonne taille n'est pas un fichier du bon type</h2>
+  <p>
+    Tout ce qui précède donne un bloc de zéros. C'est suffisant quand ce qui est testé ne regarde que la
+    taille - une limite d'envoi, un quota, un transfert. Cela cesse de l'être dès que quelque chose
+    <strong>ouvre</strong> le fichier.
+  </p>
+  <p>
+    Mesuré, et cela vaut la peine de le faire vous-même : créez un fichier de 2 Mo avec
+    <code>fsutil</code>, appelez-le <code>photo.png</code> et donnez-le à une bibliothèque d'images.
+    Pillow répond <code>cannot identify image file</code>. Ce n'est pas un PNG. Cela n'en a jamais
+    été un - seul le nom le prétendait.
+  </p>
+  <p>
+    Cela compte plus qu'il n'y paraît, à cause de <strong>la façon dont le test échoue ensuite</strong>.
+    Votre point d'envoi refuse le fichier, votre test passe au vert et vous concluez que la limite
+    de taille fonctionne. Il ne l'a pas refusé pour sa taille. Il l'a refusé parce que les octets
+    n'étaient pas une image, et la règle que vous vouliez tester n'a jamais été atteinte.
+  </p>
+  <ul class="ticks">
+    <li>un analyseur le refuse avant qu'aucune règle de taille ne soit examinée</li>
+    <li>une étape de miniature échoue et l'erreur que vous lisez concerne la miniature</li>
+    <li>un antivirus ou un contrôle de contenu le refuse pour une troisième raison</li>
+    <li>une visionneuse n'affiche rien, et personne ne peut dire si c'est le bogue</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">L'autre voie</p>
+  <h2>Un vrai fichier de ce format, à la taille exacte que vous avez demandée</h2>
+  <p>
+    C'est ce que fait Testing Files Generator. Le fichier est un vrai fichier de son format - il s'ouvre
+    dans le logiciel qui lui correspond - et il fait le nombre d'octets exact que vous avez demandé,
+    à l'octet près :
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Demandez une taille qu'un format ne peut pas atteindre et vous obtenez une erreur qui nomme le
+    plancher et sa raison, jamais un fichier de mauvaise taille. La <a href="/fr/formats/">page des
+    formats</a> liste chaque format avec le plus petit fichier qu'il peut produire.
+  </p>
+  <p>Et une limite, ce sont trois cas de test et non un, donc l'outil construit les trois :</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Cela donne 10485759, 10485760 et 10485761 octets, et un manifeste qui dit lesquels votre système
+    doit accepter et lesquels il doit refuser. La <a href="/fr/cas-d-usage/">page des cas
+    d'usage</a> passe en revue cela et quatre autres tâches pour lesquelles il est conçu.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="which">
+  <h2>Alors lequel utiliser ?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Utiliser la commande du système</p>
+      <p class="muted">
+        Quand rien n'ouvre le fichier. Tester une limite de taille sur un point d'entrée qui vérifie d'abord
+        la taille, un transfert, un quota, un disque plein. C'est une ligne et c'est déjà installé.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Utiliser un vrai générateur</p>
+      <p class="muted">
+        Quand quoi que ce soit analyse, affiche, importe ou extrait le fichier - et quand vous avez besoin
+        des mêmes fixtures demain, sur une autre machine, à l'octet près.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Les deux sont sur cette page parce que les deux sont justes une partie du temps. L'erreur à éviter
+    est d'utiliser la première là où il faut la seconde et de lire le test vert comme une preuve.
+  </p>
+</section>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="es">
+<title>Probar un límite de tamaño de subida - archivos en el límite</title>
+<meta name="description" content="Archivos un byte por debajo, justo en y un byte por encima del límite que declara tu sistema, más pasos más amplios, cada uno marcado según deba aceptarse o no.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/es/presets/size-boundaries/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/size-boundaries/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/size-boundaries/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/size-boundaries/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/size-boundaries/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/size-boundaries/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/size-boundaries/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/size-boundaries/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Probar un límite de tamaño de subida - archivos en el límite">
+<meta property="og:description" content="Archivos un byte por debajo, justo en y un byte por encima del límite que declara tu sistema, más pasos más amplios, cada uno marcado según deba aceptarse o no.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/es/presets/size-boundaries/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - archivos de prueba reales al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Probar un límite de tamaño de subida - archivos en el límite">
+<meta name="twitter:description" content="Archivos un byte por debajo, justo en y un byte por encima del límite que declara tu sistema, más pasos más amplios, cada uno marcado según deba aceptarse o no.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - archivos de prueba reales al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Inicio",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/es/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Presets",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/es\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Límites de tamaño",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/es\/presets\/size-boundaries\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/es/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/es/">Inicio</a>
+      <a href="/es/formatos/">Formatos</a>
+      <a href="/es/presets/" aria-current="true">Presets</a>
+      <a href="/es/documentacion/">Documentación</a>
+      <a href="/es/casos-de-uso/">Casos de uso</a>
+      <a href="/es/crear-archivo-de-tamano-exacto/">Tamaño exacto</a>
+      <a href="/es/preguntas-frecuentes/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Español">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Español</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/size-boundaries/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/presets/size-boundaries/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/fr/prereglages/size-boundaries/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/it/preset/size-boundaries/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/pl/presety/size-boundaries/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/size-boundaries/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/es/presets/">Presets</a></p>
+<h1>Límites de tamaño</h1>
+<p class="lead">¿Se aplica un límite de tamaño exactamente donde se declara?</p>
+<p>
+  El preset <code>size-boundaries</code> construye con un solo comando un conjunto entero de archivos de
+  prueba reales para esta pregunta, y un <code>manifest.json</code> a su lado que dice cómo debe
+  reaccionar tu sistema a cada archivo. Todo lo de abajo se lee del programa, con los valores por
+  defecto de esta versión.
+</p>
+
+
+<section class="section" id="catches">
+  <h2>¿Qué suele encontrar?</h2>
+  <ul class="ticks">
+    <li>errores de uno en el límite</li>
+    <li>MB confundido con MiB, que son un 4,8 por ciento y bastan para dejar pasar un archivo que no debería pasar</li>
+    <li>un límite aplicado en el navegador y no en el servidor</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>¿Qué hay en el conjunto?</h2>
+  <p>Con sus valores por defecto, tal como lo informa <code>tfg preset show size-boundaries</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">Archivos</th><td>7</td></tr>
+        <tr><th scope="row">Targets en su receta</th><td>7</td></tr>
+        <tr><th scope="row">Tamaño total</th><td>73 400 320 B</td></tr>
+        <tr><th scope="row">Formatos</th><td>pdf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Y lo que el manifiesto de ese conjunto espera de tu sistema:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Esperado</th><th>Significado</th><th class="num">Archivos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>Tu sistema debe aceptar el archivo.</td><td class="num">4</td></tr>
+        <tr><td><code>reject</code></td><td>Tu sistema debe rechazar el archivo.</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>¿Qué puedes cambiar?</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Ajuste</th><th>Admite</th><th>Por defecto</th><th>Qué hace</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>un tamaño como 2mb</td>
+          <td><code>10mb</code></td>
+          <td>El límite de tamaño que declara tu sistema. Todo lo demás se mide a partir de él. <strong>Este valor por defecto es nuestro marcador, no el valor de tu sistema. Pasa el tuyo.</strong></td>
+        </tr>
+        <tr>
+          <td><code>--spread</code></td>
+          <td>tamaños separados por comas</td>
+          <td><code>1B,1kb,1mb</code></td>
+          <td>Hasta dónde llegar a cada lado del límite, como una lista de tamaños.</td>
+        </tr>
+        <tr>
+          <td><code>--format</code></td>
+          <td>un id de formato de la página de formatos</td>
+          <td><code>pdf</code></td>
+          <td>El formato de cada archivo del conjunto. Es una opción de la propia herramienta, y el preset solo le da un valor por defecto.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>¿Cómo se ejecuta?</h2>
+  <p>Mira cuánto costaría el conjunto, constrúyelo o toma su receta para editarla:</p>
+  <pre><code>tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./size-boundaries
+tfg preset eject size-boundaries &gt; size-boundaries.yaml</code></pre>
+  <p>O construye sobre él en una receta propia, junto a tus pruebas:</p>
+  <pre><code>version: 1
+extends: preset:size-boundaries
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Archivos de prueba para QA, al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyecto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código en GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descargas</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Informar de un problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoyar el proyecto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/es/">Inicio</a></li>
+        <li><a href="/es/formatos/">Formatos</a></li>
+        <li><a href="/es/presets/">Presets</a></li>
+        <li><a href="/es/documentacion/">Documentación</a></li>
+        <li><a href="/es/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/">Tamaño exacto</a></li>
+        <li><a href="/es/preguntas-frecuentes/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicado bajo la Licencia Pública General de GNU, versión 3. Los archivos que generes son tuyos - la licencia cubre la herramienta, no su salida.</p>
+    <p class="muted">Este sitio no carga fuentes, scripts ni rastreadores de ningún sitio. No usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

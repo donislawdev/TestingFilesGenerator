@@ -498,6 +498,13 @@ func TestEveryPageExistsInEveryLanguage(t *testing.T) {
 // leaked or an English page somebody typed a curly quote into, and both are
 // defects.
 //
+// One thing from a translation is allowed to appear on every page, and it is
+// the list of languages in the header. A visitor reading English has to be
+// shown the way to Deutsch and to the Japanese, in the names those languages
+// call themselves - a menu that said "German" would not be found by the person
+// it is for. So the list is cut out of a page before the page is read, and
+// nothing else is: a language name anywhere else in English text is a leak.
+//
 // This was a check on Polish alone until 2026-10-01, when the site was
 // translated into a further nineteen languages at the owner's request. The
 // border moved with them: it is read from the language files, so a twenty
@@ -505,6 +512,7 @@ func TestEveryPageExistsInEveryLanguage(t *testing.T) {
 // directory the border would let its text into.
 func TestTranslatedTextStaysOnTheTranslatedPages(t *testing.T) {
 	root := webRoot(t)
+	languageMenu := regexp.MustCompile(`(?s)<ul class="langlist">.*?</ul>`)
 	// Relative to the web directory, with a trailing slash so that content/de
 	// does not let content/deutsch in.
 	var homes []string
@@ -529,7 +537,11 @@ func TestTranslatedTextStaysOnTheTranslatedPages(t *testing.T) {
 		if readErr != nil {
 			return readErr
 		}
-		for n, line := range strings.Split(string(b), "\n") {
+		page := string(b)
+		if !translated {
+			page = languageMenu.ReplaceAllString(page, "")
+		}
+		for n, line := range strings.Split(page, "\n") {
 			for col, r := range line {
 				if r > 127 && !translated {
 					t.Errorf("web/%s:%d:%d holds %q - only the pages of a translation may carry it", slashed, n+1, col+1, r)

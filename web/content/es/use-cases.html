@@ -1,0 +1,119 @@
+<h1>Para qué lo usa la gente</h1>
+<p class="lead">
+  Cinco tareas que aparecen en casi todos los proyectos que aceptan archivos de personas, y el comando
+  que hace cada una. Cada ejemplo de abajo se ejecuta tal como está escrito.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Límites de subida</p>
+  <h2>Probar si un límite de tamaño de archivo se aplica donde dice que se aplica</h2>
+  <p>
+    Un límite son tres casos de prueba, no uno: justo por debajo, exactamente en él y justo por encima.
+    Conseguirlos a mano significa calcular números de bytes y esperar no haberte equivocado en uno.
+    Pide el conjunto en su lugar:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Obtienes tres PDF reales de 1048575, 1048576 y 1048577 bytes, y un manifiesto que dice que los dos
+    primeros deben aceptarse y el tercero rechazarse por <code>size_limit</code>. Tu prueba lee la
+    expectativa en lugar de que escribas tres aserciones a mano - y cuando cambia el límite, cambias
+    un número y vuelves a ejecutar.
+  </p>
+  <p>
+    Lo mismo funciona sin preset cuando quieres un único conjunto de límites en línea:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integración continua</p>
+  <h2>Mantener los fixtures fuera del repositorio sin perderlos</h2>
+  <p>
+    Los fixtures binarios grandes hacen lento clonar un repositorio y incómodo revisarlo, y nadie puede
+    decir qué cambió cuando se sustituye uno. Una receta son unos cientos de caracteres de YAML que
+    reconstruyen los archivos idénticos - <strong>byte a byte, en cualquier máquina</strong> -
+    porque cada archivo se deriva de la semilla de la ejecución.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Cada final tiene su propio código de salida, así que una canalización puede distinguir una receta
+    mala de un disco lleno y de una discrepancia de verificación. Una ejecución fallida no imprime
+    nada en la salida estándar, lo que evita que un analizador de registros lea un error como datos.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Escala</p>
+  <h2>Descubrir qué pasa cuando la carpeta es grande</h2>
+  <p>
+    Las rutinas de importación, los trabajos nocturnos y los listados de directorios se comportan
+    distinto con diez mil archivos que con diez. Los tamaños sacados de un intervalo hacen que el
+    conjunto parezca tráfico real en lugar de diez mil archivos idénticos, y el sorteo viene de la
+    semilla, así que el conjunto es el mismo mañana.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Comprueba cuánto costaría una ejecución antes de que escriba nada, lo que importa cuando el total se
+    mide en gigabytes:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Una ejecución mayor que el espacio libre del disco se rechaza antes de escribir el primer byte, en
+    lugar de llenar el disco y fallar a medias.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Archivos comprimidos</p>
+  <h2>Probar un descompresor con un archivo comprimido que de verdad contiene archivos</h2>
+  <p>
+    Un archivo comprimido vacío con la extensión correcta no demuestra nada sobre el código que lo abre
+    y recorre lo que hay dentro. Declara el contenido y el archivo comprimido lo contiene de verdad:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    La profundidad de anidamiento, el número de entradas y el tamaño de lo que hay dentro son cosas
+    sobre las que una rutina de importación tiene opiniones, y así descubres cuáles son.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Analizadores y visores</p>
+  <h2>Comprobar que tu propio código lee un formato como lo hace el software real</h2>
+  <p>
+    Cada formato de aquí se comprueba con un lector independiente antes de publicarse - un PNG se abre y
+    se comparan sus píxeles, un DOCX lo vuelven a leer bibliotecas distintas, un archivo comprimido
+    se extrae. Eso significa que un archivo que tu analizador rechaza es un hallazgo sobre tu
+    analizador, no sobre el generador.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    La <a href="/es/formatos/">página de formatos</a> lista los ajustes que admite cada uno y el archivo
+    más pequeño que puede ser cada uno.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Para quién es</h2>
+  <p>
+    Ingenieros de QA, automatización de pruebas y cualquiera cuyo código tenga detrás un formulario de
+    subida, una rutina de importación, un analizador o una cuota de almacenamiento. Funciona en una
+    máquina sin red alguna, lo que importa en un entorno corporativo cerrado donde un generador
+    basado en navegador no es una opción.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

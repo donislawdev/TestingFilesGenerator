@@ -1,0 +1,32 @@
+<h1>Préréglages de fichiers de test, un jeu pour chaque question de test</h1>
+<p class="lead">
+  Un préréglage est tout un jeu de fichiers de test conçu autour d'une question, avec un manifeste qui
+  dit comment votre système doit réagir à chaque fichier. Vous choisissez la question, l'outil
+  construit le jeu. Chaque préréglage a sa propre page qui dit ce qu'il trouve d'habitude, ce que
+  contient le jeu et chaque réglage qu'il accepte.
+</p>
+
+{{ template "presetsList" . }}
+
+<section class="section" id="recipes">
+  <h2>En quoi un préréglage diffère-t-il d'une recette ?</h2>
+  <p>
+    En dessous, il n'en diffère pas. Un préréglage est une recette que l'outil écrit pour vous à partir
+    de quelques réglages. <code>tfg preset eject</code> affiche cette recette pour que vous la
+    gardiez à côté de vos tests et la modifiiez, et une recette à vous peut s'appuyer sur un
+    préréglage en une ligne, <code>extends: preset:</code> suivi de son identifiant.
+  </p>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+</section>
+
+<section class="section" id="defaults">
+  <h2>Puis-je me fier aux valeurs par défaut ?</h2>
+  <p>
+    Pour les fichiers, oui. Pour un nombre que seul votre système connaît, comme la limite d'un
+    formulaire d'envoi, une valeur par défaut est un substitut de notre part, et l'outil le dit
+    chaque fois qu'il en utilise une. La page de chaque préréglage marque ces réglages, et <code>tfg
+    preset show</code> le dit avant que rien ne soit écrit.
+  </p>
+</section>

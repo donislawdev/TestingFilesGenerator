@@ -1,0 +1,200 @@
+<section class="hero">
+  <div class="hero-text">
+  <h1>Générez de vrais fichiers de test à la taille exacte</h1>
+  <p class="lead">
+    PDF, PNG, DOCX, ZIP - <strong>{{ .Facts.FormatCount }} formats au total</strong>, et chacun est un
+    vrai fichier qui s'ouvre dans le logiciel qui lui correspond, à <strong>la taille exacte que
+    vous avez demandée</strong>. Chaque exécution note aussi ce que votre application doit faire de
+    chaque fichier. Ligne de commande et fenêtre de bureau, gratuit et open source, entièrement sur
+    votre machine.
+  </p>
+
+  {{ template "downloadCta" . }}
+  </div>
+
+  <figure class="hero-shot">
+    <img src="/assets/window.png" width="1000" height="847" fetchpriority="high"
+         alt="La fenêtre de bureau de Testing Files Generator, prête à écrire un lot de fichiers de test">
+    <figcaption>La fenêtre de bureau, prête à écrire un lot de fichiers. Le même moteur fonctionne derrière la ligne de commande.</figcaption>
+  </figure>
+</section>
+
+<ul class="facts">
+    <li class="fact">
+      <span class="fact-figure">{{ .Facts.FormatCount }}</span>
+      <p class="fact-label">vrais formats, chacun s'ouvrant dans le logiciel qui lui correspond</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">1 octet</span>
+      <p class="fact-label">la précision de chaque taille demandée, jamais arrondie en silence</p>
+    </li>
+    <li class="fact">
+      <span class="fact-figure">0</span>
+      <p class="fact-label">connexions vers où que ce soit - pas de compte, pas de télémétrie, pas de vérification de mises à jour</p>
+    </li>
+</ul>
+
+<section class="section" id="problem">
+  <p class="eyebrow">Le problème</p>
+  <h2>Fabriquer un fichier de test est facile. Fabriquer les mille bons est la partie fastidieuse</h2>
+  <p>Vous testez un logiciel qui reçoit des fichiers de la part de personnes. Tôt ou tard, il vous faut :</p>
+  <ul class="ticks">
+    <li>un PDF de <strong>exactement</strong> 10 Mo, pour savoir si la limite d'envoi est réelle</li>
+    <li>les trois fichiers de part et d'autre de cette limite, pour attraper les erreurs d'un</li>
+    <li>10 000 fichiers journaux, pour voir ce que fait la tâche de nuit quand le dossier est gros</li>
+    <li>un ZIP qui contient vraiment 200 documents, pas une coquille vide avec la bonne extension</li>
+    <li>un fichier de 4 Go, sans garder un fichier de 4 Go dans votre dépôt</li>
+    <li>les <strong>mêmes</strong> fixtures sur votre portable et sur le serveur de build, à l'octet près</li>
+  </ul>
+  <p>
+    C'est ce que cela remplace. C'est conçu pour les ingénieurs QA, l'automatisation de tests et tous
+    ceux dont le code a derrière lui un formulaire d'envoi, une routine d'import, un analyseur ou un
+    quota de stockage.
+  </p>
+</section>
+
+<section class="section" id="different">
+  <p class="eyebrow">Ce qui le distingue</p>
+  <h2>Les autres générateurs s'arrêtent aux octets. Celui-ci répond à ce que votre test demande vraiment</h2>
+  <p>
+    Un dossier de fichiers vous laisse encore décider ce que chacun est censé prouver. Chaque exécution
+    écrit ici un <code>manifest.json</code> à côté des fichiers - une simple liste de tout ce qui a
+    été produit et, pour chaque entrée, une <strong>attente déclarée</strong>.
+  </p>
+  <p>Admettons que votre point d'envoi accepte 1 Mo. Demandez les trois fichiers situés sur cette ligne :</p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>Fichier</th><th class="num">Octets</th><th>Votre système doit</th><th>Parce que</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>1mb_under_1b.pdf</code></td><td class="num">1048575</td><td><strong>accepter</strong></td><td>il est dans la limite</td></tr>
+        <tr><td><code>1mb_at_limit.pdf</code></td><td class="num">1048576</td><td><strong>accepter</strong></td><td>la limite elle-même est permise</td></tr>
+        <tr><td><code>1mb_over_1b.pdf</code></td><td class="num">1048577</td><td><strong>refuser</strong></td><td><code>size_limit</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Trois fichiers, trois réponses différentes, sous forme lisible par machine. Votre test lit le manifeste au lieu que vous écriviez les assertions à la main :</p>
+  <pre><code>import json, os
+
+directory = "edges"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    response = upload(os.path.join(directory, entry["path"]))
+    outcome = entry["expected"]["outcome"]
+    if outcome == "accept":
+        assert response.ok, entry["path"]
+    elif outcome == "reject":
+        assert not response.ok, entry["path"]</code></pre>
+
+  <div class="note">
+    <p class="note-title">Quand la réponse dépend de votre propre politique, le manifeste le dit</p>
+    <p>
+      Il consigne <code>unspecified</code> plutôt que d'inventer une attente. Un générateur qui devine
+      produit de faux échecs, et une suite qui crie au loup finit par être désactivée.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="presets">
+  <p class="eyebrow">Préréglages</p>
+  <h2>Choisissez la question, obtenez tout le jeu</h2>
+  <p>
+    Un préréglage est un jeu de fichiers de test conçu autour d'une question de test, pour que vous
+    n'ayez pas à chercher quels fichiers prouvent quoi. Chacun a une page qui dit ce qu'il trouve
+    d'habitude, ce que contient le jeu et chaque réglage qu'il accepte.
+  </p>
+  {{ template "presetsList" . }}
+  <p><a href="/fr/prereglages/">Tous les préréglages, et leur rapport avec les recettes</a></p>
+</section>
+
+<section class="section" id="start">
+  <p class="eyebrow">Démarrage rapide</p>
+  <h2>Trois commandes pour le voir fonctionner</h2>
+  <ol class="steps">
+    <li>
+      <h3>Créer un fichier</h3>
+      <p>Un PNG, exactement deux mégaoctets :</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </li>
+    <li>
+      <h3>Créer beaucoup de fichiers</h3>
+      <p>
+        Dix mille fichiers journaux, chacun entre un et huit kilooctets, avec des tailles tirées de la
+        graine pour que demain donne le même jeu. <strong>Donnez à chaque exécution son propre
+        répertoire</strong> - le manifeste est la seule trace de ce qu'une exécution a écrit, donc
+        l'outil refuse d'en écrire un second par-dessus :
+      </p>
+      <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    </li>
+    <li>
+      <h3>Les vérifier, puis les supprimer</h3>
+      <p><code>verify</code> vous dit que rien n'a bougé. <code>cleanup</code> supprime exactement ce qui a été écrit et rien d'autre :</p>
+      <pre><code>tfg verify ./logs/manifest.json
+tfg cleanup ./logs/manifest.json --yes</code></pre>
+    </li>
+  </ol>
+  <p>
+    Les tailles se comptent par 1024, comme le fait votre gestionnaire de fichiers, donc
+    <code>2mb</code> signifie 2097152 octets. Un nombre d'octets brut fonctionne aussi. La
+    <a href="/fr/documentation/">documentation</a> couvre les recettes, le manifeste et les codes de
+    sortie.
+  </p>
+</section>
+
+<section class="section" id="features">
+  <p class="eyebrow">Ce que vous obtenez</p>
+  <h2>Conçu pour une suite qui tourne sans surveillance</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Taille exacte, à l'octet près</p>
+      <p class="muted">Demandez 10485761 octets et obtenez exactement cela. Une taille qu'un format ne peut pas atteindre est une erreur avec une raison, jamais un fichier de mauvaise taille.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">{{ .Facts.FormatCount }} vrais formats</p>
+      <p class="muted">Pas des zéros de remplissage avec une extension. Un PNG généré s'ouvre dans une visionneuse d'images, un DOCX s'ouvre dans Word, un ZIP se décompresse. Chacun est vérifié avec des lecteurs indépendants avant d'être livré.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Un manifeste qui fait office d'oracle de test</p>
+      <p class="muted">Chemin, taille, SHA-256, format, graine, version de l'outil - et ce que votre système doit faire du fichier.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Reproductible</p>
+      <p class="muted">Même recette et même graine, mêmes octets, sur n'importe quelle machine. Commitez une petite recette YAML plutôt que de gros fixtures binaires.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Deux interfaces, un seul moteur</p>
+      <p class="muted">Une ligne de commande conçue pour la CI et une fenêtre de bureau pour les tests exploratoires. Aucune n'est une version amputée de l'autre, et un test les compare fonctionnalité par fonctionnalité.</p>
+    </li>
+    <li class="card">
+      <p class="card-title">Entièrement hors ligne</p>
+      <p class="muted">Pas de compte, pas de cloud, pas de télémétrie, pas de vérification de mises à jour. Le binaire en ligne de commande n'a aucune pile réseau compilée dedans.</p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="download">
+  <p class="eyebrow">Téléchargement</p>
+  <h2>Choisissez la version pour votre système</h2>
+  <p>
+    Décompressez l'archive et lancez-la. <code>tfg</code> est la ligne de commande et
+    <code>tfg-gui</code> est la fenêtre de bureau. Il n'y a pas d'installateur et rien à ajouter à
+    votre machine.
+  </p>
+  {{ template "downloadsTable" . }}
+  <div class="note">
+    <p class="note-title">Ce qui est signé, et ce qui ne l'est pas</p>
+    <p>
+      Les téléchargements Windows et macOS sont signés, ils démarrent donc sans avertissement sur un
+      développeur inconnu. Ceux de Linux ne le sont pas, car Linux de bureau n'a pas d'équivalent
+      pour les signer. Chaque archive est listée dans <code>verify-SHA256SUMS.txt</code> sur la page
+      des versions, pour que vous puissiez vérifier ce que vous avez téléchargé.
+    </p>
+  </div>
+  {{ template "downloadCta" . }}
+</section>
+

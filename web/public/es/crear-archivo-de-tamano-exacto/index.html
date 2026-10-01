@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="es">
+<title>Crear un archivo de un tamaño exacto - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate y mkfile, medidos cada uno en su sistema, y por qué un archivo así creado no es un PDF ni un PNG cuando una prueba necesita uno.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Crear un archivo de un tamaño exacto - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate y mkfile, medidos cada uno en su sistema, y por qué un archivo así creado no es un PDF ni un PNG cuando una prueba necesita uno.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - archivos de prueba reales al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crear un archivo de un tamaño exacto - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate y mkfile, medidos cada uno en su sistema, y por qué un archivo así creado no es un PDF ni un PNG cuando una prueba necesita uno.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - archivos de prueba reales al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Inicio",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/es/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tamaño exacto",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/es\/crear-archivo-de-tamano-exacto\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/es/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/es/">Inicio</a>
+      <a href="/es/formatos/">Formatos</a>
+      <a href="/es/presets/">Presets</a>
+      <a href="/es/documentacion/">Documentación</a>
+      <a href="/es/casos-de-uso/">Casos de uso</a>
+      <a href="/es/crear-archivo-de-tamano-exacto/" aria-current="page">Tamaño exacto</a>
+      <a href="/es/preguntas-frecuentes/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Español">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Español</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Cómo crear un archivo de un tamaño exacto</h1>
+<p class="lead">
+  Cada sistema tiene un comando para ello, y los tres están abajo. Te dan un archivo con exactamente
+  el número correcto de bytes - y para muchas pruebas eso es todo lo que necesitas. <strong>Cada
+  comando de esta página se ejecutó antes de publicarse</strong>, en el sistema al que pertenece.
+</p>
+
+<div class="note">
+  <p class="note-title">La respuesta corta</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>. Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>. macOS: <code>mkfile 10m name</code>. Los tamaños son en bytes, y 10 MB
+    contados como los cuenta tu gestor de archivos son 10485760.
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, y una versión de PowerShell que no necesita nada extra</h2>
+  <p>
+    <code>fsutil</code> viene con Windows. Toma el tamaño <strong>en bytes</strong>, así que calcula
+    antes el número - 10 MB son 10485760, 100 MB son 104857600, 1 GB es 1073741824.
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Medido en Windows 11: funciona desde un símbolo del sistema normal sin necesitar uno elevado, y el
+    archivo sale con exactamente 10485760 bytes.
+  </p>
+  <p>PowerShell puede hacer lo mismo sin llamar a otro programa, y entiende unidades:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    <code>10MB</code> en PowerShell significa 10485760 bytes, el mismo recuento en base 1024 que usa el
+    Explorador, así que los dos comandos anteriores producen el mismo tamaño.
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate y fallocate, y la diferencia que pilla a la gente</h2>
+  <p><code>dd</code> es el que todo el mundo conoce. Escribe los bytes de verdad:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> es instantáneo, y esa es la trampa. Medido en Alpine Linux, el archivo informa
+    de 10485760 bytes y ocupa <strong>cero bloques</strong> - es un <strong>archivo
+    disperso</strong>. Cualquier cosa que lo lea obtiene diez megabytes de ceros, pero el disco
+    nunca cedió el espacio:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    Eso sirve para probar un límite de subida y engaña para probar una cuota de disco.
+    <code>fallocate</code> es el que hay que usar cuando el espacio tiene que ser real:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>Y cuando el contenido tiene que ser incompresible, para que un compresor no pueda volver a reducirlo:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, que no es disperso, y los dos que ya conoces</h2>
+  <p>
+    macOS incluye <code>mkfile</code>. Medido en macOS 26.6.2: 10485760 bytes y 20480 bloques, así que
+    el espacio está realmente asignado en lugar de prometido:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> y <code>truncate</code> también están y se comportan como en Linux:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">Dónde esto deja de funcionar</p>
+  <h2>Un archivo del tamaño correcto no es un archivo del tipo correcto</h2>
+  <p>
+    Todo lo anterior te da un bloque de ceros. Eso basta cuando lo que se prueba solo mira el tamaño -
+    un límite de subida, una cuota, una transferencia. Deja de bastar en cuanto algo
+    <strong>abre</strong> el archivo.
+  </p>
+  <p>
+    Medido, y merece la pena que lo hagas tú: crea un archivo de 2 MB con <code>fsutil</code>, llámalo
+    <code>photo.png</code> y pásaselo a una biblioteca de imágenes. Pillow responde <code>cannot
+    identify image file</code>. No es un PNG. Nunca lo fue - solo lo decía el nombre.
+  </p>
+  <p>
+    Eso importa más de lo que parece, por <strong>la forma en que la prueba falla entonces</strong>. Tu
+    endpoint de subida rechaza el archivo, tu prueba se pone en verde y concluyes que el límite de
+    tamaño funciona. No lo rechazó por el tamaño. Lo rechazó porque los bytes no eran una imagen, y
+    la regla que querías probar nunca se alcanzó.
+  </p>
+  <ul class="ticks">
+    <li>un analizador lo rechaza antes de mirar ninguna regla de tamaño</li>
+    <li>falla un paso de miniaturas y el error que lees trata de la miniatura</li>
+    <li>un antivirus o una comprobación de contenido lo rechaza por un tercer motivo</li>
+    <li>un visor no muestra nada, y nadie puede saber si ese es el fallo</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">La otra vía</p>
+  <h2>Un archivo real de ese formato, con exactamente el tamaño que pediste</h2>
+  <p>
+    Esto es lo que hace Testing Files Generator. El archivo es uno genuino de su formato - se abre en el
+    programa que le corresponde - y tiene el número exacto de bytes que pediste, al byte:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    Pide un tamaño que un formato no puede alcanzar y obtienes un error que nombra el suelo y su motivo,
+    nunca un archivo del tamaño equivocado. La <a href="/es/formatos/">página de formatos</a> lista
+    cada formato con el archivo más pequeño que puede producir.
+  </p>
+  <p>Y un límite son tres casos de prueba y no uno, así que la herramienta construye los tres:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    Eso te da 10485759, 10485760 y 10485761 bytes, y un manifiesto que dice cuáles debe aceptar tu
+    sistema y cuáles rechazar. La <a href="/es/casos-de-uso/">página de casos de uso</a> repasa eso
+    y otras cuatro tareas para las que está pensada.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descargar</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Ver el código fuente</a>
+</div>
+<p class="cta-note">Gratuito y de código abierto, GPL-3.0. Sin registro. Las descargas de Windows y macOS están firmadas y se inician sin advertencias.</p>
+</section>
+
+<section class="section" id="which">
+  <h2>Entonces, ¿cuál debes usar?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Usa el comando del sistema</p>
+      <p class="muted">
+        Cuando nada abre el archivo. Probar un límite de tamaño en un endpoint que comprueba antes el
+        tamaño, una transferencia, una cuota, un disco lleno. Es una línea y ya está instalado.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Usa un generador real</p>
+      <p class="muted">
+        Cuando algo analiza, renderiza, importa o extrae el archivo - y cuando necesitas los mismos fixtures
+        mañana, en otra máquina, byte a byte.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Ambos están en esta página porque ambos aciertan parte del tiempo. El error que conviene evitar es
+    usar el primero donde hace falta el segundo y leer la prueba en verde como una demostración.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Archivos de prueba para QA, al tamaño exacto, con un manifiesto que dice cómo debe reaccionar tu sistema a cada uno.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyecto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código en GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Descargas</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Informar de un problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoyar el proyecto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/es/">Inicio</a></li>
+        <li><a href="/es/formatos/">Formatos</a></li>
+        <li><a href="/es/presets/">Presets</a></li>
+        <li><a href="/es/documentacion/">Documentación</a></li>
+        <li><a href="/es/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/">Tamaño exacto</a></li>
+        <li><a href="/es/preguntas-frecuentes/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Publicado bajo la Licencia Pública General de GNU, versión 3. Los archivos que generes son tuyos - la licencia cubre la herramienta, no su salida.</p>
+    <p class="muted">Este sitio no carga fuentes, scripts ni rastreadores de ningún sitio. No usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<h1>Preguntas frecuentes</h1>
+<p class="lead">
+  Licencia, privacidad, reproducibilidad y lo que la gente comprueba antes de poner un generador en
+  una canalización de compilación. Si tu pregunta no está aquí, el
+  <a href="{{ .Facts.Issues }}">gestor de incidencias</a> está abierto.
+</p>
+
+{{ template "faqList" . }}
+{{ template "faqSchema" . }}
+
+<section class="section" id="more">
+  <h2>¿Aún lo estás pensando?</h2>
+  <p>
+    La <a href="/es/casos-de-uso/">página de casos de uso</a> muestra las tareas para las que está
+    pensada, y la <a href="/es/formatos/">página de formatos</a> lista cada formato con el archivo
+    más pequeño que puede producir. El <a href="{{ .Facts.Repo }}">README del repositorio</a> es la
+    referencia completa.
+  </p>
+  {{ template "downloadCta" . }}
+</section>

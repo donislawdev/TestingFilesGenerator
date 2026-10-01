@@ -1,0 +1,276 @@
+<h1>Documentation</h1>
+<p class="lead">
+  Tout ce que fait l'outil, rangé selon les questions avec lesquelles les gens arrivent vraiment. Le
+  <a href="{{ .Facts.Repo }}">README du dépôt</a> est la référence complète et correspond toujours à
+  la version que vous avez téléchargée.
+</p>
+
+<section class="section" id="commands">
+  <h2>Quelles commandes existe-t-il ?</h2>
+  <p>Chacune fait une seule chose :</p>
+  {{ template "commandList" . }}
+</section>
+
+<section class="section" id="one-file">
+  <h2>Comment générer un seul fichier de taille exacte ?</h2>
+  <p>
+    Nommez le format, la taille et la destination. Les tailles se comptent par 1024, donc
+    <code>2mb</code> font 2097152 octets. Un nombre d'octets brut fonctionne aussi, donc
+    <code>--size 10485761</code> demande exactement ce nombre.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>Les options utiles de <code>generate</code> :</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>Option</th><th>Ce qu'elle fait</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>format des fichiers, par exemple <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>taille exacte de chaque fichier, comme <code>10mb</code> ou un nombre d'octets brut</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>une taille tirée par fichier dans une plage, comme <code>1kb-8kb</code>. Le tirage vient de la graine</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>trois fichiers autour d'une limite : un octet en dessous, la limite, un octet au-dessus</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>combien de fichiers produire. Par défaut <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>modèle de nom, par exemple <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>répertoire où écrire</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>graine de l'exécution. La même graine donne les mêmes octets</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>un réglage de format, répétable</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>abîmer les fichiers exprès, répétable et appliqué dans l'ordre. Lancez <code>tfg damage</code> pour la liste</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> ou <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>compter et montrer, sans rien écrire du tout</td></tr>
+        <tr><td><code>--json</code></td><td>écrire le manifeste sur la sortie standard</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>Comment fabriquer un fichier volontairement cassé ?</h2>
+  <p>
+    Tout autre fichier écrit par cet outil est correct par construction, ce qui répond à deux des trois
+    questions que pose un validateur d'envoi. <code>--damage</code> répond à la troisième - le
+    fichier s'ouvre-t-il seulement. Le fichier est produit normalement puis abîmé, il garde donc la
+    taille demandée.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    Les réglages se placent après deux-points. L'option se répète, et l'ordre dans lequel vous les
+    écrivez est l'ordre dans lequel ils sont appliqués. <code>tfg damage</code> liste ce que cette
+    version sait faire et ce que chacun accepte.
+  </p>
+  <p>Dans une recette, la clé est une liste, de noms ou de réglages :</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    Un fichier abîmé reçoit <code>expected: reject</code> dans le manifeste, avec l'altération notée à
+    côté. Deux choses sont refusées avant que rien ne soit écrit, car chacune mettrait sinon sur le
+    disque un fichier que le manifeste décrit à tort :
+  </p>
+  <ul>
+    <li>un fichier plus petit que ce dont l'altération a besoin, car il ressortirait inchangé</li>
+    <li>
+      <code>expected: accept</code> à côté d'une altération, car rien ne pourrait y répondre. Écrivez
+      <code>sanitize</code> si le système testé doit réparer le fichier, ou <code>unspecified</code>
+      si c'est justement la question que vous posez
+    </li>
+  </ul>
+  <p>
+    Une troisième ne peut pas être connue à l'avance. Si une altération s'exécute sans déplacer un seul
+    octet, ce fichier est abandonné plutôt qu'écrit - l'exécution continue, dit de quel fichier il
+    s'agissait et se termine avec le code de sortie partiel.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>À quoi ressemble une recette ?</h2>
+  <p>
+    Une recette est un fichier YAML qui décrit toute une exécution. Commitez-la à côté de vos tests et
+    les fixtures cessent d'être des binaires dans votre dépôt - n'importe qui peut les reconstruire,
+    à l'octet près, à partir d'un fichier de quelques centaines de caractères.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Chaque cible exige exactement une de ces clés : <code>size</code>, <code>size-range</code>,
+    <code>boundary</code> ou <code>contains</code>. Deux est une erreur, et aucune aussi. Une
+    recette invalide n'écrit <strong>aucun fichier</strong> et signale tous les problèmes d'un coup
+    plutôt que le premier seulement, chacun nommant le réglage concerné.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>Comment déclarer ce que mon système doit faire d'un fichier ?</h2>
+  <p>Forme courte quand le résultat suffit, forme longue quand la raison compte :</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    Les résultats sont <code>accept</code>, <code>reject</code>, <code>sanitize</code> et
+    <code>unspecified</code>. Les raisons forment une liste fermée pour qu'un rapport puisse les
+    regrouper : <code>content_malformed</code>, <code>count_limit</code>,
+    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
+    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
+    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
+    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> et
+    <code>size_zero</code>.
+  </p>
+  <p>
+    Une raison nomme <strong>la règle en jeu</strong>, pas le verdict. C'est pourquoi la même raison
+    peut se trouver sous l'un ou l'autre résultat - un fichier un octet sous une limite est
+    <code>accept</code>, et la règle concernée reste <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>Que contient le manifeste ?</h2>
+  <p>
+    Il est écrit à côté des fichiers à la fin de chaque exécution, y compris d'une exécution
+    interrompue. Une entrée par fichier :
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    Un <code>recipe_hash</code> est ajouté quand l'exécution vient d'une recette, et <code>preset</code>
+    avec <code>overrides</code> quand elle vient d'un préréglage, de sorte qu'un manifeste peut
+    toujours être rattaché à ce qui l'a produit.
+  </p>
+  <p>
+    Chaque entrée porte aussi <code>target_id</code>, l'identifiant de la cible de la recette qui a
+    produit le fichier, et <code>summary.by_target</code> compte les fichiers de chaque cible. Une
+    recette à plusieurs cibles peut donc être vérifiée cible par cible sans lire les noms de
+    fichiers.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>Qu'est-ce qu'un préréglage ?</h2>
+  <p>
+    Un jeu de fichiers prêt à l'emploi qui répond à une question de test courante, pour que vous n'ayez
+    pas à concevoir le jeu vous-même. Les préréglages sont des recettes ordinaires en dessous, et
+    <code>eject</code> affiche la recette pour que vous puissiez la modifier. Chaque préréglage a
+    <a href="/fr/prereglages/">sa propre page</a> qui dit ce qu'il trouve d'habitude, ce que
+    contient le jeu et chaque réglage qu'il accepte.
+  </p>
+  {{ template "presetsList" . }}
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    <code>show</code> vous dit ce que coûterait le jeu avant que vous ne le construisiez, et dit
+    franchement quand un nombre est un substitut de notre part plutôt qu'une limite de la vôtre.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>Que signifient les codes de sortie ?</h2>
+  <p>
+    Chaque fin a son propre code, la sortie lisible par machine va sur la sortie standard, et une
+    exécution échouée n'y écrit rien. Le tableau est un contrat figé - changer le sens d'un code
+    exige une version majeure.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Une exécution arrêtée avec Ctrl+C laisse quand même un manifeste et ne laisse jamais de fichier à
+    moitié écrit, si bien qu'une tâche annulée peut encore être nettoyée par la suivante.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>Y a-t-il une fenêtre de bureau ?</h2>
+  <p>
+    Oui, le même moteur avec une fenêtre, pour les tests qui ne sont pas scriptés. Ce n'est pas une
+    version amputée : un test compare les deux interfaces fonctionnalité par fonctionnalité, et tout
+    ce que seule l'une peut faire doit être déclaré et justifié au lieu de diverger discrètement.
+  </p>
+  <p>
+    Les écrans sont un lot, les préréglages, plusieurs lots à la fois et À propos. Elle montre ce que
+    coûterait une exécution avant d'écrire quoi que ce soit, indique la progression pendant
+    l'exécution et peut être annulée en cours de route sans laisser de fichier à moitié écrit. Elle
+    n'ouvre pas encore de fichier de recette - les recettes sont pour l'instant une affaire de ligne
+    de commande, et la fenêtre construit ses lots dans le formulaire.
+  </p>
+</section>

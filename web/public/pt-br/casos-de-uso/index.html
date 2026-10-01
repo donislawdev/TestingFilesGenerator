@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pt-BR">
+<title>Casos de uso - limites de upload, fixtures de CI, testes em massa</title>
+<meta name="description" content="Testar um limite de tamanho de upload, montar fixtures reproduzíveis para o CI, gerar dez mil arquivos e encher arquivos compactados com conteúdo real.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/anwendungsfaelle/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-uso/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-d-usage/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-d-uso/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/zastosowania/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/use-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Casos de uso - limites de upload, fixtures de CI, testes em massa">
+<meta property="og:description" content="Testar um limite de tamanho de upload, montar fixtures reproduzíveis para o CI, gerar dez mil arquivos e encher arquivos compactados com conteúdo real.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-uso/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Casos de uso - limites de upload, fixtures de CI, testes em massa">
+<meta name="twitter:description" content="Testar um limite de tamanho de upload, montar fixtures reproduzíveis para o CI, gerar dez mil arquivos e encher arquivos compactados com conteúdo real.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Início",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pt-br/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Casos de uso",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/casos-de-uso\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pt-br/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/pt-br/">Início</a>
+      <a href="/pt-br/formatos/">Formatos</a>
+      <a href="/pt-br/presets/">Presets</a>
+      <a href="/pt-br/documentacao/">Documentação</a>
+      <a href="/pt-br/casos-de-uso/" aria-current="page">Casos de uso</a>
+      <a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a>
+      <a href="/pt-br/perguntas-frequentes/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Português (Brasil)">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Português (Brasil)</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/use-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/de/anwendungsfaelle/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-uso/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-d-usage/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/it/casi-d-uso/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/pl/zastosowania/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>Para que as pessoas usam</h1>
+<p class="lead">
+  Cinco tarefas que aparecem em quase todo projeto que aceita arquivos de pessoas, e o comando que faz
+  cada uma. Todo exemplo abaixo roda como está escrito.
+</p>
+
+<section class="section" id="upload-limit">
+  <p class="eyebrow">Limites de upload</p>
+  <h2>Testar se um limite de tamanho de arquivo é aplicado onde diz que é</h2>
+  <p>
+    Um limite são três casos de teste, não um: logo abaixo, exatamente nele e logo acima. Conseguir
+    esses à mão significa calcular contagens de bytes e torcer para não ter errado por um. Peça o
+    conjunto no lugar:
+  </p>
+  <pre><code>tfg generate --preset size-boundaries --limit 1mb --spread 1B --format pdf --out ./edges</code></pre>
+  <p>
+    Você recebe três PDFs reais com 1048575, 1048576 e 1048577 bytes, e um manifesto dizendo que os dois
+    primeiros devem ser aceitos e o terceiro rejeitado por <code>size_limit</code>. Seu teste lê a
+    expectativa em vez de você escrever três asserções à mão - e quando o limite muda, você muda um
+    número e roda de novo.
+  </p>
+  <p>
+    O mesmo funciona sem preset quando você quer um único conjunto de limites embutido:
+  </p>
+  <pre><code>tfg generate --format png --boundary 5mb --out ./png-edges</code></pre>
+</section>
+
+<section class="section" id="ci-fixtures">
+  <p class="eyebrow">Integração contínua</p>
+  <h2>Manter fixtures fora do repositório sem perdê-las</h2>
+  <p>
+    Fixtures binárias grandes deixam um repositório lento de clonar e chato de revisar, e ninguém sabe
+    dizer o que mudou quando uma é substituída. Uma receita são algumas centenas de caracteres de
+    YAML que reconstroem os arquivos idênticos - <strong>byte a byte, em qualquer máquina</strong> -
+    porque cada arquivo é derivado do seed da execução.
+  </p>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    Cada término tem seu próprio código de saída, então um pipeline consegue distinguir uma receita ruim
+    de um disco cheio e de uma divergência de verificação. Uma execução com falha não imprime nada
+    na saída padrão, o que impede um parser de logs de ler um erro como dado.
+  </p>
+</section>
+
+<section class="section" id="bulk">
+  <p class="eyebrow">Escala</p>
+  <h2>Descobrir o que acontece quando a pasta é grande</h2>
+  <p>
+    Rotinas de importação, jobs noturnos e listagens de diretório se comportam diferente com dez mil
+    arquivos do que com dez. Tamanhos sorteados de um intervalo fazem o conjunto parecer tráfego
+    real em vez de dez mil arquivos idênticos, e o sorteio vem do seed, então o conjunto é o mesmo
+    amanhã.
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./fixtures</code></pre>
+  <p>
+    Confira quanto uma execução custaria antes de ela escrever qualquer coisa, o que importa quando o
+    total é medido em gigabytes:
+  </p>
+  <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --dry-run</code></pre>
+  <p>
+    Uma execução maior que o espaço livre no disco é recusada antes de o primeiro byte ser escrito, em
+    vez de encher o disco e falhar no meio.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <p class="eyebrow">Arquivos compactados</p>
+  <h2>Testar um descompactador com um arquivo compactado que realmente contém arquivos</h2>
+  <p>
+    Um arquivo compactado vazio com a extensão certa não prova nada sobre o código que o abre e percorre
+    o que há dentro. Declare o conteúdo e o arquivo compactado realmente o contém:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+  <p>
+    Profundidade de aninhamento, contagem de entradas e tamanho do que há dentro são coisas sobre as
+    quais uma rotina de importação tem opinião, e é assim que você descobre quais são.
+  </p>
+</section>
+
+<section class="section" id="parsers">
+  <p class="eyebrow">Parsers e visualizadores</p>
+  <h2>Conferir se o seu próprio código lê um formato como o software real</h2>
+  <p>
+    Todo formato aqui é verificado com um leitor independente antes de ser liberado - um PNG é aberto e
+    seus pixels comparados, um DOCX é relido por bibliotecas separadas, um arquivo compactado é
+    extraído. Isso significa que um arquivo que o seu parser recusa é uma descoberta sobre o seu
+    parser, não sobre o gerador.
+  </p>
+  <pre><code>tfg generate --format docx --size 300kb --set paragraphs=120 --out ./documents
+tfg generate --format xlsx --size 2mb --set rows=400 --set columns=6 --out ./sheets</code></pre>
+  <p>
+    A <a href="/pt-br/formatos/">página de formatos</a> lista as configurações que cada um aceita e o
+    menor arquivo que cada um pode ser.
+  </p>
+</section>
+
+<section class="section" id="who">
+  <h2>Para quem é</h2>
+  <p>
+    Engenheiros de QA, automação de testes e qualquer pessoa cujo código tenha atrás um formulário de
+    upload, uma rotina de importação, um parser ou uma cota de armazenamento. Roda em uma máquina
+    sem rede nenhuma, o que importa em um ambiente corporativo fechado onde um gerador baseado em
+    navegador não é opção.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Baixar</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">Ver o código-fonte</a>
+</div>
+<p class="cta-note">Gratuito e de código aberto, GPL-3.0. Sem cadastro. Os downloads de Windows e macOS são assinados e iniciam sem aviso.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">Arquivos de teste para QA, no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projeto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código no GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Relatar um problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoiar o projeto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/pt-br/">Início</a></li>
+        <li><a href="/pt-br/formatos/">Formatos</a></li>
+        <li><a href="/pt-br/presets/">Presets</a></li>
+        <li><a href="/pt-br/documentacao/">Documentação</a></li>
+        <li><a href="/pt-br/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Distribuído sob a Licença Pública Geral GNU, versão 3. Os arquivos que você gera são seus - a licença cobre a ferramenta, não a sua saída.</p>
+    <p class="muted">Este site não carrega fontes, scripts nem rastreadores de lugar nenhum. Não usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

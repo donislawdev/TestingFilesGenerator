@@ -154,5 +154,9 @@ func spacedBytes(n int64) string {
 // przyjmie, and each entry is exactly the form the page shows. The key is the
 // language tag, the same as the directory under web/content.
 var translatedLimitWords = map[string][2]string{
-	"de": {"akzeptieren", "ablehnen"},
+	"de":    {"akzeptieren", "ablehnen"},
+	"es":    {"aceptar", "rechazar"},
+	"fr":    {"accepter", "refuser"},
+	"it":    {"accettare", "rifiutare"},
+	"pt-BR": {"aceitar", "rejeitar"},
 }

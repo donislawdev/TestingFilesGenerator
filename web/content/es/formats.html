@@ -1,0 +1,81 @@
+<h1>{{ .Facts.FormatCount }} formatos de archivo, cada uno generado a un tamaño exacto</h1>
+<p class="lead">
+  Cada uno es un <strong>archivo real de ese formato</strong>. Se abre en el programa que le
+  corresponde y tiene exactamente el número de bytes que pediste. Ninguno es relleno de ceros con
+  una extensión pegada.
+</p>
+
+{{ template "formatsTable" . }}
+
+<section class="section" id="columns">
+  <h2>Qué significan las columnas</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">Archivo más pequeño</p>
+      <p class="muted">
+        Los menos bytes que esta herramienta aceptará para ese formato, incluida la etiqueta que escribe
+        dentro del archivo. Pide menos y obtienes un error que nombra el suelo y su motivo, nunca un
+        archivo del tamaño equivocado.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Fidelidad</p>
+      <p class="muted">
+        Cuán completo es el archivo. <code>full</code> significa que lo acepta un lector que analiza de
+        verdad el formato, no solo que la extensión coincida.
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">Comprobado con</p>
+      <p class="muted">
+        El lector independiente que abre cada archivo generado antes de que el formato se publique - una
+        implementación aparte, no nuestro propio código corrigiendo sus propios deberes.
+      </p>
+    </li>
+  </ul>
+  <p>
+    Cada formato también se repite byte a byte: la misma receta y la misma semilla producen archivos
+    idénticos en cualquier máquina, y eso es lo que hace seguro subir al repositorio una receta en
+    lugar de los fixtures mismos.
+  </p>
+</section>
+
+<section class="section" id="settings">
+  <h2>Ajustes que admite cada formato</h2>
+  <p>
+    La mayoría de los formatos tienen ajustes propios - dimensiones de imagen, calidad JPEG, número de
+    páginas de PDF, filas y columnas de una hoja de cálculo, cuántas entradas van dentro de un
+    archivo comprimido. Defínelos con <code>--set key=value</code> en la línea de comandos, o bajo
+    <code>properties:</code> en una receta.
+  </p>
+  <pre><code>tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85</code></pre>
+  {{ template "propertiesTable" . }}
+  <p>
+    Un valor fuera de lo que admite un ajuste se rechaza con un mensaje que nombra el ajuste, el
+    intervalo permitido y qué usar en su lugar. Un ajuste desconocido también es un error, nunca un
+    valor por defecto silencioso - una errata aceptada en silencio da un archivo con los ajustes
+    equivocados y una hora preguntándote por qué la prueba pasa cuando no debería.
+  </p>
+  <p>
+    Ejecuta <code>tfg formats &lt;id&gt;</code> para ver exactamente qué admite un formato en la versión
+    que tienes.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>Los archivos comprimidos contienen archivos reales</h2>
+  <p>
+    {{ range $i, $c := .Facts.Containers }}{{ if $i }} y {{ end }}<code>{{ $c.ID }}</code>{{ end }} se
+    pueden llenar de entradas en lugar de quedar como un cascarón vacío. Un archivo comprimido
+    generado contiene de verdad los documentos que dice contener, así que todo lo que lo descomprima
+    durante una prueba encuentra archivos reales dentro.
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb</code></pre>
+</section>
+
